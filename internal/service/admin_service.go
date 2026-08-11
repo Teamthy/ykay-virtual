@@ -214,6 +214,11 @@ func (s *AdminService) ModerateReview(ctx context.Context, adminID uuid.UUID, re
 	if err := s.reviews.UpdateStatus(ctx, reviewID, status, &adminID); err != nil {
 		return err
 	}
+	if status == review.ReviewPublished {
+		if err := s.reviews.RecomputeTutorRating(ctx, rv.TutorProfileID); err != nil {
+			return err
+		}
+	}
 	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "review",
 		&reviewID, map[string]any{"status": rv.Status}, map[string]any{"status": status, "moderated_by": adminID}, nil, nil)
 	return nil

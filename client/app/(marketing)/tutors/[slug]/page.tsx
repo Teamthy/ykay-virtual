@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata, personJsonLd, reviewJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { RelatedContent } from "@/components/RelatedContent";
+import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
 
 type Props = { params: { slug: string } };
@@ -65,19 +66,13 @@ export default function TutorPage({ params }: Props) {
             <p className="mt-2 text-sm text-ink-600">Tuteria parity: Adaptive Learning Plans, Child-Centered, Periodic Evaluation. YKAY adds: progress reports with strengths/weaknesses/recommendations, audited.</p>
           </section>
 
-          <section className="mt-8">
-            <h3 className="font-bold">Reviews (consent-gated public)</h3>
-            <div className="mt-4 border rounded-2xl p-5">
-              <p className="text-sm">“My daughter scored among the highest in her common entrance...”</p>
-              <div className="mt-2 text-xs text-ink-500">— Mrs. Soetan, Lekki, Lagos • Verified purchase • Consent given</div>
-            </div>
-          </section>
+          <ReviewsSection tutorSlug={params.slug} tutorId={tutor.id ?? params.slug} />
         </div>
 
         <div className="border rounded-2xl p-6 h-fit lg:sticky lg:top-28">
           <h3 className="font-bold">Book this tutor</h3>
           <p className="mt-2 text-sm text-ink-600">Escrow protected — you pay to wallet, tutor paid after confirmation or 3-day auto-release. No off-platform payment.</p>
-          <button className="mt-5 btn-gold w-full">Request Tuition</button>
+          <a href={`/private-tuition?tutor=${params.slug}`} className="mt-5 btn-gold w-full inline-flex items-center justify-center">Request Tuition</a>
           <div className="mt-4 text-xs text-ink-500">Good Fit Guarantee: first hour protected.</div>
         </div>
       </div>

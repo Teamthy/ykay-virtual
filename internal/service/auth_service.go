@@ -37,13 +37,14 @@ const (
 )
 
 type AuthService struct {
-	users    identity.UserRepository
-	sessions identity.SessionRepository
-	roles    identity.RoleRepository
-	tokens   identity.AuthTokenRepository
-	email    notification.EmailSender
-	audit    identity.AuditService
-	now      func() time.Time
+	users     identity.UserRepository
+	sessions  identity.SessionRepository
+	roles     identity.RoleRepository
+	tokens    identity.AuthTokenRepository
+	email     notification.EmailSender
+	audit     identity.AuditService
+	referrals ReferralApplier
+	now       func() time.Time
 }
 
 func NewAuthService(users identity.UserRepository, sessions identity.SessionRepository,
@@ -66,12 +67,19 @@ func (s *AuthService) WithEmailSender(email notification.EmailSender) *AuthServi
 	return s
 }
 
+// WithReferrals wires the referral applier (register ?ref=CODE support).
+func (s *AuthService) WithReferrals(r ReferralApplier) *AuthService {
+	s.referrals = r
+	return s
+}
+
 type RegisterInput struct {
-	Email    string   `json:"email"`
-	Password string   `json:"password"`
-	Roles    []string `json:"roles"` // e.g. ["PARENT"], ["TUTOR"], ["STUDENT"]
-	Phone    *string  `json:"phone,omitempty"`
-	Timezone string   `json:"timezone,omitempty"`
+	Email        string   `json:"email"`
+	Password     string   `json:"password"`
+	Roles        []string `json:"roles"` // e.g. ["PARENT"], ["TUTOR"], ["STUDENT"]
+	Phone        *string  `json:"phone,omitempty"`
+	Timezone     string   `json:"timezone,omitempty"`
+	ReferralCode string   `json:"referral_code,omitempty"`
 }
 
 // Register — creates the user with bcrypt hash, assigns roles (validated
@@ -113,6 +121,10 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 			continue // unknown role names are ignored (defensive)
 		}
 		_ = s.roles.AssignToUser(ctx, user.ID, role.ID)
+	}
+	if s.referrals != nil && strings.TrimSpace(in.ReferralCode) != "" {
+		// Record the referral (best-effort — never blocks registration).
+		_, _ = s.referrals.Apply(ctx, user.ID, in.ReferralCode)
 	}
 	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditCreate, "user",
 		&user.ID, nil, map[string]any{"email": user.Email, "roles": in.Roles, "status": user.Status},

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { B2BLeadForm } from "@/features/institutions/B2BLeadForm";
 
 export const revalidate = 3600;
 
@@ -48,6 +49,10 @@ export default function ForSchoolsPage() {
           <li>SSO / Email domain allowlist (Phase 2)</li>
         </ul>
       </section>
-    </main>
+          <section className="mt-14 max-w-xl mx-auto">
+        <B2BLeadForm defaultType="SCHOOL" ctaLabel="Request a school account" />
+      </section>
+
+</main>
   );
 }

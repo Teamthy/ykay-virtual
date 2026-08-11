@@ -5,6 +5,7 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { unreadCount } from "@/features/messaging/api";
+import { ReferralCard } from "@/features/referrals/ReferralCard";
 
 const DEV_USER = "00000000-0000-0000-0000-0000000000a1";
 
@@ -78,6 +79,11 @@ export default function ParentDashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Referrals */}
+      <section className="mt-10">
+        <ReferralCard userId={DEV_USER} />
+      </section>
 
       {/* Orders */}
       <section className="mt-10">

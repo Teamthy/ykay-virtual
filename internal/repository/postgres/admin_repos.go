@@ -11,7 +11,6 @@ import (
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/institution"
-	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
 
 	"github.com/google/uuid"
@@ -312,76 +311,6 @@ func (r *InstitutionRepo) GetByID(ctx context.Context, id uuid.UUID) (*instituti
 }
 
 var _ institution.InstitutionRepository = (*InstitutionRepo)(nil)
-
-// --- Referrals ---
-
-type ReferralRepo struct{ db TxQuerier }
-
-func NewReferralRepo(db TxQuerier) *ReferralRepo { return &ReferralRepo{db: db} }
-
-func (r *ReferralRepo) List(ctx context.Context, params referral.ReferralListParams) ([]referral.Referral, int64, error) {
-	where := ""
-	args := []any{}
-	if params.Status != "" {
-		where = " WHERE status = $1"
-		args = append(args, params.Status)
-	}
-	var total int64
-	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM referrals"+where, args...).Scan(&total); err != nil {
-		return nil, 0, fmt.Errorf("count referrals: %w", err)
-	}
-	limit := params.PageSize
-	if limit < 1 {
-		limit = 20
-	}
-	if limit > 100 {
-		limit = 100
-	}
-	offset := (params.Page - 1) * limit
-	if offset < 0 {
-		offset = 0
-	}
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, referrer_user_id, referred_user_id, referral_code_id, order_id,
-			reward_amount, status, qualified_at, rewarded_at, created_at
-		FROM referrals`+where+` ORDER BY created_at DESC LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
-		append(args, limit, offset)...)
-	if err != nil {
-		return nil, 0, fmt.Errorf("list referrals: %w", err)
-	}
-	defer rows.Close()
-	out := []referral.Referral{}
-	for rows.Next() {
-		var r referral.Referral
-		var orderID uuidNull
-		var qualifiedAt, rewardedAt sql.NullTime
-		if err := rows.Scan(&r.ID, &r.ReferrerUserID, &r.ReferredUserID, &r.ReferralCodeID, &orderID,
-			&r.RewardAmount, &r.Status, &qualifiedAt, &rewardedAt, &r.CreatedAt); err != nil {
-			return nil, 0, err
-		}
-		if orderID.Valid {
-			r.OrderID = &orderID.UUID
-		}
-		if qualifiedAt.Valid {
-			r.QualifiedAt = &qualifiedAt.Time
-		}
-		if rewardedAt.Valid {
-			r.RewardedAt = &rewardedAt.Time
-		}
-		out = append(out, r)
-	}
-	return out, total, rows.Err()
-}
-
-func (r *ReferralRepo) Count(ctx context.Context) (int64, error) {
-	var n int64
-	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM referrals").Scan(&n); err != nil {
-		return 0, fmt.Errorf("count referrals: %w", err)
-	}
-	return n, nil
-}
-
-var _ referral.ReferralRepository = (*ReferralRepo)(nil)
 
 // --- Reviews ---
 

@@ -18,6 +18,7 @@ export type RegisterInput = {
   email: string;
   password: string;
   roles: string[];
+  referral_code?: string;
 };
 
 export async function register(input: RegisterInput): Promise<CurrentUser> {

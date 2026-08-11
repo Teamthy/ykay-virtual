@@ -1,9 +1,9 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -24,8 +24,10 @@ const ROLE_COPY: Record<string, { title: string; desc: string }> = {
   TUTOR: { title: "I'm a tutor", desc: "Apply to teach and earn" },
 };
 
-export default function RegisterPage() {
+function RegisterInner() {
   const router = useRouter();
+  const sp = useSearchParams();
+  const refCode = sp.get("ref") ?? "";
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,6 +37,7 @@ export default function RegisterPage() {
       password: "",
       confirm: "",
       role: "PARENT" as "PARENT" | "STUDENT" | "TUTOR",
+      referral_code: refCode,
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -46,7 +49,12 @@ export default function RegisterPage() {
       setSubmitting(true);
       setError(null);
       try {
-        const user = await register({ email: value.email, password: value.password, roles: [value.role] });
+        const user = await register({
+          email: value.email,
+          password: value.password,
+          roles: [value.role],
+          referral_code: value.referral_code || undefined,
+        });
         // Auto-login after registration (smooth first-run experience).
         await login(value.email, value.password);
         toast.success("Account created — welcome to YKAY!");
@@ -114,6 +122,24 @@ export default function RegisterPage() {
               </label>
             )}
           </form.Field>
+          {refCode && (
+            <p className="rounded-xl bg-brand-blue/5 border border-brand-blue/20 px-4 py-3 text-xs text-brand-blue font-semibold">
+              🎁 You were referred! Code <span className="font-mono">{refCode}</span> will be applied to your account.
+            </p>
+          )}
+          <form.Field name="referral_code">
+            {(field) => (
+              <label className="block text-sm">
+                <span className="font-medium">Referral code (optional)</span>
+                <input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="e.g. ABC12345 — earn a reward together"
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                />
+              </label>
+            )}
+          </form.Field>
           <div className="grid grid-cols-2 gap-3">
             <form.Field name="password">
               {(field) => (
@@ -164,5 +190,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<p className="text-center text-ink-500 py-16">Loading…</p>}>
+      <RegisterInner />
+    </Suspense>
   );
 }

@@ -912,6 +912,122 @@ paths:
   /reviews:
     post:
       tags: [reviews]
+      summary: >-
+        Submit a review for a tutor (parent, booking-scoped). Consent is
+        required; the review starts PENDING and publishes after admin
+        moderation (which recomputes the tutor's rating).
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tutor_profile_id, rating, consent_given]
+              properties:
+                tutor_profile_id: { type: string, format: uuid }
+                booking_id: { type: string, format: uuid }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                title: { type: string }
+                comment: { type: string }
+                consent_given: { type: boolean }
+      responses:
+        '201': { description: Review pending moderation }
+        '409': { description: Already reviewed this tutor }
+        '400': { description: Consent required / invalid rating }
+
+  /tutors/{slug}/reviews:
+    get:
+      tags: [reviews]
+      summary: Published reviews for a tutor (consent-gated, Review JSON-LD source)
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Published + public + consented reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    rating: { type: integer }
+                    title: { type: string }
+                    comment: { type: string }
+                    created_at: { type: string, format: date-time }
+
+  /me/referral-code:
+    get:
+      tags: [referrals]
+      summary: My shareable referral code (created on first request)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Code + reward amount + share link
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+                  is_active: { type: boolean }
+                  reward: { type: number }
+                  currency: { type: string }
+                  share_link: { type: string }
+
+  /referrals/apply:
+    post:
+      tags: [referrals]
+      summary: Apply a referral code to my account (PENDING until first paid order)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+      responses:
+        '201': { description: Referral recorded }
+        '404': { description: Invalid code }
+        '409': { description: Account already referred }
+
+  /me/referrals:
+    get:
+      tags: [referrals]
+      summary: My sent referrals with statuses
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Referral list }
+
+  /institutions:
+    post:
+      tags: [institutions]
+      summary: Create a B2B institution account (schools/corporate; owner membership when signed in)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                type: { type: string, enum: [SCHOOL, CORPORATE, GOVERNMENT, NGO, OTHER] }
+                email: { type: string, format: email }
+                phone: { type: string }
+                website: { type: string }
+                description: { type: string }
+      responses:
+        '201': { description: Institution created }
+
+
+    post:
+      tags: [reviews]
       summary: Create review (consent-gated, booking-scoped)
       requestBody:
         required: true

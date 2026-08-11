@@ -96,6 +96,9 @@ type MemoryStore struct {
 	Tutors         *TutorMemory
 	Blogs          *BlogMemory
 	Redirects      *RedirectMemory
+	Referrals      *ReferralMemory
+	Institutions   *InstitutionMemory
+	Reviews        *ReviewMemory
 	ProgrammesSeed []academics.Programme
 	Users          *UserMemory
 	Sessions       *SessionMemory
@@ -105,24 +108,27 @@ type MemoryStore struct {
 
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		Orders:      NewOrderMemory(),
-		Payments:    NewPaymentMemory(),
-		Webhooks:    NewWebhookMemory(),
-		Escrow:      NewEscrowMemory(),
-		Payouts:     NewPayoutMemory(),
-		Wallets:     NewWalletMemory(),
-		Enrollments: NewEnrollmentMemory(),
-		Cohorts:     NewCohortMemory(nil),
-		PrivateReqs: NewPrivateReqMemory(),
-		PrivatePkgs: NewPrivatePackageMemory(),
-		Vetting:     NewVettingMemory(),
-		TutorSubj:   NewVettingTutorSubjectMemory(),
-		Tutors:      NewTutorMemory(nil),
-		Blogs:       NewBlogMemory(),
-		Redirects:   NewRedirectMemory(),
-		Users:       NewUserMemory(),
-		Sessions:    NewSessionMemory(),
-		Roles:       NewRoleMemory(),
-		AuditLogs:   NewAuditLogMemory(),
+		Orders:       NewOrderMemory(),
+		Payments:     NewPaymentMemory(),
+		Webhooks:     NewWebhookMemory(),
+		Escrow:       NewEscrowMemory(),
+		Payouts:      NewPayoutMemory(),
+		Wallets:      NewWalletMemory(),
+		Enrollments:  NewEnrollmentMemory(),
+		Cohorts:      NewCohortMemory(nil),
+		PrivateReqs:  NewPrivateReqMemory(),
+		PrivatePkgs:  NewPrivatePackageMemory(),
+		Vetting:      NewVettingMemory(),
+		TutorSubj:    NewVettingTutorSubjectMemory(),
+		Tutors:       NewTutorMemory(nil),
+		Blogs:        NewBlogMemory(),
+		Redirects:    NewRedirectMemory(),
+		Referrals:    NewReferralMemory(),
+		Institutions: NewInstitutionMemory(),
+		Reviews:      NewReviewMemory(),
+		Users:        NewUserMemory(),
+		Sessions:     NewSessionMemory(),
+		Roles:        NewRoleMemory(),
+		AuditLogs:    NewAuditLogMemory(),
 	}
 }

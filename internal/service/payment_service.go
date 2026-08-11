@@ -35,6 +35,7 @@ type PaymentService struct {
 	HoldPeriod time.Duration                // default escrow hold before auto-release (Tuteria: 72h)
 	Clock      func() time.Time
 	PayoutSvc  *PayoutService
+	referrals  ReferralQualifier
 }
 
 func NewPaymentService(uows repository.UnitOfWorkFactory,
@@ -51,6 +52,12 @@ func NewPaymentService(uows repository.UnitOfWorkFactory,
 	}
 	ps.PayoutSvc = NewPayoutService(uows, audit, ps.Clock)
 	return ps
+}
+
+// WithReferrals wires the referral qualifier (called after payment success).
+func (s *PaymentService) WithReferrals(r ReferralQualifier) *PaymentService {
+	s.referrals = r
+	return s
 }
 
 // --- Payment initiation ---
@@ -255,6 +262,12 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 	}
 	if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderPaid); err != nil {
 		return nil, err
+	}
+	if s.referrals != nil {
+		// Referral rewards qualify on first paid order (idempotent).
+		if err := s.referrals.QualifyOnOrderPaid(ctx, order.ParentUserID, order.ID); err != nil {
+			return nil, err
+		}
 	}
 
 	// Confirm the cohort enrollment tied to this order.
@@ -522,4 +535,9 @@ func (s *PaymentService) ExpireStaleHolds(ctx context.Context, limit int) (int, 
 		released++
 	}
 	return released, nil
+}
+
+// ReferralQualifier — called when an order becomes PAID (referral rewards).
+type ReferralQualifier interface {
+	QualifyOnOrderPaid(ctx context.Context, userID, orderID uuid.UUID) error
 }

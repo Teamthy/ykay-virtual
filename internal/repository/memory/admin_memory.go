@@ -10,7 +10,6 @@ import (
 	"ykay-virtual/internal/domain/admin"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/institution"
-	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
 
 	"github.com/google/uuid"
@@ -198,60 +197,6 @@ func (m *InstitutionMemory) GetByID(_ context.Context, id uuid.UUID) (*instituti
 }
 
 var _ institution.InstitutionRepository = (*InstitutionMemory)(nil)
-
-// --- Referrals ---
-
-type ReferralMemory struct {
-	mu   sync.RWMutex
-	rows []referral.Referral
-}
-
-func NewReferralMemory() *ReferralMemory { return &ReferralMemory{} }
-
-func (m *ReferralMemory) Seed(r referral.Referral) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	if r.ID == uuid.Nil {
-		r.ID = uuid.New()
-	}
-	m.rows = append(m.rows, r)
-}
-
-func (m *ReferralMemory) List(_ context.Context, params referral.ReferralListParams) ([]referral.Referral, int64, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	var out []referral.Referral
-	for _, r := range m.rows {
-		if params.Status != "" && r.Status != params.Status {
-			continue
-		}
-		out = append(out, r)
-	}
-	total := int64(len(out))
-	start := (params.Page - 1) * params.PageSize
-	if start < 0 {
-		start = 0
-	}
-	end := start + params.PageSize
-	if params.PageSize < 1 {
-		end = start + 20
-	}
-	if start > len(out) {
-		start = len(out)
-	}
-	if end > len(out) {
-		end = len(out)
-	}
-	return out[start:end], total, nil
-}
-
-func (m *ReferralMemory) Count(_ context.Context) (int64, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return int64(len(m.rows)), nil
-}
-
-var _ referral.ReferralRepository = (*ReferralMemory)(nil)
 
 // --- Reviews ---
 

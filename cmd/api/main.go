@@ -72,6 +72,7 @@ type Repositories struct {
 	Referrals       referral.ReferralRepository
 	Reviews         review.ReviewRepository
 	SupportTickets  content.SupportTicketRepository
+	Wallets         payment.WalletRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -130,6 +131,11 @@ func main() {
 	adminSvc := service.NewAdminService(repos.Stats, repos.AdminBlog, repos.Institutions,
 		repos.Referrals, repos.Reviews, audit)
 	supportSvc := service.NewSupportService(repos.SupportTickets)
+	reviewSvc := service.NewReviewService(repos.Reviews, repos.TutorRepo, audit)
+	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit)
+	institutionSvc := service.NewInstitutionService(repos.Institutions, audit)
+	paymentSvc.WithReferrals(referralSvc)
+	authSvc.WithReferrals(referralSvc)
 
 	// --- Transport ---
 	handlers := &httpapi.Handlers{
@@ -150,6 +156,7 @@ func main() {
 		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL),
 		Admin:        httpapi.NewAdminHandler(adminSvc),
 		Support:      httpapi.NewSupportHandler(supportSvc),
+		Growth:       httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
@@ -195,12 +202,14 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 	if err != nil {
 		log.Printf("storage: %v", err)
 		store := memory.NewMemoryStore()
-		store.Roles.Seed() // mirror migration 000001 role inserts
+		store.Roles.Seed()      // mirror migration 000001 role inserts
+		seedMemoryTutors(store) // mock marketplace tutors (chinasa, oluwatobi)
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
 			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
 			EscrowRead:      store.Escrow,
 			CohortRepo:      store.Cohorts,
+			TutorRepo:       store.Tutors,
 			AuditRepo:       store.AuditLogs,
 			Orders:          store.Orders,
 			Escrow:          store.Escrow,
@@ -223,6 +232,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Referrals:       memory.NewReferralMemory(),
 			Reviews:         memory.NewReviewMemory(),
 			SupportTickets:  memory.NewSupportMemory(),
+			Wallets:         store.Wallets,
 			StorageBackend:  "memory",
 		}
 	}
@@ -258,6 +268,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Referrals:       postgres.NewReferralRepo(pg.DB()),
 		Reviews:         postgres.NewReviewRepo(pg.DB()),
 		SupportTickets:  postgres.NewSupportRepo(pg.DB()),
+		Wallets:         postgres.NewWalletRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }
@@ -277,3 +288,29 @@ func (a sessionResolverAdapter) Me(ctx context.Context, tokenHash string) (uuid.
 }
 
 var _ middleware.SessionResolver = (*sessionResolverAdapter)(nil)
+
+// seedMemoryTutors — dev-mode marketplace seeds (matches the frontend mock
+// tutors chinasa/oluwatobi) so reviews, search and profiles work without
+// Postgres.
+func seedMemoryTutors(store *memory.MemoryStore) {
+	oluwatobi := uuid.MustParse("00000000-0000-0000-0000-000000000102")
+	store.Tutors.Seed(tutor.TutorSearchResult{
+		Profile: tutor.TutorProfile{
+			ID: oluwatobi, Slug: "oluwatobi", DisplayName: "Oluwatobi",
+			Status: tutor.TutorStatusApproved, IsPublic: true,
+			RatingAvg: 4.6, RatingCount: 20, RankingScore: 95.2,
+			AcceptsOnline: true, AcceptsInPerson: true,
+		},
+		Subjects: []string{"Mathematics", "Physics"}, SubjectSlugs: []string{"mathematics", "physics"},
+	})
+	chinasa := uuid.MustParse("00000000-0000-0000-0000-000000000101")
+	store.Tutors.Seed(tutor.TutorSearchResult{
+		Profile: tutor.TutorProfile{
+			ID: chinasa, Slug: "chinasa", DisplayName: "Chinasa",
+			Status: tutor.TutorStatusApproved, IsPublic: true,
+			RatingAvg: 4.87, RatingCount: 28, RankingScore: 98.5,
+			AcceptsOnline: true, AcceptsInPerson: true,
+		},
+		Subjects: []string{"Mathematics", "English"}, SubjectSlugs: []string{"mathematics", "english"},
+	})
+}
