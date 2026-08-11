@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
@@ -33,23 +34,18 @@ export default function DigitalSkillsPage() {
   });
 
   return (
-    <main className="container-x py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Digital Skills" }]} />
-
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">The digital academy</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Computing & Digital Skills</h1>
-        <p className="mt-4 text-ink-600">
-          Computer Science, programming, artificial intelligence and digital safety — taught by
-          educators who lead national and international computing programmes.
-        </p>
-        <div className="mt-6 flex justify-center gap-3 flex-wrap">
-          <Link href="/programmes" className="btn-primary">Browse computing programmes</Link>
+    <main className="container-x py-10">
+      <PageHero
+        eyebrow="The digital academy"
+        title="Computing & Digital Skills"
+        subtitle="Computer Science, programming, artificial intelligence and digital safety — taught by educators who lead national and international computing programmes."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Digital Skills" }]}
+        align="center"
+      >
+        <Link href="/programmes" className="btn-primary">Browse computing programmes</Link>
           <Link href="/private-tuition" className="btn-gold">Book a coding tutor</Link>
-        </div>
-      </section>
+      </PageHero>
+
 
       <section className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {TRACKS.map((t) => (

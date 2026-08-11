@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { apiFetchSSR } from "@/lib/api";
 import Link from "next/link";
 
@@ -41,16 +42,15 @@ export default async function CohortsPage() {
   }
 
   return (
-    <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Group Cohorts" }]} />
-      <div className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Learn together</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Group Cohorts</h1>
-        <p className="mt-4 text-ink-600">
-          Scheduled small-group classes with a vetted tutor — structured sessions, live lessons and a
-          clear schedule. Enrol securely; your fee sits in escrow until the cohort delivers.
-        </p>
-      </div>
+    <main className="container-x py-10">
+      <PageHero
+        eyebrow="Learn together"
+        title="Group Cohorts"
+        subtitle="Scheduled small-group classes with a vetted tutor — structured sessions, live lessons and a clear schedule. Enrol securely; your fee sits in escrow until the cohort delivers."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Group Cohorts" }]}
+        align="center"
+      />
+
 
       <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {cohorts.length === 0 ? (

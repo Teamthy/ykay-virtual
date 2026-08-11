@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
@@ -39,23 +40,18 @@ export default function ExamPrepPage() {
   });
 
   return (
-    <main className="container-x py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Exam Preparation" }]} />
-
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Exam season, handled</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Examination Preparation</h1>
-        <p className="mt-4 text-ink-600">
-          Revision cohorts, past-paper practice and mock examinations — built for WAEC, NECO, JAMB,
-          IGCSE and A-Level candidates.
-        </p>
-        <div className="mt-6 flex justify-center gap-3 flex-wrap">
-          <Link href="/programmes" className="btn-primary">Join a revision cohort</Link>
+    <main className="container-x py-10">
+      <PageHero
+        eyebrow="Exam season, handled"
+        title="Examination Preparation"
+        subtitle="Revision cohorts, past-paper practice and mock examinations — built for WAEC, NECO, JAMB, IGCSE and A-Level candidates."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Exam Preparation" }]}
+        align="center"
+      >
+        <Link href="/programmes" className="btn-primary">Join a revision cohort</Link>
           <Link href="/private-tuition" className="btn-gold">Get private support</Link>
-        </div>
-      </section>
+      </PageHero>
+
 
       <section className="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {EXAMS.map((e) => (

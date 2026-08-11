@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { TutorsSearchClient } from "@/features/tutors/components/TutorsSearchClient";
 
 export const revalidate = 60;
@@ -36,13 +37,14 @@ export default function TutorsPage({ searchParams }: Props) {
   const marketplaceEnabled = process.env.NEXT_PUBLIC_MARKETPLACE_ENABLED !== "false";
 
   return (
-    <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors" }]} />
-      <h1 className="text-4xl font-extrabold">Find your perfect tutor</h1>
-      <p className="mt-3 text-ink-600 max-w-2xl">
-        Every tutor on NUVORA is identity-verified, background-checked and assessed for subject
-        competency. Payments are held in escrow until your lessons are delivered.
-      </p>
+    <main className="container-x py-10">
+      <PageHero
+        title="Find your perfect tutor"
+        subtitle="Every tutor on NUVORA is identity-verified, background-checked and assessed for subject competency. Payments are held in escrow until your lessons are delivered."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Tutors" }]}
+        align="left"
+      />
+
       {!marketplaceEnabled && (
         <div className="mt-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 p-5 text-sm text-ink-700">
           <strong>Managed matching mode:</strong> instead of browsing, tell us what your learner needs and our

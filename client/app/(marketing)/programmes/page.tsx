@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { ProgrammesHub } from "@/features/programmes/components/ProgrammesHub";
 
 export const revalidate = 300;
@@ -15,13 +16,14 @@ export const metadata: Metadata = buildMetadata({
 
 export default function ProgrammesPage() {
   return (
-    <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Programmes" }]} />
-      <h1 className="text-4xl font-extrabold">Learning programmes</h1>
-      <p className="mt-3 text-ink-600 max-w-2xl">
-        Cohort classes, bootcamps and online courses led by vetted tutors. Enroll securely — your
-        fees sit in escrow until the programme delivers.
-      </p>
+    <main className="container-x py-10">
+      <PageHero
+        title="Learning programmes"
+        subtitle="Cohort classes, bootcamps and online courses led by vetted tutors. Enroll securely — your fees sit in escrow until the programme delivers."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Programmes" }]}
+        align="left"
+      />
+
       <div className="mt-10">
         <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading programmes…</p>}>
           <ProgrammesHub />

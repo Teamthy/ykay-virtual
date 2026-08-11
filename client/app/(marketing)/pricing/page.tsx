@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
@@ -58,19 +59,16 @@ export default function PricingPage() {
   const faq = faqJsonLd(FAQS);
 
   return (
-    <main className="container-x py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Pricing" }]} />
+    <main className="container-x py-10">
+      <PageHero
+        eyebrow="Clear, honest pricing"
+        title="Pricing"
+        subtitle="Indicative ranges below — your advisor confirms the exact quote before any payment. Every payment is escrow-protected."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Pricing" }]}
+        align="center"
+      >
+      </PageHero>
 
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Clear, honest pricing</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Pricing</h1>
-        <p className="mt-4 text-ink-600">
-          Indicative ranges below — your advisor confirms the exact quote before any payment. Every
-          payment is escrow-protected.
-        </p>
-      </section>
 
       {TIERS.map((tier) => (
         <section key={tier.tab} className="mt-12">

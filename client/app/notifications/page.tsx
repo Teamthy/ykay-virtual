@@ -3,6 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Inbox } from "lucide-react";
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from "@/features/messaging/api";
 
 const DEV_USER = "00000000-0000-0000-0000-0000000000a1";
@@ -49,29 +53,40 @@ export default function NotificationsPage() {
           <Skeleton className="h-16 w-full" />
         </div>
       ) : (notifs.data?.data.length ?? 0) === 0 ? (
-        <div className="border rounded-2xl p-10 text-center text-ink-500">
-          No notifications yet. Booking updates, messages and payment events will appear here.
-        </div>
+        <EmptyState
+          icon={<Inbox size={20} />}
+          title="No notifications yet"
+          description="Booking updates, messages and payment events will appear here."
+        />
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-2.5">
           {notifs.data?.data.map((n) => (
-            <li
-              key={n.id}
-              onClick={() => {
-                if (!n.is_read) markRead.mutate(n.id);
-              }}
-              className={`border rounded-2xl px-5 py-4 cursor-pointer transition-colors ${
-                n.is_read ? "bg-white" : "bg-brand-blue/5 border-brand-blue/30"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-semibold text-sm">{n.title}</span>
-                <span className="text-[10px] text-ink-400 shrink-0">
-                  {new Date(n.created_at).toLocaleString()}
-                </span>
-              </div>
-              {n.body ? <p className="text-sm text-ink-600 mt-1">{n.body}</p> : null}
-              {!n.is_read && <span className="mt-2 inline-block h-2 w-2 rounded-full bg-brand-blue" />}
+            <li key={n.id}>
+              <Card
+                className={
+                  n.is_read
+                    ? "px-5 py-4"
+                    : "cursor-pointer border-brand-blue/30 bg-brand-blue-light/50 px-5 py-4 transition-colors hover:bg-brand-blue-light/80"
+                }
+                onClick={() => {
+                  if (!n.is_read) markRead.mutate(n.id);
+                }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${n.is_read ? "bg-ink-200" : "bg-brand-blue"}`}
+                      aria-hidden="true"
+                    />
+                    <span className="truncate text-sm font-semibold text-ink-800">{n.title}</span>
+                    {!n.is_read && <StatusBadge label="New" kind="info" />}
+                  </div>
+                  <span className="shrink-0 text-[10px] text-ink-400">
+                    {new Date(n.created_at).toLocaleString()}
+                  </span>
+                </div>
+                {n.body ? <p className="mt-1 pl-[18px] text-sm text-ink-600">{n.body}</p> : null}
+              </Card>
             </li>
           ))}
         </ul>

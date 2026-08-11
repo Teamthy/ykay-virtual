@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { PrivateTuitionWizard } from "@/features/tuition/PrivateTuitionWizard";
 
 export const metadata: Metadata = buildMetadata({
@@ -42,20 +43,16 @@ export default function PrivateTuitionPage() {
   const faq = faqJsonLd(FAQS);
 
   return (
-    <main className="container-x py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Private Tuition" }]} />
+    <main className="container-x py-10">
+      <PageHero
+        eyebrow="One learner, one tutor"
+        title="Private Tuition"
+        subtitle="Tell us what your learner needs — we&apos;ll match a vetted tutor, agree a plan and protect your payment in escrow until lessons are delivered."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Private Tuition" }]}
+        align="center"
+      >
+      </PageHero>
 
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">One learner, one tutor</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Private Tuition</h1>
-        <p className="mt-4 text-ink-600">
-          Tell us what your learner needs — we&apos;ll match a vetted tutor, agree a plan and protect
-          your payment in escrow until lessons are delivered.
-        </p>
-      </section>
 
       <section className="mt-10 grid lg:grid-cols-[1fr_0.9fr] gap-10 items-start">
         <PrivateTuitionWizard />

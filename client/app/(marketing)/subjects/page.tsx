@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { SubjectsClient } from "@/features/subjects/components/SubjectsClient";
 
 export const revalidate = 300;
@@ -15,13 +16,14 @@ export const metadata: Metadata = buildMetadata({
 
 export default function SubjectsPage() {
   return (
-    <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Subjects" }]} />
-      <h1 className="text-4xl font-extrabold">Explore subjects</h1>
-      <p className="mt-3 text-ink-600 max-w-2xl">
-        Every subject links to its tutors, programmes and study guides — one curriculum-governed
-        catalogue across British and Nigerian systems.
-      </p>
+    <main className="container-x py-10">
+      <PageHero
+        title="Explore subjects"
+        subtitle="Every subject links to its tutors, programmes and study guides — one curriculum-governed catalogue across British and Nigerian systems."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Subjects" }]}
+        align="left"
+      />
+
       <div className="mt-10">
         <Suspense>
           <SubjectsClient />
