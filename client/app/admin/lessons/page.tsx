@@ -4,16 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { listLessonsToday, type AdminLesson } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { CalendarDays } from "lucide-react";
 import Link from "next/link";
-
-const LESSON_STATUS: Record<string, string> = {
-  SCHEDULED: "bg-blue-100 text-blue-700",
-  ONGOING: "bg-green-100 text-green-700",
-  COMPLETED: "bg-ink-100 text-ink-500",
-  CANCELLED: "bg-red-100 text-red-700",
-  RESCHEDULED: "bg-amber-100 text-amber-700",
-  NO_SHOW: "bg-ink-100 text-ink-400",
-};
 
 // Admin today's classes + attendance exceptions (working-doc §12).
 export default function AdminLessonsPage() {
@@ -39,7 +33,11 @@ export default function AdminLessonsPage() {
       {lessons.isLoading ? (
         <div className="space-y-3"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
       ) : data.length === 0 ? (
-        <div className="border rounded-2xl p-12 text-center text-ink-500">No lessons scheduled for today.</div>
+        <EmptyState
+          icon={<CalendarDays size={20} />}
+          title="No lessons scheduled for today"
+          description="Scheduled cohort sessions will appear here with attendance and meeting links."
+        />
       ) : (
         <ul className="space-y-3">
           {data.map((l: AdminLesson) => (
@@ -51,7 +49,7 @@ export default function AdminLessonsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${LESSON_STATUS[l.status] ?? "bg-ink-100"}`}>{l.status}</span>
+                <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                 {l.status === "SCHEDULED" && (
                   <Link href={`/cohorts/${l.cohort_id ?? "list"}`} className="text-xs font-semibold text-brand-blue hover:underline">Cohort →</Link>
                 )}

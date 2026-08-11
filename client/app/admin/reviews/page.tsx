@@ -4,14 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { listReviews, moderateReview, type ReviewRow, type ReviewStatus } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const STATUS_BADGE: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
-  PUBLISHED: "bg-green-100 text-green-700",
-  HIDDEN: "bg-ink-100 text-ink-400",
-  FLAGGED: "bg-red-100 text-red-700",
-};
 
 export default function AdminReviewsPage() {
   const [status, setStatus] = useState("PENDING");
@@ -64,9 +60,11 @@ export default function AdminReviewsPage() {
           <Skeleton className="h-16 w-full" />
         </div>
       ) : data.length === 0 ? (
-        <div className="border rounded-2xl p-12 text-center text-ink-500">
-          Nothing in this queue.
-        </div>
+        <EmptyState
+          icon={<Inbox size={20} />}
+          title="Nothing in this queue"
+          description="Reviews awaiting moderation will appear here."
+        />
       ) : (
         <ul className="space-y-3">
           {data.map((rv: ReviewRow) => (
@@ -83,9 +81,7 @@ export default function AdminReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_BADGE[rv.status]}`}>
-                    {rv.status}
-                  </span>
+                  <StatusBadge label={rv.status} kind={statusKindFor(rv.status)} />
                   {!rv.consent_given && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600">
                       NO CONSENT

@@ -28,7 +28,7 @@
     @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white text-brand-blue font-bold text-sm transition-all hover:-translate-y-0.5 hover:shadow-lift;
   }
   .tag-handwritten {
-    @apply font-handwritten font-bold text-brand-gold;
+    @apply font-bold text-brand-gold;
     font-size: 26px;
   }
   .grid-dots {

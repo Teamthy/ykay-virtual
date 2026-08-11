@@ -4,20 +4,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createAdminCohort, listAdminCohorts, setAdminCohortStatus, type AdminCohort } from "@/features/admin/api";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { DataTable, type Column } from "@/components/ui/data-table";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Progress } from "@/components/ui/progress";
+import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { CalendarDays, Users } from "lucide-react";
 
-const STATUS_BADGE: Record<string, string> = {
-  DRAFT: "bg-ink-100 text-ink-600",
-  PUBLISHED: "bg-green-100 text-green-700",
-  FULL: "bg-amber-100 text-amber-700",
-  ONGOING: "bg-blue-100 text-blue-700",
-  COMPLETED: "bg-ink-100 text-ink-400",
-  CANCELLED: "bg-red-100 text-red-700",
-};
+// Admin cohort manager (working-doc §12) — NUVORA design system:
+// DataTable + StatusBadge (text+icon+colour) + EmptyState + Progress capacity.
 
-// Admin cohort manager (working-doc §12): create, publish/unpublish, capacity,
-// timetable, enrolments, status.
+const FILTERS = ["", "DRAFT", "PUBLISHED", "FULL", "ONGOING", "COMPLETED", "CANCELLED"];
+
 export default function AdminCohortsPage() {
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -42,11 +40,73 @@ export default function AdminCohortsPage() {
   const data = cohorts.data?.data ?? [];
   const meta = cohorts.data?.meta;
 
+  const columns: Column<AdminCohort>[] = [
+    {
+      key: "title",
+      header: "Title",
+      cell: (c) => <span className="font-semibold text-ink-800 line-clamp-1 max-w-[220px]">{c.title}</span>,
+    },
+    {
+      key: "dates",
+      header: "Dates",
+      cell: (c) => (
+        <span className="text-xs text-ink-500">
+          {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}
+          <span className="block text-[10px]">{c.timezone}</span>
+        </span>
+      ),
+    },
+    {
+      key: "capacity",
+      header: "Capacity",
+      cell: (c) => (
+        <div className="w-28">
+          <Progress value={c.capacity ? Math.min((c.enrolled_count / c.capacity) * 100, 100) : 0} size="sm" showValue={false} />
+          <span className="text-[11px] text-ink-500 tabular-nums">{c.enrolled_count}/{c.capacity}</span>
+        </div>
+      ),
+    },
+    {
+      key: "fee",
+      header: "Fee",
+      cell: (c) => <span className="text-xs font-semibold tabular-nums">{c.currency} {c.fee.toLocaleString()}</span>,
+      align: "right",
+    },
+    {
+      key: "status",
+      header: "Status",
+      cell: (c) => <StatusBadge label={c.status} kind={statusKindFor(c.status)} />,
+    },
+    {
+      key: "actions",
+      header: <span className="sr-only">Actions</span>,
+      cell: (c) => (
+        <div className="flex justify-end gap-2">
+          {c.status === "DRAFT" && (
+            <Button size="sm" onClick={() => setStatusMut.mutate({ id: c.id, s: "PUBLISHED" })}>Publish</Button>
+          )}
+          {c.status === "PUBLISHED" && (
+            <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "CANCELLED" })}>Cancel</Button>
+          )}
+          {c.status === "FULL" && (
+            <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "ONGOING" })}>Start</Button>
+          )}
+          {c.status === "ONGOING" && (
+            <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "COMPLETED" })}>Complete</Button>
+          )}
+          {c.status === "CANCELLED" && (
+            <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "DRAFT" })}>Restore</Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold">Cohorts</h1>
+          <h1 className="text-3xl font-extrabold text-brand-navy">Cohorts</h1>
           <p className="text-ink-500 text-sm mt-1">Create cohorts, assign tutors, manage capacity, publish.</p>
         </div>
         <Button variant="gold" onClick={() => setShowCreate(!showCreate)}>{showCreate ? "Close" : "+ New cohort"}</Button>
@@ -55,67 +115,25 @@ export default function AdminCohortsPage() {
       {showCreate && <CreateCohortForm onDone={() => { setShowCreate(false); qc.invalidateQueries({ queryKey: ["admin", "cohorts"] }); }} />}
 
       <div className="flex gap-2 flex-wrap">
-        {["", "DRAFT", "PUBLISHED", "FULL", "ONGOING", "COMPLETED", "CANCELLED"].map((s) => (
+        {FILTERS.map((s) => (
           <button key={s || "all"} onClick={() => { setStatus(s); setPage(1); }}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
             {s || "All"}
           </button>
         ))}
       </div>
 
-      {cohorts.isLoading ? (
-        <div className="space-y-3"><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /></div>
-      ) : data.length === 0 ? (
-        <div className="border rounded-2xl p-12 text-center text-ink-500">No cohorts yet — create your first one.</div>
-      ) : (
-        <div className="border rounded-2xl overflow-x-auto">
-          <table className="w-full text-sm min-w-[720px]">
-            <thead className="bg-ink-50 text-left text-xs text-ink-500">
-              <tr>
-                <th className="px-5 py-3 font-semibold">Title</th>
-                <th className="px-5 py-3 font-semibold">Dates</th>
-                <th className="px-5 py-3 font-semibold">Capacity</th>
-                <th className="px-5 py-3 font-semibold">Fee</th>
-                <th className="px-5 py-3 font-semibold">Status</th>
-                <th className="px-5 py-3 font-semibold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((c: AdminCohort) => (
-                <tr key={c.id} className="border-t border-ink-100 hover:bg-ink-50/50">
-                  <td className="px-5 py-3 font-semibold max-w-[240px] truncate">{c.title}</td>
-                  <td className="px-5 py-3 text-xs text-ink-500">
-                    {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}
-                    <span className="block text-[10px]">{c.timezone}</span>
-                  </td>
-                  <td className="px-5 py-3 text-xs">{c.enrolled_count}/{c.capacity}</td>
-                  <td className="px-5 py-3 font-semibold text-xs">{c.currency} {c.fee.toLocaleString()}</td>
-                  <td className="px-5 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_BADGE[c.status] ?? "bg-ink-100"}`}>{c.status}</span>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    {c.status === "DRAFT" && (
-                      <Button size="sm" onClick={() => setStatusMut.mutate({ id: c.id, s: "PUBLISHED" })}>Publish</Button>
-                    )}
-                    {c.status === "PUBLISHED" && (
-                      <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "CANCELLED" })}>Cancel</Button>
-                    )}
-                    {c.status === "FULL" && (
-                      <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "ONGOING" })}>Start</Button>
-                    )}
-                    {c.status === "ONGOING" && (
-                      <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "COMPLETED" })}>Complete</Button>
-                    )}
-                    {c.status === "CANCELLED" && (
-                      <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: c.id, s: "DRAFT" })}>Restore</Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        rows={data}
+        rowKey={(c) => c.id}
+        loading={cohorts.isLoading}
+        empty={{
+          icon: <CalendarDays size={20} />,
+          title: "No cohorts in this view",
+          description: "Create your first cohort and it will appear here with capacity and status.",
+        }}
+      />
 
       {meta && meta.total_pages > 1 && (
         <div className="flex justify-center gap-2">
@@ -174,15 +192,15 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
 
   const field = (key: keyof typeof form, label: string, type = "text") => (
     <label className="block text-sm">
-      <span className="font-medium">{label}</span>
+      <span className="font-medium text-ink-700">{label}</span>
       <input type={type} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
     </label>
   );
 
   return (
-    <div className="border rounded-2xl p-6 space-y-4 bg-white">
-      <h2 className="font-bold">New cohort</h2>
+    <div className="rounded-2xl border border-ink-100 bg-white p-6 space-y-4 shadow-soft">
+      <h2 className="font-bold text-brand-navy">New cohort</h2>
       <div className="grid md:grid-cols-2 gap-4">
         {field("programme_id", "Programme ID *")}
         {field("title", "Title *")}
@@ -193,7 +211,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         {field("timezone", "Timezone")}
         {field("currency", "Currency")}
         <label className="block text-sm">
-          <span className="font-medium">Location mode</span>
+          <span className="font-medium text-ink-700">Location mode</span>
           <select value={form.location_mode} onChange={(e) => setForm({ ...form, location_mode: e.target.value })}
             className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm">
             <option>ONLINE</option><option>IN_PERSON</option><option>HYBRID</option>

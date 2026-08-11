@@ -41,9 +41,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        display: ["Inter", "sans-serif"],
-        handwritten: ["Caveat", "Kalam", "cursive"],
+        sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        display: ["var(--font-inter)", "Inter", "sans-serif"],
         serif: ["Georgia", "serif"],
       },
       fontSize: {

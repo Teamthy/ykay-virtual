@@ -4,6 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { BadgeCheck } from "lucide-react";
 import {
   adminAction,
   getVettingProfile,
@@ -67,7 +70,7 @@ export default function AdminVettingPage() {
             key={s}
             onClick={() => setStatus(s)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {STATUS_LABEL[s]}
@@ -81,9 +84,11 @@ export default function AdminVettingPage() {
           <Skeleton className="h-16 w-full" />
         </div>
       ) : (queue.data?.length ?? 0) === 0 ? (
-        <div className="border rounded-2xl p-10 text-center text-ink-500">
-          No applications in this state.
-        </div>
+        <EmptyState
+          icon={<BadgeCheck size={20} />}
+          title="No applications in this state"
+          description="Applications move through profile → subjects → documents → interview → verification → approval."
+        />
       ) : (
         <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
           <ul className="space-y-3">
@@ -97,9 +102,7 @@ export default function AdminVettingPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold">{p.display_name}</span>
-                    <span className="text-xs px-2 py-1 rounded-full bg-ink-100 text-ink-600">
-                      {STATUS_LABEL[p.status] ?? p.status}
-                    </span>
+                    <StatusBadge label={STATUS_LABEL[p.status] ?? p.status} kind={statusKindFor(p.status)} />
                   </div>
                   <p className="text-xs text-ink-500 mt-1">
                     {p.years_experience} yrs · {p.headline ?? p.slug} · ranking {p.ranking_score.toFixed(1)}

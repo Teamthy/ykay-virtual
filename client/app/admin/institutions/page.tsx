@@ -4,15 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { listInstitutions, type Institution } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const TYPE_BADGE: Record<string, string> = {
-  SCHOOL: "bg-blue-100 text-blue-700",
-  CORPORATE: "bg-purple-100 text-purple-700",
-  GOVERNMENT: "bg-green-100 text-green-700",
-  NGO: "bg-amber-100 text-amber-700",
-  OTHER: "bg-ink-100 text-ink-600",
-};
 
 export default function AdminInstitutionsPage() {
   const [search, setSearch] = useState("");
@@ -69,9 +64,11 @@ export default function AdminInstitutionsPage() {
           <Skeleton className="h-12 w-full" />
         </div>
       ) : data.length === 0 ? (
-        <div className="border rounded-2xl p-12 text-center text-ink-500">
-          No institutions yet. Schools and companies join via the B2B flow.
-        </div>
+        <EmptyState
+          icon={<Inbox size={20} />}
+          title="No institutions yet"
+          description="Schools and companies join via the B2B flow and appear here."
+        />
       ) : (
         <div className="border rounded-2xl overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
@@ -89,9 +86,7 @@ export default function AdminInstitutionsPage() {
                 <tr key={i.id} className="border-t border-ink-100 hover:bg-ink-50/50">
                   <td className="px-5 py-3 font-semibold">{i.name}</td>
                   <td className="px-5 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${TYPE_BADGE[i.type] ?? "bg-ink-100"}`}>
-                      {i.type}
-                    </span>
+                    <StatusBadge label={i.type} kind={statusKindFor(i.type)} />
                   </td>
                   <td className="px-5 py-3 text-xs text-ink-500">
                     {i.email ?? "—"}

@@ -4,14 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { listReferrals, type Referral } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const STATUS_BADGE: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
-  QUALIFIED: "bg-blue-100 text-blue-700",
-  REWARDED: "bg-green-100 text-green-700",
-  EXPIRED: "bg-ink-100 text-ink-400",
-};
 
 export default function AdminReferralsPage() {
   const [status, setStatus] = useState("");
@@ -56,9 +52,11 @@ export default function AdminReferralsPage() {
           <Skeleton className="h-12 w-full" />
         </div>
       ) : data.length === 0 ? (
-        <div className="border rounded-2xl p-12 text-center text-ink-500">
-          No referrals yet — share your code to start earning.
-        </div>
+        <EmptyState
+          icon={<Inbox size={20} />}
+          title="No referrals yet"
+          description="Share your code to start earning — qualifying referrals appear here."
+        />
       ) : (
         <div className="border rounded-2xl overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
@@ -78,9 +76,7 @@ export default function AdminReferralsPage() {
                   <td className="px-5 py-3 font-mono text-xs">{r.referrer_user_id.slice(0, 13)}…</td>
                   <td className="px-5 py-3 font-semibold">₦{r.reward_amount.toLocaleString()}</td>
                   <td className="px-5 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_BADGE[r.status] ?? "bg-ink-100"}`}>
-                      {r.status}
-                    </span>
+                    <StatusBadge label={r.status} kind={statusKindFor(r.status)} />
                   </td>
                   <td className="px-5 py-3 text-xs text-ink-500">{new Date(r.created_at).toLocaleDateString()}</td>
                 </tr>
