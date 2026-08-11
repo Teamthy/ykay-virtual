@@ -160,3 +160,92 @@ export async function listReviews(params: { status?: string; page?: number }): P
 export async function moderateReview(id: string, status: ReviewStatus): Promise<void> {
   await apiFetch(`/admin/reviews/${id}/moderate`, { method: "POST", body: JSON.stringify({ status }) });
 }
+
+// --- Portal admin (Phase 11b) ---
+
+export type AdminStats2 = AdminStats & {
+  lessons_this_week: number;
+  lessons_today: number;
+  cohorts_published: number;
+  pending_enrolments: number;
+  overdue_lesson_notes: number;
+  pending_refunds: number;
+};
+
+export async function getAdminStats2(): Promise<AdminStats2> {
+  const res = await apiFetch<AdminStats2>("/admin/stats/overview2");
+  return res.data;
+}
+
+export type SupportTicket = {
+  id: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: string;
+  created_at: string;
+};
+
+export async function listSupportTickets(params: { status?: string; page?: number }): Promise<Envelope<SupportTicket[]>> {
+  const qs = new URLSearchParams();
+  if (params.status) qs.set("status", params.status);
+  qs.set("page", String(params.page ?? 1));
+  return apiFetch<SupportTicket[]>(`/admin/support?${qs}`);
+}
+
+export async function setSupportStatus(id: string, status: string): Promise<void> {
+  await apiFetch(`/admin/support/${id}/status`, { method: "POST", body: JSON.stringify({ status }) });
+}
+
+export type AdminCohort = {
+  id: string;
+  title: string;
+  slug: string;
+  programme_id: string;
+  capacity: number;
+  enrolled_count: number;
+  start_date: string;
+  end_date: string;
+  timezone: string;
+  fee: number;
+  currency: string;
+  status: string;
+};
+
+export async function listAdminCohorts(params: { status?: string; page?: number }): Promise<Envelope<AdminCohort[]>> {
+  const qs = new URLSearchParams();
+  if (params.status) qs.set("status", params.status);
+  qs.set("page", String(params.page ?? 1));
+  return apiFetch<AdminCohort[]>(`/admin/cohorts?${qs}`);
+}
+
+export async function createAdminCohort(input: Record<string, unknown>): Promise<AdminCohort> {
+  const res = await apiFetch<AdminCohort>("/admin/cohorts", { method: "POST", body: JSON.stringify(input) });
+  return res.data;
+}
+
+export async function setAdminCohortStatus(id: string, status: string): Promise<void> {
+  await apiFetch(`/admin/cohorts/${id}/status`, { method: "POST", body: JSON.stringify({ status }) });
+}
+
+export type AdminLesson = {
+  id: string;
+  title: string;
+  start_at: string;
+  end_at: string;
+  timezone: string;
+  status: string;
+  cohort_id?: string;
+};
+
+export async function listLessonsToday(): Promise<AdminLesson[]> {
+  const res = await apiFetch<AdminLesson[]>("/admin/lessons/today");
+  return res.data ?? [];
+}
+
+export async function confirmManualPayment(orderId: string, note?: string): Promise<void> {
+  await apiFetch(`/admin/orders/${orderId}/confirm-payment`, {
+    method: "POST",
+    body: JSON.stringify({ note }),
+  });
+}

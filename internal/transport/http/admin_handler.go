@@ -2,7 +2,9 @@ package httpapi
 
 import (
 	"net/http"
+	"time"
 
+	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/institution"
 	"ykay-virtual/internal/domain/referral"
@@ -26,10 +28,17 @@ import (
 //   - POST /admin/reviews/{reviewId}/moderate  {status: PUBLISHED|HIDDEN|FLAGGED}
 
 type AdminHandler struct {
-	svc *service.AdminService
+	svc      *service.AdminService
+	payments *service.PaymentService
 }
 
 func NewAdminHandler(svc *service.AdminService) *AdminHandler { return &AdminHandler{svc: svc} }
+
+// WithPayments wires the payment service (manual payment confirmation).
+func (h *AdminHandler) WithPayments(p *service.PaymentService) *AdminHandler {
+	h.payments = p
+	return h
+}
 
 func (h *AdminHandler) requireAdmin(w http.ResponseWriter, r *http.Request) *uuid.UUID {
 	actor := requireActor(w, r)
@@ -253,4 +262,208 @@ func toBlogDraft(req blogDraftRequest) (*content.BlogDraft, error) {
 		draft.ExamIDs = append(draft.ExamIDs, id)
 	}
 	return draft, nil
+}
+
+// --- Portal admin extensions (Phase 11b) ---
+
+// Stats2 — extended KPI dashboard.
+func (h *AdminHandler) Stats2(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	overview, err := h.svc.Overview2(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, overview, nil)
+}
+
+// ListSupport — support queue with status filter + pagination.
+func (h *AdminHandler) ListSupport(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	p := ParsePagination(r)
+	tickets, total, err := h.svc.ListSupportTickets(r.Context(),
+		firstNonEmpty(r.URL.Query().Get("status"), p.Filters["status"]), p.Page, p.PageSize)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, tickets, p.Meta(total))
+}
+
+// SetSupportStatus — resolve/close tickets.
+func (h *AdminHandler) SetSupportStatus(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	ticketID, err := ParseUUID(r, "ticketId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Status string `json:"status"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetSupportStatus(r.Context(), *adminID, ticketID, req.Status); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"status": req.Status}, nil)
+}
+
+// ListCohorts — all cohorts (any status).
+func (h *AdminHandler) ListCohorts(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	p := ParsePagination(r)
+	cohorts, total, err := h.svc.ListCohortsAdmin(r.Context(),
+		firstNonEmpty(r.URL.Query().Get("status"), p.Filters["status"]), p.Page, p.PageSize)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, cohorts, p.Meta(total))
+}
+
+// CreateCohort — admin creates a cohort (DRAFT by default).
+func (h *AdminHandler) CreateCohort(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	var req struct {
+		ProgrammeID         string  `json:"programme_id"`
+		Title               string  `json:"title"`
+		Slug                string  `json:"slug"`
+		TutorProfileID      string  `json:"tutor_profile_id"`
+		Capacity            int     `json:"capacity"`
+		StartDate           string  `json:"start_date"`
+		EndDate             string  `json:"end_date"`
+		ScheduleDescription *string `json:"schedule_description"`
+		Timezone            string  `json:"timezone"`
+		LocationMode        string  `json:"location_mode"`
+		Fee                 float64 `json:"fee"`
+		Currency            string  `json:"currency"`
+		Status              string  `json:"status"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	programmeID, err := uuid.Parse(req.ProgrammeID)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("programme_id must be a valid UUID", nil))
+		return
+	}
+	start, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("start_date must be YYYY-MM-DD", nil))
+		return
+	}
+	end, err := time.Parse("2006-01-02", req.EndDate)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("end_date must be YYYY-MM-DD", nil))
+		return
+	}
+	var tutorID *uuid.UUID
+	if req.TutorProfileID != "" {
+		id, err := uuid.Parse(req.TutorProfileID)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+			return
+		}
+		tutorID = &id
+	}
+	cohort, err := h.svc.CreateCohortAdmin(r.Context(), *adminID, &booking.Cohort{
+		ProgrammeID:    programmeID,
+		Title:          req.Title,
+		Slug:           req.Slug,
+		TutorProfileID: tutorID,
+		Capacity:       req.Capacity,
+		StartDate:      start,
+		EndDate:        end,
+		ScheduleDesc:   req.ScheduleDescription,
+		Timezone:       req.Timezone,
+		LocationMode:   req.LocationMode,
+		Fee:            req.Fee,
+		Currency:       req.Currency,
+		Status:         booking.CohortStatus(req.Status),
+	})
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, cohort, nil)
+}
+
+// SetCohortStatus — publish/unpublish/cancel a cohort.
+func (h *AdminHandler) SetCohortStatus(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	cohortID, err := ParseUUID(r, "cohortId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Status string `json:"status"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetCohortStatusAdmin(r.Context(), *adminID, cohortID, booking.CohortStatus(req.Status)); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"status": req.Status}, nil)
+}
+
+// LessonsToday — today's classes.
+func (h *AdminHandler) LessonsToday(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	lessons, err := h.svc.ListLessonsToday(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, lessons, nil)
+}
+
+// ConfirmManualPayment — admin confirms a manual/bank payment.
+func (h *AdminHandler) ConfirmManualPayment(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	orderID, err := ParseUUID(r, "orderId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Note *string `json:"note"`
+	}
+	_ = DecodeJSON(r, &req)
+	p, err := h.payments.ConfirmManualPayment(r.Context(), *adminID, orderID, req.Note)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"confirmed": true, "payment_id": p.ID.String(), "provider": p.Provider,
+	}, nil)
 }

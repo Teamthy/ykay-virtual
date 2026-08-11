@@ -10,6 +10,8 @@ import (
 
 type StatsRepository interface {
 	Overview(ctx context.Context) (Overview, error)
+	// Overview2 — extended KPIs (admin portal).
+	Overview2(ctx context.Context) (Overview2, error)
 }
 
 type Overview struct {
@@ -29,4 +31,15 @@ type Overview struct {
 	ReviewsPending  int64   `json:"reviews_pending"`
 	SupportOpen     int64   `json:"support_open"`
 	EscrowDisputed  int64   `json:"escrow_disputed"`
+}
+
+// Overview2 — extended portal KPIs (admin dashboard).
+type Overview2 struct {
+	Overview
+	LessonsThisWeek    int64 `json:"lessons_this_week"`
+	LessonsToday       int64 `json:"lessons_today"`
+	CohortsPublished   int64 `json:"cohorts_published"`
+	PendingEnrolments  int64 `json:"pending_enrolments"`
+	OverdueLessonNotes int64 `json:"overdue_lesson_notes"`
+	PendingRefunds     int64 `json:"pending_refunds"`
 }

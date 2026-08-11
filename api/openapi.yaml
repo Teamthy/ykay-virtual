@@ -1097,6 +1097,239 @@ paths:
       responses:
         '200': { description: Learners }
 
+  /me/availability:
+    get:
+      tags: [portals]
+      summary: Tutor recurring availability slots
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Slots }
+    post:
+      tags: [portals]
+      summary: Upsert an availability slot (idempotent per day+time)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tutor_profile_id, day_of_week, start_time, end_time]
+              properties:
+                tutor_profile_id: { type: string, format: uuid }
+                day_of_week: { type: integer, minimum: 0, maximum: 6 }
+                start_time: { type: string, example: "16:00" }
+                end_time: { type: string, example: "17:00" }
+                is_recurring: { type: boolean, default: true }
+      responses:
+        '201': { description: Slot }
+    delete:
+      tags: [portals]
+      summary: Delete an availability slot
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Deleted }
+
+  /me/availability-exceptions:
+    get:
+      tags: [portals]
+      summary: Tutor availability exceptions (days off / ad-hoc availability)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Exceptions }
+    post:
+      tags: [portals]
+      summary: Add an availability exception
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tutor_profile_id, exception_date]
+              properties:
+                tutor_profile_id: { type: string, format: uuid }
+                exception_date: { type: string, format: date }
+                is_available: { type: boolean }
+                start_time: { type: string }
+                end_time: { type: string }
+                reason: { type: string }
+      responses:
+        '201': { description: Exception }
+
+  /me/assignments:
+    get:
+      tags: [portals]
+      summary: Assignments for a student's confirmed cohorts
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Assignments }
+
+  /me/assignments/{assignmentId}/submit:
+    post:
+      tags: [portals]
+      summary: Submit an assignment (idempotent upsert per student+assignment)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content: { type: string }
+      responses:
+        '201': { description: Submission }
+
+  /me/attendance-summary:
+    get:
+      tags: [portals]
+      summary: Student attendance summary (present/absent/late/excused/rate)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Summary }
+
+  /me/orders/{orderId}:
+    get:
+      tags: [portals]
+      summary: Parent receipt — order + items + payments (owner only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Receipt }
+        '403': { description: Not the order owner }
+
+  /admin/stats/overview2:
+    get:
+      tags: [admin]
+      summary: Extended KPI dashboard (lessons this week/today, pending enrolments, overdue notes)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Extended overview }
+
+  /admin/support:
+    get:
+      tags: [admin]
+      summary: Support queue (status filter, pagination)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Tickets }
+
+  /admin/support/{ticketId}/status:
+    post:
+      tags: [admin]
+      summary: Update a support ticket status
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: ticketId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [OPEN, IN_PROGRESS, RESOLVED, CLOSED] }
+      responses:
+        '200': { description: Updated }
+
+  /admin/cohorts:
+    get:
+      tags: [admin]
+      summary: All cohorts (any status) for the admin console
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Cohorts }
+    post:
+      tags: [admin]
+      summary: Create a cohort (DRAFT by default)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [programme_id, title, capacity, start_date, end_date, fee]
+              properties:
+                programme_id: { type: string, format: uuid }
+                title: { type: string }
+                tutor_profile_id: { type: string, format: uuid }
+                capacity: { type: integer, minimum: 1 }
+                start_date: { type: string, format: date }
+                end_date: { type: string, format: date }
+                schedule_description: { type: string }
+                timezone: { type: string }
+                location_mode: { type: string }
+                fee: { type: number }
+                currency: { type: string }
+      responses:
+        '201': { description: Created }
+
+  /admin/cohorts/{cohortId}/status:
+    post:
+      tags: [admin]
+      summary: Publish / cancel / complete a cohort
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [DRAFT, PUBLISHED, FULL, ONGOING, COMPLETED, CANCELLED] }
+      responses:
+        '200': { description: Updated }
+
+  /admin/lessons/today:
+    get:
+      tags: [admin]
+      summary: Today's classes (admin operations)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Lessons }
+
+  /admin/orders/{orderId}/confirm-payment:
+    post:
+      tags: [admin]
+      summary: Confirm a manual/bank payment (order PAID, enrollment CONFIRMED, escrow held)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note: { type: string }
+      responses:
+        '200': { description: Confirmed (idempotent for PAID orders) }
+
   /reviews:
     post:
       tags: [reviews]

@@ -11,6 +11,9 @@ import {
   Building2,
   Gift,
   Star,
+  CalendarDays,
+  Users,
+  LifeBuoy,
   LogOut,
 } from "lucide-react";
 
@@ -18,6 +21,9 @@ import {
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
+  { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
+  { href: "/admin/lessons", label: "Today's classes", icon: Users },
+  { href: "/admin/support", label: "Support", icon: LifeBuoy },
   { href: "/admin/blog", label: "Blog CMS", icon: Newspaper },
   { href: "/admin/institutions", label: "Institutions", icon: Building2 },
   { href: "/admin/referrals", label: "Referrals", icon: Gift },

@@ -281,6 +281,47 @@ func (r *AssignmentRepo) ListByCohort(ctx context.Context, cohortID uuid.UUID) (
 	return out, rows.Err()
 }
 
+func (r *AssignmentRepo) ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]booking.Assignment, error) {
+	if limit < 1 || limit > 100 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT DISTINCT a.id, a.cohort_id, a.lesson_id, a.title, a.instructions, a.due_at, a.max_score, a.created_at
+		FROM assignments a
+		JOIN cohort_enrollments ce ON ce.cohort_id = a.cohort_id AND ce.status = 'CONFIRMED'
+		WHERE ce.student_profile_id = $1
+		ORDER BY a.due_at ASC NULLS LAST LIMIT $2`, studentProfileID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list assignments by student: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.Assignment{}
+	for rows.Next() {
+		var a booking.Assignment
+		var lessonID uuidNull
+		var instructions sql.NullString
+		var dueAt sql.NullTime
+		var maxScore sql.NullFloat64
+		if err := rows.Scan(&a.ID, &a.CohortID, &lessonID, &a.Title, &instructions, &dueAt, &maxScore, &a.CreatedAt); err != nil {
+			return nil, err
+		}
+		if lessonID.Valid {
+			a.LessonID = &lessonID.UUID
+		}
+		if instructions.Valid {
+			a.Instructions = &instructions.String
+		}
+		if dueAt.Valid {
+			a.DueAt = &dueAt.Time
+		}
+		if maxScore.Valid {
+			a.MaxScore = &maxScore.Float64
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
 var _ booking.AssignmentRepository = (*AssignmentRepo)(nil)
 
 var _ = errors.Is

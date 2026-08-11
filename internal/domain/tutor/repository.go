@@ -52,3 +52,14 @@ type TutorSubjectEntry struct {
 	Slug      string    `json:"slug"`
 	Approved  bool      `json:"approved"`
 }
+
+// AvailabilityRepository — tutor recurring availability + exceptions
+// (migration 000004; tutor portal).
+type AvailabilityRepository interface {
+	ListByTutor(ctx context.Context, tutorProfileID uuid.UUID) ([]Availability, error)
+	Upsert(ctx context.Context, a *Availability) error
+	Delete(ctx context.Context, id uuid.UUID, tutorProfileID uuid.UUID) error
+	ListExceptions(ctx context.Context, tutorProfileID uuid.UUID) ([]AvailabilityException, error)
+	UpsertException(ctx context.Context, e *AvailabilityException) error
+	DeleteException(ctx context.Context, id uuid.UUID, tutorProfileID uuid.UUID) error
+}

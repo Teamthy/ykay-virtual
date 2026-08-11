@@ -55,6 +55,7 @@ type SupportTicketRepository interface {
 	Create(ctx context.Context, t *SupportTicket) error
 	GetByID(ctx context.Context, id uuid.UUID) (*SupportTicket, error)
 	SetStatus(ctx context.Context, id uuid.UUID, status string) error
+	List(ctx context.Context, status string, page, pageSize int) ([]SupportTicket, int64, error)
 }
 
 // Testimonial — consent-gated public testimonial (migration 000010).

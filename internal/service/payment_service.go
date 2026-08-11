@@ -541,3 +541,71 @@ func (s *PaymentService) ExpireStaleHolds(ctx context.Context, limit int) (int, 
 type ReferralQualifier interface {
 	QualifyOnOrderPaid(ctx context.Context, userID, orderID uuid.UUID) error
 }
+
+// ConfirmManualPayment — admin-confirmed payment (manual/bank transfer path).
+// Mirrors the webhook success path: payment SUCCESS → order PAID → enrollment
+// CONFIRMED → escrow held → referral qualify. Idempotent for PAID orders.
+func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orderID uuid.UUID, note *string) (*payment.Payment, error) {
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer uow.Rollback()
+
+	order, err := uow.Orders().GetByID(ctx, orderID)
+	if err != nil {
+		return nil, err
+	}
+	if order.Status == payment.OrderPaid {
+		// Idempotent: already paid — return the existing payment.
+		payments, err := uow.Payments().GetByOrderID(ctx, orderID)
+		if err != nil {
+			return nil, err
+		}
+		if len(payments) > 0 {
+			return &payments[0], nil
+		}
+	}
+
+	now := s.Clock().UTC()
+	ref := fmt.Sprintf("MANUAL-%s-%s", order.OrderNumber, uuid.NewString()[:8])
+	meta := "manual admin confirmation"
+	if note != nil && *note != "" {
+		meta = "manual: " + *note
+	}
+	p := &payment.Payment{
+		OrderID:           order.ID,
+		Provider:          payment.ProviderManual,
+		ProviderReference: &ref,
+		Amount:            order.TotalAmount,
+		Currency:          order.Currency,
+		Status:            payment.PaymentSuccess,
+		PaidAt:            &now,
+		Metadata:          &meta,
+	}
+	if err := uow.Payments().Create(ctx, p); err != nil {
+		return nil, err
+	}
+	if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderPaid); err != nil {
+		return nil, err
+	}
+	if s.referrals != nil {
+		if err := s.referrals.QualifyOnOrderPaid(ctx, order.ParentUserID, order.ID); err != nil {
+			return nil, err
+		}
+	}
+	if err := s.confirmEnrollment(ctx, uow, order.ID, now); err != nil {
+		return nil, err
+	}
+	if _, err := s.createEscrowHold(ctx, uow, order, p, now); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditPayment, "order",
+		&order.ID, map[string]any{"status": payment.OrderPending}, map[string]any{
+			"status": payment.OrderPaid, "manual": true, "note": note,
+		}, nil, nil)
+	if err := uow.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return p, nil
+}

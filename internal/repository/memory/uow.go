@@ -93,6 +93,11 @@ type MemoryStore struct {
 	PrivatePkgs    *PrivatePackageMemory
 	Vetting        *VettingMemory
 	TutorSubj      *VettingTutorSubjectMemory
+	Availability   *AvailabilityMemory
+	Submissions    *SubmissionMemory
+	Assignments    *AssignmentMemory
+	Attendance     *AttendanceMemory
+	Lessons        *LessonMemory
 	Tutors         *TutorMemory
 	Blogs          *BlogMemory
 	Redirects      *RedirectMemory
@@ -124,6 +129,11 @@ func NewMemoryStore() *MemoryStore {
 		PrivatePkgs:  NewPrivatePackageMemory(),
 		Vetting:      NewVettingMemory(),
 		TutorSubj:    NewVettingTutorSubjectMemory(),
+		Availability: NewAvailabilityMemory(),
+		Submissions:  NewSubmissionMemory(),
+		Assignments:  NewAssignmentMemory(),
+		Attendance:   NewAttendanceMemory(),
+		Lessons:      NewLessonMemory(),
 		Tutors:       NewTutorMemory(nil),
 		Blogs:        NewBlogMemory(),
 		Redirects:    NewRedirectMemory(),

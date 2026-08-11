@@ -2,8 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { getAdminStats } from "@/features/admin/api";
+import { getAdminStats2 } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Admin dashboard (working-doc §12): KPI cards — active learners | tutors |
+// cohorts | lessons this week | revenue + pending applications/enrolments,
+// today's classes, capacity alerts, support tickets, QA alerts.
 
 function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
   return (
@@ -17,8 +21,8 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string;
 
 export default function AdminOverviewPage() {
   const stats = useQuery({
-    queryKey: ["admin", "stats"],
-    queryFn: getAdminStats,
+    queryKey: ["admin", "stats2"],
+    queryFn: getAdminStats2,
     staleTime: 60_000,
   });
 
@@ -39,60 +43,55 @@ export default function AdminOverviewPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-extrabold">Operations overview</h1>
-        <p className="text-ink-500 text-sm mt-1">Live platform health at a glance.</p>
+        <p className="text-ink-500 text-sm mt-1">Live platform health — learners, tutors, cohorts, lessons, revenue.</p>
       </div>
 
-      {/* People */}
-      <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-ink-400 mb-3">People</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Registered users" value={s?.users.toLocaleString() ?? "–"} sub={`${s?.active_users.toLocaleString()} active`} />
-          <StatCard label="Tutors (total)" value={s?.tutors_total.toLocaleString() ?? "–"} />
-          <StatCard label="Approved tutors" value={s?.tutors_approved.toLocaleString() ?? "–"} accent />
-          <StatCard label="Pending vetting" value={s?.tutors_pending.toLocaleString() ?? "–"} />
-        </div>
+      {/* KPI row */}
+      <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Active learners" value={s?.active_users.toLocaleString() ?? "–"} sub={`${s?.users.toLocaleString()} registered`} accent />
+        <StatCard label="Tutors (approved)" value={s?.tutors_approved.toLocaleString() ?? "–"} sub={`${s?.tutors_pending.toLocaleString()} pending vetting`} />
+        <StatCard label="Cohorts (published)" value={s?.cohorts_published.toLocaleString() ?? "–"} sub={`${s?.lessons_this_week.toLocaleString()} lessons this week`} />
+        <StatCard label="Revenue" value={`₦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} sub={`${(s?.revenue_paid_out ?? 0).toLocaleString()} paid out`} accent />
       </section>
 
-      {/* Money */}
-      <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-ink-400 mb-3">Money</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Orders (total)" value={s?.orders_total.toLocaleString() ?? "–"} />
-          <StatCard label="Paid orders" value={s?.orders_paid.toLocaleString() ?? "–"} />
-          <StatCard label="Held in escrow" value={`₦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} accent />
-          <StatCard label="Paid out to tutors" value={`₦${(s?.revenue_paid_out ?? 0).toLocaleString()}`} />
-        </div>
-      </section>
-
-      {/* Content & ops */}
-      <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-ink-400 mb-3">Content & operations</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link href="/admin/blog" className="block">
-            <StatCard label="Published posts" value={s?.blog_published.toLocaleString() ?? "–"} sub={`${s?.blog_drafts.toLocaleString()} drafts`} />
-          </Link>
-          <Link href="/admin/institutions" className="block">
-            <StatCard label="Institutions (B2B)" value={s?.institutions.toLocaleString() ?? "–"} />
-          </Link>
-          <Link href="/admin/referrals" className="block">
-            <StatCard label="Referrals" value={s?.referrals.toLocaleString() ?? "–"} />
-          </Link>
-          <Link href="/admin/reviews" className="block">
-            <StatCard label="Reviews pending" value={s?.reviews_pending.toLocaleString() ?? "–"} />
-          </Link>
-        </div>
+      {/* Operational */}
+      <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Lessons today" value={s?.lessons_today.toLocaleString() ?? "–"} />
+        <StatCard label="Pending enrolments" value={s?.pending_enrolments.toLocaleString() ?? "–"} />
+        <StatCard label="Orders (total / paid)" value={`${s?.orders_total ?? 0}/${s?.orders_paid ?? 0}`} />
+        <StatCard label="Blog published" value={s?.blog_published.toLocaleString() ?? "–"} sub={`${s?.blog_drafts.toLocaleString()} drafts`} />
       </section>
 
       {/* Attention needed */}
-      {(s?.support_open ?? 0) > 0 || (s?.escrow_disputed ?? 0) > 0 ? (
+      {(s?.pending_enrolments ?? 0) > 0 || (s?.overdue_lesson_notes ?? 0) > 0 || (s?.support_open ?? 0) > 0 || (s?.escrow_disputed ?? 0) > 0 ? (
         <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
           <h2 className="font-bold text-amber-800">Needs attention</h2>
-          <ul className="mt-2 text-sm text-amber-800 list-disc pl-5">
-            {s?.support_open ? <li>{s.support_open} open support ticket(s)</li> : null}
+          <ul className="mt-2 text-sm text-amber-800 list-disc pl-5 space-y-1">
+            {s?.pending_enrolments ? <li>{s.pending_enrolments} pending enrollment(s) / payment exception(s)</li> : null}
+            {s?.overdue_lesson_notes ? <li>{s.overdue_lesson_notes} completed lesson(s) missing tutor notes (QA alert)</li> : null}
+            {s?.support_open ? <li><Link href="/admin/support" className="underline">{s.support_open} open support ticket(s)</Link></li> : null}
             {s?.escrow_disputed ? <li>{s.escrow_disputed} disputed escrow hold(s)</li> : null}
+            {s?.pending_refunds ? <li>{s.pending_refunds} pending/failed order(s) awaiting review</li> : null}
           </ul>
         </section>
       ) : null}
+
+      {/* Module quick links */}
+      <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[
+          { href: "/admin/vetting", label: "Tutor vetting queue", desc: "Applications, documents, approvals" },
+          { href: "/admin/cohorts", label: "Cohorts", desc: "Create, publish, manage capacity" },
+          { href: "/admin/lessons", label: "Today's classes", desc: "Attendance & lesson overview" },
+          { href: "/admin/support", label: "Support tickets", desc: "Resolve and escalate" },
+          { href: "/admin/reviews", label: "Review moderation", desc: "Consent-gated publishing" },
+          { href: "/admin/blog", label: "Blog CMS", desc: "Publish study content" },
+        ].map((m) => (
+          <Link key={m.href} href={m.href} className="border rounded-2xl p-5 hover:border-brand-blue hover:shadow-lift transition-all">
+            <h3 className="font-bold text-sm">{m.label}</h3>
+            <p className="text-xs text-ink-500 mt-1">{m.desc}</p>
+          </Link>
+        ))}
+      </section>
     </div>
   );
 }

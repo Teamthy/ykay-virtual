@@ -53,6 +53,8 @@ type Repositories struct {
 	TutorSubjectChk booking.TutorProfileReader
 	AuditRepo       identity.AuditLogRepository
 	Orders          payment.OrderRepository
+	Payments        payment.PaymentRepository
+	Enrollments     booking.CohortEnrollmentRepository
 	Escrow          payment.EscrowHoldRepository
 	Payouts         payment.PayoutRepository
 	PrivatePackages booking.PrivatePackageRepository
@@ -82,6 +84,10 @@ type Repositories struct {
 	Students        identity.StudentProfileRepository
 	StudentLinks    identity.ParentStudentLinkRepository
 	Vetting         vetting.VettingRepository
+	Availability    tutor.AvailabilityRepository
+	Submissions     booking.SubmissionRepository
+	CohortAdmin     booking.CohortAdminRepository
+	LessonAdmin     booking.LessonAdminRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -140,12 +146,17 @@ func main() {
 		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
 			return repos.Vetting.GetProfileByID(ctx, id)
 		})
+	portalSvc := service.NewPortalService(repos.Availability, repos.Assignments, repos.Submissions,
+		repos.Attendance, repos.Enrollments, repos.Lessons, repos.Orders, repos.Payments)
 	onboardingSvc := service.NewOnboardingService(repos.Students, repos.StudentLinks, audit)
 	contentSvc := service.NewContentService(
 		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend).
 		WithTestimonials(repos.Testimonials)
 	adminSvc := service.NewAdminService(repos.Stats, repos.AdminBlog, repos.Institutions,
-		repos.Referrals, repos.Reviews, audit)
+		repos.Referrals, repos.Reviews, audit).
+		WithSupport(repos.SupportTickets).
+		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin)
+	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
 	supportSvc := service.NewSupportService(repos.SupportTickets)
 	reviewSvc := service.NewReviewService(repos.Reviews, repos.TutorRepo, audit)
 	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit)
@@ -170,11 +181,12 @@ func main() {
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc),
 		Content:      httpapi.NewContentHandler(contentSvc),
 		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL),
-		Admin:        httpapi.NewAdminHandler(adminSvc),
+		Admin:        adminHandler,
 		Support:      httpapi.NewSupportHandler(supportSvc),
 		Growth:       httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
 		LessonOps:    httpapi.NewLessonOpsHandler(lessonSvc),
 		Onboarding:   httpapi.NewOnboardingHandler(onboardingSvc),
+		Portal:       httpapi.NewPortalHandler(portalSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
@@ -230,6 +242,8 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			TutorRepo:       store.Tutors,
 			AuditRepo:       store.AuditLogs,
 			Orders:          store.Orders,
+			Payments:        store.Payments,
+			Enrollments:     store.Enrollments,
 			Escrow:          store.Escrow,
 			Payouts:         store.Payouts,
 			PrivatePackages: store.PrivatePkgs,
@@ -259,6 +273,10 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Students:        store.Students,
 			StudentLinks:    store.StudentLinks,
 			Vetting:         store.Vetting,
+			Availability:    memory.NewAvailabilityMemory(),
+			Submissions:     memory.NewSubmissionMemory(),
+			CohortAdmin:     store.Cohorts,
+			LessonAdmin:     memory.NewLessonMemory(),
 			StorageBackend:  "memory",
 		}
 	}
@@ -274,6 +292,8 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		TutorSubjectChk: postgres.NewTutorSubjectCheckRepo(pg.DB()),
 		AuditRepo:       postgres.NewAuditLogRepo(pg.DB()),
 		Orders:          postgres.NewOrderRepo(pg.DB()),
+		Payments:        postgres.NewPaymentRepo(pg.DB()),
+		Enrollments:     postgres.NewCohortEnrollmentRepo(pg.DB()),
 		Escrow:          postgres.NewEscrowHoldRepo(pg.DB()),
 		Payouts:         postgres.NewPayoutRepo(pg.DB()),
 		PrivatePackages: postgres.NewPrivatePackageRepo(pg.DB()),
@@ -303,6 +323,10 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Students:        postgres.NewStudentProfileRepo(pg.DB()),
 		StudentLinks:    postgres.NewParentStudentLinkRepo(pg.DB()),
 		Vetting:         postgres.NewVettingRepo(pg.DB()),
+		Availability:    postgres.NewAvailabilityRepo(pg.DB()),
+		Submissions:     postgres.NewSubmissionRepo(pg.DB()),
+		CohortAdmin:     postgres.NewCohortRepo(pg.DB()),
+		LessonAdmin:     postgres.NewLessonRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/admin"
+	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
@@ -29,6 +30,9 @@ type AdminService struct {
 	institutions institution.InstitutionRepository
 	referrals    referral.ReferralRepository
 	reviews      review.ReviewRepository
+	support      content.SupportTicketRepository
+	cohortAdmin  booking.CohortAdminRepository
+	lessonAdmin  booking.LessonAdminRepository
 	audit        identity.AuditService
 	now          func() time.Time
 }
@@ -40,6 +44,19 @@ func NewAdminService(stats admin.StatsRepository, blog content.AdminBlogReposito
 		stats: stats, blog: blog, institutions: institutions, referrals: referrals,
 		reviews: reviews, audit: audit, now: time.Now,
 	}
+}
+
+// WithSupport wires the support queue.
+func (s *AdminService) WithSupport(support content.SupportTicketRepository) *AdminService {
+	s.support = support
+	return s
+}
+
+// WithCohortAdmin wires cohort + lesson admin management.
+func (s *AdminService) WithCohortAdmin(cohorts booking.CohortAdminRepository, lessons booking.LessonAdminRepository) *AdminService {
+	s.cohortAdmin = cohorts
+	s.lessonAdmin = lessons
+	return s
 }
 
 // --- Overview ---
@@ -265,4 +282,107 @@ func (s *SupportService) OpenTicket(ctx context.Context, userID *uuid.UUID, emai
 		return nil, err
 	}
 	return ticket, nil
+}
+
+// --- Portal extensions (Phase 11b) ---
+
+// Overview2 — extended KPIs for the admin dashboard.
+func (s *AdminService) Overview2(ctx context.Context) (*admin.Overview2, error) {
+	if s.stats == nil {
+		return &admin.Overview2{}, nil
+	}
+	o, err := s.stats.Overview2(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &o, nil
+}
+
+// ListSupportTickets — admin support queue.
+func (s *AdminService) ListSupportTickets(ctx context.Context, status string, page, pageSize int) ([]content.SupportTicket, int64, error) {
+	if s.support == nil {
+		return []content.SupportTicket{}, 0, nil
+	}
+	return s.support.List(ctx, status, page, pageSize)
+}
+
+// SetSupportStatus — admin resolves/closes a ticket.
+func (s *AdminService) SetSupportStatus(ctx context.Context, adminID uuid.UUID, ticketID uuid.UUID, status string) error {
+	switch status {
+	case "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED":
+	default:
+		return fmt.Errorf("%w: invalid support status", domain.ErrInvalidInput)
+	}
+	if err := s.support.SetStatus(ctx, ticketID, status); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "support_ticket",
+		&ticketID, nil, map[string]any{"status": status}, nil, nil)
+	return nil
+}
+
+// ListCohortsAdmin — all cohorts (any status) for the admin console.
+func (s *AdminService) ListCohortsAdmin(ctx context.Context, status string, page, pageSize int) ([]booking.Cohort, int64, error) {
+	if s.cohortAdmin == nil {
+		return []booking.Cohort{}, 0, nil
+	}
+	return s.cohortAdmin.ListAll(ctx, booking.CohortListParams{Status: status, Page: page, PageSize: pageSize})
+}
+
+// CreateCohortAdmin — admin creates a cohort (defaults DRAFT).
+func (s *AdminService) CreateCohortAdmin(ctx context.Context, adminID uuid.UUID, c *booking.Cohort) (*booking.Cohort, error) {
+	if strings.TrimSpace(c.Title) == "" {
+		return nil, fmt.Errorf("%w: cohort title is required", domain.ErrInvalidInput)
+	}
+	if c.Capacity < 1 {
+		return nil, fmt.Errorf("%w: capacity must be >= 1", domain.ErrInvalidInput)
+	}
+	if c.Fee < 0 {
+		return nil, fmt.Errorf("%w: fee must be >= 0", domain.ErrInvalidInput)
+	}
+	if c.Slug == "" {
+		c.Slug = slugify(c.Title)
+	}
+	if c.Status == "" {
+		c.Status = booking.CohortDraft
+	}
+	if c.Currency == "" {
+		c.Currency = "NGN"
+	}
+	if c.Timezone == "" {
+		c.Timezone = "Africa/Lagos"
+	}
+	if c.LocationMode == "" {
+		c.LocationMode = "ONLINE"
+	}
+	c.CreatedBy = &adminID
+	if err := s.cohortAdmin.Create(ctx, c); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditCreate, "cohort",
+		&c.ID, nil, map[string]any{"title": c.Title, "slug": c.Slug, "status": c.Status}, nil, nil)
+	return c, nil
+}
+
+// SetCohortStatusAdmin — publish/unpublish/cancel a cohort.
+func (s *AdminService) SetCohortStatusAdmin(ctx context.Context, adminID uuid.UUID, cohortID uuid.UUID, status booking.CohortStatus) error {
+	switch status {
+	case booking.CohortDraft, booking.CohortPublished, booking.CohortCancelled, booking.CohortCompleted:
+	default:
+		return fmt.Errorf("%w: invalid cohort status", domain.ErrInvalidInput)
+	}
+	if err := s.cohortAdmin.UpdateStatus(ctx, cohortID, status); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
+		&cohortID, nil, map[string]any{"status": status}, nil, nil)
+	return nil
+}
+
+// ListLessonsToday — today's classes (admin).
+func (s *AdminService) ListLessonsToday(ctx context.Context) ([]booking.Lesson, error) {
+	if s.lessonAdmin == nil {
+		return []booking.Lesson{}, nil
+	}
+	return s.lessonAdmin.ListByDate(ctx, time.Now().UTC())
 }

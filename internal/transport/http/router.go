@@ -118,6 +118,19 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/tutor-lessons", handlers.Dashboard.MyTutorLessons)
 	mux.HandleFunc("GET "+v1+"/me/earnings", handlers.Dashboard.MyEarnings)
 
+	// Portal surfaces (Phase 11b)
+	mux.HandleFunc("GET "+v1+"/me/availability", handlers.Portal.ListAvailability)
+	mux.HandleFunc("POST "+v1+"/me/availability", handlers.Portal.UpsertAvailability)
+	mux.HandleFunc("DELETE "+v1+"/me/availability/{id}", handlers.Portal.DeleteAvailability)
+	mux.HandleFunc("GET "+v1+"/me/availability-exceptions", handlers.Portal.ListExceptions)
+	mux.HandleFunc("POST "+v1+"/me/availability-exceptions", handlers.Portal.UpsertException)
+	mux.HandleFunc("DELETE "+v1+"/me/availability-exceptions/{id}", handlers.Portal.DeleteException)
+	mux.HandleFunc("GET "+v1+"/me/assignments", handlers.Portal.MyAssignments)
+	mux.HandleFunc("POST "+v1+"/me/assignments/{assignmentId}/submit", handlers.Portal.SubmitAssignment)
+	mux.HandleFunc("GET "+v1+"/me/submissions", handlers.Portal.MySubmissions)
+	mux.HandleFunc("GET "+v1+"/me/attendance-summary", handlers.Portal.AttendanceSummary)
+	mux.HandleFunc("GET "+v1+"/me/orders/{orderId}", handlers.Portal.OrderReceipt)
+
 	// Onboarding (Phase 10b)
 	mux.HandleFunc("POST "+v1+"/me/learners", handlers.Onboarding.CreateLearner)
 	mux.HandleFunc("GET "+v1+"/me/learners", handlers.Onboarding.ListLearners)
@@ -135,6 +148,14 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 
 	// Admin console (Phase 11)
 	mux.HandleFunc("GET "+v1+"/admin/stats", handlers.Admin.Stats)
+	mux.HandleFunc("GET "+v1+"/admin/stats/overview2", handlers.Admin.Stats2)
+	mux.HandleFunc("GET "+v1+"/admin/support", handlers.Admin.ListSupport)
+	mux.HandleFunc("POST "+v1+"/admin/support/{ticketId}/status", handlers.Admin.SetSupportStatus)
+	mux.HandleFunc("GET "+v1+"/admin/cohorts", handlers.Admin.ListCohorts)
+	mux.HandleFunc("POST "+v1+"/admin/cohorts", handlers.Admin.CreateCohort)
+	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/status", handlers.Admin.SetCohortStatus)
+	mux.HandleFunc("GET "+v1+"/admin/lessons/today", handlers.Admin.LessonsToday)
+	mux.HandleFunc("POST "+v1+"/admin/orders/{orderId}/confirm-payment", handlers.Admin.ConfirmManualPayment)
 	mux.HandleFunc("GET "+v1+"/admin/blog", handlers.Admin.ListPosts)
 	mux.HandleFunc("POST "+v1+"/admin/blog", handlers.Admin.CreatePost)
 	mux.HandleFunc("PUT "+v1+"/admin/blog/{postId}", handlers.Admin.UpdatePost)
@@ -185,5 +206,6 @@ type Handlers struct {
 	Growth       *GrowthHandler
 	LessonOps    *LessonOpsHandler
 	Onboarding   *OnboardingHandler
+	Portal       *PortalHandler
 	Objects      *ObjectHandler
 }

@@ -326,6 +326,14 @@ func (s *StatsMemory) Overview(_ context.Context) (admin.Overview, error) {
 	}, nil
 }
 
+func (s *StatsMemory) Overview2(_ context.Context) (admin.Overview2, error) {
+	o, err := s.Overview(context.Background())
+	if err != nil {
+		return admin.Overview2{}, err
+	}
+	return admin.Overview2{Overview: o}, nil
+}
+
 var _ admin.StatsRepository = (*StatsMemory)(nil)
 
 // --- Support tickets (memory) ---
@@ -371,6 +379,35 @@ func (m *SupportMemory) SetStatus(_ context.Context, id uuid.UUID, status string
 	t.Status = status
 	t.UpdatedAt = nowUTC()
 	return nil
+}
+
+func (m *SupportMemory) List(_ context.Context, status string, page, pageSize int) ([]content.SupportTicket, int64, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []content.SupportTicket
+	for _, t := range m.rows {
+		if status != "" && t.Status != status {
+			continue
+		}
+		out = append(out, *t)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	total := int64(len(out))
+	if pageSize < 1 {
+		pageSize = 20
+	}
+	start := (page - 1) * pageSize
+	if start < 0 {
+		start = 0
+	}
+	end := start + pageSize
+	if start > len(out) {
+		start = len(out)
+	}
+	if end > len(out) {
+		end = len(out)
+	}
+	return out[start:end], total, nil
 }
 
 var _ content.SupportTicketRepository = (*SupportMemory)(nil)

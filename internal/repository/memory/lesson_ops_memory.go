@@ -218,4 +218,8 @@ func (m *AssignmentMemory) ListByCohort(_ context.Context, cohortID uuid.UUID) (
 	return out, nil
 }
 
+func (m *AssignmentMemory) ListByStudent(_ context.Context, studentProfileID uuid.UUID, limit int) ([]booking.Assignment, error) {
+	return []booking.Assignment{}, nil
+}
+
 var _ booking.AssignmentRepository = (*AssignmentMemory)(nil)

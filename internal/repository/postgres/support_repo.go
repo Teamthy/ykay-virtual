@@ -59,3 +59,47 @@ func (r *SupportRepo) SetStatus(ctx context.Context, id uuid.UUID, status string
 }
 
 var _ content.SupportTicketRepository = (*SupportRepo)(nil)
+
+func (r *SupportRepo) List(ctx context.Context, status string, page, pageSize int) ([]content.SupportTicket, int64, error) {
+	where := ""
+	args := []any{}
+	if status != "" {
+		where = " WHERE status = $1"
+		args = append(args, status)
+	}
+	var total int64
+	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM support_tickets"+where, args...).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("count support tickets: %w", err)
+	}
+	if pageSize < 1 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * pageSize
+	rows, err := r.db.QueryContext(ctx,
+		"SELECT id, user_id, email, subject, message, status, created_at, updated_at FROM support_tickets"+where+
+			" ORDER BY created_at DESC LIMIT $"+fmt.Sprint(len(args)+1)+" OFFSET $"+fmt.Sprint(len(args)+2),
+		append(args, pageSize, offset)...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list support tickets: %w", err)
+	}
+	defer rows.Close()
+	out := []content.SupportTicket{}
+	for rows.Next() {
+		var t content.SupportTicket
+		var userID uuidNull
+		if err := rows.Scan(&t.ID, &userID, &t.Email, &t.Subject, &t.Message, &t.Status, &t.CreatedAt, &t.UpdatedAt); err != nil {
+			return nil, 0, err
+		}
+		if userID.Valid {
+			t.UserID = &userID.UUID
+		}
+		out = append(out, t)
+	}
+	return out, total, rows.Err()
+}

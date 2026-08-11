@@ -116,6 +116,8 @@ type Resource struct {
 // AssignmentRepository — read side for assignments (migration 000006).
 type AssignmentRepository interface {
 	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]Assignment, error)
+	// ListByStudent — assignments for cohorts the student is enrolled in.
+	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Assignment, error)
 }
 
 type Assignment struct {
@@ -127,4 +129,47 @@ type Assignment struct {
 	DueAt        *time.Time `json:"due_at,omitempty"`
 	MaxScore     *float64   `json:"max_score,omitempty"`
 	CreatedAt    time.Time  `json:"created_at"`
+}
+
+// SubmissionRepository — assignment submissions (migration 000006).
+type SubmissionRepository interface {
+	Upsert(ctx context.Context, s *Submission) error
+	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Submission, error)
+}
+
+// Submission mirrors migration submissions.
+type Submission struct {
+	ID               uuid.UUID  `json:"id"`
+	AssignmentID     uuid.UUID  `json:"assignment_id"`
+	StudentProfileID uuid.UUID  `json:"student_profile_id"`
+	Content          *string    `json:"content,omitempty"`
+	FileKey          *string    `json:"-"`
+	Score            *float64   `json:"score,omitempty"`
+	Feedback         *string    `json:"feedback,omitempty"`
+	SubmittedAt      time.Time  `json:"submitted_at"`
+	GradedAt         *time.Time `json:"graded_at,omitempty"`
+}
+
+// AvailabilityException mirrors migration tutor_availability_exceptions.
+type AvailabilityException struct {
+	ID             uuid.UUID `json:"id"`
+	TutorProfileID uuid.UUID `json:"tutor_profile_id"`
+	ExceptionDate  time.Time `json:"exception_date"`
+	IsAvailable    bool      `json:"is_available"`
+	StartTime      *string   `json:"start_time,omitempty"`
+	EndTime        *string   `json:"end_time,omitempty"`
+	Reason         *string   `json:"reason,omitempty"`
+	CreatedAt      time.Time `json:"created_at"`
+}
+
+// Admin cohort management (Phase 11 admin console).
+type CohortAdminRepository interface {
+	ListAll(ctx context.Context, params CohortListParams) ([]Cohort, int64, error)
+	Create(ctx context.Context, c *Cohort) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status CohortStatus) error
+}
+
+// Lesson admin reads.
+type LessonAdminRepository interface {
+	ListByDate(ctx context.Context, date time.Time) ([]Lesson, error)
 }
