@@ -23,9 +23,9 @@ export function BecomeTutorCTA() {
             <h2 className="text-3xl md:text-4xl font-extrabold leading-tight mb-9">
               Become a tutor and<br />earn money teaching<br />what you love
             </h2>
-            <button className="btn-outline-white">
+            <a href="/become-tutor" className="btn-outline-white inline-flex items-center gap-2">
               Apply to Teach <ChevronRight size={14} />
-            </button>
+            </a>
           </div>
         </div>
       </div>

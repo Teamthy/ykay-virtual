@@ -18,6 +18,7 @@ import (
 	"ykay-virtual/internal/repository/memory"
 	"ykay-virtual/internal/repository/postgres"
 	"ykay-virtual/internal/service"
+	"ykay-virtual/internal/storage"
 )
 
 // Worker — background jobs + crons per AGENTS.md:
@@ -48,12 +49,15 @@ func main() {
 		payment.ProviderFlutterwave: payment_provider.NewFlutterwave(cfg.FlutterwaveSecret),
 	}
 	paymentSvc := service.NewPaymentService(r.uowFactory, providers, audit, r.escrowRead)
+	vettingSvc := service.NewVettingService(r.uowFactory, storage.NewLocalStorage(), audit, nil, nil)
 
 	// --- Cron scheduler ---
 	expireTicker := time.NewTicker(15 * time.Minute)
 	defer expireTicker.Stop()
 	payoutTicker := time.NewTicker(7 * 24 * time.Hour)
 	defer payoutTicker.Stop()
+	rankingTicker := time.NewTicker(24 * time.Hour)
+	defer rankingTicker.Stop()
 
 	// Run once at boot so restarts immediately recover stale holds.
 	go func() {
@@ -83,11 +87,18 @@ func main() {
 					continue
 				}
 				log.Printf("cron[process_weekly_tutor_payouts]: paid %d payout(s)", n)
+			case <-rankingTicker.C:
+				n, err := vettingSvc.RecomputeAllRankings(ctx)
+				if err != nil {
+					log.Printf("cron[compute_tutor_ranking_score] error: %v", err)
+					continue
+				}
+				log.Printf("cron[compute_tutor_ranking_score]: updated %d ranking(s)", n)
 			}
 		}
 	}()
 
-	log.Println("Worker started — crons: expire_stale_booking_holds (15m), process_weekly_tutor_payouts (7d)")
+	log.Println("Worker started — crons: expire_stale_booking_holds (15m), process_weekly_tutor_payouts (7d), compute_tutor_ranking_score (24h)")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

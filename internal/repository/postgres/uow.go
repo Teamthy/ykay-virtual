@@ -8,6 +8,8 @@ import (
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/tutor"
+	"ykay-virtual/internal/domain/vetting"
 	"ykay-virtual/internal/repository"
 )
 
@@ -26,6 +28,8 @@ type PgUnitOfWork struct {
 	cohorts     *CohortRepo
 	privateReq  *PrivateTuitionRequestRepo
 	privatePkg  *PrivatePackageRepo
+	vetting     *VettingRepo
+	tutorSubj   *TutorSubjectRepo
 	auditLogs   *AuditLogRepo
 }
 
@@ -39,6 +43,8 @@ func (u *PgUnitOfWork) Enrollments() booking.CohortEnrollmentRepository         
 func (u *PgUnitOfWork) Cohorts() booking.CohortRepository                        { return u.cohorts }
 func (u *PgUnitOfWork) PrivateRequests() booking.PrivateTuitionRequestRepository { return u.privateReq }
 func (u *PgUnitOfWork) PrivatePackages() booking.PrivatePackageRepository        { return u.privatePkg }
+func (u *PgUnitOfWork) Vetting() vetting.VettingRepository                       { return u.vetting }
+func (u *PgUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository              { return u.tutorSubj }
 func (u *PgUnitOfWork) AuditLogs() identity.AuditLogRepository                   { return u.auditLogs }
 
 func (u *PgUnitOfWork) Commit(ctx context.Context) error {
@@ -73,6 +79,8 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
 		cohorts:     NewCohortRepo(tx),
 		privateReq:  NewPrivateTuitionRequestRepo(tx),
 		privatePkg:  NewPrivatePackageRepo(tx),
+		vetting:     NewVettingRepo(tx),
+		tutorSubj:   NewTutorSubjectRepo(tx),
 		auditLogs:   NewAuditLogRepo(tx),
 	}, nil
 }

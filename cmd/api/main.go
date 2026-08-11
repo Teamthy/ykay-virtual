@@ -69,14 +69,17 @@ func main() {
 
 	// --- Services ---
 	audit := service.NewAuditService(repos.AuditRepo)
+	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
 	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit)
+	vettingSvc := service.NewVettingService(repos.UoWFactory, store, audit,
+		service.SubjectReaderAdapter{Repo: repos.SubjectRepo},
+		service.SearchInvalidatorAdapter{Fn: func(ctx context.Context) error { return tutorSvc.InvalidateSearchCache(ctx) }})
 	providers := map[payment.PaymentProvider]payment_provider.Provider{
 		payment.ProviderPaystack:    payment_provider.NewPaystack(cfg.PaystackSecret),
 		payment.ProviderFlutterwave: payment_provider.NewFlutterwave(cfg.FlutterwaveSecret),
 	}
 	paymentSvc := service.NewPaymentService(repos.UoWFactory, providers, audit, repos.EscrowRead)
 
-	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
 	subjectSvc := service.NewSubjectService(repos.SubjectRepo, cacheBackend)
 	programmeSvc := service.NewProgrammeService(repos.ProgrammeRepo, cacheBackend)
 	cohortSvc := service.NewCohortService(repos.CohortRepo, cacheBackend)
@@ -92,6 +95,9 @@ func main() {
 			payment.ProviderPaystack:    cfg.PaystackSecret,
 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
 		}, cfg.SiteURL),
+		Vetting:      httpapi.NewVettingHandler(vettingSvc),
+		AdminVetting: httpapi.NewAdminVettingHandler(vettingSvc),
+		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouter(Version, handlers)
 
@@ -140,6 +146,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			UoWFactory:     memory.NewMemoryUnitOfWorkFactory(store),
 			EscrowRead:     store.Escrow,
 			CohortRepo:     store.Cohorts,
+			AuditRepo:      store.AuditLogs,
 			StorageBackend: "memory",
 		}
 	}

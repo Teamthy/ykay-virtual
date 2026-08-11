@@ -36,3 +36,19 @@ type TutorRepository interface {
 	GetBySlug(ctx context.Context, slug string) (*TutorProfile, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*TutorProfile, error)
 }
+
+// TutorSubjectRepository — the tutor's teaching scope (tutor_subjects).
+// Used by the vetting pipeline (subject selection + assessment eligibility)
+// and the booking engine's TutorCanTeach check.
+type TutorSubjectRepository interface {
+	ListByTutor(ctx context.Context, profileID uuid.UUID) ([]TutorSubjectEntry, error)
+	AddForTutor(ctx context.Context, profileID, subjectID uuid.UUID) error
+}
+
+// TutorSubjectEntry — a subject in the tutor's teaching scope.
+type TutorSubjectEntry struct {
+	SubjectID uuid.UUID `json:"subject_id"`
+	Name      string    `json:"name"`
+	Slug      string    `json:"slug"`
+	Approved  bool      `json:"approved"`
+}

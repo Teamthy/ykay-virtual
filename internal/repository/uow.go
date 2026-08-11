@@ -6,11 +6,14 @@ import (
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/tutor"
+	"ykay-virtual/internal/domain/vetting"
 )
 
-// UnitOfWork — transactional scope for money mutations. Per AGENTS.md:
-// "DB transactions on money mutations" and "AuditService on every state
-// change affecting money/access/tutor-status" — both happen inside one UoW.
+// UnitOfWork — transactional scope for money mutations and tutor-status
+// changes. Per AGENTS.md: "DB transactions on money mutations" and
+// "AuditService on every state change affecting money/access/tutor-status" —
+// both happen inside one UoW.
 //
 // Implementations:
 //   - postgres.PgUnitOfWork  → real BEGIN/COMMIT/ROLLBACK on *sql.Tx
@@ -26,6 +29,8 @@ type UnitOfWork interface {
 	Cohorts() booking.CohortRepository
 	PrivateRequests() booking.PrivateTuitionRequestRepository
 	PrivatePackages() booking.PrivatePackageRepository
+	Vetting() vetting.VettingRepository
+	TutorSubjects() tutor.TutorSubjectRepository
 	AuditLogs() identity.AuditLogRepository
 	Commit(ctx context.Context) error
 	Rollback()

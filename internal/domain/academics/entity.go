@@ -101,6 +101,7 @@ type ProgrammeSubject struct {
 type SubjectRepository interface {
 	List(ctx context.Context, params SubjectListParams) ([]Subject, int64, error)
 	GetBySlug(ctx context.Context, slug string) (*Subject, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*Subject, error)
 }
 
 type SubjectListParams struct {

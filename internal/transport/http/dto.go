@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"ykay-virtual/internal/middleware"
 	"ykay-virtual/pkg"
 
 	"github.com/google/uuid"
@@ -138,4 +139,15 @@ func WriteAppError(w http.ResponseWriter, err error) {
 
 func isDomain(err error, needle string) bool {
 	return strings.Contains(strings.ToLower(err.Error()), needle)
+}
+
+// requireActor reads the dev-auth-bridge actor from context; returns nil
+// (after writing 401) when no actor is present.
+func requireActor(w http.ResponseWriter, r *http.Request) *middleware.Actor {
+	actor, ok := middleware.ActorFromContext(r.Context())
+	if !ok || actor.UserID == uuid.Nil {
+		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "authentication required", nil)
+		return nil
+	}
+	return &actor
 }

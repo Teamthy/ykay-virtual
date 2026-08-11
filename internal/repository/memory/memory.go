@@ -71,6 +71,16 @@ func (m *SubjectMemory) List(_ context.Context, p academics.SubjectListParams) (
 	return out[start:end], total, nil
 }
 
+func (m *SubjectMemory) GetByID(_ context.Context, id uuid.UUID) (*academics.Subject, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if s, ok := m.rows[id]; ok {
+		cp := s
+		return &cp, nil
+	}
+	return nil, domain.ErrNotFound
+}
+
 func (m *SubjectMemory) GetBySlug(_ context.Context, slug string) (*academics.Subject, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

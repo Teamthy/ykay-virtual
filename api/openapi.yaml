@@ -274,6 +274,200 @@ paths:
                 $ref: '#/components/schemas/WebhookResult'
         '400': { description: Invalid signature / malformed payload / amount mismatch }
 
+  /tutors/me/vetting/profile:
+    post:
+      tags: [tutors]
+      summary: Create draft tutor profile (vetting pipeline entry)
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTutorProfile'
+      responses:
+        '201': { description: Draft profile created, content: { application/json: { schema: { $ref: '#/components/schemas/VettingProfile' } } } }
+        '409': { description: Profile already exists }
+    get:
+      tags: [tutors]
+      summary: Get own vetting profile
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Profile, content: { application/json: { schema: { $ref: '#/components/schemas/VettingProfile' } } } }
+        '404': { description: No profile yet }
+
+  /tutors/me/vetting/profiles/{profileId}/subjects:
+    post:
+      tags: [tutors]
+      summary: Add teaching subject to vetting profile (owner only)
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject_id]
+              properties:
+                subject_id: { type: string, format: uuid }
+      responses:
+        '201': { description: Subject added }
+    get:
+      tags: [tutors]
+      summary: List my teaching subjects
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Subjects }
+
+  /tutors/me/vetting/profiles/{profileId}/submit:
+    post:
+      tags: [tutors]
+      summary: Submit profile for review (DRAFT to SUBMITTED, owner only)
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Submitted }
+        '400': { description: Incomplete profile }
+
+  /tutors/me/vetting/profiles/{profileId}/documents:
+    post:
+      tags: [tutors]
+      summary: Request signed upload URL for a vetting document (PRIVATE bucket)
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, file_name]
+              properties:
+                type: { $ref: '#/components/schemas/DocumentType' }
+                file_name: { type: string }
+                mime_type: { type: string }
+                file_size: { type: integer }
+      responses:
+        '201':
+          description: Document row + signed PUT URL (15 min)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document: { $ref: '#/components/schemas/VettingDocument' }
+                  upload_url: { type: string }
+
+  /tutors/me/vetting/documents/{documentId}:
+    get:
+      tags: [tutors]
+      summary: Signed view URL (owner or admin only, server authz first)
+      security: [{ actorHeader: [] }]
+      responses:
+        '200':
+          description: Signed GET URL (5 min)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signed_url: { type: string }
+
+  /tutors/me/vetting/profiles/{profileId}/assessments:
+    post:
+      tags: [tutors]
+      summary: Start competency quiz attempt (5 questions, 30 min)
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject_id]
+              properties:
+                subject_id: { type: string, format: uuid }
+      responses:
+        '201': { description: Attempt + questions (no answer keys) }
+        '409': { description: Attempt already active / passed / question bank not ready }
+
+  /tutors/me/vetting/assessments/{attemptId}/submit:
+    post:
+      tags: [tutors]
+      summary: Submit answers (70% pass, 12-month competency validity)
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    required: [question_id, chosen_index]
+                    properties:
+                      question_id: { type: string, format: uuid }
+                      chosen_index: { type: integer, minimum: 0 }
+      responses:
+        '200': { description: Graded result }
+
+  /admin/vetting/queue:
+    get:
+      tags: [admin]
+      summary: Vetting review queue (admin only)
+      security: [{ actorHeader: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Paginated profiles }
+
+  /admin/vetting/profiles/{profileId}:
+    get:
+      tags: [admin]
+      summary: Full vetting dossier (documents, subjects, competency, events)
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Dossier }
+
+  /admin/vetting/profiles/{profileId}/{action}:
+    post:
+      tags: [admin]
+      summary: Admin workflow action — review | interview | verify | approve | reject | hold | suspend
+      security: [{ actorHeader: [] }]
+      parameters:
+        - { name: action, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        '200': { description: Transition applied }
+
+  /admin/vetting/documents/{documentId}/review:
+    post:
+      tags: [admin]
+      summary: Approve/reject a vetting document (rejection requires reason)
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [approve]
+              properties:
+                approve: { type: boolean }
+                reason: { type: string }
+      responses:
+        '200': { description: Reviewed }
+
   /reviews:
     post:
       tags: [reviews]
@@ -315,6 +509,12 @@ paths:
         '201': { description: Institution created }
 
 components:
+  securitySchemes:
+    actorHeader:
+      type: apiKey
+      in: header
+      name: X-User-ID
+      description: Dev auth bridge until Phase 7 session auth. Roles via X-User-Roles header.
   schemas:
     User:
       type: object
@@ -460,3 +660,62 @@ components:
         ignored: { type: boolean }
         reason: { type: string }
         payment_id: { type: string, format: uuid }
+
+    CreateTutorProfile:
+      type: object
+      required: [display_name]
+      properties:
+        display_name: { type: string, minLength: 2 }
+        headline: { type: string }
+        bio: { type: string }
+        years_experience: { type: integer, minimum: 0 }
+        hourly_rate_min: { type: number, exclusiveMinimum: 0 }
+        hourly_rate_max: { type: number }
+        currency: { type: string, default: NGN }
+        timezone: { type: string, default: Africa/Lagos }
+        accepts_online: { type: boolean, default: true }
+        accepts_in_person: { type: boolean, default: false }
+
+    DocumentType:
+      type: string
+      enum: [GOVT_ID, CERTIFICATE, CV, REFERENCE_LETTER, GUARANTOR_ID, OTHER]
+
+    VettingDocument:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tutor_profile_id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/DocumentType' }
+        file_name: { type: string }
+        file_size: { type: integer }
+        mime_type: { type: string }
+        status: { type: string, enum: [PENDING, APPROVED, REJECTED] }
+        reviewed_at: { type: string, format: date-time }
+        rejection_reason: { type: string }
+        created_at: { type: string, format: date-time }
+
+    TutorStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, UNDER_REVIEW, INTERVIEW, VERIFICATION, APPROVED, REJECTED, SUSPENDED, HOLD]
+
+    VettingProfile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        slug: { type: string }
+        display_name: { type: string }
+        headline: { type: string }
+        bio: { type: string }
+        years_experience: { type: integer }
+        hourly_rate_min: { type: number }
+        hourly_rate_max: { type: number }
+        currency: { type: string }
+        status: { $ref: '#/components/schemas/TutorStatus' }
+        is_public: { type: boolean }
+        ranking_score: { type: number }
+        timezone: { type: string }
+        accepts_online: { type: boolean }
+        accepts_in_person: { type: boolean }
+        verified_at: { type: string, format: date-time }
+        approved_at: { type: string, format: date-time }

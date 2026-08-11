@@ -6,6 +6,8 @@ import (
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/tutor"
+	"ykay-virtual/internal/domain/vetting"
 	"ykay-virtual/internal/repository"
 )
 
@@ -23,6 +25,8 @@ type MemoryUnitOfWork struct {
 	cohorts     *CohortMemory
 	privateReq  *PrivateReqMemory
 	privatePkg  *PrivatePackageMemory
+	vetting     *VettingMemory
+	tutorSubj   *VettingTutorSubjectMemory
 	auditLogs   *AuditLogMemory
 }
 
@@ -38,6 +42,8 @@ func (u *MemoryUnitOfWork) PrivateRequests() booking.PrivateTuitionRequestReposi
 	return u.privateReq
 }
 func (u *MemoryUnitOfWork) PrivatePackages() booking.PrivatePackageRepository { return u.privatePkg }
+func (u *MemoryUnitOfWork) Vetting() vetting.VettingRepository                { return u.vetting }
+func (u *MemoryUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository       { return u.tutorSubj }
 func (u *MemoryUnitOfWork) AuditLogs() identity.AuditLogRepository            { return u.auditLogs }
 
 func (u *MemoryUnitOfWork) Commit(_ context.Context) error { return nil }
@@ -63,6 +69,8 @@ func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWor
 		cohorts:     f.store.Cohorts,
 		privateReq:  f.store.PrivateReqs,
 		privatePkg:  f.store.PrivatePkgs,
+		vetting:     f.store.Vetting,
+		tutorSubj:   f.store.TutorSubj,
 		auditLogs:   f.store.AuditLogs,
 	}, nil
 }
@@ -82,6 +90,8 @@ type MemoryStore struct {
 	Cohorts     *CohortMemory
 	PrivateReqs *PrivateReqMemory
 	PrivatePkgs *PrivatePackageMemory
+	Vetting     *VettingMemory
+	TutorSubj   *VettingTutorSubjectMemory
 	AuditLogs   *AuditLogMemory
 }
 
@@ -97,6 +107,8 @@ func NewMemoryStore() *MemoryStore {
 		Cohorts:     NewCohortMemory(nil),
 		PrivateReqs: NewPrivateReqMemory(),
 		PrivatePkgs: NewPrivatePackageMemory(),
+		Vetting:     NewVettingMemory(),
+		TutorSubj:   NewVettingTutorSubjectMemory(),
 		AuditLogs:   NewAuditLogMemory(),
 	}
 }
