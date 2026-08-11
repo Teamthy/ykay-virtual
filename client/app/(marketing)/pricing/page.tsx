@@ -98,6 +98,24 @@ export default function PricingPage() {
         and <Link href="/corporate-training" className="text-brand-blue font-semibold">corporate training</Link> pages.
       </p>
 
+      <section className="mt-14 rounded-2xl border p-8">
+        <h2 className="text-xl font-extrabold mb-3">Cancellation & reschedule policy</h2>
+        <div className="grid md:grid-cols-3 gap-6 text-sm text-ink-700">
+          <div>
+            <h3 className="font-bold">Rescheduling</h3>
+            <p className="mt-1.5">Lessons can be rescheduled free of charge within your package window — with at least 24 hours notice where possible.</p>
+          </div>
+          <div>
+            <h3 className="font-bold">Cancellation</h3>
+            <p className="mt-1.5">Unused escrow balances are refundable per policy. Cancellation requests are handled by our support team within one business day.</p>
+          </div>
+          <div>
+            <h3 className="font-bold">Tutor no-show</h3>
+            <p className="mt-1.5">If a tutor cannot deliver a scheduled lesson, the session is not counted and the escrow balance is protected — full refunds where required.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="mt-14">
         <h2 className="text-2xl font-extrabold mb-6">Frequently asked questions</h2>
         <div className="max-w-2xl space-y-3">

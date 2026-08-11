@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { ProgrammesClient } from "@/features/programmes/components/ProgrammesClient";
+import { ProgrammesHub } from "@/features/programmes/components/ProgrammesHub";
 
 export const revalidate = 300;
 
@@ -23,8 +23,8 @@ export default function ProgrammesPage() {
         fees sit in escrow until the programme delivers.
       </p>
       <div className="mt-10">
-        <Suspense>
-          <ProgrammesClient />
+        <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading programmes…</p>}>
+          <ProgrammesHub />
         </Suspense>
       </div>
     </main>

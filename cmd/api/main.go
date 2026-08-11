@@ -63,6 +63,7 @@ type Repositories struct {
 	Notifications   messaging.NotificationRepository
 	Blog            content.BlogPostRepository
 	Redirects       content.RedirectRepository
+	Testimonials    content.TestimonialRepository
 	Users           identity.UserRepository
 	Sessions        identity.SessionRepository
 	Roles           identity.RoleRepository
@@ -141,7 +142,8 @@ func main() {
 		})
 	onboardingSvc := service.NewOnboardingService(repos.Students, repos.StudentLinks, audit)
 	contentSvc := service.NewContentService(
-		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend)
+		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend).
+		WithTestimonials(repos.Testimonials)
 	adminSvc := service.NewAdminService(repos.Stats, repos.AdminBlog, repos.Institutions,
 		repos.Referrals, repos.Reviews, audit)
 	supportSvc := service.NewSupportService(repos.SupportTickets)
@@ -238,6 +240,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Notifications:   memory.NewNotificationMemory(),
 			Blog:            store.Blogs,
 			Redirects:       store.Redirects,
+			Testimonials:    store.Testimonials,
 			Users:           store.Users,
 			Sessions:        store.Sessions,
 			Roles:           store.Roles,
@@ -281,6 +284,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Notifications:   postgres.NewNotificationRepo(pg.DB()),
 		Blog:            postgres.NewBlogRepo(pg.DB()),
 		Redirects:       postgres.NewRedirectRepo(pg.DB()),
+		Testimonials:    postgres.NewTestimonialRepo(pg.DB()),
 		Users:           postgres.NewUserRepo(pg.DB()),
 		Sessions:        postgres.NewSessionRepo(pg.DB()),
 		Roles:           postgres.NewRoleRepo(pg.DB()),

@@ -16,8 +16,10 @@ export type Programme = {
 
 export type ProgrammeListParams = {
   search?: string;
+  subject?: string;
   curriculum?: string;
   exam?: string;
+  level?: string;
   format?: string;
   featured?: boolean;
   page?: number;

@@ -54,6 +54,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/tutors/{slug}", handlers.Tutors.GetBySlug)
 	mux.HandleFunc("GET "+v1+"/programmes", handlers.Programmes.List)
 	mux.HandleFunc("GET "+v1+"/programmes/{slug}", handlers.Programmes.GetBySlug)
+	mux.HandleFunc("GET "+v1+"/programmes/{slug}/tutors", handlers.Programmes.Tutors)
 	mux.HandleFunc("GET "+v1+"/cohorts", handlers.Cohorts.List)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}", handlers.Cohorts.GetByID)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/lessons", handlers.LessonOps.ListCohortLessons)
@@ -104,6 +105,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/me/notifications/read-all", handlers.Messaging.MarkAllRead)
 
 	// Content engine (Phase 6 SEO)
+	mux.HandleFunc("GET "+v1+"/content/testimonials", handlers.Content.ListTestimonials)
+	mux.HandleFunc("POST "+v1+"/admin/testimonials", handlers.Content.CreateTestimonial)
 	mux.HandleFunc("GET "+v1+"/content/blog", handlers.Content.ListPosts)
 	mux.HandleFunc("GET "+v1+"/content/blog/{slug}", handlers.Content.GetPost)
 	mux.HandleFunc("GET "+v1+"/subjects/{slug}/related", handlers.Content.Related)

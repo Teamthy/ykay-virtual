@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
@@ -92,6 +93,7 @@ export default function ExamPrepPage() {
           ))}
         </div>
       </section>
-    </main>
+          <CohortStrip />
+</main>
   );
 }

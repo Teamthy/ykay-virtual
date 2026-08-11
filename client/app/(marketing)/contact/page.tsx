@@ -15,7 +15,8 @@ export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [subject, setSubject] = useState("");
+  const [learnerLevel, setLearnerLevel] = useState("");
+  const [enquirySubject, setEnquirySubject] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
@@ -39,8 +40,8 @@ export default function ContactPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
-            subject: `[${category}] ${subject || "General enquiry"}`,
-            message: `${name ? "Name: " + name + "\n" : ""}${phone ? "Phone: " + phone + "\n" : ""}${message}`,
+            subject: `[${category}] ${enquirySubject || "General enquiry"}`,
+            message: `${name ? "Name: " + name + "\n" : ""}${phone ? "Phone: " + phone + "\n" : ""}${learnerLevel ? "Learner level: " + learnerLevel + "\n" : ""}${message}`,
           }),
         }
       );
@@ -104,11 +105,27 @@ export default function ContactPage() {
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
           </label>
-          <label className="block text-sm">
-            <span className="font-medium">Subject</span>
-            <input value={subject} onChange={(e) => setSubject(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
-          </label>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <label className="block text-sm">
+              <span className="font-medium">Learner level</span>
+              <select value={learnerLevel} onChange={(e) => setLearnerLevel(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none">
+                <option value="">Select level…</option>
+                <option>Year 7–9 (British)</option>
+                <option>IGCSE (Year 10–11)</option>
+                <option>A-Level (Year 12–13)</option>
+                <option>JSS1–3 (Nigerian)</option>
+                <option>SSS1–3 (Nigerian)</option>
+                <option>Adult / professional</option>
+              </select>
+            </label>
+            <label className="block text-sm">
+              <span className="font-medium">Subject</span>
+              <input value={enquirySubject} onChange={(e) => setEnquirySubject(e.target.value)}
+                placeholder="e.g. Mathematics, IELTS…"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            </label>
+          </div>
           <label className="block text-sm">
             <span className="font-medium">Message *</span>
             <textarea rows={5} required value={message} onChange={(e) => setMessage(e.target.value)}

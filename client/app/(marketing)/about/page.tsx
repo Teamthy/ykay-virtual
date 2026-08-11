@@ -142,6 +142,38 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Academic quality model + safeguarding */}
+      <section className="mt-14 grid md:grid-cols-2 gap-5">
+        <div className="border rounded-2xl p-6">
+          <h2 className="font-bold text-lg">Our academic quality model</h2>
+          <ul className="mt-3 space-y-2.5 text-sm text-ink-700">
+            {[
+              "Staged tutor vetting: identity, documents, interview and competency assessment",
+              "Curriculum-governed programmes with defined learning outcomes",
+              "Lesson notes, attendance and homework after every session",
+              "Weekly progress reports with strengths, weaknesses and recommendations",
+              "Performance review: tutor ratings recomputed from consented published reviews",
+            ].map((t) => (
+              <li key={t} className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>{t}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="border rounded-2xl p-6">
+          <h2 className="font-bold text-lg">Safeguarding & learner wellbeing</h2>
+          <ul className="mt-3 space-y-2.5 text-sm text-ink-700">
+            {[
+              "Minors are created and linked by parents or guardians — no self-registration under the threshold",
+              "Learner contact details are never exposed to tutors unless business rules require it",
+              "Messages are booking-scoped; direct contact between strangers is not possible",
+              "Lesson access is governed; tutor documents live in a private bucket with signed URLs",
+              "A clear reporting path for safeguarding concerns via our support team",
+            ].map((t) => (
+              <li key={t} className="flex gap-2"><span className="text-green-700 font-bold">✓</span>{t}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="mt-14 text-center border rounded-3xl p-12">
         <h2 className="text-2xl font-extrabold">Explore what YKAY offers</h2>

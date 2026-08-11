@@ -56,3 +56,10 @@ type SupportTicketRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*SupportTicket, error)
 	SetStatus(ctx context.Context, id uuid.UUID, status string) error
 }
+
+// Testimonial — consent-gated public testimonial (migration 000010).
+type TestimonialRepository interface {
+	// ListPublic returns consent-given + public testimonials only (featured first).
+	ListPublic(ctx context.Context, featuredOnly bool, limit int) ([]Testimonial, error)
+	Create(ctx context.Context, t *Testimonial) error
+}

@@ -196,3 +196,54 @@ func (m *RedirectMemory) List(_ context.Context, limit int) ([]content.RedirectM
 }
 
 var _ content.RedirectRepository = (*RedirectMemory)(nil)
+
+// --- Testimonials (memory) ---
+
+type TestimonialMemory struct {
+	mu   sync.RWMutex
+	rows []content.Testimonial
+}
+
+func NewTestimonialMemory() *TestimonialMemory { return &TestimonialMemory{} }
+
+func (m *TestimonialMemory) Seed(t content.Testimonial) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if t.ID == uuid.Nil {
+		t.ID = uuid.New()
+	}
+	t.CreatedAt = nowUTC()
+	m.rows = append(m.rows, t)
+}
+
+func (m *TestimonialMemory) ListPublic(_ context.Context, featuredOnly bool, limit int) ([]content.Testimonial, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []content.Testimonial{}
+	for _, t := range m.rows {
+		if !t.IsPublic || !t.ConsentGiven {
+			continue
+		}
+		if featuredOnly && !t.IsFeatured {
+			continue
+		}
+		out = append(out, t)
+	}
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
+func (m *TestimonialMemory) Create(_ context.Context, t *content.Testimonial) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if t.ID == uuid.Nil {
+		t.ID = uuid.New()
+	}
+	t.CreatedAt = nowUTC()
+	m.rows = append(m.rows, *t)
+	return nil
+}
+
+var _ content.TestimonialRepository = (*TestimonialMemory)(nil)

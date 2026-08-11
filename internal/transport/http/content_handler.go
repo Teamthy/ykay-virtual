@@ -75,3 +75,47 @@ func (h *ContentHandler) ResolveRedirect(w http.ResponseWriter, r *http.Request)
 	}
 	pkg.WriteSuccess(w, http.StatusOK, rm, nil)
 }
+
+// ListTestimonials — GET /api/v1/content/testimonials (public, consent-gated).
+func (h *ContentHandler) ListTestimonials(w http.ResponseWriter, r *http.Request) {
+	featured := r.URL.Query().Get("featured") == "true"
+	list, err := h.svc.ListTestimonials(r.Context(), featured, 20)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+}
+
+// CreateTestimonial — POST /api/v1/admin/testimonials (admin-managed).
+func (h *ContentHandler) CreateTestimonial(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil || !actor.IsAdmin {
+		WriteAppError(w, pkg.Forbidden("admin access required"))
+		return
+	}
+	var req struct {
+		AuthorName     string  `json:"author_name"`
+		AuthorLocation *string `json:"author_location"`
+		AuthorRole     *string `json:"author_role"`
+		Body           string  `json:"body"`
+		Rating         *int    `json:"rating"`
+		IsFeatured     bool    `json:"is_featured"`
+		ConsentGiven   bool    `json:"consent_given"`
+		IsPublic       bool    `json:"is_public"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	t, err := h.svc.CreateTestimonial(r.Context(), actor.UserID, &content.Testimonial{
+		AuthorName: req.AuthorName, AuthorLocation: req.AuthorLocation, AuthorRole: req.AuthorRole,
+		Body: req.Body, Rating: req.Rating, IsFeatured: req.IsFeatured,
+		ConsentGiven: req.ConsentGiven, IsPublic: req.IsPublic,
+	})
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, t, nil)
+}

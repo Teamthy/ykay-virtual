@@ -710,6 +710,70 @@ paths:
       responses:
         '200': { description: Earnings summary }
 
+  /content/testimonials:
+    get:
+      tags: [content]
+      summary: Public testimonials (consent-given + is_public only, featured first)
+      parameters:
+        - { name: featured, in: query, schema: { type: boolean } }
+      responses:
+        '200':
+          description: Consent-gated testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    author_name: { type: string }
+                    author_location: { type: string }
+                    author_role: { type: string }
+                    body: { type: string }
+                    rating: { type: integer }
+                    is_featured: { type: boolean }
+
+  /admin/testimonials:
+    post:
+      tags: [admin]
+      summary: Create a testimonial (consent_given required; is_public gates visibility)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [author_name, body, consent_given]
+              properties:
+                author_name: { type: string }
+                author_location: { type: string }
+                author_role: { type: string }
+                body: { type: string }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                is_featured: { type: boolean }
+                consent_given: { type: boolean }
+                is_public: { type: boolean }
+      responses:
+        '201': { description: Created }
+        '400': { description: Consent required }
+
+  /programmes/{slug}/tutors:
+    get:
+      tags: [tutors]
+      summary: Approved tutors for a programme's subjects (detail page Tutors tab)
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Approved tutors ranked by ranking_score
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TutorProfile' }
+
   /content/blog:
     get:
       tags: [content]

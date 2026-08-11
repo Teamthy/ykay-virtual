@@ -66,6 +66,21 @@ export default function SuccessStoriesPage() {
       </section>
 
       <section className="mt-12">
+        <h2 className="text-2xl font-extrabold mb-5">Case studies</h2>
+        <div className="grid md:grid-cols-2 gap-5">
+          {[
+            { title: "[Case study — pending consent]", body: "The learner's starting point, the plan, the outcome and the family's journey — published only with explicit consent and documentary support." },
+            { title: "[Case study — pending consent]", body: "From foundation to exam success: how a structured YKAY programme turned a learner's year around." },
+          ].map((c) => (
+            <div key={c.title} className="rounded-2xl bg-ink-50 border border-dashed border-ink-200 p-6">
+              <h3 className="font-bold text-sm">{c.title}</h3>
+              <p className="mt-2 text-sm text-ink-600 italic">“{c.body}”</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-12">
         <h2 className="text-2xl font-extrabold mb-5">Parent & student stories</h2>
         <div className="grid md:grid-cols-2 gap-5">
           {[
@@ -79,7 +94,8 @@ export default function SuccessStoriesPage() {
           ))}
         </div>
         <p className="mt-4 text-xs text-ink-400">
-          These slots fill as verified families give consent. Share your story via the contact page.
+          Photos and details appear only with explicit, consent-controlled publication — never without.
+          Share your family&apos;s story via the contact page.
         </p>
       </section>
 

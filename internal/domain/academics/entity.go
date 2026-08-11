@@ -123,8 +123,20 @@ type ProgrammeListParams struct {
 	Curriculum  string
 	Exam        string
 	Format      string
+	Level       string
 	Featured    *bool
 	Page        int
 	PageSize    int
 	Sort        string
+}
+
+// ProgrammeDetail — programme + display names + subjects + next cohort start.
+type ProgrammeDetail struct {
+	Programme
+	CurriculumName *string  `json:"curriculum_name,omitempty"`
+	LevelName      *string  `json:"level_name,omitempty"`
+	ExamName       *string  `json:"exam_name,omitempty"`
+	NextStart      *string  `json:"next_start,omitempty"` // ISO date of next published cohort
+	Subjects       []string `json:"subjects"`             // subject names
+	SubjectSlugs   []string `json:"subject_slugs"`
 }

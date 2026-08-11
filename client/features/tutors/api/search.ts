@@ -9,6 +9,8 @@ export type Tutor = {
   rating_avg: number;
   rating_count: number;
   ranking_score: number;
+  years_experience?: number;
+  location?: string;
   subjects: { name: string; slug: string }[];
 };
 

@@ -57,6 +57,7 @@ type Testimonial struct {
 	ID             uuid.UUID `json:"id"`
 	AuthorName     string    `json:"author_name"`
 	AuthorLocation *string   `json:"author_location,omitempty"`
+	AuthorRole     *string   `json:"author_role,omitempty"`
 	Body           string    `json:"body"`
 	Rating         *int      `json:"rating,omitempty"`
 	IsFeatured     bool      `json:"is_featured"`

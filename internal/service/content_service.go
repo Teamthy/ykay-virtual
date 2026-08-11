@@ -3,10 +3,13 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"ykay-virtual/internal/cache"
+	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/tutor"
@@ -24,12 +27,13 @@ const (
 )
 
 type ContentService struct {
-	blog       content.BlogPostRepository
-	redirects  content.RedirectRepository
-	tutors     tutor.TutorRepository
-	programmes academics.ProgrammeRepository
-	cache      cache.Cache
-	now        func() time.Time
+	blog         content.BlogPostRepository
+	redirects    content.RedirectRepository
+	tutors       tutor.TutorRepository
+	programmes   academics.ProgrammeRepository
+	testimonials content.TestimonialRepository
+	cache        cache.Cache
+	now          func() time.Time
 }
 
 func NewContentService(blog content.BlogPostRepository, redirects content.RedirectRepository,
@@ -189,4 +193,40 @@ func (s *ContentService) AddRedirect(ctx context.Context, fromSlug, toSlug strin
 		return nil
 	}
 	return s.redirects.Create(ctx, fromSlug, toSlug, redirectType, createdBy)
+}
+
+// --- Testimonials (admin-managed, consent-gated) ---
+
+// ListTestimonials — public, consent-given + is_public only (featured first).
+func (s *ContentService) ListTestimonials(ctx context.Context, featuredOnly bool, limit int) ([]content.Testimonial, error) {
+	if s.testimonials == nil {
+		return []content.Testimonial{}, nil
+	}
+	return s.testimonials.ListPublic(ctx, featuredOnly, limit)
+}
+
+// CreateTestimonial — admin-managed (consent flag required to ever be public).
+func (s *ContentService) CreateTestimonial(ctx context.Context, adminID uuid.UUID, t *content.Testimonial) (*content.Testimonial, error) {
+	if strings.TrimSpace(t.AuthorName) == "" || strings.TrimSpace(t.Body) == "" {
+		return nil, fmt.Errorf("%w: author_name and body are required", domain.ErrInvalidInput)
+	}
+	if !t.ConsentGiven {
+		return nil, fmt.Errorf("%w: consent_given is required before publishing", domain.ErrInvalidInput)
+	}
+	if t.IsPublic && !t.ConsentGiven {
+		return nil, fmt.Errorf("%w: cannot publish without consent", domain.ErrConflict)
+	}
+	if s.testimonials == nil {
+		return nil, errors.New("testimonial store unavailable")
+	}
+	if err := s.testimonials.Create(ctx, t); err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+// WithTestimonials wires the consent-gated testimonial repository.
+func (s *ContentService) WithTestimonials(t content.TestimonialRepository) *ContentService {
+	s.testimonials = t
+	return s
 }

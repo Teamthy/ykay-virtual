@@ -150,14 +150,21 @@ func (h *ProgrammeHandler) List(w http.ResponseWriter, r *http.Request) {
 	p := ParsePagination(r)
 	q := r.URL.Query()
 	params := academics.ProgrammeListParams{
-		Search:     q.Get("search"),
-		Curriculum: firstNonEmpty(q.Get("curriculum"), p.Filters["curriculum"]),
-		Exam:       firstNonEmpty(q.Get("exam"), p.Filters["exam"]),
-		Format:     firstNonEmpty(q.Get("format"), p.Filters["format"]),
-		Featured:   ParseBoolPtr(q.Get("featured")),
-		Page:       p.Page,
-		PageSize:   p.PageSize,
-		Sort:       p.Sort,
+		Search:      q.Get("search"),
+		SubjectSlug: q.Get("subject"),
+		Curriculum:  firstNonEmpty(q.Get("curriculum"), p.Filters["curriculum"]),
+		Exam:        firstNonEmpty(q.Get("exam"), p.Filters["exam"]),
+		Format:      firstNonEmpty(q.Get("format"), p.Filters["format"]),
+		Level:       firstNonEmpty(q.Get("level"), p.Filters["level"]),
+		Featured:    ParseBoolPtr(q.Get("featured")),
+		Page:        p.Page,
+		PageSize:    p.PageSize,
+		Sort:        p.Sort,
+	}
+	// Enriched when supported (postgres), plain otherwise.
+	if list, total, err := h.svc.ListWithMeta(r.Context(), params); err == nil && list != nil {
+		pkg.WriteSuccess(w, http.StatusOK, list, p.Meta(total))
+		return
 	}
 	programmes, total, err := h.svc.List(r.Context(), params)
 	if err != nil {
@@ -167,7 +174,33 @@ func (h *ProgrammeHandler) List(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, programmes, p.Meta(total))
 }
 
+func (h *ProgrammeHandler) Tutors(w http.ResponseWriter, r *http.Request) {
+	pr, err := h.svc.GetBySlug(r.Context(), r.PathValue("slug"))
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if pr == nil {
+		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), "programme not found", nil)
+		return
+	}
+	tutors, err := h.svc.TutorsForProgramme(r.Context(), pr.ID, 12)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	out := make([]TutorDTO, 0, len(tutors))
+	for _, t := range tutors {
+		out = append(out, toTutorDTO(t))
+	}
+	pkg.WriteSuccess(w, http.StatusOK, out, nil)
+}
+
 func (h *ProgrammeHandler) GetBySlug(w http.ResponseWriter, r *http.Request) {
+	if detail, err := h.svc.GetDetailBySlug(r.Context(), r.PathValue("slug")); err == nil && detail != nil {
+		pkg.WriteSuccess(w, http.StatusOK, detail, nil)
+		return
+	}
 	pr, err := h.svc.GetBySlug(r.Context(), r.PathValue("slug"))
 	if err != nil {
 		WriteAppError(w, err)

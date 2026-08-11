@@ -1,5 +1,9 @@
 import { CategoryPills } from "@/components/home/CategoryPills";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
+import { HeroSearch } from "@/features/programmes/components/HeroSearch";
+import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
+import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
+import { TestimonialsSection } from "@/features/content/components/TestimonialsSection";
 import { TrustLogos } from "@/components/home/TrustLogos";
 import { CommunitySection } from "@/components/home/CommunitySection";
 import { PartnerSection } from "@/components/home/PartnerSection";
@@ -18,12 +22,17 @@ export default function HomePage() {
     <>
       <CategoryPills />
       <HeroCarousel />
+      <div className="container-x -mt-10 relative z-20">
+        <HeroSearch />
+      </div>
       <TrustLogos />
+      <PopularProgrammes />
+      <UpcomingCohorts />
       <HowItWorksStrip />
       <CommunitySection />
       <PartnerSection />
       <ResultsSection />
-      <TestimonialSlider />
+      <TestimonialsSection />
       <ExamPrepGrid />
       <StudentQuote />
       <TestPrepCard />
