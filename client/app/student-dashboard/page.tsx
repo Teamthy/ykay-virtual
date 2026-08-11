@@ -14,6 +14,7 @@ import {
   submitAssignment,
   getAttendanceSummary,
 } from "@/features/portal/api";
+import { StudentQuizzes } from "@/features/learning/StudentQuizzes";
 
 // Student portal (working-doc §9): side nav, Today panel, progress,
 // assignments with submission, resources, announcements, support.
@@ -36,7 +37,7 @@ type Cohort = {
   status: string;
 };
 
-const SECTIONS = ["Dashboard", "My Classes", "Calendar", "Resources", "Assignments", "Progress"] as const;
+const SECTIONS = ["Dashboard", "My Classes", "Calendar", "Resources", "Assignments", "Quizzes", "Progress"] as const;
 type Section = (typeof SECTIONS)[number];
 
 const STUDENT_ID = "00000000-0000-0000-0000-000000000001";
@@ -319,6 +320,12 @@ export default function StudentDashboardPage() {
                   })}
                 </ul>
               )}
+            </section>
+          )}
+
+          {section === "Quizzes" && (
+            <section className="border rounded-2xl p-6">
+              <StudentQuizzes />
             </section>
           )}
 

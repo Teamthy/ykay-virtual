@@ -98,6 +98,8 @@ type MemoryStore struct {
 	Assignments    *AssignmentMemory
 	Attendance     *AttendanceMemory
 	Lessons        *LessonMemory
+	Learning       *LearningMemory
+	Analytics      *AnalyticsMemory
 	Tutors         *TutorMemory
 	Blogs          *BlogMemory
 	Redirects      *RedirectMemory
@@ -134,6 +136,7 @@ func NewMemoryStore() *MemoryStore {
 		Assignments:  NewAssignmentMemory(),
 		Attendance:   NewAttendanceMemory(),
 		Lessons:      NewLessonMemory(),
+		Learning:     NewLearningMemory(),
 		Tutors:       NewTutorMemory(nil),
 		Blogs:        NewBlogMemory(),
 		Redirects:    NewRedirectMemory(),
@@ -149,5 +152,6 @@ func NewMemoryStore() *MemoryStore {
 		AuditLogs:    NewAuditLogMemory(),
 	}
 	store.StudentLinks = NewParentStudentLinkMemory(students)
+	store.Analytics = NewAnalyticsMemory(store) // reads live from the same store
 	return store
 }

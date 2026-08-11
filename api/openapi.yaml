@@ -24,6 +24,8 @@ tags:
   - name: content
   - name: institutions
   - name: referrals
+  - name: learning
+  - name: analytics
 
 paths:
   /auth/register:
@@ -1486,6 +1488,218 @@ paths:
       responses:
         '201': { description: Institution created }
 
+  /learning/assessments:
+    post:
+      tags: [learning]
+      summary: Create an assessment (tutor)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssessmentRequest'
+      responses:
+        '201':
+          description: Assessment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/LearnerAssessment' }
+        '400': { description: Invalid input }
+        '401': { description: Unauthenticated }
+    get:
+      tags: [learning]
+      summary: List assessments (student)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohort_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Published assessments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/LearnerAssessment' }
+  /learning/assessments/{id}/start:
+    post:
+      tags: [learning]
+      summary: Start an attempt (student, single attempt, 30-minute window)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Attempt started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/AssessmentStart' }
+        '409': { description: Assessment closed or already attempted }
+  /learning/assessments/{id}/submit:
+    post:
+      tags: [learning]
+      summary: Submit and auto-grade an assessment (student)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    required: [question_id, chosen_index]
+                    properties:
+                      question_id: { type: string, format: uuid }
+                      chosen_index: { type: integer }
+      responses:
+        '200':
+          description: Graded result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/AssessmentResult' }
+        '409': { description: Already completed or expired }
+  /learning/assignments/{assignmentId}/submissions:
+    get:
+      tags: [learning]
+      summary: List submissions for an assignment (tutor gradebook)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Submissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/GradedSubmission' }
+  /learning/submissions/{submissionId}/grade:
+    post:
+      tags: [learning]
+      summary: Grade a submission with score and feedback (tutor)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: submissionId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [score]
+              properties:
+                score: { type: number, minimum: 0, maximum: 100 }
+                feedback: { type: string }
+      responses:
+        '200':
+          description: Graded submission
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/GradedSubmission' }
+  /learning/progress-reports:
+    post:
+      tags: [learning]
+      summary: Write a progress report (tutor, released to student + linked parent)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReportRequest'
+      responses:
+        '201':
+          description: Report created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ProgressReport' }
+    get:
+      tags: [learning]
+      summary: List progress reports (student/parent by student, or tutor by tutor)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ProgressReport' }
+  /admin/analytics:
+    get:
+      tags: [analytics]
+      summary: Funnel, cohort and revenue analytics (admin)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Analytics payload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Analytics' }
+        '403': { description: Admin access required }
+  /admin/reports/attendance.csv:
+    get:
+      tags: [analytics]
+      summary: Attendance CSV export (admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lesson_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv: {}
+  /admin/reports/revenue.csv:
+    get:
+      tags: [analytics]
+      summary: Revenue by programme CSV export (admin)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv: {}
+
+
 components:
   securitySchemes:
     actorHeader:
@@ -1760,3 +1974,159 @@ components:
         accepts_in_person: { type: boolean }
         verified_at: { type: string, format: date-time }
         approved_at: { type: string, format: date-time }
+
+    CreateAssessmentRequest:
+      type: object
+      required: [tutor_profile_id, title, questions]
+      properties:
+        tutor_profile_id: { type: string, format: uuid }
+        cohort_id: { type: string, format: uuid }
+        title: { type: string }
+        instructions: { type: string }
+        pass_threshold: { type: number, minimum: 0.01, maximum: 1, default: 0.5 }
+        due_at: { type: string, format: date-time }
+        questions:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [question, options, correct_index]
+            properties:
+              question: { type: string }
+              options:
+                type: array
+                minItems: 2
+                items: { type: string }
+              correct_index: { type: integer }
+              explanation: { type: string }
+
+    LearnerAssessment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        cohort_id: { type: string, format: uuid }
+        lesson_id: { type: string, format: uuid }
+        tutor_profile_id: { type: string, format: uuid }
+        title: { type: string }
+        instructions: { type: string }
+        pass_threshold: { type: number }
+        due_at: { type: string, format: date-time }
+        status: { type: string, enum: [PUBLISHED, DRAFT, ARCHIVED] }
+        created_by: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+
+    AssessmentQuestionView:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        question: { type: string }
+        options:
+          type: array
+          items: { type: string }
+
+    AssessmentStart:
+      type: object
+      properties:
+        title: { type: string }
+        pass_threshold: { type: number }
+        attempt:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            assessment_id: { type: string, format: uuid }
+            student_profile_id: { type: string, format: uuid }
+            status: { type: string, enum: [IN_PROGRESS, COMPLETED, EXPIRED] }
+            started_at: { type: string, format: date-time }
+            expires_at: { type: string, format: date-time }
+        questions:
+          type: array
+          items: { $ref: '#/components/schemas/AssessmentQuestionView' }
+
+    AssessmentResult:
+      type: object
+      properties:
+        attempt_id: { type: string, format: uuid }
+        score: { type: number }
+        max_score: { type: number }
+        passed: { type: boolean }
+        correct: { type: integer }
+        total: { type: integer }
+
+    GradedSubmission:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        assignment_id: { type: string, format: uuid }
+        student_profile_id: { type: string, format: uuid }
+        content: { type: string }
+        submitted_at: { type: string, format: date-time }
+        score: { type: number }
+        feedback: { type: string }
+        graded_at: { type: string, format: date-time }
+
+    CreateReportRequest:
+      type: object
+      required: [student_profile_id, tutor_profile_id, period_start, period_end, overall_rating]
+      properties:
+        student_profile_id: { type: string, format: uuid }
+        tutor_profile_id: { type: string, format: uuid }
+        period_start: { type: string, format: date }
+        period_end: { type: string, format: date }
+        strengths: { type: string }
+        weaknesses: { type: string }
+        recommendations: { type: string }
+        overall_rating: { type: integer, minimum: 1, maximum: 5 }
+
+    ProgressReport:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        student_profile_id: { type: string, format: uuid }
+        tutor_profile_id: { type: string, format: uuid }
+        period_start: { type: string, format: date }
+        period_end: { type: string, format: date }
+        strengths: { type: string }
+        weaknesses: { type: string }
+        recommendations: { type: string }
+        overall_rating: { type: integer }
+        created_at: { type: string, format: date-time }
+
+    Analytics:
+      type: object
+      properties:
+        funnel: { $ref: '#/components/schemas/Funnel' }
+        cohorts:
+          type: array
+          items: { $ref: '#/components/schemas/CohortAnalyticsRow' }
+        revenue:
+          type: array
+          items: { $ref: '#/components/schemas/RevenueRow' }
+
+    Funnel:
+      type: object
+      properties:
+        registered_users: { type: integer, format: int64 }
+        learners_created: { type: integer, format: int64 }
+        orders_created: { type: integer, format: int64 }
+        paid_orders: { type: integer, format: int64 }
+        enrollments_confirmed: { type: integer, format: int64 }
+        conversion_rate: { type: number }
+
+    CohortAnalyticsRow:
+      type: object
+      properties:
+        cohort_id: { type: string, format: uuid }
+        title: { type: string }
+        capacity: { type: integer }
+        enrolled: { type: integer }
+        fill_rate: { type: number }
+        lessons_count: { type: integer, format: int64 }
+        attendance_rate: { type: number }
+
+    RevenueRow:
+      type: object
+      properties:
+        programme_id: { type: string, format: uuid }
+        programme_title: { type: string }
+        revenue: { type: number }
+        orders: { type: integer, format: int64 }

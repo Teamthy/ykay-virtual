@@ -14,6 +14,7 @@ import {
   CalendarDays,
   Users,
   LifeBuoy,
+  BarChart3,
   LogOut,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
   { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
   { href: "/admin/lessons", label: "Today's classes", icon: Users },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/support", label: "Support", icon: LifeBuoy },
   { href: "/admin/blog", label: "Blog CMS", icon: Newspaper },
   { href: "/admin/institutions", label: "Institutions", icon: Building2 },

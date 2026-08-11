@@ -9,6 +9,7 @@ import { useSession } from "@/hooks/useSession";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/vetting/api";
+import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
 
 // Tutor portal (working-doc §11): status + profile completion, availability,
@@ -276,6 +277,16 @@ export default function TutorDashboardPage() {
               <div className="rounded-xl bg-green-50 p-3"><div className="text-lg font-extrabold text-green-700">₦0</div><div className="text-[10px] text-ink-500">Paid out</div></div>
             </div>
             <p className="text-[10px] text-ink-400 mt-2">Live figures appear once bookings are paid.</p>
+          </section>
+
+          {/* Gradebook (phase 11c) */}
+          <section className="rounded-2xl border p-6">
+            <TutorGradebook />
+          </section>
+
+          {/* Progress reports (phase 11c) */}
+          <section className="rounded-2xl border p-6">
+            <TutorProgressReports />
           </section>
 
           {/* Quick links */}

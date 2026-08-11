@@ -21,6 +21,7 @@ import (
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
+	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/referral"
@@ -84,6 +85,10 @@ type Repositories struct {
 	Students        identity.StudentProfileRepository
 	StudentLinks    identity.ParentStudentLinkRepository
 	Vetting         vetting.VettingRepository
+	Learning        learning.AssessmentRepository
+	Grading         learning.GradingRepository
+	ProgressReports learning.ProgressReportRepository
+	Analytics       learning.AnalyticsRepository
 	Availability    tutor.AvailabilityRepository
 	Submissions     booking.SubmissionRepository
 	CohortAdmin     booking.CohortAdminRepository
@@ -157,6 +162,9 @@ func main() {
 		WithSupport(repos.SupportTickets).
 		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin)
 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
+	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
+		repos.Assignments, audit).WithNotifications(messagingSvc)
+	analyticsSvc := service.NewAnalyticsService(repos.Analytics)
 	supportSvc := service.NewSupportService(repos.SupportTickets)
 	reviewSvc := service.NewReviewService(repos.Reviews, repos.TutorRepo, audit)
 	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit)
@@ -187,6 +195,7 @@ func main() {
 		LessonOps:    httpapi.NewLessonOpsHandler(lessonSvc),
 		Onboarding:   httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:       httpapi.NewPortalHandler(portalSvc),
+		Learning:     httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
@@ -273,6 +282,10 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Students:        store.Students,
 			StudentLinks:    store.StudentLinks,
 			Vetting:         store.Vetting,
+			Learning:        memory.NewLearningMemory(),
+			Grading:         memory.NewLearningMemory(),
+			ProgressReports: memory.NewLearningMemory(),
+			Analytics:       memory.NewAnalyticsMemory(store),
 			Availability:    memory.NewAvailabilityMemory(),
 			Submissions:     memory.NewSubmissionMemory(),
 			CohortAdmin:     store.Cohorts,
@@ -323,6 +336,10 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Students:        postgres.NewStudentProfileRepo(pg.DB()),
 		StudentLinks:    postgres.NewParentStudentLinkRepo(pg.DB()),
 		Vetting:         postgres.NewVettingRepo(pg.DB()),
+		Learning:        postgres.NewAssessmentRepo(pg.DB()),
+		Grading:         postgres.NewGradingRepo(pg.DB()),
+		ProgressReports: postgres.NewProgressReportRepo(pg.DB()),
+		Analytics:       postgres.NewAnalyticsRepo(pg.DB()),
 		Availability:    postgres.NewAvailabilityRepo(pg.DB()),
 		Submissions:     postgres.NewSubmissionRepo(pg.DB()),
 		CohortAdmin:     postgres.NewCohortRepo(pg.DB()),

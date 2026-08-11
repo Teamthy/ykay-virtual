@@ -317,6 +317,19 @@ func NewEnrollmentMemory() *EnrollmentMemory {
 	return &EnrollmentMemory{rows: map[uuid.UUID]*booking.CohortEnrollment{}}
 }
 
+// Count returns confirmed enrollments — dev-mode analytics funnel.
+func (m *EnrollmentMemory) Count() int64 {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var n int64
+	for _, e := range m.rows {
+		if e.Status == booking.EnrollmentConfirmed {
+			n++
+		}
+	}
+	return n
+}
+
 func (m *EnrollmentMemory) Create(_ context.Context, e *booking.CohortEnrollment) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -367,6 +380,23 @@ type OrderMemory struct {
 func NewOrderMemory() *OrderMemory {
 	return &OrderMemory{rows: map[uuid.UUID]*payment.Order{}, items: map[uuid.UUID][]payment.OrderItem{}, byKey: map[string]*payment.Order{}}
 }
+
+// Stats returns (orders created, paid orders) — dev-mode analytics funnel.
+func (m *OrderMemory) Stats() (orders, paid int64) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, o := range m.rows {
+		orders++
+		if o.Status == payment.OrderPaid {
+			paid++
+		}
+	}
+	return orders, paid
+}
+
+// RLock/RUnlock expose the order maps for dev-mode analytics aggregation.
+func (m *OrderMemory) RLock()   { m.mu.RLock() }
+func (m *OrderMemory) RUnlock() { m.mu.RUnlock() }
 
 func (m *OrderMemory) Create(_ context.Context, o *payment.Order) error {
 	m.mu.Lock()
@@ -857,6 +887,27 @@ var _ booking.TutorProfileReader = (*TutorSubjectMemory)(nil)
 
 // --- Seed helpers for tests ---
 
+// All returns a snapshot of every cohort — dev-mode cohort analytics.
+func (m *CohortMemory) All() []*booking.Cohort {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := make([]*booking.Cohort, 0, len(m.rows))
+	for _, c := range m.rows {
+		out = append(out, c)
+	}
+	return out
+}
+
+// ProgrammeOf resolves a cohort to its programme — dev-mode revenue grouping.
+func (m *CohortMemory) ProgrammeOf(id uuid.UUID) uuid.UUID {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if c, ok := m.rows[id]; ok {
+		return c.ProgrammeID
+	}
+	return uuid.Nil
+}
+
 func (m *CohortMemory) Seed(c *booking.Cohort) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -864,6 +915,20 @@ func (m *CohortMemory) Seed(c *booking.Cohort) {
 		c.ID = uuid.New()
 	}
 	m.rows[c.ID] = c
+}
+
+// CountByStatus returns tutor profiles in the given status — dev-mode
+// analytics funnel.
+func (m *TutorMemory) CountByStatus(st tutor.TutorStatus) int64 {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var n int64
+	for _, t := range m.rows {
+		if t.Profile.Status == st {
+			n++
+		}
+	}
+	return n
 }
 
 func (m *TutorMemory) Seed(t tutor.TutorSearchResult) {

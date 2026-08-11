@@ -23,6 +23,20 @@ func NewUserMemory() *UserMemory {
 	return &UserMemory{rows: map[uuid.UUID]*identity.User{}, byEmail: map[string]*identity.User{}}
 }
 
+// Count returns (total users, users with a verified email or phone) — used by
+// the dev-mode analytics funnel.
+func (m *UserMemory) Count() (total, verified int64) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, u := range m.rows {
+		total++
+		if u.EmailVerifiedAt != nil || u.PhoneVerifiedAt != nil {
+			verified++
+		}
+	}
+	return total, verified
+}
+
 func (m *UserMemory) Create(_ context.Context, u *identity.User) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -226,6 +240,13 @@ type StudentProfileMemory struct {
 	mu       sync.RWMutex
 	rows     map[uuid.UUID]*identity.StudentProfile
 	byParent map[uuid.UUID][]uuid.UUID
+}
+
+// Count returns the number of learner profiles — dev-mode analytics funnel.
+func (m *StudentProfileMemory) Count() int64 {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return int64(len(m.rows))
 }
 
 func NewStudentProfileMemory() *StudentProfileMemory {

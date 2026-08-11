@@ -118,6 +118,19 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/tutor-lessons", handlers.Dashboard.MyTutorLessons)
 	mux.HandleFunc("GET "+v1+"/me/earnings", handlers.Dashboard.MyEarnings)
 
+	// Learning, Assessment & Reporting (Phase 11c)
+	mux.HandleFunc("POST "+v1+"/learning/assessments", handlers.Learning.CreateAssessment)
+	mux.HandleFunc("GET "+v1+"/learning/assessments", handlers.Learning.ListAssessments)
+	mux.HandleFunc("POST "+v1+"/learning/assessments/{id}/start", handlers.Learning.StartAssessment)
+	mux.HandleFunc("POST "+v1+"/learning/assessments/{id}/submit", handlers.Learning.SubmitAssessment)
+	mux.HandleFunc("GET "+v1+"/learning/assignments/{assignmentId}/submissions", handlers.Learning.ListSubmissions)
+	mux.HandleFunc("POST "+v1+"/learning/submissions/{submissionId}/grade", handlers.Learning.GradeSubmission)
+	mux.HandleFunc("POST "+v1+"/learning/progress-reports", handlers.Learning.CreateProgressReport)
+	mux.HandleFunc("GET "+v1+"/learning/progress-reports", handlers.Learning.ListProgressReports)
+	mux.HandleFunc("GET "+v1+"/admin/analytics", handlers.Learning.Analytics)
+	mux.HandleFunc("GET "+v1+"/admin/reports/attendance.csv", handlers.Learning.AttendanceCSV)
+	mux.HandleFunc("GET "+v1+"/admin/reports/revenue.csv", handlers.Learning.RevenueCSV)
+
 	// Portal surfaces (Phase 11b)
 	mux.HandleFunc("GET "+v1+"/me/availability", handlers.Portal.ListAvailability)
 	mux.HandleFunc("POST "+v1+"/me/availability", handlers.Portal.UpsertAvailability)
@@ -207,5 +220,6 @@ type Handlers struct {
 	LessonOps    *LessonOpsHandler
 	Onboarding   *OnboardingHandler
 	Portal       *PortalHandler
+	Learning     *LearningHandler
 	Objects      *ObjectHandler
 }
