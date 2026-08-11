@@ -9,6 +9,9 @@ import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { StudentQuote } from "@/components/home/StudentQuote";
 import { TestPrepCard } from "@/components/home/TestPrepCard";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
+import { LeadershipTeaser } from "@/components/home/LeadershipTeaser";
+import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
+import { HomeFAQ } from "@/components/home/HomeFAQ";
 
 export default function HomePage() {
   return (
@@ -16,6 +19,7 @@ export default function HomePage() {
       <CategoryPills />
       <HeroCarousel />
       <TrustLogos />
+      <HowItWorksStrip />
       <CommunitySection />
       <PartnerSection />
       <ResultsSection />
@@ -23,6 +27,8 @@ export default function HomePage() {
       <ExamPrepGrid />
       <StudentQuote />
       <TestPrepCard />
+      <LeadershipTeaser />
+      <HomeFAQ />
       <BecomeTutorCTA />
     </>
   );

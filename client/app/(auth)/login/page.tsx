@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { login } from "@/features/auth/api";
 
 const loginSchema = z.object({
@@ -34,6 +35,7 @@ export default function LoginPage() {
       try {
         const user = await login(value.email, value.password);
         qc.setQueryData(["session"], user);
+        toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
         if (user.status === "PENDING_VERIFICATION") {
           router.push("/verify-email?sent=1");
           return;

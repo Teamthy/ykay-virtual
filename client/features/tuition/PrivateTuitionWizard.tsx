@@ -1,0 +1,308 @@
+"use client";
+
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useSession } from "@/hooks/useSession";
+
+// 7-step private tuition request (per the YKAY working document §8.7).
+// Submits a structured request via the support pipeline; our advisors match
+// the learner with a vetted tutor (managed matching, Tuteria-style fallback).
+
+const STEPS = [
+  "Learner & level",
+  "Subject",
+  "Goals",
+  "Schedule",
+  "Tutor preference",
+  "Contact",
+  "Review",
+] as const;
+
+const LEVELS = ["Year 7–9 (British)", "IGCSE (Year 10–11)", "A-Level (Year 12–13)", "JSS1–3 (Nigerian)", "SSS1–3 (Nigerian)", "Other"];
+const SUBJECTS = ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Computer Science", "Python Programming", "Economics", "IELTS / English exam", "Other"];
+const DAYS = ["Weekdays", "Weekends", "Both"];
+const TIMES = ["Morning (8am–12pm)", "Afternoon (12–4pm)", "Evening (4–8pm)", "Flexible"];
+
+type FormState = {
+  learnerName: string;
+  level: string;
+  subject: string;
+  goals: string;
+  days: string;
+  time: string;
+  timezone: string;
+  tutorPreference: string;
+  email: string;
+  phone: string;
+};
+
+const EMPTY: FormState = {
+  learnerName: "", level: "", subject: "", goals: "",
+  days: "", time: "", timezone: "Africa/Lagos", tutorPreference: "No preference — match me",
+  email: "", phone: "",
+};
+
+export function PrivateTuitionWizard() {
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState<FormState>(EMPTY);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const { user } = useSession();
+
+  const set = (k: keyof FormState, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const canNext = () => {
+    switch (step) {
+      case 0: return form.learnerName.trim() !== "" && form.level !== "";
+      case 1: return form.subject !== "";
+      case 2: return form.goals.trim().length >= 10;
+      case 3: return form.days !== "" && form.time !== "";
+      case 5: return (user?.email ?? form.email).includes("@");
+      default: return true;
+    }
+  };
+
+  const submit = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"}/support/tickets`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user?.email ?? form.email,
+            subject: `Private tuition request — ${form.subject} (${form.level})`,
+            message: [
+              `Learner: ${form.learnerName}`,
+              `Level: ${form.level}`,
+              `Subject: ${form.subject}`,
+              `Goals: ${form.goals}`,
+              `Preferred: ${form.days} · ${form.time} · ${form.timezone}`,
+              `Tutor preference: ${form.tutorPreference}`,
+              `Contact: ${form.email} ${form.phone ? "/ " + form.phone : ""}`,
+            ].join("\n"),
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("request failed");
+      setDone(true);
+      toast.success("Request received", {
+        description: "Our advisors will match you with a vetted tutor within 24 hours.",
+      });
+    } catch {
+      toast.error("Could not send request", {
+        description: "Please try again or email us directly from the contact page.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="border rounded-2xl p-10 text-center space-y-4">
+        <div className="text-5xl">🎉</div>
+        <h2 className="text-2xl font-extrabold">Request received!</h2>
+        <p className="text-ink-600 text-sm max-w-md mx-auto">
+          Our team will match {form.learnerName} with a vetted {form.subject} tutor and reach out to{" "}
+          <strong>{user?.email ?? form.email}</strong> within 24 hours with a proposed schedule and quote.
+        </p>
+        <Button variant="outline" onClick={() => { setForm(EMPTY); setStep(0); setDone(false); }}>
+          Submit another request
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border rounded-2xl p-6 md:p-8">
+      {/* Stepper */}
+      <ol className="flex items-center gap-1 text-[11px] mb-8 flex-wrap">
+        {STEPS.map((label, i) => (
+          <li key={label} className="flex items-center gap-1">
+            <span className={`flex h-6 w-6 items-center justify-center rounded-full font-bold ${
+              i < step ? "bg-green-500 text-white" : i === step ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-400"
+            }`}>
+              {i < step ? "✓" : i + 1}
+            </span>
+            <span className={`hidden sm:inline ${i === step ? "font-semibold text-ink-800" : "text-ink-400"}`}>{label}</span>
+            {i < STEPS.length - 1 && <span className="w-3 h-px bg-ink-200 mx-1" />}
+          </li>
+        ))}
+      </ol>
+
+      <div className="min-h-[260px]">
+        {step === 0 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Who is this for?</h2>
+            <label className="block text-sm">
+              <span className="font-medium">Learner&apos;s name</span>
+              <input value={form.learnerName} onChange={(e) => set("learnerName", e.target.value)}
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            </label>
+            <div>
+              <span className="text-sm font-medium">Current level</span>
+              <div className="mt-2 grid sm:grid-cols-2 gap-2">
+                {LEVELS.map((l) => (
+                  <button key={l} type="button" onClick={() => set("level", l)}
+                    className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.level === l ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Which subject?</h2>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {SUBJECTS.map((s) => (
+                <button key={s} type="button" onClick={() => set("subject", s)}
+                  className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.subject === s ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Goals & challenges</h2>
+            <label className="block text-sm">
+              <span className="font-medium">What would you like to achieve? (min 10 characters)</span>
+              <textarea rows={4} value={form.goals} onChange={(e) => set("goals", e.target.value)}
+                placeholder="e.g. Improve from C to A in IGCSE Mathematics before the November exams…"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            </label>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Preferred schedule</h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <span className="text-sm font-medium">Days</span>
+                <div className="mt-2 space-y-2">
+                  {DAYS.map((d) => (
+                    <button key={d} type="button" onClick={() => set("days", d)}
+                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.days === d ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="text-sm font-medium">Time of day</span>
+                <div className="mt-2 space-y-2">
+                  {TIMES.map((t) => (
+                    <button key={t} type="button" onClick={() => set("time", t)}
+                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.time === t ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <label className="block text-sm">
+              <span className="font-medium">Timezone</span>
+              <input value={form.timezone} onChange={(e) => set("timezone", e.target.value)}
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            </label>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Tutor preference (optional)</h2>
+            {["No preference — match me", "Female tutor", "Male tutor", "Specific tutor (I'll name them)"].map((t) => (
+              <button key={t} type="button" onClick={() => set("tutorPreference", t)}
+                className={`block w-full rounded-xl border px-4 py-3 text-sm text-left ${form.tutorPreference === t ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                {t}
+              </button>
+            ))}
+            <LinkToTutors />
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Where should we reach you?</h2>
+            {!user && (
+              <label className="block text-sm">
+                <span className="font-medium">Email</span>
+                <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+              </label>
+            )}
+            {user && <p className="text-sm text-ink-500">We&apos;ll use your account email: <strong>{user.email}</strong></p>}
+            <label className="block text-sm">
+              <span className="font-medium">Phone / WhatsApp (optional)</span>
+              <input value={form.phone} onChange={(e) => set("phone", e.target.value)}
+                placeholder="+234…"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            </label>
+          </div>
+        )}
+
+        {step === 6 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold">Review your request</h2>
+            <dl className="rounded-xl bg-ink-50 p-5 text-sm space-y-2">
+              <SummaryRow k="Learner" v={form.learnerName} />
+              <SummaryRow k="Level" v={form.level} />
+              <SummaryRow k="Subject" v={form.subject} />
+              <SummaryRow k="Goals" v={form.goals} />
+              <SummaryRow k="Schedule" v={`${form.days} · ${form.time} · ${form.timezone}`} />
+              <SummaryRow k="Tutor" v={form.tutorPreference} />
+              <SummaryRow k="Contact" v={user?.email ?? form.email} />
+            </dl>
+            <p className="text-xs text-ink-400">
+              Submitting creates a request ticket — our advisors match you with a vetted tutor and agree
+              the price before any payment (escrow-protected).
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8 flex justify-between gap-3">
+        <Button variant="outline" onClick={() => setStep(step - 1)} disabled={step === 0 || submitting}>
+          Back
+        </Button>
+        {step < STEPS.length - 1 ? (
+          <Button variant="gold" onClick={() => setStep(step + 1)} disabled={!canNext()}>
+            Continue
+          </Button>
+        ) : (
+          <Button variant="gold" onClick={() => void submit()} disabled={submitting || !canNext()}>
+            {submitting ? "Submitting…" : "Submit request"}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex gap-3">
+      <dt className="w-24 shrink-0 text-ink-400 font-medium">{k}</dt>
+      <dd className="text-ink-800">{v}</dd>
+    </div>
+  );
+}
+
+function LinkToTutors() {
+  const { user } = useSession();
+  if (!user) return null;
+  return (
+    <a href="/tutors" className="text-sm text-brand-blue font-semibold hover:underline">
+      Browse tutors on the marketplace →
+    </a>
+  );
+}

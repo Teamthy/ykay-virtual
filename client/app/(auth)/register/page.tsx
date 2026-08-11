@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { login, register } from "@/features/auth/api";
 
 const registerSchema = z
@@ -48,6 +49,7 @@ export default function RegisterPage() {
         const user = await register({ email: value.email, password: value.password, roles: [value.role] });
         // Auto-login after registration (smooth first-run experience).
         await login(value.email, value.password);
+        toast.success("Account created — welcome to YKAY!");
         if (user.roles.includes("TUTOR")) router.push("/verify-email?sent=1");
         else router.push("/verify-email?sent=1");
       } catch (err) {

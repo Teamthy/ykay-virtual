@@ -225,3 +225,39 @@ func (s *AdminService) ListReviews(ctx context.Context, p review.ReviewListParam
 	}
 	return s.reviews.List(ctx, p)
 }
+
+// --- Support tickets ---
+
+type SupportService struct {
+	tickets content.SupportTicketRepository
+	now     func() time.Time
+}
+
+func NewSupportService(tickets content.SupportTicketRepository) *SupportService {
+	return &SupportService{tickets: tickets, now: time.Now}
+}
+
+// OpenTicket — creates a support ticket (public + signed-in users).
+func (s *SupportService) OpenTicket(ctx context.Context, userID *uuid.UUID, email, subject, message string) (*content.SupportTicket, error) {
+	if strings.TrimSpace(email) == "" || !validEmail(email) {
+		return nil, fmt.Errorf("%w: a valid email is required", domain.ErrInvalidInput)
+	}
+	if strings.TrimSpace(subject) == "" || len(subject) > 255 {
+		return nil, fmt.Errorf("%w: subject is required (max 255 chars)", domain.ErrInvalidInput)
+	}
+	if strings.TrimSpace(message) == "" {
+		return nil, fmt.Errorf("%w: message is required", domain.ErrInvalidInput)
+	}
+	if s.tickets == nil {
+		return nil, errors.New("support store unavailable")
+	}
+	ticket := &content.SupportTicket{
+		UserID: userID, Email: strings.TrimSpace(email),
+		Subject: strings.TrimSpace(subject), Message: strings.TrimSpace(message),
+		Status: "OPEN",
+	}
+	if err := s.tickets.Create(ctx, ticket); err != nil {
+		return nil, err
+	}
+	return ticket, nil
+}

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import {
   createAdminPost,
   listAdminPosts,
@@ -34,6 +35,10 @@ export default function AdminBlogPage() {
 
   const setStatusMut = useMutation({
     mutationFn: ({ id, s }: { id: string; s: BlogStatus }) => setAdminPostStatus(id, s),
+    onSuccess: (_d, { s }) => {
+      toast.success(s === "PUBLISHED" ? "Post published" : s === "ARCHIVED" ? "Post archived" : `Status: ${s}`);
+    },
+    onError: () => toast.error("Could not update post status"),
     onSettled: () => qc.invalidateQueries({ queryKey: ["admin", "blog"] }),
   });
 
@@ -204,6 +209,7 @@ function CreatePostForm({ onDone }: { onDone: () => void }) {
         seo_description: form.seo_description || undefined,
       });
       onDone();
+      toast.success("Post created");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create post");
     } finally {

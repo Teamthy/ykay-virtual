@@ -4,6 +4,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { z } from "zod";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { qk } from "@/lib/queryClient";
@@ -90,6 +91,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           email: value.email,
         });
         setStep({ name: "link", booking, payment });
+        toast.success("Order created — complete payment to secure your seat");
       } catch (err) {
         setStep({
           name: "error",

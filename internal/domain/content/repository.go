@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -36,4 +37,22 @@ type RedirectRepository interface {
 	Lookup(ctx context.Context, fromSlug string) (*RedirectMap, error)
 	Create(ctx context.Context, fromSlug, toSlug, redirectType string, createdBy *uuid.UUID) error
 	List(ctx context.Context, limit int) ([]RedirectMap, error)
+}
+
+// SupportTicket — customer support enquiries (migration 000010_content).
+type SupportTicket struct {
+	ID        uuid.UUID  `json:"id"`
+	UserID    *uuid.UUID `json:"user_id,omitempty"`
+	Email     string     `json:"email"`
+	Subject   string     `json:"subject"`
+	Message   string     `json:"message"`
+	Status    string     `json:"status"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
+type SupportTicketRepository interface {
+	Create(ctx context.Context, t *SupportTicket) error
+	GetByID(ctx context.Context, id uuid.UUID) (*SupportTicket, error)
+	SetStatus(ctx context.Context, id uuid.UUID, status string) error
 }

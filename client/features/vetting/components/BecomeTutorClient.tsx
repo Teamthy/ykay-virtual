@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import { listSubjects, type Subject } from "@/features/subjects/api/list";
 import {
   addSubject,
@@ -160,6 +161,7 @@ function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: Tut
         };
         const p = await createTutorProfile(userId, input);
         onCreated(p);
+        toast.success("Profile created — let's add your subjects");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not create profile");
       } finally {
@@ -303,6 +305,7 @@ function SubjectsStep({
         await addSubject(userId, profileId, id);
       }
       onNext();
+      toast.success("Subjects saved");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save subjects");
     } finally {

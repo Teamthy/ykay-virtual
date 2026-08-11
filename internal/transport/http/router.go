@@ -107,6 +107,9 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/tutor-lessons", handlers.Dashboard.MyTutorLessons)
 	mux.HandleFunc("GET "+v1+"/me/earnings", handlers.Dashboard.MyEarnings)
 
+	// Support tickets (Phase 9 site)
+	mux.HandleFunc("POST "+v1+"/support/tickets", handlers.Support.CreateTicket)
+
 	// Admin console (Phase 11)
 	mux.HandleFunc("GET "+v1+"/admin/stats", handlers.Admin.Stats)
 	mux.HandleFunc("GET "+v1+"/admin/blog", handlers.Admin.ListPosts)
@@ -155,5 +158,6 @@ type Handlers struct {
 	Content      *ContentHandler
 	Auth         *AuthHandler
 	Admin        *AdminHandler
+	Support      *SupportHandler
 	Objects      *ObjectHandler
 }

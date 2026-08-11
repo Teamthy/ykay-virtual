@@ -71,6 +71,7 @@ type Repositories struct {
 	Institutions    institution.InstitutionRepository
 	Referrals       referral.ReferralRepository
 	Reviews         review.ReviewRepository
+	SupportTickets  content.SupportTicketRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -128,6 +129,7 @@ func main() {
 		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend)
 	adminSvc := service.NewAdminService(repos.Stats, repos.AdminBlog, repos.Institutions,
 		repos.Referrals, repos.Reviews, audit)
+	supportSvc := service.NewSupportService(repos.SupportTickets)
 
 	// --- Transport ---
 	handlers := &httpapi.Handlers{
@@ -147,6 +149,7 @@ func main() {
 		Content:      httpapi.NewContentHandler(contentSvc),
 		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL),
 		Admin:        httpapi.NewAdminHandler(adminSvc),
+		Support:      httpapi.NewSupportHandler(supportSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
@@ -219,6 +222,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Institutions:    memory.NewInstitutionMemory(),
 			Referrals:       memory.NewReferralMemory(),
 			Reviews:         memory.NewReviewMemory(),
+			SupportTickets:  memory.NewSupportMemory(),
 			StorageBackend:  "memory",
 		}
 	}
@@ -253,6 +257,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Institutions:    postgres.NewInstitutionRepo(pg.DB()),
 		Referrals:       postgres.NewReferralRepo(pg.DB()),
 		Reviews:         postgres.NewReviewRepo(pg.DB()),
+		SupportTickets:  postgres.NewSupportRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }

@@ -382,3 +382,50 @@ func (s *StatsMemory) Overview(_ context.Context) (admin.Overview, error) {
 }
 
 var _ admin.StatsRepository = (*StatsMemory)(nil)
+
+// --- Support tickets (memory) ---
+
+type SupportMemory struct {
+	mu   sync.RWMutex
+	rows map[uuid.UUID]*content.SupportTicket
+}
+
+func NewSupportMemory() *SupportMemory {
+	return &SupportMemory{rows: map[uuid.UUID]*content.SupportTicket{}}
+}
+
+func (m *SupportMemory) Create(_ context.Context, t *content.SupportTicket) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if t.ID == uuid.Nil {
+		t.ID = uuid.New()
+	}
+	t.CreatedAt = nowUTC()
+	t.UpdatedAt = t.CreatedAt
+	m.rows[t.ID] = t
+	return nil
+}
+
+func (m *SupportMemory) GetByID(_ context.Context, id uuid.UUID) (*content.SupportTicket, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if t, ok := m.rows[id]; ok {
+		cp := *t
+		return &cp, nil
+	}
+	return nil, domain.ErrNotFound
+}
+
+func (m *SupportMemory) SetStatus(_ context.Context, id uuid.UUID, status string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	t, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	t.Status = status
+	t.UpdatedAt = nowUTC()
+	return nil
+}
+
+var _ content.SupportTicketRepository = (*SupportMemory)(nil)

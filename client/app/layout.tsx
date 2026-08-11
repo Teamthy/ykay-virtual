@@ -6,6 +6,7 @@ import { ChatWidget } from "@/components/layout/ChatWidget";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Providers } from "@/components/providers";
 import { RegisterSW } from "@/components/register-sw";
+import { Toaster } from "@/components/toaster";
 import { organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ChatWidget />
           <MobileNav />
           <RegisterSW />
+          <Toaster />
         </Providers>
       </body>
     </html>
