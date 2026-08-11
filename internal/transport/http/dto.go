@@ -2,10 +2,12 @@ package httpapi
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/middleware"
 	"ykay-virtual/pkg"
 
@@ -113,32 +115,30 @@ func DecodeJSON(r *http.Request, dst any) error {
 }
 
 // WriteAppError maps any error to the response envelope at the transport edge
-// (typed errors → HTTP only here, per AGENTS.md).
+// (typed errors → HTTP only here, per AGENTS.md). Sentinel errors are matched
+// with errors.Is FIRST so messages like "invalid credentials" cannot be
+// misrouted by substring matching.
 func WriteAppError(w http.ResponseWriter, err error) {
 	if appErr, ok := pkg.IsAppError(err); ok {
 		pkg.WriteError(w, appErr.StatusCode, string(appErr.Code), appErr.Message, appErr.Details)
 		return
 	}
 	switch {
-	case isDomain(err, "not found"):
-		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), "resource not found", nil)
-	case isDomain(err, "conflict"):
-		pkg.WriteError(w, http.StatusConflict, string(pkg.CodeConflict), err.Error(), nil)
-	case isDomain(err, "invalid"):
-		pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), err.Error(), nil)
-	case isDomain(err, "forbidden"):
+	case errors.Is(err, domain.ErrUnauthorized):
+		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "unauthorized", nil)
+	case errors.Is(err, domain.ErrForbidden):
 		pkg.WriteError(w, http.StatusForbidden, string(pkg.CodeForbidden), "forbidden", nil)
-	case isDomain(err, "capacity"):
+	case errors.Is(err, domain.ErrNotFound):
+		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), "resource not found", nil)
+	case errors.Is(err, domain.ErrAlreadyExists):
 		pkg.WriteError(w, http.StatusConflict, string(pkg.CodeConflict), err.Error(), nil)
-	case isDomain(err, "signature"):
-		pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), "invalid webhook signature", nil)
+	case errors.Is(err, domain.ErrConflict), errors.Is(err, domain.ErrCapacityFull):
+		pkg.WriteError(w, http.StatusConflict, string(pkg.CodeConflict), err.Error(), nil)
+	case errors.Is(err, domain.ErrInvalidInput), errors.Is(err, domain.ErrInvalidSignature):
+		pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), err.Error(), nil)
 	default:
 		pkg.WriteError(w, http.StatusInternalServerError, string(pkg.CodeInternal), "internal server error", nil)
 	}
-}
-
-func isDomain(err error, needle string) bool {
-	return strings.Contains(strings.ToLower(err.Error()), needle)
 }
 
 // requireActor reads the dev-auth-bridge actor from context; returns nil

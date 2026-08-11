@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 
 	"ykay-virtual/internal/cache"
@@ -21,6 +22,7 @@ import (
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/tutor"
+	"ykay-virtual/internal/middleware"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
 	"ykay-virtual/internal/repository/memory"
@@ -56,6 +58,9 @@ type Repositories struct {
 	Notifications   messaging.NotificationRepository
 	Blog            content.BlogPostRepository
 	Redirects       content.RedirectRepository
+	Users           identity.UserRepository
+	Sessions        identity.SessionRepository
+	Roles           identity.RoleRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -82,6 +87,11 @@ func main() {
 
 	// --- Services ---
 	audit := service.NewAuditService(repos.AuditRepo)
+
+	// --- Auth + sessions ---
+	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit)
+	sessionAuth := middleware.SessionAuth(sessionResolverAdapter{svc: authSvc}, "ykay_session")
+
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
 	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit)
 	vettingSvc := service.NewVettingService(repos.UoWFactory, store, audit,
@@ -122,9 +132,10 @@ func main() {
 		Messaging:    httpapi.NewMessagingHandler(messagingSvc),
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc),
 		Content:      httpapi.NewContentHandler(contentSvc),
+		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production"),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
-	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins)
+	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -167,6 +178,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 	if err != nil {
 		log.Printf("storage: %v", err)
 		store := memory.NewMemoryStore()
+		store.Roles.Seed() // mirror migration 000001 role inserts
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
 			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
@@ -184,6 +196,9 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Notifications:   memory.NewNotificationMemory(),
 			Blog:            store.Blogs,
 			Redirects:       store.Redirects,
+			Users:           store.Users,
+			Sessions:        store.Sessions,
+			Roles:           store.Roles,
 			StorageBackend:  "memory",
 		}
 	}
@@ -209,6 +224,25 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Notifications:   postgres.NewNotificationRepo(pg.DB()),
 		Blog:            postgres.NewBlogRepo(pg.DB()),
 		Redirects:       postgres.NewRedirectRepo(pg.DB()),
+		Users:           postgres.NewUserRepo(pg.DB()),
+		Sessions:        postgres.NewSessionRepo(pg.DB()),
+		Roles:           postgres.NewRoleRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }
+
+// sessionResolverAdapter — bridges AuthService.Me into the middleware's
+// SessionResolver shape.
+type sessionResolverAdapter struct {
+	svc *service.AuthService
+}
+
+func (a sessionResolverAdapter) Me(ctx context.Context, tokenHash string) (uuid.UUID, []string, error) {
+	user, roles, err := a.svc.Me(ctx, tokenHash)
+	if err != nil {
+		return uuid.Nil, nil, err
+	}
+	return user.ID, roles, nil
+}
+
+var _ middleware.SessionResolver = (*sessionResolverAdapter)(nil)

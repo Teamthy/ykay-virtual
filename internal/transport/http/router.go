@@ -16,13 +16,14 @@ type Router struct {
 	rateLimiter    *middleware.RateLimiter
 	Version        string
 	allowedOrigins string
+	sessionAuth    func(http.Handler) http.Handler
 }
 
-func NewRouter(version string, handlers *Handlers) *Router {
-	return NewRouterWithOrigins(version, handlers, "*")
+func NewRouter(version string, handlers *Handlers, sessionAuth func(http.Handler) http.Handler) *Router {
+	return NewRouterWithOrigins(version, handlers, "*", sessionAuth)
 }
 
-func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string) *Router {
+func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string, sessionAuth func(http.Handler) http.Handler) *Router {
 	mux := http.NewServeMux()
 	rl := middleware.NewRateLimiter(100, time.Minute) // sliding window: 100 req/min default
 
@@ -35,6 +36,12 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	})
 
 	v1 := "/api/v1"
+
+	// Auth + sessions (Phase 7)
+	mux.HandleFunc("POST "+v1+"/auth/register", handlers.Auth.Register)
+	mux.HandleFunc("POST "+v1+"/auth/login", handlers.Auth.Login)
+	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
+	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
 
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)
@@ -101,7 +108,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 		mux.HandleFunc("GET /objects/{bucket}/{key...}", handlers.Objects.Serve)
 	}
 
-	return &Router{mux: mux, rateLimiter: rl, Version: version, allowedOrigins: allowedOrigins}
+	return &Router{mux: mux, rateLimiter: rl, Version: version, allowedOrigins: allowedOrigins, sessionAuth: sessionAuth}
 }
 
 func (rt *Router) Handler() http.Handler {
@@ -110,6 +117,9 @@ func (rt *Router) Handler() http.Handler {
 	h = middleware.Logger(h)
 	h = middleware.Recover(h)
 	h = middleware.CORS(rt.allowedOrigins)(h)
+	if rt.sessionAuth != nil {
+		h = rt.sessionAuth(h)
+	}
 	h = middleware.AuthBridge(h)
 	h = rt.rateLimiter.Middleware(h)
 	return h
@@ -128,5 +138,6 @@ type Handlers struct {
 	Messaging    *MessagingHandler
 	Dashboard    *DashboardHandler
 	Content      *ContentHandler
+	Auth         *AuthHandler
 	Objects      *ObjectHandler
 }

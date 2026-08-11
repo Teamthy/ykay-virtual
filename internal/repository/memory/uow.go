@@ -97,6 +97,9 @@ type MemoryStore struct {
 	Blogs          *BlogMemory
 	Redirects      *RedirectMemory
 	ProgrammesSeed []academics.Programme
+	Users          *UserMemory
+	Sessions       *SessionMemory
+	Roles          *RoleMemory
 	AuditLogs      *AuditLogMemory
 }
 
@@ -117,6 +120,9 @@ func NewMemoryStore() *MemoryStore {
 		Tutors:      NewTutorMemory(nil),
 		Blogs:       NewBlogMemory(),
 		Redirects:   NewRedirectMemory(),
+		Users:       NewUserMemory(),
+		Sessions:    NewSessionMemory(),
+		Roles:       NewRoleMemory(),
 		AuditLogs:   NewAuditLogMemory(),
 	}
 }

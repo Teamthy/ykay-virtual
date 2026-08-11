@@ -2,22 +2,36 @@ package identity
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
+
+// Repository interfaces for identity + sessions (migration 000001_identity).
+// Implementations: internal/repository/postgres, internal/repository/memory.
+// Auth flows run through the service layer; sessions are httpOnly-cookie bound
+// (token_hash stored, raw token only ever in the cookie).
 
 type UserRepository interface {
 	Create(ctx context.Context, user *User) error
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*User, error)
 	Update(ctx context.Context, user *User) error
+	UpdateLastLogin(ctx context.Context, id uuid.UUID, at time.Time) error
 }
 
 type SessionRepository interface {
 	Create(ctx context.Context, session *Session) error
 	FindByTokenHash(ctx context.Context, tokenHash string) (*Session, error)
 	Revoke(ctx context.Context, id uuid.UUID) error
+	RevokeAllForUser(ctx context.Context, userID uuid.UUID) error
 	DeleteExpired(ctx context.Context) (int64, error)
+}
+
+type RoleRepository interface {
+	FindByName(ctx context.Context, name string) (*Role, error)
+	AssignToUser(ctx context.Context, userID, roleID uuid.UUID) error
+	RolesForUser(ctx context.Context, userID uuid.UUID) ([]Role, error)
 }
 
 type ParentProfileRepository interface {

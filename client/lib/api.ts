@@ -41,6 +41,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Env
       "X-Request-ID": traceId,
       ...(init?.headers || {}),
     },
+    credentials: "include", // httpOnly session cookie flows on every request
     cache: "no-store",
   });
 

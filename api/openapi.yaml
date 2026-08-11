@@ -29,7 +29,7 @@ paths:
   /auth/register:
     post:
       tags: [identity]
-      summary: Register new user
+      summary: Register a user (bcrypt password, role assignment, audit logged)
       requestBody:
         required: true
         content:
@@ -41,18 +41,24 @@ paths:
                 email: { type: string, format: email }
                 password: { type: string, minLength: 8 }
                 roles: { type: array, items: { type: string, enum: [STUDENT, PARENT, TUTOR] } }
+                phone: { type: string }
+                timezone: { type: string, default: Africa/Lagos }
       responses:
         '201':
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/AuthUser'
+        '409': { description: Email already registered }
 
   /auth/login:
     post:
       tags: [identity]
-      summary: Login
+      summary: >-
+        Log in with email + password. Verifies bcrypt hash, creates a session
+        and returns an httpOnly `ykay_session` cookie (raw token never leaves
+        the cookie; only its SHA-256 hash is stored).
       requestBody:
         required: true
         content:
@@ -65,14 +71,32 @@ paths:
                 password: { type: string }
       responses:
         '200':
-          description: Token
+          description: Logged in — sets httpOnly ykay_session cookie
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token: { type: string }
-                  user: { $ref: '#/components/schemas/User' }
+                $ref: '#/components/schemas/AuthUser'
+        '401': { description: Invalid credentials }
+
+  /auth/logout:
+    post:
+      tags: [identity]
+      summary: Revoke the session and clear the cookie (idempotent)
+      responses:
+        '200': { description: Logged out }
+
+  /auth/me:
+    get:
+      tags: [identity]
+      summary: Current user + roles from the session cookie
+      responses:
+        '200':
+          description: Session user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUser'
+        '401': { description: Not authenticated / session expired or revoked }
 
   /subjects:
     get:
@@ -735,6 +759,16 @@ components:
         email: { type: string }
         status: { type: string }
         timezone: { type: string }
+
+    AuthUser:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string }
+        status: { type: string }
+        timezone: { type: string }
+        roles: { type: array, items: { type: string } }
+        created_at: { type: string, format: date-time }
 
     Subject:
       type: object

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Search, Phone, ChevronDown, Menu, X, Play } from "lucide-react";
+import { AuthNav } from "@/components/layout/AuthNav";
 import { navServices } from "@/lib/site-data";
 import { cn } from "@/lib/utils";
 
@@ -51,12 +52,10 @@ export function Header() {
           <Link href="/tutors/apply" className="text-sm font-semibold text-ink-800 hover:text-brand-blue transition-colors">
             Become a Tutor
           </Link>
-          <Link href="/auth" className="text-sm font-medium text-ink-800 hover:text-brand-blue transition-colors">
-            Login
-          </Link>
         </div>
 
         {/* Mobile toggle */}
+        <AuthNav />
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="lg:hidden ml-auto p-2 text-ink-800"
@@ -115,7 +114,7 @@ export function Header() {
           <a className="block py-2 text-sm font-semibold text-ink-800">Our Services</a>
           <a className="block py-2 text-sm text-ink-800">Contact Us</a>
           <Link href="/tutors/apply" className="block py-2 text-sm font-semibold text-ink-800">Become a Tutor</Link>
-          <Link href="/auth" className="block py-2 text-sm text-ink-800">Login</Link>
+          <Link href="/login" className="block py-2 text-sm text-ink-800">Login</Link>
         </div>
       )}
     </header>

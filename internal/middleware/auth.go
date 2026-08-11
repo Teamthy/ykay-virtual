@@ -32,6 +32,12 @@ func ActorFromContext(ctx context.Context) (Actor, bool) {
 
 func AuthBridge(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// A session-authenticated actor (set by SessionAuth) always wins;
+		// the dev header bridge only fills gaps when no session exists.
+		if _, ok := ActorFromContext(r.Context()); ok {
+			next.ServeHTTP(w, r)
+			return
+		}
 		actor := Actor{}
 		if id := r.Header.Get("X-User-ID"); id != "" {
 			if parsed, err := uuid.Parse(id); err == nil {
