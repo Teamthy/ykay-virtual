@@ -3,6 +3,7 @@ package payments
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type Handler struct {
@@ -51,4 +52,26 @@ func (h *Handler) MarkPaid(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(invoice)
+}
+
+func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
+	var req WebhookRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	resp, err := h.service.ProcessWebhook(r.Context(), req)
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "forbidden") {
+			http.Error(w, err.Error(), http.StatusForbidden)
+		} else {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
 }

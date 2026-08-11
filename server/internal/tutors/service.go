@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -15,6 +16,15 @@ type Profile struct {
 	Status    string    `json:"status"`
 	Timezone  string    `json:"timezone"`
 	CreatedAt time.Time `json:"createdAt"`
+}
+
+type QualificationFile struct {
+	ID          string    `json:"id"`
+	TutorID     string    `json:"tutorId"`
+	Filename    string    `json:"filename"`
+	StoragePath string    `json:"storagePath"`
+	IsPublic    bool      `json:"isPublic"`
+	UploadedAt  time.Time `json:"uploadedAt"`
 }
 
 type CreateProfileRequest struct {
@@ -29,14 +39,21 @@ type CreateProfileResponse struct {
 }
 
 type Service struct {
-	profiles []Profile
+	mu             sync.RWMutex
+	profiles       []Profile
+	qualifications map[string]QualificationFile
 }
 
 func NewService() *Service {
-	return &Service{}
+	return &Service{
+		qualifications: make(map[string]QualificationFile),
+	}
 }
 
 func (s *Service) CreateProfile(_ context.Context, req CreateProfileRequest) (CreateProfileResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	if strings.TrimSpace(req.Name) == "" {
 		return CreateProfileResponse{}, errors.New("name is required")
 	}
@@ -63,6 +80,8 @@ func (s *Service) CreateProfile(_ context.Context, req CreateProfileRequest) (Cr
 }
 
 func (s *Service) ListProfiles(_ context.Context) []Profile {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return append([]Profile(nil), s.profiles...)
 }
 
@@ -71,6 +90,9 @@ type UpdateProfileStatusResponse struct {
 }
 
 func (s *Service) UpdateProfileStatus(_ context.Context, id string, status string) (UpdateProfileStatusResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	trimmedStatus := strings.TrimSpace(status)
 	if trimmedStatus == "" {
 		return UpdateProfileStatusResponse{}, errors.New("status is required")
@@ -84,4 +106,44 @@ func (s *Service) UpdateProfileStatus(_ context.Context, id string, status strin
 	}
 
 	return UpdateProfileStatusResponse{}, errors.New("profile not found")
+}
+
+// UploadQualification stores a qualification file in restricted storage (IsPublic=false).
+func (s *Service) UploadQualification(_ context.Context, tutorID, filename string) (QualificationFile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if strings.TrimSpace(tutorID) == "" || strings.TrimSpace(filename) == "" {
+		return QualificationFile{}, errors.New("tutorId and filename are required")
+	}
+
+	id := fmt.Sprintf("qual-%d", len(s.qualifications)+1)
+	qual := QualificationFile{
+		ID:          id,
+		TutorID:     strings.TrimSpace(tutorID),
+		Filename:    strings.TrimSpace(filename),
+		StoragePath: fmt.Sprintf("private/tutors/%s/evidence/%s", tutorID, filename),
+		IsPublic:    false,
+		UploadedAt:  time.Now().UTC(),
+	}
+	s.qualifications[id] = qual
+	return qual, nil
+}
+
+// GetQualificationFile enforces AC-10: Tutor qualification files are not publicly accessible.
+func (s *Service) GetQualificationFile(_ context.Context, fileID, requestRole, requestID string) (QualificationFile, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	qual, exists := s.qualifications[fileID]
+	if !exists {
+		return QualificationFile{}, errors.New("qualification file not found")
+	}
+
+	role := strings.ToUpper(strings.TrimSpace(requestRole))
+	if role != "ACADEMIC_ADMIN" && role != "SUPER_ADMIN" && requestID != qual.TutorID {
+		return QualificationFile{}, errors.New("forbidden: tutor qualification files are not publicly accessible")
+	}
+
+	return qual, nil
 }

@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "YKAY Virtual School",
+    "slug": "ykay-virtual-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1B3D"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ng.ykay.virtual.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B1B3D"
+      },
+      "package": "ng.ykay.virtual.app"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "ykay"
+  }
+}

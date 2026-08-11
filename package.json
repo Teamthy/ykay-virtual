@@ -1,8 +1,12 @@
 {
-    "name": "ykay-virtual",
-    "private": true,
-    "scripts": {
-        "dev:web": "npm --prefix client run dev -- --hostname 127.0.0.1",
-        "dev:api": "go run ./server/cmd/server"
-    }
+  "name": "ykay-virtual",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix client run dev -- -H 0.0.0.0 -p 3000",
+    "dev:api": "go run -C server ./cmd/server",
+    "build:web": "npm --prefix client run build",
+    "test:api": "go test -C server -v ./...",
+    "test:mobile": "npm --prefix mobile run typecheck",
+    "test:all": "npm run test:api && npm run build:web && npm run test:mobile"
+  }
 }
