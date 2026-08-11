@@ -102,6 +102,9 @@ type ProgrammeMemory struct {
 	rows map[uuid.UUID]academics.Programme
 }
 
+// ProgrammesSeed — convenience slice on MemoryStore for test seeding.
+// (Declared on the store struct below; kept here for doc.)
+
 func NewProgrammeMemory(seed []academics.Programme) *ProgrammeMemory {
 	m := &ProgrammeMemory{rows: map[uuid.UUID]academics.Programme{}}
 	for _, p := range seed {

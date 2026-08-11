@@ -118,12 +118,13 @@ type ProgrammeRepository interface {
 }
 
 type ProgrammeListParams struct {
-	Search     string
-	Curriculum string
-	Exam       string
-	Format     string
-	Featured   *bool
-	Page       int
-	PageSize   int
-	Sort       string
+	Search      string
+	SubjectSlug string
+	Curriculum  string
+	Exam        string
+	Format      string
+	Featured    *bool
+	Page        int
+	PageSize    int
+	Sort        string
 }

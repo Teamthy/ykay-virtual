@@ -6,8 +6,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/subjects/", "/programmes/", "/tutors/", "/blog/", "/online-classes", "/for-schools", "/corporate-training"],
-        disallow: ["/admin", "/api", "/student", "/parent", "/tutor", "/dashboard", "/account"],
+        allow: ["/", "/subjects/", "/programmes/", "/tutors/", "/blog/", "/online-classes", "/for-schools", "/corporate-training", "/careers", "/become-tutor"],
+        disallow: [
+          "/admin",
+          "/api",
+          "/dashboard",
+          "/tutor-dashboard",
+          "/messages",
+          "/notifications",
+          "/checkout",
+          "/offline",
+          "/account",
+        ],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

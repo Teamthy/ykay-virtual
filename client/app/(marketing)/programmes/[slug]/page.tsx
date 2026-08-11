@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { buildMetadata, courseJsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, courseJsonLd, faqJsonLd } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { RelatedContent } from "@/components/RelatedContent";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -35,11 +37,6 @@ export default function ProgrammePage({ params }: Props) {
   const p = programmes[params.slug];
   if (!p) return notFound();
 
-  const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Programmes", item: "https://ykayvirtual.com/programmes" },
-    { name: p.title, item: `https://ykayvirtual.com/programmes/${params.slug}` },
-  ]);
   const course = courseJsonLd({
     name: p.title,
     description: p.summary,
@@ -50,7 +47,7 @@ export default function ProgrammePage({ params }: Props) {
 
   return (
     <main className="container-x py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Programmes", href: "/programmes" }, { name: p.title }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
 
@@ -92,6 +89,7 @@ export default function ProgrammePage({ params }: Props) {
           <div className="mt-4 text-xs text-ink-500">Good Fit Guarantee • Secure escrow • Verified tutors</div>
         </div>
       </div>
+      <RelatedContent subjectSlug={p.slug} />
     </main>
   );
 }

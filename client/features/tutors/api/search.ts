@@ -16,6 +16,9 @@ export type SearchParams = {
   subject?: string;
   location?: string;
   online?: boolean;
+  in_person?: boolean;
+  min_price?: number;
+  max_price?: number;
   page?: number;
   page_size?: number;
   sort?: string;

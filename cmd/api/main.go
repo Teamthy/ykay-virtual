@@ -16,6 +16,7 @@ import (
 	"ykay-virtual/internal/config"
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
@@ -53,6 +54,8 @@ type Repositories struct {
 	Conversations   messaging.ConversationRepository
 	Messages        messaging.MessageRepository
 	Notifications   messaging.NotificationRepository
+	Blog            content.BlogPostRepository
+	Redirects       content.RedirectRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -100,6 +103,8 @@ func main() {
 		repos.PrivatePackages, repos.Cohorts, nil)
 	dashboardSvc := service.NewDashboardService(
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
+	contentSvc := service.NewContentService(
+		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend)
 
 	// --- Transport ---
 	handlers := &httpapi.Handlers{
@@ -116,6 +121,7 @@ func main() {
 		AdminVetting: httpapi.NewAdminVettingHandler(vettingSvc),
 		Messaging:    httpapi.NewMessagingHandler(messagingSvc),
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc),
+		Content:      httpapi.NewContentHandler(contentSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins)
@@ -176,6 +182,8 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Conversations:   convMem,
 			Messages:        memory.NewMessageMemory(convMem),
 			Notifications:   memory.NewNotificationMemory(),
+			Blog:            store.Blogs,
+			Redirects:       store.Redirects,
 			StorageBackend:  "memory",
 		}
 	}
@@ -199,6 +207,8 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Conversations:   postgres.NewConversationRepo(pg.DB()),
 		Messages:        postgres.NewMessageRepo(pg.DB()),
 		Notifications:   postgres.NewNotificationRepo(pg.DB()),
+		Blog:            postgres.NewBlogRepo(pg.DB()),
+		Redirects:       postgres.NewRedirectRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }

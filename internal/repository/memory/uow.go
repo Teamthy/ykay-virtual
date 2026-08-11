@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 
+	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
@@ -80,19 +81,23 @@ var _ repository.UnitOfWorkFactory = (*MemoryUnitOfWorkFactory)(nil)
 // MemoryStore — shared state container so multiple UoWs (and services) share
 // the same in-memory "database" in tests.
 type MemoryStore struct {
-	Orders      *OrderMemory
-	Payments    *PaymentMemory
-	Webhooks    *WebhookMemory
-	Escrow      *EscrowMemory
-	Payouts     *PayoutMemory
-	Wallets     *WalletMemory
-	Enrollments *EnrollmentMemory
-	Cohorts     *CohortMemory
-	PrivateReqs *PrivateReqMemory
-	PrivatePkgs *PrivatePackageMemory
-	Vetting     *VettingMemory
-	TutorSubj   *VettingTutorSubjectMemory
-	AuditLogs   *AuditLogMemory
+	Orders         *OrderMemory
+	Payments       *PaymentMemory
+	Webhooks       *WebhookMemory
+	Escrow         *EscrowMemory
+	Payouts        *PayoutMemory
+	Wallets        *WalletMemory
+	Enrollments    *EnrollmentMemory
+	Cohorts        *CohortMemory
+	PrivateReqs    *PrivateReqMemory
+	PrivatePkgs    *PrivatePackageMemory
+	Vetting        *VettingMemory
+	TutorSubj      *VettingTutorSubjectMemory
+	Tutors         *TutorMemory
+	Blogs          *BlogMemory
+	Redirects      *RedirectMemory
+	ProgrammesSeed []academics.Programme
+	AuditLogs      *AuditLogMemory
 }
 
 func NewMemoryStore() *MemoryStore {
@@ -109,6 +114,9 @@ func NewMemoryStore() *MemoryStore {
 		PrivatePkgs: NewPrivatePackageMemory(),
 		Vetting:     NewVettingMemory(),
 		TutorSubj:   NewVettingTutorSubjectMemory(),
+		Tutors:      NewTutorMemory(nil),
+		Blogs:       NewBlogMemory(),
+		Redirects:   NewRedirectMemory(),
 		AuditLogs:   NewAuditLogMemory(),
 	}
 }

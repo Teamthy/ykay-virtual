@@ -1,0 +1,39 @@
+package content
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
+
+// Repository interfaces for the content engine (migrations 000009, 000010):
+// blog posts (SEO growth channel), redirect map (slug changes → 301s),
+// and the related-content graph (tutor↔subject↔programme↔blog).
+
+type BlogListParams struct {
+	Subject  string // subject slug filter
+	Exam     string // exam slug filter
+	Page     int
+	PageSize int
+	Sort     string
+}
+
+type BlogPostRepository interface {
+	ListPublished(ctx context.Context, p BlogListParams) ([]BlogPost, int64, error)
+	GetPublishedBySlug(ctx context.Context, slug string) (*BlogPost, error)
+	// TagsForPosts returns subject + exam slugs for the given post ids.
+	TagsForPosts(ctx context.Context, postIDs []uuid.UUID) (map[uuid.UUID]PostTags, error)
+	// RelatedBySlugs — published posts tagged with any of the subject/exam slugs.
+	RelatedBySlugs(ctx context.Context, subjectSlugs, examSlugs []string, limit int) ([]BlogPost, error)
+}
+
+type PostTags struct {
+	SubjectSlugs []string `json:"subject_slugs"`
+	ExamSlugs    []string `json:"exam_slugs"`
+}
+
+type RedirectRepository interface {
+	Lookup(ctx context.Context, fromSlug string) (*RedirectMap, error)
+	Create(ctx context.Context, fromSlug, toSlug, redirectType string, createdBy *uuid.UUID) error
+	List(ctx context.Context, limit int) ([]RedirectMap, error)
+}

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { buildMetadata, personJsonLd, breadcrumbJsonLd, reviewJsonLd } from "@/lib/seo";
+import { buildMetadata, personJsonLd, reviewJsonLd } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { RelatedContent } from "@/components/RelatedContent";
 import { notFound } from "next/navigation";
 
 type Props = { params: { slug: string } };
@@ -24,11 +26,6 @@ export default function TutorPage({ params }: Props) {
   const tutor = tutors[params.slug];
   if (!tutor) return notFound();
 
-  const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Tutors", item: "https://ykayvirtual.com/tutors" },
-    { name: tutor.name, item: `https://ykayvirtual.com/tutors/${params.slug}` },
-  ]);
 
   const person = personJsonLd({
     name: tutor.name,
@@ -48,7 +45,7 @@ export default function TutorPage({ params }: Props) {
 
   return (
     <main className="container-x py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors", href: "/tutors" }, { name: tutor.name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(review) }} />
 
@@ -84,6 +81,7 @@ export default function TutorPage({ params }: Props) {
           <div className="mt-4 text-xs text-ink-500">Good Fit Guarantee: first hour protected.</div>
         </div>
       </div>
+      <RelatedContent subjectSlug={(tutor.subjects?.[0] ?? "mathematics").toLowerCase().replace(/\s+/g, "-")} />
     </main>
   );
 }

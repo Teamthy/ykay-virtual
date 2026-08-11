@@ -84,6 +84,12 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/me/notifications/{notificationId}/read", handlers.Messaging.MarkNotificationRead)
 	mux.HandleFunc("POST "+v1+"/me/notifications/read-all", handlers.Messaging.MarkAllRead)
 
+	// Content engine (Phase 6 SEO)
+	mux.HandleFunc("GET "+v1+"/content/blog", handlers.Content.ListPosts)
+	mux.HandleFunc("GET "+v1+"/content/blog/{slug}", handlers.Content.GetPost)
+	mux.HandleFunc("GET "+v1+"/subjects/{slug}/related", handlers.Content.Related)
+	mux.HandleFunc("GET "+v1+"/redirects/{slug}", handlers.Content.ResolveRedirect)
+
 	// Dashboards (Phase 5 portals)
 	mux.HandleFunc("GET "+v1+"/me/orders", handlers.Dashboard.MyOrders)
 	mux.HandleFunc("GET "+v1+"/me/lessons", handlers.Dashboard.MyLessons)
@@ -121,5 +127,6 @@ type Handlers struct {
 	AdminVetting *AdminVettingHandler
 	Messaging    *MessagingHandler
 	Dashboard    *DashboardHandler
+	Content      *ContentHandler
 	Objects      *ObjectHandler
 }

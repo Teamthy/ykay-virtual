@@ -11,7 +11,8 @@
         "typecheck": "npm --prefix client exec tsc -- --noEmit",
         "test:web": "echo \"Vitest not yet configured (Phase 5 testing rollout)\"",
         "test:api": "go test ./...",
-        "test": "go test ./... && cd legacy/server && go test ./..."
+        "test": "go test ./... && cd legacy/server && go test ./...",
+        "lighthouse": "lhci autorun --config=./lighthouserc.json"
     },
     "devDependencies": {}
 }

@@ -80,6 +80,12 @@ func (r *ProgrammeRepo) List(ctx context.Context, p academics.ProgrammeListParam
 
 	conds = append(conds, "p.status = 'PUBLISHED'")
 
+	if p.SubjectSlug != "" {
+		conds = append(conds, fmt.Sprintf(`EXISTS (
+			SELECT 1 FROM programme_subjects ps JOIN subjects s ON s.id = ps.subject_id
+			WHERE ps.programme_id = p.id AND s.slug = $%d)`, len(args)+1))
+		args = append(args, p.SubjectSlug)
+	}
 	if p.Search != "" {
 		conds = append(conds, fmt.Sprintf("(p.title ILIKE $%d OR p.slug ILIKE $%d OR COALESCE(p.summary,'') ILIKE $%d)", len(args)+1, len(args)+1, len(args)+1))
 		args = append(args, "%"+p.Search+"%")

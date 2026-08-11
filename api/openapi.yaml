@@ -609,6 +609,77 @@ paths:
       responses:
         '200': { description: Earnings summary }
 
+  /content/blog:
+    get:
+      tags: [content]
+      summary: Published blog posts (SSG+ISR, subject/exam filtered, cached 300s)
+      parameters:
+        - { name: subject, in: query, schema: { type: string } }
+        - { name: exam, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Paginated posts with subject/exam tags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/BlogPost' } }
+
+  /content/blog/{slug}:
+    get:
+      tags: [content]
+      summary: Published post by slug (Article JSON-LD source, cached 600s)
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Post with tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+        '404': { description: Not published / not found }
+
+  /subjects/{slug}/related:
+    get:
+      tags: [content]
+      summary: Related-content graph (approved tutors + published programmes + posts)
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Related content buckets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tutors: { type: array, items: { $ref: '#/components/schemas/TutorProfile' } }
+                  programmes: { type: array, items: { type: object } }
+                  posts: { type: array, items: { $ref: '#/components/schemas/BlogPost' } }
+
+  /redirects/{slug}:
+    get:
+      tags: [content]
+      summary: Resolve a renamed slug (RedirectMap table → 301s; fixes soft-404s)
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Redirect mapping
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  from_slug: { type: string }
+                  to_slug: { type: string }
+                  type: { type: string }
+        '404': { description: No mapping }
+
   /reviews:
     post:
       tags: [reviews]
@@ -792,6 +863,20 @@ components:
         currency: { type: string }
         payment_link: { type: string }
         status: { type: string }
+
+    BlogPost:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        slug: { type: string }
+        excerpt: { type: string }
+        content: { type: string }
+        seo_title: { type: string }
+        seo_description: { type: string }
+        published_at: { type: string, format: date-time }
+        subject_slugs: { type: array, items: { type: string } }
+        exam_slugs: { type: array, items: { type: string } }
 
     WebhookResult:
       type: object
