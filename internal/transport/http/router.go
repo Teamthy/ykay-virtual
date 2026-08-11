@@ -107,6 +107,17 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/tutor-lessons", handlers.Dashboard.MyTutorLessons)
 	mux.HandleFunc("GET "+v1+"/me/earnings", handlers.Dashboard.MyEarnings)
 
+	// Admin console (Phase 11)
+	mux.HandleFunc("GET "+v1+"/admin/stats", handlers.Admin.Stats)
+	mux.HandleFunc("GET "+v1+"/admin/blog", handlers.Admin.ListPosts)
+	mux.HandleFunc("POST "+v1+"/admin/blog", handlers.Admin.CreatePost)
+	mux.HandleFunc("PUT "+v1+"/admin/blog/{postId}", handlers.Admin.UpdatePost)
+	mux.HandleFunc("POST "+v1+"/admin/blog/{postId}/status", handlers.Admin.SetPostStatus)
+	mux.HandleFunc("GET "+v1+"/admin/institutions", handlers.Admin.ListInstitutions)
+	mux.HandleFunc("GET "+v1+"/admin/referrals", handlers.Admin.ListReferrals)
+	mux.HandleFunc("GET "+v1+"/admin/reviews", handlers.Admin.ListReviews)
+	mux.HandleFunc("POST "+v1+"/admin/reviews/{reviewId}/moderate", handlers.Admin.ModerateReview)
+
 	// Dev object serving (LocalStorage signed URLs)
 	if handlers.Objects != nil {
 		mux.HandleFunc("GET /objects/{bucket}/{key...}", handlers.Objects.Serve)
@@ -143,5 +154,6 @@ type Handlers struct {
 	Dashboard    *DashboardHandler
 	Content      *ContentHandler
 	Auth         *AuthHandler
+	Admin        *AdminHandler
 	Objects      *ObjectHandler
 }

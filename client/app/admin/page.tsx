@@ -1,153 +1,98 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { getAdminStats } from "@/features/admin/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type Summary = {
-    id: string;
-    title: string;
-    curriculum: string;
-    status: string;
-    enrollmentCount: number;
-};
+function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+  return (
+    <div className={`rounded-2xl border p-5 ${accent ? "bg-brand-blue text-white border-brand-blue" : "bg-white"}`}>
+      <div className={`text-2xl font-extrabold ${accent ? "text-white" : "text-brand-blue"}`}>{value}</div>
+      <div className={`text-xs mt-1 ${accent ? "text-white/80" : "text-ink-500"}`}>{label}</div>
+      {sub && <div className={`text-[10px] mt-1 ${accent ? "text-white/60" : "text-ink-400"}`}>{sub}</div>}
+    </div>
+  );
+}
 
-type TutorProfile = {
-    id: string;
-    name: string;
-    subject: string;
-    status: string;
-    timezone: string;
-};
+export default function AdminOverviewPage() {
+  const stats = useQuery({
+    queryKey: ["admin", "stats"],
+    queryFn: getAdminStats,
+    staleTime: 60_000,
+  });
 
-type SupportTicket = {
-    id: string;
-    name: string;
-    subject: string;
-    status: string;
-};
-
-export default function AdminPage() {
-    const [summaries, setSummaries] = useState<Summary[]>([]);
-    const [tutors, setTutors] = useState<TutorProfile[]>([]);
-    const [tickets, setTickets] = useState<SupportTicket[]>([]);
-
-    async function loadSummaries() {
-        const response = await fetch('http://localhost:8080/api/v1/admin/programme-summaries');
-        if (!response.ok) {
-            return;
-        }
-        const data = await response.json();
-        setSummaries(data.summaries ?? []);
-    }
-
-    async function loadTutors() {
-        const response = await fetch('http://localhost:8080/api/v1/tutors');
-        if (!response.ok) {
-            return;
-        }
-        const data = await response.json();
-        setTutors(data.profiles ?? []);
-    }
-
-    async function loadTickets() {
-        const response = await fetch('http://localhost:8080/api/v1/support/tickets');
-        if (!response.ok) {
-            return;
-        }
-        const data = await response.json();
-        setTickets(data.tickets ?? []);
-    }
-
-    useEffect(() => {
-        loadSummaries();
-        loadTutors();
-        loadTickets();
-    }, []);
-
-    async function handleApprove(id: string) {
-        await fetch(`http://localhost:8080/api/v1/tutors/status?id=${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'APPROVED' }),
-        });
-        await loadTutors();
-    }
-
-    async function handleCloseTicket(id: string) {
-        await fetch(`http://localhost:8080/api/v1/support/tickets/status?id=${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'CLOSED' }),
-        });
-        await loadTickets();
-    }
-
+  if (stats.isLoading) {
     return (
-        <main style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: 960 }}>
-            <h1>Admin operations</h1>
-            <p>This view reflects the first admin-facing programme summary and tutor review experience for the MVP.</p>
-
-            <section style={{ marginTop: '1.5rem' }}>
-                <h2>Programme overview</h2>
-                {summaries.length === 0 ? (
-                    <p>No programme summaries available yet.</p>
-                ) : (
-                    <ul style={{ display: 'grid', gap: '0.75rem', padding: 0, listStyle: 'none' }}>
-                        {summaries.map((summary) => (
-                            <li key={summary.id} style={{ border: '1px solid #d1d5db', borderRadius: '0.75rem', padding: '1rem' }}>
-                                <strong>{summary.title}</strong>
-                                <div>Curriculum: {summary.curriculum}</div>
-                                <div>Status: {summary.status}</div>
-                                <div>Enrollments: {summary.enrollmentCount}</div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
-
-            <section style={{ marginTop: '1.5rem' }}>
-                <h2>Tutor review queue</h2>
-                {tutors.length === 0 ? (
-                    <p>No tutor applications yet.</p>
-                ) : (
-                    <ul style={{ display: 'grid', gap: '0.75rem', padding: 0, listStyle: 'none' }}>
-                        {tutors.map((tutor) => (
-                            <li key={tutor.id} style={{ border: '1px solid #d1d5db', borderRadius: '0.75rem', padding: '1rem' }}>
-                                <strong>{tutor.name}</strong>
-                                <div>Subject: {tutor.subject}</div>
-                                <div>Status: {tutor.status}</div>
-                                <div>Timezone: {tutor.timezone}</div>
-                                {tutor.status !== 'APPROVED' ? (
-                                    <button onClick={() => handleApprove(tutor.id)} style={{ marginTop: '0.75rem' }}>
-                                        Approve
-                                    </button>
-                                ) : null}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
-
-            <section style={{ marginTop: '1.5rem' }}>
-                <h2>Support queue</h2>
-                {tickets.length === 0 ? (
-                    <p>No support tickets yet.</p>
-                ) : (
-                    <ul style={{ display: 'grid', gap: '0.75rem', padding: 0, listStyle: 'none' }}>
-                        {tickets.map((ticket) => (
-                            <li key={ticket.id} style={{ border: '1px solid #d1d5db', borderRadius: '0.75rem', padding: '1rem' }}>
-                                <strong>{ticket.subject}</strong>
-                                <div>From: {ticket.name}</div>
-                                <div>Status: {ticket.status}</div>
-                                {ticket.status !== 'CLOSED' ? (
-                                    <button onClick={() => handleCloseTicket(ticket.id)} style={{ marginTop: '0.75rem' }}>
-                                        Close ticket
-                                    </button>
-                                ) : null}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
-        </main>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
     );
+  }
+
+  const s = stats.data;
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-extrabold">Operations overview</h1>
+        <p className="text-ink-500 text-sm mt-1">Live platform health at a glance.</p>
+      </div>
+
+      {/* People */}
+      <section>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-ink-400 mb-3">People</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Registered users" value={s?.users.toLocaleString() ?? "–"} sub={`${s?.active_users.toLocaleString()} active`} />
+          <StatCard label="Tutors (total)" value={s?.tutors_total.toLocaleString() ?? "–"} />
+          <StatCard label="Approved tutors" value={s?.tutors_approved.toLocaleString() ?? "–"} accent />
+          <StatCard label="Pending vetting" value={s?.tutors_pending.toLocaleString() ?? "–"} />
+        </div>
+      </section>
+
+      {/* Money */}
+      <section>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-ink-400 mb-3">Money</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Orders (total)" value={s?.orders_total.toLocaleString() ?? "–"} />
+          <StatCard label="Paid orders" value={s?.orders_paid.toLocaleString() ?? "–"} />
+          <StatCard label="Held in escrow" value={`₦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} accent />
+          <StatCard label="Paid out to tutors" value={`₦${(s?.revenue_paid_out ?? 0).toLocaleString()}`} />
+        </div>
+      </section>
+
+      {/* Content & ops */}
+      <section>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-ink-400 mb-3">Content & operations</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link href="/admin/blog" className="block">
+            <StatCard label="Published posts" value={s?.blog_published.toLocaleString() ?? "–"} sub={`${s?.blog_drafts.toLocaleString()} drafts`} />
+          </Link>
+          <Link href="/admin/institutions" className="block">
+            <StatCard label="Institutions (B2B)" value={s?.institutions.toLocaleString() ?? "–"} />
+          </Link>
+          <Link href="/admin/referrals" className="block">
+            <StatCard label="Referrals" value={s?.referrals.toLocaleString() ?? "–"} />
+          </Link>
+          <Link href="/admin/reviews" className="block">
+            <StatCard label="Reviews pending" value={s?.reviews_pending.toLocaleString() ?? "–"} />
+          </Link>
+        </div>
+      </section>
+
+      {/* Attention needed */}
+      {(s?.support_open ?? 0) > 0 || (s?.escrow_disputed ?? 0) > 0 ? (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <h2 className="font-bold text-amber-800">Needs attention</h2>
+          <ul className="mt-2 text-sm text-amber-800 list-disc pl-5">
+            {s?.support_open ? <li>{s.support_open} open support ticket(s)</li> : null}
+            {s?.escrow_disputed ? <li>{s.escrow_disputed} disputed escrow hold(s)</li> : null}
+          </ul>
+        </section>
+      ) : null}
+    </div>
+  );
 }

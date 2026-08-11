@@ -16,11 +16,15 @@ import (
 	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/config"
 	"ykay-virtual/internal/domain/academics"
+	"ykay-virtual/internal/domain/admin"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/domain/institution"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/referral"
+	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/middleware"
 	payment_provider "ykay-virtual/internal/payment"
@@ -62,6 +66,11 @@ type Repositories struct {
 	Sessions        identity.SessionRepository
 	Roles           identity.RoleRepository
 	AuthTokens      identity.AuthTokenRepository
+	Stats           admin.StatsRepository
+	AdminBlog       content.AdminBlogRepository
+	Institutions    institution.InstitutionRepository
+	Referrals       referral.ReferralRepository
+	Reviews         review.ReviewRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -117,6 +126,8 @@ func main() {
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
 	contentSvc := service.NewContentService(
 		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend)
+	adminSvc := service.NewAdminService(repos.Stats, repos.AdminBlog, repos.Institutions,
+		repos.Referrals, repos.Reviews, audit)
 
 	// --- Transport ---
 	handlers := &httpapi.Handlers{
@@ -135,6 +146,7 @@ func main() {
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc),
 		Content:      httpapi.NewContentHandler(contentSvc),
 		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL),
+		Admin:        httpapi.NewAdminHandler(adminSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
@@ -202,6 +214,11 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Sessions:        store.Sessions,
 			Roles:           store.Roles,
 			AuthTokens:      memory.NewAuthTokenMemory(),
+			Stats:           memory.NewStatsMemory(),
+			AdminBlog:       memory.NewAdminBlogMemory(),
+			Institutions:    memory.NewInstitutionMemory(),
+			Referrals:       memory.NewReferralMemory(),
+			Reviews:         memory.NewReviewMemory(),
 			StorageBackend:  "memory",
 		}
 	}
@@ -231,6 +248,11 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Sessions:        postgres.NewSessionRepo(pg.DB()),
 		Roles:           postgres.NewRoleRepo(pg.DB()),
 		AuthTokens:      postgres.NewAuthTokenRepo(pg.DB()),
+		Stats:           postgres.NewStatsRepo(pg.DB()),
+		AdminBlog:       postgres.NewAdminBlogRepo(pg.DB()),
+		Institutions:    postgres.NewInstitutionRepo(pg.DB()),
+		Referrals:       postgres.NewReferralRepo(pg.DB()),
+		Reviews:         postgres.NewReviewRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }

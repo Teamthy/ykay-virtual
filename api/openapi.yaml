@@ -781,6 +781,134 @@ paths:
                   type: { type: string }
         '404': { description: No mapping }
 
+  /admin/stats:
+    get:
+      tags: [admin]
+      summary: Operations overview (users, tutors, orders, escrow, content)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Dashboard aggregates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStats'
+        '403': { description: Admin role required }
+
+  /admin/blog:
+    get:
+      tags: [admin]
+      summary: List all blog posts (any status) with search + pagination
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [DRAFT, SCHEDULED, PUBLISHED, ARCHIVED] } }
+        - { name: search, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Paginated posts }
+    post:
+      tags: [admin]
+      summary: Create blog post (slug auto-generated, subject/exam tags)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogDraft'
+      responses:
+        '201': { description: Created }
+
+  /admin/blog/{postId}:
+    put:
+      tags: [admin]
+      summary: Update blog post fields + tags
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: postId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogDraft'
+      responses:
+        '200': { description: Updated }
+
+  /admin/blog/{postId}/status:
+    post:
+      tags: [admin]
+      summary: Publish / unpublish / archive a post (published_at set once)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: postId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [DRAFT, SCHEDULED, PUBLISHED, ARCHIVED] }
+      responses:
+        '200': { description: Status applied }
+
+  /admin/institutions:
+    get:
+      tags: [admin]
+      summary: B2B institution accounts (schools/corporate)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: search, in: query, schema: { type: string } }
+        - { name: type, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Paginated institutions }
+
+  /admin/referrals:
+    get:
+      tags: [admin]
+      summary: Referral programme list
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Paginated referrals }
+
+  /admin/reviews:
+    get:
+      tags: [admin]
+      summary: Review moderation queue
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [PENDING, PUBLISHED, HIDDEN, FLAGGED] } }
+        - { name: page, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Paginated reviews }
+
+  /admin/reviews/{reviewId}/moderate:
+    post:
+      tags: [admin]
+      summary: Publish/hide/flag a review (publish requires consent_given)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: reviewId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [PUBLISHED, HIDDEN, FLAGGED] }
+      responses:
+        '200': { description: Moderated }
+        '409': { description: Publish without consent rejected }
+
   /reviews:
     post:
       tags: [reviews]
@@ -827,7 +955,12 @@ components:
       type: apiKey
       in: header
       name: X-User-ID
-      description: Dev auth bridge until Phase 7 session auth. Roles via X-User-Roles header.
+      description: Dev auth bridge (session takes precedence when present).
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: ykay_session
+      description: httpOnly session cookie set by /auth/login.
   schemas:
     User:
       type: object
@@ -974,6 +1107,40 @@ components:
         currency: { type: string }
         payment_link: { type: string }
         status: { type: string }
+
+    AdminStats:
+      type: object
+      properties:
+        users: { type: integer }
+        active_users: { type: integer }
+        tutors_total: { type: integer }
+        tutors_approved: { type: integer }
+        tutors_pending: { type: integer }
+        orders_total: { type: integer }
+        orders_paid: { type: integer }
+        revenue_in_escrow: { type: number }
+        revenue_paid_out: { type: number }
+        blog_published: { type: integer }
+        blog_drafts: { type: integer }
+        institutions: { type: integer }
+        referrals: { type: integer }
+        reviews_pending: { type: integer }
+        support_open: { type: integer }
+        escrow_disputed: { type: integer }
+
+    BlogDraft:
+      type: object
+      required: [title, content]
+      properties:
+        title: { type: string, minLength: 1 }
+        slug: { type: string }
+        excerpt: { type: string }
+        content: { type: string }
+        status: { type: string, enum: [DRAFT, SCHEDULED, PUBLISHED, ARCHIVED] }
+        seo_title: { type: string }
+        seo_description: { type: string }
+        subject_ids: { type: array, items: { type: string, format: uuid } }
+        exam_ids: { type: array, items: { type: string, format: uuid } }
 
     BlogPost:
       type: object

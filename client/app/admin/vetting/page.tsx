@@ -50,8 +50,8 @@ export default function AdminVettingPage() {
   });
 
   return (
-    <main className="container-x py-12">
-      <div className="flex items-center justify-between mb-8">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-2">
         <div>
           <h1 className="text-3xl font-extrabold">Tutor vetting queue</h1>
           <p className="text-ink-500 text-sm mt-1">
@@ -112,7 +112,7 @@ export default function AdminVettingPage() {
           <div>{selected && detail.data && <Dossier adminId={DEV_ADMIN} detail={detail.data} onChanged={() => void queue.refetch()} />}</div>
         </div>
       )}
-    </main>
+    </div>
   );
 }
 
