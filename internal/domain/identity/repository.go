@@ -43,4 +43,7 @@ type AuditLogRepository interface {
 
 type AuditService interface {
 	Log(ctx context.Context, actorID *uuid.UUID, action AuditAction, targetType string, targetID *uuid.UUID, before, after *string, reqID, traceID *string) error
+	// LogStateChange serializes structured before/after state for money/access
+	// mutations (implemented by internal/service.AuditService).
+	LogStateChange(ctx context.Context, actorID *uuid.UUID, action AuditAction, targetType string, targetID *uuid.UUID, before, after any, reqID, traceID *string) error
 }

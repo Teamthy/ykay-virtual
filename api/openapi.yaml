@@ -167,30 +167,98 @@ paths:
       responses:
         '200': { description: Cohorts }
 
+  /cohorts/{id}:
+    get:
+      tags: [cohorts]
+      summary: Get cohort by id (checkout surface, cached 300s)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Cohort
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cohort'
+        '404': { description: Cohort not found }
+
   /bookings:
     post:
       tags: [bookings]
-      summary: Create booking (private tuition request or cohort enrollment) — transactional, bounded pool, no N+1
+      summary: >-
+        Create booking (COHORT enrollment or PRIVATE package) — transactional,
+        bounded pool, no N+1. Idempotent via idempotency_key: a repeated key
+        returns the original order (replayed=true) with no duplicate charge.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [type, parent_user_id, student_id]
               properties:
                 type: { type: string, enum: [PRIVATE, COHORT] }
+                cohort_id: { type: string, format: uuid }
                 subject_id: { type: string, format: uuid }
+                tutor_profile_id: { type: string, format: uuid }
+                parent_user_id: { type: string, format: uuid }
                 student_id: { type: string, format: uuid }
+                total_sessions: { type: integer, minimum: 1 }
+                session_duration_minutes: { type: integer, minimum: 15 }
+                price_per_session: { type: number, exclusiveMinimum: 0 }
+                currency: { type: string, default: NGN }
+                goals: { type: string }
+                preferred_days: { type: string }
+                preferred_time_range: { type: string }
+                idempotency_key: { type: string, maxLength: 100 }
       responses:
-        '201': { description: Booking created }
+        '201':
+          description: Booking created (order PENDING)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '403': { description: Student not linked to parent / tutor cannot teach }
+        '409': { description: Capacity full, duplicate enrollment, or order conflict }
+
+  /payments/initiate:
+    post:
+      tags: [payments]
+      summary: >-
+        Initiate payment for a PENDING order. Creates the payment row with a
+        unique provider_reference and returns the hosted checkout link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_id, provider, email]
+              properties:
+                order_id: { type: string, format: uuid }
+                provider: { type: string, enum: [PAYSTACK, FLUTTERWAVE] }
+                email: { type: string, format: email }
+                callback_url: { type: string }
+      responses:
+        '201':
+          description: Payment pending + checkout link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiatePaymentResponse'
+        '409': { description: Order not PENDING }
 
   /payments/webhooks/{provider}:
     post:
       tags: [payments]
-      summary: Idempotent webhook (unique provider_reference, signature-verified)
+      summary: >-
+        Idempotent webhook (UNIQUE provider_reference, HMAC signature verified
+        server-side — the client redirect is never trusted). Duplicate
+        deliveries return 200 with duplicate=true; signature failures 400.
       parameters:
-        - { name: provider, in: path, required: true, schema: { type: string, enum: [PAYSTACK, FLUTTERWAVE, STRIPE] } }
+        - { name: provider, in: path, required: true, schema: { type: string, enum: [PAYSTACK, FLUTTERWAVE] } }
         - { name: X-Paystack-Signature, in: header, schema: { type: string } }
+        - { name: verif-hash, in: header, schema: { type: string } }
       requestBody:
         required: true
         content:
@@ -198,7 +266,13 @@ paths:
             schema:
               type: object
       responses:
-        '200': { description: Webhook processed (idempotent) }
+        '200':
+          description: Webhook processed (idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResult'
+        '400': { description: Invalid signature / malformed payload / amount mismatch }
 
   /reviews:
     post:
@@ -316,3 +390,73 @@ components:
         rating: { type: integer, minimum: 1, maximum: 5 }
         comment: { type: string }
         consent_given: { type: boolean }
+
+    Cohort:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        programme_id: { type: string, format: uuid }
+        title: { type: string }
+        slug: { type: string }
+        tutor_profile_id: { type: string, format: uuid }
+        capacity: { type: integer }
+        enrolled_count: { type: integer }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        schedule_description: { type: string }
+        timezone: { type: string }
+        location_mode: { type: string, enum: [ONLINE, IN_PERSON, HYBRID] }
+        fee: { type: number }
+        currency: { type: string }
+        status: { type: string }
+
+    OrderItem:
+      type: object
+      properties:
+        item_type: { type: string, enum: [COHORT, PRIVATE_PACKAGE, PRODUCT, FEE] }
+        reference_id: { type: string, format: uuid }
+        description: { type: string }
+        quantity: { type: integer }
+        total_price: { type: number }
+
+    Order:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        order_number: { type: string }
+        status: { type: string, enum: [PENDING, PAID, FAILED, REFUNDED, CANCELLED] }
+        subtotal: { type: number }
+        discount_amount: { type: number }
+        total_amount: { type: number }
+        currency: { type: string }
+        items: { type: array, items: { $ref: '#/components/schemas/OrderItem' } }
+
+    BookingResponse:
+      type: object
+      properties:
+        order: { $ref: '#/components/schemas/Order' }
+        enrollment_id: { type: string, format: uuid }
+        package_id: { type: string, format: uuid }
+        replayed: { type: boolean }
+        payment_required: { type: boolean }
+
+    InitiatePaymentResponse:
+      type: object
+      properties:
+        payment_id: { type: string, format: uuid }
+        order_number: { type: string }
+        provider: { type: string }
+        provider_reference: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        payment_link: { type: string }
+        status: { type: string }
+
+    WebhookResult:
+      type: object
+      properties:
+        processed: { type: boolean }
+        duplicate: { type: boolean }
+        ignored: { type: boolean }
+        reason: { type: string }
+        payment_id: { type: string, format: uuid }

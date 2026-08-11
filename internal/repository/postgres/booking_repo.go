@@ -1,0 +1,260 @@
+package postgres
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+
+	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/booking"
+
+	"github.com/google/uuid"
+)
+
+type CohortRepo struct{ db TxQuerier }
+
+func NewCohortRepo(db TxQuerier) *CohortRepo { return &CohortRepo{db: db} }
+
+const cohortColumns = `id, programme_id, title, slug, tutor_profile_id, capacity, enrolled_count,
+	start_date, end_date, schedule_description, timezone, location_mode, location_id,
+	fee, currency, status, meeting_link_template, created_by, published_at, created_at, updated_at`
+
+func scanCohort(row interface{ Scan(...any) error }) (*booking.Cohort, error) {
+	var c booking.Cohort
+	var tutorID, locID, createdBy uuidNull
+	var schedule, meetingLink sql.NullString
+	var publishedAt sql.NullTime
+	if err := row.Scan(
+		&c.ID, &c.ProgrammeID, &c.Title, &c.Slug, &tutorID, &c.Capacity, &c.EnrolledCount,
+		&c.StartDate, &c.EndDate, &schedule, &c.Timezone, &c.LocationMode, &locID,
+		&c.Fee, &c.Currency, &c.Status, &meetingLink, &createdBy, &publishedAt, &c.CreatedAt, &c.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+	if tutorID.Valid {
+		c.TutorProfileID = &tutorID.UUID
+	}
+	if locID.Valid {
+		c.LocationID = &locID.UUID
+	}
+	if createdBy.Valid {
+		c.CreatedBy = &createdBy.UUID
+	}
+	if schedule.Valid {
+		c.ScheduleDesc = &schedule.String
+	}
+	if meetingLink.Valid {
+		c.MeetingLinkTemplate = &meetingLink.String
+	}
+	if publishedAt.Valid {
+		c.PublishedAt = &publishedAt.Time
+	}
+	return &c, nil
+}
+
+func (r *CohortRepo) GetByID(ctx context.Context, id uuid.UUID) (*booking.Cohort, error) {
+	return r.get(ctx, id, "")
+}
+
+func (r *CohortRepo) GetByIDForUpdate(ctx context.Context, id uuid.UUID) (*booking.Cohort, error) {
+	return r.get(ctx, id, " FOR UPDATE")
+}
+
+func (r *CohortRepo) get(ctx context.Context, id uuid.UUID, lock string) (*booking.Cohort, error) {
+	row := r.db.QueryRowContext(ctx, "SELECT "+cohortColumns+" FROM cohorts WHERE id = $1"+lock, id)
+	c, err := scanCohort(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	return c, nil
+}
+
+func (r *CohortRepo) IncrementEnrolledCount(ctx context.Context, id uuid.UUID, delta int) error {
+	res, err := r.db.ExecContext(ctx,
+		"UPDATE cohorts SET enrolled_count = enrolled_count + $1, updated_at = NOW() WHERE id = $2", delta, id)
+	if err != nil {
+		return fmt.Errorf("increment enrolled count: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+type CohortEnrollmentRepo struct{ db TxQuerier }
+
+func NewCohortEnrollmentRepo(db TxQuerier) *CohortEnrollmentRepo {
+	return &CohortEnrollmentRepo{db: db}
+}
+
+const enrollmentColumns = `id, cohort_id, student_profile_id, parent_user_id, order_id, status, enrolled_at, cancelled_at, created_at`
+
+func scanEnrollment(row interface{ Scan(...any) error }) (*booking.CohortEnrollment, error) {
+	var e booking.CohortEnrollment
+	var orderID uuidNull
+	var cancelledAt sql.NullTime
+	if err := row.Scan(
+		&e.ID, &e.CohortID, &e.StudentProfileID, &e.ParentUserID, &orderID,
+		&e.Status, &e.EnrolledAt, &cancelledAt, &e.CreatedAt,
+	); err != nil {
+		return nil, err
+	}
+	if orderID.Valid {
+		e.OrderID = &orderID.UUID
+	}
+	if cancelledAt.Valid {
+		e.CancelledAt = &cancelledAt.Time
+	}
+	return &e, nil
+}
+
+func (r *CohortEnrollmentRepo) Create(ctx context.Context, e *booking.CohortEnrollment) error {
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO cohort_enrollments (cohort_id, student_profile_id, parent_user_id, order_id, status)
+		VALUES ($1, $2, $3, $4, $5) RETURNING id, enrolled_at, created_at`,
+		e.CohortID, e.StudentProfileID, e.ParentUserID, e.OrderID, e.Status,
+	).Scan(&e.ID, &e.EnrolledAt, &e.CreatedAt)
+	if err != nil {
+		return fmt.Errorf("create enrollment: %w", err)
+	}
+	return nil
+}
+
+func (r *CohortEnrollmentRepo) GetByCohortAndStudent(ctx context.Context, cohortID, studentProfileID uuid.UUID) (*booking.CohortEnrollment, error) {
+	row := r.db.QueryRowContext(ctx,
+		"SELECT "+enrollmentColumns+" FROM cohort_enrollments WHERE cohort_id = $1 AND student_profile_id = $2",
+		cohortID, studentProfileID)
+	e, err := scanEnrollment(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	return e, nil
+}
+
+func (r *CohortEnrollmentRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status booking.EnrollmentStatus) error {
+	_, err := r.db.ExecContext(ctx,
+		"UPDATE cohort_enrollments SET status = $1, updated_at = NOW() WHERE id = $2", status, id)
+	if err != nil {
+		return fmt.Errorf("update enrollment status: %w", err)
+	}
+	return nil
+}
+
+type PrivateTuitionRequestRepo struct{ db TxQuerier }
+
+func NewPrivateTuitionRequestRepo(db TxQuerier) *PrivateTuitionRequestRepo {
+	return &PrivateTuitionRequestRepo{db: db}
+}
+
+func (r *PrivateTuitionRequestRepo) Create(ctx context.Context, req *booking.PrivateTuitionRequest) error {
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO private_tuition_requests
+			(parent_user_id, student_profile_id, subject_id, curriculum_id, level_id,
+			 goals, preferred_days, preferred_time_range, timezone, location_mode, location_id)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+		RETURNING id, created_at, updated_at`,
+		req.ParentUserID, req.StudentProfileID, req.SubjectID, req.CurriculumID, req.LevelID,
+		req.Goals, req.PreferredDays, req.PreferredTime, req.Timezone, req.LocationMode, req.LocationID,
+	).Scan(&req.ID, &req.CreatedAt, &req.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("create private tuition request: %w", err)
+	}
+	return nil
+}
+
+func (r *PrivateTuitionRequestRepo) GetByID(ctx context.Context, id uuid.UUID) (*booking.PrivateTuitionRequest, error) {
+	var req booking.PrivateTuitionRequest
+	var curriculumID, levelID, locID, matchedTutor uuidNull
+	var goals, preferredDays, preferredTime sql.NullString
+	err := r.db.QueryRowContext(ctx, `
+		SELECT id, parent_user_id, student_profile_id, subject_id, curriculum_id, level_id,
+			goals, preferred_days, preferred_time_range, timezone, location_mode, location_id,
+			status, matched_tutor_id, created_at, updated_at
+		FROM private_tuition_requests WHERE id = $1`, id).
+		Scan(&req.ID, &req.ParentUserID, &req.StudentProfileID, &req.SubjectID,
+			&curriculumID, &levelID, &goals, &preferredDays, &preferredTime, &req.Timezone,
+			&req.LocationMode, &locID, &req.Status, &matchedTutor, &req.CreatedAt, &req.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	if curriculumID.Valid {
+		req.CurriculumID = &curriculumID.UUID
+	}
+	if levelID.Valid {
+		req.LevelID = &levelID.UUID
+	}
+	if locID.Valid {
+		req.LocationID = &locID.UUID
+	}
+	if matchedTutor.Valid {
+		req.MatchedTutorID = &matchedTutor.UUID
+	}
+	if goals.Valid {
+		req.Goals = &goals.String
+	}
+	if preferredDays.Valid {
+		req.PreferredDays = &preferredDays.String
+	}
+	if preferredTime.Valid {
+		req.PreferredTime = &preferredTime.String
+	}
+	return &req, nil
+}
+
+type PrivatePackageRepo struct{ db TxQuerier }
+
+func NewPrivatePackageRepo(db TxQuerier) *PrivatePackageRepo { return &PrivatePackageRepo{db: db} }
+
+func (r *PrivatePackageRepo) Create(ctx context.Context, p *booking.PrivatePackage) error {
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO private_packages
+			(request_id, tutor_profile_id, student_profile_id, total_sessions, sessions_used,
+			 session_duration_minutes, price_per_session, total_price, currency, valid_from, valid_until, status)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+		RETURNING id, created_at, updated_at`,
+		p.RequestID, p.TutorProfileID, p.StudentProfileID, p.TotalSessions, p.SessionsUsed,
+		p.SessionDurationMins, p.PricePerSession, p.TotalPrice, p.Currency, p.ValidFrom, p.ValidUntil, p.Status,
+	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("create private package: %w", err)
+	}
+	return nil
+}
+
+func (r *PrivatePackageRepo) GetByID(ctx context.Context, id uuid.UUID) (*booking.PrivatePackage, error) {
+	var p booking.PrivatePackage
+	var validUntil sql.NullTime
+	err := r.db.QueryRowContext(ctx, `
+		SELECT id, request_id, tutor_profile_id, student_profile_id, total_sessions, sessions_used,
+			session_duration_minutes, price_per_session, total_price, currency, valid_from, valid_until, status,
+			created_at, updated_at
+		FROM private_packages WHERE id = $1`, id).
+		Scan(&p.ID, &p.RequestID, &p.TutorProfileID, &p.StudentProfileID, &p.TotalSessions,
+			&p.SessionsUsed, &p.SessionDurationMins, &p.PricePerSession, &p.TotalPrice,
+			&p.Currency, &p.ValidFrom, &validUntil, &p.Status, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	if validUntil.Valid {
+		p.ValidUntil = &validUntil.Time
+	}
+	return &p, nil
+}
+
+var _ booking.CohortRepository = (*CohortRepo)(nil)
+var _ booking.CohortEnrollmentRepository = (*CohortEnrollmentRepo)(nil)
+var _ booking.PrivateTuitionRequestRepository = (*PrivateTuitionRequestRepo)(nil)
+var _ booking.PrivatePackageRepository = (*PrivatePackageRepo)(nil)

@@ -22,6 +22,8 @@ func main() {
 	programmesHandler := programmes.NewHandler(programmesService)
 	enrollmentsService := enrollments.NewService()
 	enrollmentsHandler := enrollments.NewHandler(enrollmentsService)
+	tutorsService := tutors.NewService()
+	tutorsHandler := tutors.NewHandler(tutorsService)
 	lessonsService := lessons.NewService(tutorsService)
 	lessonsHandler := lessons.NewHandler(lessonsService)
 	adminService := admin.NewService()
@@ -30,8 +32,6 @@ func main() {
 	paymentsHandler := payments.NewHandler(paymentsService)
 	supportService := support.NewService()
 	supportHandler := support.NewHandler(supportService)
-	tutorsService := tutors.NewService()
-	tutorsHandler := tutors.NewHandler(tutorsService)
 	tuitionRequestsService := tuitionrequests.NewService()
 	tuitionRequestsHandler := tuitionrequests.NewHandler(tuitionRequestsService)
 

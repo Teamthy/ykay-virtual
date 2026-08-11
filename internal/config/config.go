@@ -20,6 +20,7 @@ type Config struct {
 	FlutterwaveSecret string
 	Environment     string
 	OtelEndpoint    string
+	SiteURL         string
 }
 
 func Load() Config {
@@ -38,6 +39,7 @@ func Load() Config {
 		PaystackSecret:  getEnv("PAYSTACK_SECRET", ""),
 		Environment:     getEnv("ENVIRONMENT", "development"),
 		OtelEndpoint:    getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
+		SiteURL:         getEnv("SITE_URL", "https://ykayvirtual.com"),
 	}
 }
 

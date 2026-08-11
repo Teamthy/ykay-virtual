@@ -35,5 +35,17 @@ export const qk = {
   bookings: {
     all: ["bookings"] as const,
     byStudent: (studentId: string) => ["bookings", "student", studentId] as const,
+    byOrder: (orderId: string) => ["bookings", "order", orderId] as const,
+  },
+  cohorts: {
+    all: ["cohorts"] as const,
+    byId: (id: string) => ["cohorts", "id", id] as const,
+  },
+  orders: {
+    all: ["orders"] as const,
+    byNumber: (number: string) => ["orders", "number", number] as const,
+  },
+  checkout: {
+    state: ["checkout"] as const,
   },
 };

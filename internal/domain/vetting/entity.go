@@ -1,7 +1,6 @@
 package vetting
 
 import (
-	"time"
 	"github.com/google/uuid"
 )
 

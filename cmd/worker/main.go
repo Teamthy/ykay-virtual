@@ -8,44 +8,108 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"ykay-virtual/internal/config"
-	"ykay-virtual/internal/worker"
+	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/domain/payment"
+	payment_provider "ykay-virtual/internal/payment"
+	"ykay-virtual/internal/repository"
+	"ykay-virtual/internal/repository/memory"
+	"ykay-virtual/internal/repository/postgres"
+	"ykay-virtual/internal/service"
 )
 
-func main() {
-	cfg := config.Load()
-	_ = cfg
+// Worker — background jobs + crons per AGENTS.md:
+//   - expire_stale_booking_holds   (every 15 min; Tuteria 3-day auto-release)
+//   - process_weekly_tutor_payouts (weekly; PENDING → PAID)
+//   - compute_tutor_ranking_score, regenerate_sitemaps etc. land in later phases.
+//
+// All jobs are idempotent; failures are logged and retried on the next tick.
 
-	w := worker.New()
+type repos struct {
+	uowFactory repository.UnitOfWorkFactory
+	escrowRead payment.EscrowHoldRepository
+	auditRepo  identity.AuditLogRepository
+}
+
+func main() {
+	_ = godotenv.Load()
+	cfg := config.Load()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Cron placeholders per AGENTS.md
-	// generate_lesson_reminders, expire_stale_booking_holds, compute_tutor_ranking_score nightly,
-	// process_weekly_tutor_payouts, regenerate_sitemaps etc.
+	// Same fallback strategy as the API: Postgres when available, else memory.
+	r := setupRepos(ctx, cfg)
 
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
+	audit := service.NewAuditService(r.auditRepo)
+	providers := map[payment.PaymentProvider]payment_provider.Provider{
+		payment.ProviderPaystack:    payment_provider.NewPaystack(cfg.PaystackSecret),
+		payment.ProviderFlutterwave: payment_provider.NewFlutterwave(cfg.FlutterwaveSecret),
+	}
+	paymentSvc := service.NewPaymentService(r.uowFactory, providers, audit, r.escrowRead)
+
+	// --- Cron scheduler ---
+	expireTicker := time.NewTicker(15 * time.Minute)
+	defer expireTicker.Stop()
+	payoutTicker := time.NewTicker(7 * 24 * time.Hour)
+	defer payoutTicker.Stop()
+
+	// Run once at boot so restarts immediately recover stale holds.
+	go func() {
+		if n, err := paymentSvc.ExpireStaleHolds(ctx, 200); err == nil && n > 0 {
+			log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
+		}
+	}()
 
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
-				// Example: expire stale holds
-				err := w.Process(ctx, worker.Job{ID: "cron-expire-holds", Type: worker.JobExpireStaleBookingHolds})
+			case <-expireTicker.C:
+				n, err := paymentSvc.ExpireStaleHolds(ctx, 200)
 				if err != nil {
-					log.Printf("worker error: %v", err)
+					log.Printf("cron[expire_stale_booking_holds] error: %v", err)
+					continue
 				}
+				if n > 0 {
+					log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
+				}
+			case <-payoutTicker.C:
+				n, err := paymentSvc.PayoutSvc.ProcessPendingPayouts(ctx, 200)
+				if err != nil {
+					log.Printf("cron[process_weekly_tutor_payouts] error: %v", err)
+					continue
+				}
+				log.Printf("cron[process_weekly_tutor_payouts]: paid %d payout(s)", n)
 			}
 		}
 	}()
 
-	log.Println("Worker started - waiting for jobs (Phase1 placeholder)")
+	log.Println("Worker started — crons: expire_stale_booking_holds (15m), process_weekly_tutor_payouts (7d)")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Worker shutting down...")
+}
+
+func setupRepos(ctx context.Context, cfg config.Config) *repos {
+	pg, err := postgres.New(cfg.DatabaseURL)
+	if err != nil {
+		log.Printf("storage: %v — worker running against in-memory store (dev mode)", err)
+		store := memory.NewMemoryStore()
+		return &repos{
+			uowFactory: memory.NewMemoryUnitOfWorkFactory(store),
+			escrowRead: store.Escrow,
+			auditRepo:  store.AuditLogs,
+		}
+	}
+	_ = ctx
+	return &repos{
+		uowFactory: postgres.NewPgUnitOfWorkFactory(pg),
+		escrowRead: postgres.NewEscrowHoldRepo(pg.DB()),
+		auditRepo:  postgres.NewAuditLogRepo(pg.DB()),
+	}
 }
