@@ -61,6 +61,7 @@ type Repositories struct {
 	Users           identity.UserRepository
 	Sessions        identity.SessionRepository
 	Roles           identity.RoleRepository
+	AuthTokens      identity.AuthTokenRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -89,7 +90,8 @@ func main() {
 	audit := service.NewAuditService(repos.AuditRepo)
 
 	// --- Auth + sessions ---
-	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit)
+	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit).
+		WithAuthTokens(repos.AuthTokens)
 	sessionAuth := middleware.SessionAuth(sessionResolverAdapter{svc: authSvc}, "ykay_session")
 
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
@@ -132,7 +134,7 @@ func main() {
 		Messaging:    httpapi.NewMessagingHandler(messagingSvc),
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc),
 		Content:      httpapi.NewContentHandler(contentSvc),
-		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production"),
+		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
@@ -199,6 +201,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Users:           store.Users,
 			Sessions:        store.Sessions,
 			Roles:           store.Roles,
+			AuthTokens:      memory.NewAuthTokenMemory(),
 			StorageBackend:  "memory",
 		}
 	}
@@ -227,6 +230,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Users:           postgres.NewUserRepo(pg.DB()),
 		Sessions:        postgres.NewSessionRepo(pg.DB()),
 		Roles:           postgres.NewRoleRepo(pg.DB()),
+		AuthTokens:      postgres.NewAuthTokenRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }

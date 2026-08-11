@@ -57,3 +57,34 @@ export function isAdmin(user: CurrentUser | null): boolean {
 export function isTutor(user: CurrentUser | null): boolean {
   return !!user?.roles?.includes("TUTOR");
 }
+
+// --- Email verification + password reset (Phase 8) ---
+
+export async function resendVerificationEmail(email: string): Promise<void> {
+  await apiFetch("/auth/verify-email/request", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function confirmVerification(token: string): Promise<{ verified: boolean; status: string }> {
+  const res = await apiFetch<{ verified: boolean; status: string }>("/auth/verify-email/confirm", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+  return res.data;
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  await apiFetch("/auth/password-reset/request", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  await apiFetch("/auth/password-reset/confirm", {
+    method: "POST",
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+}

@@ -18,12 +18,16 @@ import (
 //   - GET  /api/v1/auth/me         current user + roles
 
 type AuthHandler struct {
-	svc *service.AuthService
-	cfg middleware.CookieConfig
+	svc     *service.AuthService
+	cfg     middleware.CookieConfig
+	siteURL string
 }
 
-func NewAuthHandler(svc *service.AuthService, secureCookies bool) *AuthHandler {
-	return &AuthHandler{svc: svc, cfg: middleware.DefaultCookieConfig(secureCookies)}
+func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string) *AuthHandler {
+	if siteURL == "" {
+		siteURL = "http://localhost:3000"
+	}
+	return &AuthHandler{svc: svc, cfg: middleware.DefaultCookieConfig(secureCookies), siteURL: siteURL}
 }
 
 type userResponse struct {
@@ -117,4 +121,75 @@ func clientIP(r *http.Request) string {
 		host = host[:i]
 	}
 	return host
+}
+
+// --- Email verification + password reset (Phase 8) ---
+
+// ResendVerification — POST /auth/verify-email/request {email}
+func (h *AuthHandler) ResendVerification(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.RequestEmailVerification(r.Context(), req.Email, h.siteURL); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	// Always 200 (never reveal account existence).
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"sent": true}, nil)
+}
+
+// ConfirmVerification — POST /auth/verify-email/confirm {token}
+func (h *AuthHandler) ConfirmVerification(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Token string `json:"token"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	user, err := h.svc.VerifyEmail(r.Context(), req.Token)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"verified": true, "status": string(user.Status),
+	}, nil)
+}
+
+// RequestPasswordReset — POST /auth/password-reset/request {email}
+func (h *AuthHandler) RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.RequestPasswordReset(r.Context(), req.Email, h.siteURL); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"sent": true}, nil)
+}
+
+// ConfirmPasswordReset — POST /auth/password-reset/confirm {token, new_password}
+func (h *AuthHandler) ConfirmPasswordReset(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.ResetPassword(r.Context(), req.Token, req.NewPassword); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"reset": true}, nil)
 }

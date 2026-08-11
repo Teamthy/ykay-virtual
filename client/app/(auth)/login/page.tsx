@@ -34,6 +34,10 @@ export default function LoginPage() {
       try {
         const user = await login(value.email, value.password);
         qc.setQueryData(["session"], user);
+        if (user.status === "PENDING_VERIFICATION") {
+          router.push("/verify-email?sent=1");
+          return;
+        }
         router.push(user.roles.includes("TUTOR") ? "/tutor-dashboard" : "/dashboard");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Login failed");
@@ -101,6 +105,11 @@ export default function LoginPage() {
           <Button type="submit" variant="gold" size="lg" className="w-full" disabled={submitting}>
             {submitting ? "Logging in…" : "Log in"}
           </Button>
+          <p className="text-center">
+            <Link href="/forgot-password" className="text-sm text-brand-blue font-semibold hover:underline">
+              Forgot your password?
+            </Link>
+          </p>
         </form>
         <p className="text-center text-sm text-ink-500 mt-6">
           New to YKAY?{" "}

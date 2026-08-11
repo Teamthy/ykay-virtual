@@ -98,6 +98,83 @@ paths:
                 $ref: '#/components/schemas/AuthUser'
         '401': { description: Not authenticated / session expired or revoked }
 
+  /auth/verify-email/request:
+    post:
+      tags: [identity]
+      summary: Send email verification link (never reveals account existence)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { description: Sent (or silently skipped when unknown/already verified) }
+
+  /auth/verify-email/confirm:
+    post:
+      tags: [identity]
+      summary: Confirm email with the single-use token from the emailed link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string }
+      responses:
+        '200':
+          description: Verified — account activated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verified: { type: boolean }
+                  status: { type: string }
+        '400': { description: Invalid or expired token }
+        '409': { description: Token already used }
+
+  /auth/password-reset/request:
+    post:
+      tags: [identity]
+      summary: Email a password reset link (never reveals account existence)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { description: Sent (or silently skipped when unknown) }
+
+  /auth/password-reset/confirm:
+    post:
+      tags: [identity]
+      summary: Set a new password with the single-use token; rotates ALL sessions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, new_password]
+              properties:
+                token: { type: string }
+                new_password: { type: string, minLength: 8 }
+      responses:
+        '200': { description: Password updated, sessions rotated }
+        '400': { description: Invalid/expired token or weak password }
+        '409': { description: Token already used }
+
   /subjects:
     get:
       tags: [subjects]

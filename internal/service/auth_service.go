@@ -17,6 +17,7 @@ import (
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/notification"
 )
 
 // AuthService — registration, session-based login (httpOnly cookie bound),
@@ -39,13 +40,30 @@ type AuthService struct {
 	users    identity.UserRepository
 	sessions identity.SessionRepository
 	roles    identity.RoleRepository
+	tokens   identity.AuthTokenRepository
+	email    notification.EmailSender
 	audit    identity.AuditService
 	now      func() time.Time
 }
 
 func NewAuthService(users identity.UserRepository, sessions identity.SessionRepository,
 	roles identity.RoleRepository, audit identity.AuditService) *AuthService {
-	return &AuthService{users: users, sessions: sessions, roles: roles, audit: audit, now: time.Now}
+	return &AuthService{
+		users: users, sessions: sessions, roles: roles, audit: audit,
+		tokens: nil, email: notification.NewEmailSender(), now: time.Now,
+	}
+}
+
+// WithAuthTokens wires the token repository (email verification + reset).
+func (s *AuthService) WithAuthTokens(tokens identity.AuthTokenRepository) *AuthService {
+	s.tokens = tokens
+	return s
+}
+
+// WithEmailSender overrides the email adapter (tests / custom delivery).
+func (s *AuthService) WithEmailSender(email notification.EmailSender) *AuthService {
+	s.email = email
+	return s
 }
 
 type RegisterInput struct {

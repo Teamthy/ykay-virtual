@@ -48,8 +48,8 @@ export default function RegisterPage() {
         const user = await register({ email: value.email, password: value.password, roles: [value.role] });
         // Auto-login after registration (smooth first-run experience).
         await login(value.email, value.password);
-        if (user.roles.includes("TUTOR")) router.push("/become-tutor");
-        else router.push("/dashboard");
+        if (user.roles.includes("TUTOR")) router.push("/verify-email?sent=1");
+        else router.push("/verify-email?sent=1");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Registration failed");
       } finally {
