@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS parent_student_links;
+DROP TABLE IF EXISTS student_profiles;
+DROP TABLE IF EXISTS parent_profiles;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS audit_action;
+DROP TYPE IF EXISTS user_status;

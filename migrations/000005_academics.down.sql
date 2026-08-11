@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS tutor_subjects;
+DROP TABLE IF EXISTS programme_subjects;
+DROP TABLE IF EXISTS programmes;
+DROP TABLE IF EXISTS exams;
+DROP TABLE IF EXISTS subjects;
+DROP TABLE IF EXISTS levels;
+DROP TABLE IF EXISTS curricula;
+DROP TYPE IF EXISTS programme_status;
+DROP TYPE IF EXISTS programme_format;
+DROP TYPE IF EXISTS curriculum_type;

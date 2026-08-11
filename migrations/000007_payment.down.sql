@@ -1,0 +1,14 @@
+DROP FUNCTION IF EXISTS generate_order_number();
+ALTER TABLE cohort_enrollments DROP CONSTRAINT IF EXISTS fk_enrollment_order;
+DROP TABLE IF EXISTS payouts;
+DROP TABLE IF EXISTS escrow_holds;
+DROP TABLE IF EXISTS payment_webhooks;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS wallets;
+DROP TYPE IF EXISTS escrow_status;
+DROP TYPE IF EXISTS payout_status;
+DROP TYPE IF EXISTS payment_provider;
+DROP TYPE IF EXISTS payment_status;
+DROP TYPE IF EXISTS order_status;

@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS competency_assessments;
+DROP TABLE IF EXISTS vetting_events;
+DROP TABLE IF EXISTS tutor_availability_exceptions;
+DROP TABLE IF EXISTS tutor_availabilities;
+DROP TABLE IF EXISTS tutor_documents;
+DROP TABLE IF EXISTS tutor_qualifications;
+DROP TABLE IF EXISTS tutor_profiles;
+DROP TYPE IF EXISTS document_status;
+DROP TYPE IF EXISTS document_type;
+DROP TYPE IF EXISTS vetting_stage_type;
+DROP TYPE IF EXISTS tutor_status;

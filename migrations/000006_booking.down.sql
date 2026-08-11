@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS submissions;
+DROP TABLE IF EXISTS assignments;
+DROP TABLE IF EXISTS resources;
+DROP TABLE IF EXISTS lesson_notes;
+DROP TABLE IF EXISTS attendance;
+DROP TABLE IF EXISTS lesson_participants;
+DROP TABLE IF EXISTS lessons;
+DROP TABLE IF EXISTS private_packages;
+DROP TABLE IF EXISTS private_tuition_requests;
+DROP TABLE IF EXISTS cohort_enrollments;
+DROP TABLE IF EXISTS cohorts;
+DROP TYPE IF EXISTS attendance_status;
+DROP TYPE IF EXISTS lesson_status;
+DROP TYPE IF EXISTS private_request_status;
+DROP TYPE IF EXISTS enrollment_status;
+DROP TYPE IF EXISTS cohort_status;
