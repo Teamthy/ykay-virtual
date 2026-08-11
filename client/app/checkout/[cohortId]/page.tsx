@@ -48,19 +48,23 @@ export default async function CheckoutPage({ params }: Props) {
 
       <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-start">
         <div>
-          <h1 className="text-3xl font-extrabold">Enrol in {cohort.title}</h1>
+          <h1 className="text-3xl font-extrabold text-brand-navy">Enrol in {cohort.title}</h1>
           <p className="mt-3 text-ink-600 leading-relaxed">
             Your enrolment is confirmed instantly after payment. Lessons follow the published cohort schedule
-            in {cohort.timezone}. Your payment is protected by our escrow guarantee — if the tutor cannot
-            deliver, you get a full refund.
+            in {cohort.timezone}.
           </p>
-          <section className="mt-8 rounded-2xl border p-6">
-            <h2 className="font-bold">What you get</h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-600 list-disc pl-5">
-              <li>Live lessons with an approved, vetted tutor</li>
-              <li>Recordings, resources and homework after every lesson</li>
-              <li>Weekly progress reports for parents</li>
-              <li>Money-back guarantee while your payment is in escrow</li>
+          <section className="mt-8 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-brand-navy to-brand-blue p-6 text-white shadow-brand">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-bold">What you get</h2>
+              <span className="rounded-full bg-brand-gold px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
+                Escrow protected
+              </span>
+            </div>
+            <ul className="mt-4 grid gap-3 text-sm text-white/85">
+              <li className="flex items-center gap-3"><span aria-hidden="true">🎓</span> Live lessons with an approved, vetted tutor</li>
+              <li className="flex items-center gap-3"><span aria-hidden="true">📚</span> Recordings, resources and homework after every lesson</li>
+              <li className="flex items-center gap-3"><span aria-hidden="true">📈</span> Weekly progress reports for parents</li>
+              <li className="flex items-center gap-3"><span aria-hidden="true">🛡️</span> Money-back guarantee while your payment is in escrow</li>
             </ul>
           </section>
         </div>

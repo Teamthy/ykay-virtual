@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { toast } from "sonner";
 import { login, register } from "@/features/auth/api";
 
@@ -70,10 +71,19 @@ function RegisterInner() {
   });
 
   return (
-    <main className="container-x py-16 flex justify-center">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-extrabold">Create your account</h1>
-        <p className="text-ink-500 text-sm mt-2">Join NUVORA — free to start, escrow-protected payments.</p>
+    <AuthShell
+      title="Create your account"
+      subtitle="Join NUVORA — free to start, escrow-protected payments."
+      footer={
+        <>
+          Already registered?{" "}
+          <Link href="/login" className="text-brand-blue font-semibold hover:underline">
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <div className="rounded-2xl border border-ink-100 bg-white p-7 shadow-soft">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -183,14 +193,8 @@ function RegisterInner() {
             {submitting ? "Creating account…" : "Create account"}
           </Button>
         </form>
-        <p className="text-center text-sm text-ink-500 mt-6">
-          Already registered?{" "}
-          <Link href="/login" className="text-brand-blue font-semibold hover:underline">
-            Log in
-          </Link>
-        </p>
       </div>
-    </main>
+    </AuthShell>
   );
 }
 

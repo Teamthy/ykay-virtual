@@ -15,5 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
+    shortcuts: [
+      { name: "Find a programme", url: "/programmes", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+      { name: "Book private tuition", url: "/private-tuition", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+    ],
   };
 }

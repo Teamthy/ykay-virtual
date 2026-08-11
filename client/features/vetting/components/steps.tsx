@@ -2,6 +2,9 @@
 
 import { useForm } from "@tanstack/react-form";
 import { Stepper } from "@/components/ui/stepper";
+import { FileUploader, type UploadedFile } from "@/components/ui/file-uploader";
+import { Modal } from "@/components/ui/modal";
+import { FileText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
@@ -202,19 +205,23 @@ export function SubjectsStep({ userId, profileId, onNext }: { userId: string; pr
 }
 
 export function DocumentsStep({ userId, profileId, onNext }: { userId: string; profileId: string; onNext: () => void }) {
-  const [fileName, setFileName] = useState("");
+  const [files, setFiles] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const upload = async () => {
-    if (!fileName.trim()) { setError("Choose an ID document file first"); return; }
+    if (files.length === 0) { setError("Choose at least one ID document first"); return; }
     setUploading(true);
     setError(null);
     try {
-      const res = await requestDocumentUpload(userId, profileId, "GOVT_ID", fileName.trim(), "application/pdf");
-      if (res.upload_url) {
-        try { await fetch(res.upload_url, { method: "PUT", body: new Blob([`dev-upload:${fileName}`]) }); } catch { /* ignore */ }
+      for (const f of files) {
+        const res = await requestDocumentUpload(userId, profileId, "GOVT_ID", f.name, "application/pdf");
+        if (res.upload_url) {
+          try { await fetch(res.upload_url, { method: "PUT", body: new Blob([`dev-upload:${f.name}`]) }); } catch { /* ignore */ }
+        }
       }
+      setConfirmOpen(false);
       onNext();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
@@ -224,18 +231,56 @@ export function DocumentsStep({ userId, profileId, onNext }: { userId: string; p
   };
 
   return (
-    <div className="border rounded-2xl p-6 space-y-4">
-      <h2 className="text-xl font-bold">Identity verification</h2>
-      <p className="text-sm text-ink-600">
-        Upload a government-issued ID (national ID, passport, or driver&apos;s licence). Files go to a{" "}
-        <strong>private bucket</strong> — only you and our review team can access them, via signed URLs.
-      </p>
-      <input value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="e.g. national-id.pdf"
-        className="w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      <Button variant="gold" size="lg" className="w-full" disabled={uploading} onClick={upload}>
-        {uploading ? "Uploading…" : "Upload ID & continue"}
-      </Button>
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft space-y-4">
+        <h2 className="text-xl font-bold text-brand-navy">Identity verification</h2>
+        <p className="text-sm text-ink-600">
+          Upload a government-issued ID (national ID, passport, or driver&apos;s licence). Files go to a{" "}
+          <strong>private bucket</strong> — only you and our review team can access them, via signed URLs.
+        </p>
+        <FileUploader
+          files={files}
+          onChange={(f) => { setFiles(f); setError(null); }}
+          accept=".pdf,.jpg,.jpeg,.png"
+          maxFiles={3}
+          hint="PDF, JPG or PNG · up to 3 files"
+        />
+        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        <Button variant="gold" size="lg" className="w-full" disabled={files.length === 0} onClick={() => setConfirmOpen(true)}>
+          Upload &amp; continue
+        </Button>
+      </div>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Confirm upload"
+        description="Your ID documents are submitted to the NUVORA review team."
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+            <Button variant="gold" disabled={uploading} onClick={() => void upload()}>
+              {uploading ? "Uploading…" : "Confirm & submit"}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-ink-600">
+          You are about to submit{" "}
+          <strong>{files.length} document{files.length === 1 ? "" : "s"}</strong>:
+        </p>
+        <ul className="mt-3 space-y-1.5">
+          {files.map((f) => (
+            <li key={`${f.name}-${f.size}`} className="flex items-center gap-2 text-sm text-ink-700">
+              <FileText size={14} className="text-brand-blue" aria-hidden="true" />
+              {f.name}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 rounded-xl bg-brand-gold-light px-4 py-3 text-xs text-ink-700">
+          🛡️ Your documents are stored privately and only reviewed by the vetting team via signed URLs.
+        </p>
+      </Modal>
     </div>
   );
 }

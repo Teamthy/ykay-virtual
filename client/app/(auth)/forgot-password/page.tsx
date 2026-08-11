@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { requestPasswordReset } from "@/features/auth/api";
 
 export default function ForgotPasswordPage() {
@@ -30,30 +31,36 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <main className="container-x py-16 flex justify-center">
-        <div className="w-full max-w-md text-center space-y-4">
-          <div className="text-5xl">📬</div>
-          <h1 className="text-2xl font-extrabold">Check your inbox</h1>
-          <p className="text-ink-600 text-sm">
+      <AuthShell title="Check your inbox">
+        <div className="rounded-2xl border border-ink-100 bg-white p-7 text-center shadow-soft">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand-blue-light text-2xl">📬</div>
+          <h2 className="mt-4 text-xl font-extrabold text-brand-navy">Check your inbox</h2>
+          <p className="mt-2 text-sm text-ink-600">
             If an account exists for <strong>{email}</strong>, a password reset link is on its way. The link
             expires in 24 hours.
           </p>
-          <Link href="/login" className="block text-sm text-brand-blue font-semibold hover:underline">
+          <Link href="/login" className="mt-4 block text-sm text-brand-blue font-semibold hover:underline">
             Back to login
           </Link>
         </div>
-      </main>
+      </AuthShell>
     );
   }
 
   return (
-    <main className="container-x py-16 flex justify-center">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-extrabold">Reset your password</h1>
-        <p className="text-ink-500 text-sm mt-2">
-          Enter the email you registered with and we&apos;ll send you a reset link.
-        </p>
-        <div className="mt-8 border rounded-2xl p-6 space-y-4">
+    <AuthShell
+      title="Reset your password"
+      subtitle="Enter the email you registered with and we&apos;ll send you a reset link."
+      footer={
+        <>
+          Remembered it?{" "}
+          <Link href="/login" className="text-brand-blue font-semibold hover:underline">
+            Back to login
+          </Link>
+        </>
+      }
+    >
+      <div className="rounded-2xl border border-ink-100 bg-white p-7 shadow-soft space-y-4">
           <label className="block text-sm">
             <span className="font-medium">Email</span>
             <input
@@ -70,11 +77,7 @@ export default function ForgotPasswordPage() {
           <Button variant="gold" size="lg" className="w-full" disabled={submitting} onClick={() => void submit()}>
             {submitting ? "Sending…" : "Send reset link"}
           </Button>
-          <Link href="/login" className="block text-center text-sm text-brand-blue font-semibold hover:underline">
-            Back to login
-          </Link>
         </div>
-      </div>
-    </main>
+    </AuthShell>
   );
 }

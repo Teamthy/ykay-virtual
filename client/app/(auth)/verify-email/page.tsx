@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { confirmVerification, resendVerificationEmail } from "@/features/auth/api";
 
 type State =
@@ -96,12 +97,10 @@ function VerifyEmailInner() {
 
 export default function VerifyEmailPage() {
   return (
-    <main className="container-x py-16 flex justify-center">
-      <div className="w-full max-w-md">
-        <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}>
-          <VerifyEmailInner />
-        </Suspense>
-      </div>
-    </main>
+    <AuthShell title="Verify your email" subtitle="Confirm your address to activate your NUVORA account.">
+      <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}>
+        <VerifyEmailInner />
+      </Suspense>
+    </AuthShell>
   );
 }

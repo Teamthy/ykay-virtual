@@ -17,6 +17,19 @@ export const metadata: Metadata = {
   },
   description: "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com"),
+  openGraph: {
+    type: "website",
+    siteName: "NUVORA",
+    title: "NUVORA — Learning beyond boundaries",
+    description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "NUVORA — Learning beyond boundaries" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NUVORA — Learning beyond boundaries",
+    description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
+    images: ["/og.png"],
+  },
 };
 
 const inter = Inter({

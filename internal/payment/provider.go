@@ -131,7 +131,7 @@ func (p *FlutterwaveProvider) CreatePaymentLink(amount float64, currency, refere
 		"tx_ref":       reference,
 		"amount":       amount,
 		"currency":     currency,
-		"redirect_url": "https://ykayvirtual.com/checkout/verify",
+		"redirect_url": "https://nuvora.com/checkout/verify",
 		"customer":     map[string]string{"email": email},
 	})
 	req, err := http.NewRequest(http.MethodPost, p.BaseURL+"/payments", bytes.NewReader(body))

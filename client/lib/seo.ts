@@ -29,14 +29,14 @@ export function buildMetadata({ title, description, path, image, noIndex, canoni
       description,
       url,
       siteName: "NUVORA",
-      images: image ? [{ url: image }] : [{ url: absoluteUrl("/og-default.jpg") }],
+      images: image ? [{ url: image }] : [{ url: absoluteUrl("/og.png") }],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: image ? [image] : [absoluteUrl("/og-default.jpg")],
+      images: image ? [image] : [absoluteUrl("/og.png")],
     },
     robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
   };

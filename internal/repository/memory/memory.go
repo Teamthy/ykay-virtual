@@ -419,7 +419,7 @@ func (m *OrderMemory) Create(_ context.Context, o *payment.Order) error {
 		o.ID = uuid.New()
 	}
 	if o.OrderNumber == "" {
-		o.OrderNumber = fmt.Sprintf("YKAY-MEM-%s", uuid.NewString()[:8])
+		o.OrderNumber = fmt.Sprintf("NUVORA-MEM-%s", uuid.NewString()[:8])
 	}
 	m.rows[o.ID] = o
 	if o.IdempotencyKey != nil {

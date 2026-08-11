@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { login } from "@/features/auth/api";
+import { AuthShell } from "@/components/layout/AuthShell";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -52,10 +53,19 @@ export default function LoginPage() {
   });
 
   return (
-    <main className="container-x py-16 flex justify-center">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-extrabold">Welcome back</h1>
-        <p className="text-ink-500 text-sm mt-2">Log in to your NUVORA account to manage bookings and messages.</p>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Log in to your NUVORA account to manage bookings, lessons and progress."
+      footer={
+        <>
+          New to NUVORA?{" "}
+          <Link href="/register" className="text-brand-blue font-semibold hover:underline">
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <div className="rounded-2xl border border-ink-100 bg-white p-7 shadow-soft">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -128,13 +138,7 @@ export default function LoginPage() {
             <p className="mt-1 text-center text-[10px] text-ink-400">Google sign-in arrives with OAuth setup — email + password works today.</p>
           </div>
         )}
-        <p className="text-center text-sm text-ink-500 mt-6">
-          New to NUVORA?{" "}
-          <Link href="/register" className="text-brand-blue font-semibold hover:underline">
-            Create an account
-          </Link>
-        </p>
       </div>
-    </main>
+    </AuthShell>
   );
 }

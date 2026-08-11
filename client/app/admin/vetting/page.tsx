@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Modal } from "@/components/ui/modal";
 import { BadgeCheck } from "lucide-react";
 import {
   adminAction,
@@ -143,6 +144,10 @@ function Dossier({
     },
   });
 
+  const [rejecting, setRejecting] = useState<{ docId: string; name: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectError, setRejectError] = useState<string | null>(null);
+
   const reviewDoc = useMutation({
     mutationFn: async ({ docId, approve, r }: { docId: string; approve: boolean; r?: string }) => {
       await reviewDocument(adminId, docId, approve, r ?? "");
@@ -178,10 +183,7 @@ function Dossier({
             <li key={d.id} className="flex items-center justify-between gap-2 border rounded-xl px-4 py-2 text-sm">
               <span>
                 {d.type} — {d.file_name}
-                <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
-                  d.status === "APPROVED" ? "bg-green-100 text-green-700"
-                  : d.status === "REJECTED" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
-                }`}>{d.status}</span>
+                <StatusBadge label={d.status} kind={statusKindFor(d.status)} />
                 {d.rejection_reason ? <span className="block text-xs text-red-600">{d.rejection_reason}</span> : null}
               </span>
               {d.status === "PENDING" && (
@@ -189,10 +191,7 @@ function Dossier({
                   <Button size="sm" variant="default" disabled={reviewDoc.isPending}
                     onClick={() => reviewDoc.mutate({ docId: d.id, approve: true })}>Approve</Button>
                   <Button size="sm" variant="outline" disabled={reviewDoc.isPending}
-                    onClick={() => {
-                      const r = window.prompt("Rejection reason:");
-                      if (r) reviewDoc.mutate({ docId: d.id, approve: false, r });
-                    }}>Reject</Button>
+                    onClick={() => { setRejecting({ docId: d.id, name: d.file_name }); setRejectReason(""); setRejectError(null); }}>Reject</Button>
                 </span>
               )}
             </li>
@@ -236,6 +235,43 @@ function Dossier({
       </section>
 
       {/* Actions */}
+      <Modal
+        open={rejecting !== null}
+        onClose={() => setRejecting(null)}
+        title="Reject document"
+        description={rejecting ? `Rejecting ${rejecting.name}` : undefined}
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setRejecting(null)}>Cancel</Button>
+            <Button
+              variant="default"
+              disabled={!rejectReason.trim() || reviewDoc.isPending}
+              onClick={() => {
+                if (!rejecting) return;
+                if (!rejectReason.trim()) { setRejectError("A rejection reason is required"); return; }
+                reviewDoc.mutate({ docId: rejecting.docId, approve: false, r: rejectReason.trim() });
+                setRejecting(null);
+              }}
+            >
+              {reviewDoc.isPending ? "Rejecting…" : "Reject document"}
+            </Button>
+          </div>
+        }
+      >
+        <label className="block text-sm">
+          <span className="font-semibold text-ink-700">Rejection reason *</span>
+          <textarea
+            value={rejectReason}
+            onChange={(e) => { setRejectReason(e.target.value); setRejectError(null); }}
+            rows={3}
+            placeholder="e.g. Document is blurry or expired — please re-upload a clear copy."
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+          />
+        </label>
+        {rejectError && <p className="mt-2 text-xs text-red-600">{rejectError}</p>}
+        <p className="mt-3 text-xs text-ink-500">The tutor will see this reason and can re-upload.</p>
+      </Modal>
+
       {actionable && (
         <section className="border-t pt-4 space-y-3">
           <div className="flex flex-wrap gap-2">

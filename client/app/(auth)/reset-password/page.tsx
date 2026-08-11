@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/layout/AuthShell";
 import { confirmPasswordReset } from "@/features/auth/api";
 
 const resetSchema = z
@@ -125,12 +126,10 @@ function ResetPasswordInner() {
 
 export default function ResetPasswordPage() {
   return (
-    <main className="container-x py-16 flex justify-center">
-      <div className="w-full max-w-md">
-        <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}>
-          <ResetPasswordInner />
-        </Suspense>
-      </div>
-    </main>
+    <AuthShell title="Set a new password" subtitle="Choose a strong password to secure your NUVORA account.">
+      <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}>
+        <ResetPasswordInner />
+      </Suspense>
+    </AuthShell>
   );
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/url"
 	"time"
+	"ykay-virtual/internal/notification"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -21,8 +22,8 @@ import (
 
 const (
 	authTokenTTL    = 24 * time.Hour
-	verifyEmailFrom = "verification@ykayvirtual.com"
-	resetFrom       = "security@ykayvirtual.com"
+	verifyEmailFrom = "verification@nuvora.com"
+	resetFrom       = "security@nuvora.com"
 )
 
 // RequestEmailVerification — creates a VERIFY_EMAIL token and emails the
@@ -57,10 +58,13 @@ func (s *AuthService) RequestEmailVerification(ctx context.Context, email string
 		return err
 	}
 	link := fmt.Sprintf("%s/verify-email?token=%s", stringsTrimSlash(siteURL), url.QueryEscape(raw))
-	return s.email.Send(ctx, user.Email, "Verify your YKAY email",
-		"<p>Hi,</p><p>Click the link below to verify your email and activate your YKAY account:</p>"+
-			"<p><a href=\""+link+"\">Verify email</a></p>"+
-			"<p>This link expires in 24 hours. If you didn't create an account, ignore this email.</p>")
+	return s.email.Send(ctx, user.Email, "Verify your NUVORA email",
+		notification.BrandEmail(
+			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Welcome to NUVORA</h1>"+
+				"<p style=\"margin:0 0 16px;\">Hi,</p>"+
+				"<p style=\"margin:0 0 20px;\">Click the button below to verify your email and activate your NUVORA account:</p>"+
+				"<p><a href=\""+link+"\" style=\"display:inline-block;background:#1E5EFF;color:#ffffff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;\">Verify email</a></p>"+
+				"<p style=\"margin:20px 0 0;color:#8794AC;font-size:13px;\">This link expires in 24 hours. If you didn't create an account, ignore this email.</p>"))
 }
 
 // VerifyEmail — consumes the token, marks the email verified and activates
@@ -134,10 +138,13 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email, siteURL s
 		return err
 	}
 	link := fmt.Sprintf("%s/reset-password?token=%s", stringsTrimSlash(siteURL), url.QueryEscape(raw))
-	return s.email.Send(ctx, user.Email, "Reset your YKAY password",
-		"<p>Hi,</p><p>We received a request to reset your password. Click the link below to choose a new one:</p>"+
-			"<p><a href=\""+link+"\">Reset password</a></p>"+
-			"<p>This link expires in 24 hours. If you didn't request this, you can safely ignore this email.</p>")
+	return s.email.Send(ctx, user.Email, "Reset your NUVORA password",
+		notification.BrandEmail(
+			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Reset your password</h1>"+
+				"<p style=\"margin:0 0 16px;\">Hi,</p>"+
+				"<p style=\"margin:0 0 20px;\">We received a request to reset your NUVORA password. Click the button below to choose a new one:</p>"+
+				"<p><a href=\""+link+"\" style=\"display:inline-block;background:#1E5EFF;color:#ffffff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;\">Reset password</a></p>"+
+				"<p style=\"margin:20px 0 0;color:#8794AC;font-size:13px;\">This link expires in 24 hours. If you didn't request this, you can safely ignore this email.</p>"))
 }
 
 // ResetPassword — consumes the token, updates the bcrypt hash, and rotates
