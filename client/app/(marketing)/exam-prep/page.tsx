@@ -5,7 +5,7 @@ import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Exam Preparation — WAEC, NECO, JAMB, IGCSE & A-Level | YKAY",
+  title: "Exam Preparation — WAEC, NECO, JAMB, IGCSE & A-Level | NUVORA",
   description:
     "Structured exam preparation: WAEC, NECO, JAMB/UTME, IGCSE and A-Level revision cohorts, past-paper practice, mocks and private support from vetted tutors.",
   path: "/exam-prep",
@@ -28,14 +28,14 @@ const METHOD = [
 
 export default function ExamPrepPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Exam Preparation", item: "https://ykayvirtual.com/exam-prep" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Exam Preparation", item: "https://nuvora.com/exam-prep" },
   ]);
   const course = courseJsonLd({
-    name: "Exam Preparation at YKAY",
+    name: "Exam Preparation at NUVORA",
     description: "WAEC, NECO, JAMB, IGCSE and A-Level preparation: revision cohorts, mocks and private support.",
-    provider: "YKAY Virtual School",
-    url: "https://ykayvirtual.com/exam-prep",
+    provider: "NUVORA",
+    url: "https://nuvora.com/exam-prep",
   });
 
   return (

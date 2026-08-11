@@ -7,9 +7,9 @@ import Link from "next/link";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Blog — Study Guides, Exam Tips & Learning Insights | YKAY",
+  title: "Blog — Study Guides, Exam Tips & Learning Insights | NUVORA",
   description:
-    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB, IELTS, A-Level and more — from the YKAY academic team.",
+    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB, IELTS, A-Level and more — from the NUVORA academic team.",
   path: "/blog",
 });
 

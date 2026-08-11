@@ -45,7 +45,7 @@ function VerifyEmailInner() {
       <div className="text-center space-y-4 py-6">
         <div className="text-5xl">✅</div>
         <h1 className="text-2xl font-extrabold">Email verified!</h1>
-        <p className="text-ink-600">Your account is now active. Welcome to YKAY.</p>
+        <p className="text-ink-600">Your account is now active. Welcome to NUVORA.</p>
         <Button variant="gold" onClick={() => router.push("/dashboard")}>
           Go to dashboard
         </Button>

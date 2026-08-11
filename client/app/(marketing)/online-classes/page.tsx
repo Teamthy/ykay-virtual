@@ -5,7 +5,7 @@ export const revalidate = 600; // ISR 10min
 
 export function generateMetadata(): Metadata {
   return buildMetadata({
-    title: "Online Classes & Cohorts — YKAY Virtual School | Live Small-Group Learning",
+    title: "Online Classes & Cohorts — NUVORA | Live Small-Group Learning",
     description: "Join live, small-group cohorts: IGCSE, WAEC/NECO, JAMB, A-Level, Digital Skills. Structured schemes, vetted tutors, progress reports. What Tuteria Prep does, but on one platform.",
     path: "/online-classes",
   });
@@ -19,14 +19,14 @@ const cohorts = [
 
 export default function OnlineClassesPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Online Classes", item: "https://ykayvirtual.com/online-classes" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Online Classes", item: "https://nuvora.com/online-classes" },
   ]);
   const course = courseJsonLd({
-    name: "YKAY Online Classes & Cohorts",
+    name: "NUVORA Online Classes & Cohorts",
     description: "Structured online cohorts for British, Nigerian and Professional exams with live lessons, recordings, practice exams and weekly reports.",
-    provider: "YKAY Virtual School",
-    url: "https://ykayvirtual.com/online-classes",
+    provider: "NUVORA",
+    url: "https://nuvora.com/online-classes",
   });
 
   return (
@@ -64,7 +64,7 @@ export default function OnlineClassesPage() {
         </div>
         <div className="rounded-2xl bg-ink-100 p-8">
           <h3 className="font-bold">What Tuteria doesn’t have here</h3>
-          <p className="mt-2 text-sm text-ink-600">Tuteria Prep is a separate subdomain (tuteriaprep.com) with isolated auth. YKAY keeps cohorts inside main domain → single SEO authority, unified wallet, same login, related content tutor↔subject↔blog, cancellable with escrow.</p>
+          <p className="mt-2 text-sm text-ink-600">Tuteria Prep is a separate subdomain (tuteriaprep.com) with isolated auth. NUVORA keeps cohorts inside main domain → single SEO authority, unified wallet, same login, related content tutor↔subject↔blog, cancellable with escrow.</p>
         </div>
       </section>
     </main>

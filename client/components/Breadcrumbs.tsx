@@ -7,7 +7,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
   const jsonLd = breadcrumbJsonLd(
     items.map((it, i) => ({
       name: it.name,
-      item: it.href ?? `https://ykayvirtual.com${i === 0 ? "/" : ""}`,
+      item: it.href ?? `https://nuvora.com${i === 0 ? "/" : ""}`,
     }))
   );
 

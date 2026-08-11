@@ -1,8 +1,8 @@
 export const siteConfig = {
-  name: "YKAY Virtual School",
-  brand: "ykay",
-  tagline: "Expert teaching. Structured learning. Anywhere.",
-  description: "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
+  name: "NUVORA",
+  brand: "nuvora",
+  tagline: "Learning beyond boundaries",
+  description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
 };
 
 export const navServices = {
@@ -20,7 +20,7 @@ export const categoryPills = [
   { emoji: "📊", label: "JAMB Prep", href: "/programmes/jamb" },
   { emoji: "🇬🇧", label: "A Level", href: "/programmes/a-level" },
   { emoji: "✈️", label: "Study Abroad", href: "/programmes/study-abroad" },
-  { emoji: "⭐", label: "YKAY Plus", href: "/programmes/plus" },
+  { emoji: "⭐", label: "NUVORA Plus", href: "/programmes/plus" },
   { emoji: "💻", label: "Digital Skills", href: "/programmes/digital" },
 ];
 
@@ -73,11 +73,11 @@ export const heroSlides = [
   },
   {
     tag: "Top 1% of Vetted Tutors",
-    title: "Upgrade your child's learning with YKAY Plus",
+    title: "Upgrade your child's learning with NUVORA Plus",
     desc: "Our premium tutoring service designed for families who want structured academic mentorship from the top 1% of tutors.",
-    cta: "Unlock YKAY Plus",
+    cta: "Unlock NUVORA Plus",
     bg: "#0f7938",
-    label: "YKAY Plus",
+    label: "NUVORA Plus",
     img: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=900&q=80",
   },
   {
@@ -158,7 +158,7 @@ export const kidImages = [
 ];
 
 export const accordionItems = [
-  { num: "1", title: "YKAY Insights™ Assessment", content: "Comprehensive evaluation of your child's current academic level, learning style and knowledge gaps to build a strong foundation." },
+  { num: "1", title: "NUVORA Insights™ Assessment", content: "Comprehensive evaluation of your child's current academic level, learning style and knowledge gaps to build a strong foundation." },
   { num: "2", title: "Adaptive Learning Plans", content: "Customised learning plans that adapt to your child's pace and preferences for maximum effectiveness and long-term retention." },
   { num: "3", title: "Child-Centered Learning", content: "Every lesson is tailored to engage your child based on their interests, strengths and unique learning preferences." },
   { num: "4", title: "Periodic Evaluation", content: "Regular structured assessments to track progress and refine the learning approach as your child grows." },
@@ -167,10 +167,10 @@ export const accordionItems = [
 
 export const testimonials = [
   { text: "My daughter scored among the highest in her common entrance exam into a top school and got admitted the same day. It has been very gratifying to see her improve under her tutor, to the point where she now contends with the top students in class.", name: "Mrs. Soetan", location: "Lekki, Lagos" },
-  { text: "The transformation in my son's performance has been remarkable. From struggling with basic maths to leading his class, YKAY has been a game changer for our family.", name: "Mr. Adeyemi", location: "Ikeja, Lagos" },
+  { text: "The transformation in my son's performance has been remarkable. From struggling with basic maths to leading his class, NUVORA has been a game changer for our family.", name: "Mr. Adeyemi", location: "Ikeja, Lagos" },
   { text: "I got into my dream university thanks to the amazing SAT preparation I received. My tutor was patient, knowledgeable and truly cared about my success.", name: "Sarah Okonkwo", location: "Abuja" },
-  { text: "As busy parents we needed reliable tutors who could come to our home. YKAY delivered beyond expectations. Our children look forward to every session.", name: "Dr. Ibrahim", location: "Victoria Island, Lagos" },
-  { text: "The IELTS preparation was thorough and effective. I scored 8.5 overall and secured my Canadian PR. Highly recommend YKAY to anyone serious about their goals.", name: "Chinedu Okafor", location: "Port Harcourt" },
+  { text: "As busy parents we needed reliable tutors who could come to our home. NUVORA delivered beyond expectations. Our children look forward to every session.", name: "Dr. Ibrahim", location: "Victoria Island, Lagos" },
+  { text: "The IELTS preparation was thorough and effective. I scored 8.5 overall and secured my Canadian PR. Highly recommend NUVORA to anyone serious about their goals.", name: "Chinedu Okafor", location: "Port Harcourt" },
 ];
 
 export const examCards = [

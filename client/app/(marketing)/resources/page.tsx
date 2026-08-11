@@ -4,9 +4,9 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Resources — Study Guides, Exam Tips & Learning Guidance | YKAY",
+  title: "Resources — Study Guides, Exam Tips & Learning Guidance | NUVORA",
   description:
-    "Free learning resources from YKAY: study guides, exam preparation tips, curriculum guidance and subject advice for British and Nigerian learners.",
+    "Free learning resources from NUVORA: study guides, exam preparation tips, curriculum guidance and subject advice for British and Nigerian learners.",
   path: "/resources",
 });
 
@@ -28,8 +28,8 @@ const TIPS = [
 
 export default function ResourcesPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Resources", item: "https://ykayvirtual.com/resources" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Resources", item: "https://nuvora.com/resources" },
   ]);
 
   return (

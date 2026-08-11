@@ -14,7 +14,7 @@ export function PartnerSection() {
         <div>
           <div className="tag-handwritten mb-5">We do home tutoring the right way.</div>
           <h2 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-7">
-            Make YKAY your children&apos;s tutoring partner from cradle to ruling the world.
+            Make NUVORA your children&apos;s tutoring partner from cradle to ruling the world.
           </h2>
           <p className="text-base leading-relaxed mb-9 opacity-90 max-w-[560px]">
             We work with you to ensure your children excel at every stage of their learning journey whether it&apos;s building early foundations, helping with homework, getting better grades, mastering their subjects or passing pivotal exams.

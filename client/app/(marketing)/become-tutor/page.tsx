@@ -4,9 +4,9 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Become a Tutor — Apply to Teach at YKAY",
+  title: "Become a Tutor — Apply to Teach at NUVORA",
   description:
-    "Join YKAY's vetted tutor network. Pass our competency assessment, complete identity verification and start earning from private tuition and cohort programmes.",
+    "Join NUVORA's vetted tutor network. Pass our competency assessment, complete identity verification and start earning from private tuition and cohort programmes.",
   path: "/become-tutor",
 });
 
@@ -26,8 +26,8 @@ const FAQS = [
 
 export default function BecomeTutorPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Become a Tutor", item: "https://ykayvirtual.com/become-tutor" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Become a Tutor", item: "https://nuvora.com/become-tutor" },
   ]);
   const faq = faqJsonLd(FAQS);
 
@@ -38,7 +38,7 @@ export default function BecomeTutorPage() {
 
       <div className="text-center max-w-2xl mx-auto">
         <p className="tag-handwritten">Earn from what you love</p>
-        <h1 className="text-4xl font-extrabold mt-2">Become a YKAY tutor</h1>
+        <h1 className="text-4xl font-extrabold mt-2">Become a NUVORA tutor</h1>
         <p className="mt-3 text-ink-600">
           A five-step, stateful application: build your profile, pick your subjects, verify your
           identity, pass a short competency quiz — then track your application live.

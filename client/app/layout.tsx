@@ -11,11 +11,11 @@ import { organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {
-    default: "YKAY Virtual School — Expert teaching. Structured learning. Anywhere.",
-    template: "%s | YKAY Virtual School",
+    default: "NUVORA — Learning beyond boundaries. British & Nigerian curricula, exam preparation, private tuition and live cohorts.",
+    template: "%s | NUVORA",
   },
   description: "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ykayvirtual.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com"),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

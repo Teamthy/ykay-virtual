@@ -20,7 +20,7 @@ const registerSchema = z
 
 const ROLE_COPY: Record<string, { title: string; desc: string }> = {
   PARENT: { title: "I'm a parent", desc: "Book tutors and programmes for my child" },
-  STUDENT: { title: "I'm a student", desc: "Learn with YKAY tutors" },
+  STUDENT: { title: "I'm a student", desc: "Learn with NUVORA tutors" },
   TUTOR: { title: "I'm a tutor", desc: "Apply to teach and earn" },
 };
 
@@ -57,7 +57,7 @@ function RegisterInner() {
         });
         // Auto-login after registration (smooth first-run experience).
         await login(value.email, value.password);
-        toast.success("Account created — welcome to YKAY!");
+        toast.success("Account created — welcome to NUVORA!");
         if (user.roles.includes("TUTOR")) router.push("/become-tutor/apply");
         else if (user.roles.includes("PARENT")) router.push("/onboarding/learner");
         else router.push("/dashboard");
@@ -73,7 +73,7 @@ function RegisterInner() {
     <main className="container-x py-16 flex justify-center">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-extrabold">Create your account</h1>
-        <p className="text-ink-500 text-sm mt-2">Join YKAY — free to start, escrow-protected payments.</p>
+        <p className="text-ink-500 text-sm mt-2">Join NUVORA — free to start, escrow-protected payments.</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();

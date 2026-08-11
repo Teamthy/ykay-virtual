@@ -5,7 +5,7 @@ import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Computing & Digital Skills — CS, Python, AI, Cybersecurity | YKAY",
+  title: "Computing & Digital Skills — CS, Python, AI, Cybersecurity | NUVORA",
   description:
     "Digital academy: Computer Science, ICT, Python programming, Artificial Intelligence, Cybersecurity and Microsoft Office certification preparation — cohorts and private tuition.",
   path: "/digital-skills",
@@ -22,14 +22,14 @@ const TRACKS = [
 
 export default function DigitalSkillsPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Digital Skills", item: "https://ykayvirtual.com/digital-skills" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Digital Skills", item: "https://nuvora.com/digital-skills" },
   ]);
   const course = courseJsonLd({
     name: "Computing & Digital Skills Academy",
     description: "Computer Science, ICT, Python, AI, Cybersecurity and Microsoft Office certification preparation.",
-    provider: "YKAY Virtual School",
-    url: "https://ykayvirtual.com/digital-skills",
+    provider: "NUVORA",
+    url: "https://nuvora.com/digital-skills",
   });
 
   return (

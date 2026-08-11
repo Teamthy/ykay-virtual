@@ -6,23 +6,23 @@ export const revalidate = 3600;
 
 export function generateMetadata(): Metadata {
   return buildMetadata({
-    title: "For Schools — YKAY Virtual School B2B | Institutional Accounts",
-    description: "Partner your school with YKAY: managed tutor network, cohort scheduling, institutional dashboards, pooled billing, safeguarding. Tuteria lacks true B2B infra — YKAY builds it.",
+    title: "For Schools — NUVORA B2B | Institutional Accounts",
+    description: "Partner your school with NUVORA: managed tutor network, cohort scheduling, institutional dashboards, pooled billing, safeguarding. Tuteria lacks true B2B infra — NUVORA builds it.",
     path: "/for-schools",
   });
 }
 
 export default function ForSchoolsPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "For Schools", item: "https://ykayvirtual.com/for-schools" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "For Schools", item: "https://nuvora.com/for-schools" },
   ]);
   return (
     <main className="container-x py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <h1 className="text-4xl font-extrabold">For Schools — Institutional Accounts</h1>
       <p className="mt-4 max-w-3xl text-lg text-ink-600">
-        Tuteria serves individual families. YKAY adds <strong>institution</strong> entity: schools, learning centres, NGOs can create B2B accounts, bulk-enrol students, assign teachers, get pooled invoices, and monitor attendance/progress in one dashboard.
+        Tuteria serves individual families. NUVORA adds <strong>institution</strong> entity: schools, learning centres, NGOs can create B2B accounts, bulk-enrol students, assign teachers, get pooled invoices, and monitor attendance/progress in one dashboard.
       </p>
 
       <div className="mt-10 grid md:grid-cols-3 gap-6">

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { apiFetchSSR } from "@/lib/api";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://ykayvirtual.com";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
 const now = new Date();
 
 // Dynamic sitemap — static pages + live tutors/subjects/programmes/blog,

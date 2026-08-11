@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return buildMetadata({ title: "Post Not Found", description: "Not found", path: `/blog/${params.slug}`, noIndex: true });
   }
   return buildMetadata({
-    title: post.seo_title ?? `${post.title} | YKAY Blog`,
+    title: post.seo_title ?? `${post.title} | NUVORA Blog`,
     description: post.seo_description ?? post.excerpt ?? "",
     path: `/blog/${params.slug}`,
   });
@@ -70,8 +70,8 @@ export default async function BlogSlugPage({ params }: Props) {
     headline: post.title,
     description: post.excerpt ?? "",
     datePublished: post.published_at ?? new Date().toISOString(),
-    author: "YKAY Academic Team",
-    url: `https://ykayvirtual.com/blog/${params.slug}`,
+    author: "NUVORA Academic Team",
+    url: `https://nuvora.com/blog/${params.slug}`,
   });
 
   const primarySubject = post.subject_slugs?.[0];

@@ -9,33 +9,35 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // YKAY brand system - academic, calm, premium
+        // NUVORA brand system — modern, calm, premium, academic
         brand: {
-          navy: "#0a2472",       // Primary deep navy
-          blue: "#1a4fd4",       // Digital blue
-          "blue-dark": "#1a3fb0",
-          "blue-light": "#e8f0ff",
-          gold: "#ffd400",       // Restrained gold accent
-          "gold-dark": "#e6bf00",
-          green: "#0f7938",      // Success / premium
-          "green-dark": "#0a5c2a",
+          navy: "#0A1F44",       // Primary — deep academic navy
+          "navy-dark": "#060F26",
+          blue: "#1E5EFF",       // Accent — clear digital blue
+          "blue-dark": "#1648CC",
+          "blue-light": "#E9F0FF",
+          gold: "#C9A227",       // Restrained gold for premium highlights
+          "gold-dark": "#A8841C",
+          "gold-light": "#F7F1DE",
+          green: "#0F7938",      // Success
+          "green-dark": "#0A5C2A",
         },
         ink: {
-          900: "#0a0e27",
-          800: "#1a1a2e",
-          700: "#333333",
-          600: "#555555",
-          500: "#777777",
-          400: "#999999",
-          300: "#cccccc",
-          200: "#e5e5e5",
-          100: "#f5f5f5",
-          50: "#fafafa",
+          900: "#0B1220",
+          800: "#141B2C",
+          700: "#2B3448",
+          600: "#475069",
+          500: "#5D6B84",
+          400: "#8794AC",
+          300: "#AEB9CE",
+          200: "#D3DCEA",
+          100: "#E8EEF7",
+          50: "#F5F8FD",
         },
         surface: {
           DEFAULT: "#ffffff",
-          muted: "#f5f7fb",
-          subtle: "#fafafa",
+          muted: "#F3F6FB",
+          subtle: "#F8FAFE",
         },
       },
       fontFamily: {

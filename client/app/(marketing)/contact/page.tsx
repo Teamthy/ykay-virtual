@@ -148,7 +148,7 @@ export default function ContactPage() {
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">✉️</span>
                 <div>
                   <div className="font-semibold">Email</div>
-                  <div className="text-xs text-ink-500">support@ykayvirtual.com</div>
+                  <div className="text-xs text-ink-500">support@nuvora.com</div>
                 </div>
               </li>
               <li className="flex items-center gap-3">

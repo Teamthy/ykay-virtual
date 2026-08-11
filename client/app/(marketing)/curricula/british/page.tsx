@@ -5,7 +5,7 @@ import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "British Curriculum Online — Year 7–9, IGCSE & A-Level | YKAY",
+  title: "British Curriculum Online — Year 7–9, IGCSE & A-Level | NUVORA",
   description:
     "British curriculum learning online: Year 7, 8 and 9, IGCSE (Year 10–11) and A-Level — cohorts, private tuition and exam preparation with vetted tutors.",
   path: "/curricula/british",
@@ -25,14 +25,14 @@ const FAQS = [
 
 export default function BritishCurriculumPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "British Curriculum", item: "https://ykayvirtual.com/curricula/british" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "British Curriculum", item: "https://nuvora.com/curricula/british" },
   ]);
   const course = courseJsonLd({
     name: "British Curriculum Online",
     description: "Year 7–9, IGCSE and A-Level learning with vetted tutors, structured cohorts and exam preparation.",
-    provider: "YKAY Virtual School",
-    url: "https://ykayvirtual.com/curricula/british",
+    provider: "NUVORA",
+    url: "https://nuvora.com/curricula/british",
   });
   const faq = faqJsonLd(FAQS);
 

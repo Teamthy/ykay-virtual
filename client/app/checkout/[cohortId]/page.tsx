@@ -30,9 +30,9 @@ export default async function CheckoutPage({ params }: Props) {
   }
 
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Programmes", item: "https://ykayvirtual.com/programmes" },
-    { name: cohort.title, item: `https://ykayvirtual.com/checkout/${cohort.id}` },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Programmes", item: "https://nuvora.com/programmes" },
+    { name: cohort.title, item: `https://nuvora.com/checkout/${cohort.id}` },
   ]);
 
   return (

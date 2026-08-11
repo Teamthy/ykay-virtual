@@ -1,7 +1,7 @@
-// YKAY service worker — offline shell for the PWA (mobile app experience).
+// NUVORA service worker — offline shell for the PWA (mobile app experience).
 // Strategy: network-first for navigation, cache-first for static assets.
 
-const CACHE = "ykay-v1";
+const CACHE = "nuvora-v1";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

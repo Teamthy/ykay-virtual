@@ -3,6 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatCard } from "@/components/ui/stat-card";
+import { Users, Wallet } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 import { getAnalytics } from "@/features/learning/api";
 
@@ -72,6 +75,19 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
+      {/* KPI stat cards (24.1) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Registered users" value={data.funnel.registered_users.toLocaleString()} hint="Accounts created" />
+        <StatCard label="Learner profiles" value={data.funnel.learners_created.toLocaleString()} hint="Linked to parents" />
+        <StatCard label="Paid orders" value={data.funnel.paid_orders.toLocaleString()} hint={`${data.funnel.orders_created.toLocaleString()} total orders`} />
+        <StatCard
+          label="Conversion rate"
+          value={`${data.funnel.conversion_rate.toFixed(1)}%`}
+          hint="Paid orders ÷ registered users"
+          trend={{ direction: data.funnel.conversion_rate >= 5 ? "up" : "flat", text: data.funnel.conversion_rate >= 5 ? "Healthy" : "Warming up", positive: data.funnel.conversion_rate >= 5 }}
+        />
+      </div>
+
       {/* Funnel */}
       <Card>
         <CardHeader>
@@ -111,7 +127,13 @@ export default function AdminAnalyticsPage() {
             <CardTitle>Cohort fill rates</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {data.cohorts.length === 0 && <p className="text-sm text-ink-500">No cohorts yet.</p>}
+            {data.cohorts.length === 0 && (
+              <EmptyState
+                icon={<Users size={20} />}
+                title="No cohorts yet"
+                description="Create a cohort and enrolments will appear here with fill rates."
+              />
+            )}
             {data.cohorts.map((c) => (
               <div key={c.cohort_id}>
                 <div className="flex items-center justify-between text-sm">
@@ -137,7 +159,13 @@ export default function AdminAnalyticsPage() {
             <CardTitle>Revenue by programme</CardTitle>
           </CardHeader>
           <CardContent>
-            {data.revenue.length === 0 && <p className="text-sm text-ink-500">No paid orders yet.</p>}
+            {data.revenue.length === 0 && (
+              <EmptyState
+                icon={<Wallet size={20} />}
+                title="No paid orders yet"
+                description="Revenue by programme appears once parents complete checkout."
+              />
+            )}
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-ink-400">

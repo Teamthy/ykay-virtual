@@ -5,7 +5,7 @@ import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Nigerian Curriculum Online — JSS1–3, SSS1–3, WAEC, NECO, JAMB | YKAY",
+  title: "Nigerian Curriculum Online — JSS1–3, SSS1–3, WAEC, NECO, JAMB | NUVORA",
   description:
     "Nigerian curriculum learning online: JSS1–3 and SSS1–3 with WAEC, NECO and JAMB preparation — cohorts, private tuition and exam bootcamps with vetted tutors.",
   path: "/curricula/nigerian",
@@ -25,14 +25,14 @@ const FAQS = [
 
 export default function NigerianCurriculumPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Nigerian Curriculum", item: "https://ykayvirtual.com/curricula/nigerian" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Nigerian Curriculum", item: "https://nuvora.com/curricula/nigerian" },
   ]);
   const course = courseJsonLd({
     name: "Nigerian Curriculum Online",
     description: "JSS1–3 and SSS1–3 learning with WAEC, NECO and JAMB preparation from vetted subject specialists.",
-    provider: "YKAY Virtual School",
-    url: "https://ykayvirtual.com/curricula/nigerian",
+    provider: "NUVORA",
+    url: "https://nuvora.com/curricula/nigerian",
   });
   const faq = faqJsonLd(FAQS);
 

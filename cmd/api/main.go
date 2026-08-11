@@ -39,7 +39,7 @@ import (
 	httpapi "ykay-virtual/internal/transport/http"
 )
 
-const Version = "0.3.0"
+const Version = "0.4.0"
 
 // Repositories — resolved dependency set (Postgres when reachable, otherwise
 // the in-memory store so the API runs standalone in dev).
@@ -209,7 +209,7 @@ func main() {
 	}
 
 	go func() {
-		fmt.Printf("YKAY API v%s listening on :%s env=%s\n", Version, cfg.Port, cfg.Environment)
+		fmt.Printf("NUVORA API v%s listening on :%s env=%s\n", Version, cfg.Port, cfg.Environment)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen failed: %v", err)
 		}

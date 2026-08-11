@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Inbox } from "lucide-react";
 import { listCohorts } from "@/features/cohorts/api/list";
 import { getCohortAssignments } from "@/features/cohorts/api/lessons";
 import { createProgressReport, gradeSubmission, listProgressReports, listSubmissions } from "./api";
@@ -149,7 +151,11 @@ export function TutorGradebook() {
             </Card>
           ))}
           {!submissions.isLoading && (submissions.data ?? []).length === 0 && (
-            <p className="text-sm text-ink-500">No submissions yet for this assignment.</p>
+            <EmptyState
+              icon={<Inbox size={20} />}
+              title="No submissions yet"
+              description="When students submit this assignment it will appear here for grading."
+            />
           )}
         </div>
       )}

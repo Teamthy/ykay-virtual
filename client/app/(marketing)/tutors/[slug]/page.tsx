@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = tutors[params.slug];
   if (!t) return buildMetadata({ title: "Tutor Not Found", description: "Tutor not found", path: `/tutors/${params.slug}`, noIndex: true });
   return buildMetadata({
-    title: `${t.name} — ${t.subjects.join(", ")} Tutor | YKAY Virtual School`,
+    title: `${t.name} — ${t.subjects.join(", ")} Tutor | NUVORA`,
     description: t.bio.slice(0, 155),
     path: `/tutors/${params.slug}`,
   });
@@ -33,8 +33,8 @@ export default function TutorPage({ params }: Props) {
     description: tutor.bio,
     ratingValue: tutor.rating,
     ratingCount: tutor.count,
-    url: `https://ykayvirtual.com/tutors/${params.slug}`,
-    image: "https://ykayvirtual.com/og-default.jpg",
+    url: `https://nuvora.com/tutors/${params.slug}`,
+    image: "https://nuvora.com/og-default.jpg",
   });
 
   const review = reviewJsonLd({
@@ -63,7 +63,7 @@ export default function TutorPage({ params }: Props) {
 
           <section className="mt-8 border rounded-2xl p-6">
             <h3 className="font-bold">Child-Centered Teaching Approach</h3>
-            <p className="mt-2 text-sm text-ink-600">Tuteria parity: Adaptive Learning Plans, Child-Centered, Periodic Evaluation. YKAY adds: progress reports with strengths/weaknesses/recommendations, audited.</p>
+            <p className="mt-2 text-sm text-ink-600">Tuteria parity: Adaptive Learning Plans, Child-Centered, Periodic Evaluation. NUVORA adds: progress reports with strengths/weaknesses/recommendations, audited.</p>
           </section>
 
           <ReviewsSection tutorSlug={params.slug} tutorId={tutor.id ?? params.slug} />

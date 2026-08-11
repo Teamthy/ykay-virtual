@@ -4,7 +4,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Pricing — Cohorts, Private Tuition & Exam Prep | YKAY",
+  title: "Pricing — Cohorts, Private Tuition & Exam Prep | NUVORA",
   description:
     "Transparent pricing for cohort programmes, private tuition packages and exam preparation. Escrow-protected payments with clear cancellation policies.",
   path: "/pricing",
@@ -52,8 +52,8 @@ const FAQS = [
 
 export default function PricingPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Pricing", item: "https://ykayvirtual.com/pricing" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Pricing", item: "https://nuvora.com/pricing" },
   ]);
   const faq = faqJsonLd(FAQS);
 

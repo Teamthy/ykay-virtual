@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ClipboardList, FileText } from "lucide-react";
 import {
   listAssessments,
   listProgressReports,
@@ -169,7 +171,13 @@ export function StudentQuizzes() {
           </Card>
         ))}
         {!assessments.isLoading && (assessments.data ?? []).length === 0 && (
-          <p className="text-sm text-ink-500">No quizzes published for you yet.</p>
+          <div className="md:col-span-2">
+            <EmptyState
+              icon={<ClipboardList size={20} />}
+              title="No quizzes published yet"
+              description="When your tutor publishes a quiz it will appear here, ready to take."
+            />
+          </div>
         )}
       </div>
 
@@ -195,7 +203,11 @@ export function StudentQuizzes() {
             </Card>
           ))}
           {!reports.isLoading && (reports.data ?? []).length === 0 && (
-            <p className="text-sm text-ink-500">No progress reports released yet.</p>
+            <EmptyState
+              icon={<FileText size={20} />}
+              title="No progress reports yet"
+              description="Reports written by your tutor appear here — you and your parent can see them."
+            />
           )}
         </div>
       </div>

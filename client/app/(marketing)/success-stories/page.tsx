@@ -4,9 +4,9 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Success Stories — Results, Competitions & Testimonials | YKAY",
+  title: "Success Stories — Results, Competitions & Testimonials | NUVORA",
   description:
-    "Learner results, competition achievements and parent stories at YKAY Virtual School. Testimonials appear with consent only.",
+    "Learner results, competition achievements and parent stories at NUVORA. Testimonials appear with consent only.",
   path: "/success-stories",
 });
 
@@ -27,8 +27,8 @@ const RESULTS = [
 
 export default function SuccessStoriesPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Success Stories", item: "https://ykayvirtual.com/success-stories" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Success Stories", item: "https://nuvora.com/success-stories" },
   ]);
   const faq = faqJsonLd([
     {
@@ -70,7 +70,7 @@ export default function SuccessStoriesPage() {
         <div className="grid md:grid-cols-2 gap-5">
           {[
             { title: "[Case study — pending consent]", body: "The learner's starting point, the plan, the outcome and the family's journey — published only with explicit consent and documentary support." },
-            { title: "[Case study — pending consent]", body: "From foundation to exam success: how a structured YKAY programme turned a learner's year around." },
+            { title: "[Case study — pending consent]", body: "From foundation to exam success: how a structured NUVORA programme turned a learner's year around." },
           ].map((c) => (
             <div key={c.title} className="rounded-2xl bg-ink-50 border border-dashed border-ink-200 p-6">
               <h3 className="font-bold text-sm">{c.title}</h3>

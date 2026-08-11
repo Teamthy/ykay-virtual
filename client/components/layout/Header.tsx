@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search, ChevronDown, Menu, X } from "lucide-react";
 import { AuthNav } from "@/components/layout/AuthNav";
+import { Logo } from "./Logo";
 import { cn } from "@/lib/utils";
 
 // Fully-wired header: every link points at a real route (no dead hrefs).
@@ -45,11 +46,8 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-ink-100">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-4 flex items-center gap-5">
         {/* Brand */}
-        <Link href="/" onClick={closeAll} className="flex items-center gap-2 text-2xl font-extrabold text-brand-blue tracking-tight shrink-0">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4 4h12a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H4V4zm2 2v16h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6z"/>
-          </svg>
-          ykay
+        <Link href="/" onClick={closeAll} className="shrink-0" aria-label="NUVORA home">
+          <Logo />
         </Link>
 
         {/* Desktop nav */}

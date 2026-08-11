@@ -1,3 +1,4 @@
+import { Logo } from "./Logo";
 import Link from "next/link";
 
 // Fully-wired footer: every column links to a real route.
@@ -34,15 +35,15 @@ export function Footer() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-14 mb-14">
           <div>
-            <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold mb-5">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="#1a4fd4">
-                <path d="M4 4h12a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H4V4zm2 2v16h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6z"/>
-              </svg>
-              ykay
+            <Link href="/" className="mb-5 inline-block" aria-label="NUVORA home">
+              <Logo dark />
             </Link>
-            <p className="text-sm text-white/65 leading-relaxed mb-6 max-w-xs">
-              Expert teaching. Structured learning. Anywhere. British and Nigerian curriculum,
-              examination preparation and expert private tuition online.
+            <p className="text-sm text-white/65 leading-relaxed mb-3 max-w-xs">
+              Learning beyond boundaries. British &amp; Nigerian curricula, exam preparation,
+              private tuition and live cohorts — one academically governed platform.
+            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold mb-6">
+              Learning beyond boundaries
             </p>
             <div className="flex gap-3">
               {[socialIcon("facebook"), socialIcon("twitter"), socialIcon("instagram"), socialIcon("linkedin")].map((icon, i) => (
@@ -58,7 +59,7 @@ export function Footer() {
           <FooterCol title="Support" links={SUPPORT} />
         </div>
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-3 text-xs text-white/55">
-          <span>© 2026 YKAY Virtual School. All rights reserved.</span>
+          <span>© 2026 NUVORA. All rights reserved.</span>
           <span className="flex gap-4">
             <Link href="/about" className="hover:text-white">Safeguarding</Link>
             <Link href="/contact" className="hover:text-white">Terms & Privacy</Link>

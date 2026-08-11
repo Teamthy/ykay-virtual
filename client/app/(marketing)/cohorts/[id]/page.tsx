@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const cohort = await getCohortSSR(params.id);
     return buildMetadata({
-      title: `${cohort.title} — Cohort Sessions & Enrolment | YKAY`,
+      title: `${cohort.title} — Cohort Sessions & Enrolment | NUVORA`,
       description: cohort.schedule_description ?? `Join the ${cohort.title} cohort — ${cohort.capacity} seats, ${cohort.timezone}, ${cohort.currency} ${cohort.fee.toLocaleString()}. Escrow-protected.`,
       path: `/cohorts/${params.id}`,
     });
@@ -51,9 +51,9 @@ export default async function CohortDetailPage({ params }: Props) {
   const full = seatsLeft === 0;
   const course = courseJsonLd({
     name: cohort.title,
-    description: cohort.schedule_description ?? `${cohort.title} cohort at YKAY Virtual School.`,
-    provider: "YKAY Virtual School",
-    url: `https://ykayvirtual.com/cohorts/${cohort.id}`,
+    description: cohort.schedule_description ?? `${cohort.title} cohort at NUVORA.`,
+    provider: "NUVORA",
+    url: `https://nuvora.com/cohorts/${cohort.id}`,
   });
 
   return (
@@ -69,7 +69,7 @@ export default async function CohortDetailPage({ params }: Props) {
           </span>
           <h1 className="text-3xl md:text-4xl font-extrabold mt-3">{cohort.title}</h1>
           <p className="mt-3 text-ink-600 leading-relaxed">
-            {cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted YKAY tutor."}
+            {cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
           </p>
 
           <div className="mt-6 grid sm:grid-cols-3 gap-3">

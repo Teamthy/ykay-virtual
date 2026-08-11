@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const s = subjects[params.slug];
   if (!s) return buildMetadata({ title: "Subject Not Found", description: "Not found", path: `/subjects/${params.slug}`, noIndex: true });
   return buildMetadata({
-    title: `${s.name} Tutoring — ${s.category} | YKAY Virtual School`,
+    title: `${s.name} Tutoring — ${s.category} | NUVORA`,
     description: s.desc,
     path: `/subjects/${params.slug}`,
   });
@@ -30,8 +30,8 @@ export default function SubjectPage({ params }: Props) {
   const course = courseJsonLd({
     name: subject.name,
     description: subject.desc,
-    provider: "YKAY Virtual School",
-    url: `https://ykayvirtual.com/subjects/${params.slug}`,
+    provider: "NUVORA",
+    url: `https://nuvora.com/subjects/${params.slug}`,
   });
   const faqs = faqJsonLd([
     { question: `Where will ${subject.name} lessons hold?`, answer: "In your home, online via Google Meet/Zoom, or hybrid — you choose location_mode ONLINE/IN_PERSON/HYBRID." },

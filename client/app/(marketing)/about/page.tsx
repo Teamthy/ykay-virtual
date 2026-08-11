@@ -3,9 +3,9 @@ import { buildMetadata, personJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "About — Academic Leadership, Standards & Safeguarding | YKAY",
+  title: "About — Academic Leadership, Standards & Safeguarding | NUVORA",
   description:
-    "YKAY Virtual School combines excellent teachers, strong academic systems and technology to give learners structured, high-quality education anywhere. Meet our academic leader.",
+    "NUVORA combines excellent teachers, strong academic systems and technology to give learners structured, high-quality education anywhere. Meet our academic leader.",
   path: "/about",
 });
 
@@ -25,12 +25,12 @@ const FOUNDER = {
     "Led students in international technology competitions, including the 2026 International Coding Olympiad in Rome, Italy — his delegation won medals and a Nigerian student achieved a world Top-3 result in the Codementum category.",
   ],
   vision:
-    "Yinka's vision for YKAY Virtual School is to combine excellent teachers, strong academic systems and technology to give learners access to structured, high-quality education wherever they are.",};
+    "Yinka's vision for NUVORA is to combine excellent teachers, strong academic systems and technology to give learners access to structured, high-quality education wherever they are.",};
 
 const PILLARS = [
   {
     title: "Academically governed",
-    body: "YKAY controls tutor quality, programme standards and the learner experience. Every tutor is vetted, every programme follows a defined curriculum pathway.",
+    body: "NUVORA controls tutor quality, programme standards and the learner experience. Every tutor is vetted, every programme follows a defined curriculum pathway.",
   },
   {
     title: "Multi-curriculum",
@@ -50,11 +50,11 @@ export default function AboutPage() {
   const person = personJsonLd({
     name: FOUNDER.name,
     description: FOUNDER.summary,
-    url: "https://ykayvirtual.com/about",
+    url: "https://nuvora.com/about",
   });
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "About", item: "https://ykayvirtual.com/about" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "About", item: "https://nuvora.com/about" },
   ]);
 
   return (
@@ -69,7 +69,7 @@ export default function AboutPage() {
           Expert teaching. Structured learning. Anywhere.
         </h1>
         <p className="mt-4 text-ink-600 leading-relaxed">
-          YKAY Virtual School is a digital education business — an online school rather than a simple
+          NUVORA is a digital education business — an online school rather than a simple
           tutor directory. We combine the standards of a strong school with the flexibility of online
           learning: programmes, cohorts, vetted tutors, assessments and progress you can actually see.
         </p>
@@ -86,7 +86,7 @@ export default function AboutPage() {
 
       {/* Pillars */}
       <section className="mt-14">
-        <h2 className="text-2xl font-extrabold mb-6">What makes YKAY different</h2>
+        <h2 className="text-2xl font-extrabold mb-6">What makes NUVORA different</h2>
         <div className="grid sm:grid-cols-2 gap-5">
           {PILLARS.map((p) => (
             <div key={p.title} className="border rounded-2xl p-6 hover:border-brand-blue/40 transition-colors">
@@ -176,7 +176,7 @@ export default function AboutPage() {
 
       {/* CTA */}
       <section className="mt-14 text-center border rounded-3xl p-12">
-        <h2 className="text-2xl font-extrabold">Explore what YKAY offers</h2>
+        <h2 className="text-2xl font-extrabold">Explore what NUVORA offers</h2>
         <p className="mt-2 text-ink-600 text-sm max-w-xl mx-auto">
           British or Nigerian curriculum, exam preparation or digital skills — find the right
           programme for your learner.

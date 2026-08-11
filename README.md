@@ -1,4 +1,6 @@
-# YKAY Virtual School
+# NUVORA — Learning beyond boundaries
+
+British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.
 
 Full commercial, SEO-first, curriculum-governed online tutoring marketplace and virtual school —
 built to Tuteria-level feature parity and beyond (escrow automation, booking-scoped messaging,

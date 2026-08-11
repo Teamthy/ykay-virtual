@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
 
-// 7-step private tuition request (per the YKAY working document §8.7).
+// 7-step private tuition request (per the NUVORA working document §8.7).
 // Submits a structured request via the support pipeline; our advisors match
 // the learner with a vetted tutor (managed matching, Tuteria-style fallback).
 

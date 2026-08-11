@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
+import { Stepper } from "@/components/ui/stepper";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
@@ -33,22 +34,9 @@ const profileSchema = z.object({
 });
 
 export function OnboardingStepper({ current }: { current: number }) {
-  const order = ["Profile", "Subjects", "Documents", "Quiz", "In review"];
-  return (
-    <ol className="flex items-center gap-2 text-xs mb-8 flex-wrap justify-center">
-      {order.map((label, i) => (
-        <li key={label} className="flex items-center gap-2">
-          <span className={`flex h-6 w-6 items-center justify-center rounded-full font-bold ${
-            i < current ? "bg-green-500 text-white" : i === current ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-400"
-          }`}>
-            {i < current ? "✓" : i + 1}
-          </span>
-          <span className={i <= current ? "font-semibold text-ink-800" : "text-ink-400"}>{label}</span>
-          {i < order.length - 1 && <span className="w-4 h-px bg-ink-200" />}
-        </li>
-      ))}
-    </ol>
-  );
+  // Reuses the shared Stepper (24.1) so the 5-page tutor flow matches the
+  // NUVORA design system tokens.
+  return <Stepper steps={["Profile", "Subjects", "Documents", "Quiz", "In review"]} current={current} className="mb-8" />;
 }
 
 export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: TutorProfile) => void }) {

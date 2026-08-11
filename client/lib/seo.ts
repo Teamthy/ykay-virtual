@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ykayvirtual.com";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
 
 export function absoluteUrl(path: string) {
   return `${SITE_URL}${path}`;
@@ -28,7 +28,7 @@ export function buildMetadata({ title, description, path, image, noIndex, canoni
       title,
       description,
       url,
-      siteName: "YKAY Virtual School",
+      siteName: "NUVORA",
       images: image ? [{ url: image }] : [{ url: absoluteUrl("/og-default.jpg") }],
       type: "website",
     },
@@ -48,15 +48,15 @@ export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "YKAY Virtual School",
+    name: "NUVORA",
     url: SITE_URL,
     logo: absoluteUrl("/logo.png"),
     description: "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
     sameAs: [
-      "https://twitter.com/ykayvirtual",
-      "https://facebook.com/ykayvirtual",
-      "https://instagram.com/ykayvirtual",
-      "https://linkedin.com/company/ykayvirtual",
+      "https://twitter.com/nuvora",
+      "https://facebook.com/nuvora",
+      "https://instagram.com/nuvora",
+      "https://linkedin.com/company/nuvora",
     ],
   };
 }
@@ -134,7 +134,7 @@ export function articleJsonLd({ headline, description, datePublished, dateModifi
     description,
     image,
     author: { "@type": "Person", name: author },
-    publisher: { "@type": "Organization", name: "YKAY Virtual School", logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") } },
+    publisher: { "@type": "Organization", name: "NUVORA", logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") } },
     datePublished,
     dateModified: dateModified || datePublished,
     mainEntityOfPage: url,

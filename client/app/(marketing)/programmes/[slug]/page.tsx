@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   return buildMetadata({
     title: p.title,
-    description: p.summary ?? `${p.title} — ${[p.curriculum_name, p.level_name, p.exam_name].filter(Boolean).join(" · ")} at YKAY Virtual School.`,
+    description: p.summary ?? `${p.title} — ${[p.curriculum_name, p.level_name, p.exam_name].filter(Boolean).join(" · ")} at NUVORA.`,
     path: `/programmes/${params.slug}`,
   });
 }
@@ -62,8 +62,8 @@ export default async function ProgrammeDetailPage({ params }: Props) {
   const course = courseJsonLd({
     name: p.title,
     description: p.summary ?? p.title,
-    provider: "YKAY Virtual School",
-    url: `https://ykayvirtual.com/programmes/${p.slug}`,
+    provider: "NUVORA",
+    url: `https://nuvora.com/programmes/${p.slug}`,
   });
   const faq = faqJsonLd([
     { question: "Who is this programme for?", answer: `${p.title} is designed for learners at the ${p.level_name ?? "appropriate"} level${p.exam_name ? ` preparing for ${p.exam_name}` : ""}.` },

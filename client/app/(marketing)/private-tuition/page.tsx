@@ -4,7 +4,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PrivateTuitionWizard } from "@/features/tuition/PrivateTuitionWizard";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Private Tuition — One-to-One Learning with Vetted Tutors | YKAY",
+  title: "Private Tuition — One-to-One Learning with Vetted Tutors | NUVORA",
   description:
     "Request one-to-one tuition in 7 steps: tell us the learner's level, subject, goals and schedule — we match you with a vetted tutor. Escrow-protected payments.",
   path: "/private-tuition",
@@ -30,14 +30,14 @@ const FAQS = [
 
 export default function PrivateTuitionPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "Private Tuition", item: "https://ykayvirtual.com/private-tuition" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "Private Tuition", item: "https://nuvora.com/private-tuition" },
   ]);
   const course = courseJsonLd({
-    name: "Private Tuition at YKAY",
+    name: "Private Tuition at NUVORA",
     description: "One-to-one learning with vetted tutors — British and Nigerian curricula, exam preparation and digital skills.",
-    provider: "YKAY Virtual School",
-    url: "https://ykayvirtual.com/private-tuition",
+    provider: "NUVORA",
+    url: "https://nuvora.com/private-tuition",
   });
   const faq = faqJsonLd(FAQS);
 
@@ -61,7 +61,7 @@ export default function PrivateTuitionPage() {
         <PrivateTuitionWizard />
         <aside className="space-y-5 lg:sticky lg:top-28">
           <div className="border rounded-2xl p-6">
-            <h2 className="font-bold">Why private tuition at YKAY</h2>
+            <h2 className="font-bold">Why private tuition at NUVORA</h2>
             <ul className="mt-3 space-y-2.5 text-sm text-ink-700">
               {[
                 "Tutors are identity-verified, background-checked and competency-assessed",

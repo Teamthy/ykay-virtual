@@ -4,9 +4,9 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "How It Works — Choose, Enrol, Learn, Track | YKAY",
+  title: "How It Works — Choose, Enrol, Learn, Track | NUVORA",
   description:
-    "How YKAY works for parents, students and tutors: discover programmes, enrol securely with escrow, attend lessons and track progress.",
+    "How NUVORA works for parents, students and tutors: discover programmes, enrol securely with escrow, attend lessons and track progress.",
   path: "/how-it-works",
 });
 
@@ -26,8 +26,8 @@ const TUTOR_STEPS = [
 
 export default function HowItWorksPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://ykayvirtual.com/" },
-    { name: "How It Works", item: "https://ykayvirtual.com/how-it-works" },
+    { name: "Home", item: "https://nuvora.com/" },
+    { name: "How It Works", item: "https://nuvora.com/how-it-works" },
   ]);
 
   return (
@@ -37,7 +37,7 @@ export default function HowItWorksPage() {
 
       <section className="text-center max-w-3xl mx-auto">
         <p className="tag-handwritten">Simple by design</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">How YKAY works</h1>
+        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">How NUVORA works</h1>
         <p className="mt-4 text-ink-600">
           Four steps for families, four steps for tutors — with escrow protection and full visibility
           at every stage.

@@ -18,15 +18,15 @@ export function generateMetadata({ searchParams }: Props): Metadata {
   if (filterCount >= 2) {
     return buildMetadata({
       title: "Find Tutors — Filtered Search",
-      description: "Filtered tutor search on YKAY Virtual School.",
+      description: "Filtered tutor search on NUVORA.",
       path: "/tutors",
       noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Find Private Tutors Online — Vetted & Verified | YKAY",
+    title: "Find Private Tutors Online — Vetted & Verified | NUVORA",
     description:
-      "Search YKAY's vetted private tutors for British & Nigerian curricula, WAEC, NECO, JAMB, IGCSE, A-Level and IELTS preparation. ID-verified, background-checked, escrow-protected.",
+      "Search NUVORA's vetted private tutors for British & Nigerian curricula, WAEC, NECO, JAMB, IGCSE, A-Level and IELTS preparation. ID-verified, background-checked, escrow-protected.",
     path: "/tutors",
   });
 }
@@ -40,7 +40,7 @@ export default function TutorsPage({ searchParams }: Props) {
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors" }]} />
       <h1 className="text-4xl font-extrabold">Find your perfect tutor</h1>
       <p className="mt-3 text-ink-600 max-w-2xl">
-        Every tutor on YKAY is identity-verified, background-checked and assessed for subject
+        Every tutor on NUVORA is identity-verified, background-checked and assessed for subject
         competency. Payments are held in escrow until your lessons are delivered.
       </p>
       {!marketplaceEnabled && (

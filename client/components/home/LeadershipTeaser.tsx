@@ -14,7 +14,7 @@ export function LeadershipTeaser() {
         </div>
         <div className="p-10 md:p-14">
           <p className="text-white/80 leading-relaxed">
-            YKAY is led by an experienced educator and Computing leader whose career spans leading
+            NUVORA is led by an experienced educator and Computing leader whose career spans leading
             international schools in Nigeria — including preparing learners for IGCSE Computer
             Science with exceptional national outcomes and coaching students to international
             competition success.
@@ -29,7 +29,7 @@ export function LeadershipTeaser() {
             ))}
           </ul>
           <div className="mt-6 flex gap-3 flex-wrap">
-            <Link href="/about" className="text-sm font-semibold text-white hover:text-brand-gold transition-colors">About YKAY →</Link>
+            <Link href="/about" className="text-sm font-semibold text-white hover:text-brand-gold transition-colors">About NUVORA →</Link>
             <Link href="/digital-skills" className="text-sm font-semibold text-white hover:text-brand-gold transition-colors">Computing & digital skills →</Link>
           </div>
         </div>

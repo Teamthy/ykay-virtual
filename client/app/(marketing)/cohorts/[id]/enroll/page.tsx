@@ -11,7 +11,7 @@ type Props = { params: { id: string } };
 
 export const metadata: Metadata = buildMetadata({
   title: "Enrol — Secure Checkout",
-  description: "Enrol securely in a YKAY cohort. Funds are held in escrow until lessons are delivered.",
+  description: "Enrol securely in a NUVORA cohort. Funds are held in escrow until lessons are delivered.",
   path: "/cohorts/enroll",
   noIndex: true,
 });

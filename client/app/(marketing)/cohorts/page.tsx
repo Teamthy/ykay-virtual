@@ -7,7 +7,7 @@ import Link from "next/link";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Group Cohorts — Scheduled Small-Group Classes | YKAY",
+  title: "Group Cohorts — Scheduled Small-Group Classes | NUVORA",
   description:
     "Join scheduled small-group cohort classes across British and Nigerian curricula, exam preparation and digital skills — with vetted tutors and escrow-protected enrolment.",
   path: "/cohorts",

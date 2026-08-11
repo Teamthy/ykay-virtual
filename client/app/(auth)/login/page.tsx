@@ -55,7 +55,7 @@ export default function LoginPage() {
     <main className="container-x py-16 flex justify-center">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-extrabold">Welcome back</h1>
-        <p className="text-ink-500 text-sm mt-2">Log in to your YKAY account to manage bookings and messages.</p>
+        <p className="text-ink-500 text-sm mt-2">Log in to your NUVORA account to manage bookings and messages.</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -129,7 +129,7 @@ export default function LoginPage() {
           </div>
         )}
         <p className="text-center text-sm text-ink-500 mt-6">
-          New to YKAY?{" "}
+          New to NUVORA?{" "}
           <Link href="/register" className="text-brand-blue font-semibold hover:underline">
             Create an account
           </Link>

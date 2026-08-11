@@ -14,7 +14,7 @@ export function ResultsSection() {
           We deliver the best results, period.
         </div>
         <h2 className="text-3xl md:text-5xl font-extrabold leading-tight tracking-tight mb-16">
-          YKAY students perform 3x better in class<br />
+          NUVORA students perform 3x better in class<br />
           and school examinations
         </h2>
 
@@ -22,20 +22,20 @@ export function ResultsSection() {
           {/* Bar chart */}
           <div className="relative h-[440px] flex items-end justify-center gap-10 pl-16">
             <div className="absolute left-5 top-5 bottom-28 w-0.5 bg-white before:content-[''] before:absolute before:-top-2 before:-left-1.5 before:border-[7px] before:border-transparent before:border-b-white after:content-[''] after:absolute after:-bottom-2 after:-left-1.5 after:border-[7px] after:border-transparent after:border-t-white" />
-            <div className="absolute left-14 top-[40%] text-brand-gold font-handwritten text-3xl font-bold text-center leading-tight">
+            <div className="absolute left-14 top-[40%] text-brand-gold font-bold text-3xl font-bold text-center leading-tight">
               3x<br />growth
             </div>
             <div className="relative flex flex-col items-center">
-              <div className="w-32 md:w-[150px] h-[130px] bg-[#f0f0f0] rounded-t-md flex items-center justify-center text-ink-800 font-handwritten font-bold text-xl md:text-2xl text-center leading-tight p-5 shadow-[8px_0_0_#999]">
+              <div className="w-32 md:w-[150px] h-[130px] bg-[#f0f0f0] rounded-t-md flex items-center justify-center text-ink-800 font-bold font-bold text-xl md:text-2xl text-center leading-tight p-5 shadow-[8px_0_0_#999]">
                 School<br />only
               </div>
-              <div className="mt-3.5 text-white font-handwritten font-bold text-base text-center">School only</div>
+              <div className="mt-3.5 text-white font-bold font-bold text-base text-center">School only</div>
             </div>
             <div className="relative flex flex-col items-center">
-              <div className="w-32 md:w-[150px] h-[340px] bg-brand-gold rounded-t-md flex items-center justify-center text-ink-800 font-handwritten font-bold text-xl md:text-2xl text-center leading-tight p-5 shadow-[8px_0_0_#b8860b]">
-                YKAY<br />Tutoring
+              <div className="w-32 md:w-[150px] h-[340px] bg-brand-gold rounded-t-md flex items-center justify-center text-ink-800 font-bold font-bold text-xl md:text-2xl text-center leading-tight p-5 shadow-[8px_0_0_#b8860b]">
+                NUVORA<br />Tutoring
               </div>
-              <div className="mt-3.5 text-white font-handwritten font-bold text-base text-center">School + YKAY</div>
+              <div className="mt-3.5 text-white font-bold font-bold text-base text-center">School + NUVORA</div>
             </div>
           </div>
 
