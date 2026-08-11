@@ -12,12 +12,17 @@ import (
 // rate-limit) + versioned routes per api/openapi.yaml.
 
 type Router struct {
-	mux         *http.ServeMux
-	rateLimiter *middleware.RateLimiter
-	Version     string
+	mux            *http.ServeMux
+	rateLimiter    *middleware.RateLimiter
+	Version        string
+	allowedOrigins string
 }
 
 func NewRouter(version string, handlers *Handlers) *Router {
+	return NewRouterWithOrigins(version, handlers, "*")
+}
+
+func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string) *Router {
 	mux := http.NewServeMux()
 	rl := middleware.NewRateLimiter(100, time.Minute) // sliding window: 100 req/min default
 
@@ -68,12 +73,29 @@ func NewRouter(version string, handlers *Handlers) *Router {
 	mux.HandleFunc("POST "+v1+"/admin/vetting/profiles/{profileId}/suspend", handlers.AdminVetting.action("suspend"))
 	mux.HandleFunc("POST "+v1+"/admin/vetting/documents/{documentId}/review", handlers.AdminVetting.ReviewDocument)
 
+	// Messaging + notifications (Phase 5)
+	mux.HandleFunc("GET "+v1+"/me/conversations", handlers.Messaging.ListConversations)
+	mux.HandleFunc("POST "+v1+"/me/conversations", handlers.Messaging.CreateConversation)
+	mux.HandleFunc("GET "+v1+"/me/conversations/{conversationId}/messages", handlers.Messaging.ListMessages)
+	mux.HandleFunc("POST "+v1+"/me/conversations/{conversationId}/messages", handlers.Messaging.SendMessage)
+	mux.HandleFunc("POST "+v1+"/me/conversations/{conversationId}/read", handlers.Messaging.MarkRead)
+	mux.HandleFunc("GET "+v1+"/me/notifications", handlers.Messaging.ListNotifications)
+	mux.HandleFunc("GET "+v1+"/me/notifications/unread-count", handlers.Messaging.UnreadCount)
+	mux.HandleFunc("POST "+v1+"/me/notifications/{notificationId}/read", handlers.Messaging.MarkNotificationRead)
+	mux.HandleFunc("POST "+v1+"/me/notifications/read-all", handlers.Messaging.MarkAllRead)
+
+	// Dashboards (Phase 5 portals)
+	mux.HandleFunc("GET "+v1+"/me/orders", handlers.Dashboard.MyOrders)
+	mux.HandleFunc("GET "+v1+"/me/lessons", handlers.Dashboard.MyLessons)
+	mux.HandleFunc("GET "+v1+"/me/tutor-lessons", handlers.Dashboard.MyTutorLessons)
+	mux.HandleFunc("GET "+v1+"/me/earnings", handlers.Dashboard.MyEarnings)
+
 	// Dev object serving (LocalStorage signed URLs)
 	if handlers.Objects != nil {
 		mux.HandleFunc("GET /objects/{bucket}/{key...}", handlers.Objects.Serve)
 	}
 
-	return &Router{mux: mux, rateLimiter: rl, Version: version}
+	return &Router{mux: mux, rateLimiter: rl, Version: version, allowedOrigins: allowedOrigins}
 }
 
 func (rt *Router) Handler() http.Handler {
@@ -81,6 +103,7 @@ func (rt *Router) Handler() http.Handler {
 	h = middleware.RequestID(h)
 	h = middleware.Logger(h)
 	h = middleware.Recover(h)
+	h = middleware.CORS(rt.allowedOrigins)(h)
 	h = middleware.AuthBridge(h)
 	h = rt.rateLimiter.Middleware(h)
 	return h
@@ -96,5 +119,7 @@ type Handlers struct {
 	Payments     *PaymentHandler
 	Vetting      *VettingHandler
 	AdminVetting *AdminVettingHandler
+	Messaging    *MessagingHandler
+	Dashboard    *DashboardHandler
 	Objects      *ObjectHandler
 }

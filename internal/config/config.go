@@ -21,6 +21,7 @@ type Config struct {
 	Environment       string
 	OtelEndpoint      string
 	SiteURL           string
+	AllowedOrigins    string
 }
 
 func Load() Config {
@@ -40,6 +41,7 @@ func Load() Config {
 		Environment:     getEnv("ENVIRONMENT", "development"),
 		OtelEndpoint:    getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
 		SiteURL:         getEnv("SITE_URL", "https://ykayvirtual.com"),
+		AllowedOrigins:  getEnv("ALLOWED_ORIGINS", "*"),
 	}
 }
 

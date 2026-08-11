@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"ykay-virtual/internal/domain/identity"
 
@@ -56,3 +57,8 @@ func (s *AuditService) LogStateChange(ctx context.Context, actorID *uuid.UUID,
 }
 
 var _ identity.AuditService = (*AuditService)(nil)
+
+func nowPtr() time.Time { return time.Now().UTC() }
+
+// strPtr returns a pointer to s (shared string helper).
+func strPtr(s string) *string { return &s }

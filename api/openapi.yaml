@@ -468,6 +468,147 @@ paths:
       responses:
         '200': { description: Reviewed }
 
+  /me/conversations:
+    get:
+      tags: [messaging]
+      summary: My conversations (participant only, paginated)
+      security: [{ actorHeader: [] }]
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Conversations with meta }
+    post:
+      tags: [messaging]
+      summary: Create booking/cohort conversation
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type]
+              properties:
+                type: { type: string, enum: [BOOKING, COHORT] }
+                package_id: { type: string, format: uuid }
+                cohort_id: { type: string, format: uuid }
+                participant_user_ids: { type: array, items: { type: string, format: uuid } }
+      responses:
+        '201': { description: Conversation }
+
+  /me/conversations/{conversationId}/messages:
+    get:
+      tags: [messaging]
+      summary: List messages (participant only, newest first)
+      security: [{ actorHeader: [] }]
+      parameters:
+        - { name: before, in: query, schema: { type: string, format: uuid } }
+        - { name: limit, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Messages }
+    post:
+      tags: [messaging]
+      summary: Send message (notifies other participants)
+      security: [{ actorHeader: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                type: { type: string, default: TEXT }
+                body: { type: string, maxLength: 4000 }
+      responses:
+        '201': { description: Message }
+
+  /me/conversations/{conversationId}/read:
+    post:
+      tags: [messaging]
+      summary: Mark conversation read
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Marked }
+
+  /me/notifications:
+    get:
+      tags: [messaging]
+      summary: My notifications (paginated)
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Notifications }
+
+  /me/notifications/unread-count:
+    get:
+      tags: [messaging]
+      summary: Unread notification count
+      security: [{ actorHeader: [] }]
+      responses:
+        '200':
+          description: Count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unread: { type: integer }
+
+  /me/notifications/{notificationId}/read:
+    post:
+      tags: [messaging]
+      summary: Mark one notification read
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Marked }
+
+  /me/notifications/read-all:
+    post:
+      tags: [messaging]
+      summary: Mark all notifications read
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Marked }
+
+  /me/orders:
+    get:
+      tags: [identity]
+      summary: My orders (parent portal)
+      security: [{ actorHeader: [] }]
+      responses:
+        '200': { description: Orders }
+
+  /me/lessons:
+    get:
+      tags: [identity]
+      summary: Lessons for a linked student (student portal)
+      security: [{ actorHeader: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Lessons }
+
+  /me/tutor-lessons:
+    get:
+      tags: [identity]
+      summary: Lessons for a tutor profile
+      security: [{ actorHeader: [] }]
+      parameters:
+        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Lessons }
+
+  /me/earnings:
+    get:
+      tags: [identity]
+      summary: Tutor earnings (escrow holds + payouts)
+      security: [{ actorHeader: [] }]
+      parameters:
+        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Earnings summary }
+
   /reviews:
     post:
       tags: [reviews]

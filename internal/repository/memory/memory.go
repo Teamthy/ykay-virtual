@@ -453,6 +453,30 @@ func (m *OrderMemory) ListItems(_ context.Context, orderID uuid.UUID) ([]payment
 	return out, nil
 }
 
+func (m *OrderMemory) ListByParentUserID(_ context.Context, parentUserID uuid.UUID, limit, offset int) ([]payment.Order, int64, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []payment.Order
+	for _, o := range m.rows {
+		if o.ParentUserID == parentUserID {
+			out = append(out, *o)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	total := int64(len(out))
+	if offset > len(out) {
+		offset = len(out)
+	}
+	end := offset + limit
+	if limit < 1 {
+		end = offset + 20
+	}
+	if end > len(out) {
+		end = len(out)
+	}
+	return out[offset:end], total, nil
+}
+
 var _ payment.OrderRepository = (*OrderMemory)(nil)
 
 type PaymentMemory struct {
@@ -640,6 +664,21 @@ func (m *EscrowMemory) ListStaleHeld(_ context.Context, now time.Time, limit int
 	return out, nil
 }
 
+func (m *EscrowMemory) ListByTutorProfileID(_ context.Context, tutorProfileID uuid.UUID, limit int) ([]payment.EscrowHold, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []payment.EscrowHold
+	for _, h := range m.rows {
+		if h.TutorProfileID == tutorProfileID {
+			out = append(out, *h)
+		}
+	}
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
 var _ payment.EscrowHoldRepository = (*EscrowMemory)(nil)
 
 type PayoutMemory struct {
@@ -698,6 +737,21 @@ func (m *PayoutMemory) UpdateStatus(_ context.Context, id uuid.UUID, status paym
 	p.ProviderReference = providerRef
 	p.ProcessedAt = processedAt
 	return nil
+}
+
+func (m *PayoutMemory) ListByTutorProfileID(_ context.Context, tutorProfileID uuid.UUID, limit int) ([]payment.Payout, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []payment.Payout
+	for _, p := range m.rows {
+		if p.TutorProfileID == tutorProfileID {
+			out = append(out, *p)
+		}
+	}
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
 }
 
 var _ payment.PayoutRepository = (*PayoutMemory)(nil)

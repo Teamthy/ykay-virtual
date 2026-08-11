@@ -268,6 +268,26 @@ func (r *EscrowHoldRepo) ListStaleHeld(ctx context.Context, now time.Time, limit
 	return out, rows.Err()
 }
 
+func (r *EscrowHoldRepo) ListByTutorProfileID(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]payment.EscrowHold, error) {
+	if limit < 1 || limit > 100 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx, "SELECT "+escrowColumns+" FROM escrow_holds WHERE tutor_profile_id = $1 ORDER BY created_at DESC LIMIT $2", tutorProfileID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list escrow by tutor: %w", err)
+	}
+	defer rows.Close()
+	out := []payment.EscrowHold{}
+	for rows.Next() {
+		h, err := scanEscrow(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *h)
+	}
+	return out, rows.Err()
+}
+
 var _ payment.EscrowHoldRepository = (*EscrowHoldRepo)(nil)
 
 // --- Payouts ---
@@ -357,6 +377,40 @@ func (r *PayoutRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status paym
 		return fmt.Errorf("update payout status: %w", err)
 	}
 	return nil
+}
+
+func (r *PayoutRepo) ListByTutorProfileID(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]payment.Payout, error) {
+	if limit < 1 || limit > 100 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at
+		FROM payouts WHERE tutor_profile_id = $1 ORDER BY created_at DESC LIMIT $2`, tutorProfileID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list payouts by tutor: %w", err)
+	}
+	defer rows.Close()
+	out := []payment.Payout{}
+	for rows.Next() {
+		var p payment.Payout
+		var provider, providerRef sql.NullString
+		var processedAt sql.NullTime
+		if err := rows.Scan(&p.ID, &p.TutorProfileID, &p.EscrowHoldID, &p.Amount, &p.Currency,
+			&p.Status, &provider, &providerRef, &processedAt, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			return nil, err
+		}
+		if provider.Valid {
+			p.Provider = &provider.String
+		}
+		if providerRef.Valid {
+			p.ProviderReference = &providerRef.String
+		}
+		if processedAt.Valid {
+			p.ProcessedAt = &processedAt.Time
+		}
+		out = append(out, p)
+	}
+	return out, rows.Err()
 }
 
 var _ payment.PayoutRepository = (*PayoutRepo)(nil)

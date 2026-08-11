@@ -156,4 +156,31 @@ func (r *OrderRepo) Update(ctx context.Context, o *payment.Order) error {
 	return nil
 }
 
+func (r *OrderRepo) ListByParentUserID(ctx context.Context, parentUserID uuid.UUID, limit, offset int) ([]payment.Order, int64, error) {
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	var total int64
+	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM orders WHERE parent_user_id = $1", parentUserID).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("count orders: %w", err)
+	}
+	rows, err := r.db.QueryContext(ctx, "SELECT "+orderColumns+" FROM orders WHERE parent_user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3", parentUserID, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list orders: %w", err)
+	}
+	defer rows.Close()
+	out := []payment.Order{}
+	for rows.Next() {
+		o, err := scanOrder(rows)
+		if err != nil {
+			return nil, 0, err
+		}
+		out = append(out, *o)
+	}
+	return out, total, rows.Err()
+}
+
 var _ payment.OrderRepository = (*OrderRepo)(nil)

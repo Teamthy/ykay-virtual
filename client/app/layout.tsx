@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/layout/ChatWidget";
+import { MobileNav } from "@/components/layout/MobileNav";
 import { Providers } from "@/components/providers";
+import { RegisterSW } from "@/components/register-sw";
 import { organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -31,9 +33,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <Header />
-          <main>{children}</main>
+          <main className="pb-16 lg:pb-0">{children}</main>
           <Footer />
           <ChatWidget />
+          <MobileNav />
+          <RegisterSW />
         </Providers>
       </body>
     </html>

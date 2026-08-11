@@ -28,5 +28,3 @@ func signPaystack(payload []byte, secret string) string {
 	mac.Write(payload)
 	return hex.EncodeToString(mac.Sum(nil))
 }
-
-func strPtr(s string) *string { return &s }

@@ -17,6 +17,7 @@ import (
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/tutor"
 	payment_provider "ykay-virtual/internal/payment"
@@ -43,6 +44,15 @@ type Repositories struct {
 	StudentLink     booking.StudentProfileReader
 	TutorSubjectChk booking.TutorProfileReader
 	AuditRepo       identity.AuditLogRepository
+	Orders          payment.OrderRepository
+	Escrow          payment.EscrowHoldRepository
+	Payouts         payment.PayoutRepository
+	PrivatePackages booking.PrivatePackageRepository
+	Cohorts         booking.CohortRepository
+	Lessons         booking.LessonRepository
+	Conversations   messaging.ConversationRepository
+	Messages        messaging.MessageRepository
+	Notifications   messaging.NotificationRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -84,6 +94,13 @@ func main() {
 	programmeSvc := service.NewProgrammeService(repos.ProgrammeRepo, cacheBackend)
 	cohortSvc := service.NewCohortService(repos.CohortRepo, cacheBackend)
 
+	// --- Messaging + dashboards ---
+	messagingSvc := service.NewMessagingService(
+		repos.Conversations, repos.Messages, repos.Notifications,
+		repos.PrivatePackages, repos.Cohorts, nil)
+	dashboardSvc := service.NewDashboardService(
+		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
+
 	// --- Transport ---
 	handlers := &httpapi.Handlers{
 		Subjects:   httpapi.NewSubjectHandler(subjectSvc),
@@ -97,9 +114,11 @@ func main() {
 		}, cfg.SiteURL),
 		Vetting:      httpapi.NewVettingHandler(vettingSvc),
 		AdminVetting: httpapi.NewAdminVettingHandler(vettingSvc),
+		Messaging:    httpapi.NewMessagingHandler(messagingSvc),
+		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
-	router := httpapi.NewRouter(Version, handlers)
+	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -142,12 +161,22 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 	if err != nil {
 		log.Printf("storage: %v", err)
 		store := memory.NewMemoryStore()
+		convMem := memory.NewConversationMemory()
 		return &Repositories{
-			UoWFactory:     memory.NewMemoryUnitOfWorkFactory(store),
-			EscrowRead:     store.Escrow,
-			CohortRepo:     store.Cohorts,
-			AuditRepo:      store.AuditLogs,
-			StorageBackend: "memory",
+			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
+			EscrowRead:      store.Escrow,
+			CohortRepo:      store.Cohorts,
+			AuditRepo:       store.AuditLogs,
+			Orders:          store.Orders,
+			Escrow:          store.Escrow,
+			Payouts:         store.Payouts,
+			PrivatePackages: store.PrivatePkgs,
+			Cohorts:         store.Cohorts,
+			Lessons:         memory.NewLessonMemory(),
+			Conversations:   convMem,
+			Messages:        memory.NewMessageMemory(convMem),
+			Notifications:   memory.NewNotificationMemory(),
+			StorageBackend:  "memory",
 		}
 	}
 	_ = ctx
@@ -161,6 +190,15 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		StudentLink:     postgres.NewStudentLinkRepo(pg.DB()),
 		TutorSubjectChk: postgres.NewTutorSubjectCheckRepo(pg.DB()),
 		AuditRepo:       postgres.NewAuditLogRepo(pg.DB()),
+		Orders:          postgres.NewOrderRepo(pg.DB()),
+		Escrow:          postgres.NewEscrowHoldRepo(pg.DB()),
+		Payouts:         postgres.NewPayoutRepo(pg.DB()),
+		PrivatePackages: postgres.NewPrivatePackageRepo(pg.DB()),
+		Cohorts:         postgres.NewCohortRepo(pg.DB()),
+		Lessons:         postgres.NewLessonRepo(pg.DB()),
+		Conversations:   postgres.NewConversationRepo(pg.DB()),
+		Messages:        postgres.NewMessageRepo(pg.DB()),
+		Notifications:   postgres.NewNotificationRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }

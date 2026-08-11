@@ -43,3 +43,9 @@ type StudentProfileReader interface {
 type TutorProfileReader interface {
 	TutorCanTeach(ctx context.Context, tutorProfileID uuid.UUID, subjectID uuid.UUID) (bool, error)
 }
+
+// LessonRepository — read side for lessons (dashboards, scheduling).
+type LessonRepository interface {
+	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Lesson, error)
+	ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Lesson, error)
+}

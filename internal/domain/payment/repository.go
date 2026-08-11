@@ -21,6 +21,7 @@ type OrderRepository interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status OrderStatus) error
 	Update(ctx context.Context, o *Order) error
 	ListItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
+	ListByParentUserID(ctx context.Context, parentUserID uuid.UUID, limit, offset int) ([]Order, int64, error)
 }
 
 type PaymentRepository interface {
@@ -48,12 +49,14 @@ type EscrowHoldRepository interface {
 	// ListStaleHeld lists HELD holds whose release_at has passed — used by the
 	// expire_stale_booking_holds cron (Tuteria parity: 3-day auto release).
 	ListStaleHeld(ctx context.Context, now time.Time, limit int) ([]EscrowHold, error)
+	ListByTutorProfileID(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]EscrowHold, error)
 }
 
 type PayoutRepository interface {
 	Create(ctx context.Context, p *Payout) error
 	GetByEscrowHoldID(ctx context.Context, escrowHoldID uuid.UUID) (*Payout, error)
 	ListByStatus(ctx context.Context, status PayoutStatus, limit int) ([]Payout, error)
+	ListByTutorProfileID(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Payout, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status PayoutStatus, providerRef *string, processedAt *time.Time) error
 }
 
