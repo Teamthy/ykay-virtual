@@ -1,11 +1,12 @@
 package review
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type ReviewStatus string
+
 const (
 	ReviewPending   ReviewStatus = "PENDING"
 	ReviewPublished ReviewStatus = "PUBLISHED"

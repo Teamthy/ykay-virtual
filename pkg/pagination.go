@@ -34,12 +34,12 @@ func (p PaginationParams) Limit() int {
 }
 
 type PaginationMeta struct {
-	Page       int  `json:"page"`
-	PageSize   int  `json:"page_size"`
+	Page       int   `json:"page"`
+	PageSize   int   `json:"page_size"`
 	TotalItems int64 `json:"total_items"`
-	TotalPages int  `json:"total_pages"`
-	HasNext    bool `json:"has_next"`
-	HasPrev    bool `json:"has_prev"`
+	TotalPages int   `json:"total_pages"`
+	HasNext    bool  `json:"has_next"`
+	HasPrev    bool  `json:"has_prev"`
 }
 
 func NewPaginationMeta(page, pageSize int, total int64) PaginationMeta {

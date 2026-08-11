@@ -34,16 +34,16 @@ const Version = "0.3.0"
 // Repositories — resolved dependency set (Postgres when reachable, otherwise
 // the in-memory store so the API runs standalone in dev).
 type Repositories struct {
-	UoWFactory       repository.UnitOfWorkFactory
-	EscrowRead       payment.EscrowHoldRepository
-	TutorRepo        tutor.TutorRepository
-	SubjectRepo      academics.SubjectRepository
-	ProgrammeRepo    academics.ProgrammeRepository
-	CohortRepo       booking.CohortRepository
-	StudentLink      booking.StudentProfileReader
-	TutorSubjectChk  booking.TutorProfileReader
-	AuditRepo        identity.AuditLogRepository
-	StorageBackend   string // "postgres" | "memory"
+	UoWFactory      repository.UnitOfWorkFactory
+	EscrowRead      payment.EscrowHoldRepository
+	TutorRepo       tutor.TutorRepository
+	SubjectRepo     academics.SubjectRepository
+	ProgrammeRepo   academics.ProgrammeRepository
+	CohortRepo      booking.CohortRepository
+	StudentLink     booking.StudentProfileReader
+	TutorSubjectChk booking.TutorProfileReader
+	AuditRepo       identity.AuditLogRepository
+	StorageBackend  string // "postgres" | "memory"
 }
 
 func main() {

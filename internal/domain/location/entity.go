@@ -1,11 +1,12 @@
 package location
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type LocationType string
+
 const (
 	TypeCountry LocationType = "COUNTRY"
 	TypeState   LocationType = "STATE"

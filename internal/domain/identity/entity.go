@@ -11,10 +11,10 @@ import (
 type UserStatus string
 
 const (
-	UserStatusPending  UserStatus = "PENDING_VERIFICATION"
-	UserStatusActive   UserStatus = "ACTIVE"
+	UserStatusPending   UserStatus = "PENDING_VERIFICATION"
+	UserStatusActive    UserStatus = "ACTIVE"
 	UserStatusSuspended UserStatus = "SUSPENDED"
-	UserStatusDeleted  UserStatus = "DELETED"
+	UserStatusDeleted   UserStatus = "DELETED"
 )
 
 type User struct {
@@ -39,11 +39,11 @@ type Role struct {
 }
 
 type UserRole struct {
-	ID        uuid.UUID `json:"id"`
-	UserID    uuid.UUID `json:"user_id"`
-	RoleID    uuid.UUID `json:"role_id"`
+	ID        uuid.UUID  `json:"id"`
+	UserID    uuid.UUID  `json:"user_id"`
+	RoleID    uuid.UUID  `json:"role_id"`
 	GrantedBy *uuid.UUID `json:"granted_by,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time  `json:"created_at"`
 }
 
 type Session struct {
@@ -60,13 +60,13 @@ type Session struct {
 
 // ParentStudentLink enforces object-level authz: parent can only access linked students
 type ParentProfile struct {
-	ID            uuid.UUID `json:"id"`
-	UserID        uuid.UUID `json:"user_id"`
-	FirstName     string    `json:"first_name"`
-	LastName      string    `json:"last_name"`
-	WhatsappNumber *string  `json:"whatsapp_number,omitempty"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID             uuid.UUID `json:"id"`
+	UserID         uuid.UUID `json:"user_id"`
+	FirstName      string    `json:"first_name"`
+	LastName       string    `json:"last_name"`
+	WhatsappNumber *string   `json:"whatsapp_number,omitempty"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type StudentProfile struct {

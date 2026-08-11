@@ -1,11 +1,12 @@
 package payment
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type OrderStatus string
+
 const (
 	OrderPending   OrderStatus = "PENDING"
 	OrderPaid      OrderStatus = "PAID"
@@ -15,6 +16,7 @@ const (
 )
 
 type PaymentStatus string
+
 const (
 	PaymentPending  PaymentStatus = "PENDING"
 	PaymentSuccess  PaymentStatus = "SUCCESS"
@@ -23,6 +25,7 @@ const (
 )
 
 type PaymentProvider string
+
 const (
 	ProviderPaystack     PaymentProvider = "PAYSTACK"
 	ProviderFlutterwave  PaymentProvider = "FLUTTERWAVE"
@@ -32,6 +35,7 @@ const (
 )
 
 type EscrowStatus string
+
 const (
 	EscrowHeld     EscrowStatus = "HELD"
 	EscrowReleased EscrowStatus = "RELEASED"
@@ -40,6 +44,7 @@ const (
 )
 
 type PayoutStatus string
+
 const (
 	PayoutPending    PayoutStatus = "PENDING"
 	PayoutProcessing PayoutStatus = "PROCESSING"
@@ -57,19 +62,19 @@ type Wallet struct {
 }
 
 type Order struct {
-	ID              uuid.UUID   `json:"id"`
-	OrderNumber     string      `json:"order_number"`
-	ParentUserID    uuid.UUID   `json:"parent_user_id"`
-	StudentID       *uuid.UUID  `json:"student_profile_id,omitempty"`
-	InstitutionID   *uuid.UUID  `json:"institution_id,omitempty"`
-	Status          OrderStatus `json:"status"`
-	Subtotal        float64     `json:"subtotal"`
-	DiscountAmount  float64     `json:"discount_amount"`
-	TotalAmount     float64     `json:"total_amount"`
-	Currency        string      `json:"currency"`
-	IdempotencyKey  *string     `json:"idempotency_key,omitempty"`
-	CreatedAt       time.Time   `json:"created_at"`
-	UpdatedAt       time.Time   `json:"updated_at"`
+	ID             uuid.UUID   `json:"id"`
+	OrderNumber    string      `json:"order_number"`
+	ParentUserID   uuid.UUID   `json:"parent_user_id"`
+	StudentID      *uuid.UUID  `json:"student_profile_id,omitempty"`
+	InstitutionID  *uuid.UUID  `json:"institution_id,omitempty"`
+	Status         OrderStatus `json:"status"`
+	Subtotal       float64     `json:"subtotal"`
+	DiscountAmount float64     `json:"discount_amount"`
+	TotalAmount    float64     `json:"total_amount"`
+	Currency       string      `json:"currency"`
+	IdempotencyKey *string     `json:"idempotency_key,omitempty"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
 }
 
 type OrderItem struct {

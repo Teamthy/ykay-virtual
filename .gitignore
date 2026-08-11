@@ -11,3 +11,5 @@ coverage/
 /tmp/
 *.bundle
 *.tsbuildinfo
+.history/
+legacy/server/.env

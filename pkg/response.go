@@ -9,8 +9,8 @@ import (
 // Error envelope: {"error":{"code","message","details"}}
 
 type SuccessEnvelope struct {
-	Data interface{}       `json:"data"`
-	Meta *PaginationMeta   `json:"meta,omitempty"`
+	Data interface{}     `json:"data"`
+	Meta *PaginationMeta `json:"meta,omitempty"`
 }
 
 type ErrorDetail struct {

@@ -9,28 +9,28 @@ import (
 type TutorStatus string
 
 const (
-	TutorStatusDraft       TutorStatus = "DRAFT"
-	TutorStatusSubmitted   TutorStatus = "SUBMITTED"
-	TutorStatusUnderReview TutorStatus = "UNDER_REVIEW"
-	TutorStatusInterview   TutorStatus = "INTERVIEW"
+	TutorStatusDraft        TutorStatus = "DRAFT"
+	TutorStatusSubmitted    TutorStatus = "SUBMITTED"
+	TutorStatusUnderReview  TutorStatus = "UNDER_REVIEW"
+	TutorStatusInterview    TutorStatus = "INTERVIEW"
 	TutorStatusVerification TutorStatus = "VERIFICATION"
-	TutorStatusApproved    TutorStatus = "APPROVED"
-	TutorStatusRejected    TutorStatus = "REJECTED"
-	TutorStatusSuspended   TutorStatus = "SUSPENDED"
-	TutorStatusHold        TutorStatus = "HOLD"
+	TutorStatusApproved     TutorStatus = "APPROVED"
+	TutorStatusRejected     TutorStatus = "REJECTED"
+	TutorStatusSuspended    TutorStatus = "SUSPENDED"
+	TutorStatusHold         TutorStatus = "HOLD"
 )
 
 type VettingStage string
 
 const (
-	StageAccount        VettingStage = "ACCOUNT"
-	StagePersonal       VettingStage = "PERSONAL_PROFILE"
-	StageProfessional   VettingStage = "PROFESSIONAL"
-	StageTeachingScope  VettingStage = "TEACHING_SCOPE"
-	StageEvidence       VettingStage = "EVIDENCE"
-	StageScreening      VettingStage = "SCREENING"
-	StageDecision       VettingStage = "DECISION"
-	StageActivation     VettingStage = "ACTIVATION"
+	StageAccount       VettingStage = "ACCOUNT"
+	StagePersonal      VettingStage = "PERSONAL_PROFILE"
+	StageProfessional  VettingStage = "PROFESSIONAL"
+	StageTeachingScope VettingStage = "TEACHING_SCOPE"
+	StageEvidence      VettingStage = "EVIDENCE"
+	StageScreening     VettingStage = "SCREENING"
+	StageDecision      VettingStage = "DECISION"
+	StageActivation    VettingStage = "ACTIVATION"
 )
 
 type DocumentType string
@@ -93,25 +93,25 @@ type Qualification struct {
 }
 
 type Document struct {
-	ID             uuid.UUID      `json:"id"`
-	TutorProfileID uuid.UUID      `json:"tutor_profile_id"`
-	Type           DocumentType   `json:"type"`
-	FileKey        string         `json:"-"` // PRIVATE bucket, never expose raw
-	FileName       string         `json:"file_name"`
-	FileSize       *int           `json:"file_size,omitempty"`
-	MimeType       *string        `json:"mime_type,omitempty"`
-	Status         DocumentStatus `json:"status"`
-	ReviewedBy     *uuid.UUID     `json:"reviewed_by,omitempty"`
-	ReviewedAt     *time.Time     `json:"reviewed_at,omitempty"`
-	RejectionReason *string       `json:"rejection_reason,omitempty"`
-	CreatedAt      time.Time      `json:"created_at"`
+	ID              uuid.UUID      `json:"id"`
+	TutorProfileID  uuid.UUID      `json:"tutor_profile_id"`
+	Type            DocumentType   `json:"type"`
+	FileKey         string         `json:"-"` // PRIVATE bucket, never expose raw
+	FileName        string         `json:"file_name"`
+	FileSize        *int           `json:"file_size,omitempty"`
+	MimeType        *string        `json:"mime_type,omitempty"`
+	Status          DocumentStatus `json:"status"`
+	ReviewedBy      *uuid.UUID     `json:"reviewed_by,omitempty"`
+	ReviewedAt      *time.Time     `json:"reviewed_at,omitempty"`
+	RejectionReason *string        `json:"rejection_reason,omitempty"`
+	CreatedAt       time.Time      `json:"created_at"`
 }
 
 type Availability struct {
 	ID             uuid.UUID  `json:"id"`
 	TutorProfileID uuid.UUID  `json:"tutor_profile_id"`
 	DayOfWeek      int        `json:"day_of_week"` // 0-6 Sunday=0
-	StartTime      string     `json:"start_time"` // "09:00"
+	StartTime      string     `json:"start_time"`  // "09:00"
 	EndTime        string     `json:"end_time"`
 	IsRecurring    bool       `json:"is_recurring"`
 	ValidFrom      *time.Time `json:"valid_from,omitempty"`
@@ -120,19 +120,19 @@ type Availability struct {
 }
 
 type AvailabilityException struct {
-	ID             uuid.UUID  `json:"id"`
-	TutorProfileID uuid.UUID  `json:"tutor_profile_id"`
-	ExceptionDate  time.Time  `json:"exception_date"`
-	IsAvailable    bool       `json:"is_available"`
-	StartTime      *string    `json:"start_time,omitempty"`
-	EndTime        *string    `json:"end_time,omitempty"`
-	Reason         *string    `json:"reason,omitempty"`
-	CreatedAt      time.Time  `json:"created_at"`
+	ID             uuid.UUID `json:"id"`
+	TutorProfileID uuid.UUID `json:"tutor_profile_id"`
+	ExceptionDate  time.Time `json:"exception_date"`
+	IsAvailable    bool      `json:"is_available"`
+	StartTime      *string   `json:"start_time,omitempty"`
+	EndTime        *string   `json:"end_time,omitempty"`
+	Reason         *string   `json:"reason,omitempty"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 type VettingEvent struct {
-	ID             uuid.UUID   `json:"id"`
-	TutorProfileID uuid.UUID   `json:"tutor_profile_id"`
+	ID             uuid.UUID    `json:"id"`
+	TutorProfileID uuid.UUID    `json:"tutor_profile_id"`
 	Stage          VettingStage `json:"stage"`
 	FromStatus     *TutorStatus `json:"from_status,omitempty"`
 	ToStatus       TutorStatus  `json:"to_status"`
@@ -164,14 +164,14 @@ func (t *TutorProfile) CanTeach() bool {
 
 func (t *TutorProfile) CanTransitionTo(newStatus TutorStatus) bool {
 	transitions := map[TutorStatus][]TutorStatus{
-		TutorStatusDraft:       {TutorStatusSubmitted},
-		TutorStatusSubmitted:   {TutorStatusUnderReview, TutorStatusHold},
-		TutorStatusUnderReview: {TutorStatusInterview, TutorStatusHold, TutorStatusRejected},
-		TutorStatusInterview:   {TutorStatusVerification, TutorStatusHold, TutorStatusRejected},
+		TutorStatusDraft:        {TutorStatusSubmitted},
+		TutorStatusSubmitted:    {TutorStatusUnderReview, TutorStatusHold},
+		TutorStatusUnderReview:  {TutorStatusInterview, TutorStatusHold, TutorStatusRejected},
+		TutorStatusInterview:    {TutorStatusVerification, TutorStatusHold, TutorStatusRejected},
 		TutorStatusVerification: {TutorStatusApproved, TutorStatusRejected, TutorStatusHold},
-		TutorStatusHold:        {TutorStatusUnderReview, TutorStatusRejected},
-		TutorStatusApproved:    {TutorStatusSuspended},
-		TutorStatusSuspended:   {TutorStatusApproved, TutorStatusRejected},
+		TutorStatusHold:         {TutorStatusUnderReview, TutorStatusRejected},
+		TutorStatusApproved:     {TutorStatusSuspended},
+		TutorStatusSuspended:    {TutorStatusApproved, TutorStatusRejected},
 	}
 	allowed, ok := transitions[t.Status]
 	if !ok {

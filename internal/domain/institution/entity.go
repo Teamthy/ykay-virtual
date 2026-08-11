@@ -1,11 +1,12 @@
 package institution
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type InstitutionType string
+
 const (
 	TypeSchool    InstitutionType = "SCHOOL"
 	TypeCorporate InstitutionType = "CORPORATE"
@@ -15,6 +16,7 @@ const (
 )
 
 type MembershipRole string
+
 const (
 	RoleOwner   MembershipRole = "OWNER"
 	RoleAdmin   MembershipRole = "ADMIN"

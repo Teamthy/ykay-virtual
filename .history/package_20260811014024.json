@@ -1,8 +1,0 @@
-{
-    "name": "ykay-virtual",
-    "private": true,
-    "scripts": {
-        "dev:web": "npm --prefix client run dev -- --hostname 127.0.0.1",
-        "dev:api": "go run ./server/cmd/server"
-    }
-}

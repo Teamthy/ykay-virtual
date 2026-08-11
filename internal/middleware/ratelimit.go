@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"ykay-virtual/pkg"
 )
 
 type RateLimiter struct {
@@ -36,7 +38,8 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 		}
 		if len(filtered) >= rl.limit {
 			rl.mu.Unlock()
-			http.Error(w, "too many requests", http.StatusTooManyRequests)
+			pkg.WriteError(w, http.StatusTooManyRequests, string(pkg.CodeTooManyRequests),
+				"too many requests, please slow down", nil)
 			return
 		}
 		filtered = append(filtered, now)

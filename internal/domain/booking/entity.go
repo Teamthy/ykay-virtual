@@ -7,6 +7,7 @@ import (
 )
 
 type CohortStatus string
+
 const (
 	CohortDraft     CohortStatus = "DRAFT"
 	CohortPublished CohortStatus = "PUBLISHED"
@@ -17,15 +18,17 @@ const (
 )
 
 type EnrollmentStatus string
+
 const (
-	EnrollmentPending   EnrollmentStatus = "PENDING"
-	EnrollmentConfirmed EnrollmentStatus = "CONFIRMED"
-	EnrollmentCancelled EnrollmentStatus = "CANCELLED"
-	EnrollmentRefunded  EnrollmentStatus = "REFUNDED"
+	EnrollmentPending    EnrollmentStatus = "PENDING"
+	EnrollmentConfirmed  EnrollmentStatus = "CONFIRMED"
+	EnrollmentCancelled  EnrollmentStatus = "CANCELLED"
+	EnrollmentRefunded   EnrollmentStatus = "REFUNDED"
 	EnrollmentWaitlisted EnrollmentStatus = "WAITLISTED"
 )
 
 type PrivateRequestStatus string
+
 const (
 	PrivatePending    PrivateRequestStatus = "PENDING"
 	PrivateMatched    PrivateRequestStatus = "MATCHED"
@@ -36,6 +39,7 @@ const (
 )
 
 type LessonStatus string
+
 const (
 	LessonScheduled   LessonStatus = "SCHEDULED"
 	LessonOngoing     LessonStatus = "ONGOING"
@@ -46,30 +50,30 @@ const (
 )
 
 type Cohort struct {
-	ID                uuid.UUID    `json:"id"`
-	ProgrammeID       uuid.UUID    `json:"programme_id"`
-	Title             string       `json:"title"`
-	Slug              string       `json:"slug"`
-	TutorProfileID    *uuid.UUID   `json:"tutor_profile_id,omitempty"`
-	Capacity          int          `json:"capacity"`
-	EnrolledCount     int          `json:"enrolled_count"`
-	StartDate         time.Time    `json:"start_date"`
-	EndDate           time.Time    `json:"end_date"`
-	ScheduleDesc      *string      `json:"schedule_description,omitempty"`
-	Timezone          string       `json:"timezone"`
-	LocationMode      string       `json:"location_mode"`
-	LocationID        *uuid.UUID   `json:"location_id,omitempty"`
-	Fee               float64      `json:"fee"`
-	Currency          string       `json:"currency"`
-	Status            CohortStatus  `json:"status"`
-	MeetingLinkTemplate *string    `json:"meeting_link_template,omitempty"`
-	CreatedBy         *uuid.UUID   `json:"created_by,omitempty"`
-	PublishedAt       *time.Time   `json:"published_at,omitempty"`
-	CreatedAt         time.Time    `json:"created_at"`
-	UpdatedAt         time.Time    `json:"updated_at"`
+	ID                  uuid.UUID    `json:"id"`
+	ProgrammeID         uuid.UUID    `json:"programme_id"`
+	Title               string       `json:"title"`
+	Slug                string       `json:"slug"`
+	TutorProfileID      *uuid.UUID   `json:"tutor_profile_id,omitempty"`
+	Capacity            int          `json:"capacity"`
+	EnrolledCount       int          `json:"enrolled_count"`
+	StartDate           time.Time    `json:"start_date"`
+	EndDate             time.Time    `json:"end_date"`
+	ScheduleDesc        *string      `json:"schedule_description,omitempty"`
+	Timezone            string       `json:"timezone"`
+	LocationMode        string       `json:"location_mode"`
+	LocationID          *uuid.UUID   `json:"location_id,omitempty"`
+	Fee                 float64      `json:"fee"`
+	Currency            string       `json:"currency"`
+	Status              CohortStatus `json:"status"`
+	MeetingLinkTemplate *string      `json:"meeting_link_template,omitempty"`
+	CreatedBy           *uuid.UUID   `json:"created_by,omitempty"`
+	PublishedAt         *time.Time   `json:"published_at,omitempty"`
+	CreatedAt           time.Time    `json:"created_at"`
+	UpdatedAt           time.Time    `json:"updated_at"`
 }
 
-func (c *Cohort) IsFull() bool { return c.EnrolledCount >= c.Capacity }
+func (c *Cohort) IsFull() bool    { return c.EnrolledCount >= c.Capacity }
 func (c *Cohort) CanEnroll() bool { return c.Status == CohortPublished && !c.IsFull() }
 
 type CohortEnrollment struct {
@@ -104,21 +108,21 @@ type PrivateTuitionRequest struct {
 }
 
 type PrivatePackage struct {
-	ID                   uuid.UUID `json:"id"`
-	RequestID            uuid.UUID `json:"request_id"`
-	TutorProfileID       uuid.UUID `json:"tutor_profile_id"`
-	StudentProfileID     uuid.UUID `json:"student_profile_id"`
-	TotalSessions        int       `json:"total_sessions"`
-	SessionsUsed         int       `json:"sessions_used"`
-	SessionDurationMins  int       `json:"session_duration_minutes"`
-	PricePerSession      float64   `json:"price_per_session"`
-	TotalPrice           float64   `json:"total_price"`
-	Currency             string    `json:"currency"`
-	ValidFrom            time.Time `json:"valid_from"`
-	ValidUntil           *time.Time `json:"valid_until,omitempty"`
-	Status               string    `json:"status"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                  uuid.UUID  `json:"id"`
+	RequestID           uuid.UUID  `json:"request_id"`
+	TutorProfileID      uuid.UUID  `json:"tutor_profile_id"`
+	StudentProfileID    uuid.UUID  `json:"student_profile_id"`
+	TotalSessions       int        `json:"total_sessions"`
+	SessionsUsed        int        `json:"sessions_used"`
+	SessionDurationMins int        `json:"session_duration_minutes"`
+	PricePerSession     float64    `json:"price_per_session"`
+	TotalPrice          float64    `json:"total_price"`
+	Currency            string     `json:"currency"`
+	ValidFrom           time.Time  `json:"valid_from"`
+	ValidUntil          *time.Time `json:"valid_until,omitempty"`
+	Status              string     `json:"status"`
+	CreatedAt           time.Time  `json:"created_at"`
+	UpdatedAt           time.Time  `json:"updated_at"`
 }
 
 func (p *PrivatePackage) RemainingSessions() int {

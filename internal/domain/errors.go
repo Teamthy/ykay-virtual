@@ -10,17 +10,17 @@ import (
 // HTTP status codes via pkg/apierror — domain code never imports net/http.
 
 var (
-	ErrNotFound        = errors.New("resource not found")
-	ErrConflict        = errors.New("resource state conflict")
-	ErrInvalidInput    = errors.New("invalid input")
-	ErrUnauthorized    = errors.New("unauthorized")
-	ErrForbidden       = errors.New("forbidden")
-	ErrAlreadyExists   = errors.New("resource already exists")
-	ErrCapacityFull    = errors.New("capacity full")
-	ErrNotPublished    = errors.New("resource not published")
+	ErrNotFound            = errors.New("resource not found")
+	ErrConflict            = errors.New("resource state conflict")
+	ErrInvalidInput        = errors.New("invalid input")
+	ErrUnauthorized        = errors.New("unauthorized")
+	ErrForbidden           = errors.New("forbidden")
+	ErrAlreadyExists       = errors.New("resource already exists")
+	ErrCapacityFull        = errors.New("capacity full")
+	ErrNotPublished        = errors.New("resource not published")
 	ErrInsufficientBalance = errors.New("insufficient wallet balance")
-	ErrDuplicateWebhook = errors.New("duplicate webhook")
-	ErrInvalidSignature  = errors.New("invalid webhook signature")
+	ErrDuplicateWebhook    = errors.New("duplicate webhook")
+	ErrInvalidSignature    = errors.New("invalid webhook signature")
 )
 
 // NotFoundErr wraps a sentinel with a resource type + id for structured logs.
@@ -38,6 +38,6 @@ func (e *ResourceError) Error() string { return e.What + " not found: " + e.ID.S
 func (e *ResourceError) Unwrap() error { return e.Err }
 
 // IsNotFound / IsConflict helpers for transport mapping.
-func IsNotFound(err error) bool  { return errors.Is(err, ErrNotFound) }
-func IsConflict(err error) bool  { return errors.Is(err, ErrConflict) }
-func IsInvalid(err error) bool   { return errors.Is(err, ErrInvalidInput) }
+func IsNotFound(err error) bool { return errors.Is(err, ErrNotFound) }
+func IsConflict(err error) bool { return errors.Is(err, ErrConflict) }
+func IsInvalid(err error) bool  { return errors.Is(err, ErrInvalidInput) }

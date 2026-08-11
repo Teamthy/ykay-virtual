@@ -8,15 +8,15 @@ import (
 type Code string
 
 const (
-	CodeBadRequest          Code = "BAD_REQUEST"
-	CodeUnauthorized        Code = "UNAUTHORIZED"
-	CodeForbidden           Code = "FORBIDDEN"
-	CodeNotFound            Code = "NOT_FOUND"
-	CodeConflict            Code = "CONFLICT"
-	CodeValidationError     Code = "VALIDATION_ERROR"
-	CodeInternal            Code = "INTERNAL_ERROR"
-	CodePaymentRequired     Code = "PAYMENT_REQUIRED"
-	CodeTooManyRequests     Code = "TOO_MANY_REQUESTS"
+	CodeBadRequest      Code = "BAD_REQUEST"
+	CodeUnauthorized    Code = "UNAUTHORIZED"
+	CodeForbidden       Code = "FORBIDDEN"
+	CodeNotFound        Code = "NOT_FOUND"
+	CodeConflict        Code = "CONFLICT"
+	CodeValidationError Code = "VALIDATION_ERROR"
+	CodeInternal        Code = "INTERNAL_ERROR"
+	CodePaymentRequired Code = "PAYMENT_REQUIRED"
+	CodeTooManyRequests Code = "TOO_MANY_REQUESTS"
 )
 
 type AppError struct {

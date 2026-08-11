@@ -17,14 +17,17 @@ type Cache interface {
 }
 
 type InMemoryCache struct {
-	store map[string]struct{
+	store map[string]struct {
 		val string
 		exp time.Time
 	}
 }
 
 func NewInMemoryCache() *InMemoryCache {
-	return &InMemoryCache{store: make(map[string]struct{val string; exp time.Time})}
+	return &InMemoryCache{store: make(map[string]struct {
+		val string
+		exp time.Time
+	})}
 }
 
 func (c *InMemoryCache) Get(_ context.Context, key string) (string, error) {
@@ -44,7 +47,10 @@ func (c *InMemoryCache) Set(_ context.Context, key, value string, ttl time.Durat
 	if ttl > 0 {
 		exp = time.Now().Add(ttl)
 	}
-	c.store[key] = struct{val string; exp time.Time}{val: value, exp: exp}
+	c.store[key] = struct {
+		val string
+		exp time.Time
+	}{val: value, exp: exp}
 	return nil
 }
 

@@ -1,19 +1,21 @@
 package messaging
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type ConversationType string
+
 const (
-	TypeBooking  ConversationType = "BOOKING"
-	TypeCohort   ConversationType = "COHORT"
-	TypeSupport  ConversationType = "SUPPORT"
-	TypeDirect   ConversationType = "DIRECT"
+	TypeBooking ConversationType = "BOOKING"
+	TypeCohort  ConversationType = "COHORT"
+	TypeSupport ConversationType = "SUPPORT"
+	TypeDirect  ConversationType = "DIRECT"
 )
 
 type MessageType string
+
 const (
 	MsgText   MessageType = "TEXT"
 	MsgImage  MessageType = "IMAGE"

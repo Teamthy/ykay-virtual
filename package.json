@@ -1,8 +1,17 @@
 {
     "name": "ykay-virtual",
+    "version": "0.3.0",
     "private": true,
     "scripts": {
-        "dev:web": "npm --prefix client run dev -- --hostname 127.0.0.1",
-        "dev:api": "go run ./server/cmd/server"
-    }
+        "dev:web": "npm --prefix client run dev",
+        "dev:api": "go run ./cmd/api",
+        "dev:worker": "go run ./cmd/worker",
+        "migrate": "go run ./cmd/migrate --cmd=up",
+        "build:web": "npm --prefix client run build",
+        "typecheck": "npm --prefix client exec tsc -- --noEmit",
+        "test:web": "echo \"Vitest not yet configured (Phase 5 testing rollout)\"",
+        "test:api": "go test ./...",
+        "test": "go test ./... && cd legacy/server && go test ./..."
+    },
+    "devDependencies": {}
 }

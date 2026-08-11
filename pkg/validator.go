@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -20,7 +21,7 @@ func ValidateRequiredString(s string, field string) []ErrorDetail {
 
 func ValidateMinLength(s string, min int, field string) []ErrorDetail {
 	if len(strings.TrimSpace(s)) < min {
-		return []ErrorDetail{{Field: field, Message: field + " must be at least " + string(rune(min)) + " characters"}}
+		return []ErrorDetail{{Field: field, Message: field + " must be at least " + strconv.Itoa(min) + " characters"}}
 	}
 	return nil
 }

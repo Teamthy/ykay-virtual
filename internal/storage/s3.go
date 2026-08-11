@@ -24,7 +24,9 @@ type LocalStorage struct{}
 
 func NewLocalStorage() *LocalStorage { return &LocalStorage{} }
 
-func (s *LocalStorage) Upload(_ context.Context, _ BucketType, _ string, _ []byte, _ string) error { return nil }
+func (s *LocalStorage) Upload(_ context.Context, _ BucketType, _ string, _ []byte, _ string) error {
+	return nil
+}
 func (s *LocalStorage) Delete(_ context.Context, _ BucketType, _ string) error { return nil }
 func (s *LocalStorage) GeneratePresignedURL(_ context.Context, _ BucketType, key string, _ time.Duration) (string, error) {
 	return "https://storage.local/" + key, nil

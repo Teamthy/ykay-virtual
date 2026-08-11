@@ -5,22 +5,22 @@ import (
 )
 
 type Config struct {
-	Port            string
-	DatabaseURL     string
-	RedisURL        string
-	JWTSecret       string
-	S3Endpoint      string
-	S3PublicBucket  string
-	S3PrivateBucket string
-	S3Region        string
-	S3AccessKey     string
-	S3SecretKey     string
-	PaymentProvider string
-	PaystackSecret  string
+	Port              string
+	DatabaseURL       string
+	RedisURL          string
+	JWTSecret         string
+	S3Endpoint        string
+	S3PublicBucket    string
+	S3PrivateBucket   string
+	S3Region          string
+	S3AccessKey       string
+	S3SecretKey       string
+	PaymentProvider   string
+	PaystackSecret    string
 	FlutterwaveSecret string
-	Environment     string
-	OtelEndpoint    string
-	SiteURL         string
+	Environment       string
+	OtelEndpoint      string
+	SiteURL           string
 }
 
 func Load() Config {

@@ -1,21 +1,21 @@
 package referral
 
 import (
-	"time"
 	"github.com/google/uuid"
+	"time"
 )
 
 type Referral struct {
-	ID              uuid.UUID  `json:"id"`
-	ReferrerUserID  uuid.UUID  `json:"referrer_user_id"`
-	ReferredUserID  uuid.UUID  `json:"referred_user_id"`
-	ReferralCodeID  uuid.UUID  `json:"referral_code_id"`
-	OrderID         *uuid.UUID `json:"order_id,omitempty"`
-	RewardAmount    float64    `json:"reward_amount"`
-	Status          string     `json:"status"`
-	QualifiedAt     *time.Time `json:"qualified_at,omitempty"`
-	RewardedAt      *time.Time `json:"rewarded_at,omitempty"`
-	CreatedAt       time.Time  `json:"created_at"`
+	ID             uuid.UUID  `json:"id"`
+	ReferrerUserID uuid.UUID  `json:"referrer_user_id"`
+	ReferredUserID uuid.UUID  `json:"referred_user_id"`
+	ReferralCodeID uuid.UUID  `json:"referral_code_id"`
+	OrderID        *uuid.UUID `json:"order_id,omitempty"`
+	RewardAmount   float64    `json:"reward_amount"`
+	Status         string     `json:"status"`
+	QualifiedAt    *time.Time `json:"qualified_at,omitempty"`
+	RewardedAt     *time.Time `json:"rewarded_at,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
 }
 
 type ReferralCode struct {
