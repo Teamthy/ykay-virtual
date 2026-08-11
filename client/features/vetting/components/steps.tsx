@@ -2,29 +2,25 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import { listSubjects, type Subject } from "@/features/subjects/api/list";
 import {
   addSubject,
   createTutorProfile,
-  getMyProfile,
   listMySubjects,
   requestDocumentUpload,
   startAssessment,
   submitAssessment,
-  submitForReview,
   type AnswerInput,
   type CreateProfileInput,
 } from "@/features/vetting/api";
 import type { TutorProfile } from "@/features/vetting/types";
 
-// Dev auth bridge — replaced by session auth in Phase 7. This constant is
-// overridable via query string (?user=…) for local demo.
-const DEV_USER = "00000000-0000-0000-0000-0000000000a1";
+// Shared step components for the stateful multi-page tutor onboarding
+// (/become-tutor/apply → subjects → documents → assessment → status).
 
 const profileSchema = z.object({
   display_name: z.string().min(2, "Full name is required"),
@@ -36,85 +32,18 @@ const profileSchema = z.object({
   accepts_in_person: z.boolean(),
 });
 
-type Step = "profile" | "subjects" | "documents" | "assessment" | "submitted";
-
-export function BecomeTutorClient() {
-  const [step, setStep] = useState<Step>("profile");
-  const [profile, setProfile] = useState<TutorProfile | null>(null);
-  const [userId] = useState(() => {
-    if (typeof window !== "undefined") {
-      const u = new URLSearchParams(window.location.search).get("user");
-      if (u) return u;
-    }
-    return DEV_USER;
-  });
-
-  // If the tutor already has a profile, jump straight to its status.
-  useQuery({
-    queryKey: ["vetting", "me", userId],
-    queryFn: async () => {
-      const p = await getMyProfile(userId);
-      if (p) {
-        setProfile(p);
-        setStep(p.status === "DRAFT" ? "subjects" : "submitted");
-      }
-      return p;
-    },
-    staleTime: 30_000,
-  });
-
+export function OnboardingStepper({ current }: { current: number }) {
+  const order = ["Profile", "Subjects", "Documents", "Quiz", "In review"];
   return (
-    <div className="max-w-3xl mx-auto">
-      <Stepper step={step} />
-      {step === "profile" && (
-        <ProfileStep
-          userId={userId}
-          onCreated={(p) => {
-            setProfile(p);
-            setStep("subjects");
-          }}
-        />
-      )}
-      {step === "subjects" && profile && (
-        <SubjectsStep userId={userId} profileId={profile.id} onNext={() => setStep("documents")} />
-      )}
-      {step === "documents" && profile && (
-        <DocumentsStep userId={userId} profileId={profile.id} onNext={() => setStep("assessment")} />
-      )}
-      {step === "assessment" && profile && (
-        <AssessmentStep
-          userId={userId}
-          profileId={profile.id}
-          onDone={() => setStep("submitted")}
-        />
-      )}
-      {step === "submitted" && profile && <SubmittedState userId={userId} profile={profile} />}
-    </div>
-  );
-}
-
-function Stepper({ step }: { step: Step }) {
-  const order: Step[] = ["profile", "subjects", "documents", "assessment", "submitted"];
-  const labels: Record<Step, string> = {
-    profile: "Profile",
-    subjects: "Subjects",
-    documents: "Documents",
-    assessment: "Quiz",
-    submitted: "In review",
-  };
-  const idx = order.indexOf(step);
-  return (
-    <ol className="flex items-center gap-2 text-xs mb-8 flex-wrap">
-      {order.map((s, i) => (
-        <li key={s} className="flex items-center gap-2">
-          <span
-            className={`flex h-6 w-6 items-center justify-center rounded-full font-bold ${
-              i <= idx ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-400"
-            }`}
-          >
-            {i + 1}
+    <ol className="flex items-center gap-2 text-xs mb-8 flex-wrap justify-center">
+      {order.map((label, i) => (
+        <li key={label} className="flex items-center gap-2">
+          <span className={`flex h-6 w-6 items-center justify-center rounded-full font-bold ${
+            i < current ? "bg-green-500 text-white" : i === current ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-400"
+          }`}>
+            {i < current ? "✓" : i + 1}
           </span>
-          <span className={i <= idx ? "font-semibold text-ink-800" : "text-ink-400"}>{labels[s]}</span>
+          <span className={i <= current ? "font-semibold text-ink-800" : "text-ink-400"}>{label}</span>
           {i < order.length - 1 && <span className="w-4 h-px bg-ink-200" />}
         </li>
       ))}
@@ -122,21 +51,14 @@ function Stepper({ step }: { step: Step }) {
   );
 }
 
-// --- Step 1: profile (TanStack Form + Zod) ---
-
-function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: TutorProfile) => void }) {
+export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: TutorProfile) => void }) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm({
     defaultValues: {
-      display_name: "",
-      headline: "",
-      bio: "",
-      years_experience: 1,
-      hourly_rate_min: 5000,
-      accepts_online: true,
-      accepts_in_person: false,
+      display_name: "", headline: "", bio: "", years_experience: 1,
+      hourly_rate_min: 5000, accepts_online: true, accepts_in_person: false,
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -149,19 +71,13 @@ function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: Tut
       setError(null);
       try {
         const input: CreateProfileInput = {
-          display_name: value.display_name,
-          headline: value.headline,
-          bio: value.bio,
-          years_experience: value.years_experience,
-          hourly_rate_min: value.hourly_rate_min,
-          currency: "NGN",
-          timezone: "Africa/Lagos",
-          accepts_online: value.accepts_online,
-          accepts_in_person: value.accepts_in_person,
+          display_name: value.display_name, headline: value.headline, bio: value.bio,
+          years_experience: value.years_experience, hourly_rate_min: value.hourly_rate_min,
+          currency: "NGN", timezone: "Africa/Lagos",
+          accepts_online: value.accepts_online, accepts_in_person: value.accepts_in_person,
         };
         const p = await createTutorProfile(userId, input);
         onCreated(p);
-        toast.success("Profile created — let's add your subjects");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not create profile");
       } finally {
@@ -171,14 +87,8 @@ function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: Tut
   });
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        void form.handleSubmit();
-      }}
-      className="border rounded-2xl p-6 space-y-4"
-    >
+    <form onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); void form.handleSubmit(); }}
+      className="border rounded-2xl p-6 space-y-4">
       <h2 className="text-xl font-bold">Tell us about yourself</h2>
       {(["display_name", "headline", "bio"] as const).map((field) => (
         <form.Field key={field} name={field}>
@@ -186,24 +96,13 @@ function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: Tut
             <label className="block text-sm">
               <span className="font-medium capitalize">{field.replace("_", " ")}</span>
               {field === "bio" ? (
-                <textarea
-                  rows={4}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
-                  value={f.state.value}
-                  onChange={(e) => f.handleChange(e.target.value)}
-                  onBlur={f.handleBlur}
-                />
+                <textarea rows={4} value={f.state.value} onChange={(e) => f.handleChange(e.target.value)} onBlur={f.handleBlur}
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
               ) : (
-                <input
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
-                  value={f.state.value}
-                  onChange={(e) => f.handleChange(e.target.value)}
-                  onBlur={f.handleBlur}
-                />
+                <input value={f.state.value} onChange={(e) => f.handleChange(e.target.value)} onBlur={f.handleBlur}
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
               )}
-              {f.state.meta.errors?.length ? (
-                <span className="mt-1 block text-xs text-red-600">{f.state.meta.errors.join(", ")}</span>
-              ) : null}
+              {f.state.meta.errors?.length ? <span className="mt-1 block text-xs text-red-600">{f.state.meta.errors.join(", ")}</span> : null}
             </label>
           )}
         </form.Field>
@@ -213,13 +112,8 @@ function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: Tut
           {(f) => (
             <label className="block text-sm">
               <span className="font-medium">Years of experience</span>
-              <input
-                type="number"
-                min={1}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
-                value={f.state.value}
-                onChange={(e) => f.handleChange(Number(e.target.value))}
-              />
+              <input type="number" min={1} value={f.state.value} onChange={(e) => f.handleChange(Number(e.target.value))}
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
             </label>
           )}
         </form.Field>
@@ -227,13 +121,8 @@ function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: Tut
           {(f) => (
             <label className="block text-sm">
               <span className="font-medium">Hourly rate (₦)</span>
-              <input
-                type="number"
-                min={1000}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
-                value={f.state.value}
-                onChange={(e) => f.handleChange(Number(e.target.value))}
-              />
+              <input type="number" min={1000} value={f.state.value} onChange={(e) => f.handleChange(Number(e.target.value))}
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
             </label>
           )}
         </form.Field>
@@ -242,39 +131,27 @@ function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: Tut
         <form.Field name="accepts_online">
           {(f) => (
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={f.state.value} onChange={(e) => f.handleChange(e.target.checked)} />
-              Teaches online
+              <input type="checkbox" checked={f.state.value} onChange={(e) => f.handleChange(e.target.checked)} /> Teaches online
             </label>
           )}
         </form.Field>
         <form.Field name="accepts_in_person">
           {(f) => (
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={f.state.value} onChange={(e) => f.handleChange(e.target.checked)} />
-              Teaches in person
+              <input type="checkbox" checked={f.state.value} onChange={(e) => f.handleChange(e.target.checked)} /> Teaches in person
             </label>
           )}
         </form.Field>
       </div>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       <Button type="submit" variant="gold" size="lg" className="w-full" disabled={submitting}>
-        {submitting ? "Creating profile…" : "Continue to subjects"}
+        {submitting ? "Creating profile…" : "Create profile & continue"}
       </Button>
     </form>
   );
 }
 
-// --- Step 2: subjects ---
-
-function SubjectsStep({
-  userId,
-  profileId,
-  onNext,
-}: {
-  userId: string;
-  profileId: string;
-  onNext: () => void;
-}) {
+export function SubjectsStep({ userId, profileId, onNext }: { userId: string; profileId: string; onNext: () => void }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -291,8 +168,7 @@ function SubjectsStep({
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   };
@@ -301,11 +177,8 @@ function SubjectsStep({
     setSaving(true);
     setError(null);
     try {
-      for (const id of selected) {
-        await addSubject(userId, profileId, id);
-      }
+      for (const id of selected) await addSubject(userId, profileId, id);
       onNext();
-      toast.success("Subjects saved");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save subjects");
     } finally {
@@ -314,12 +187,7 @@ function SubjectsStep({
   };
 
   if (subjects.isLoading) {
-    return (
-      <div className="border rounded-2xl p-6 space-y-3">
-        <Skeleton className="h-6 w-1/2" />
-        <Skeleton className="h-20 w-full" />
-      </div>
-    );
+    return <div className="border rounded-2xl p-6 space-y-3"><Skeleton className="h-6 w-1/2" /><Skeleton className="h-20 w-full" /></div>;
   }
 
   return (
@@ -328,16 +196,10 @@ function SubjectsStep({
       <p className="text-sm text-ink-600">Choose at least one subject — you can add more later.</p>
       <div className="grid sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
         {(subjects.data ?? []).map((s: Subject) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => toggle(s.id)}
+          <button key={s.id} type="button" onClick={() => toggle(s.id)}
             className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
-              selected.has(s.id)
-                ? "border-brand-blue bg-brand-blue/5 text-brand-blue font-semibold"
-                : "border-ink-200 hover:border-ink-400"
-            }`}
-          >
+              selected.has(s.id) ? "border-brand-blue bg-brand-blue/5 text-brand-blue font-semibold" : "border-ink-200 hover:border-ink-400"
+            }`}>
             {s.name}
             <span className="block text-xs text-ink-400 font-normal">{s.category}</span>
           </button>
@@ -351,37 +213,19 @@ function SubjectsStep({
   );
 }
 
-// --- Step 3: documents (identity first) ---
-
-function DocumentsStep({
-  userId,
-  profileId,
-  onNext,
-}: {
-  userId: string;
-  profileId: string;
-  onNext: () => void;
-}) {
+export function DocumentsStep({ userId, profileId, onNext }: { userId: string; profileId: string; onNext: () => void }) {
   const [fileName, setFileName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const upload = async () => {
-    if (!fileName.trim()) {
-      setError("Choose an ID document file first");
-      return;
-    }
+    if (!fileName.trim()) { setError("Choose an ID document file first"); return; }
     setUploading(true);
     setError(null);
     try {
       const res = await requestDocumentUpload(userId, profileId, "GOVT_ID", fileName.trim(), "application/pdf");
-      // Dev: the signed URL is a local token URL; production uploads PUT to S3.
       if (res.upload_url) {
-        try {
-          await fetch(res.upload_url, { method: "PUT", body: new Blob([`dev-upload:${fileName}`]) });
-        } catch {
-          // ignore dev upload failures — the document row is what matters
-        }
+        try { await fetch(res.upload_url, { method: "PUT", body: new Blob([`dev-upload:${fileName}`]) }); } catch { /* ignore */ }
       }
       onNext();
     } catch (err) {
@@ -398,12 +242,8 @@ function DocumentsStep({
         Upload a government-issued ID (national ID, passport, or driver&apos;s licence). Files go to a{" "}
         <strong>private bucket</strong> — only you and our review team can access them, via signed URLs.
       </p>
-      <input
-        value={fileName}
-        onChange={(e) => setFileName(e.target.value)}
-        placeholder="e.g. national-id.pdf"
-        className="w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
-      />
+      <input value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="e.g. national-id.pdf"
+        className="w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       <Button variant="gold" size="lg" className="w-full" disabled={uploading} onClick={upload}>
         {uploading ? "Uploading…" : "Upload ID & continue"}
@@ -412,19 +252,8 @@ function DocumentsStep({
   );
 }
 
-// --- Step 4: competency quiz ---
-
-function AssessmentStep({
-  userId,
-  profileId,
-  onDone,
-}: {
-  userId: string;
-  profileId: string;
-  onDone: () => void;
-}) {
+export function AssessmentStep({ userId, profileId, onDone }: { userId: string; profileId: string; onDone: () => void }) {
   const [attempt, setAttempt] = useState<Awaited<ReturnType<typeof startAssessment>> | null>(null);
-  const [subjectId, setSubjectId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<Awaited<ReturnType<typeof submitAssessment>> | null>(null);
   const [busy, setBusy] = useState(false);
@@ -441,7 +270,6 @@ function AssessmentStep({
     setError(null);
     try {
       const a = await startAssessment(userId, profileId, subject);
-      setSubjectId(subject);
       setAttempt(a);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start quiz");
@@ -455,10 +283,7 @@ function AssessmentStep({
     setBusy(true);
     setError(null);
     try {
-      const inputs: AnswerInput[] = attempt.questions.map((q) => ({
-        question_id: q.id,
-        chosen_index: answers[q.id] ?? 0,
-      }));
+      const inputs: AnswerInput[] = attempt.questions.map((q) => ({ question_id: q.id, chosen_index: answers[q.id] ?? 0 }));
       const r = await submitAssessment(userId, attempt.attempt.id, inputs);
       setResult(r);
     } catch (err) {
@@ -486,23 +311,15 @@ function AssessmentStep({
     return (
       <div className="border rounded-2xl p-6 space-y-5">
         <h2 className="text-xl font-bold">Competency quiz</h2>
-        <p className="text-xs text-ink-500">
-          You have 30 minutes. Pass mark: {Math.round(attempt.pass_threshold * 100)}%.
-        </p>
-        {attempt.questions.map((q: { id: string; question: string; options: string[] }, i: number) => (
+        <p className="text-xs text-ink-500">You have 30 minutes. Pass mark: {Math.round(attempt.pass_threshold * 100)}%.</p>
+        {attempt.questions.map((q, i) => (
           <div key={q.id} className="rounded-xl border p-4 space-y-2">
-            <p className="text-sm font-semibold">
-              {i + 1}. {q.question}
-            </p>
+            <p className="text-sm font-semibold">{i + 1}. {q.question}</p>
             <div className="space-y-1">
-              {q.options.map((opt: string, idx: number) => (
+              {q.options.map((opt, idx) => (
                 <label key={idx} className="flex items-center gap-2 text-sm text-ink-700 cursor-pointer">
-                  <input
-                    type="radio"
-                    name={q.id}
-                    checked={answers[q.id] === idx}
-                    onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: idx }))}
-                  />
+                  <input type="radio" name={q.id} checked={answers[q.id] === idx}
+                    onChange={() => setAnswers((prev) => ({ ...prev, [q.id]: idx }))} />
                   {opt}
                 </label>
               ))}
@@ -520,18 +337,11 @@ function AssessmentStep({
   return (
     <div className="border rounded-2xl p-6 space-y-4">
       <h2 className="text-xl font-bold">Competency assessment</h2>
-      <p className="text-sm text-ink-600">
-        Pick a subject from your teaching scope to start the quiz — 5 questions, 30 minutes, 70% to pass.
-      </p>
+      <p className="text-sm text-ink-600">Pick a subject from your teaching scope — 5 questions, 30 minutes, 70% to pass.</p>
       <div className="grid sm:grid-cols-2 gap-2">
-        {(mySubjects.data ?? []).map((s: { subject_id: string; name: string }) => (
-          <button
-            key={s.subject_id}
-            type="button"
-            disabled={busy}
-            onClick={() => begin(s.subject_id)}
-            className="rounded-xl border border-ink-200 px-4 py-3 text-sm hover:border-brand-blue transition-colors disabled:opacity-50"
-          >
+        {(mySubjects.data ?? []).map((s) => (
+          <button key={s.subject_id} type="button" disabled={busy} onClick={() => begin(s.subject_id)}
+            className="rounded-xl border border-ink-200 px-4 py-3 text-sm hover:border-brand-blue transition-colors disabled:opacity-50">
             {s.name}
           </button>
         ))}
@@ -541,9 +351,7 @@ function AssessmentStep({
   );
 }
 
-// --- Submitted / status state ---
-
-function SubmittedState({ userId, profile }: { userId: string; profile: TutorProfile }) {
+export function SubmittedState({ profile }: { profile: TutorProfile }) {
   const statusCopy: Record<string, { label: string; hint: string }> = {
     DRAFT: { label: "Draft", hint: "Finish your application to submit for review." },
     SUBMITTED: { label: "Submitted", hint: "Our team will review your application shortly." },
@@ -567,14 +375,8 @@ function SubmittedState({ userId, profile }: { userId: string; profile: TutorPro
       <p className="text-xs text-ink-400">
         Profile: {profile.display_name} · {profile.slug} · ranking {profile.ranking_score.toFixed(1)}
       </p>
-      {profile.status === "APPROVED" ? (
-        <a href={`/tutors/${profile.slug}`} className="inline-block btn-gold">
-          View your public profile
-        </a>
-      ) : (
-        <Button variant="outline" onClick={() => submitForReview(userId, profile.id)}>
-          {profile.status === "DRAFT" ? "Submit for review" : "Refresh status"}
-        </Button>
+      {profile.status === "APPROVED" && (
+        <a href={`/tutors/${profile.slug}`} className="inline-block btn-gold">View your public profile</a>
       )}
     </div>
   );

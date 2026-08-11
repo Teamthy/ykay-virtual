@@ -25,9 +25,7 @@ const FOUNDER = {
     "Led students in international technology competitions, including the 2026 International Coding Olympiad in Rome, Italy — his delegation won medals and a Nigerian student achieved a world Top-3 result in the Codementum category.",
   ],
   vision:
-    "Yinka's vision for YKAY Virtual School is to combine excellent teachers, strong academic systems and technology to give learners access to structured, high-quality education wherever they are.",
-  note: "Content verification: the exact wording of awards, school titles, fellowship status and competition results should be verified with documentary support before publication, with permission obtained where institutional names, logos or testimonials are used.",
-};
+    "Yinka's vision for YKAY Virtual School is to combine excellent teachers, strong academic systems and technology to give learners access to structured, high-quality education wherever they are.",};
 
 const PILLARS = [
   {
@@ -141,7 +139,6 @@ export default function AboutPage() {
             {FOUNDER.vision}
           </p>
 
-          <p className="mt-4 text-[11px] text-ink-400 leading-relaxed">⚠️ {FOUNDER.note}</p>
         </div>
       </section>
 

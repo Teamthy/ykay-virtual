@@ -52,3 +52,29 @@ func (s *CohortService) Invalidate(ctx context.Context) error {
 	}
 	return s.cache.Del(ctx, cache.CacheKey(cohortCachePrefix, "*"))
 }
+
+// ListPublished — public cohort catalogue (newest starts first).
+func (s *CohortService) ListPublished(ctx context.Context, params booking.CohortListParams) ([]booking.Cohort, int64, error) {
+	if s.repo == nil {
+		return []booking.Cohort{}, 0, nil
+	}
+	cacheKey := cache.CacheKey(cohortCachePrefix, "list", searchParamsKey(struct {
+		ProgrammeID *uuid.UUID
+		Page        int
+		PageSize    int
+	}{params.ProgrammeID, params.Page, params.PageSize}))
+	if cached, err := s.cache.Get(ctx, cacheKey); err == nil && cached != "" {
+		var data []booking.Cohort
+		if json.Unmarshal([]byte(cached), &data) == nil {
+			return data, int64(len(data)), nil
+		}
+	}
+	cohorts, total, err := s.repo.ListPublished(ctx, params)
+	if err != nil {
+		return nil, 0, err
+	}
+	if b, err := json.Marshal(cohorts); err == nil {
+		_ = s.cache.Set(ctx, cacheKey, string(b), cohortCacheTTL)
+	}
+	return cohorts, total, nil
+}

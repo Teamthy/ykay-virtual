@@ -58,8 +58,9 @@ function RegisterInner() {
         // Auto-login after registration (smooth first-run experience).
         await login(value.email, value.password);
         toast.success("Account created — welcome to YKAY!");
-        if (user.roles.includes("TUTOR")) router.push("/verify-email?sent=1");
-        else router.push("/verify-email?sent=1");
+        if (user.roles.includes("TUTOR")) router.push("/become-tutor/apply");
+        else if (user.roles.includes("PARENT")) router.push("/onboarding/learner");
+        else router.push("/dashboard");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Registration failed");
       } finally {

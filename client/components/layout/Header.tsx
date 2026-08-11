@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 const SERVICES = [
   { href: "/programmes", label: "Programmes", desc: "Cohorts, bootcamps & structured courses" },
+  { href: "/cohorts", label: "Group Cohorts", desc: "Scheduled small-group classes" },
   { href: "/private-tuition", label: "Private Tuition", desc: "One-to-one with a vetted tutor" },
   { href: "/exam-prep", label: "Exam Preparation", desc: "WAEC, NECO, JAMB, IGCSE, A-Level" },
   { href: "/digital-skills", label: "Computing & Digital Skills", desc: "CS, Python, AI, Cybersecurity" },
@@ -133,6 +134,7 @@ export function Header() {
         <div className="lg:hidden border-t border-ink-100 bg-white px-6 py-4 space-y-1 max-h-[70vh] overflow-y-auto">
           <p className="pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Learn</p>
           <MobileLink href="/programmes" label="Programmes" onClose={closeAll} />
+          <MobileLink href="/cohorts" label="Group Cohorts" onClose={closeAll} />
           <MobileLink href="/private-tuition" label="Private Tuition" onClose={closeAll} />
           <MobileLink href="/exam-prep" label="Exam Preparation" onClose={closeAll} />
           <MobileLink href="/digital-skills" label="Digital Skills" onClose={closeAll} />
@@ -144,7 +146,8 @@ export function Header() {
           <MobileLink href="/how-it-works" label="How It Works" onClose={closeAll} />
           <MobileLink href="/pricing" label="Pricing" onClose={closeAll} />
           <MobileLink href="/success-stories" label="Success Stories" onClose={closeAll} />
-          <MobileLink href="/blog" label="Resources & Blog" onClose={closeAll} />
+          <MobileLink href="/resources" label="Resources" onClose={closeAll} />
+          <MobileLink href="/blog" label="Blog" onClose={closeAll} />
           <MobileLink href="/contact" label="Contact / Support" onClose={closeAll} />
           <p className="pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Teach</p>
           <MobileLink href="/become-tutor" label="Become a Tutor" onClose={closeAll} />

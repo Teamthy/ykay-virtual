@@ -219,3 +219,92 @@ func (m *RoleMemory) RolesForUser(_ context.Context, userID uuid.UUID) ([]identi
 }
 
 var _ identity.RoleRepository = (*RoleMemory)(nil)
+
+// --- Student profiles + parent links ---
+
+type StudentProfileMemory struct {
+	mu       sync.RWMutex
+	rows     map[uuid.UUID]*identity.StudentProfile
+	byParent map[uuid.UUID][]uuid.UUID
+}
+
+func NewStudentProfileMemory() *StudentProfileMemory {
+	return &StudentProfileMemory{rows: map[uuid.UUID]*identity.StudentProfile{}, byParent: map[uuid.UUID][]uuid.UUID{}}
+}
+
+func (m *StudentProfileMemory) Create(_ context.Context, p *identity.StudentProfile) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if p.ID == uuid.Nil {
+		p.ID = uuid.New()
+	}
+	p.CreatedAt = nowUTC()
+	p.UpdatedAt = p.CreatedAt
+	m.rows[p.ID] = p
+	return nil
+}
+
+func (m *StudentProfileMemory) FindByID(_ context.Context, id uuid.UUID) (*identity.StudentProfile, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if p, ok := m.rows[id]; ok {
+		cp := *p
+		return &cp, nil
+	}
+	return nil, domain.ErrNotFound
+}
+
+func (m *StudentProfileMemory) ListByParentUserID(_ context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []identity.StudentProfile{}
+	for _, id := range m.byParent[parentUserID] {
+		if p, ok := m.rows[id]; ok {
+			out = append(out, *p)
+		}
+	}
+	return out, nil
+}
+
+// LinkStudent — test/dev helper to attach a learner to a parent.
+func (m *StudentProfileMemory) LinkStudent(parentUserID, studentID uuid.UUID) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.byParent[parentUserID] = append(m.byParent[parentUserID], studentID)
+}
+
+var _ identity.StudentProfileRepository = (*StudentProfileMemory)(nil)
+
+// --- Parent-student links ---
+
+type ParentStudentLinkMemory struct {
+	mu       sync.RWMutex
+	links    map[string]bool // parent|student
+	students *StudentProfileMemory
+}
+
+func NewParentStudentLinkMemory(students *StudentProfileMemory) *ParentStudentLinkMemory {
+	return &ParentStudentLinkMemory{links: map[string]bool{}, students: students}
+}
+
+func (m *ParentStudentLinkMemory) Create(_ context.Context, l *identity.ParentStudentLink) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if l.ID == uuid.Nil {
+		l.ID = uuid.New()
+	}
+	l.CreatedAt = nowUTC()
+	m.links[l.ParentUserID.String()+"|"+l.StudentProfileID.String()] = true
+	if m.students != nil {
+		m.students.byParent[l.ParentUserID] = append(m.students.byParent[l.ParentUserID], l.StudentProfileID)
+	}
+	return nil
+}
+
+func (m *ParentStudentLinkMemory) Exists(_ context.Context, parentUserID, studentProfileID uuid.UUID) (bool, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.links[parentUserID.String()+"|"+studentProfileID.String()], nil
+}
+
+var _ identity.ParentStudentLinkRepository = (*ParentStudentLinkMemory)(nil)

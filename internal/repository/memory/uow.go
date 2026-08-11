@@ -103,11 +103,14 @@ type MemoryStore struct {
 	Users          *UserMemory
 	Sessions       *SessionMemory
 	Roles          *RoleMemory
+	Students       *StudentProfileMemory
+	StudentLinks   *ParentStudentLinkMemory
 	AuditLogs      *AuditLogMemory
 }
 
 func NewMemoryStore() *MemoryStore {
-	return &MemoryStore{
+	students := NewStudentProfileMemory()
+	store := &MemoryStore{
 		Orders:       NewOrderMemory(),
 		Payments:     NewPaymentMemory(),
 		Webhooks:     NewWebhookMemory(),
@@ -129,6 +132,10 @@ func NewMemoryStore() *MemoryStore {
 		Users:        NewUserMemory(),
 		Sessions:     NewSessionMemory(),
 		Roles:        NewRoleMemory(),
+		Students:     students,
+		StudentLinks: NewParentStudentLinkMemory(students),
 		AuditLogs:    NewAuditLogMemory(),
 	}
+	store.StudentLinks = NewParentStudentLinkMemory(students)
+	return store
 }

@@ -54,7 +54,15 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/tutors/{slug}", handlers.Tutors.GetBySlug)
 	mux.HandleFunc("GET "+v1+"/programmes", handlers.Programmes.List)
 	mux.HandleFunc("GET "+v1+"/programmes/{slug}", handlers.Programmes.GetBySlug)
+	mux.HandleFunc("GET "+v1+"/cohorts", handlers.Cohorts.List)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}", handlers.Cohorts.GetByID)
+	mux.HandleFunc("GET "+v1+"/cohorts/{id}/lessons", handlers.LessonOps.ListCohortLessons)
+	mux.HandleFunc("GET "+v1+"/cohorts/{id}/resources", handlers.LessonOps.ListResources)
+	mux.HandleFunc("GET "+v1+"/cohorts/{id}/assignments", handlers.LessonOps.ListAssignments)
+	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.MarkAttendance)
+	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.ListAttendance)
+	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.AddNote)
+	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.ListNotes)
 
 	// Bookings + payments (Phase 3)
 	mux.HandleFunc("POST "+v1+"/bookings", handlers.Bookings.Create)
@@ -106,6 +114,10 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/lessons", handlers.Dashboard.MyLessons)
 	mux.HandleFunc("GET "+v1+"/me/tutor-lessons", handlers.Dashboard.MyTutorLessons)
 	mux.HandleFunc("GET "+v1+"/me/earnings", handlers.Dashboard.MyEarnings)
+
+	// Onboarding (Phase 10b)
+	mux.HandleFunc("POST "+v1+"/me/learners", handlers.Onboarding.CreateLearner)
+	mux.HandleFunc("GET "+v1+"/me/learners", handlers.Onboarding.ListLearners)
 
 	// Growth: reviews, referrals, institutions (Phase 10)
 	mux.HandleFunc("POST "+v1+"/reviews", handlers.Growth.CreateReview)
@@ -168,5 +180,7 @@ type Handlers struct {
 	Admin        *AdminHandler
 	Support      *SupportHandler
 	Growth       *GrowthHandler
+	LessonOps    *LessonOpsHandler
+	Onboarding   *OnboardingHandler
 	Objects      *ObjectHandler
 }

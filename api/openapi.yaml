@@ -909,6 +909,130 @@ paths:
         '200': { description: Moderated }
         '409': { description: Publish without consent rejected }
 
+  /cohorts:
+    get:
+      tags: [cohorts]
+      summary: Published cohort catalogue (SSR, cached 300s)
+      parameters:
+        - { name: programme_id, in: query, schema: { type: string, format: uuid } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Paginated published cohorts }
+
+  /cohorts/{id}/lessons:
+    get:
+      tags: [cohorts]
+      summary: Session schedule for a cohort (public)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Lessons ordered by start time }
+
+  /cohorts/{id}/resources:
+    get:
+      tags: [learning]
+      summary: Learning resources for a cohort
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Resources }
+
+  /cohorts/{id}/assignments:
+    get:
+      tags: [learning]
+      summary: Assignments for a cohort
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Assignments }
+
+  /lessons/{lessonId}/attendance:
+    post:
+      tags: [learning]
+      summary: Mark attendance (tutor, own lesson only; upsert per student)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [student_profile_id, status]
+              properties:
+                student_profile_id: { type: string, format: uuid }
+                status: { type: string, enum: [PRESENT, ABSENT, LATE, EXCUSED] }
+                note: { type: string }
+      responses:
+        '200': { description: Marked }
+        '403': { description: Not the lesson's tutor }
+    get:
+      tags: [learning]
+      summary: Attendance list for a lesson
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Attendance rows }
+
+  /lessons/{lessonId}/notes:
+    post:
+      tags: [learning]
+      summary: Add tutor lesson note + homework (tutor, own lesson only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                student_profile_id: { type: string, format: uuid }
+                content: { type: string }
+                homework: { type: string }
+                is_visible_to_parent: { type: boolean, default: true }
+      responses:
+        '201': { description: Note created }
+    get:
+      tags: [learning]
+      summary: Lesson notes for a lesson
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Notes }
+
+  /me/learners:
+    post:
+      tags: [identity]
+      summary: Add a linked learner (parent onboarding; guardian relationship enforced)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [first_name, last_name]
+              properties:
+                first_name: { type: string }
+                last_name: { type: string }
+                date_of_birth: { type: string, format: date }
+                school_name: { type: string }
+                current_level: { type: string }
+                relationship: { type: string, default: PARENT }
+      responses:
+        '201': { description: Learner created + linked }
+    get:
+      tags: [identity]
+      summary: The parent's linked learners
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Learners }
+
   /reviews:
     post:
       tags: [reviews]

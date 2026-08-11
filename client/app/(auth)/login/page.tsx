@@ -40,7 +40,9 @@ export default function LoginPage() {
           router.push("/verify-email?sent=1");
           return;
         }
-        router.push(user.roles.includes("TUTOR") ? "/tutor-dashboard" : "/dashboard");
+        if (user.roles.includes("TUTOR")) router.push("/tutor-dashboard");
+        else if (user.roles.includes("PARENT")) router.push("/dashboard");
+        else router.push("/student-dashboard");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Login failed");
       } finally {

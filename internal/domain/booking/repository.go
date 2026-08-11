@@ -2,6 +2,7 @@ package booking
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -11,6 +12,7 @@ import (
 // internal/repository/postgres (transactional), internal/repository/memory (fakes).
 
 type CohortRepository interface {
+	ListPublished(ctx context.Context, params CohortListParams) ([]Cohort, int64, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*Cohort, error)
 	// GetByIDForUpdate locks the row (SELECT ... FOR UPDATE) so concurrent
 	// enrollments cannot oversubscribe a cohort (SLO: no overbooking).
@@ -46,6 +48,83 @@ type TutorProfileReader interface {
 
 // LessonRepository — read side for lessons (dashboards, scheduling).
 type LessonRepository interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*Lesson, error)
 	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Lesson, error)
 	ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Lesson, error)
+	ListByCohort(ctx context.Context, cohortID uuid.UUID, limit int) ([]Lesson, error)
+}
+
+// CohortListParams — public cohort catalogue filters.
+type CohortListParams struct {
+	ProgrammeID *uuid.UUID
+	Status      string // default PUBLISHED
+	Page        int
+	PageSize    int
+}
+
+// AttendanceRepository — lesson attendance (MVP teaching ops).
+type AttendanceRepository interface {
+	Upsert(ctx context.Context, lessonID, studentProfileID uuid.UUID, status string, markedBy uuid.UUID, note *string) error
+	ListByLesson(ctx context.Context, lessonID uuid.UUID) ([]Attendance, error)
+}
+
+// Attendance mirrors migration attendance.
+type Attendance struct {
+	ID               uuid.UUID `json:"id"`
+	LessonID         uuid.UUID `json:"lesson_id"`
+	StudentProfileID uuid.UUID `json:"student_profile_id"`
+	Status           string    `json:"status"`
+	MarkedBy         uuid.UUID `json:"marked_by"`
+	Note             *string   `json:"note,omitempty"`
+	MarkedAt         time.Time `json:"marked_at"`
+}
+
+// LessonNoteRepository — tutor lesson notes (MVP teaching ops).
+type LessonNoteRepository interface {
+	Create(ctx context.Context, n *LessonNote) error
+	ListByLesson(ctx context.Context, lessonID uuid.UUID) ([]LessonNote, error)
+}
+
+type LessonNote struct {
+	ID                uuid.UUID  `json:"id"`
+	LessonID          uuid.UUID  `json:"lesson_id"`
+	TutorProfileID    uuid.UUID  `json:"tutor_profile_id"`
+	StudentProfileID  *uuid.UUID `json:"student_profile_id,omitempty"`
+	Content           string     `json:"content"`
+	Homework          *string    `json:"homework,omitempty"`
+	IsVisibleToParent bool       `json:"is_visible_to_parent"`
+	CreatedAt         time.Time  `json:"created_at"`
+}
+
+// ResourceRepository — read side for learning resources (migration 000006).
+type ResourceRepository interface {
+	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]Resource, error)
+}
+
+type Resource struct {
+	ID          uuid.UUID  `json:"id"`
+	ProgrammeID *uuid.UUID `json:"programme_id,omitempty"`
+	CohortID    *uuid.UUID `json:"cohort_id,omitempty"`
+	LessonID    *uuid.UUID `json:"lesson_id,omitempty"`
+	Title       string     `json:"title"`
+	Description *string    `json:"description,omitempty"`
+	FileURL     *string    `json:"file_url,omitempty"`
+	IsPublic    bool       `json:"is_public"`
+	CreatedAt   time.Time  `json:"created_at"`
+}
+
+// AssignmentRepository — read side for assignments (migration 000006).
+type AssignmentRepository interface {
+	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]Assignment, error)
+}
+
+type Assignment struct {
+	ID           uuid.UUID  `json:"id"`
+	CohortID     *uuid.UUID `json:"cohort_id,omitempty"`
+	LessonID     *uuid.UUID `json:"lesson_id,omitempty"`
+	Title        string     `json:"title"`
+	Instructions *string    `json:"instructions,omitempty"`
+	DueAt        *time.Time `json:"due_at,omitempty"`
+	MaxScore     *float64   `json:"max_score,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
 }

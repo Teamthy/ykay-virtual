@@ -3,6 +3,7 @@ import Link from "next/link";
 // Fully-wired footer: every column links to a real route.
 
 const PROGRAMMES = [
+  { href: "/cohorts", label: "Group Cohorts" },
   { href: "/curricula/british", label: "British Curriculum" },
   { href: "/curricula/nigerian", label: "Nigerian Curriculum" },
   { href: "/exam-prep", label: "Exam Preparation" },
@@ -12,6 +13,7 @@ const PROGRAMMES = [
 
 const COMPANY = [
   { href: "/about", label: "About & Academic Leadership" },
+  { href: "/resources", label: "Resources & Study Guides" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/success-stories", label: "Success Stories" },
   { href: "/blog", label: "Resources & Blog" },

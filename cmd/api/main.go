@@ -26,6 +26,7 @@ import (
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/domain/tutor"
+	"ykay-virtual/internal/domain/vetting"
 	"ykay-virtual/internal/middleware"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
@@ -73,6 +74,13 @@ type Repositories struct {
 	Reviews         review.ReviewRepository
 	SupportTickets  content.SupportTicketRepository
 	Wallets         payment.WalletRepository
+	Attendance      booking.AttendanceRepository
+	LessonNotes     booking.LessonNoteRepository
+	Resources       booking.ResourceRepository
+	Assignments     booking.AssignmentRepository
+	Students        identity.StudentProfileRepository
+	StudentLinks    identity.ParentStudentLinkRepository
+	Vetting         vetting.VettingRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -126,6 +134,12 @@ func main() {
 		repos.PrivatePackages, repos.Cohorts, nil)
 	dashboardSvc := service.NewDashboardService(
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
+	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
+		repos.Resources, repos.Assignments).
+		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
+			return repos.Vetting.GetProfileByID(ctx, id)
+		})
+	onboardingSvc := service.NewOnboardingService(repos.Students, repos.StudentLinks, audit)
 	contentSvc := service.NewContentService(
 		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend)
 	adminSvc := service.NewAdminService(repos.Stats, repos.AdminBlog, repos.Institutions,
@@ -157,6 +171,8 @@ func main() {
 		Admin:        httpapi.NewAdminHandler(adminSvc),
 		Support:      httpapi.NewSupportHandler(supportSvc),
 		Growth:       httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
+		LessonOps:    httpapi.NewLessonOpsHandler(lessonSvc),
+		Onboarding:   httpapi.NewOnboardingHandler(onboardingSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
@@ -233,6 +249,13 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Reviews:         memory.NewReviewMemory(),
 			SupportTickets:  memory.NewSupportMemory(),
 			Wallets:         store.Wallets,
+			Attendance:      memory.NewAttendanceMemory(),
+			LessonNotes:     memory.NewLessonNoteMemory(),
+			Resources:       memory.NewResourceMemory(),
+			Assignments:     memory.NewAssignmentMemory(),
+			Students:        store.Students,
+			StudentLinks:    store.StudentLinks,
+			Vetting:         store.Vetting,
 			StorageBackend:  "memory",
 		}
 	}
@@ -269,6 +292,13 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		Reviews:         postgres.NewReviewRepo(pg.DB()),
 		SupportTickets:  postgres.NewSupportRepo(pg.DB()),
 		Wallets:         postgres.NewWalletRepo(pg.DB()),
+		Attendance:      postgres.NewAttendanceRepo(pg.DB()),
+		LessonNotes:     postgres.NewLessonNoteRepo(pg.DB()),
+		Resources:       postgres.NewResourceRepo(pg.DB()),
+		Assignments:     postgres.NewAssignmentRepo(pg.DB()),
+		Students:        postgres.NewStudentProfileRepo(pg.DB()),
+		StudentLinks:    postgres.NewParentStudentLinkRepo(pg.DB()),
+		Vetting:         postgres.NewVettingRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}
 }
