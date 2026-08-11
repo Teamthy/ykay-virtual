@@ -36,6 +36,13 @@ func NewSubjectMemory(seed []academics.Subject) *SubjectMemory {
 	return m
 }
 
+// Seed inserts a subject (dev-mode catalogue seeding).
+func (m *SubjectMemory) Seed(s academics.Subject) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.rows[s.ID] = s
+}
+
 func (m *SubjectMemory) List(_ context.Context, p academics.SubjectListParams) ([]academics.Subject, int64, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -111,6 +118,13 @@ func NewProgrammeMemory(seed []academics.Programme) *ProgrammeMemory {
 		m.rows[p.ID] = p
 	}
 	return m
+}
+
+// Seed inserts a programme (dev-mode catalogue seeding).
+func (m *ProgrammeMemory) Seed(p academics.Programme) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.rows[p.ID] = p
 }
 
 func (m *ProgrammeMemory) List(_ context.Context, p academics.ProgrammeListParams) ([]academics.Programme, int64, error) {

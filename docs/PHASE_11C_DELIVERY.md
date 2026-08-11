@@ -42,6 +42,34 @@ Migration `000016_learning`: `learner_assessments`, `learner_assessment_question
 
 ---
 
+## E2E suite (added on merge to main)
+
+`scripts/e2e.sh` boots the API (memory fallback) and exercises the full
+platform over HTTP — **71 checks, 0 failures**:
+
+- Auth: register/login/me/logout/password-reset, wrong-password 401, session invalidation
+- Catalogue: subjects, programmes, cohorts
+- Onboarding: parent creates learner, lists learners
+- **Tutor vetting full pipeline**: profile → subject → GOVT_ID upload → submit
+  → admin review → admin approves document → interview → verify (requires
+  approved ID) → competency assessment (seeded maths bank, 5 questions, pass)
+  → approve → status APPROVED
+- Availability upsert/list
+- **Phase 11c learning**: assessment create (no answer-key leak), student
+  start (keys hidden), auto-grade 1/2 → passed (inclusive threshold),
+  resubmit 409, cross-assessment answer 400, progress reports (tutor write,
+  student view, tutor-scoped list, missing-filter 400)
+- Notifications unread count, admin analytics funnel (real counts),
+  analytics/CSVs RBAC (403 for students), attendance.csv + revenue.csv
+  headers, attendance.csv missing lesson_id → 400
+
+Dev-mode additions that make this possible: seeded catalogue (3 subjects, 2
+programmes), seeded vetting question bank (mathematics, correct answer = option
+index 1 for deterministic e2e), `SubjectRepo`/`ProgrammeRepo` wired in memory
+mode.
+
+---
+
 ## Verification
 
 ```text

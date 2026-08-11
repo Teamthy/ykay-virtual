@@ -101,6 +101,8 @@ type MemoryStore struct {
 	Learning       *LearningMemory
 	Analytics      *AnalyticsMemory
 	Tutors         *TutorMemory
+	Subjects       *SubjectMemory
+	Programmes     *ProgrammeMemory
 	Blogs          *BlogMemory
 	Redirects      *RedirectMemory
 	Testimonials   *TestimonialMemory
@@ -138,6 +140,8 @@ func NewMemoryStore() *MemoryStore {
 		Lessons:      NewLessonMemory(),
 		Learning:     NewLearningMemory(),
 		Tutors:       NewTutorMemory(nil),
+		Subjects:     NewSubjectMemory(nil),
+		Programmes:   NewProgrammeMemory(nil),
 		Blogs:        NewBlogMemory(),
 		Redirects:    NewRedirectMemory(),
 		Testimonials: NewTestimonialMemory(),

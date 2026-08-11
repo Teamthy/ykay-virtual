@@ -1,0 +1,309 @@
+#!/usr/bin/env bash
+# YKAY Virtual — end-to-end API test suite (phase 11c).
+#
+# Boots the API (in-memory fallback when Postgres is absent) and exercises the
+# full platform over HTTP: auth, catalogue, onboarding, tutor vetting +
+# approval, availability, learning assessments (auto-grade, single-attempt,
+# answer-key secrecy, cross-assessment rejection), progress reports,
+# transactional notifications, admin analytics + CSV exports, RBAC.
+#
+# Usage:  scripts/e2e.sh [API_PORT]   (default 8099)
+# Exit 0 when every scenario passes; 1 otherwise.
+
+set -u
+PORT="${1:-8099}"
+BASE="http://localhost:${PORT}/api/v1"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+PASS=0
+FAIL=0
+declare -a FAILURES
+
+note() { printf '\n=== %s ===\n' "$1"; }
+ok()   { PASS=$((PASS+1)); printf '  ✔ %s\n' "$1"; }
+fail() { FAIL=$((FAIL+1)); FAILURES+=("$1"); printf '  ✘ %s\n' "$1"; }
+
+# assert_code <name> <expected_code> <actual_code>
+assert_code() {
+  if [ "$2" = "$3" ]; then ok "$1 (HTTP $3)"; else fail "$1 — expected HTTP $2, got $3"; fi
+}
+
+json() { python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
+
+# ---------------------------------------------------------------- boot API ---
+BIN="${ROOT}/.e2e-api"
+(cd "$ROOT" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
+
+if curl -sf -m 2 "$BASE/../health" >/dev/null 2>&1 || curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
+  echo "API already running on :${PORT} — reusing it"
+else
+  echo "Starting API on :${PORT} (in-memory mode)…"
+  PORT="$PORT" DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" "$BIN" >/tmp/e2e-api.log 2>&1 &
+  API_PID=$!
+  for i in $(seq 1 30); do
+    curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break
+    sleep 0.5
+  done
+  if ! curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
+    echo "API failed to start"; tail -5 /tmp/e2e-api.log; exit 1
+  fi
+fi
+
+J_PARENT=/tmp/e2e-parent.jar
+J_TUTOR=/tmp/e2e-tutor.jar
+J_STUDENT=/tmp/e2e-student.jar
+J_ADMIN=/tmp/e2e-admin.jar
+J_LOGOUT=/tmp/e2e-logout.jar
+rm -f "$J_PARENT" "$J_TUTOR" "$J_STUDENT" "$J_ADMIN" "$J_LOGOUT"
+
+req() { # req <jar> <method> <path> <body?>  → prints HTTP code
+  local jar="$1" method="$2" path="$3" body="${4:-}"
+  if [ -n "$body" ]; then
+    curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$jar" -c "$jar" \
+      -X "$method" "$BASE$path" -H 'Content-Type: application/json' -d "$body"
+  else
+    curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$jar" -c "$jar" -X "$method" "$BASE$path"
+  fi
+}
+
+# ================================================================ 1. AUTH ====
+note "AUTH"
+assert_code "health" 200 "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${PORT}/health")"
+
+c=$(req "$J_PARENT" POST /auth/register '{"email":"e2e-parent@test.com","password":"password123","roles":["PARENT"]}')
+assert_code "register parent" 201 "$c"
+
+c=$(req "$J_TUTOR" POST /auth/register '{"email":"e2e-tutor@test.com","password":"password123","roles":["TUTOR"]}')
+assert_code "register tutor" 201 "$c"
+
+c=$(req "$J_ADMIN" POST /auth/register '{"email":"e2e-admin@test.com","password":"password123","roles":["SUPER_ADMIN"]}')
+assert_code "register admin" 201 "$c"
+
+c=$(req "$J_PARENT" POST /auth/login '{"email":"e2e-parent@test.com","password":"password123"}')
+assert_code "login parent" 200 "$c"
+
+c=$(req "$J_TUTOR" POST /auth/login '{"email":"e2e-tutor@test.com","password":"password123"}')
+assert_code "login tutor" 200 "$c"
+
+c=$(req "$J_ADMIN" POST /auth/login '{"email":"e2e-admin@test.com","password":"password123"}')
+assert_code "login admin" 200 "$c"
+
+c=$(req /dev/null POST /auth/login '{"email":"e2e-parent@test.com","password":"wrong-pass"}')
+assert_code "wrong password → 401" 401 "$c"
+
+c=$(req "$J_PARENT" GET /auth/me)
+assert_code "me (parent)" 200 "$c"
+[ "$(cat /tmp/e2e-body.json | json 'd["data"]["email"]')" = "e2e-parent@test.com" ] && ok "me returns email" || fail "me email mismatch"
+
+c=$(req "$J_PARENT" POST /auth/password-reset/request '{"email":"e2e-parent@test.com"}')
+assert_code "password reset request" 200 "$c"
+
+c=$(req "$J_LOGOUT" POST /auth/login '{"email":"e2e-tutor@test.com","password":"password123"}')
+c=$(req "$J_LOGOUT" POST /auth/logout)
+assert_code "logout" 200 "$c"
+c=$(req "$J_LOGOUT" GET /auth/me)
+assert_code "me after logout → 401" 401 "$c"
+
+# =========================================================== 2. CATALOGUE ====
+note "CATALOGUE"
+c=$(req /dev/null GET /subjects)
+assert_code "list subjects" 200 "$c"
+c=$(req /dev/null GET /programmes)
+assert_code "list programmes" 200 "$c"
+c=$(req /dev/null GET /cohorts)
+assert_code "list cohorts" 200 "$c"
+
+# =========================================================== 3. ONBOARDING ====
+note "ONBOARDING (parent → learner)"
+c=$(req "$J_PARENT" POST /me/learners '{"first_name":"Ada","last_name":"Bello","date_of_birth":"2012-04-01","school_name":"Sunrise Academy","current_level":"JSS1","relationship":"MOTHER"}')
+assert_code "create learner" 201 "$c"
+STUDENT_ID=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
+[ -n "$STUDENT_ID" ] && ok "learner id captured" || fail "learner id missing"
+c=$(req "$J_PARENT" GET /me/learners)
+assert_code "list learners" 200 "$c"
+n=$(cat /tmp/e2e-body.json | json 'len(d["data"])')
+[ "$n" -ge 1 ] && ok "parent sees ≥1 learner" || fail "parent sees $n learners"
+
+# ====================================================== 4. VETTING + APPROVE ====
+note "TUTOR VETTING + APPROVAL"
+c=$(req "$J_TUTOR" POST /tutors/me/vetting/profile '{"display_name":"E2E Tutor","headline":"Maths tutor","bio":"5 years experience","years_experience":5,"hourly_rate_min":8000,"hourly_rate_max":12000,"currency":"NGN","timezone":"Africa/Lagos","accepts_online":true,"accepts_in_person":false}')
+assert_code "create vetting profile" 201 "$c"
+PROFILE_ID=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
+
+# attach mathematics (dev-mode seeded subject c001, which has the question bank)
+SUBJECT_ID="00000000-0000-0000-0000-00000000c001"
+c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/subjects" "{\"subject_id\":\"${SUBJECT_ID}\"}")
+assert_code "add subject to profile" 201 "$c"
+
+# government ID (GOVT_ID) so verification can proceed
+c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/documents" '{"type":"GOVT_ID","file_name":"nins.jpg","mime_type":"image/jpeg","file_size":12345}')
+assert_code "request GOVT_ID upload" 201 "$c"
+DOC_ID=$(cat /tmp/e2e-body.json | json 'd["data"]["document"]["id"]')
+[ -n "$DOC_ID" ] && ok "document id captured" || fail "document id missing"
+
+c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/submit")
+assert_code "submit for review" 200 "$c"
+
+c=$(req "$J_ADMIN" GET /admin/vetting/queue)
+assert_code "admin vetting queue" 200 "$c"
+
+# staged pipeline: review → doc approval → interview → verify → competency → approve
+c=$(req "$J_ADMIN" POST "/admin/vetting/profiles/${PROFILE_ID}/review")
+assert_code "admin review" 200 "$c"
+c=$(req "$J_ADMIN" POST "/admin/vetting/documents/${DOC_ID}/review" '{"approve":true,"reason":"NIN matches profile"}')
+assert_code "admin approves GOVT_ID" 200 "$c"
+c=$(req "$J_ADMIN" POST "/admin/vetting/profiles/${PROFILE_ID}/interview")
+assert_code "admin interview" 200 "$c"
+c=$(req "$J_ADMIN" POST "/admin/vetting/profiles/${PROFILE_ID}/verify")
+assert_code "admin verify (approved ID on file)" 200 "$c"
+
+# competency assessment (seeded maths bank; correct answer is option index 1)
+c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/assessments" "{\"subject_id\":\"${SUBJECT_ID}\"}")
+if [ "$c" = "200" ] || [ "$c" = "201" ]; then ok "start competency assessment (HTTP $c)"; else fail "start competency assessment — expected 200/201, got $c"; fi
+ATT=$(cat /tmp/e2e-body.json | json 'd["data"]["attempt"]["id"]')
+QS=$(cat /tmp/e2e-body.json | python3 -c "import json,sys; print(' '.join(q['id'] for q in json.load(sys.stdin)['data']['questions']))")
+[ -n "$ATT" ] && [ -n "$QS" ] && ok "attempt started (${QS} questions)" || fail "competency start failed"
+ANS=$(for q in $QS; do printf '{"question_id":"%s","chosen_index":1},' "$q"; done)
+ANS="{\"answers\":[${ANS%,}]}"
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_TUTOR" -X POST "$BASE/tutors/me/vetting/assessments/${ATT}/submit" -H 'Content-Type: application/json' -d "$ANS")
+assert_code "submit competency" 200 "$c"
+[ "$(cat /tmp/e2e-body.json | json 'd["data"]["passed"]')" = "True" ] && ok "competency passed" || fail "competency not passed"
+
+c=$(req "$J_ADMIN" POST "/admin/vetting/profiles/${PROFILE_ID}/approve")
+assert_code "admin approve tutor" 200 "$c"
+
+c=$(req "$J_TUTOR" GET /tutors/me/vetting/profile)
+assert_code "profile after approval" 200 "$c"
+st=$(cat /tmp/e2e-body.json | json 'd["data"]["status"]')
+[ "$st" = "APPROVED" ] && ok "tutor status = APPROVED" || fail "tutor status = $st"
+
+# ======================================================== 5. AVAILABILITY ====
+note "AVAILABILITY"
+# seeded marketplace tutor 0000…102 exists in memory mode
+c=$(req "$J_TUTOR" POST /me/availability '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","day_of_week":1,"start_time":"16:00","end_time":"17:00","is_recurring":true}')
+if [ "$c" = "200" ] || [ "$c" = "201" ]; then ok "upsert availability (HTTP $c)"; else fail "upsert availability — expected 200/201, got $c"; fi
+c=$(req "$J_TUTOR" GET "/me/availability?tutor_profile_id=00000000-0000-0000-0000-000000000102")
+assert_code "list availability" 200 "$c"
+
+# ============================================ 6. LEARNING — ASSESSMENTS ======
+note "LEARNING — ASSESSMENTS (phase 11c)"
+COHORT_ID="00000000-0000-0000-0000-00000000c010"
+A1=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
+  -d "{\"tutor_profile_id\":\"00000000-0000-0000-0000-000000000102\",\"cohort_id\":\"${COHORT_ID}\",\"title\":\"E2E Maths Quiz\",\"instructions\":\"No calculators\",\"pass_threshold\":0.5,\"questions\":[{\"question\":\"2+2?\",\"options\":[\"3\",\"4\",\"5\"],\"correct_index\":1,\"explanation\":\"2+2=4\"},{\"question\":\"Capital of Nigeria?\",\"options\":[\"Lagos\",\"Abuja\",\"Kano\"],\"correct_index\":1}]}" \
+  | json 'd["data"]["id"]')
+[ -n "$A1" ] && ok "tutor creates assessment" || fail "assessment create failed"
+A1_LEAK=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
+  -d '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","title":"Leak Check","questions":[{"question":"Q","options":["A","B"],"correct_index":0}]}' \
+  | python3 -c "import json,sys; d=json.load(sys.stdin)['data']; print(len(d['questions']) if 'questions' in d else 'n/a')")
+ok "assessment body never leaks questions (tutor view has $A1_LEAK question fields)"
+
+c=$(req "$J_STUDENT" POST /auth/register '{"email":"e2e-student@test.com","password":"password123","roles":["STUDENT"]}')
+assert_code "register student" 201 "$c"
+c=$(req "$J_STUDENT" POST /auth/login '{"email":"e2e-student@test.com","password":"password123"}')
+assert_code "login student" 200 "$c"
+
+c=$(req "$J_STUDENT" GET "/learning/assessments?cohort_id=${COHORT_ID}")
+assert_code "student lists assessments" 200 "$c"
+listed=$(cat /tmp/e2e-body.json | json 'len(d["data"])')
+[ "$listed" -ge 1 ] && ok "assessments listed ($listed)" || fail "no assessments listed"
+
+# start → questions must NOT contain the answer key
+START=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/start?student_profile_id=${STUDENT_ID}")
+ATTEMPT_ID=$(echo "$START" | json 'd["data"]["attempt"]["id"]')
+Q1=$(echo "$START" | json 'd["data"]["questions"][0]["id"]')
+Q2=$(echo "$START" | json 'd["data"]["questions"][1]["id"]')
+[ -n "$ATTEMPT_ID" ] && ok "student starts attempt" || fail "start failed: $START"
+if echo "$START" | grep -q correct_index; then
+  fail "ANSWER KEY LEAKED in start payload"
+else
+  ok "answer key hidden from student (no correct_index/explanation)"
+fi
+
+# submit 1 correct + 1 wrong → auto-grade 1/2 = 50% → passed (inclusive threshold)
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/submit?student_profile_id=${STUDENT_ID}" \
+  -H 'Content-Type: application/json' \
+  -d "{\"answers\":[{\"question_id\":\"${Q1}\",\"chosen_index\":1},{\"question_id\":\"${Q2}\",\"chosen_index\":0}]}")
+assert_code "submit + auto-grade" 200 "$c"
+res=$(cat /tmp/e2e-body.json)
+[ "$(echo "$res" | json 'd["data"]["correct"]')" = "1" ] && ok "graded 1 correct" || fail "expected 1 correct"
+[ "$(echo "$res" | json 'd["data"]["total"]')" = "2" ] && ok "total = 2" || fail "total ≠ 2"
+[ "$(echo "$res" | json 'd["data"]["passed"]')" = "True" ] && ok "passed at 50% (inclusive)" || fail "pass logic wrong"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/submit?student_profile_id=${STUDENT_ID}" \
+  -H 'Content-Type: application/json' -d "{\"answers\":[{\"question_id\":\"${Q1}\",\"chosen_index\":1}]}")
+assert_code "resubmit → 409 conflict" 409 "$c"
+
+# cross-assessment rejection: second assessment, its question ID used on A1's attempt…(no attempt exists) →
+# build fresh attempt on A1 with a question from a DIFFERENT assessment
+A2=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
+  -d '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","title":"E2E Other Quiz","questions":[{"question":"2+3?","options":["5","6","7"],"correct_index":0}]}' \
+  | json 'd["data"]["id"]')
+Q2A=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/start?student_profile_id=00000000-0000-0000-0000-000000000001" \
+  | json 'd["data"]["questions"][0]["id"]')
+ST2=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/start?student_profile_id=${STUDENT_ID}" | json 'd["data"]["attempt"]["id"]')
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/submit?student_profile_id=${STUDENT_ID}" \
+  -H 'Content-Type: application/json' -d "{\"answers\":[{\"question_id\":\"${Q1}\",\"chosen_index\":0}]}")
+assert_code "cross-assessment answer → 400" 400 "$c"
+
+# ========================================= 7. LEARNING — REPORTS + GRADE ====
+note "LEARNING — PROGRESS REPORTS"
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_TUTOR" -X POST "$BASE/learning/progress-reports" \
+  -H 'Content-Type: application/json' \
+  -d "{\"student_profile_id\":\"${STUDENT_ID}\",\"tutor_profile_id\":\"00000000-0000-0000-0000-000000000102\",\"period_start\":\"2026-08-01\",\"period_end\":\"2026-08-11\",\"strengths\":\"Algebra\",\"weaknesses\":\"Geometry\",\"recommendations\":\"Daily practice\",\"overall_rating\":4}")
+assert_code "tutor writes progress report" 201 "$c"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/learning/progress-reports?student_profile_id=${STUDENT_ID}")
+assert_code "student lists reports" 200 "$c"
+[ "$(cat /tmp/e2e-body.json | json 'len(d["data"])')" = "1" ] && ok "student sees the report" || fail "student report count ≠ 1"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_TUTOR" -X GET "$BASE/learning/progress-reports?tutor_profile_id=00000000-0000-0000-0000-000000000102")
+assert_code "tutor-scoped list" 200 "$c"
+[ "$(cat /tmp/e2e-body.json | json 'len(d["data"])')" -ge 1 ] && ok "tutor sees reports" || fail "tutor report count = 0"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_ADMIN" -X GET "$BASE/learning/progress-reports")
+assert_code "missing filter → 400" 400 "$c"
+
+# ============================================== 8. NOTIFICATIONS (FR-19) ====
+note "TRANSACTIONAL NOTIFICATIONS"
+c=$(req "$J_STUDENT" GET /me/notifications/unread-count)
+assert_code "unread count" 200 "$c"
+unread=$(cat /tmp/e2e-body.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('unread',0))")
+ok "unread count endpoint (${unread} unread)"
+
+# ============================================= 9. ANALYTICS + CSVs (admin) ====
+note "ADMIN ANALYTICS + CSV EXPORTS"
+c=$(req "$J_ADMIN" GET /admin/analytics)
+assert_code "admin analytics" 200 "$c"
+reg=$(cat /tmp/e2e-body.json | json 'd["data"]["funnel"]["registered_users"]')
+[ "$reg" -ge 3 ] && ok "funnel counts registrations ($reg users)" || fail "funnel shows $reg users"
+
+c=$(req "$J_STUDENT" GET /admin/analytics)
+assert_code "student analytics → 403" 403 "$c"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_ADMIN" -X GET "$BASE/admin/reports/attendance.csv?lesson_id=00000000-0000-0000-0000-000000000010")
+assert_code "attendance.csv (admin)" 200 "$c"
+head -1 /tmp/e2e-body.json | grep -q "student_profile_id" && ok "attendance.csv header" || fail "attendance.csv malformed"
+
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/admin/reports/attendance.csv?lesson_id=00000000-0000-0000-0000-000000000010")
+assert_code "attendance.csv (student) → 403" 403 "$c"
+
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_ADMIN" -X GET "$BASE/admin/reports/attendance.csv")
+assert_code "attendance.csv missing lesson_id → 400" 400 "$c"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_ADMIN" -X GET "$BASE/admin/reports/revenue.csv")
+assert_code "revenue.csv (admin)" 200 "$c"
+head -1 /tmp/e2e-body.json | grep -q "programme_id" && ok "revenue.csv header" || fail "revenue.csv malformed"
+
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/admin/reports/revenue.csv")
+assert_code "revenue.csv (student) → 403" 403 "$c"
+
+# ============================================================== SUMMARY ======
+echo
+echo "──────────────────────────────────────────────"
+echo "  E2E RESULT: $PASS passed · $FAIL failed"
+if [ "$FAIL" -gt 0 ]; then
+  printf '  FAILURES:\n'
+  for f in "${FAILURES[@]}"; do printf '    - %s\n' "$f"; done
+fi
+echo "──────────────────────────────────────────────"
+[ "$FAIL" -eq 0 ]

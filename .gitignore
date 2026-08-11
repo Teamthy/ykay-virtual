@@ -13,3 +13,6 @@ coverage/
 *.tsbuildinfo
 .history/
 legacy/server/.env
+
+# e2e API binary
+.e2e-api

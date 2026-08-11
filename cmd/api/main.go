@@ -243,11 +243,14 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		store := memory.NewMemoryStore()
 		store.Roles.Seed()      // mirror migration 000001 role inserts
 		seedMemoryTutors(store) // mock marketplace tutors (chinasa, oluwatobi)
+		seedMemoryCatalogue(store)
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
 			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
 			EscrowRead:      store.Escrow,
 			CohortRepo:      store.Cohorts,
+			SubjectRepo:     store.Subjects,
+			ProgrammeRepo:   store.Programmes,
 			TutorRepo:       store.Tutors,
 			AuditRepo:       store.AuditLogs,
 			Orders:          store.Orders,
@@ -388,4 +391,43 @@ func seedMemoryTutors(store *memory.MemoryStore) {
 		},
 		Subjects: []string{"Mathematics", "English"}, SubjectSlugs: []string{"mathematics", "english"},
 	})
+}
+
+// seedMemoryCatalogue — dev-mode curriculum catalogue (subjects +
+// programmes) so catalogue pages and the tutor vetting subject picker work
+// without Postgres.
+func seedMemoryCatalogue(store *memory.MemoryStore) {
+	mathsID := uuid.MustParse("00000000-0000-0000-0000-00000000c001")
+	engID := uuid.MustParse("00000000-0000-0000-0000-00000000c002")
+	physID := uuid.MustParse("00000000-0000-0000-0000-00000000c003")
+	now := time.Now()
+	store.Subjects.Seed(academics.Subject{ID: mathsID, Name: "Mathematics", Slug: "mathematics", Category: "Core", IsActive: true, CreatedAt: now})
+	store.Subjects.Seed(academics.Subject{ID: engID, Name: "English", Slug: "english", Category: "Core", IsActive: true, CreatedAt: now})
+	store.Subjects.Seed(academics.Subject{ID: physID, Name: "Physics", Slug: "physics", Category: "Sciences", IsActive: true, CreatedAt: now})
+
+	p1 := uuid.MustParse("00000000-0000-0000-0000-00000000d001")
+	p2 := uuid.MustParse("00000000-0000-0000-0000-00000000d002")
+	store.Programmes.Seed(academics.Programme{ID: p1, Title: "Nigerian Curriculum (Core Maths)", Slug: "nigerian-curriculum", Format: academics.FormatCohort, Status: academics.ProgrammePublished, Currency: "NGN", IsFeatured: true, CreatedAt: now})
+	store.Programmes.Seed(academics.Programme{ID: p2, Title: "British Curriculum (IGCSE Prep)", Slug: "british-curriculum", Format: academics.FormatCohort, Status: academics.ProgrammePublished, Currency: "NGN", IsFeatured: false, CreatedAt: now})
+
+	// Vet competency question bank (mathematics) — dev-mode stand-in for the
+	// SQL-seeded bank; correct answer is always option index 1 so e2e can
+	// answer deterministically.
+	bank := []struct {
+		q string
+		o []string
+	}{
+		{"What is 7 × 6?", []string{"36", "42", "48", "54"}},
+		{"What is 15% of 200?", []string{"20", "30", "35", "40"}},
+		{"Solve for x: 2x + 4 = 12", []string{"2", "4", "6", "8"}},
+		{"What is the square root of 144?", []string{"10", "12", "14", "16"}},
+		{"What is 3/4 as a decimal?", []string{"0.25", "0.75", "0.5", "1.25"}},
+		{"What is the area of a 6×9 rectangle?", []string{"36", "54", "63", "72"}},
+	}
+	for _, item := range bank {
+		store.Vetting.SeedQuestion(vetting.AssessmentQuestion{
+			SubjectID: mathsID, Question: item.q, Options: item.o,
+			CorrectIndex: 1, Difficulty: vetting.DiffMedium, IsActive: true,
+		})
+	}
 }
