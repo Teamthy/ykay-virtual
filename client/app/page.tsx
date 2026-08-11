@@ -1,19 +1,29 @@
-import Link from 'next/link';
+import { CategoryPills } from "@/components/home/CategoryPills";
+import { HeroCarousel } from "@/components/home/HeroCarousel";
+import { TrustLogos } from "@/components/home/TrustLogos";
+import { CommunitySection } from "@/components/home/CommunitySection";
+import { PartnerSection } from "@/components/home/PartnerSection";
+import { ResultsSection } from "@/components/home/ResultsSection";
+import { TestimonialSlider } from "@/components/home/TestimonialSlider";
+import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
+import { StudentQuote } from "@/components/home/StudentQuote";
+import { TestPrepCard } from "@/components/home/TestPrepCard";
+import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
 
 export default function HomePage() {
-    return (
-        <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-            <h1>YKAY Virtual School</h1>
-            <p>Expert teaching. Structured learning. Anywhere.</p>
-            <p>The first slice is focused on the core parent journey: discover a programme, view its details, and begin the enrolment path.</p>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-                <Link href="/programmes" style={{ color: '#0f766e', textDecoration: 'underline' }}>
-                    Browse programmes
-                </Link>
-                <Link href="/auth" style={{ color: '#0f766e', textDecoration: 'underline' }}>
-                    Open auth experience
-                </Link>
-            </div>
-        </main>
-    );
+  return (
+    <>
+      <CategoryPills />
+      <HeroCarousel />
+      <TrustLogos />
+      <CommunitySection />
+      <PartnerSection />
+      <ResultsSection />
+      <TestimonialSlider />
+      <ExamPrepGrid />
+      <StudentQuote />
+      <TestPrepCard />
+      <BecomeTutorCTA />
+    </>
+  );
 }
