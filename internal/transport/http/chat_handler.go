@@ -1,7 +1,9 @@
 package httpapi
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"ykay-virtual/internal/middleware"
 	"ykay-virtual/internal/service"
@@ -230,6 +232,30 @@ func (h *ChatHandler) ChatAnalytics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, a, nil)
+}
+
+// CSATExport — GET /admin/chat/csat.csv
+func (h *ChatHandler) CSATExport(w http.ResponseWriter, r *http.Request) {
+	if !h.requireAdmin(w, r) {
+		return
+	}
+	rows, err := h.svc.AdminCSATRows(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var b strings.Builder
+	b.WriteString("thread_id,title,status,rating,comment,rated_at,user_id\n")
+	for _, row := range rows {
+		comment := strings.ReplaceAll(row.Comment, "\"", "'")
+		comment = strings.ReplaceAll(comment, "\n", " ")
+		fmt.Fprintf(&b, "%s,%s,%s,%d,%s,%s,%s\n",
+			row.ThreadID, strings.ReplaceAll(row.Title, ",", " "), row.Status,
+			row.Rating, comment, row.RatedAt, row.UserID)
+	}
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=chat-csat.csv")
+	_, _ = w.Write([]byte(b.String()))
 }
 
 // RateThread — POST /chat/threads/{threadId}/rating {score, comment?}

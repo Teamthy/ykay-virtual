@@ -8,7 +8,7 @@ const sections = [
   { href: "/chat", title: "Chat with Nuvora", desc: "AI assistant + human handoff", icon: "💬" },
   { href: "https://app.nuvora.com/cohorts", title: "Browse cohorts", desc: "UTME, IGCSE, WAEC & more", icon: "🎓" },
   { href: "https://app.nuvora.com/tutors", title: "Find a tutor", desc: "1,200+ verified experts", icon: "👩‍🏫" },
-  { href: "https://app.nuvora.com/lms", title: "My Learning (LMS)", desc: "Lessons, quizzes, grades", icon: "📚" },
+  { href: "/lms", title: "My Learning (LMS)", desc: "Lessons, quizzes, grades", icon: "📚" },
 ] as const;
 
 export default function Home() {

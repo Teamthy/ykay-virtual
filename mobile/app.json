@@ -31,7 +31,8 @@
       "resizeMode": "contain"
     },
     "extra": {
-      "apiUrl": "http://localhost:8080/api/v1"
+      "apiUrl": "http://localhost:8080/api/v1",
+      "projectId": "nuvora-0000"
     }
   }
 }

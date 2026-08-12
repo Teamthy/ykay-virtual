@@ -24,6 +24,30 @@ export async function setToken(token: string | null): Promise<void> {
   else await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
 
+// Register this device for push (M4): fetch the Expo push token and POST it
+// to the device registry. Best-effort — notifications are progressive.
+export async function registerDevice(): Promise<void> {
+  try {
+    const Notifications = await import("expo-notifications");
+    const { default: Platform } = await import("react-native");
+    const { default: Constants } = await import("expo-constants");
+    if (!Constants.isDevice) return; // push tokens are device-only
+    const perms = await Notifications.requestPermissionsAsync();
+    if (!perms.granted) return;
+    const token = await Notifications.getExpoPushTokenAsync({ projectId: Constants.expoConfig?.extra?.projectId });
+    await apiFetch("/me/devices", {
+      method: "POST",
+      body: JSON.stringify({
+        token: token.data,
+        platform: Platform.OS,
+        app_version: Constants.expoConfig?.version ?? "0.1.0",
+      }),
+    });
+  } catch {
+    // Push registration must never block auth.
+  }
+}
+
 export async function apiFetch<T>(
   path: string,
   init: RequestInit = {}

@@ -166,17 +166,25 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(h.cfg.Name); err == nil && cookie.Value != "" {
 		_ = h.svc.Logout(r.Context(), hashToken(cookie.Value))
 	}
+	if raw := middleware.BearerToken(r); raw != "" {
+		_ = h.svc.Logout(r.Context(), hashToken(raw))
+	}
 	middleware.ClearSessionCookie(w, h.cfg)
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"logged_out": true}, nil)
 }
 
 func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie(h.cfg.Name)
-	if err != nil || cookie.Value == "" {
+	raw := ""
+	if cookie, err := r.Cookie(h.cfg.Name); err == nil && cookie.Value != "" {
+		raw = cookie.Value
+	} else {
+		raw = middleware.BearerToken(r)
+	}
+	if raw == "" {
 		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "not authenticated", nil)
 		return
 	}
-	user, roles, err := h.svc.Me(r.Context(), hashToken(cookie.Value))
+	user, roles, err := h.svc.Me(r.Context(), hashToken(raw))
 	if err != nil {
 		WriteAppError(w, err)
 		return
@@ -321,4 +329,57 @@ func (h *AuthHandler) ConfirmPasswordReset(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"reset": true}, nil)
+}
+
+// MobileLogin — POST /auth/login/mobile — same credential flow as /auth/login
+// but returns the raw session token in the body (native apps store it in the
+// OS keychain; no cookie required).
+func (h *AuthHandler) MobileLogin(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	ip := clientIP(r)
+	token, user, roles, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"token": token,
+		"user": toUserResponse(
+			user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
+			user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		),
+	}, nil)
+}
+
+// MobileLoginCodeConfirm — POST /auth/login-code/mobile/confirm — 6-digit
+// code sign-in that returns the raw session token for native apps.
+func (h *AuthHandler) MobileLoginCodeConfirm(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+		Code  string `json:"code"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	ip := clientIP(r)
+	token, user, roles, err := h.svc.ConfirmLoginCode(r.Context(), req.Email, req.Code, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"token": token,
+		"user": toUserResponse(
+			user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
+			user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		),
+	}, nil)
 }

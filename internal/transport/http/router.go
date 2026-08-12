@@ -74,6 +74,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/login-code/confirm", authRate(handlers.Auth.ConfirmLoginCode))
 	mux.HandleFunc("GET "+v1+"/auth/google/url", handlers.Auth.GoogleAuthURL)
 	mux.HandleFunc("GET "+v1+"/auth/google/callback", handlers.Auth.GoogleCallback)
+	mux.HandleFunc("POST "+v1+"/auth/login/mobile", authRate(handlers.Auth.MobileLogin))
+	mux.HandleFunc("POST "+v1+"/auth/login-code/mobile/confirm", authRate(handlers.Auth.MobileLoginCodeConfirm))
 	mux.HandleFunc("POST "+v1+"/auth/me/role", handlers.Auth.SetRole)
 	mux.HandleFunc("POST "+v1+"/auth/me/password", handlers.Auth.ChangePassword)
 
@@ -85,12 +87,18 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/escalate", handlers.Chat.Escalate)
 	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/rating", handlers.Chat.RateThread)
 
+	// Push devices (M4)
+	mux.HandleFunc("POST "+v1+"/me/devices", handlers.Devices.RegisterDevice)
+	mux.HandleFunc("GET "+v1+"/me/devices", handlers.Devices.ListDevices)
+	mux.HandleFunc("DELETE "+v1+"/me/devices/{deviceId}", handlers.Devices.RemoveDevice)
+
 	// Agent inbox (C4–C6)
 	mux.HandleFunc("GET "+v1+"/admin/chat/threads", handlers.Chat.ListAllThreads)
 	mux.HandleFunc("GET "+v1+"/admin/chat/threads/{threadId}/messages", handlers.Chat.ListThreadMessages)
 	mux.HandleFunc("POST "+v1+"/admin/chat/threads/{threadId}/reply", handlers.Chat.AgentReply)
 	mux.HandleFunc("POST "+v1+"/admin/chat/threads/{threadId}/close", handlers.Chat.CloseThread)
 	mux.HandleFunc("GET "+v1+"/admin/chat/analytics", handlers.Chat.ChatAnalytics)
+	mux.HandleFunc("GET "+v1+"/admin/chat/csat.csv", handlers.Chat.CSATExport)
 
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)
@@ -277,6 +285,7 @@ type Handlers struct {
 	Growth       *GrowthHandler
 	LessonOps    *LessonOpsHandler
 	Chat         *ChatHandler
+	Devices      *DeviceHandler
 	Onboarding   *OnboardingHandler
 	Portal       *PortalHandler
 	Learning     *LearningHandler

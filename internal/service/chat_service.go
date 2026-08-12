@@ -51,6 +51,7 @@ type ChatService struct {
 	users      identity.UserRepository
 	provider   ChatProvider
 	contextFor ChatContextBuilder
+	pusher     *PushService
 	now        func() time.Time
 }
 
@@ -66,6 +67,13 @@ func NewChatService(threads chat.ThreadRepository, support *SupportService, user
 // WithProvider wires the AI provider (nil-safe: unconfigured → canned reply).
 func (s *ChatService) WithProvider(p ChatProvider) *ChatService {
 	s.provider = p
+	return s
+}
+
+// WithPusher wires push notifications (agent replies notify the user's
+// devices — M4).
+func (s *ChatService) WithPusher(p *PushService) *ChatService {
+	s.pusher = p
 	return s
 }
 
@@ -246,7 +254,18 @@ func (s *ChatService) AgentReply(ctx context.Context, threadID uuid.UUID, conten
 	if content == "" {
 		return nil, fmt.Errorf("%w: reply is required", domain.ErrInvalidInput)
 	}
-	return s.append(ctx, threadID, chat.RoleAgent, content)
+	msg, err := s.append(ctx, threadID, chat.RoleAgent, content)
+	if err != nil {
+		return nil, err
+	}
+	// Notify the user's devices that a human replied (best-effort).
+	if s.pusher != nil {
+		if thread, err := s.threads.GetThread(ctx, threadID); err == nil {
+			_ = s.pusher.NotifyUser(ctx, thread.UserID,
+				"NUVORA support replied 💬", content, map[string]string{"thread_id": threadID.String()})
+		}
+	}
+	return msg, nil
 }
 
 // CloseThread — ends the conversation (agent inbox).
@@ -277,8 +296,22 @@ type ChatAnalytics struct {
 	TotalMessages    int     `json:"total_messages"`
 	AvgRating        float64 `json:"avg_rating"`
 	RatedThreads     int     `json:"rated_threads"`
+	CSAT             float64 `json:"csat"`            // % of rated threads ≥ 4 stars
+	CSATResponded    int     `json:"csat_responded"`  // threads that were rated
+	CSATTotal        int     `json:"csat_total"`      // escalated/closed threads
 	EscalationRate   float64 `json:"escalation_rate"` // escalated / total
 	DeflectionRate   float64 `json:"deflection_rate"` // 1 - escalated / total
+}
+
+// CSATRow — one rated thread for the CSV export.
+type CSATRow struct {
+	ThreadID uuid.UUID `json:"thread_id"`
+	Title    string    `json:"title"`
+	Status   string    `json:"status"`
+	Rating   int       `json:"rating"`
+	Comment  string    `json:"comment"`
+	RatedAt  string    `json:"rated_at"`
+	UserID   uuid.UUID `json:"user_id"`
 }
 
 func (s *ChatService) AdminAnalytics(ctx context.Context) (ChatAnalytics, error) {
@@ -311,7 +344,50 @@ func (s *ChatService) AdminAnalytics(ctx context.Context) (ChatAnalytics, error)
 	if a.RatedThreads > 0 {
 		a.AvgRating = float64(ratingSum) / float64(a.RatedThreads)
 	}
+	// CSAT: share of ≥4-star ratings among threads that were rated
+	// (escalated or closed — the ones users actually experienced).
+	eligible := 0
+	satisfied := 0
+	for _, t := range threads {
+		if t.Status == chat.ThreadEscalated || t.Status == chat.ThreadClosed {
+			a.CSATTotal++
+			if t.Rating != nil {
+				eligible++
+				if *t.Rating >= 4 {
+					satisfied++
+				}
+			}
+		}
+	}
+	a.CSATResponded = eligible
+	if eligible > 0 {
+		a.CSAT = float64(satisfied) / float64(eligible) * 100
+	}
 	return a, nil
+}
+
+// AdminCSATRows — every rated thread (CSV export).
+func (s *ChatService) AdminCSATRows(ctx context.Context) ([]CSATRow, error) {
+	threads, err := s.threads.ListAllThreads(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := []CSATRow{}
+	for _, t := range threads {
+		if t.Rating == nil {
+			continue
+		}
+		comment := ""
+		if t.RatingComment != nil {
+			comment = *t.RatingComment
+		}
+		out = append(out, CSATRow{
+			ThreadID: t.ID, Title: t.Title, Status: string(t.Status),
+			Rating: *t.Rating, Comment: comment,
+			RatedAt: t.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"), UserID: t.UserID,
+		})
+	}
+	return out, nil
 }
 
 // --- helpers ---

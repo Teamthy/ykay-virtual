@@ -97,6 +97,7 @@ type Repositories struct {
 	CohortAdmin     booking.CohortAdminRepository
 	LessonAdmin     booking.LessonAdminRepository
 	Chat            chat.ThreadRepository
+	Devices         identity.DeviceRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -191,7 +192,10 @@ func main() {
 		chatSvc.WithProvider(service.NewGeminiProvider(cfg.GeminiAPIKey, cfg.GeminiModel))
 		chatSvc.WithContextBuilder(buildChatContext(programmeSvc, cohortSvc, tutorSvc))
 	}
+	pushSvc := service.NewPushService(repos.Devices, service.NewExpoPushSender(cfg.ExpoAccessToken))
+	chatSvc.WithPusher(pushSvc)
 	chatHandler := httpapi.NewChatHandler(chatSvc)
+	deviceHandler := httpapi.NewDeviceHandler(pushSvc)
 
 	// --- Transport ---
 	handlers := &httpapi.Handlers{
@@ -215,6 +219,7 @@ func main() {
 		Growth:       httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
 		LessonOps:    httpapi.NewLessonOpsHandler(lessonSvc),
 		Chat:         chatHandler,
+		Devices:      deviceHandler,
 		Onboarding:   httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:       httpapi.NewPortalHandler(portalSvc),
 		Learning:     httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc),
@@ -330,6 +335,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Availability:    memory.NewAvailabilityMemory(),
 			Submissions:     store.Submissions,
 			Chat:            memory.NewChatMemory(),
+			Devices:         memory.NewDeviceMemory(),
 			CohortAdmin:     store.Cohorts,
 			LessonAdmin:     store.Lessons,
 			StorageBackend:  "memory",
@@ -384,7 +390,8 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Analytics:       postgres.NewAnalyticsRepo(pg.DB()),
 		Availability:    postgres.NewAvailabilityRepo(pg.DB()),
 		Submissions:     postgres.NewSubmissionRepo(pg.DB()),
-		Chat:            nil, // postgres chat repo: follow-up migration 000021
+		Chat:            postgres.NewChatRepo(pg.DB()),
+		Devices:         postgres.NewDeviceRepo(pg.DB()),
 		CohortAdmin:     postgres.NewCohortRepo(pg.DB()),
 		LessonAdmin:     postgres.NewLessonRepo(pg.DB()),
 		StorageBackend:  "postgres",

@@ -377,6 +377,41 @@ c=$(req "$J_ADMIN" GET /admin/chat/analytics)
 assert_code "chat analytics" 200 "$c"
 grep -q '"deflection_rate"' /tmp/e2e-body.json && ok "analytics fields present" || fail "analytics fields missing"
 
+
+# --- M4: mobile token auth + devices + CSAT export ---
+c=$(req "$J_LOGOUT" POST /auth/login/mobile '{"email":"e2e-parent@test.com","password":"password123"}')
+assert_code "mobile login token" 200 "$c"
+MOB_TOKEN=$(cat /tmp/e2e-body.json | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"]["token"])')
+[ -n "$MOB_TOKEN" ] && ok "mobile token captured" || fail "mobile token missing"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -H "Authorization: Bearer $MOB_TOKEN" "$BASE/auth/me")
+assert_code "bearer /auth/me" 200 "$c"
+grep -q "e2e-parent@test.com" /tmp/e2e-body.json && ok "bearer identity resolved" || fail "bearer identity wrong"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -H "Authorization: Bearer $MOB_TOKEN" -X POST "$BASE/me/devices" -H 'Content-Type: application/json' -d '{"token":"ExponentPushToken[e2e]","platform":"ios","app_version":"0.1.0"}')
+assert_code "register device" 201 "$c"
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -H "Authorization: Bearer $MOB_TOKEN" "$BASE/me/devices")
+assert_code "list devices" 200 "$c"
+grep -q "ExponentPushToken\[e2e\]" /tmp/e2e-body.json && ok "device listed" || fail "device missing"
+DEV_ID=$(cat /tmp/e2e-body.json | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"][0]["id"])')
+c=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $MOB_TOKEN" -X DELETE "$BASE/me/devices/$DEV_ID")
+assert_code "remove device" 200 "$c"
+
+c=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $MOB_TOKEN" -X POST "$BASE/auth/logout")
+assert_code "bearer logout" 200 "$c"
+c=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $MOB_TOKEN" "$BASE/auth/me")
+assert_code "me after bearer logout → 401" 401 "$c"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_ADMIN" "$BASE/admin/chat/csat.csv")
+assert_code "csat.csv (admin)" 200 "$c"
+head -1 /tmp/e2e-body.json | grep -q "thread_id,title" && ok "csat.csv header" || fail "csat.csv malformed"
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_STUDENT" "$BASE/admin/chat/csat.csv")
+assert_code "csat.csv (student) → 403" 403 "$c"
+
+c=$(req "$J_ADMIN" GET /admin/chat/analytics)
+assert_code "analytics incl csat" 200 "$c"
+grep -q '"csat"' /tmp/e2e-body.json && ok "csat field present" || fail "csat field missing"
+
 # ============================================================== SUMMARY ======
 echo
 echo "──────────────────────────────────────────────"

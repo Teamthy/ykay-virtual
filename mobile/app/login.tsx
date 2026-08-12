@@ -2,7 +2,7 @@ import { useState } from "react";
 import { router } from "expo-router";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
-import { apiFetch, setToken } from "@/src/lib/api";
+import { apiFetch, setToken, registerDevice } from "@/src/lib/api";
 
 // Login — email + password against the shared backend. Native token auth
 // (POST /auth/login/mobile) is wired here as soon as it ships (M4); until
@@ -17,12 +17,14 @@ export default function Login() {
     if (!email || !password) return Alert.alert("Missing details", "Enter your email and password.");
     setBusy(true);
     try {
-      const res = await apiFetch<{ id: string; email: string; roles: string[] }>("/auth/login", {
+      // M4: native token auth — the raw session token is returned in the
+      // body and stored in the OS keychain; every request carries Bearer.
+      const res = await apiFetch<{ token: string; user: { id: string; email: string; roles: string[] } }>("/auth/login/mobile", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-      // In-app sessions will use a bearer token here (mobile auth endpoint).
-      await setToken(res.data.id);
+      await setToken(res.data.token);
+      await registerDevice();
       router.replace("/home");
     } catch (e) {
       Alert.alert("Login failed", e instanceof Error ? e.message : "Please try again.");

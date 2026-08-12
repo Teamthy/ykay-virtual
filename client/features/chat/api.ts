@@ -67,6 +67,9 @@ export type ChatAnalytics = {
   total_messages: number;
   avg_rating: number;
   rated_threads: number;
+  csat: number;
+  csat_responded: number;
+  csat_total: number;
   escalation_rate: number;
   deflection_rate: number;
 };

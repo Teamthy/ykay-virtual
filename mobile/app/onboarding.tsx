@@ -2,7 +2,7 @@ import { useState } from "react";
 import { router } from "expo-router";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
-import { apiFetch } from "@/src/lib/api";
+import { apiFetch, setToken, registerDevice } from "@/src/lib/api";
 
 // Onboarding — mirrors the web 7-step flow in a compact 4-screen version:
 //   1. name + email     2. verify code (6-digit)
@@ -46,10 +46,12 @@ export default function Onboarding() {
     if (code.length !== 6) return;
     setBusy(true);
     try {
-      await apiFetch("/auth/login-code/confirm", {
+      const res = await apiFetch<{ token: string }>("/auth/login-code/mobile/confirm", {
         method: "POST",
         body: JSON.stringify({ email: email.trim(), code }),
       });
+      await setToken(res.data.token);
+      await registerDevice();
       setStep(3);
     } catch (e) {
       Alert.alert("Code invalid", e instanceof Error ? e.message : "Try again.");

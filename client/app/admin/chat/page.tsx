@@ -71,6 +71,7 @@ export default function AdminChatPage() {
     { label: "Escalated", value: analytics.data?.escalated_threads ?? "—" },
     { label: "Closed", value: analytics.data?.closed_threads ?? "—" },
     { label: "Avg rating", value: analytics.data?.avg_rating ? `★ ${analytics.data.avg_rating.toFixed(1)}` : "—" },
+    { label: "CSAT (4★+)", value: analytics.data ? `${Math.round(analytics.data.csat)}%` : "—" },
     { label: "Deflection", value: analytics.data ? `${Math.round(analytics.data.deflection_rate * 100)}%` : "—" },
     { label: "Messages", value: analytics.data?.total_messages ?? "—" },
   ];
@@ -84,6 +85,12 @@ export default function AdminChatPage() {
         <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-brand-navy">
           Agent inbox <span className="align-middle text-sm font-semibold text-ink-400">· {escalatedCount} waiting</span>
         </h1>
+        <p className="mt-1 text-sm text-ink-500">
+          CSAT:{" "}
+          <span className="font-bold text-brand-navy">{analytics.data ? `${Math.round(analytics.data.csat)}%` : "—"}</span>{" "}
+          satisfied ({analytics.data?.csat_responded ?? 0}/{analytics.data?.csat_total ?? 0} rated) ·{" "}
+          <a href="/api/v1/admin/chat/csat.csv" className="font-semibold text-brand-gold-dark hover:underline">export CSV ↓</a>
+        </p>
       </header>
 
       {/* Analytics */}
@@ -132,7 +139,7 @@ export default function AdminChatPage() {
                   </span>
                   <span className="mt-0.5 block text-[11px] text-ink-400">
                     {t.user_id.slice(0, 8)}… · {new Date(t.updated_at).toLocaleString()}
-                    {t.rating ? ` · ★${t.rating}` : ""}
+                    {t.rating ? ` · ★${t.rating}${t.rating_comment ? " — " + t.rating_comment.slice(0, 24) : ""}` : ""}
                   </span>
                 </button>
               ))}

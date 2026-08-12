@@ -39,6 +39,7 @@ type Config struct {
 	GeminiAPIKey       string
 	GeminiModel        string
 	ChatbotEnabled     bool
+	ExpoAccessToken    string
 }
 
 func Load() Config {
@@ -67,6 +68,7 @@ func Load() Config {
 		GeminiAPIKey:       getEnv("GEMINI_API_KEY", ""),
 		GeminiModel:        getEnv("GEMINI_MODEL", "gemini-2.0-flash"),
 		ChatbotEnabled:     strings.ToLower(getEnv("CHATBOT_ENABLED", "true")) != "false",
+		ExpoAccessToken:    getEnv("EXPO_ACCESS_TOKEN", ""),
 	}
 }
 
