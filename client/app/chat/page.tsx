@@ -12,6 +12,7 @@ import {
   listChatMessages,
   sendChatMessage,
   escalateChatThread,
+  rateChatThread,
   type ChatMessage,
 } from "@/features/chat/api";
 import { useSession } from "@/hooks/useSession";
@@ -28,6 +29,8 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [escalating, setEscalating] = useState(false);
+  const [rating, setRating] = useState<number | null>(null);
+  const [ratingSaved, setRatingSaved] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const threads = useQuery({ queryKey: ["chat", "threads"], queryFn: listChatThreads });
@@ -112,6 +115,19 @@ export default function ChatPage() {
     }
   };
 
+  const saveRating = async (score: number) => {
+    if (!activeId) return;
+    setRating(score);
+    try {
+      await rateChatThread(activeId, score);
+      setRatingSaved(true);
+      toast.success("Thanks for your feedback!");
+    } catch {
+      setRatingSaved(false);
+      toast.error("Could not save your rating");
+    }
+  };
+
   const activeThread = threads.data?.find((t) => t.id === activeId);
   const escalated = activeThread?.status === "ESCALATED";
 
@@ -185,12 +201,17 @@ export default function ChatPage() {
             ) : (
               <>
                 {(messages.data ?? []).map((m) => (
-                  <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+                  <div key={m.id} className={cn("flex flex-col", m.role === "user" ? "items-end" : "items-start")}>
+                    {m.role === "agent" && (
+                      <span className="mb-0.5 rounded-full bg-brand-navy px-2 py-0.5 text-[10px] font-bold text-white">SUPPORT AGENT</span>
+                    )}
                     <div
                       className={cn(
                         "max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                         m.role === "user"
                           ? "rounded-br-md bg-brand-navy text-white"
+                          : m.role === "agent"
+                          ? "rounded-bl-md border-2 border-brand-gold bg-white text-ink-800"
                           : "rounded-bl-md border border-ink-100 bg-[#FFF8E8] text-ink-800"
                       )}
                     >
@@ -215,6 +236,22 @@ export default function ChatPage() {
           </div>
 
           <div className="border-t border-ink-100 p-4">
+            {activeId && !escalated && (messages.data?.length ?? 0) >= 4 && !ratingSaved && (
+              <div className="mb-3 flex items-center gap-2 rounded-xl bg-surface-muted px-4 py-2.5">
+                <span className="text-xs font-semibold text-ink-600">Rate this chat:</span>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => void saveRating(n)}
+                    className={cn("text-lg transition-transform hover:scale-125", rating !== null && rating >= n ? "" : "grayscale opacity-50")}
+                    aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+            )}
             {escalated && (
               <p className="mb-3 rounded-xl bg-brand-gold-light px-4 py-2.5 text-xs font-semibold text-brand-navy">
                 👤 A human agent is on this thread — they&apos;ll reply here. You can keep messaging.

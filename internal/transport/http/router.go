@@ -83,6 +83,14 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/chat/threads/{threadId}/messages", handlers.Chat.ListMessages)
 	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/messages", authRate(handlers.Chat.SendMessage))
 	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/escalate", handlers.Chat.Escalate)
+	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/rating", handlers.Chat.RateThread)
+
+	// Agent inbox (C4–C6)
+	mux.HandleFunc("GET "+v1+"/admin/chat/threads", handlers.Chat.ListAllThreads)
+	mux.HandleFunc("GET "+v1+"/admin/chat/threads/{threadId}/messages", handlers.Chat.ListThreadMessages)
+	mux.HandleFunc("POST "+v1+"/admin/chat/threads/{threadId}/reply", handlers.Chat.AgentReply)
+	mux.HandleFunc("POST "+v1+"/admin/chat/threads/{threadId}/close", handlers.Chat.CloseThread)
+	mux.HandleFunc("GET "+v1+"/admin/chat/analytics", handlers.Chat.ChatAnalytics)
 
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)

@@ -1,13 +1,20 @@
-// NUVORA service worker — offline shell for the PWA (mobile app experience).
-// Strategy: network-first for navigation, cache-first for static assets.
+// NUVORA service worker — PWA offline shell (M1 hardening).
+// Strategy:
+//   - App shell (/ , /offline)  → precached at install
+//   - Hashed static assets      → cache-first (immutable, safe)
+//   - Navigations               → network-first, offline fallback
+//   - API calls                 → never cached (money/data safety)
+//   - Unsplash images           → stale-while-revalidate
 
-const CACHE = "nuvora-v1";
+const CACHE = "nuvora-v2";
+const SHELL = ["/", "/offline"];
+const API_PREFIX = "/api/";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(["/", "/offline"]))
+      .then((cache) => cache.addAll(SHELL))
       .then(() => self.skipWaiting())
   );
 });
@@ -25,20 +32,60 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  // API calls: network only (never cache money/data requests).
-  if (req.url.includes("/api/")) return;
+  // API: network only.
+  if (req.url.includes(API_PREFIX)) return;
 
-  event.respondWith(
-    fetch(req)
-      .then((res) => {
-        if (res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-        }
-        return res;
-      })
-      .catch(() =>
-        caches.match(req).then((cached) => cached || caches.match("/offline"))
+  const url = new URL(req.url);
+
+  // Navigation requests: network-first with offline fallback.
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((cache) => cache.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then((hit) => hit || caches.match("/offline"))
+        )
+    );
+    return;
+  }
+
+  // Hashed Next.js build assets (_next/static): cache-first.
+  if (url.pathname.startsWith("/_next/static/")) {
+    event.respondWith(
+      caches.match(req).then(
+        (hit) =>
+          hit ||
+          fetch(req).then((res) => {
+            if (res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE).then((cache) => cache.put(req, copy));
+            }
+            return res;
+          })
       )
+    );
+    return;
+  }
+
+  // Images: stale-while-revalidate.
+  event.respondWith(
+    caches.match(req).then((hit) => {
+      const network = fetch(req)
+        .then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((cache) => cache.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => hit);
+      return hit || network;
+    })
   );
 });

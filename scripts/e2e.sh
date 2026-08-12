@@ -351,6 +351,32 @@ assert_code "lms roster" 200 "$c"
 c=$(req "$J_STUDENT" GET /cohorts/00000000-0000-0000-0000-00000000c010/enrollments)
 assert_code "lms roster (student) → 403" 403 "$c"
 
+
+# --- Chatbot C4-C6: ratings, agent inbox, analytics ---
+c=$(req "$J_PARENT" POST "/chat/threads/$THREAD/rating" '{"score":5,"comment":"Great help"}')
+assert_code "chat rate thread" 200 "$c"
+
+c=$(req "$J_ADMIN" GET /admin/chat/threads)
+assert_code "agent inbox list" 200 "$c"
+grep -q "ESCALATED" /tmp/e2e-body.json && ok "inbox shows escalated thread" || fail "inbox missing escalated thread"
+
+c=$(req "$J_ADMIN" GET "/admin/chat/threads/$THREAD/messages")
+assert_code "agent transcript" 200 "$c"
+
+c=$(req "$J_ADMIN" POST "/admin/chat/threads/$THREAD/reply" '{"content":"Hi! This is Ada from NUVORA support — how can I help?"}')
+assert_code "agent reply" 201 "$c"
+grep -q "Ada from NUVORA" /tmp/e2e-body.json && ok "agent reply stored" || fail "agent reply missing"
+
+c=$(req "$J_STUDENT" POST "/admin/chat/threads/$THREAD/reply" '{"content":"hacked"}')
+assert_code "agent reply (student) → 403" 403 "$c"
+
+c=$(req "$J_ADMIN" POST "/admin/chat/threads/$THREAD/close" '{}')
+assert_code "agent close thread" 200 "$c"
+
+c=$(req "$J_ADMIN" GET /admin/chat/analytics)
+assert_code "chat analytics" 200 "$c"
+grep -q '"deflection_rate"' /tmp/e2e-body.json && ok "analytics fields present" || fail "analytics fields missing"
+
 # ============================================================== SUMMARY ======
 echo
 echo "──────────────────────────────────────────────"

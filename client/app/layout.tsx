@@ -4,6 +4,7 @@ import { Anton, DM_Sans } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/layout/ChatWidget";
+import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Providers } from "@/components/providers";
 import { RegisterSW } from "@/components/register-sw";
@@ -29,6 +30,18 @@ export const metadata: Metadata = {
     title: "NUVORA — Learning beyond boundaries",
     description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
     images: ["/og.png"],
+  },
+  // PWA (M1 hardening): installable on Android/iOS.
+  manifest: "/manifest.json",
+  icons: [{ rel: "apple-touch-icon", url: "/icons/icon-192.png", sizes: "192x192" }],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "NUVORA",
+  },
+  other: {
+    "theme-color": "#0A1F44",
+    "mobile-web-app-capable": "yes",
   },
 };
 
@@ -58,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="pb-16 lg:pb-0">{children}</main>
           <Footer />
           <ChatWidget />
+          <InstallPrompt />
           <MobileNav />
           <RegisterSW />
           <Toaster />

@@ -130,3 +130,130 @@ func (h *ChatHandler) Escalate(w http.ResponseWriter, r *http.Request) {
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"escalated": true}, nil)
 }
+
+// ── Agent inbox (admin) ────────────────────────────────────────────────────
+
+func (h *ChatHandler) requireAdmin(w http.ResponseWriter, r *http.Request) bool {
+	actor, ok := middleware.ActorFromContext(r.Context())
+	if !ok || actor.UserID == uuid.Nil {
+		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "authentication required", nil)
+		return false
+	}
+	if !actor.IsAdmin {
+		pkg.WriteError(w, http.StatusForbidden, string(pkg.CodeForbidden), "admin access required", nil)
+		return false
+	}
+	return true
+}
+
+// ListAllThreads — GET /admin/chat/threads
+func (h *ChatHandler) ListAllThreads(w http.ResponseWriter, r *http.Request) {
+	if !h.requireAdmin(w, r) {
+		return
+	}
+	list, err := h.svc.AdminListThreads(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+}
+
+// ListThreadMessages — GET /admin/chat/threads/{threadId}/messages
+func (h *ChatHandler) ListThreadMessages(w http.ResponseWriter, r *http.Request) {
+	if !h.requireAdmin(w, r) {
+		return
+	}
+	threadID, err := ParseUUID(r, "threadId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	list, err := h.svc.AdminListMessages(r.Context(), threadID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+}
+
+// AgentReply — POST /admin/chat/threads/{threadId}/reply {content}
+func (h *ChatHandler) AgentReply(w http.ResponseWriter, r *http.Request) {
+	if !h.requireAdmin(w, r) {
+		return
+	}
+	threadID, err := ParseUUID(r, "threadId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Content string `json:"content"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	msg, err := h.svc.AgentReply(r.Context(), threadID, req.Content)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, msg, nil)
+}
+
+// CloseThread — POST /admin/chat/threads/{threadId}/close
+func (h *ChatHandler) CloseThread(w http.ResponseWriter, r *http.Request) {
+	if !h.requireAdmin(w, r) {
+		return
+	}
+	threadID, err := ParseUUID(r, "threadId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.CloseThread(r.Context(), threadID); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"closed": true}, nil)
+}
+
+// ChatAnalytics — GET /admin/chat/analytics
+func (h *ChatHandler) ChatAnalytics(w http.ResponseWriter, r *http.Request) {
+	if !h.requireAdmin(w, r) {
+		return
+	}
+	a, err := h.svc.AdminAnalytics(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, a, nil)
+}
+
+// RateThread — POST /chat/threads/{threadId}/rating {score, comment?}
+func (h *ChatHandler) RateThread(w http.ResponseWriter, r *http.Request) {
+	userID, ok := h.requireUser(w, r)
+	if !ok {
+		return
+	}
+	threadID, err := ParseUUID(r, "threadId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Score   int     `json:"score"`
+		Comment *string `json:"comment"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.RateThread(r.Context(), *userID, threadID, req.Score, req.Comment); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"rated": true, "score": req.Score}, nil)
+}

@@ -212,6 +212,108 @@ func (s *ChatService) EscalateToHuman(ctx context.Context, userID, threadID uuid
 	return nil
 }
 
+// AdminListThreads — agent inbox: every thread, newest first.
+func (s *ChatService) AdminListThreads(ctx context.Context) ([]chat.Thread, error) {
+	list, err := s.threads.ListAllThreads(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if list == nil {
+		list = []chat.Thread{}
+	}
+	return list, nil
+}
+
+// AdminListMessages — any thread's transcript for the agent inbox.
+func (s *ChatService) AdminListMessages(ctx context.Context, threadID uuid.UUID) ([]chat.Message, error) {
+	list, err := s.threads.ListMessages(ctx, threadID)
+	if err != nil {
+		return nil, err
+	}
+	if list == nil {
+		list = []chat.Message{}
+	}
+	return list, nil
+}
+
+// AgentReply — a human agent answers on the thread (kept ESCALATED while
+// the conversation is active).
+func (s *ChatService) AgentReply(ctx context.Context, threadID uuid.UUID, content string) (*chat.Message, error) {
+	if _, err := s.threads.GetThread(ctx, threadID); err != nil {
+		return nil, err
+	}
+	content = strings.TrimSpace(content)
+	if content == "" {
+		return nil, fmt.Errorf("%w: reply is required", domain.ErrInvalidInput)
+	}
+	return s.append(ctx, threadID, chat.RoleAgent, content)
+}
+
+// CloseThread — ends the conversation (agent inbox).
+func (s *ChatService) CloseThread(ctx context.Context, threadID uuid.UUID) error {
+	if _, err := s.threads.GetThread(ctx, threadID); err != nil {
+		return err
+	}
+	return s.threads.SetStatus(ctx, threadID, chat.ThreadClosed)
+}
+
+// RateThread — user satisfaction for a closed/any thread (C5). 1..5.
+func (s *ChatService) RateThread(ctx context.Context, userID, threadID uuid.UUID, score int, comment *string) error {
+	if score < 1 || score > 5 {
+		return fmt.Errorf("%w: rating must be between 1 and 5", domain.ErrInvalidInput)
+	}
+	if _, err := s.threadFor(ctx, userID, threadID); err != nil {
+		return err
+	}
+	return s.threads.UpdateRating(ctx, threadID, score, comment)
+}
+
+// AdminAnalytics — chat metrics for the support dashboard (C6).
+type ChatAnalytics struct {
+	TotalThreads     int     `json:"total_threads"`
+	OpenThreads      int     `json:"open_threads"`
+	EscalatedThreads int     `json:"escalated_threads"`
+	ClosedThreads    int     `json:"closed_threads"`
+	TotalMessages    int     `json:"total_messages"`
+	AvgRating        float64 `json:"avg_rating"`
+	RatedThreads     int     `json:"rated_threads"`
+	EscalationRate   float64 `json:"escalation_rate"` // escalated / total
+	DeflectionRate   float64 `json:"deflection_rate"` // 1 - escalated / total
+}
+
+func (s *ChatService) AdminAnalytics(ctx context.Context) (ChatAnalytics, error) {
+	threads, err := s.threads.ListAllThreads(ctx)
+	if err != nil {
+		return ChatAnalytics{}, err
+	}
+	a := ChatAnalytics{TotalThreads: len(threads)}
+	ratingSum := 0
+	for _, t := range threads {
+		msgs, _ := s.threads.ListMessages(ctx, t.ID)
+		a.TotalMessages += len(msgs)
+		switch t.Status {
+		case chat.ThreadEscalated:
+			a.EscalatedThreads++
+		case chat.ThreadClosed:
+			a.ClosedThreads++
+		default:
+			a.OpenThreads++
+		}
+		if t.Rating != nil {
+			a.RatedThreads++
+			ratingSum += *t.Rating
+		}
+	}
+	if a.TotalThreads > 0 {
+		a.EscalationRate = float64(a.EscalatedThreads) / float64(a.TotalThreads)
+		a.DeflectionRate = 1 - a.EscalationRate
+	}
+	if a.RatedThreads > 0 {
+		a.AvgRating = float64(ratingSum) / float64(a.RatedThreads)
+	}
+	return a, nil
+}
+
 // --- helpers ---
 
 func (s *ChatService) threadFor(ctx context.Context, userID, threadID uuid.UUID) (*chat.Thread, error) {

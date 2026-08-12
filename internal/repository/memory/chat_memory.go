@@ -96,6 +96,30 @@ func (m *ChatMemory) ListMessages(_ context.Context, threadID uuid.UUID) ([]chat
 	return out, nil
 }
 
+func (m *ChatMemory) ListAllThreads(_ context.Context) ([]chat.Thread, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []chat.Thread{}
+	for _, t := range m.threads {
+		out = append(out, *t)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].UpdatedAt.After(out[j].UpdatedAt) })
+	return out, nil
+}
+
+func (m *ChatMemory) UpdateRating(_ context.Context, threadID uuid.UUID, score int, comment *string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	t, ok := m.threads[threadID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	t.Rating = &score
+	t.RatingComment = comment
+	t.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
 func (m *ChatMemory) SetStatus(_ context.Context, threadID uuid.UUID, status chat.ThreadStatus) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

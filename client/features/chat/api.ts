@@ -7,6 +7,8 @@ export type ChatThread = {
   user_id: string;
   title: string;
   status: "OPEN" | "ESCALATED" | "CLOSED";
+  rating?: number;
+  rating_comment?: string;
   created_at: string;
   updated_at: string;
 };
@@ -14,7 +16,7 @@ export type ChatThread = {
 export type ChatMessage = {
   id: string;
   thread_id: string;
-  role: "user" | "assistant" | "system";
+  role: "user" | "assistant" | "agent" | "system";
   content: string;
   created_at: string;
 };
@@ -53,4 +55,47 @@ export async function escalateChatThread(threadId: string, note?: string): Promi
     method: "POST",
     body: JSON.stringify({ note }),
   });
+}
+
+// --- C4–C6: ratings + agent inbox ---
+
+export type ChatAnalytics = {
+  total_threads: number;
+  open_threads: number;
+  escalated_threads: number;
+  closed_threads: number;
+  total_messages: number;
+  avg_rating: number;
+  rated_threads: number;
+  escalation_rate: number;
+  deflection_rate: number;
+};
+
+export async function rateChatThread(threadId: string, score: number, comment?: string): Promise<void> {
+  await apiFetch(`/chat/threads/${threadId}/rating`, {
+    method: "POST",
+    body: JSON.stringify({ score, comment }),
+  });
+}
+
+export async function listAllChatThreads(): Promise<ChatThread[]> {
+  const res = await apiFetch<ChatThread[]>("/admin/chat/threads");
+  return res.data ?? [];
+}
+
+export async function getChatAnalytics(): Promise<ChatAnalytics> {
+  const res = await apiFetch<ChatAnalytics>("/admin/chat/analytics");
+  return res.data;
+}
+
+export async function agentReply(threadId: string, content: string): Promise<ChatMessage> {
+  const res = await apiFetch<ChatMessage>(`/admin/chat/threads/${threadId}/reply`, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+  return res.data;
+}
+
+export async function closeChatThread(threadId: string): Promise<void> {
+  await apiFetch(`/admin/chat/threads/${threadId}/close`, { method: "POST" });
 }
