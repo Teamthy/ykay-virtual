@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -25,7 +26,12 @@ func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Key on the bare IP (not ip:port) so keep-alive/new connections from
+		// the same client cannot bypass the window.
 		ip := r.RemoteAddr
+		if host, _, err := net.SplitHostPort(ip); err == nil {
+			ip = host
+		}
 		rl.mu.Lock()
 		now := time.Now()
 		cutoff := now.Add(-rl.window)

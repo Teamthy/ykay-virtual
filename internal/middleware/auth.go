@@ -3,17 +3,15 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/google/uuid"
 )
 
-// Dev auth bridge — reads the actor from X-User-ID / X-User-Roles headers.
-// This is a TEMPORARY seam until Phase 7 replaces it with httpOnly-cookie
-// sessions + middleware route guards; it lets the service layer enforce
-// object-level authorization today without faking a session system.
-// In production the headers are stripped by the edge and actors come from
-// the session cookie.
+// Actor context — the authenticated actor resolved from the httpOnly session
+// cookie by SessionAuth. There is deliberately NO header-based auth bridge:
+// X-User-ID / X-User-Roles headers were a temporary dev seam that allowed
+// complete authentication bypass; it has been REMOVED (hardening audit
+// SEC-001). Sessions are the only way to become an actor.
 
 type actorCtxKey string
 
@@ -30,31 +28,14 @@ func ActorFromContext(ctx context.Context) (Actor, bool) {
 	return a, ok
 }
 
-func AuthBridge(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// A session-authenticated actor (set by SessionAuth) always wins;
-		// the dev header bridge only fills gaps when no session exists.
-		if _, ok := ActorFromContext(r.Context()); ok {
-			next.ServeHTTP(w, r)
-			return
-		}
-		actor := Actor{}
-		if id := r.Header.Get("X-User-ID"); id != "" {
-			if parsed, err := uuid.Parse(id); err == nil {
-				actor.UserID = parsed
-			}
-		}
-		for _, role := range strings.Split(r.Header.Get("X-User-Roles"), ",") {
-			role = strings.TrimSpace(strings.ToUpper(role))
-			if role == "" {
-				continue
-			}
-			actor.Roles = append(actor.Roles, role)
-			if role == "ADMIN" || role == "SUPER_ADMIN" {
-				actor.IsAdmin = true
-			}
-		}
-		ctx := context.WithValue(r.Context(), ActorKey, actor)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+// RequireActor — helper for handlers that need an authenticated actor.
+// Returns 401 when no valid session is present.
+func RequireActor(w http.ResponseWriter, r *http.Request) (Actor, bool) {
+	actor, ok := ActorFromContext(r.Context())
+	if !ok || actor.UserID == uuid.Nil {
+		w.Header().Set("WWW-Authenticate", "Session")
+		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		return Actor{}, false
+	}
+	return actor, true
 }

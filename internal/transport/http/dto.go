@@ -141,8 +141,9 @@ func WriteAppError(w http.ResponseWriter, err error) {
 	}
 }
 
-// requireActor reads the dev-auth-bridge actor from context; returns nil
-// (after writing 401) when no actor is present.
+// requireActor reads the session actor from context; returns nil
+// (after writing 401) when no valid session is present. Actors can only
+// come from the httpOnly session cookie (dev header bridge removed).
 func requireActor(w http.ResponseWriter, r *http.Request) *middleware.Actor {
 	actor, ok := middleware.ActorFromContext(r.Context())
 	if !ok || actor.UserID == uuid.Nil {

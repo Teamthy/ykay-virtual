@@ -100,6 +100,9 @@ type Repositories struct {
 func main() {
 	_ = godotenv.Load()
 	cfg := config.Load()
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("config: %v", err)
+	}
 	ctx := context.Background()
 	shutdownTracer := telemetry.InitTracer(ctx, cfg.OtelEndpoint)
 	defer shutdownTracer()
@@ -111,7 +114,7 @@ func main() {
 	_ = store
 
 	// --- Repositories: Postgres → in-memory fallback (dev mode) ---
-	repos := setupRepositories(ctx, cfg)
+	repos, readyCheck := setupRepositories(ctx, cfg)
 	if repos.StorageBackend == "postgres" {
 		log.Println("storage: postgres connected")
 	} else {
@@ -204,7 +207,7 @@ func main() {
 		Learning:     httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc),
 		Objects:      httpapi.NewObjectHandler(store),
 	}
-	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth)
+	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth, readyCheck, cfg.Environment == "production")
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -242,15 +245,29 @@ func setupCache(ctx context.Context, redisURL string) cache.Cache {
 	return cache.NewInMemoryCache()
 }
 
-func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
+// getEnvDefault — env value or fallback (demo credentials are overridable;
+// hardcoded secrets are removed from source per hardening SEC-003).
+func getEnvDefault(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
+
+func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, func() error) {
 	pg, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
-		log.Printf("storage: %v", err)
+		if cfg.Environment == "production" {
+			// Never silently fall back to in-memory in production: a failed
+			// database means the service must not serve stale/empty data.
+			log.Fatalf("storage: %v", err)
+		}
+		log.Printf("storage: postgres unavailable — using in-memory store (dev mode)")
 		store := memory.NewMemoryStore()
 		store.Roles.Seed()      // mirror migration 000001 role inserts
 		seedMemoryTutors(store) // mock marketplace tutors (chinasa, oluwatobi)
 		seedMemoryCatalogue(store)
-		seedDemoUsers(store)
+		seedDemoUsers(store, getEnvDefault("DEMO_PASSWORD", "password123"))
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
 			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
@@ -301,7 +318,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			CohortAdmin:     store.Cohorts,
 			LessonAdmin:     store.Lessons,
 			StorageBackend:  "memory",
-		}
+		}, func() error { return nil } // in-memory store is always "ready"
 	}
 	_ = ctx
 	return &Repositories{
@@ -355,7 +372,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		CohortAdmin:     postgres.NewCohortRepo(pg.DB()),
 		LessonAdmin:     postgres.NewLessonRepo(pg.DB()),
 		StorageBackend:  "postgres",
-	}
+	}, func() error { return pg.DB().PingContext(ctx) }
 }
 
 // sessionResolverAdapter — bridges AuthService.Me into the middleware's
@@ -489,8 +506,8 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 
 // seedDemoUsers — one account per role so every dashboard is reachable in
 // dev mode. Password for all: password123.
-func seedDemoUsers(store *memory.MemoryStore) {
-	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
+	hash, _ := bcrypt.GenerateFromPassword([]byte(demoPassword), bcrypt.DefaultCost)
 	now := time.Now()
 	verified := now
 

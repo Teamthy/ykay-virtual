@@ -14,40 +14,63 @@ import (
 type Router struct {
 	mux            *http.ServeMux
 	rateLimiter    *middleware.RateLimiter
+	authLimiter    *middleware.RateLimiter
 	Version        string
 	allowedOrigins string
 	sessionAuth    func(http.Handler) http.Handler
+	readyCheck     func() error
+	blockFrames    bool
 }
 
-func NewRouter(version string, handlers *Handlers, sessionAuth func(http.Handler) http.Handler) *Router {
-	return NewRouterWithOrigins(version, handlers, "*", sessionAuth)
+// NewRouter — fail-closed defaults (no cross-origin) + no frame blocking.
+func NewRouter(version string, handlers *Handlers, sessionAuth func(http.Handler) http.Handler, readyCheck func() error) *Router {
+	return NewRouterWithOrigins(version, handlers, "", sessionAuth, readyCheck, false)
 }
 
-func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string, sessionAuth func(http.Handler) http.Handler) *Router {
+// NewRouterWithOrigins — explicit CORS allowlist, auth-route rate limiter,
+// liveness/readiness endpoints and optional frame blocking (production).
+func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string, sessionAuth func(http.Handler) http.Handler, readyCheck func() error, blockFrames bool) *Router {
 	mux := http.NewServeMux()
-	rl := middleware.NewRateLimiter(100, time.Minute) // sliding window: 100 req/min default
+	rl := middleware.NewRateLimiter(100, time.Minute)    // sliding window: 100 req/min default
+	authRL := middleware.NewRateLimiter(40, time.Minute) // auth endpoints: 40 req/min per IP (SEC-005)
+	authRate := func(h http.HandlerFunc) http.HandlerFunc { return authRL.Middleware(h).ServeHTTP }
 
-	// Health
+	// Health: /health (basic), /health/live (process), /health/ready (deps)
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"status": "ok", "version": version, "time": time.Now().UTC(),
 		})
 	})
+	mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"status": "ok"})
+	})
+	mux.HandleFunc("GET /health/ready", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if readyCheck != nil {
+			if err := readyCheck(); err != nil {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				_ = json.NewEncoder(w).Encode(map[string]any{"status": "not_ready", "reason": err.Error()})
+				return
+			}
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"status": "ready"})
+	})
 
 	v1 := "/api/v1"
 
 	// Auth + sessions (Phase 7)
-	mux.HandleFunc("POST "+v1+"/auth/register", handlers.Auth.Register)
-	mux.HandleFunc("POST "+v1+"/auth/login", handlers.Auth.Login)
+	mux.HandleFunc("POST "+v1+"/auth/register", authRate(handlers.Auth.Register))
+	mux.HandleFunc("POST "+v1+"/auth/login", authRate(handlers.Auth.Login))
 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
 	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
-	mux.HandleFunc("POST "+v1+"/auth/verify-email/request", handlers.Auth.ResendVerification)
+	mux.HandleFunc("POST "+v1+"/auth/verify-email/request", authRate(handlers.Auth.ResendVerification))
 	mux.HandleFunc("POST "+v1+"/auth/verify-email/confirm", handlers.Auth.ConfirmVerification)
-	mux.HandleFunc("POST "+v1+"/auth/password-reset/request", handlers.Auth.RequestPasswordReset)
-	mux.HandleFunc("POST "+v1+"/auth/password-reset/confirm", handlers.Auth.ConfirmPasswordReset)
-	mux.HandleFunc("POST "+v1+"/auth/login-code/request", handlers.Auth.RequestLoginCode)
-	mux.HandleFunc("POST "+v1+"/auth/login-code/confirm", handlers.Auth.ConfirmLoginCode)
+	mux.HandleFunc("POST "+v1+"/auth/password-reset/request", authRate(handlers.Auth.RequestPasswordReset))
+	mux.HandleFunc("POST "+v1+"/auth/password-reset/confirm", authRate(handlers.Auth.ConfirmPasswordReset))
+	mux.HandleFunc("POST "+v1+"/auth/login-code/request", authRate(handlers.Auth.RequestLoginCode))
+	mux.HandleFunc("POST "+v1+"/auth/login-code/confirm", authRate(handlers.Auth.ConfirmLoginCode))
 	mux.HandleFunc("GET "+v1+"/auth/google/url", handlers.Auth.GoogleAuthURL)
 	mux.HandleFunc("GET "+v1+"/auth/google/callback", handlers.Auth.GoogleCallback)
 	mux.HandleFunc("POST "+v1+"/auth/me/role", handlers.Auth.SetRole)
@@ -189,7 +212,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 		mux.HandleFunc("GET /objects/{bucket}/{key...}", handlers.Objects.Serve)
 	}
 
-	return &Router{mux: mux, rateLimiter: rl, Version: version, allowedOrigins: allowedOrigins, sessionAuth: sessionAuth}
+	return &Router{mux: mux, rateLimiter: rl, authLimiter: authRL, Version: version, allowedOrigins: allowedOrigins, sessionAuth: sessionAuth, readyCheck: readyCheck, blockFrames: blockFrames}
 }
 
 func (rt *Router) Handler() http.Handler {
@@ -198,10 +221,10 @@ func (rt *Router) Handler() http.Handler {
 	h = middleware.Logger(h)
 	h = middleware.Recover(h)
 	h = middleware.CORS(rt.allowedOrigins)(h)
+	h = middleware.SecurityHeaders(rt.blockFrames)(h)
 	if rt.sessionAuth != nil {
 		h = rt.sessionAuth(h)
 	}
-	h = middleware.AuthBridge(h)
 	h = rt.rateLimiter.Middleware(h)
 	return h
 }

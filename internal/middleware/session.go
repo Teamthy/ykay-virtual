@@ -15,9 +15,8 @@ import (
 //   1. Reads the raw token from the `ykay_session` cookie
 //   2. Hashes it (SHA-256) and looks the session up via the AuthService
 //   3. Puts the actor (user id + roles) in the request context
-// The dev auth bridge (X-User-ID headers) is applied AFTER this and only
-// fills the actor when no session cookie is present, so real sessions always
-// take precedence and the two cannot conflict.
+// There is no fallback bridge: without a valid session cookie no actor is
+// established and protected handlers return 401 (hardening SEC-001).
 
 type SessionResolver interface {
 	Me(ctx context.Context, tokenHash string) (userID uuid.UUID, roles []string, err error)
