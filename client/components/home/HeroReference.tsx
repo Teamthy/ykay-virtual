@@ -15,14 +15,6 @@ export function HeroReference() {
     <section className="relative overflow-hidden border-b border-ink-100 bg-white">
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-10 py-16 md:py-20 grid lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center">
         <div>
-          <p className="animate-hero-in inline-flex items-center gap-2.5 rounded-full border border-brand-blue-light bg-brand-blue-light/60 px-4 py-1.5 text-xs font-bold text-brand-navy">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-green opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-green" />
-            </span>
-            Trusted by 9000+ Parents
-          </p>
-
           <h1 className="animate-hero-in mt-6 font-display text-[2.4rem] leading-[1.05] tracking-[0.02em] text-brand-navy md:text-[3.6rem]">
             Better, Brighter Future For Your Kids.
           </h1>
@@ -72,7 +64,7 @@ export function HeroReference() {
         <div className="relative mx-auto w-full max-w-[520px]">
           <div className="relative overflow-hidden rounded-[1.75rem] shadow-card ring-1 ring-ink-100">
             <Image
-              src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&q=80"
+              src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80"
               alt="Student learning with a NUVORA tutor"
               width={1040}
               height={780}

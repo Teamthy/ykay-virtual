@@ -1,31 +1,38 @@
+import { ClipboardCheck, Route, HeartHandshake, Activity, FileBarChart } from "lucide-react";
+
 // "Our Innovative Approach Ensures Your Child Achieves Stellar Results" —
 // Tuteria v2 five-point methodology with real copy.
 
 const STEPS = [
   {
     n: "1",
-    title: "Tuteria Insights ™ Assessment",
-    desc: "Our tailored assessments measure your child's current academic level and give you actionable insights into their strengths and weaknesses and how to overcome them.",
+    icon: <ClipboardCheck size={28} />,
+    title: "NUVORA Insights™ Assessment",
+    desc: "Comprehensive evaluation of your child's current academic level, learning style and knowledge gaps to build a strong foundation.",
   },
   {
     n: "2",
+    icon: <Route size={28} />,
     title: "Adaptive Learning Plans",
-    desc: "We prepare a personalized learning path adapted to empower your child to step into each classroom session with confidence and enthusiasm.",
+    desc: "A personalized learning path that empowers your child to step into each classroom session with confidence.",
   },
   {
     n: "3",
+    icon: <HeartHandshake size={28} />,
     title: "Child-Centered Learning",
-    desc: "Rather than molding children to fit a standardized mold, we mold education to fit each child — blending innate curiosity with structured knowledge.",
+    desc: "We mold education to fit each child — blending innate curiosity with structured knowledge.",
   },
   {
     n: "4",
+    icon: <Activity size={28} />,
     title: "Periodic Evaluation",
-    desc: "We monitor your child's progress every step of the way to drive continuous improvement and informed decision-making.",
+    desc: "We monitor your child's progress every step of the way to drive continuous improvement.",
   },
   {
     n: "5",
+    icon: <FileBarChart size={28} />,
     title: "Progress Reports & Reviews",
-    desc: "You receive progress reports on your child's growth with highlights on strong and weak areas plus actionable recommendations.",
+    desc: "Receive progress reports with highlights on strong and weak areas plus actionable recommendations.",
   },
 ];
 
@@ -45,12 +52,17 @@ export function ApproachSection() {
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5 items-start">
           {STEPS.map((s) => (
-            <div key={s.n} className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-              <div className="font-display text-4xl tracking-[0.02em] text-brand-gold-dark">{s.n}</div>
-              <h3 className="mt-3 text-sm font-bold uppercase tracking-wide text-ink-800">{s.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-500">{s.desc}</p>
+            <div key={s.n}>
+              <div className="shrink-0 text-brand-gold-dark">{s.icon}</div>
+              <div className="mt-6 h-0.5 bg-gradient-to-r from-ink-900/30 via-ink-900/10 to-transparent">
+                <div className="h-0.5 w-9 bg-brand-gold" />
+              </div>
+              <div className="mt-5">
+                <h3 className="text-lg font-semibold text-ink-900">{s.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-ink-600">{s.desc}</p>
+              </div>
             </div>
           ))}
         </div>

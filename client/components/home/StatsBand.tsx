@@ -1,5 +1,7 @@
 // Stats band — Tuteria v2: "Learn from the largest community of professional
-// tutors in Africa" with 10k+ / 280k+ / 38k+ / 98%.
+// tutors in Africa" with 10k+ / 280k+ / 38k+ / 98% + press wordmarks.
+
+import { PressLogos } from "@/components/home/PressLogos";
 
 const STATS = [
   { value: "10k+", label: "Exceptional tutors" },
@@ -7,8 +9,6 @@ const STATS = [
   { value: "38k+", label: "Students supported" },
   { value: "98%", label: "Success rate" },
 ];
-
-const PRESS = ["Forbes", "internet.org", "BBC", "Microsoft", "TEF"];
 
 export function StatsBand() {
   return (
@@ -28,12 +28,8 @@ export function StatsBand() {
         <p className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-ink-400">
           We are backed by
         </p>
-        <div className="mt-3 flex justify-center items-center gap-8 flex-wrap">
-          {PRESS.map((p) => (
-            <span key={p} className="text-sm font-extrabold uppercase tracking-wide text-ink-300">
-              {p}
-            </span>
-          ))}
+        <div className="mt-4">
+          <PressLogos />
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { apiFetchSSR } from "@/lib/api";
-import { CohortCard } from "@/features/cohorts/components/CohortCard";
+import { CohortCard, type CohortCardData } from "@/features/cohorts/components/CohortCard";
 
 // Home "Upcoming cohorts" strip (working-doc §8.1): capacity/status,
 // schedule, fee, enrol CTA — live from the API.
@@ -28,16 +28,42 @@ export async function UpcomingCohorts() {
     cohorts = [];
   }
 
+  // Dummy showcase when the API has no rows yet (dev/preview): real links.
   if (cohorts.length === 0) {
+    const now = Date.now();
+    const dummy: CohortCardData[] = [
+      {
+        id: "dummy-utme", title: "UTME 2026 Mastery — 320+ Programme",
+        start_date: new Date(now + 25 * 864e5).toISOString(), end_date: new Date(now + 145 * 864e5).toISOString(),
+        timezone: "Africa/Lagos", location_mode: "ONLINE", capacity: 60, enrolled_count: 41,
+        fee: 35000, currency: "NGN", schedule_description: "Live classes Tue/Thu/Sat evenings + weekly mock CBT.",
+      },
+      {
+        id: "dummy-igcse", title: "IGCSE Computer Science — 2026 Cohort",
+        start_date: new Date(now + 32 * 864e5).toISOString(), end_date: new Date(now + 200 * 864e5).toISOString(),
+        timezone: "Africa/Lagos", location_mode: "ONLINE", capacity: 20, enrolled_count: 12,
+        fee: 35000, currency: "NGN", schedule_description: "Small-group live sessions with a certified specialist.",
+      },
+      {
+        id: "dummy-waec", title: "WAEC Mathematics Intensive",
+        start_date: new Date(now + 18 * 864e5).toISOString(), end_date: new Date(now + 100 * 864e5).toISOString(),
+        timezone: "Africa/Lagos", location_mode: "HYBRID", capacity: 25, enrolled_count: 17,
+        fee: 45000, currency: "NGN", schedule_description: "Rolling enrolment · weekend cohorts · past papers.",
+      },
+    ];
     return (
       <section className="container-x py-16">
-        <div className="rounded-2xl border border-dashed border-ink-200 p-8 text-center">
-          <h2 className="text-2xl font-extrabold">Upcoming cohorts</h2>
-          <p className="mt-2 text-sm text-ink-500">
-            New cohorts launch regularly —{" "}
-            <Link href="/cohorts" className="text-brand-blue font-semibold hover:underline">see all cohorts</Link> or{" "}
-            <Link href="/private-tuition" className="text-brand-blue font-semibold hover:underline">request private tuition</Link>.
-          </p>
+        <div className="flex items-end justify-between flex-wrap gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark">Starting soon</p>
+            <h2 className="font-display mt-1 text-3xl tracking-[0.02em] text-brand-navy">Upcoming cohorts</h2>
+          </div>
+          <Link href="/cohorts" className="text-sm font-semibold text-brand-blue hover:underline">View all cohorts →</Link>
+        </div>
+        <div className="mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {dummy.map((c) => (
+            <CohortCard key={c.id} c={c} />
+          ))}
         </div>
       </section>
     );
