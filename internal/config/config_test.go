@@ -42,6 +42,12 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 		require.NoError(t, Load().Validate())
 	})
 
+	t.Run("google creds optional in production", func(t *testing.T) {
+		// Google OAuth degrades gracefully — missing creds must not block deploy.
+		set(prodOK)
+		require.NoError(t, Load().Validate())
+	})
+
 	t.Run("wildcard origins rejected in production", func(t *testing.T) {
 		cfg := prodOK
 		cfg["ALLOWED_ORIGINS"] = "*"

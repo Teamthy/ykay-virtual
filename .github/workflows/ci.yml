@@ -40,16 +40,34 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: go test ./internal/service/ -run 'TestChatPromptEvals_Live' -v
 
-  e2e:
-    name: E2E — API suite (scripts/e2e.sh)
+  e2e-pg:
+    name: E2E — real PostgreSQL (scripts/e2e-pg.sh)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nuvora
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-      - name: Run E2E suite
-        run: bash scripts/e2e.sh 8099
+      - name: Install postgres client (psql/pg_dump)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Run full E2E against real Postgres
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nuvora?sslmode=disable
+        run: bash scripts/e2e-pg.sh 8099
 
   frontend:
     name: Web — typecheck + build
@@ -82,17 +100,17 @@ jobs:
           go-version: "1.22"
       - name: Install LHCI
         run: npm install -g @lhci/cli@0.14.x
-      - name: Start API (memory fallback)
-        run: go run ./cmd/api &
-        env:
-          PORT: "8080"
-      - name: Start web
+      # All three processes must run inside ONE step — GitHub Actions kills
+      # background processes when the step shell exits.
+      - name: Boot API + web, run Lighthouse
         working-directory: client
-        run: npm run build && npm run start -- --port 3000 &
-      - name: Run Lighthouse CI
-        run: lhci autorun --config=./lighthouserc.json
-      - name: Fail build if gates not met
-        if: failure()
         run: |
-          echo "Lighthouse gates failed (Perf/SEO/A11y >= 90 required)"
-          exit 1
+          set -e
+          (cd .. && PORT=8080 go run ./cmd/api > /tmp/api.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf -m 1 localhost:8080/health >/dev/null 2>&1 && break; sleep 1; done
+          curl -sf -m 1 localhost:8080/health >/dev/null || { echo "API failed"; tail -20 /tmp/api.log; exit 1; }
+          npm run build
+          API_PROXY_TARGET=http://localhost:8080 PORT=3000 HOSTNAME=0.0.0.0 node .next/standalone/server.js > /tmp/web.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf -m 1 localhost:3000/ >/dev/null 2>&1 && break; sleep 1; done
+          curl -sf -m 1 localhost:3000/ >/dev/null || { echo "web failed"; tail -20 /tmp/web.log; exit 1; }
+          lhci autorun --config=../lighthouserc.json

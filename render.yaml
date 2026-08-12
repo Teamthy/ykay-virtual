@@ -1,0 +1,60 @@
+# Render Blueprint (phase 42) — one-click setup of the NUVORA API + Postgres.
+#   https://dashboard.render.com/blueprints → "New Blueprint Instance" → this file.
+#
+# Notes:
+#   - The free Postgres plan EXPIRES after 30 days. Use `starter` ($7/mo) for
+#     anything persistent, or accept re-seeding for a short-lived demo.
+#   - Free web services sleep after 15 min idle → first request after sleep
+#     takes ~30–60s. Keep warm with a free UptimeRobot ping, or use starter.
+#   - Environment values marked with sync:false are secrets you set once in
+#     the dashboard (Render won't overwrite them on redeploy).
+
+services:
+  - type: web
+    name: nuvora-api
+    runtime: docker
+    repo: https://github.com/YOUR_ORG/ykay-virtual
+    plan: free # or: starter
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nuvora-db
+          property: connectionString
+      - key: SITE_URL
+        sync: false # set to https://app.yourdomain.com in the dashboard
+      - key: ALLOWED_ORIGINS
+        sync: false # set to https://app.yourdomain.com
+      - key: PAYSTACK_SECRET
+        sync: false
+      - key: FLUTTERWAVE_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URL
+        sync: false # set to https://app.yourdomain.com/auth/google/callback
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CHATBOT_ENABLED
+        value: "true"
+      - key: EXPO_ACCESS_TOKEN
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+    healthCheckPath: /health/ready
+
+databases:
+  - name: nuvora-db
+    plan: free # or: starter (free expires after 30 days)

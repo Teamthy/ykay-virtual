@@ -32,6 +32,7 @@ const SUPPORT = [
   { href: "/become-tutor", label: "Become a Tutor" },
   { href: "/for-schools", label: "For Schools" },
   { href: "/corporate-training", label: "Corporate Training" },
+  { href: "/download", label: "Android App (APK)" },
 ];
 
 export function Footer() {

@@ -94,9 +94,8 @@ func (c Config) Validate() error {
 	if c.Port == DevPort {
 		return errors.New("production: PORT must be explicitly configured")
 	}
-	if c.GoogleClientID == "" || c.GoogleClientSecret == "" {
-		return errors.New("production: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are required")
-	}
+	// Google OAuth is OPTIONAL: the login buttons degrade gracefully when
+	// creds are absent, so missing creds must not block a production deploy.
 	return nil
 }
 
