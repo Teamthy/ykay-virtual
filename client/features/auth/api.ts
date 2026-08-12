@@ -89,3 +89,17 @@ export async function confirmPasswordReset(token: string, newPassword: string): 
     body: JSON.stringify({ token, new_password: newPassword }),
   });
 }
+
+// --- Magic-link login (phase 18) ---
+
+export async function requestLoginCode(email: string): Promise<void> {
+  await apiFetch("/auth/login-code/request", { method: "POST", body: JSON.stringify({ email }) });
+}
+
+export async function confirmLoginCode(email: string, code: string): Promise<CurrentUser> {
+  const res = await apiFetch<CurrentUser>("/auth/login-code/confirm", {
+    method: "POST",
+    body: JSON.stringify({ email, code }),
+  });
+  return res.data;
+}

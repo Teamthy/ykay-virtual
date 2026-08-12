@@ -35,7 +35,9 @@ func NewEmailSender() EmailSender {
 type ConsoleEmailSender struct{}
 
 func (ConsoleEmailSender) Send(_ context.Context, to, subject, htmlBody string) error {
-	log.Printf("📧 EMAIL to=%s subject=%q body=%s", to, subject, truncate(htmlBody, 300))
+	// Dev console: log enough of the body to include codes/links (the branded
+	// shell is long, so 300 would hide them).
+	log.Printf("📧 EMAIL to=%s subject=%q body=%s", to, subject, truncate(htmlBody, 3000))
 	return nil
 }
 

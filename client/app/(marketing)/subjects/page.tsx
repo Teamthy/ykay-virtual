@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { Suspense } from "react";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import { SubjectsClient } from "@/features/subjects/components/SubjectsClient";
 

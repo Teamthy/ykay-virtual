@@ -12,6 +12,7 @@ import (
 
 	"ykay-virtual/internal/config"
 	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/payment"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
@@ -32,6 +33,7 @@ type repos struct {
 	uowFactory repository.UnitOfWorkFactory
 	escrowRead payment.EscrowHoldRepository
 	auditRepo  identity.AuditLogRepository
+	learning   learning.AssessmentRepository
 }
 
 func main() {
@@ -59,10 +61,13 @@ func main() {
 	rankingTicker := time.NewTicker(24 * time.Hour)
 	defer rankingTicker.Stop()
 
-	// Run once at boot so restarts immediately recover stale holds.
+	// Run once at boot so restarts immediately recover stale holds + attempts.
 	go func() {
 		if n, err := paymentSvc.ExpireStaleHolds(ctx, 200); err == nil && n > 0 {
 			log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
+		}
+		if n, err := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); err == nil && n > 0 {
+			log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
 		}
 	}()
 
@@ -76,6 +81,11 @@ func main() {
 				if err != nil {
 					log.Printf("cron[expire_stale_booking_holds] error: %v", err)
 					continue
+				}
+				if n, aerr := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); aerr != nil {
+					log.Printf("cron[expire_stale_learning_attempts] error: %v", aerr)
+				} else if n > 0 {
+					log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
 				}
 				if n > 0 {
 					log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
@@ -115,6 +125,7 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 			uowFactory: memory.NewMemoryUnitOfWorkFactory(store),
 			escrowRead: store.Escrow,
 			auditRepo:  store.AuditLogs,
+			learning:   store.Learning,
 		}
 	}
 	_ = ctx
@@ -122,5 +133,6 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 		uowFactory: postgres.NewPgUnitOfWorkFactory(pg),
 		escrowRead: postgres.NewEscrowHoldRepo(pg.DB()),
 		auditRepo:  postgres.NewAuditLogRepo(pg.DB()),
+		learning:   postgres.NewAssessmentRepo(pg.DB()),
 	}
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GraduationCap, BookOpen, LineChart, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getCohortSSR } from "@/features/cohorts/api/get";
@@ -61,10 +62,10 @@ export default async function CheckoutPage({ params }: Props) {
               </span>
             </div>
             <ul className="mt-4 grid gap-3 text-sm text-white/85">
-              <li className="flex items-center gap-3"><span aria-hidden="true">🎓</span> Live lessons with an approved, vetted tutor</li>
-              <li className="flex items-center gap-3"><span aria-hidden="true">📚</span> Recordings, resources and homework after every lesson</li>
-              <li className="flex items-center gap-3"><span aria-hidden="true">📈</span> Weekly progress reports for parents</li>
-              <li className="flex items-center gap-3"><span aria-hidden="true">🛡️</span> Money-back guarantee while your payment is in escrow</li>
+              <li className="flex items-center gap-3"><GraduationCap size={16} className="text-brand-gold" /> Live lessons with an approved, vetted tutor</li>
+              <li className="flex items-center gap-3"><BookOpen size={16} className="text-brand-gold" /> Recordings, resources and homework after every lesson</li>
+              <li className="flex items-center gap-3"><LineChart size={16} className="text-brand-gold" /> Weekly progress reports for parents</li>
+              <li className="flex items-center gap-3"><ShieldCheck size={16} className="text-brand-gold" /> Money-back guarantee while your payment is in escrow</li>
             </ul>
           </section>
         </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
@@ -43,18 +44,17 @@ export default function BritishCurriculumPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "British Curriculum" }]} />
 
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">British pathway</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">British Curriculum Online</h1>
-        <p className="mt-4 text-ink-600">
-          From Key Stage 3 foundations to IGCSE and A-Level — a structured British pathway taught by
-          vetted subject specialists, with parent visibility at every step.
-        </p>
-        <div className="mt-6 flex justify-center gap-3 flex-wrap">
-          <Link href="/programmes" className="btn-primary">Browse programmes</Link>
-          <Link href="/private-tuition" className="btn-gold">Book private tuition</Link>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="British pathway"
+        title="British Curriculum Online"
+        subtitle="From Key Stage 3 foundations to IGCSE and A-Level — a structured British pathway taught by vetted subject specialists, with parent visibility at every step."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "British Curriculum" }]}
+        align="center"
+      >
+<Link href="/programmes" className="btn-primary">Browse programmes</Link>
+        <Link href="/private-tuition" className="btn-gold">Book private tuition</Link>
+      </PageHero>
+
 
       <section className="mt-14 grid md:grid-cols-3 gap-5">
         {STAGES.map((s) => (

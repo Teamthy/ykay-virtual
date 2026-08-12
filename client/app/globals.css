@@ -37,3 +37,68 @@
     background-size: 80px 80px, 100px 100px;
   }
 }
+/* --- Motion system (phase 18): scroll reveals + micro-entrances --- */
+@layer utilities {
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .animate-hero-in {
+    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-hero-in-late {
+    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+  }
+  .animate-float {
+    animation: floatY 5s ease-in-out infinite;
+  }
+  .hover-lift {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatY {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .animate-hero-in,
+  .animate-hero-in-late,
+  .animate-float {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

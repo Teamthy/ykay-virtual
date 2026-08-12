@@ -397,3 +397,16 @@ func (r *ProgressReportRepo) ListByTutor(ctx context.Context, tutorProfileID uui
 }
 
 var _ learning.ProgressReportRepository = (*ProgressReportRepo)(nil)
+
+// ExpireStaleAttempts — worker cron: IN_PROGRESS with expires_at < before → EXPIRED.
+func (r *AssessmentRepo) ExpireStaleAttempts(ctx context.Context, before time.Time) (int64, error) {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE learner_assessment_attempts
+		SET status = 'EXPIRED', completed_at = NOW()
+		WHERE status = 'IN_PROGRESS' AND expires_at < $1`, before)
+	if err != nil {
+		return 0, fmt.Errorf("expire stale attempts: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	return n, nil
+}

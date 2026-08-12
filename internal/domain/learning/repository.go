@@ -50,6 +50,7 @@ type AttemptStatus string
 const (
 	AttemptInProgress AttemptStatus = "IN_PROGRESS"
 	AttemptCompleted  AttemptStatus = "COMPLETED"
+	AttemptExpired    AttemptStatus = "EXPIRED"
 )
 
 type LearnerAttempt struct {
@@ -95,6 +96,9 @@ type AssessmentRepository interface {
 	CreateAttempt(ctx context.Context, a *LearnerAttempt) error
 	GetAttempt(ctx context.Context, id uuid.UUID) (*LearnerAttempt, error)
 	GetAttemptForStudent(ctx context.Context, assessmentID, studentProfileID uuid.UUID) (*LearnerAttempt, error)
+	// ExpireStaleAttempts — marks IN_PROGRESS attempts whose window has passed
+	// as EXPIRED (worker cron). Returns the number expired.
+	ExpireStaleAttempts(ctx context.Context, before time.Time) (int64, error)
 	CompleteAttempt(ctx context.Context, id uuid.UUID, score, maxScore float64, passed bool) error
 }
 

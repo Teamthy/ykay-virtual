@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHero } from "@/components/layout/PageHero";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { B2BLeadForm } from "@/features/institutions/B2BLeadForm";
 
@@ -20,10 +21,14 @@ export default function ForSchoolsPage() {
   return (
     <main className="container-x py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <h1 className="text-4xl font-extrabold">For Schools — Institutional Accounts</h1>
-      <p className="mt-4 max-w-3xl text-lg text-ink-600">
-        Tuteria serves individual families. NUVORA adds <strong>institution</strong> entity: schools, learning centres, NGOs can create B2B accounts, bulk-enrol students, assign teachers, get pooled invoices, and monitor attendance/progress in one dashboard.
-      </p>
+      <PageHero
+        eyebrow="For institutions"
+        title="For Schools — Institutional Accounts"
+        subtitle="Schools, learning centres and NGOs get institutional accounts: bulk-enrol students, assign teachers, pool invoices and monitor attendance and progress in one dashboard."
+        crumbs={[{ name: "Home", href: "/" }, { name: "For Schools" }]}
+        align="left"
+      />
+
 
       <div className="mt-10 grid md:grid-cols-3 gap-6">
         <div className="border rounded-2xl p-6">

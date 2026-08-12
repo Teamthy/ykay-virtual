@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/Logo";
+import { GraduationCap, BadgeCheck, ShieldCheck, LineChart } from "lucide-react";
 
 // Auth shell — split-screen NUVORA brand panel (navy, tagline, positioning
 // strip, trust points) + white form column. Shared by login/register/
@@ -13,10 +14,10 @@ export type AuthShellProps = {
 };
 
 const TRUST = [
-  { icon: "🎓", text: "British & Nigerian curriculum pathways" },
-  { icon: "✅", text: "1% of tutors — vetted, approved and competency-tested" },
-  { icon: "🛡️", text: "Payment protection with escrow-held tuition fees" },
-  { icon: "📈", text: "Progress reports released to parents every term" },
+  { icon: <GraduationCap size={18} />, text: "British & Nigerian curriculum pathways" },
+  { icon: <BadgeCheck size={18} />, text: "1% of tutors — vetted, approved and competency-tested" },
+  { icon: <ShieldCheck size={18} />, text: "Payment protection with escrow-held tuition fees" },
+  { icon: <LineChart size={18} />, text: "Progress reports released to parents every term" },
 ];
 
 export function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
@@ -41,7 +42,7 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
           <ul className="mt-8 space-y-3.5">
             {TRUST.map((t) => (
               <li key={t.text} className="flex items-center gap-3 text-sm text-white/85">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-base">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-brand-gold">
                   {t.icon}
                 </span>
                 {t.text}

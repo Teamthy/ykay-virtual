@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHero } from "@/components/layout/PageHero";
 import { buildMetadata, personJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import Link from "next/link";
 
@@ -63,17 +64,14 @@ export default function AboutPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
 
       {/* Hero */}
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Who we are</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">
-          Expert teaching. Structured learning. Anywhere.
-        </h1>
-        <p className="mt-4 text-ink-600 leading-relaxed">
-          NUVORA is a digital education business — an online school rather than a simple
-          tutor directory. We combine the standards of a strong school with the flexibility of online
-          learning: programmes, cohorts, vetted tutors, assessments and progress you can actually see.
-        </p>
-      </section>
+      <PageHero
+        eyebrow="Who we are"
+        title="A school without walls"
+        subtitle="NUVORA is a digital education business — an online school rather than a simple tutor directory. We combine the standards of a strong school with the flexibility of online learning: programmes, cohorts, vetted tutors, assessments and progress you can actually see."
+        crumbs={[{ name: "Home", href: "/" }, { name: "About" }]}
+        align="center"
+      />
+
 
       {/* Vision */}
       <section className="mt-14 rounded-3xl bg-brand-blue text-white p-10 md:p-14 text-center">

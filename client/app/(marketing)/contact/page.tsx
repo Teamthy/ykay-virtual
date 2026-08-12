@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 
 // Contact / support — creates a real support ticket (POST /support/tickets)
 // with toast feedback; advisor channels listed alongside.
@@ -63,14 +64,14 @@ export default function ContactPage() {
     <main className="container-x py-12">
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Contact / Support" }]} />
 
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">We&apos;re here to help</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Contact & Support</h1>
-        <p className="mt-4 text-ink-600">
-          Questions about programmes, payments or your account — send a message and our team will
-          respond within one business day.
-        </p>
-      </section>
+      <PageHero
+        eyebrow="We&apos;re here to help"
+        title="Contact & Support"
+        subtitle="Questions about programmes, payments or your account — send a message and our team will respond within one business day."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Contact / Support" }]}
+        align="center"
+      />
+
 
       <div className="mt-10 grid lg:grid-cols-[1fr_0.8fr] gap-10 items-start">
         <form onSubmit={submit} className="border rounded-2xl p-6 space-y-4">

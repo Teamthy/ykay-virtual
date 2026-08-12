@@ -13,6 +13,7 @@ type AuthTokenPurpose string
 const (
 	TokenVerifyEmail   AuthTokenPurpose = "VERIFY_EMAIL"
 	TokenPasswordReset AuthTokenPurpose = "PASSWORD_RESET"
+	TokenLoginCode     AuthTokenPurpose = "LOGIN_CODE"
 )
 
 // AuthToken — single-use, expiring, hash-only-stored token for email

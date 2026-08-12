@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import { CategoryRail } from "@/components/layout/CategoryRail";
 import { StepsToTutor } from "@/components/home/StepsToTutor";

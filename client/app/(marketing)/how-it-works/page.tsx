@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
@@ -35,14 +36,14 @@ export default function HowItWorksPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "How It Works" }]} />
 
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Simple by design</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">How NUVORA works</h1>
-        <p className="mt-4 text-ink-600">
-          Four steps for families, four steps for tutors — with escrow protection and full visibility
-          at every stage.
-        </p>
-      </section>
+      <PageHero
+        eyebrow="Simple by design"
+        title="How NUVORA works"
+        subtitle="Four steps for families, four steps for tutors — with escrow protection and full visibility at every stage."
+        crumbs={[{ name: "Home", href: "/" }, { name: "How It Works" }]}
+        align="center"
+      />
+
 
       <section className="mt-14">
         <h2 className="text-2xl font-extrabold mb-6">For families</h2>

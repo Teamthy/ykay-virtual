@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
@@ -37,14 +38,14 @@ export default function ResourcesPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Resources" }]} />
 
-      <div className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Learn how to learn</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Resources</h1>
-        <p className="mt-4 text-ink-600">
-          Study guides, exam tips and curriculum guidance — everything families need to make the
-          right learning decisions.
-        </p>
-      </div>
+      <PageHero
+        eyebrow="Learn how to learn"
+        title="Resources"
+        subtitle="Study guides, exam tips and curriculum guidance — everything families need to make the right learning decisions."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Resources" }]}
+        align="center"
+      />
+
 
       <section className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {HUBS.map((h) => (

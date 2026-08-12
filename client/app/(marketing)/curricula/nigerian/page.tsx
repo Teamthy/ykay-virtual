@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
@@ -43,18 +44,17 @@ export default function NigerianCurriculumPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "Nigerian Curriculum" }]} />
 
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Nigerian pathway</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Nigerian Curriculum Online</h1>
-        <p className="mt-4 text-ink-600">
-          Junior and senior secondary learning with WAEC, NECO and JAMB preparation — structured,
-          exam-focused and taught by vetted Nigerian educators.
-        </p>
-        <div className="mt-6 flex justify-center gap-3 flex-wrap">
-          <Link href="/exam-prep" className="btn-primary">Exam preparation</Link>
-          <Link href="/private-tuition" className="btn-gold">Book private tuition</Link>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Nigerian pathway"
+        title="Nigerian Curriculum Online"
+        subtitle="Junior and senior secondary learning with WAEC, NECO and JAMB preparation — structured, exam-focused and taught by vetted Nigerian educators."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "Nigerian Curriculum" }]}
+        align="center"
+      >
+<Link href="/exam-prep" className="btn-primary">Exam preparation</Link>
+        <Link href="/private-tuition" className="btn-gold">Book private tuition</Link>
+      </PageHero>
+
 
       <section className="mt-14 grid md:grid-cols-3 gap-5">
         {STAGES.map((s) => (

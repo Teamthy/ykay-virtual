@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 	"sync"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/learning"
@@ -334,3 +335,17 @@ func (m *AnalyticsMemory) RevenueByProgramme(_ context.Context, limit int) ([]le
 }
 
 var _ learning.AnalyticsRepository = (*AnalyticsMemory)(nil)
+
+// ExpireStaleAttempts — worker cron (memory/dev mode).
+func (m *LearningMemory) ExpireStaleAttempts(_ context.Context, before time.Time) (int64, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	var n int64
+	for _, a := range m.attempts {
+		if a.Status == learning.AttemptInProgress && a.ExpiresAt.Before(before) {
+			a.Status = learning.AttemptExpired
+			n++
+		}
+	}
+	return n, nil
+}

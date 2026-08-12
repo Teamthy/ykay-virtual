@@ -217,8 +217,8 @@ func (s *LearningService) SubmitAssessmentForStudent(ctx context.Context, studen
 	if err != nil {
 		return nil, err
 	}
-	if attempt.Status == learning.AttemptCompleted {
-		return nil, fmt.Errorf("%w: attempt already completed", domain.ErrConflict)
+	if attempt.Status == learning.AttemptCompleted || attempt.Status == learning.AttemptExpired {
+		return nil, fmt.Errorf("%w: attempt already completed or expired", domain.ErrConflict)
 	}
 	return s.SubmitAssessment(ctx, studentProfileID, attempt.ID, answers)
 }
@@ -236,8 +236,8 @@ func (s *LearningService) SubmitAssessment(ctx context.Context, studentProfileID
 	if attempt.StudentProfileID != studentProfileID {
 		return nil, domain.ErrForbidden
 	}
-	if attempt.Status == learning.AttemptCompleted {
-		return nil, fmt.Errorf("%w: attempt already completed", domain.ErrConflict)
+	if attempt.Status == learning.AttemptCompleted || attempt.Status == learning.AttemptExpired {
+		return nil, fmt.Errorf("%w: attempt already completed or expired", domain.ErrConflict)
 	}
 	if s.now().UTC().After(attempt.ExpiresAt) {
 		return nil, fmt.Errorf("%w: attempt expired", domain.ErrConflict)

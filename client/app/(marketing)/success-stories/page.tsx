@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
@@ -44,14 +45,14 @@ export default function SuccessStoriesPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Success Stories" }]} />
 
-      <section className="text-center max-w-3xl mx-auto">
-        <p className="tag-handwritten">Real outcomes, verified</p>
-        <h1 className="text-4xl md:text-5xl font-extrabold mt-2">Success Stories</h1>
-        <p className="mt-4 text-ink-600">
-          Results, competition achievements and family stories. Testimonials are published with
-          explicit consent only — no fabricated claims.
-        </p>
-      </section>
+      <PageHero
+        eyebrow="Real outcomes, verified"
+        title="Success Stories"
+        subtitle="Results, competition achievements and family stories. Testimonials are published with explicit consent only — no fabricated claims."
+        crumbs={[{ name: "Home", href: "/" }, { name: "Success Stories" }]}
+        align="center"
+      />
+
 
       <section className="mt-14 grid md:grid-cols-2 gap-5">
         {RESULTS.map((r) => (

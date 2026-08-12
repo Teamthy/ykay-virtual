@@ -119,11 +119,14 @@ export default function LoginPage() {
           <Button type="submit" variant="gold" size="lg" className="w-full" disabled={submitting}>
             {submitting ? "Logging in…" : "Log in"}
           </Button>
-          <p className="text-center">
-            <Link href="/forgot-password" className="text-sm text-brand-blue font-semibold hover:underline">
+          <div className="flex items-center justify-between text-sm">
+            <Link href="/forgot-password" className="text-brand-blue font-semibold hover:underline">
               Forgot your password?
             </Link>
-          </p>
+            <Link href="/login-code" className="font-semibold text-ink-500 hover:text-brand-blue hover:underline">
+              Log in with a code
+            </Link>
+          </div>
         </form>
         {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
           <div className="mt-4">

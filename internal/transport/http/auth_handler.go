@@ -82,6 +82,48 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	), nil)
 }
 
+func (h *AuthHandler) RequestLoginCode(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if req.Email == "" {
+		WriteAppError(w, pkg.BadRequest("email is required", nil))
+		return
+	}
+	// Anti-enumeration: service always reports success for valid-looking emails.
+	if err := h.svc.RequestLoginCode(r.Context(), req.Email); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"sent": true}, nil)
+}
+
+func (h *AuthHandler) ConfirmLoginCode(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+		Code  string `json:"code"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	ip := clientIP(r)
+	token, user, roles, err := h.svc.ConfirmLoginCode(r.Context(), req.Email, req.Code, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	middleware.SetSessionCookie(w, h.cfg, token)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(
+		user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
+		user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	), nil)
+}
+
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(h.cfg.Name); err == nil && cookie.Value != "" {
 		_ = h.svc.Logout(r.Context(), hashToken(cookie.Value))

@@ -302,3 +302,36 @@ func TestAnalytics_FunnelCohortRevenueFromMemory(t *testing.T) {
 	assert.InDelta(t, 75000.0, revenue[0].Revenue, 0.001)
 	assert.Equal(t, int64(1), revenue[0].Orders)
 }
+
+// Expired attempts: the worker cron marks stale IN_PROGRESS attempts EXPIRED,
+// and submit afterwards is a conflict.
+func TestLearning_ExpireStaleAttempts(t *testing.T) {
+	ctx := context.Background()
+	store := memory.NewMemoryStore()
+	svc := NewLearningService(
+		store.Learning, store.Learning, store.Learning, store.Assignments,
+		NewAuditService(store.AuditLogs))
+
+	a, err := svc.CreateAssessment(ctx, CreateAssessmentInput{
+		AuthorUserID: uuid.New(), TutorProfileID: uuid.New(), Title: "T",
+		Questions: []AssessmentQuestionInput{{Question: "Q", Options: []string{"A", "B"}, CorrectIndex: 0}},
+	})
+	require.NoError(t, err)
+
+	student := uuid.New()
+	start, err := svc.StartAssessment(ctx, student, a.ID)
+	require.NoError(t, err)
+
+	// The attempt window is 30 minutes; a future "now" makes the cron's
+	// "expires_at < before" predicate catch it (no store mutation needed —
+	// GetAttempt returns a copy).
+	n, err := store.Learning.ExpireStaleAttempts(ctx, time.Now().UTC().Add(31*time.Minute))
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), n)
+
+	// Submit after expiry → conflict.
+	_, err = svc.SubmitAssessment(ctx, student, start.Attempt.ID, []AssessmentAnswer{
+		{QuestionID: start.Questions[0].ID, ChosenIndex: 0},
+	})
+	assert.ErrorIs(t, err, domain.ErrConflict)
+}

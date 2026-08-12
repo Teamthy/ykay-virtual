@@ -104,6 +104,21 @@ assert_code "logout" 200 "$c"
 c=$(req "$J_LOGOUT" GET /auth/me)
 assert_code "me after logout → 401" 401 "$c"
 
+# --- Magic-link login (phase 18) ---
+c=$(req "$J_LOGOUT" POST /auth/login-code/request '{"email":"e2e-parent@test.com"}')
+assert_code "login-code request" 200 "$c"
+sleep 1
+CODE=$(grep -oP 'font-family:monospace;">\K[0-9]{6}' /tmp/e2e-api.log | tail -1)
+if [ -n "$CODE" ]; then ok "code captured from email log"; else fail "login code not found in email log"; fi
+c=$(req "$J_LOGOUT" POST /auth/login-code/confirm "{\"email\":\"e2e-parent@test.com\",\"code\":\"000000\"}")
+assert_code "wrong code → 401" 401 "$c"
+c=$(req "$J_LOGOUT" POST /auth/login-code/confirm "{\"email\":\"e2e-parent@test.com\",\"code\":\"${CODE}\"}")
+assert_code "login-code confirm" 200 "$c"
+c=$(req "$J_LOGOUT" GET /auth/me)
+assert_code "me via magic-link session" 200 "$c"
+c=$(req "$J_LOGOUT" POST /auth/logout)
+assert_code "magic-link session logout" 200 "$c"
+
 # =========================================================== 2. CATALOGUE ====
 note "CATALOGUE"
 c=$(req /dev/null GET /subjects)

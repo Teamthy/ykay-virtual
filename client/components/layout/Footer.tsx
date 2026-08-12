@@ -1,4 +1,5 @@
 import { Logo } from "./Logo";
+import { Phone, Mail } from "lucide-react";
 import Link from "next/link";
 
 // Fully-wired footer: every column links to a real route.
@@ -40,11 +41,11 @@ export function Footer() {
             <p className="mt-1 text-sm text-white/60">Free advice on programmes, curricula and matching the right tutor.</p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
-            <a href="tel:+2347063726773" className="rounded-xl bg-white/10 px-5 py-3 text-sm font-bold hover:bg-white/20 transition-colors">
-              📞 +234 706 372 6773
+            <a href="tel:+2347063726773" className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold hover:bg-white/20 transition-colors">
+              <Phone size={15} /> +234 706 372 6773
             </a>
-            <a href="mailto:hello@nuvora.com" className="rounded-xl bg-brand-gold px-5 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
-              ✉️ hello@nuvora.com
+            <a href="mailto:hello@nuvora.com" className="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
+              <Mail size={15} /> hello@nuvora.com
             </a>
           </div>
         </div>
