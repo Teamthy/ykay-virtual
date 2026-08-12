@@ -22,6 +22,8 @@ type OrderRepository interface {
 	Update(ctx context.Context, o *Order) error
 	ListItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
 	ListByParentUserID(ctx context.Context, parentUserID uuid.UUID, limit, offset int) ([]Order, int64, error)
+	// ListAll — admin payments view (phase 38).
+	ListAll(ctx context.Context, limit, offset int) ([]Order, int64, error)
 }
 
 type PaymentRepository interface {

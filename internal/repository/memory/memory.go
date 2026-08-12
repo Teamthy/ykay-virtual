@@ -513,6 +513,25 @@ func (m *OrderMemory) ListItems(_ context.Context, orderID uuid.UUID) ([]payment
 	return out, nil
 }
 
+func (m *OrderMemory) ListAll(_ context.Context, limit, offset int) ([]payment.Order, int64, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	all := make([]payment.Order, 0, len(m.rows))
+	for _, o := range m.rows {
+		all = append(all, *o)
+	}
+	sort.Slice(all, func(i, j int) bool { return all[i].CreatedAt.After(all[j].CreatedAt) })
+	total := int64(len(all))
+	if offset >= len(all) {
+		return []payment.Order{}, total, nil
+	}
+	end := offset + limit
+	if limit <= 0 || end > len(all) {
+		end = len(all)
+	}
+	return all[offset:end], total, nil
+}
+
 func (m *OrderMemory) ListByParentUserID(_ context.Context, parentUserID uuid.UUID, limit, offset int) ([]payment.Order, int64, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

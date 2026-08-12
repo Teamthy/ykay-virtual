@@ -393,3 +393,35 @@ func (h *AuthHandler) MobileLoginCodeConfirm(w http.ResponseWriter, r *http.Requ
 		),
 	}, nil)
 }
+
+// GoogleExchange — POST /auth/google/exchange {code, state} — server-to-server
+// exchange that returns the raw session token + user (used by the Next.js
+// callback route so the session cookie lands on the APP host, not the API).
+func (h *AuthHandler) GoogleExchange(w http.ResponseWriter, r *http.Request) {
+	if h.google == nil || !h.google.Enabled() {
+		WriteAppError(w, pkg.Conflict("google auth is not configured"))
+		return
+	}
+	var req struct {
+		Code  string `json:"code"`
+		State string `json:"state"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if req.Code == "" || req.State == "" {
+		WriteAppError(w, pkg.BadRequest("missing code or state", nil))
+		return
+	}
+	ip := clientIP(r)
+	token, user, roles, err := h.google.ExchangeCode(r.Context(), req.Code, req.State, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"token": token,
+		"user":  toUserResponseFull(user, roles),
+	}, nil)
+}

@@ -463,6 +463,44 @@ func (s *PaymentService) ReleaseEscrow(ctx context.Context, escrowHoldID uuid.UU
 	return payout, nil
 }
 
+// RefundOrder — admin refund of an entire order: refunds every escrow hold
+// attached to the order and marks the order REFUNDED.
+func (s *PaymentService) RefundOrder(ctx context.Context, orderID uuid.UUID, actorID *uuid.UUID, reason string) error {
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer uow.Rollback()
+	order, err := uow.Orders().GetByID(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	if order.Status == payment.OrderRefunded {
+		return fmt.Errorf("%w: order already refunded", domain.ErrConflict)
+	}
+	holds, err := uow.Escrow().GetByOrderID(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	for _, h := range holds {
+		if h.Status != payment.EscrowHeld {
+			continue
+		}
+		if err := s.refundEscrowInUOW(ctx, uow, h.ID, actorID, reason); err != nil {
+			return err
+		}
+	}
+	if err := uow.Orders().UpdateStatus(ctx, orderID, payment.OrderRefunded); err != nil {
+		return err
+	}
+	if err := uow.Commit(ctx); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, actorID, identity.AuditUpdate, "order",
+		&orderID, nil, map[string]any{"event": "refund", "reason": reason}, nil, nil)
+	return nil
+}
+
 // RefundEscrow — dispute/refund path: escrow → REFUNDED, parent wallet
 // credited, order + enrollment → REFUNDED (Tuteria dispute-hold parity).
 func (s *PaymentService) RefundEscrow(ctx context.Context, escrowHoldID uuid.UUID,
@@ -473,6 +511,19 @@ func (s *PaymentService) RefundEscrow(ctx context.Context, escrowHoldID uuid.UUI
 		return err
 	}
 	defer uow.Rollback()
+	if err := s.refundEscrowInUOW(ctx, uow, escrowHoldID, actorID, reason); err != nil {
+		return err
+	}
+	if err := uow.Commit(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+// refundEscrowInUOW — the shared escrow-refund core (status, wallet credit,
+// order status, enrollment refund) inside an open unit of work.
+func (s *PaymentService) refundEscrowInUOW(ctx context.Context, uow repository.UnitOfWork,
+	escrowHoldID uuid.UUID, actorID *uuid.UUID, reason string) error {
 
 	hold, err := uow.Escrow().GetByID(ctx, escrowHoldID)
 	if err != nil {
@@ -511,7 +562,7 @@ func (s *PaymentService) RefundEscrow(ctx context.Context, escrowHoldID uuid.UUI
 	_ = s.audit.LogStateChange(ctx, actorID, identity.AuditPayment, "escrow_hold",
 		&hold.ID, map[string]any{"status": payment.EscrowHeld}, map[string]any{
 			"status": payment.EscrowRefunded, "reason": reason, "wallet_credited": hold.Amount,
-		}, reqID, traceID)
+		}, nil, nil)
 
 	return uow.Commit(ctx)
 }

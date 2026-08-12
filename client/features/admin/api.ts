@@ -1,4 +1,5 @@
 import { apiFetch, Envelope } from "@/lib/api";
+import type { Order } from "@/features/bookings/types";
 
 // Admin console API — all endpoints require the session cookie with an
 // ACADEMIC_ADMIN / SUPER_ADMIN role (enforced server-side).
@@ -248,4 +249,34 @@ export async function confirmManualPayment(orderId: string, note?: string): Prom
     method: "POST",
     body: JSON.stringify({ note }),
   });
+}
+
+// Admin payments console (P1).
+
+export type AdminPayout = {
+  id: string;
+  tutor_profile_id: string;
+  escrow_hold_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  created_at: string;
+  processed_at?: string;
+};
+
+export async function listAdminOrders(page = 1, pageSize = 25): Promise<{ orders: Order[]; total: number }> {
+  const res = await apiFetch<Order[]>(`/admin/orders?page=${page}&page_size=${pageSize}`);
+  return { orders: res.data ?? [], total: res.meta?.total_items ?? 0 };
+}
+
+export async function refundOrder(orderId: string, reason: string): Promise<void> {
+  await apiFetch(`/admin/orders/${orderId}/refund`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function listAdminPayouts(status?: string): Promise<AdminPayout[]> {
+  const res = await apiFetch<AdminPayout[]>(`/admin/payouts${status ? `?status=${status}` : ""}`);
+  return res.data ?? [];
 }

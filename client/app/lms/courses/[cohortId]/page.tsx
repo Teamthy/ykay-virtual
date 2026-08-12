@@ -74,6 +74,9 @@ export default function LmsCoursePage() {
     enabled: lessons.isFetched,
   });
 
+  const quizzesPassed = (quizzes.data ?? []).filter((q) => q.status === "PASSED" || q.status === "GRADED").length;
+  const quizzesTotal = (quizzes.data ?? []).length;
+
   const startQuiz = useMutation({
     mutationFn: (id: string) => startAssessment(id, studentId),
     onSuccess: (data) => setQuiz({ phase: "taking", data, answers: {} }),
@@ -149,6 +152,67 @@ export default function LmsCoursePage() {
       </header>
 
       <div className="mx-auto max-w-6xl px-6">
+        {/* Progress charts */}
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {/* Attendance per lesson */}
+          <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-brand-navy">Attendance</h3>
+            <div className="mt-3 flex items-end gap-1.5" style={{ height: 96 }}>
+              {(lessons.data ?? []).slice(0, 8).map((l, i) => {
+                const row = (attendance.data ?? []).find((a) => (attendance.data ?? [])[i]?.lesson_id === l.id);
+                const present = row?.status === "PRESENT";
+                const late = row?.status === "LATE";
+                return (
+                  <div key={l.id} className="flex flex-1 flex-col items-center gap-1">
+                    <span className="text-[10px] font-bold">{row ? "✓" : "–"}</span>
+                    <div
+                      className={`w-full rounded-t ${present ? "bg-green-500" : late ? "bg-amber-400" : "bg-ink-200"}`}
+                      style={{ height: row ? 56 : 16 }}
+                      title={l.title}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[11px] text-ink-400">Last lessons · green = present, amber = late, grey = untracked</p>
+          </div>
+
+          {/* Quiz pass rate */}
+          <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-brand-navy">Quizzes</h3>
+            <p className="mt-2 text-3xl font-extrabold text-brand-navy">
+              {quizzesTotal > 0 ? Math.round((quizzesPassed / quizzesTotal) * 100) : "—"}
+              {quizzesTotal > 0 && <span className="text-base font-bold text-ink-400">% passed</span>}
+            </p>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-100">
+              <div
+                className="h-full rounded-full bg-brand-gold"
+                style={{ width: quizzesTotal > 0 ? `${(quizzesPassed / quizzesTotal) * 100}%` : "0%" }}
+              />
+            </div>
+            <p className="mt-2 text-[11px] text-ink-400">{quizzesPassed} of {quizzesTotal} quizzes passed</p>
+          </div>
+
+          {/* Report ratings */}
+          <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-brand-navy">Tutor ratings</h3>
+            <div className="mt-3 space-y-2">
+              {(reports.data ?? []).slice(-4).map((r) => (
+                <div key={r.id} className="flex items-center gap-2">
+                  <span className="w-14 shrink-0 text-[10px] text-ink-400">
+                    {new Date(r.period_start).toLocaleDateString(undefined, { month: "short" })}
+                  </span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-100">
+                    <div className="h-full rounded-full bg-brand-navy" style={{ width: `${(r.overall_rating / 5) * 100}%` }} />
+                  </div>
+                  <span className="w-8 shrink-0 text-right text-[11px] font-bold text-brand-navy">★{r.overall_rating}</span>
+                </div>
+              ))}
+              {(reports.data ?? []).length === 0 && <p className="py-6 text-center text-[11px] text-ink-400">No reports yet</p>}
+            </div>
+          </div>
+        </div>
+
         {/* Attendance strip */}
         <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white px-5 py-4 shadow-sm">
           <span className="text-sm font-bold text-brand-navy">Attendance</span>

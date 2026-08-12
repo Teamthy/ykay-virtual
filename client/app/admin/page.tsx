@@ -84,6 +84,7 @@ export default function AdminOverviewPage() {
           { href: "/admin/lessons", label: "Today's classes", desc: "Attendance & lesson overview" },
           { href: "/admin/support", label: "Support tickets", desc: "Resolve and escalate" },
           { href: "/admin/chat", label: "Chat agent inbox", desc: "Escalated conversations, replies, ratings" },
+          { href: "/admin/payments", label: "Payments", desc: "Orders, confirmations, refunds, payouts" },
           { href: "/admin/reviews", label: "Review moderation", desc: "Consent-gated publishing" },
           { href: "/admin/blog", label: "Blog CMS", desc: "Publish study content" },
         ].map((m) => (

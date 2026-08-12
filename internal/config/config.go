@@ -64,7 +64,7 @@ func Load() Config {
 		AllowedOrigins:     getEnv("ALLOWED_ORIGINS", ""),
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
-		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:8080/api/v1/auth/google/callback"),
+		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:3100/auth/google/callback"),
 		GeminiAPIKey:       getEnv("GEMINI_API_KEY", ""),
 		GeminiModel:        getEnv("GEMINI_MODEL", "gemini-2.0-flash"),
 		ChatbotEnabled:     strings.ToLower(getEnv("CHATBOT_ENABLED", "true")) != "false",

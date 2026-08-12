@@ -156,6 +156,36 @@ func (r *OrderRepo) Update(ctx context.Context, o *payment.Order) error {
 	return nil
 }
 
+func (r *OrderRepo) ListAll(ctx context.Context, limit, offset int) ([]payment.Order, int64, error) {
+	var total int64
+	if err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM orders WHERE deleted_at IS NULL`).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("count orders: %w", err)
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT `+orderColumns+` FROM orders WHERE deleted_at IS NULL
+		ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list orders: %w", err)
+	}
+	defer rows.Close()
+	out := []payment.Order{}
+	for rows.Next() {
+		var o payment.Order
+		var studentID, institutionID uuidNull
+		var idemKey sql.NullString
+		if err := rows.Scan(&o.ID, &o.OrderNumber, &o.ParentUserID, &studentID, &institutionID,
+			&o.Status, &o.Subtotal, &o.DiscountAmount, &o.TotalAmount, &o.Currency,
+			&idemKey, &o.CreatedAt, &o.UpdatedAt); err != nil {
+			return nil, 0, err
+		}
+		if idemKey.Valid {
+			o.IdempotencyKey = &idemKey.String
+		}
+		out = append(out, o)
+	}
+	return out, total, rows.Err()
+}
+
 func (r *OrderRepo) ListByParentUserID(ctx context.Context, parentUserID uuid.UUID, limit, offset int) ([]payment.Order, int64, error) {
 	if limit < 1 || limit > 100 {
 		limit = 20

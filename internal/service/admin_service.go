@@ -13,6 +13,7 @@ import (
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
+	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
 
@@ -33,6 +34,8 @@ type AdminService struct {
 	support      content.SupportTicketRepository
 	cohortAdmin  booking.CohortAdminRepository
 	lessonAdmin  booking.LessonAdminRepository
+	orders       payment.OrderRepository
+	payouts      payment.PayoutRepository
 	audit        identity.AuditService
 	now          func() time.Time
 }
@@ -44,6 +47,13 @@ func NewAdminService(stats admin.StatsRepository, blog content.AdminBlogReposito
 		stats: stats, blog: blog, institutions: institutions, referrals: referrals,
 		reviews: reviews, audit: audit, now: time.Now,
 	}
+}
+
+// WithPayments wires order + payout read models for the payments console.
+func (s *AdminService) WithPayments(orders payment.OrderRepository, payouts payment.PayoutRepository) *AdminService {
+	s.orders = orders
+	s.payouts = payouts
+	return s
 }
 
 // WithSupport wires the support queue.
@@ -385,4 +395,34 @@ func (s *AdminService) ListLessonsToday(ctx context.Context) ([]booking.Lesson, 
 		return []booking.Lesson{}, nil
 	}
 	return s.lessonAdmin.ListByDate(ctx, time.Now().UTC())
+}
+
+// ── Payments admin (phase 38) ──────────────────────────────────────────────
+
+func (s *AdminService) ListOrders(ctx context.Context, limit, offset int) ([]payment.Order, int64, error) {
+	if s.orders == nil {
+		return []payment.Order{}, 0, nil
+	}
+	list, total, err := s.orders.ListAll(ctx, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	if list == nil {
+		list = []payment.Order{}
+	}
+	return list, total, nil
+}
+
+func (s *AdminService) ListPayouts(ctx context.Context, status string) ([]payment.Payout, error) {
+	if s.payouts == nil {
+		return []payment.Payout{}, nil
+	}
+	list, err := s.payouts.ListByStatus(ctx, payment.PayoutStatus(status), 200)
+	if err != nil {
+		return nil, err
+	}
+	if list == nil {
+		list = []payment.Payout{}
+	}
+	return list, nil
 }

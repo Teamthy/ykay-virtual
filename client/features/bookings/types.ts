@@ -19,6 +19,7 @@ export type Order = {
   discount_amount: number;
   total_amount: number;
   currency: string;
+  created_at: string;
   items: OrderItem[];
 };
 

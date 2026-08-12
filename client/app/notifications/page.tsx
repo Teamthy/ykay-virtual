@@ -8,24 +8,34 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Inbox } from "lucide-react";
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from "@/features/messaging/api";
-
-const DEV_USER = "00000000-0000-0000-0000-0000000000a1";
+import { useSession } from "@/hooks/useSession";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function NotificationsPage() {
   const qc = useQueryClient();
+  const router = useRouter();
+  const { user, isLoading } = useSession();
+  const userId = user?.id ?? "";
+
+  useEffect(() => {
+    if (!isLoading && !user) router.replace("/login");
+  }, [isLoading, user, router]);
+
   const notifs = useQuery({
-    queryKey: ["notifications", DEV_USER],
-    queryFn: () => listNotifications(DEV_USER),
+    queryKey: ["notifications", userId],
+    queryFn: () => listNotifications(userId),
+    enabled: !!userId,
     staleTime: 15_000,
     refetchInterval: 30_000,
   });
 
   const markRead = useMutation({
-    mutationFn: (id: string) => markNotificationRead(DEV_USER, id),
+    mutationFn: (id: string) => markNotificationRead(userId, id),
     onSettled: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const markAll = useMutation({
-    mutationFn: () => markAllNotificationsRead(DEV_USER),
+    mutationFn: () => markAllNotificationsRead(userId),
     onSettled: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
 

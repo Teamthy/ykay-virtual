@@ -4,10 +4,16 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { RelatedContent } from "@/components/RelatedContent";
 import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
+import { PrivateBookingForm } from "@/features/tuition/PrivateBookingForm";
 
 type Props = { params: { slug: string } };
 
 // Mock - in prod fetch from /api/v1/tutors/[slug] with SSG+ISR revalidate 3600
+const TUTOR_IDS: Record<string, string> = {
+  "chinasa": "00000000-0000-0000-0000-000000000101",
+  "oluwatobi": "00000000-0000-0000-0000-000000000102",
+};
+
 const tutors: Record<string, any> = {
   "chinasa": { name: "Chinasa", bio: "M.Ed Mathematics Education UNILAG. Teaches British & Nigerian Syllabus Grades 1-6. 10+ years, 2548 hours, 34 students.", rating: 4.87, count: 28, subjects: ["Mathematics", "English"], verified: true, location: "Lagos" },
   "oluwatobi": { name: "Oluwatobi", bio: "Build student's confidence in Mathematics and Sciences. Common Entrance, Checkpoint, WAEC, NECO, UTME...", rating: 4.6, count: 20, subjects: ["Mathematics", "Physics"], verified: true, location: "Lagos" },
@@ -66,7 +72,15 @@ export default function TutorPage({ params }: Props) {
             <p className="mt-2 text-sm text-ink-600">Tuteria parity: Adaptive Learning Plans, Child-Centered, Periodic Evaluation. NUVORA adds: progress reports with strengths/weaknesses/recommendations, audited.</p>
           </section>
 
-          <ReviewsSection tutorSlug={params.slug} tutorId={tutor.id ?? params.slug} />
+          <div className="mt-10">
+        <PrivateBookingForm
+          tutorProfileId={TUTOR_IDS[params.slug] ?? "00000000-0000-0000-0000-000000000102"}
+          subjects={tutors[params.slug]?.subjects ?? []}
+          defaultRate={5000}
+        />
+      </div>
+
+      <ReviewsSection tutorSlug={params.slug} tutorId={tutor.id ?? params.slug} />
         </div>
 
         <div className="border rounded-2xl p-6 h-fit lg:sticky lg:top-28">

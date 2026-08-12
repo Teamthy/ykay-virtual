@@ -216,3 +216,41 @@ export async function createAssessment(input: QuizInput): Promise<LearnerAssessm
   });
   return res.data;
 }
+
+// --- Tutor earnings (P1) ---
+
+export type EscrowHold = {
+  id: string;
+  order_id: string;
+  tutor_profile_id: string;
+  amount: number;
+  status: string;
+  held_at: string;
+  release_at?: string;
+  released_at?: string;
+  dispute_reason?: string;
+};
+
+export type Payout = {
+  id: string;
+  tutor_profile_id: string;
+  escrow_hold_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  created_at: string;
+  processed_at?: string;
+};
+
+export type TutorEarnings = {
+  escrow_holds: EscrowHold[];
+  payouts: Payout[];
+  held_total: number;
+  released_total: number;
+  paid_total: number;
+};
+
+export async function getTutorEarnings(tutorProfileId: string): Promise<TutorEarnings> {
+  const res = await apiFetch<TutorEarnings>(`/me/earnings?tutor_profile_id=${tutorProfileId}`);
+  return res.data;
+}

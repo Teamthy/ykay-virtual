@@ -32,7 +32,7 @@ func NewRouter(version string, handlers *Handlers, sessionAuth func(http.Handler
 // liveness/readiness endpoints and optional frame blocking (production).
 func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string, sessionAuth func(http.Handler) http.Handler, readyCheck func() error, blockFrames bool) *Router {
 	mux := http.NewServeMux()
-	rl := middleware.NewRateLimiter(100, time.Minute)    // sliding window: 100 req/min default
+	rl := middleware.NewRateLimiter(300, time.Minute)    // sliding window: 300 req/min default
 	authRL := middleware.NewRateLimiter(40, time.Minute) // auth endpoints: 40 req/min per IP (SEC-005)
 	authRate := func(h http.HandlerFunc) http.HandlerFunc { return authRL.Middleware(h).ServeHTTP }
 
@@ -74,6 +74,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/login-code/confirm", authRate(handlers.Auth.ConfirmLoginCode))
 	mux.HandleFunc("GET "+v1+"/auth/google/url", handlers.Auth.GoogleAuthURL)
 	mux.HandleFunc("GET "+v1+"/auth/google/callback", handlers.Auth.GoogleCallback)
+	mux.HandleFunc("POST "+v1+"/auth/google/exchange", authRate(handlers.Auth.GoogleExchange))
 	mux.HandleFunc("POST "+v1+"/auth/login/mobile", authRate(handlers.Auth.MobileLogin))
 	mux.HandleFunc("POST "+v1+"/auth/login-code/mobile/confirm", authRate(handlers.Auth.MobileLoginCodeConfirm))
 	mux.HandleFunc("POST "+v1+"/auth/me/role", handlers.Auth.SetRole)
@@ -231,6 +232,9 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/status", handlers.Admin.SetCohortStatus)
 	mux.HandleFunc("GET "+v1+"/admin/lessons/today", handlers.Admin.LessonsToday)
 	mux.HandleFunc("POST "+v1+"/admin/orders/{orderId}/confirm-payment", handlers.Admin.ConfirmManualPayment)
+	mux.HandleFunc("GET "+v1+"/admin/orders", handlers.Admin.ListOrders)
+	mux.HandleFunc("POST "+v1+"/admin/orders/{orderId}/refund", handlers.Admin.RefundOrder)
+	mux.HandleFunc("GET "+v1+"/admin/payouts", handlers.Admin.ListPayouts)
 	mux.HandleFunc("GET "+v1+"/admin/blog", handlers.Admin.ListPosts)
 	mux.HandleFunc("POST "+v1+"/admin/blog", handlers.Admin.CreatePost)
 	mux.HandleFunc("PUT "+v1+"/admin/blog/{postId}", handlers.Admin.UpdatePost)

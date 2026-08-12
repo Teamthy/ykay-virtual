@@ -176,6 +176,7 @@ func main() {
 		WithSupport(repos.SupportTickets).
 		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin)
 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
+	adminSvc.WithPayments(repos.Orders, repos.Payouts)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
 		repos.Assignments, audit).WithNotifications(messagingSvc)
 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)

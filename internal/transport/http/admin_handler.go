@@ -467,3 +467,55 @@ func (h *AdminHandler) ConfirmManualPayment(w http.ResponseWriter, r *http.Reque
 		"confirmed": true, "payment_id": p.ID.String(), "provider": p.Provider,
 	}, nil)
 }
+
+// ── Payments operations (phase 38 P1) ──────────────────────────────────────
+
+// ListOrders — GET /admin/orders?page=&page_size=
+func (h *AdminHandler) ListOrders(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	p := ParsePagination(r)
+	list, total, err := h.svc.ListOrders(r.Context(), p.PageSize, (p.Page-1)*p.PageSize)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, p.Meta(total))
+}
+
+// RefundOrder — POST /admin/orders/{orderId}/refund {reason}
+func (h *AdminHandler) RefundOrder(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	orderID, err := ParseUUID(r, "orderId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Reason string `json:"reason"`
+	}
+	_ = DecodeJSON(r, &req)
+	if err := h.payments.RefundOrder(r.Context(), orderID, adminID, req.Reason); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"refunded": true}, nil)
+}
+
+// ListPayouts — GET /admin/payouts?status=
+func (h *AdminHandler) ListPayouts(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	status := r.URL.Query().Get("status")
+	list, err := h.svc.ListPayouts(r.Context(), status)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+}

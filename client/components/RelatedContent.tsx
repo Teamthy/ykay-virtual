@@ -26,18 +26,28 @@ export async function RelatedContent({ subjectSlug }: { subjectSlug: string }) {
     return null;
   }
 
-  const hasAny = related.tutors.length > 0 || related.programmes.length > 0 || related.posts.length > 0;
+  // The related endpoint historically serialized Go structs with raw field
+  // names (Profile/Subjects/SubjectSlugs). Normalize to the flat shape.
+  const tutors = related.tutors.map((t: any) => ({
+    id: t.id ?? t.Profile?.id ?? "",
+    slug: t.slug ?? t.Profile?.slug ?? "",
+    display_name: t.display_name ?? t.Profile?.display_name ?? "Tutor",
+    rating_avg: t.rating_avg ?? t.Profile?.rating_avg ?? 0,
+    rating_count: t.rating_count ?? t.Profile?.rating_count ?? 0,
+  }));
+
+  const hasAny = tutors.length > 0 || related.programmes.length > 0 || related.posts.length > 0;
   if (!hasAny) return null;
 
   return (
     <section className="mt-12" aria-label="Related content">
       <h2 className="text-2xl font-extrabold mb-6">Keep exploring</h2>
       <div className="grid md:grid-cols-3 gap-5">
-        {related.tutors.length > 0 && (
+        {tutors.length > 0 && (
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-3">Top tutors</h3>
             <ul className="space-y-2">
-              {related.tutors.map((t) => (
+              {tutors.map((t) => (
                 <li key={t.id}>
                   <Link
                     href={`/tutors/${t.slug}`}

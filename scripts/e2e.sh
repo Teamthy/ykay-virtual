@@ -438,6 +438,36 @@ grep -qi "oluwatobi" /tmp/e2e-body.json && ok "free-text search finds tutor" || 
 c=$(req "$J_LOGOUT" POST /auth/login '{"email":"e2e-parent@test.com","password":"password123"}')
 assert_code "parent relogin after profile edit" 200 "$c"
 
+
+# --- P1: payments console, earnings, google exchange ---
+c=$(req "$J_ADMIN" GET "/admin/orders?page=1&page_size=25")
+assert_code "admin orders list" 200 "$c"
+grep -q '"total_items"' /tmp/e2e-body.json && ok "admin orders pagination meta" || fail "orders meta missing"
+
+c=$(req "$J_ADMIN" GET /admin/payouts)
+assert_code "admin payouts list" 200 "$c"
+
+c=$(req "$J_PARENT" POST /bookings '{"type":"COHORT","cohort_id":"00000000-0000-0000-0000-00000000c010","parent_user_id":"00000000-0000-0000-0000-0000000000a2","student_id":"'$STUDENT_ID'","idempotency_key":"e2e-phase38-booking"}')
+assert_code "create cohort booking" 201 "$c"
+NEW_ORDER=$(cat /tmp/e2e-body.json | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"]["order"]["id"])')
+[ -n "$NEW_ORDER" ] && ok "booking order captured" || fail "booking order missing"
+
+c=$(req "$J_ADMIN" POST "/admin/orders/$NEW_ORDER/confirm-payment" '{"note":"e2e confirm"}')
+assert_code "confirm payment (admin)" 200 "$c"
+
+c=$(req "$J_ADMIN" POST "/admin/orders/$NEW_ORDER/refund" '{"reason":"e2e refund test"}')
+assert_code "refund order (admin)" 200 "$c"
+
+c=$(req "$J_STUDENT" GET "/admin/orders?page=1")
+assert_code "admin orders (student) → 403" 403 "$c"
+
+c=$(req "$J_TUTOR" GET "/me/earnings?tutor_profile_id=00000000-0000-0000-0000-000000000102")
+assert_code "tutor earnings" 200 "$c"
+grep -q '"held_total"' /tmp/e2e-body.json && ok "earnings fields present" || fail "earnings fields missing"
+
+c=$(req "$J_LOGOUT" POST /auth/google/exchange '{"code":"bad","state":"bad"}')
+assert_code "google exchange unconfigured → 409" 409 "$c"
+
 # ============================================================== SUMMARY ======
 echo
 echo "──────────────────────────────────────────────"

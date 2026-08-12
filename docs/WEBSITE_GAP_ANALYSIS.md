@@ -40,34 +40,43 @@ Legend: 🔴 launch blocker · 🟠 should-have · 🟢 nice-to-have
    - Note: end-to-end with **live Paystack keys** still requires the
      merchant's test/live keys (backend webhook + escrow already e2e-tested).
 
-## 🟠 P1 — high value
+## 🟠 P1 — ✅ DONE in phase 38
 
-5. **Payment/admin operations UI**
-   - Admin: payments list, manual payment confirmation, **refunds**,
-     **payouts to tutors**, escrow holds. Backend + e2e exist; UI doesn't
-     (`/admin` has analytics/vetting/cohorts/lessons/support/reviews/blog/
-     referrals/institutions/chat).
+5. **Admin payments/refunds/payouts UI** — ✅
+   - `/admin/payments`: orders table (pagination), **confirm payment**,
+     **refund with reason** (escrow → wallet → order REFUNDED via new
+     `POST /admin/orders/{id}/refund`), payouts table. Backend:
+     `GET /admin/orders` (ListAll), `GET /admin/payouts`, PaymentService
+     `RefundOrder`.
 
-6. **Tutor earnings & payout dashboard**
-   - Tutor sees lessons/availability today; add escrow balance, payout
-     history, withdraw flow (API: `/me/earnings`, payouts).
+6. **Tutor earnings & payouts** — ✅
+   - `/lms/tutor` earnings section: held / released / paid-out totals +
+     payout history (from `/me/earnings`), escrow-protected messaging.
 
-7. **Real Google sign-in + OAuth error surfacing**
-   - Flow is built; needs the production Google client credentials and a
-     nice callback error page (not a JSON blob).
+7. **Google OAuth production flow** — ✅
+   - New `POST /auth/google/exchange` returns the raw token; **Next route
+     `/auth/google/callback`** exchanges server-side and sets the session
+     cookie on the APP host (fixes the cookie-domain bug), redirects to
+     dashboard/onboarding; friendly **`/auth/google/error`** page. Config
+     default redirect now `http://localhost:3100/auth/google/callback`.
+     Real creds remain env/deploy (GOOGLE_CLIENT_ID/SECRET).
 
-8. **Notifications UX**
-   - `/notifications` works for a dev user; wire the real session user,
-     mark-as-read, push consent, and in-app badge counts.
+8. **Notifications for the real session user** — ✅
+   - `/notifications` now uses the session user (was a hardcoded dev id),
+     keeps mark-read/read-all + polling.
 
-9. **Booking → lesson lifecycle for private tuition**
-   - Cohort flow is complete; 1:1 private tuition booking (availability →
-     request → confirmation → payment) needs its web UI (API exists:
-     availability, private packages).
+9. **Private-tuition booking UI** — ✅
+   - `PrivateBookingForm` on tutor pages: subject/learner/sessions/duration/
+     price/goals → `createPrivateBooking` → escrow payment link. (Lead
+     wizard on /private-tuition kept for managed matching.)
 
-10. **Progress visualisation for parents/students**
-    - Charts for quiz/attendance/progress-report trends on `/lms` course
-      pages (CSAT-style SVG bars are already used in admin — reuse pattern).
+10. **Progress charts on LMS** — ✅
+    - Course page charts: per-lesson attendance bars, quiz pass-rate gauge,
+      tutor report ratings — CSS/SVG, no chart dependency.
+
+Also fixed en route: `RelatedContent` crashed on tutor pages (the related
+endpoint serializes Go structs as `Profile.*` — normalized both shapes);
+global rate limit raised 100→300 req/min (suite + real-user headroom).
 
 ## 🟢 P2 — polish & scale
 
