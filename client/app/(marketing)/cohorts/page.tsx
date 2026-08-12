@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
-import { apiFetchSSR } from "@/lib/api";
+import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import Link from "next/link";
 
 export const revalidate = 300;

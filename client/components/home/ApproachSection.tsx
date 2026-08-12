@@ -1,79 +1,93 @@
-import { ClipboardCheck, Route, HeartHandshake, Activity, FileBarChart } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Phone } from "lucide-react";
 
-// "Our Innovative Approach Ensures Your Child Achieves Stellar Results" —
-// Tuteria v2 five-point methodology with real copy.
+// "We deliver the best results, period." — Preline approach template: image
+// left, numbered timeline (NUVORA Insights™ → Progress Reports) right with a
+// connector line, gold CTA.
 
 const STEPS = [
   {
-    n: "1",
-    icon: <ClipboardCheck size={28} />,
     title: "NUVORA Insights™ Assessment",
     desc: "Comprehensive evaluation of your child's current academic level, learning style and knowledge gaps to build a strong foundation.",
   },
   {
-    n: "2",
-    icon: <Route size={28} />,
     title: "Adaptive Learning Plans",
-    desc: "A personalized learning path that empowers your child to step into each classroom session with confidence.",
+    desc: "We prepare a personalized learning path adapted to empower your child to step into each classroom session with confidence and enthusiasm.",
   },
   {
-    n: "3",
-    icon: <HeartHandshake size={28} />,
     title: "Child-Centered Learning",
-    desc: "We mold education to fit each child — blending innate curiosity with structured knowledge.",
+    desc: "Rather than molding children to fit a standardized mold, we mold education to fit each child — blending innate curiosity with structured knowledge.",
   },
   {
-    n: "4",
-    icon: <Activity size={28} />,
     title: "Periodic Evaluation",
-    desc: "We monitor your child's progress every step of the way to drive continuous improvement.",
+    desc: "We monitor your child's progress every step of the way to drive continuous improvement and informed decision-making.",
   },
   {
-    n: "5",
-    icon: <FileBarChart size={28} />,
     title: "Progress Reports & Reviews",
-    desc: "Receive progress reports with highlights on strong and weak areas plus actionable recommendations.",
+    desc: "You receive progress reports on your child's growth with highlights on strong and weak areas plus actionable recommendations.",
   },
 ];
 
 export function ApproachSection() {
   return (
-    <section className="border-t border-ink-100 bg-surface-muted py-16">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
+    <section className="border-t border-ink-100 bg-white">
+      <div className="mx-auto max-w-[1400px] px-6 py-14 md:px-10 lg:py-20">
+        {/* Title */}
+        <div className="mb-10 max-w-3xl lg:mb-14">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark">
             We deliver the best results, period.
           </p>
-          <p className="mt-3 text-lg font-semibold text-ink-600">
+          <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
             NUVORA students perform 3x better in class and school exams
-          </p>
-          <h2 className="mt-8 font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
-            Our Innovative Approach Ensures Your Child Achieves Stellar Results
           </h2>
         </div>
 
-        <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-5 items-start">
-          {STEPS.map((s) => (
-            <div key={s.n}>
-              <div className="shrink-0 text-brand-gold-dark">{s.icon}</div>
-              <div className="mt-6 h-0.5 bg-gradient-to-r from-ink-900/30 via-ink-900/10 to-transparent">
-                <div className="h-0.5 w-9 bg-brand-gold" />
-              </div>
-              <div className="mt-5">
-                <h3 className="text-lg font-semibold text-ink-900">{s.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-ink-600">{s.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Grid */}
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="aspect-[16/9] lg:aspect-auto">
+            <Image
+              src="https://images.unsplash.com/photo-1587614203976-365c74645e83?w=960&q=80"
+              alt="Tutor working with a student"
+              width={960}
+              height={720}
+              className="h-full w-full rounded-xl object-cover lg:h-auto"
+            />
+          </div>
 
-        <div className="mt-10 text-center">
-          <a
-            href="/private-tuition"
-            className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
-          >
-            Get started today
-          </a>
+          {/* Timeline */}
+          <div>
+            <div className="mb-4">
+              <h3 className="text-xs font-medium uppercase tracking-wide text-brand-gold-dark">Steps</h3>
+            </div>
+
+            {STEPS.map((s, i) => (
+              <div key={s.title} className="ms-1 flex gap-x-5">
+                {/* Icon */}
+                <div className="relative after:absolute after:inset-s-4 after:bottom-0 after:top-8 after:-translate-x-[0.5px] after:border-s after:border-ink-200 last:after:hidden">
+                  <div className="relative z-10 flex size-8 items-center justify-center">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-ink-200 bg-white text-xs font-bold uppercase text-brand-gold-dark">
+                      {i + 1}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right content */}
+                <div className="grow pb-8 pt-0.5 sm:pb-10">
+                  <p className="text-sm text-ink-600 lg:text-base">
+                    <span className="font-semibold text-ink-900">{s.title}:</span> {s.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            <Link
+              href="/private-tuition"
+              className="group mt-2 inline-flex items-center gap-x-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-medium text-ink-900 transition-colors hover:bg-brand-gold-hover"
+            >
+              Get started today
+            </Link>
+          </div>
         </div>
       </div>
     </section>

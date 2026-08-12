@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { buildMetadata, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { apiFetchSSR } from "@/lib/api";
+import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import Link from "next/link";
 import { ProgrammeDetailTabs } from "@/features/programmes/components/ProgrammeDetailTabs";
 

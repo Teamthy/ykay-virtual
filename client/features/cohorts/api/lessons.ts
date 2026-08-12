@@ -1,4 +1,5 @@
-import { apiFetchSSR, apiFetch } from "@/lib/api";
+import { apiFetchSSR } from "@/lib/server-api";
+import { apiFetch } from "@/lib/api";
 
 export type CohortLesson = {
   id: string;

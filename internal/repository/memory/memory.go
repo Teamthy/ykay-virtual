@@ -953,3 +953,45 @@ func (m *TutorMemory) Seed(t tutor.TutorSearchResult) {
 	}
 	m.rows[t.Profile.ID] = t
 }
+
+// ListWithMeta — enriched list for the catalogue (dev mode: joins the seeded
+// subject catalogue by programme slug; NextStart requires the cohort store so
+// it stays nil here — the frontend falls back to "Starts soon").
+func (m *ProgrammeMemory) ListWithMeta(ctx context.Context, p academics.ProgrammeListParams) ([]academics.ProgrammeDetail, int64, error) {
+	base, total, err := m.List(ctx, p)
+	if err != nil {
+		return nil, 0, err
+	}
+	out := make([]academics.ProgrammeDetail, 0, len(base))
+	for _, pr := range base {
+		d := academics.ProgrammeDetail{Programme: pr, Subjects: []string{}, SubjectSlugs: []string{}}
+		switch pr.Slug {
+		case "nigerian-curriculum":
+			d.Subjects = []string{"Mathematics", "English", "Physics"}
+			d.SubjectSlugs = []string{"mathematics", "english", "physics"}
+		case "british-curriculum":
+			d.Subjects = []string{"Mathematics", "English"}
+			d.SubjectSlugs = []string{"mathematics", "english"}
+		}
+		out = append(out, d)
+	}
+	return out, total, nil
+}
+
+// GetDetailBySlug — enriched single programme (tabs page).
+func (m *ProgrammeMemory) GetDetailBySlug(ctx context.Context, slug string) (*academics.ProgrammeDetail, error) {
+	pr, err := m.GetBySlug(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+	d := academics.ProgrammeDetail{Programme: *pr, Subjects: []string{}, SubjectSlugs: []string{}}
+	switch pr.Slug {
+	case "nigerian-curriculum":
+		d.Subjects = []string{"Mathematics", "English", "Physics"}
+		d.SubjectSlugs = []string{"mathematics", "english", "physics"}
+	case "british-curriculum":
+		d.Subjects = []string{"Mathematics", "English"}
+		d.SubjectSlugs = []string{"mathematics", "english"}
+	}
+	return &d, nil
+}

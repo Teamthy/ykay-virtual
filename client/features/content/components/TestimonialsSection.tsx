@@ -1,4 +1,4 @@
-import { apiFetchSSR } from "@/lib/api";
+import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 
 // Home testimonials (working-doc §8.1): admin-managed, consent-gated —
 // only testimonials with consent_given + is_public are ever shown.

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
-import { apiFetchSSR } from "@/lib/api";
+import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";

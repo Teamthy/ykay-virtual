@@ -5,6 +5,7 @@ export type ProgrammeCardData = {
   id: string;
   title: string;
   slug: string;
+  href?: string; // overrides /programmes/{slug} (e.g. dummy showcase → real page)
   summary?: string;
   format: string;
   curriculum_name?: string;
@@ -35,7 +36,7 @@ export function ProgrammeCard({ p }: { p: ProgrammeCardData }) {
 
   return (
     <Link
-      href={`/programmes/${p.slug}`}
+      href={p.href ?? `/programmes/${p.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-card"
     >
       {/* Tinted format banner */}

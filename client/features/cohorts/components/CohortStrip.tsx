@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { apiFetchSSR } from "@/lib/api";
+import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 
 type Cohort = {
   id: string;

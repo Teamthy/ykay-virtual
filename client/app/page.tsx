@@ -8,7 +8,6 @@ import { PopularProgrammes } from "@/features/programmes/components/PopularProgr
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
 import { TestimonialsSection } from "@/features/content/components/TestimonialsSection";
 import { PartnerSection } from "@/components/home/PartnerSection";
-import { ResultsSection } from "@/components/home/ResultsSection";
 import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
@@ -33,7 +32,6 @@ export default function HomePage() {
       <HowItWorksStrip />
       <HowItWorksVideo />
       <PartnerSection />
-      <ResultsSection />
       <ApproachSection />
       <TestimonialSlider />
       <AnnouncementVideo />

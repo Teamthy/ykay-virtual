@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { apiFetchSSR } from "@/lib/api";
+import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
 const now = new Date();

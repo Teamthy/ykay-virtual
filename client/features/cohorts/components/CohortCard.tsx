@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, MapPin, Users } from "lucide-react";
 export type CohortCardData = {
   id: string;
   title: string;
+  href?: string; // overrides /cohorts/{id}/enroll (dummy showcase → real page)
   slug?: string;
   programme_title?: string;
   tutor_display_name?: string;
@@ -77,7 +78,7 @@ export function CohortCard({ c }: { c: CohortCardData }) {
             {c.currency} {c.fee.toLocaleString()}
           </span>
           <Link
-            href={full ? "/cohorts" : `/cohorts/${c.id}/enroll`}
+            href={full ? "/cohorts" : (c.href ?? `/cohorts/${c.id}/enroll`)}
             className={`inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-bold transition-colors ${
               full
                 ? "bg-ink-100 text-ink-400 cursor-not-allowed"

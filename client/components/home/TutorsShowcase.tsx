@@ -1,104 +1,116 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Users, BookOpen } from "lucide-react";
+import { Star, BadgeCheck } from "lucide-react";
 
-// "Meet Some Of Our Tutors" — Tuteria v2 real tutor cards (Oluwatobi, Olanike)
-// with ratings, student/lesson counts and verified review quote.
+// "Meet Some Of Our Tutors" — Preline team template: avatar + name + role
+// rows with rating + verified chip, plus a "We are hiring!"-style card that
+// links to the full tutor directory.
 
 const TUTORS = [
   {
+    name: "Chinasa",
+    role: "Maths & English · Grades 1–6",
+    rating: "4.87",
+    reviews: "28 reviews",
+    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=320&q=80",
+    href: "/tutors/chinasa",
+  },
+  {
     name: "Oluwatobi",
+    role: "Mathematics & Sciences",
     rating: "4.6",
-    reviews: "20 Reviews",
-    headline: "Build student's confidence in Mathematics and Sciences",
-    students: "37",
-    lessons: "680",
-    exams: "Common Entrance, Checkpoint, WAEC, NECO, UTME, NABTEB, IJMB, IGCSE, and SAT",
-    quote:
-      "I highly recommend Oluwatobi to other clients. He has not only demonstrated exceptional teaching skills but has also successfully built a strong rapport with my son. Under Oluwatobi's guidance, my son has not only improved academically but has also gained confidence in handling his tasks independently.",
-    quotedBy: "Mr. Victor",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+    reviews: "20 reviews",
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=320&q=80",
+    href: "/tutors/oluwatobi",
   },
   {
     name: "Olanike",
+    role: "Expert Mathematics Teacher",
     rating: "5",
-    reviews: "8 Reviews",
-    headline: "Expert Mathematics Teacher",
-    students: "21",
-    lessons: "410",
-    exams: "Primary Maths, Checkpoint, WAEC, NECO, UTME and IGCSE",
-    quote:
-      "Olanike is an exceptional teacher. She explains concepts so clearly that my daughter looks forward to every lesson. Her grades have improved remarkably in just one term.",
-    quotedBy: "Mrs. Adebayo",
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80",
+    reviews: "8 reviews",
+    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=320&q=80",
+    href: "/tutors",
+  },
+  {
+    name: "Adewale",
+    role: "GMAT & Test Prep Tutor",
+    rating: "4.8",
+    reviews: "15 reviews",
+    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=320&q=80",
+    href: "/tutors",
+  },
+  {
+    name: "Judith",
+    role: "German Language Tutor",
+    rating: "4.9",
+    reviews: "11 reviews",
+    img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=320&q=80",
+    href: "/tutors",
+  },
+  {
+    name: "Demilola",
+    role: "Fashion Design Tutor",
+    rating: "4.7",
+    reviews: "9 reviews",
+    img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=320&q=80",
+    href: "/tutors",
   },
 ];
 
 export function TutorsShowcase() {
   return (
-    <section className="border-t border-ink-100 bg-surface-muted py-16">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
-            Meet Some Of Our Tutors
-          </h2>
-          <p className="mt-3 text-ink-600">
-            Enjoy one-on-one instruction from Nigeria&apos;s biggest network of independent experts.
-          </p>
+    <section className="border-t border-ink-100 bg-white">
+      <div className="mx-auto max-w-[1400px] px-6 py-14 md:px-10 lg:py-14">
+        {/* Title */}
+        <div className="mx-auto mb-10 max-w-2xl text-center lg:mb-14">
+          <h2 className="font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">Meet some of our tutors</h2>
+          <p className="mt-1 text-ink-600">Enjoy one-on-one instruction from Nigeria&apos;s biggest network of independent experts.</p>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        {/* Grid */}
+        <div className="grid grid-cols-2 gap-8 md:gap-12 lg:grid-cols-3">
           {TUTORS.map((t) => (
-            <div key={t.name} className="overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-soft">
-              <div className="flex flex-col sm:flex-row">
-                <div className="relative h-44 w-full sm:h-auto sm:w-44 shrink-0">
-                  <Image
-                    src={t.img}
-                    alt={t.name}
-                    width={352}
-                    height={440}
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-brand-navy shadow-soft">
-                    ★ {t.rating}
+            <Link key={t.name} href={t.href} className="group flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <Image
+                src={t.img}
+                alt={t.name}
+                width={80}
+                height={80}
+                className="size-20 rounded-lg object-cover"
+              />
+              <div className="grow">
+                <div>
+                  <h3 className="flex items-center gap-1.5 font-medium text-ink-900 transition-colors group-hover:text-brand-gold-dark">
+                    {t.name}
+                    <BadgeCheck size={15} className="text-brand-green" aria-label="Verified" />
+                  </h3>
+                  <p className="mt-1 text-xs uppercase text-ink-500">{t.role}</p>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="flex items-center gap-1 text-xs font-bold text-ink-800">
+                    <Star size={13} className="text-brand-gold" fill="currentColor" strokeWidth={0} />
+                    {t.rating}
                   </span>
-                </div>
-                <div className="flex-1 p-6">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="font-display text-xl tracking-[0.02em] text-brand-navy">{t.name}</h3>
-                    <span className="text-xs font-semibold text-ink-400">{t.reviews}</span>
-                  </div>
-                  <p className="mt-1 text-sm font-semibold text-ink-700">{t.headline}</p>
-                  <div className="mt-3 flex items-center gap-5 text-xs font-semibold text-ink-500">
-                    <span className="flex items-center gap-1.5">
-                      <Users size={13} className="text-brand-blue" /> {t.students} Students
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <BookOpen size={13} className="text-brand-blue" /> {t.lessons} Lessons
-                    </span>
-                  </div>
-                  <p className="mt-3 text-xs leading-relaxed text-ink-500">{t.exams}</p>
+                  <span className="text-xs text-ink-400">{t.reviews}</span>
                 </div>
               </div>
-              <div className="border-t border-ink-100 bg-surface-muted px-6 py-4">
-                <div className="flex items-start gap-1 text-brand-gold" aria-label="5 star rating">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} size={12} fill="currentColor" strokeWidth={0} />
-                  ))}
-                </div>
-                <p className="mt-2 text-sm italic leading-relaxed text-ink-600">&ldquo;{t.quote}&rdquo;</p>
-                <p className="mt-2 text-xs font-bold text-ink-800">— {t.quotedBy}</p>
-              </div>
-            </div>
+            </Link>
           ))}
-        </div>
 
-        <div className="mt-10 text-center">
+          {/* Browse-all card (team "We are hiring!" treatment) */}
           <Link
             href="/tutors"
-            className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
+            className="flex flex-col items-start justify-center gap-3 sm:flex-row sm:items-center sm:gap-4"
           >
-            Browse all tutors
+            <span className="grid size-20 place-items-center rounded-lg border border-dashed border-ink-300 bg-surface-muted text-3xl">
+              →
+            </span>
+            <div className="grow">
+              <h3 className="font-medium text-ink-900">Browse all tutors</h3>
+              <span className="text-sm font-medium text-brand-gold-dark decoration-2 hover:underline">
+                Check out / Tutors
+              </span>
+            </div>
           </Link>
         </div>
       </div>

@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 
 	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/config"
@@ -244,6 +245,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 		store.Roles.Seed()      // mirror migration 000001 role inserts
 		seedMemoryTutors(store) // mock marketplace tutors (chinasa, oluwatobi)
 		seedMemoryCatalogue(store)
+		seedDemoUsers(store)
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
 			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
@@ -260,7 +262,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Payouts:         store.Payouts,
 			PrivatePackages: store.PrivatePkgs,
 			Cohorts:         store.Cohorts,
-			Lessons:         memory.NewLessonMemory(),
+			Lessons:         store.Lessons,
 			Conversations:   convMem,
 			Messages:        memory.NewMessageMemory(convMem),
 			Notifications:   memory.NewNotificationMemory(),
@@ -292,7 +294,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) *Repositories {
 			Availability:    memory.NewAvailabilityMemory(),
 			Submissions:     memory.NewSubmissionMemory(),
 			CohortAdmin:     store.Cohorts,
-			LessonAdmin:     memory.NewLessonMemory(),
+			LessonAdmin:     store.Lessons,
 			StorageBackend:  "memory",
 		}
 	}
@@ -410,6 +412,54 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 	store.Programmes.Seed(academics.Programme{ID: p1, Title: "Nigerian Curriculum (Core Maths)", Slug: "nigerian-curriculum", Format: academics.FormatCohort, Status: academics.ProgrammePublished, Currency: "NGN", IsFeatured: true, CreatedAt: now})
 	store.Programmes.Seed(academics.Programme{ID: p2, Title: "British Curriculum (IGCSE Prep)", Slug: "british-curriculum", Format: academics.FormatCohort, Status: academics.ProgrammePublished, Currency: "NGN", IsFeatured: false, CreatedAt: now})
 
+	// Demo cohorts (published) + scheduled lessons so the cohort flow works
+	// end-to-end in dev (list → detail → enroll → checkout).
+	oluwatobiID := uuid.MustParse("00000000-0000-0000-0000-000000000102")
+	c1 := uuid.MustParse("00000000-0000-0000-0000-00000000c010")
+	c2 := uuid.MustParse("00000000-0000-0000-0000-00000000c011")
+	c3 := uuid.MustParse("00000000-0000-0000-0000-00000000c012")
+	desc1 := "Live classes Tue/Thu/Sat evenings + weekly mock CBT."
+	desc2 := "Small-group live sessions with a certified specialist."
+	desc3 := "Rolling enrolment · weekend cohorts · past papers."
+	store.Cohorts.Seed(&booking.Cohort{
+		ID: c1, ProgrammeID: p1, Title: "UTME 2026 Mastery — 320+ Programme", Slug: "utme-2026-mastery",
+		TutorProfileID: &oluwatobiID, Capacity: 60, EnrolledCount: 41,
+		StartDate: now.Add(25 * 24 * time.Hour), EndDate: now.Add(145 * 24 * time.Hour),
+		ScheduleDesc: &desc1, Timezone: "Africa/Lagos", LocationMode: "ONLINE",
+		Fee: 35000, Currency: "NGN", Status: booking.CohortPublished,
+		CreatedAt: now, UpdatedAt: now,
+	})
+	store.Cohorts.Seed(&booking.Cohort{
+		ID: c2, ProgrammeID: p2, Title: "IGCSE Computer Science — 2026 Cohort", Slug: "igcse-computer-science",
+		TutorProfileID: &oluwatobiID, Capacity: 20, EnrolledCount: 12,
+		StartDate: now.Add(32 * 24 * time.Hour), EndDate: now.Add(200 * 24 * time.Hour),
+		ScheduleDesc: &desc2, Timezone: "Africa/Lagos", LocationMode: "ONLINE",
+		Fee: 35000, Currency: "NGN", Status: booking.CohortPublished,
+		CreatedAt: now, UpdatedAt: now,
+	})
+	store.Cohorts.Seed(&booking.Cohort{
+		ID: c3, ProgrammeID: p1, Title: "WAEC Mathematics Intensive", Slug: "waec-mathematics-intensive",
+		TutorProfileID: &oluwatobiID, Capacity: 25, EnrolledCount: 17,
+		StartDate: now.Add(18 * 24 * time.Hour), EndDate: now.Add(100 * 24 * time.Hour),
+		ScheduleDesc: &desc3, Timezone: "Africa/Lagos", LocationMode: "HYBRID",
+		Fee: 45000, Currency: "NGN", Status: booking.CohortPublished,
+		CreatedAt: now, UpdatedAt: now,
+	})
+
+	// Scheduled lessons for the UTME cohort (appear on the cohort detail page).
+	lessonTitles := []string{"Intro + diagnostic", "Maths: Algebra foundations", "English: Comprehension strategies"}
+	lessonDesc := "Live session"
+	for i, t := range lessonTitles {
+		start := now.Add(time.Duration(25+i*7) * 24 * time.Hour).Add(18 * time.Hour)
+		store.Lessons.Seed(&booking.Lesson{
+			ID: uuid.New(), CohortID: &c1, TutorProfileID: oluwatobiID,
+			Title: t, Description: &lessonDesc,
+			StartAt: start, EndAt: start.Add(90 * time.Minute),
+			Timezone: "Africa/Lagos", MeetingProvider: "GOOGLE_MEET",
+			Status: booking.LessonScheduled, CreatedAt: now, UpdatedAt: now,
+		})
+	}
+
 	// Vet competency question bank (mathematics) — dev-mode stand-in for the
 	// SQL-seeded bank; correct answer is always option index 1 so e2e can
 	// answer deterministically.
@@ -430,4 +480,47 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 			CorrectIndex: 1, Difficulty: vetting.DiffMedium, IsActive: true,
 		})
 	}
+}
+
+// seedDemoUsers — one account per role so every dashboard is reachable in
+// dev mode. Password for all: password123.
+func seedDemoUsers(store *memory.MemoryStore) {
+	hash, _ := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	now := time.Now()
+	verified := now
+
+	users := []struct {
+		id    uuid.UUID
+		email string
+		role  string
+	}{
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a1"), "admin@nuvora.com", "SUPER_ADMIN"},
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a2"), "parent@nuvora.com", "PARENT"},
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a3"), "tutor@nuvora.com", "TUTOR"},
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a4"), "student@nuvora.com", "STUDENT"},
+	}
+	for _, u := range users {
+		if _, err := store.Users.FindByEmail(context.Background(), u.email); err == nil {
+			continue // already seeded
+		}
+		_ = store.Users.Create(context.Background(), &identity.User{
+			ID: u.id, Email: u.email, PasswordHash: string(hash),
+			Status: identity.UserStatusActive, Timezone: "Africa/Lagos",
+			EmailVerifiedAt: &verified, CreatedAt: now, UpdatedAt: now,
+		})
+		role, _ := store.Roles.FindByName(context.Background(), u.role)
+		if role != nil {
+			_ = store.Roles.AssignToUser(context.Background(), u.id, role.ID)
+		}
+	}
+
+	// Demo learner linked to the parent account (student dashboard + portal).
+	parentID := uuid.MustParse("00000000-0000-0000-0000-0000000000a2")
+	learner := identity.StudentProfile{
+		ID:     uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		UserID: &parentID, FirstName: "Ada", LastName: "Bello",
+		Timezone: "Africa/Lagos", GuardianConsent: true,
+		CreatedAt: now, UpdatedAt: now,
+	}
+	_ = store.Students.Create(context.Background(), &learner)
 }

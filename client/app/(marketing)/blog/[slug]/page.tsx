@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, articleJsonLd } from "@/lib/seo";
 import { notFound } from "next/navigation";
-import { apiFetchSSR } from "@/lib/api";
+import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { RelatedContent } from "@/components/RelatedContent";
 
