@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ykay-virtual/internal/middleware"
+	"ykay-virtual/pkg"
 )
 
 // Router assembles the API: middleware chain (request-id → logger → recover →
@@ -211,6 +212,16 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	if handlers.Objects != nil {
 		mux.HandleFunc("GET /objects/{bucket}/{key...}", handlers.Objects.Serve)
 	}
+
+	// JSON 404s for unknown API + root paths — the API never returns HTML,
+	// so browser clients always get a parseable error envelope (auth UX fix:
+	// "Request failed 404" was an HTML Next.js 404 page reaching apiFetch).
+	mux.HandleFunc("/api/v1/", func(w http.ResponseWriter, r *http.Request) {
+		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), "endpoint not found", nil)
+	})
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), "not found", nil)
+	})
 
 	return &Router{mux: mux, rateLimiter: rl, authLimiter: authRL, Version: version, allowedOrigins: allowedOrigins, sessionAuth: sessionAuth, readyCheck: readyCheck, blockFrames: blockFrames}
 }

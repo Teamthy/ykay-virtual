@@ -30,7 +30,7 @@ export function StudentQuizzes() {
 
   const assessments = useQuery({
     queryKey: ["student", "assessments"],
-    queryFn: listAssessments,
+    queryFn: () => listAssessments(),
     staleTime: 30_000,
   });
 

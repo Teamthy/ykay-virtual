@@ -105,6 +105,9 @@ export default function StudentDashboardPage() {
         </button>
       ))}
       <div className="border-t border-ink-100 mt-2 pt-2 space-y-1">
+        <button onClick={() => router.push("/lms")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
+          🎓 My Learning (LMS)
+        </button>
         <button onClick={() => router.push("/messages")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
           💬 Messages
         </button>

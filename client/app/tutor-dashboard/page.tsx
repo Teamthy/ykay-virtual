@@ -291,6 +291,7 @@ export default function TutorDashboardPage() {
 
           {/* Quick links */}
           <div className="flex flex-col gap-3">
+            <Link href="/lms/tutor" className="rounded-xl bg-brand-gold py-3 text-center text-sm font-bold text-ink-900 hover:bg-brand-gold-hover">🏫 Teaching console (LMS)</Link>
             <Link href="/messages" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Messages</Link>
             <Link href="/notifications" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Notifications</Link>
             <Link href="/contact" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Support</Link>

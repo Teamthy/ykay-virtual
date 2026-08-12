@@ -16,7 +16,14 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
       const { url } = await getGoogleAuthURL();
       window.location.href = url;
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Google sign-in is not configured yet");
+      const msg = e instanceof Error ? e.message : "Google sign-in is not configured yet";
+      if (/not configured/i.test(msg)) {
+        toast.error("Google sign-in isn't enabled yet — use email instead", {
+          description: "The server needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET configured.",
+        });
+      } else {
+        toast.error(msg);
+      }
       setBusy(false);
     }
   };

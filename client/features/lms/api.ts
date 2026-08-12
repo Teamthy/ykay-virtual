@@ -1,0 +1,163 @@
+import { apiFetch } from "@/lib/api";
+import {
+  getCohortAssignments,
+  getCohortResources,
+  type CohortAssignment,
+  type CohortLesson,
+  type CohortResource,
+} from "@/features/cohorts/api/lessons";
+import { type Cohort } from "@/features/cohorts/api/get";
+import {
+  getAttendanceSummary,
+  listMyAssignments,
+  listMySubmissions,
+  submitAssignment,
+  type Assignment,
+  type AttendanceSummary,
+  type Submission,
+} from "@/features/portal/api";
+import {
+  listAssessments,
+  startAssessment,
+  submitAssessment,
+  listSubmissions,
+  gradeSubmission,
+  listProgressReports,
+  createProgressReport,
+  type LearnerAssessment,
+  type AssessmentStart,
+  type AssessmentResult,
+  type GradedSubmission,
+  type ProgressReport,
+  type ReportInput,
+} from "@/features/learning/api";
+
+// ── LMS API (phase 32) — student + tutor portals over the learning surface ──
+
+export const DEMO_STUDENT_ID = "00000000-0000-0000-0000-000000000001";
+export const DEMO_TUTOR_PROFILE_ID = "00000000-0000-0000-0000-000000000102";
+
+export type LessonNote = {
+  id: string;
+  lesson_id: string;
+  student_profile_id?: string;
+  content: string;
+  homework?: string;
+  is_visible_to_parent?: boolean;
+  created_at: string;
+};
+
+export type AttendanceRow = {
+  id?: string;
+  lesson_id?: string;
+  student_profile_id: string;
+  status: string;
+  note?: string;
+  marked_at?: string;
+};
+
+export async function getCohort(id: string): Promise<Cohort> {
+  const res = await apiFetch<Cohort>(`/cohorts/${id}`);
+  return res.data;
+}
+
+export async function getCohortLessons(cohortId: string): Promise<CohortLesson[]> {
+  const res = await apiFetch<CohortLesson[]>(`/cohorts/${cohortId}/lessons`);
+  return res.data ?? [];
+}
+
+export async function getMyLessons(studentProfileId: string): Promise<CohortLesson[]> {
+  const res = await apiFetch<CohortLesson[]>(`/me/lessons?student_profile_id=${studentProfileId}`);
+  return res.data ?? [];
+}
+
+export async function getMyTutorLessons(tutorProfileId: string): Promise<CohortLesson[]> {
+  const res = await apiFetch<CohortLesson[]>(`/me/tutor-lessons?tutor_profile_id=${tutorProfileId}`);
+  return res.data ?? [];
+}
+
+// --- Notes ---
+
+export async function getLessonNotes(lessonId: string): Promise<LessonNote[]> {
+  const res = await apiFetch<LessonNote[]>(`/lessons/${lessonId}/notes`);
+  return res.data ?? [];
+}
+
+export async function addLessonNote(
+  lessonId: string,
+  input: { student_profile_id?: string; content: string; homework?: string; is_visible_to_parent?: boolean }
+): Promise<LessonNote> {
+  const res = await apiFetch<LessonNote>(`/lessons/${lessonId}/notes`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
+// --- Attendance ---
+
+export async function getLessonAttendance(lessonId: string): Promise<AttendanceRow[]> {
+  const res = await apiFetch<AttendanceRow[]>(`/lessons/${lessonId}/attendance`);
+  return res.data ?? [];
+}
+
+export async function markAttendance(
+  lessonId: string,
+  input: { student_profile_id: string; status: string; note?: string }
+): Promise<void> {
+  await apiFetch(`/lessons/${lessonId}/attendance`, { method: "POST", body: JSON.stringify(input) });
+}
+
+export { getAttendanceSummary };
+
+export async function getCohortAttendanceSummary(cohortId: string, studentProfileId: string): Promise<AttendanceSummary> {
+  const lessons = await getCohortLessons(cohortId);
+  const rows: AttendanceRow[] = [];
+  for (const lesson of lessons.slice(0, 6)) {
+    rows.push(...(await getLessonAttendance(lesson.id)));
+  }
+  const mine = rows.filter((r) => r.student_profile_id === studentProfileId);
+  const present = mine.filter((r) => r.status === "PRESENT").length;
+  const late = mine.filter((r) => r.status === "LATE").length;
+  const absent = mine.filter((r) => r.status === "ABSENT").length;
+  const total = mine.length;
+  return {
+    total,
+    present,
+    absent,
+    late,
+    excused: 0,
+    untracked: Math.max(lessons.length - total, 0),
+    rate: total ? Math.round(((present + late) / total) * 100) : 0,
+  };
+}
+
+export {
+  getCohortAssignments,
+  getCohortResources,
+  listMyAssignments,
+  listMySubmissions,
+  submitAssignment,
+  listAssessments,
+  startAssessment,
+  submitAssessment,
+  listSubmissions,
+  gradeSubmission,
+  listProgressReports,
+  createProgressReport,
+};
+export type {
+  CohortAssignment,
+  CohortLesson,
+  CohortResource,
+  Cohort,
+  Assignment,
+  AttendanceSummary,
+  Submission,
+  LearnerAssessment,
+  AssessmentStart,
+  AssessmentResult,
+  GradedSubmission,
+  ProgressReport,
+  ReportInput,
+};

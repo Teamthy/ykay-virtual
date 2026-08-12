@@ -98,8 +98,10 @@ export type Analytics = {
 
 // --- Assessments (student) ---
 
-export async function listAssessments() {
-  const res = await apiFetch<LearnerAssessment[]>("/learning/assessments");
+export async function listAssessments(cohortId?: string) {
+  const res = await apiFetch<LearnerAssessment[]>(
+    `/learning/assessments${cohortId ? `?cohort_id=${cohortId}` : ""}`
+  );
   return res.data ?? [];
 }
 

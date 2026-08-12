@@ -268,6 +268,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		seedMemoryTutors(store) // mock marketplace tutors (chinasa, oluwatobi)
 		seedMemoryCatalogue(store)
 		seedDemoUsers(store, getEnvDefault("DEMO_PASSWORD", "password123"))
+		seedLMSDemo(store) // LMS demo content (assignments, quiz, attendance)
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
 			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
@@ -302,19 +303,19 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Reviews:         memory.NewReviewMemory(),
 			SupportTickets:  memory.NewSupportMemory(),
 			Wallets:         store.Wallets,
-			Attendance:      memory.NewAttendanceMemory(),
+			Attendance:      store.Attendance,
 			LessonNotes:     memory.NewLessonNoteMemory(),
 			Resources:       memory.NewResourceMemory(),
-			Assignments:     memory.NewAssignmentMemory(),
+			Assignments:     store.Assignments,
 			Students:        store.Students,
 			StudentLinks:    store.StudentLinks,
 			Vetting:         store.Vetting,
-			Learning:        memory.NewLearningMemory(),
-			Grading:         memory.NewLearningMemory(),
-			ProgressReports: memory.NewLearningMemory(),
+			Learning:        store.Learning,
+			Grading:         store.Learning,
+			ProgressReports: store.Learning,
 			Analytics:       memory.NewAnalyticsMemory(store),
 			Availability:    memory.NewAvailabilityMemory(),
-			Submissions:     memory.NewSubmissionMemory(),
+			Submissions:     store.Submissions,
 			CohortAdmin:     store.Cohorts,
 			LessonAdmin:     store.Lessons,
 			StorageBackend:  "memory",
@@ -502,6 +503,84 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 			CorrectIndex: 1, Difficulty: vetting.DiffMedium, IsActive: true,
 		})
 	}
+}
+
+// seedLMSDemo — LMS demo content for the seeded UTME cohort (c010) so the
+// student/tutor LMS portals have real data in dev: 2 assignments, a 3-question
+// auto-graded quiz, attendance rows and a graded submission for learner 0001.
+func seedLMSDemo(store *memory.MemoryStore) {
+	ctx := context.Background()
+	now := time.Now()
+	c1 := uuid.MustParse("00000000-0000-0000-0000-00000000c010")
+	studentID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	tutorID := uuid.MustParse("00000000-0000-0000-0000-000000000102")
+	adminID := uuid.MustParse("00000000-0000-0000-0000-0000000000a1")
+
+	// Assignments for the UTME cohort.
+	a1 := uuid.New()
+	a2 := uuid.New()
+	inst1 := "Solve the diagnostic worksheet and upload your working."
+	inst2 := "Write a 300-word comprehension summary of the attached passage."
+	due1 := now.Add(10 * 24 * time.Hour)
+	due2 := now.Add(17 * 24 * time.Hour)
+	max1 := 20.0
+	max2 := 10.0
+	store.Assignments.Seed(booking.Assignment{ID: a1, CohortID: &c1, Title: "Algebra diagnostic worksheet",
+		Instructions: &inst1, DueAt: &due1, MaxScore: &max1, CreatedAt: now})
+	store.Assignments.Seed(booking.Assignment{ID: a2, CohortID: &c1, Title: "Comprehension essay",
+		Instructions: &inst2, DueAt: &due2, MaxScore: &max2, CreatedAt: now})
+
+	// Auto-graded quiz (3 questions, 70% pass) for the cohort.
+	quizID := uuid.New()
+	quizInst := "You have 10 minutes. Passing mark: 70%."
+	pass := 70.0
+	_ = store.Learning.CreateAssessment(ctx, &learning.LearnerAssessment{
+		ID: quizID, CohortID: &c1, TutorProfileID: tutorID,
+		Title: "Week 1 diagnostic quiz", Instructions: &quizInst,
+		PassThreshold: pass, Status: learning.AssessmentPublished,
+		CreatedAt: now, UpdatedAt: now,
+	})
+	questions := []struct {
+		q string
+		o []string
+	}{
+		{"What is 7 × 6?", []string{"36", "42", "48", "54"}},
+		{"Solve for x: 2x + 4 = 12", []string{"2", "4", "6", "8"}},
+		{"What is 15% of 200?", []string{"20", "30", "35", "40"}},
+	}
+	for i, item := range questions {
+		_ = store.Learning.AddQuestion(ctx, &learning.AssessmentQuestion{
+			ID: uuid.New(), AssessmentID: quizID, Question: item.q,
+			Options: item.o, CorrectIndex: 1, SortOrder: i,
+		})
+	}
+
+	// Link the c010 lessons to learner 0001 so /me/lessons returns them,
+	// and record a CONFIRMED enrollment (student portal shows the course).
+	lessons, _ := store.Lessons.ListByCohort(ctx, c1, 50)
+	for _, lesson := range lessons {
+		store.Lessons.Seed(&lesson, studentID)
+	}
+	_ = store.Enrollments.Create(ctx, &booking.CohortEnrollment{
+		ID: uuid.New(), CohortID: c1, StudentProfileID: studentID,
+		ParentUserID: uuid.MustParse("00000000-0000-0000-0000-0000000000a2"),
+		Status:       booking.EnrollmentConfirmed, EnrolledAt: now, CreatedAt: now,
+	})
+	if len(lessons) >= 2 {
+		note1 := "Participated well in the diagnostic."
+		_ = store.Attendance.Upsert(ctx, lessons[0].ID, studentID, "PRESENT", adminID, &note1)
+		_ = store.Attendance.Upsert(ctx, lessons[1].ID, studentID, "LATE", adminID, nil)
+	}
+
+	// One graded submission for the first assignment.
+	content := "Worksheet attached — factorisation and linear equations completed."
+	score := 17.0
+	feedback := "Strong on factorisation; review linear equations 4–6."
+	store.Learning.SeedSubmission(learning.GradedSubmission{
+		ID: uuid.New(), AssignmentID: a1, StudentProfileID: studentID,
+		Content: &content, Score: &score, Feedback: &feedback,
+		SubmittedAt: now.Add(-24 * time.Hour), GradedAt: &now,
+	})
 }
 
 // seedDemoUsers — one account per role so every dashboard is reachable in
