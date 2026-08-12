@@ -5,6 +5,6 @@ ALTER TABLE submissions ADD CONSTRAINT submissions_assignment_student_key UNIQUE
 
 CREATE INDEX IF NOT EXISTS idx_submissions_student ON submissions(student_profile_id, submitted_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_lessons_start ON lessons (start_at) WHERE start_at >= NOW() - INTERVAL '1 day';
+CREATE INDEX IF NOT EXISTS idx_lessons_start ON lessons (start_at);
 
 CREATE INDEX IF NOT EXISTS idx_support_status ON support_tickets (status, created_at DESC);

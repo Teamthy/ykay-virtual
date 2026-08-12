@@ -125,13 +125,15 @@ func (s *VettingService) CreateProfile(ctx context.Context, actorUserID uuid.UUI
 		return nil, err
 	}
 	stage := vetting.StageAccount
-	_ = uow.Vetting().CreateEvent(ctx, &vetting.VettingEvent{
+	if err := uow.Vetting().CreateEvent(ctx, &vetting.VettingEvent{
 		TutorProfileID: profile.ID,
 		Stage:          stage,
 		ToStatus:       string(tutor.TutorStatusDraft),
 		ActorUserID:    &actorUserID,
 		Notes:          strPtrOrNil("Tutor profile created"),
-	})
+	}); err != nil {
+		return nil, err
+	}
 	_ = s.audit.LogStateChange(ctx, &actorUserID, identity.AuditVettingStatusChange, "tutor_profile",
 		&profile.ID, nil, map[string]any{"action": "created", "slug": profile.Slug, "status": tutor.TutorStatusDraft},
 		nil, nil)
@@ -288,13 +290,15 @@ func (s *VettingService) ReviewDocument(ctx context.Context, adminID, documentID
 	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditVettingStatusChange, "tutor_document",
 		&documentID, map[string]any{"status": vetting.DocStatusPending}, map[string]any{"status": status, "reason": reason},
 		nil, nil)
-	_ = uow.Vetting().CreateEvent(ctx, &vetting.VettingEvent{
+	if err := uow.Vetting().CreateEvent(ctx, &vetting.VettingEvent{
 		TutorProfileID: doc.TutorProfileID,
 		Stage:          vetting.StageEvidence,
-		ToStatus:       "DOC_" + string(status),
+		ToStatus:       string(status), // must be a valid tutor_status enum value
 		ActorUserID:    &adminID,
 		Notes:          strPtrOrNil(notes),
-	})
+	}); err != nil {
+		return err
+	}
 	return uow.Commit(ctx)
 }
 

@@ -25,12 +25,26 @@ func NewVettingRepo(db TxQuerier) *VettingRepo { return &VettingRepo{db: db} }
 
 func (r *VettingRepo) GetProfileByID(ctx context.Context, profileID uuid.UUID) (*tutor.TutorProfile, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+" FROM tutor_profiles t WHERE t.id = $1", profileID)
-	return scanTutor(row)
+	t, err := scanTutor(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	return t, nil
 }
 
 func (r *VettingRepo) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*tutor.TutorProfile, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+" FROM tutor_profiles t WHERE t.user_id = $1", userID)
-	return scanTutor(row)
+	t, err := scanTutor(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	return t, nil
 }
 
 func (r *VettingRepo) CreateProfile(ctx context.Context, p *tutor.TutorProfile) error {

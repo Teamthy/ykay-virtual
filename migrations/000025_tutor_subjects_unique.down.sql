@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS tutor_subjects_profile_subject_unique;

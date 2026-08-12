@@ -3,6 +3,7 @@ package httpapi
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"net"
 	"net/http"
 	"strings"
 
@@ -215,10 +216,11 @@ func clientIP(r *http.Request) string {
 		return strings.TrimSpace(strings.Split(xff, ",")[0])
 	}
 	host := r.RemoteAddr
-	if i := strings.LastIndex(host, ":"); i > 0 {
-		host = host[:i]
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
 	}
-	return host
+	// IPv6 literals come back bracketed from SplitHostPort ([::1]).
+	return strings.TrimPrefix(strings.TrimSuffix(host, "]"), "[")
 }
 
 // --- Email verification + password reset (Phase 8) ---

@@ -564,7 +564,8 @@ func (s *PaymentService) refundEscrowInUOW(ctx context.Context, uow repository.U
 			"status": payment.EscrowRefunded, "reason": reason, "wallet_credited": hold.Amount,
 		}, nil, nil)
 
-	return uow.Commit(ctx)
+	// The caller owns the unit of work and commits.
+	return nil
 }
 
 // ExpireStaleHolds — cron: auto-release every HELD hold whose release_at has
@@ -620,10 +621,9 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 
 	now := s.Clock().UTC()
 	ref := fmt.Sprintf("MANUAL-%s-%s", order.OrderNumber, uuid.NewString()[:8])
-	meta := "manual admin confirmation"
-	if note != nil && *note != "" {
-		meta = "manual: " + *note
-	}
+	// metadata is a jsonb column — store valid JSON.
+	metaBytes, _ := json.Marshal(map[string]string{"type": "manual", "note": noteOr(note, "admin confirmation")})
+	meta := string(metaBytes)
 	p := &payment.Payment{
 		OrderID:           order.ID,
 		Provider:          payment.ProviderManual,
@@ -659,4 +659,11 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 		return nil, err
 	}
 	return p, nil
+}
+
+func noteOr(note *string, fallback string) string {
+	if note != nil && *note != "" {
+		return *note
+	}
+	return fallback
 }

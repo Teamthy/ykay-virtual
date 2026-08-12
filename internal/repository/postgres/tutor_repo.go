@@ -30,7 +30,7 @@ const tutorColumns = `t.id, t.user_id, t.slug, t.display_name, t.headline, t.bio
 	t.status, t.is_public, t.rating_avg, t.rating_count, t.total_hours_taught, t.total_students,
 	t.ranking_score, t.timezone, t.location_id, t.accepts_online, t.accepts_in_person,
 	t.verified_at, t.created_at, t.updated_at,
-	(SELECT COALESCE(l.area, l.city, l.state, '') FROM locations l WHERE l.id = t.location_id) AS location_label`
+	(SELECT COALESCE(l.name, '') FROM locations l WHERE l.id = t.location_id) AS location_label`
 
 func scanTutorResult(row interface{ Scan(...any) error }) (*tutor.TutorSearchResult, error) {
 	var t tutor.TutorProfile
@@ -61,17 +61,18 @@ func scanTutorResult(row interface{ Scan(...any) error }) (*tutor.TutorSearchRes
 	return &res, nil
 }
 
-// scanTutor scans a plain profile row (no location_label column).
+// scanTutor scans a plain profile row. tutorColumns includes the derived
+// location_label column, so the 25th destination is scanned and dropped.
 func scanTutor(row interface{ Scan(...any) error }) (*tutor.TutorProfile, error) {
 	var t tutor.TutorProfile
-	var headline, bio sql.NullString
+	var headline, bio, label sql.NullString
 	var verifiedAt sql.NullTime
 	if err := row.Scan(
 		&t.ID, &t.UserID, &t.Slug, &t.DisplayName, &headline, &bio,
 		&t.YearsExperience, &t.HourlyRateMin, &t.HourlyRateMax, &t.Currency,
 		&t.Status, &t.IsPublic, &t.RatingAvg, &t.RatingCount, &t.TotalHoursTaught, &t.TotalStudents,
 		&t.RankingScore, &t.Timezone, &t.LocationID, &t.AcceptsOnline, &t.AcceptsInPerson,
-		&verifiedAt, &t.CreatedAt, &t.UpdatedAt,
+		&verifiedAt, &t.CreatedAt, &t.UpdatedAt, &label,
 	); err != nil {
 		return nil, err
 	}
@@ -114,8 +115,8 @@ func (r *TutorRepo) Search(ctx context.Context, p tutor.TutorSearchParams) ([]tu
 	if p.Location != "" {
 		conds = append(conds, fmt.Sprintf(`EXISTS (
 			SELECT 1 FROM locations l WHERE l.id = t.location_id
-			AND (l.city ILIKE $%d OR l.area ILIKE $%d OR l.state ILIKE $%d)
-		)`, len(args)+1, len(args)+1, len(args)+1))
+			AND l.name ILIKE $%d
+		)`, len(args)+1))
 		args = append(args, "%"+p.Location+"%")
 	}
 	if p.Online != nil {

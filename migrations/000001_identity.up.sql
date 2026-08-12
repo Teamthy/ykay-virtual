@@ -19,9 +19,10 @@ CREATE TABLE users (
     last_login_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMPTZ,
-    CONSTRAINT users_email_unique UNIQUE (email) WHERE deleted_at IS NULL
+    deleted_at TIMESTAMPTZ
 );
+-- Partial unique index (valid Postgres; inline UNIQUE(...) WHERE is not).
+CREATE UNIQUE INDEX users_email_unique ON users(email) WHERE deleted_at IS NULL;
 
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_status ON users(status);

@@ -158,11 +158,11 @@ func (r *OrderRepo) Update(ctx context.Context, o *payment.Order) error {
 
 func (r *OrderRepo) ListAll(ctx context.Context, limit, offset int) ([]payment.Order, int64, error) {
 	var total int64
-	if err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM orders WHERE deleted_at IS NULL`).Scan(&total); err != nil {
+	if err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM orders`).Scan(&total); err != nil {
 		return nil, 0, fmt.Errorf("count orders: %w", err)
 	}
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT `+orderColumns+` FROM orders WHERE deleted_at IS NULL
+		SELECT `+orderColumns+` FROM orders
 		ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("list orders: %w", err)

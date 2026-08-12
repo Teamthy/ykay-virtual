@@ -315,6 +315,12 @@ func NewParentStudentLinkMemory(students *StudentProfileMemory) *ParentStudentLi
 	return &ParentStudentLinkMemory{links: map[string]bool{}, students: students}
 }
 
+// StudentExistsForParent — booking authz reader (mirrors StudentLinkMemory,
+// but backed by the same store the onboarding flow writes to).
+func (m *ParentStudentLinkMemory) StudentExistsForParent(ctx context.Context, studentID, parentUserID uuid.UUID) (bool, error) {
+	return m.Exists(ctx, parentUserID, studentID)
+}
+
 func (m *ParentStudentLinkMemory) Create(_ context.Context, l *identity.ParentStudentLink) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

@@ -45,7 +45,7 @@ func scanPayment(row interface{ Scan(...any) error }) (*payment.Payment, error) 
 func (r *PaymentRepo) Create(ctx context.Context, p *payment.Payment) error {
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO payments (order_id, provider, provider_reference, amount, currency, status, metadata)
-		VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, created_at, updated_at`,
+		VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb) RETURNING id, created_at, updated_at`,
 		p.OrderID, p.Provider, p.ProviderReference, p.Amount, p.Currency, p.Status, p.Metadata,
 	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
@@ -339,9 +339,15 @@ func (r *PayoutRepo) ListByStatus(ctx context.Context, status payment.PayoutStat
 	if limit < 1 {
 		limit = 200
 	}
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at
-		FROM payouts WHERE status = $1 ORDER BY created_at LIMIT $2`, status, limit)
+	cols := `id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at`
+	var rows *sql.Rows
+	var err error
+	if status == "" {
+		// No filter → list everything (admin payments console).
+		rows, err = r.db.QueryContext(ctx, `SELECT `+cols+` FROM payouts ORDER BY created_at DESC LIMIT $1`, limit)
+	} else {
+		rows, err = r.db.QueryContext(ctx, `SELECT `+cols+` FROM payouts WHERE status = $1 ORDER BY created_at DESC LIMIT $2`, status, limit)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("list payouts: %w", err)
 	}

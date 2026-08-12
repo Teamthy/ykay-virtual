@@ -67,6 +67,7 @@ start api+web → wait for healthy → smoke `/api/v1/health` + home.
 
 ```bash
 make migrate            # apply pending migrations (against local dev)
+DATABASE_URL="postgres://…" bash scripts/e2e-pg.sh   # release gate: full E2E on real Postgres
 bash scripts/deploy.sh  # deploy (migrations included)
 bash scripts/deploy.sh --skip-migrate   # code-only deploy
 bash scripts/backup.sh  # manual backup → ./backups/

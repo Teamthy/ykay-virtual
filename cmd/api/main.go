@@ -337,6 +337,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Assignments:     store.Assignments,
 			Students:        store.Students,
 			StudentLinks:    store.StudentLinks,
+			StudentLink:     store.StudentLinks,
 			Vetting:         store.Vetting,
 			Learning:        store.Learning,
 			Grading:         store.Learning,

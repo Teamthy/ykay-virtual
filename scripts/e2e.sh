@@ -145,8 +145,10 @@ c=$(req "$J_TUTOR" POST /tutors/me/vetting/profile '{"display_name":"E2E Tutor",
 assert_code "create vetting profile" 201 "$c"
 PROFILE_ID=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
 
-# attach mathematics (dev-mode seeded subject c001, which has the question bank)
-SUBJECT_ID="00000000-0000-0000-0000-00000000c001"
+# attach mathematics (resolved dynamically so both memory and postgres
+# modes work — the subject that carries the competency question bank)
+SUBJECT_ID=$(curl -s "$BASE/subjects" | python3 -c 'import json,sys; d=json.load(sys.stdin)["data"]; print(next((x["id"] for x in d if x.get("slug")=="mathematics"), next((x["id"] for x in d if "mathematic" in x["name"].lower()), d[0]["id"] if d else "")))')
+[ -n "$SUBJECT_ID" ] && ok "subject resolved ($SUBJECT_ID)" || fail "subject id missing"
 c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/subjects" "{\"subject_id\":\"${SUBJECT_ID}\"}")
 assert_code "add subject to profile" 201 "$c"
 
@@ -447,7 +449,9 @@ grep -q '"total_items"' /tmp/e2e-body.json && ok "admin orders pagination meta" 
 c=$(req "$J_ADMIN" GET /admin/payouts)
 assert_code "admin payouts list" 200 "$c"
 
-c=$(req "$J_PARENT" POST /bookings '{"type":"COHORT","cohort_id":"00000000-0000-0000-0000-00000000c010","parent_user_id":"00000000-0000-0000-0000-0000000000a2","student_id":"'$STUDENT_ID'","idempotency_key":"e2e-phase38-booking"}')
+PARENT_ID=$(curl -s -b "$J_PARENT" "$BASE/auth/me" | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"]["id"])')
+[ -n "$PARENT_ID" ] && ok "parent id resolved" || fail "parent id missing"
+c=$(req "$J_PARENT" POST /bookings "{\"type\":\"COHORT\",\"cohort_id\":\"00000000-0000-0000-0000-00000000c010\",\"parent_user_id\":\"$PARENT_ID\",\"student_id\":\"$STUDENT_ID\",\"idempotency_key\":\"e2e-phase38-booking\"}")
 assert_code "create cohort booking" 201 "$c"
 NEW_ORDER=$(cat /tmp/e2e-body.json | python3 -c 'import json,sys; print(json.load(sys.stdin)["data"]["order"]["id"])')
 [ -n "$NEW_ORDER" ] && ok "booking order captured" || fail "booking order missing"
