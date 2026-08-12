@@ -124,7 +124,7 @@ export default function OnboardingLearnerPage() {
                 <label className="block text-sm">
                   <span className="font-medium">First name *</span>
                   <input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
                   {field.state.meta.errors?.length ? <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span> : null}
                 </label>
               )}
@@ -134,7 +134,7 @@ export default function OnboardingLearnerPage() {
                 <label className="block text-sm">
                   <span className="font-medium">Last name *</span>
                   <input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
                   {field.state.meta.errors?.length ? <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span> : null}
                 </label>
               )}
@@ -145,7 +145,7 @@ export default function OnboardingLearnerPage() {
               <label className="block text-sm">
                 <span className="font-medium">Date of birth (optional)</span>
                 <input type="date" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
               </label>
             )}
           </form.Field>
@@ -155,7 +155,7 @@ export default function OnboardingLearnerPage() {
                 <span className="font-medium">School (optional)</span>
                 <input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="e.g. Lagos Prep School"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
               </label>
             )}
           </form.Field>

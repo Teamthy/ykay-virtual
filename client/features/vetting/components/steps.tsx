@@ -88,10 +88,10 @@ export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: 
               <span className="font-medium capitalize">{field.replace("_", " ")}</span>
               {field === "bio" ? (
                 <textarea rows={4} value={f.state.value} onChange={(e) => f.handleChange(e.target.value)} onBlur={f.handleBlur}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
               ) : (
                 <input value={f.state.value} onChange={(e) => f.handleChange(e.target.value)} onBlur={f.handleBlur}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
               )}
               {f.state.meta.errors?.length ? <span className="mt-1 block text-xs text-red-600">{f.state.meta.errors.join(", ")}</span> : null}
             </label>
@@ -104,7 +104,7 @@ export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: 
             <label className="block text-sm">
               <span className="font-medium">Years of experience</span>
               <input type="number" min={1} value={f.state.value} onChange={(e) => f.handleChange(Number(e.target.value))}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           )}
         </form.Field>
@@ -113,7 +113,7 @@ export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: 
             <label className="block text-sm">
               <span className="font-medium">Hourly rate (₦)</span>
               <input type="number" min={1000} value={f.state.value} onChange={(e) => f.handleChange(Number(e.target.value))}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           )}
         </form.Field>

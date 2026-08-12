@@ -48,7 +48,7 @@ export function ApproachSection() {
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-5">
           {STEPS.map((s) => (
             <div key={s.n} className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-              <div className="font-display text-4xl tracking-[0.02em] text-brand-blue">{s.n}</div>
+              <div className="font-display text-4xl tracking-[0.02em] text-brand-gold-dark">{s.n}</div>
               <h3 className="mt-3 text-sm font-bold uppercase tracking-wide text-ink-800">{s.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-500">{s.desc}</p>
             </div>
@@ -58,7 +58,7 @@ export function ApproachSection() {
         <div className="mt-10 text-center">
           <a
             href="/private-tuition"
-            className="inline-block rounded-xl bg-brand-navy px-9 py-4 text-sm font-bold text-white transition-colors hover:bg-brand-blue"
+            className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
           >
             Get started today
           </a>

@@ -70,7 +70,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
             onChange={(e) => setSubject(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && applyFilters({ subject })}
             placeholder="e.g. mathematics"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>
         <div className="space-y-2 text-sm">
@@ -90,7 +90,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
             onBlur={() => applyFilters({ min_price: minPrice })}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>
         <label className="block text-sm">

@@ -54,7 +54,7 @@ export default function AdminInstitutionsPage() {
             setPage(1);
           }}
           placeholder="Search institutions…"
-          className="ml-auto rounded-xl border border-ink-200 px-4 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+          className="ml-auto rounded-xl border border-ink-200 px-4 py-2 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
         />
       </div>
 

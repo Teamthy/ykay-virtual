@@ -3,7 +3,7 @@ import { Check, Play } from "lucide-react";
 
 export function PartnerSection() {
   return (
-    <section className="py-24 md:py-28 bg-brand-navy text-white relative overflow-hidden">
+    <section className="py-24 md:py-28 bg-[#111111] text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-30 pointer-events-none"
         style={{
           backgroundImage: "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 2px, transparent 2px)",

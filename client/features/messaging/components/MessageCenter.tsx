@@ -160,7 +160,7 @@ export function MessageCenter() {
                   }
                 }}
                 placeholder="Type a message…"
-                className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
               />
               <Button size="sm" onClick={submit} disabled={!draft.trim() || send.isPending}>
                 Send

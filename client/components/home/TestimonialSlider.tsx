@@ -16,7 +16,7 @@ export function TestimonialSlider() {
   const prev = () => setActive((active - 1 + testimonials.length) % testimonials.length);
 
   return (
-    <section className="py-24 md:py-28 bg-brand-navy text-white text-center relative">
+    <section className="py-24 md:py-28 bg-[#111111] text-white text-center relative">
       <button
         onClick={prev}
         className="hidden md:flex absolute left-[6%] top-1/2 -translate-y-1/2 w-12 h-12 bg-brand-blue rounded-full items-center justify-center hover:bg-brand-blue-dark hover:scale-105 transition-all"

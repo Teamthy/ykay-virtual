@@ -109,7 +109,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
               />
             </label>
             <label className="block text-sm">
@@ -118,7 +118,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
                 rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
               />
             </label>
             <label className="flex items-start gap-2 text-xs text-ink-600 cursor-pointer">

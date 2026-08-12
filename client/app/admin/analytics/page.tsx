@@ -68,7 +68,7 @@ export default function AdminAnalyticsPage() {
           </a>
           <a
             href={`${API_BASE}/admin/reports/revenue.csv`}
-            className="rounded-xl bg-brand-blue px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+            className="rounded-xl bg-brand-gold px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
             ⬇ Revenue CSV
           </a>
@@ -110,7 +110,7 @@ export default function AdminAnalyticsPage() {
                 </div>
                 <div className="mt-1 h-2.5 rounded-full bg-ink-100">
                   <div
-                    className="h-full rounded-full bg-brand-blue transition-all"
+                    className="h-full rounded-full bg-brand-gold transition-all"
                     style={{ width: `${pct}%` }}
                   />
                 </div>

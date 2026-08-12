@@ -91,7 +91,7 @@ export default function StudyAbroadPage() {
                 ))}
               </ul>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/gmat" className="rounded-xl bg-brand-navy px-8 py-4 text-sm font-bold text-white hover:bg-brand-blue transition-colors">
+                <Link href="/gmat" className="rounded-full bg-brand-gold px-8 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5">
                   Start test prep
                 </Link>
                 <Link href="/contact" className="rounded-xl border border-ink-200 px-8 py-4 text-sm font-bold text-ink-700 hover:bg-ink-100 transition-colors">

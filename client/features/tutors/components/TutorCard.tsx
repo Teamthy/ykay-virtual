@@ -86,7 +86,7 @@ export function TutorCard({ tutor }: { tutor: Tutor }) {
         </Link>
         <Link
           href={`/private-tuition?tutor=${tutor.slug}`}
-          className="rounded-xl bg-brand-navy py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-brand-blue"
+          className="rounded-full bg-brand-gold py-2.5 text-center text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover"
         >
           Request tuition
         </Link>

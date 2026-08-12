@@ -98,7 +98,7 @@ export default function StudentDashboardPage() {
           key={s}
           onClick={() => setSection(s)}
           className={`block w-full text-left rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-            section === s ? "bg-brand-blue text-white" : "text-ink-700 hover:bg-ink-50"
+            section === s ? "bg-brand-gold text-ink-900" : "text-ink-700 hover:bg-ink-50"
           }`}
         >
           {s}
@@ -304,7 +304,7 @@ export default function StudentDashboardPage() {
                               value={drafts[a.id] ?? ""}
                               onChange={(e) => setDrafts((d) => ({ ...d, [a.id]: e.target.value }))}
                               placeholder="Write your answer…"
-                              className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                              className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
                             />
                             <Button size="sm" disabled={submit.isPending || !(drafts[a.id] ?? "").trim()}
                               onClick={() => submit.mutate({ assignmentId: a.id, content: drafts[a.id] ?? "" })}>

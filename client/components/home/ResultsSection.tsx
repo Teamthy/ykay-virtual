@@ -8,7 +8,7 @@ export function ResultsSection() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <section className="py-24 md:py-28 bg-brand-navy text-white text-center relative overflow-hidden">
+    <section className="py-24 md:py-28 bg-[#111111] text-white text-center relative overflow-hidden">
       <div className="container-x relative">
         <div className="tag-handwritten mb-4" style={{ fontSize: "28px" }}>
           We deliver the best results, period.

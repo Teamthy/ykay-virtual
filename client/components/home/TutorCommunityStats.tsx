@@ -33,7 +33,7 @@ export function TutorCommunityStats() {
             </div>
           ))}
         </div>
-        <Link href="/become-tutor/apply" className="mt-10 inline-block rounded-xl bg-brand-navy px-8 py-4 text-sm font-bold text-white hover:bg-brand-blue transition-colors">
+        <Link href="/become-tutor/apply" className="mt-10 inline-block rounded-xl bg-[#111111] px-8 py-4 text-sm font-bold text-white hover:bg-brand-blue transition-colors">
           Become a tutor
         </Link>
       </div>

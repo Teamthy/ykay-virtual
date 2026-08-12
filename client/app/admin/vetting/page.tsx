@@ -71,7 +71,7 @@ export default function AdminVettingPage() {
             key={s}
             onClick={() => setStatus(s)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {STATUS_LABEL[s]}
@@ -265,7 +265,7 @@ function Dossier({
             onChange={(e) => { setRejectReason(e.target.value); setRejectError(null); }}
             rows={3}
             placeholder="e.g. Document is blurry or expired — please re-upload a clear copy."
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>
         {rejectError && <p className="mt-2 text-xs text-red-600">{rejectError}</p>}

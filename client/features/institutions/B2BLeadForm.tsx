@@ -89,7 +89,7 @@ export function B2BLeadForm({ defaultType, ctaLabel }: { defaultType: string; ct
       <label className="block text-sm">
         <span className="font-medium">Institution name *</span>
         <input value={form.name} onChange={(e) => set("name", e.target.value)}
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
       </label>
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="block text-sm">
@@ -106,26 +106,26 @@ export function B2BLeadForm({ defaultType, ctaLabel }: { defaultType: string; ct
         <label className="block text-sm">
           <span className="font-medium">Contact email *</span>
           <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
         </label>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="block text-sm">
           <span className="font-medium">Phone</span>
           <input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+234…"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
         </label>
         <label className="block text-sm">
           <span className="font-medium">Website</span>
           <input value={form.website} onChange={(e) => set("website", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
         </label>
       </div>
       <label className="block text-sm">
         <span className="font-medium">What do you need?</span>
         <textarea rows={3} value={form.description} onChange={(e) => set("description", e.target.value)}
           placeholder="e.g. Cohort learning for 200 students, staff training, exam prep for Year 11…"
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
       </label>
       {user && (
         <p className="text-xs text-ink-400">

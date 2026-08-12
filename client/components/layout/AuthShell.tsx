@@ -24,9 +24,9 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
   return (
     <main className="grid min-h-[calc(100vh-73px)] lg:grid-cols-[1.05fr_1fr]">
       {/* Brand panel */}
-      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-navy-dark via-brand-navy to-brand-blue p-12 text-white">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-blue/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-brand-gold/20 blur-3xl" />
+      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-[#111111] p-12 text-white">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-gold/15 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-brand-gold/15 blur-3xl" />
 
         <Link href="/" aria-label="NUVORA home" className="relative">
           <Logo dark />

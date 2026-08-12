@@ -132,13 +132,13 @@ export default function ParentDashboardPage() {
                   <button
                     onClick={() => setSection(n.key)}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                      section === n.key ? "bg-brand-navy text-white" : "text-ink-700 hover:bg-ink-100"
+                      section === n.key ? "bg-brand-gold text-ink-900" : "text-ink-700 hover:bg-ink-100"
                     }`}
                   >
-                    <span className={section === n.key ? "text-brand-gold" : "text-brand-blue"}>{n.icon}</span>
+                    <span className={section === n.key ? "text-ink-900" : "text-brand-blue"}>{n.icon}</span>
                     {n.label}
                     {n.key === "payments" && paidCount > 0 && (
-                      <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${section === n.key ? "bg-white/15" : "bg-brand-blue-light text-brand-blue"}`}>
+                      <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${section === n.key ? "bg-black/10" : "bg-brand-gold-light text-brand-gold-dark"}`}>
                         {paidCount}
                       </span>
                     )}
@@ -156,7 +156,7 @@ export default function ParentDashboardPage() {
           </div>
 
           <div className="mt-4 flex flex-col gap-2.5">
-            <Link href="/private-tuition" className="rounded-xl bg-brand-navy px-5 py-3 text-center text-sm font-bold text-white hover:bg-brand-blue transition-colors">
+            <Link href="/private-tuition" className="rounded-full bg-brand-gold px-5 py-3 text-center text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover">
               Book more tuition
             </Link>
             <Link href="/programmes" className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-center text-sm font-bold text-ink-700 hover:bg-ink-100 transition-colors">
@@ -178,7 +178,7 @@ export default function ParentDashboardPage() {
               <select
                 value={selectedLearner || activeLearner?.id || ""}
                 onChange={(e) => setSelectedLearner(e.target.value)}
-                className="rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className="rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
               >
                 {(learners.data ?? []).map((l) => (
                   <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
@@ -222,7 +222,7 @@ export default function ParentDashboardPage() {
                     key={t}
                     onClick={() => setTab(t)}
                     className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-                      tab === t ? "bg-brand-navy text-white" : "bg-white text-ink-600 ring-1 ring-ink-200 hover:bg-ink-100"
+                      tab === t ? "bg-brand-gold text-ink-900" : "bg-white text-ink-600 ring-1 ring-ink-200 hover:bg-ink-100"
                     }`}
                   >
                     {t}

@@ -96,7 +96,7 @@ export function TutorsShowcase() {
         <div className="mt-10 text-center">
           <Link
             href="/tutors"
-            className="inline-block rounded-xl bg-brand-navy px-9 py-4 text-sm font-bold text-white transition-colors hover:bg-brand-blue"
+            className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
           >
             Browse all tutors
           </Link>

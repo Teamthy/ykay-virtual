@@ -117,7 +117,7 @@ export default function AdminCohortsPage() {
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map((s) => (
           <button key={s || "all"} onClick={() => { setStatus(s); setPage(1); }}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
             {s || "All"}
           </button>
         ))}
@@ -194,7 +194,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
     <label className="block text-sm">
       <span className="font-medium text-ink-700">{label}</span>
       <input type={type} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-        className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+        className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
     </label>
   );
 

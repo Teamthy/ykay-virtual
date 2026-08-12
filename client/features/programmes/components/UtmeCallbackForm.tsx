@@ -85,7 +85,7 @@ export function UtmeCallbackForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your full name"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>
         <label className="block text-sm">
@@ -95,7 +95,7 @@ export function UtmeCallbackForm() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+234 800 000 0000"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>
         <label className="block text-sm">
@@ -103,7 +103,7 @@ export function UtmeCallbackForm() {
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           >
             <option>SSS3</option>
             <option>SSS2</option>

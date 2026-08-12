@@ -81,7 +81,7 @@ export function GmatLeadForm() {
             value={form.first_name}
             onChange={(e) => setForm({ ...form, first_name: e.target.value })}
             placeholder="Your first name"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>
         <label className="block text-sm">
@@ -91,7 +91,7 @@ export function GmatLeadForm() {
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             placeholder="+234 800 000 0000"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>
         <div className="grid grid-cols-2 gap-4">
@@ -100,7 +100,7 @@ export function GmatLeadForm() {
             <select
               value={form.country}
               onChange={(e) => setForm({ ...form, country: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
             >
               <option>Nigeria</option>
               <option>Ghana</option>
@@ -116,7 +116,7 @@ export function GmatLeadForm() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="Your email"
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
             />
           </label>
         </div>

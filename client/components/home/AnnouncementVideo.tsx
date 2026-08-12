@@ -33,7 +33,7 @@ export function AnnouncementVideo() {
             href="https://www.youtube.com/results?search_query=online+tutoring+nigeria"
             target="_blank"
             rel="noreferrer"
-            className="group grid h-24 w-24 place-items-center rounded-full bg-brand-navy text-white shadow-card transition-transform hover:scale-105"
+            className="group grid h-24 w-24 place-items-center rounded-full bg-[#111111] text-white shadow-card transition-transform hover:scale-105"
             aria-label="Watch the announcement video on YouTube"
           >
             <span className="grid h-16 w-16 place-items-center rounded-full bg-white/10 transition-colors group-hover:bg-white/20">

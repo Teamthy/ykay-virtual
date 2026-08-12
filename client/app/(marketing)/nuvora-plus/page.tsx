@@ -85,7 +85,7 @@ export default function NuvoraPlusPage() {
                 href="https://wa.me/447465654119?text=Hi+NUVORA%2C+I+want+to+book+a+NUVORA+Plus+tutoring+package+for+my+child"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-xl bg-brand-navy px-8 py-4 text-sm font-bold text-white hover:bg-brand-blue transition-colors"
+                className="rounded-full bg-brand-gold px-8 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
               >
                 Book a Tutor Today
               </a>
@@ -142,7 +142,7 @@ export default function NuvoraPlusPage() {
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Link href="/contact" className="inline-block rounded-xl bg-brand-navy px-9 py-4 text-sm font-bold text-white hover:bg-brand-blue transition-colors">
+            <Link href="/contact" className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5">
               Unlock Premium Tutoring
             </Link>
           </div>

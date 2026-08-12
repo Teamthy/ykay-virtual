@@ -85,7 +85,7 @@ export default function AdminSupportPage() {
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map((s) => (
           <button key={s || "all"} onClick={() => { setStatus(s); setPage(1); }}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
             {s || "All"}
           </button>
         ))}

@@ -22,13 +22,13 @@ export function TravelAndCareBands() {
           </p>
           <Link
             href="/study-abroad"
-            className="group mt-6 inline-flex items-center gap-2 rounded-xl bg-brand-navy px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-blue"
+            className="group mt-6 inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
           >
             Start your journey
             <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
-        <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-brand-navy to-brand-blue p-8 text-white shadow-card">
+        <div className="overflow-hidden rounded-3xl bg-[#111111] p-8 text-white shadow-card">
           <p className="font-display text-5xl tracking-[0.02em]">1600+</p>
           <p className="mt-1 text-white/80">universities &amp; colleges in the US, UK, Canada &amp; Australia</p>
           <div className="mt-6 flex flex-wrap gap-2">
@@ -63,7 +63,7 @@ export function TravelAndCareBands() {
             </span>
             <Link
               href="/healthcare"
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-navy px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-blue"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
             >
               Join the Training <ArrowRight size={15} />
             </Link>

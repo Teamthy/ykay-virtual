@@ -114,7 +114,7 @@ export function Header() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="What do you want to learn?"
-            className="w-full pl-10 pr-4 py-2.5 bg-ink-100 rounded-full text-sm text-ink-700 placeholder:text-ink-400 focus:bg-white focus:ring-2 focus:ring-brand-blue/25 outline-none transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-ink-100 rounded-full text-sm text-ink-700 placeholder:text-ink-400 focus:bg-white focus:ring-2 focus:ring-brand-gold/30 outline-none transition-all"
           />
         </form>
 
@@ -125,7 +125,7 @@ export function Header() {
             Contact Us
           </Link>
           <Link href="/become-tutor" onClick={closeAll}
-            className="hidden md:block px-3.5 py-2.5 rounded-xl text-sm font-bold text-brand-blue hover:bg-brand-blue-light transition-colors">
+            className="hidden md:block px-3.5 py-2.5 rounded-xl text-sm font-bold text-brand-gold-dark hover:bg-brand-gold-light transition-colors">
             Become a Tutor
           </Link>
           <AuthNav />

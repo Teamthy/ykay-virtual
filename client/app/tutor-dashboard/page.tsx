@@ -156,7 +156,7 @@ export default function TutorDashboardPage() {
           </section>
 
           {/* Today's lessons */}
-          <section className="rounded-2xl bg-brand-blue text-white p-6">
+          <section className="rounded-2xl bg-brand-gold text-ink-900 p-6">
             <h2 className="font-bold">Today&apos;s lessons</h2>
             {lessons.isLoading ? (
               <Skeleton className="h-12 w-full mt-3 bg-white/20" />

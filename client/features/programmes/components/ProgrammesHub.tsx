@@ -112,7 +112,7 @@ export function ProgrammesHub() {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && push({ q: search })}
             placeholder="Search programmes…"
-            className="w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className="w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
           <div className="flex flex-wrap gap-2">
             <span className="text-xs font-bold uppercase tracking-wide text-ink-400 self-center">Format:</span>

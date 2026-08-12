@@ -49,7 +49,7 @@ export function SubjectsClient() {
             }
           }}
           placeholder="Search subjects…"
-          className="flex-1 max-w-sm rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+          className="flex-1 max-w-sm rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
         />
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => (

@@ -180,7 +180,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
             <label className="block text-sm">
               <span className="font-medium">Parent user id</span>
               <input
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
                 placeholder="e.g. 3f2c…-a1b2"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -198,7 +198,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
             <label className="block text-sm">
               <span className="font-medium">Student id</span>
               <input
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
                 placeholder="e.g. 9c41…-d5e6"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -217,7 +217,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
               <span className="font-medium">Billing email</span>
               <input
                 type="email"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
                 placeholder="parent@example.com"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}

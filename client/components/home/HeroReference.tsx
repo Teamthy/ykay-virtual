@@ -34,7 +34,7 @@ export function HeroReference() {
 
           <div className="animate-hero-in-late mt-8 flex flex-wrap items-center gap-4">
             <Link href="/tutors">
-              <Button size="lg" className="group rounded-xl bg-brand-navy px-9 hover:bg-brand-blue">
+              <Button size="lg" className="group rounded-full bg-brand-gold px-9 text-ink-900 hover:bg-brand-gold-hover">
                 Get Started
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
               </Button>

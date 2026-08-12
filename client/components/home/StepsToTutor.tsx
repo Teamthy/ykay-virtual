@@ -32,7 +32,7 @@ export function StepsToTutor({
         <div className="mt-10 grid md:grid-cols-3 gap-6">
           {steps.map((s) => (
             <div key={s.n} className="relative rounded-2xl border border-ink-100 bg-surface-muted p-7">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-navy text-sm font-extrabold text-white">
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-gold text-sm text-ink-900 font-extrabold text-white">
                 {s.n}
               </div>
               <h3 className="mt-4 font-bold text-brand-navy">{s.title}</h3>

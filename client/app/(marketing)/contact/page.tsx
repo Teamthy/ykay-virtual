@@ -93,24 +93,24 @@ export default function ContactPage() {
             <label className="block text-sm">
               <span className="font-medium">Name</span>
               <input value={name} onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
             <label className="block text-sm">
               <span className="font-medium">Phone / WhatsApp</span>
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+234…"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           </div>
           <label className="block text-sm">
             <span className="font-medium">Email *</span>
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
           </label>
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block text-sm">
               <span className="font-medium">Learner level</span>
               <select value={learnerLevel} onChange={(e) => setLearnerLevel(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none">
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none">
                 <option value="">Select level…</option>
                 <option>Year 7–9 (British)</option>
                 <option>IGCSE (Year 10–11)</option>
@@ -124,13 +124,13 @@ export default function ContactPage() {
               <span className="font-medium">Subject</span>
               <input value={enquirySubject} onChange={(e) => setEnquirySubject(e.target.value)}
                 placeholder="e.g. Mathematics, IELTS…"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           </div>
           <label className="block text-sm">
             <span className="font-medium">Message *</span>
             <textarea rows={5} required value={message} onChange={(e) => setMessage(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
           </label>
           <Button type="submit" variant="gold" size="lg" className="w-full" disabled={busy}>
             {busy ? "Sending…" : sent ? "Sent ✓" : "Send message"}

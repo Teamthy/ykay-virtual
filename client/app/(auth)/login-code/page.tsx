@@ -97,7 +97,7 @@ export default function LoginCodePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && void request()}
                 placeholder="you@example.com"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
               />
             </label>
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -116,7 +116,7 @@ export default function LoginCodePage() {
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(e) => e.key === "Enter" && void confirm()}
                 placeholder="••••••"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-center text-2xl font-extrabold tracking-[0.4em] text-brand-navy focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-center text-2xl font-extrabold tracking-[0.4em] text-brand-navy focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
               />
               <p className="mt-2 text-xs text-ink-400">Expires in 10 minutes · single use</p>
             </label>

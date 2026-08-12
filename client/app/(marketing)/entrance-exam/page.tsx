@@ -103,7 +103,7 @@ export default function EntranceExamPage() {
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Link href="/exam-prep" className="inline-block rounded-xl bg-brand-navy px-9 py-4 text-sm font-bold text-white hover:bg-brand-blue transition-colors">
+            <Link href="/exam-prep" className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5">
               Explore exam prep programmes
             </Link>
           </div>

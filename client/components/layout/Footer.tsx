@@ -36,7 +36,7 @@ const SUPPORT = [
 
 export function Footer() {
   return (
-    <footer className="bg-brand-navy-dark text-white mt-16">
+    <footer className="bg-[#111111] text-white mt-16">
       {/* Learning Advisors contact band (reference 003305) */}
       <section className="border-b border-white/10">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -48,7 +48,7 @@ export function Footer() {
             <a href="tel:+2347063726773" className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold hover:bg-white/20 transition-colors">
               <Phone size={15} /> +234 706 372 6773
             </a>
-            <a href="mailto:hello@nuvora.com" className="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
+            <a href="mailto:hello@nuvora.com" className="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-hover-dark transition-colors">
               <Mail size={15} /> hello@nuvora.com
             </a>
           </div>
@@ -71,7 +71,7 @@ export function Footer() {
             <div className="flex gap-3">
               {[socialIcon("facebook"), socialIcon("twitter"), socialIcon("instagram"), socialIcon("linkedin")].map((icon, i) => (
                 <a key={i} href="/contact" aria-label={icon.label}
-                  className="w-10 h-10 bg-white/8 rounded-full flex items-center justify-center hover:bg-brand-blue hover:-translate-y-0.5 transition-all">
+                  className="w-10 h-10 bg-white/8 rounded-full flex items-center justify-center hover:bg-brand-gold hover:text-ink-900 hover:-translate-y-0.5 transition-all">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">{icon.paths}</svg>
                 </a>
               ))}

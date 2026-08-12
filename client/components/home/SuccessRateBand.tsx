@@ -23,7 +23,7 @@ export function SuccessRateBand() {
             Grange, St. Saviour&apos;s, King&apos;s College UK, CIS and federal schools — with
             past-paper practice and mock examinations.
           </p>
-          <a href="/exam-prep" className="mt-6 inline-block rounded-xl bg-brand-navy px-6 py-3 text-sm font-bold text-white hover:bg-brand-blue transition-colors">
+          <a href="/exam-prep" className="mt-6 inline-block rounded-full bg-brand-gold px-7 py-3 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5">
             Start exam prep
           </a>
         </div>
