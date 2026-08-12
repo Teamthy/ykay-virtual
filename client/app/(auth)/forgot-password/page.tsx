@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { INPUT_CLS } from "@/components/ui/password-input";
 import { requestPasswordReset } from "@/features/auth/api";
 
 export default function ForgotPasswordPage() {
@@ -60,24 +60,30 @@ export default function ForgotPasswordPage() {
         </>
       }
     >
-      <div className="rounded-2xl border border-ink-100 bg-white p-7 shadow-soft space-y-4">
-          <label className="block text-sm">
-            <span className="font-medium">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && void submit()}
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-            />
-          </label>
-          {error ? (
-            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>
-          ) : null}
-          <Button variant="gold" size="lg" className="w-full" disabled={submitting} onClick={() => void submit()}>
-            {submitting ? "Sending…" : "Send reset link"}
-          </Button>
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="fp-email" className="mb-1.5 block text-sm font-medium text-ink-800">Email</label>
+          <input
+            id="fp-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && void submit()}
+            className={INPUT_CLS}
+          />
         </div>
+        {error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        ) : null}
+        <button
+          type="button"
+          disabled={submitting}
+          onClick={() => void submit()}
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+        >
+          {submitting ? "Sending…" : "Send reset link"}
+        </button>
+      </div>
     </AuthShell>
   );
 }

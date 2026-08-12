@@ -6,10 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { login } from "@/features/auth/api";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
+import { GoogleButton } from "@/components/ui/google-button";
+import { login } from "@/features/auth/api";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -59,88 +60,87 @@ export default function LoginPage() {
       footer={
         <>
           New to NUVORA?{" "}
-          <Link href="/register" className="text-brand-blue font-semibold hover:underline">
+          <Link href="/register" className="font-semibold text-brand-gold-dark hover:underline">
             Create an account
           </Link>
         </>
       }
     >
-      <div className="rounded-2xl border border-ink-100 bg-white p-7 shadow-soft">
+      <div className="space-y-5">
+        <GoogleButton />
+
+        <div className="flex items-center gap-3 text-xs uppercase text-ink-400 before:flex-1 before:border-t before:border-ink-200 before:me-4 after:flex-1 after:border-t after:border-ink-200 after:ms-4">
+          Or
+        </div>
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
             void form.handleSubmit();
           }}
-          className="mt-8 border rounded-2xl p-6 space-y-4"
+          className="space-y-4"
           noValidate
         >
           <form.Field name="email">
             {(field) => (
-              <label className="block text-sm">
-                <span className="font-medium">Email</span>
+              <div>
+                <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-ink-800">
+                  Email
+                </label>
                 <input
+                  id="login-email"
                   type="email"
                   autoComplete="email"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className={INPUT_CLS}
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                 />
                 {field.state.meta.errors?.length ? (
-                  <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
+                  <p className="mt-1.5 text-xs text-red-600">{field.state.meta.errors.join(", ")}</p>
                 ) : null}
-              </label>
+              </div>
             )}
           </form.Field>
+
           <form.Field name="password">
             {(field) => (
-              <label className="block text-sm">
-                <span className="font-medium">Password</span>
-                <input
-                  type="password"
-                  autoComplete="current-password"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                />
-                {field.state.meta.errors?.length ? (
-                  <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
-                ) : null}
-              </label>
+              <PasswordInput
+                id="login-password"
+                label="Password"
+                autoComplete="current-password"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                error={field.state.meta.errors?.join(", ")}
+              />
             )}
           </form.Field>
-          {error ? (
-            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
+
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
               {error}
             </div>
-          ) : null}
-          <Button type="submit" variant="gold" size="lg" className="w-full" disabled={submitting}>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+          >
             {submitting ? "Logging in…" : "Log in"}
-          </Button>
+          </button>
+
           <div className="flex items-center justify-between text-sm">
-            <Link href="/forgot-password" className="text-brand-blue font-semibold hover:underline">
+            <Link href="/forgot-password" className="font-medium text-brand-gold-dark hover:underline">
               Forgot your password?
             </Link>
-            <Link href="/login-code" className="font-semibold text-ink-500 hover:text-brand-blue hover:underline">
+            <Link href="/login-code" className="font-medium text-ink-500 hover:text-ink-800 hover:underline">
               Log in with a code
             </Link>
           </div>
         </form>
-        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-          <div className="mt-4">
-            <button
-              type="button"
-              disabled
-              className="w-full rounded-xl border border-ink-200 py-3 text-sm font-semibold text-ink-700 flex items-center justify-center gap-2 opacity-60 cursor-not-allowed"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.97 10.97 0 0 0 12 1 11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
-              Continue with Google
-            </button>
-            <p className="mt-1 text-center text-[10px] text-ink-400">Google sign-in arrives with OAuth setup — email + password works today.</p>
-          </div>
-        )}
       </div>
     </AuthShell>
   );

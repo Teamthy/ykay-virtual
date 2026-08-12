@@ -7,12 +7,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
 import { createLearner, listLearners } from "@/features/onboarding/api";
+import { AuthShell } from "@/components/layout/AuthShell";
+import { Stepper } from "@/components/ui/stepper";
+import { INPUT_CLS } from "@/components/ui/password-input";
 
-// Onboarding step 2 (parents): add your first learner.
-// Stateful flow: /register → /onboarding/learner → /dashboard.
+// Onboarding step 2 (parents & students): add your first learner.
+// Stateful flow: /register → /onboarding → /onboarding/learner → /dashboard.
 
 const learnerSchema = z.object({
   first_name: z.string().min(2, "First name is required"),
@@ -48,7 +50,7 @@ export default function OnboardingLearnerPage() {
     onSubmit: async ({ value }) => {
       setBusy(true);
       try {
-        const learner = await createLearner({
+        await createLearner({
           first_name: value.first_name,
           last_name: value.last_name,
           date_of_birth: value.date_of_birth || undefined,
@@ -56,12 +58,10 @@ export default function OnboardingLearnerPage() {
           current_level: value.current_level || undefined,
         });
         qc.invalidateQueries({ queryKey: ["onboarding", "learners"] });
-        toast.success(`${learner.first_name} added to your family`, {
-          description: "You can add more learners or head to your dashboard.",
-        });
+        toast.success("Learner added — welcome!");
         router.push("/dashboard");
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Could not add learner");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not add learner");
       } finally {
         setBusy(false);
       }
@@ -69,106 +69,117 @@ export default function OnboardingLearnerPage() {
   });
 
   if (isLoading) {
-    return <main className="container-x py-24 text-center text-ink-500">Loading…</main>;
+    return <p className="py-20 text-center text-ink-500">Loading…</p>;
   }
 
   if (!user) {
     return (
-      <main className="container-x py-24 text-center">
-        <h1 className="text-2xl font-extrabold">Sign in to continue</h1>
-        <p className="text-ink-500 mt-2 text-sm">Create your account first, then add your learner.</p>
-        <Link href="/register" className="btn-gold mt-6 inline-block">Create an account</Link>
-      </main>
+      <AuthShell title="Sign in to continue" subtitle="Create your account first, then add your learner.">
+        <Link href="/register" className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover">
+          Create an account
+        </Link>
+      </AuthShell>
     );
   }
 
   const hasLearners = (existing.data?.length ?? 0) > 0;
 
   return (
-    <main className="container-x py-12 flex justify-center">
-      <div className="w-full max-w-lg">
-        {/* Progress */}
-        <ol className="flex items-center gap-1 text-[11px] mb-8 justify-center">
-          {["Account", "Learner", "Dashboard"].map((label, i) => (
-            <li key={label} className="flex items-center gap-1">
-              <span className={`flex h-6 w-6 items-center justify-center rounded-full font-bold ${
-                i < 1 ? "bg-green-500 text-white" : i === 1 ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-400"
-              }`}>{i < 1 ? "✓" : i + 1}</span>
-              <span className={`${i === 1 ? "font-semibold text-ink-800" : "text-ink-400"}`}>{label}</span>
-              {i < 2 && <span className="w-4 h-px bg-ink-200 mx-1" />}
-            </li>
-          ))}
-        </ol>
-
-        <h1 className="text-3xl font-extrabold">
-          {hasLearners ? "Add another learner" : "Add your first learner"}
-        </h1>
-        <p className="text-ink-500 text-sm mt-2">
-          Learners are linked to your account — you control their bookings, schedule and progress.
-        </p>
+    <AuthShell
+      title={hasLearners ? "Add another learner" : "Add your first learner"}
+      subtitle="Learners are linked to your account — you control their bookings, schedule and progress."
+    >
+      <div className="space-y-5">
+        <Stepper steps={["Account", "Learner", "Dashboard"]} current={1} />
 
         {hasLearners && (
-          <div className="mt-5 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
             ✓ Already linked: {existing.data?.map((l) => `${l.first_name} ${l.last_name}`).join(", ")}
           </div>
         )}
 
         <form
-          onSubmit={(e) => { e.preventDefault(); e.stopPropagation(); void form.handleSubmit(); }}
-          className="mt-6 border rounded-2xl p-6 space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void form.handleSubmit();
+          }}
+          className="space-y-4"
           noValidate
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <form.Field name="first_name">
               {(field) => (
-                <label className="block text-sm">
-                  <span className="font-medium">First name *</span>
-                  <input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
-                  {field.state.meta.errors?.length ? <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span> : null}
-                </label>
+                <div>
+                  <label htmlFor="ln-first" className="mb-1.5 block text-sm font-medium text-ink-800">First name *</label>
+                  <input
+                    id="ln-first"
+                    className={INPUT_CLS}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  {field.state.meta.errors?.length ? <p className="mt-1.5 text-xs text-red-600">{field.state.meta.errors.join(", ")}</p> : null}
+                </div>
               )}
             </form.Field>
             <form.Field name="last_name">
               {(field) => (
-                <label className="block text-sm">
-                  <span className="font-medium">Last name *</span>
-                  <input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
-                  {field.state.meta.errors?.length ? <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span> : null}
-                </label>
+                <div>
+                  <label htmlFor="ln-last" className="mb-1.5 block text-sm font-medium text-ink-800">Last name *</label>
+                  <input
+                    id="ln-last"
+                    className={INPUT_CLS}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  {field.state.meta.errors?.length ? <p className="mt-1.5 text-xs text-red-600">{field.state.meta.errors.join(", ")}</p> : null}
+                </div>
               )}
             </form.Field>
           </div>
+
           <form.Field name="date_of_birth">
             {(field) => (
-              <label className="block text-sm">
-                <span className="font-medium">Date of birth (optional)</span>
-                <input type="date" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
-              </label>
+              <div>
+                <label htmlFor="ln-dob" className="mb-1.5 block text-sm font-medium text-ink-800">Date of birth (optional)</label>
+                <input id="ln-dob" type="date" className={INPUT_CLS} value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} />
+              </div>
             )}
           </form.Field>
+
           <form.Field name="school_name">
             {(field) => (
-              <label className="block text-sm">
-                <span className="font-medium">School (optional)</span>
-                <input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)}
+              <div>
+                <label htmlFor="ln-school" className="mb-1.5 block text-sm font-medium text-ink-800">School (optional)</label>
+                <input
+                  id="ln-school"
+                  className={INPUT_CLS}
                   placeholder="e.g. Lagos Prep School"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
-              </label>
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              </div>
             )}
           </form.Field>
+
           <form.Field name="current_level">
             {(field) => (
               <div className="text-sm">
-                <span className="font-medium">Current level (optional)</span>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <span className="mb-2 block font-medium text-ink-800">Current level (optional)</span>
+                <div className="flex flex-wrap gap-2">
                   {LEVELS.map((l) => (
-                    <button key={l} type="button" onClick={() => field.handleChange(field.state.value === l ? "" : l)}
-                      className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
-                        field.state.value === l ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
-                      }`}>
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => field.handleChange(field.state.value === l ? "" : l)}
+                      className={
+                        field.state.value === l
+                          ? "inline-flex h-9 items-center rounded-full border border-brand-gold bg-brand-gold-light px-3.5 text-xs font-semibold text-ink-900"
+                          : "inline-flex h-9 items-center rounded-full border border-ink-200 bg-white px-3.5 text-xs font-semibold text-ink-600 transition-colors hover:border-brand-gold"
+                      }
+                    >
                       {l}
                     </button>
                   ))}
@@ -176,16 +187,25 @@ export default function OnboardingLearnerPage() {
               </div>
             )}
           </form.Field>
+
           <div className="flex gap-3 pt-2">
-            <Button type="submit" variant="gold" size="lg" className="flex-1" disabled={busy}>
+            <button
+              type="submit"
+              disabled={busy}
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+            >
               {busy ? "Adding…" : hasLearners ? "Add learner & continue" : "Add learner & go to dashboard"}
-            </Button>
-            <Button type="button" variant="outline" size="lg" onClick={() => router.push("/dashboard")}>
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-200 bg-white px-5 text-sm font-medium text-ink-800 transition-colors hover:bg-ink-50"
+            >
               Skip
-            </Button>
+            </button>
           </div>
         </form>
       </div>
-    </main>
+    </AuthShell>
   );
 }

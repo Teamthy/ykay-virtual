@@ -124,6 +124,11 @@ func main() {
 	// --- Auth + sessions ---
 	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit).
 		WithAuthTokens(repos.AuthTokens)
+	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
+		ClientID:     cfg.GoogleClientID,
+		ClientSecret: cfg.GoogleClientSecret,
+		RedirectURL:  cfg.GoogleRedirectURL,
+	}, authSvc)
 	sessionAuth := middleware.SessionAuth(sessionResolverAdapter{svc: authSvc}, "ykay_session")
 
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
@@ -189,7 +194,7 @@ func main() {
 		Messaging:    httpapi.NewMessagingHandler(messagingSvc),
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc),
 		Content:      httpapi.NewContentHandler(contentSvc),
-		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL),
+		Auth:         httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL, googleAuth),
 		Admin:        adminHandler,
 		Support:      httpapi.NewSupportHandler(supportSvc),
 		Growth:       httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),

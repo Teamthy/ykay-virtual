@@ -21,9 +21,10 @@ type AuthHandler struct {
 	svc     *service.AuthService
 	cfg     middleware.CookieConfig
 	siteURL string
+	google  *service.GoogleAuthService
 }
 
-func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string) *AuthHandler {
+func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string, google *service.GoogleAuthService) *AuthHandler {
 	if siteURL == "" {
 		siteURL = "http://localhost:3000"
 	}
@@ -113,6 +114,43 @@ func (h *AuthHandler) ConfirmLoginCode(w http.ResponseWriter, r *http.Request) {
 	}
 	ip := clientIP(r)
 	token, user, roles, err := h.svc.ConfirmLoginCode(r.Context(), req.Email, req.Code, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	middleware.SetSessionCookie(w, h.cfg, token)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(
+		user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
+		user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	), nil)
+}
+
+func (h *AuthHandler) GoogleAuthURL(w http.ResponseWriter, r *http.Request) {
+	if h.google == nil || !h.google.Enabled() {
+		WriteAppError(w, pkg.Conflict("google auth is not configured"))
+		return
+	}
+	u, state, err := h.google.BuildAuthURL()
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"url": u, "state": state}, nil)
+}
+
+func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
+	if h.google == nil || !h.google.Enabled() {
+		WriteAppError(w, pkg.Conflict("google auth is not configured"))
+		return
+	}
+	code := r.URL.Query().Get("code")
+	state := r.URL.Query().Get("state")
+	if code == "" || state == "" {
+		WriteAppError(w, pkg.BadRequest("missing code or state", nil))
+		return
+	}
+	ip := clientIP(r)
+	token, user, roles, err := h.google.ExchangeCode(r.Context(), code, state, ip, r.UserAgent())
 	if err != nil {
 		WriteAppError(w, err)
 		return

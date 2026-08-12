@@ -1,73 +1,109 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Logo } from "@/components/layout/Logo";
-import { GraduationCap, BadgeCheck, ShieldCheck, LineChart } from "lucide-react";
 
-// Auth shell — split-screen NUVORA brand panel (navy, tagline, positioning
-// strip, trust points) + white form column. Shared by login/register/
-// forgot-password/reset-password/verify-email.
+// Auth shell — Preline split-panel: left 30% cream panel with brand + image
+// + trusted strip, right 70% white panel with the form. Shared by login,
+// register, forgot/reset password, OTP/login-code, verify-email, onboarding.
 
 export type AuthShellProps = {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  image?: string;
+  imageAlt?: string;
 };
 
-const TRUST = [
-  { icon: <GraduationCap size={18} />, text: "British & Nigerian curriculum pathways" },
-  { icon: <BadgeCheck size={18} />, text: "1% of tutors — vetted, approved and competency-tested" },
-  { icon: <ShieldCheck size={18} />, text: "Payment protection with escrow-held tuition fees" },
-  { icon: <LineChart size={18} />, text: "Progress reports released to parents every term" },
-];
+const IMG =
+  "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=900&q=80";
 
-export function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
+export function AuthShell({ title, subtitle, children, footer, image = IMG, imageAlt = "Tutor helping a student learn" }: AuthShellProps) {
   return (
-    <main className="grid min-h-[calc(100vh-73px)] lg:grid-cols-[1.05fr_1fr]">
-      {/* Brand panel */}
-      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-[#111111] p-12 text-white">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-gold/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-brand-gold/15 blur-3xl" />
+    <div className="min-h-screen bg-white">
+      <div className="grid min-h-screen lg:grid-cols-[30%_70%]">
+        {/* ── Left panel ── */}
+        <aside className="relative hidden overflow-hidden bg-surface-muted lg:flex lg:flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-8">
+            <Link href="/" aria-label="NUVORA home">
+              <Logo />
+            </Link>
+            <span className="inline-flex h-9 items-center gap-x-2 rounded-lg border border-ink-200 bg-white px-3 text-xs font-medium text-ink-700 shadow-sm">
+              🇳🇬 English (NG)
+            </span>
+          </div>
 
-        <Link href="/" aria-label="NUVORA home" className="relative">
-          <Logo dark />
-        </Link>
+          {/* Visual */}
+          <div className="flex flex-1 flex-col justify-center px-9 pb-8">
+            <h1 className="max-w-xs font-display text-3xl leading-tight tracking-[0.02em] text-brand-navy">
+              Learning beyond boundaries
+            </h1>
+            <div className="relative mt-5 overflow-hidden rounded-2xl shadow-lg">
+              <Image
+                src={image}
+                alt={imageAlt}
+                width={720}
+                height={520}
+                className="h-[300px] w-full object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                <p className="text-sm font-semibold text-white">
+                  Join 30,000+ families learning with NUVORA
+                </p>
+              </div>
+            </div>
+          </div>
 
-        <div className="relative max-w-md">
-          <h1 className="text-4xl font-extrabold leading-tight tracking-tight">
-            Learning beyond boundaries
-          </h1>
-          <p className="mt-3 text-white/70">
-            British &amp; Nigerian curricula · Exam preparation · Private tuition · Live cohorts.
-          </p>
-          <ul className="mt-8 space-y-3.5">
-            {TRUST.map((t) => (
-              <li key={t.text} className="flex items-center gap-3 text-sm text-white/85">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-brand-gold">
-                  {t.icon}
-                </span>
-                {t.text}
-              </li>
-            ))}
-          </ul>
-        </div>
+          {/* Trusted strip */}
+          <div className="flex items-center gap-x-6 px-10 pb-7 text-sm font-semibold text-ink-400">
+            <span className="font-serif font-bold italic">Forbes</span>
+            <span>BBC</span>
+            <span className="font-extrabold tracking-tight">Microsoft</span>
+            <span className="font-extrabold tracking-[0.18em]">TEF</span>
+          </div>
+        </aside>
 
-        <p className="relative text-xs text-white/40">
-          © 2026 NUVORA · Academically governed online learning
-        </p>
-      </aside>
-
-      {/* Form column */}
-      <section className="flex items-center justify-center bg-surface-muted px-6 py-14">
-        <div className="w-full max-w-md">
-          <Link href="/" aria-label="NUVORA home" className="mb-8 inline-block lg:hidden">
-            <Logo />
+        {/* ── Right panel ── */}
+        <section className="relative flex min-h-screen items-center justify-center bg-white">
+          {/* Skip */}
+          <Link
+            href="/"
+            className="absolute right-6 top-8 inline-flex items-center gap-x-1 text-sm text-ink-500 transition-colors hover:text-ink-700"
+          >
+            Skip
+            <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path
+                fillRule="evenodd"
+                d="M7.21 14.77a.75.75 0 01.02-1.06L10.94 10 7.23 6.29a.75.75 0 111.06-1.06l4.24 4.24a.75.75 0 010 1.06l-4.24 4.24a.75.75 0 01-1.08 0z"
+                clipRule="evenodd"
+              />
+            </svg>
           </Link>
-          <h2 className="text-3xl font-extrabold tracking-tight text-brand-navy">{title}</h2>
-          {subtitle && <p className="mt-2 text-sm text-ink-500">{subtitle}</p>}
-          <div className="mt-8">{children}</div>
-          {footer && <div className="mt-6 border-t border-ink-100 pt-5 text-center text-sm text-ink-500">{footer}</div>}
-        </div>
-      </section>
-    </main>
+
+          <div className="w-full max-w-md px-6 py-16">
+            <div className="text-left">
+              <h2 className="text-2xl font-semibold tracking-tight text-[#0d2a49]">{title}</h2>
+              {subtitle && <p className="mt-1 text-sm leading-5 text-ink-500">{subtitle}</p>}
+            </div>
+
+            <div className="mt-6">{children}</div>
+
+            {footer && <div className="mt-6 border-t border-ink-100 pt-5 text-center text-sm text-ink-500">{footer}</div>}
+          </div>
+
+          {/* Chat button */}
+          <a
+            href="/contact"
+            aria-label="Chat with support"
+            className="absolute -bottom-1 -right-2 hidden size-11 items-center justify-center rounded-full bg-brand-gold shadow-lg transition-colors hover:bg-brand-gold-hover lg:flex"
+          >
+            <svg className="size-5 text-ink-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20 11.5a8.5 8.5 0 01-9 8.48 9.7 9.7 0 01-3.8-.77L3 20l1.08-3.8A8.48 8.48 0 013 11.5 8.5 8.5 0 0111.5 3h.01A8.5 8.5 0 0120 11.5z" />
+            </svg>
+          </a>
+        </section>
+      </div>
+    </div>
   );
 }

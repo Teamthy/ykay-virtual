@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { AuthShell } from "@/components/layout/AuthShell";
 import { toast } from "sonner";
-import { login, register } from "@/features/auth/api";
+import { AuthShell } from "@/components/layout/AuthShell";
+import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
+import { GoogleButton } from "@/components/ui/google-button";
+import { register } from "@/features/auth/api";
 
 const registerSchema = z
   .object({
@@ -19,27 +20,21 @@ const registerSchema = z
   })
   .refine((v) => v.password === v.confirm, { message: "Passwords do not match", path: ["confirm"] });
 
-const ROLE_COPY: Record<string, { title: string; desc: string }> = {
-  PARENT: { title: "I'm a parent", desc: "Book tutors and programmes for my child" },
-  STUDENT: { title: "I'm a student", desc: "Learn with NUVORA tutors" },
-  TUTOR: { title: "I'm a tutor", desc: "Apply to teach and earn" },
-};
+const ROLES = [
+  { value: "PARENT" as const, label: "Parent", desc: "Book tutors & programmes for my child", icon: "👪" },
+  { value: "STUDENT" as const, label: "Student", desc: "Learn with NUVORA tutors", icon: "🎓" },
+  { value: "TUTOR" as const, label: "Tutor", desc: "Apply to teach and earn", icon: "✍️" },
+];
 
 function RegisterInner() {
   const router = useRouter();
   const sp = useSearchParams();
-  const refCode = sp.get("ref") ?? "";
+  const refCode = sp.get("ref") ?? undefined;
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-      confirm: "",
-      role: "PARENT" as "PARENT" | "STUDENT" | "TUTOR",
-      referral_code: refCode,
-    },
+    defaultValues: { email: "", password: "", confirm: "", role: "PARENT" as "PARENT" | "STUDENT" | "TUTOR", referral_code: refCode ?? "" },
     validators: {
       onSubmit: ({ value }) => {
         const res = registerSchema.safeParse(value);
@@ -50,20 +45,21 @@ function RegisterInner() {
       setSubmitting(true);
       setError(null);
       try {
-        const user = await register({
+        await register({
           email: value.email,
           password: value.password,
           roles: [value.role],
           referral_code: value.referral_code || undefined,
         });
-        // Auto-login after registration (smooth first-run experience).
-        await login(value.email, value.password);
         toast.success("Account created — welcome to NUVORA!");
-        if (user.roles.includes("TUTOR")) router.push("/become-tutor/apply");
-        else if (user.roles.includes("PARENT")) router.push("/onboarding/learner");
-        else router.push("/dashboard");
+        // Stateful onboarding: role-specific next step.
+        if (value.role === "TUTOR") {
+          router.push("/become-tutor/apply");
+        } else {
+          router.push(`/onboarding?role=${value.role}`);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Registration failed");
+        setError(err instanceof Error ? err.message : "Could not create account");
       } finally {
         setSubmitting(false);
       }
@@ -77,121 +73,122 @@ function RegisterInner() {
       footer={
         <>
           Already registered?{" "}
-          <Link href="/login" className="text-brand-blue font-semibold hover:underline">
+          <Link href="/login" className="font-semibold text-brand-gold-dark hover:underline">
             Log in
           </Link>
         </>
       }
     >
-      <div className="rounded-2xl border border-ink-100 bg-white p-7 shadow-soft">
+      <div className="space-y-5">
+        <GoogleButton label="Sign up with Google" />
+
+        <div className="flex items-center gap-3 text-xs uppercase text-ink-400 before:flex-1 before:border-t before:border-ink-200 before:me-4 after:flex-1 after:border-t after:border-ink-200 after:ms-4">
+          Or
+        </div>
+
         <form
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
             void form.handleSubmit();
           }}
-          className="mt-8 border rounded-2xl p-6 space-y-4"
+          className="space-y-4"
           noValidate
         >
+          {/* Role chips (Preline role-selection template) */}
           <form.Field name="role">
             {(field) => (
-              <fieldset>
-                <span className="text-sm font-medium">I am a…</span>
-                <div className="mt-2 grid gap-2">
-                  {(["PARENT", "STUDENT", "TUTOR"] as const).map((r) => (
+              <div>
+                <span className="mb-2 block text-sm font-medium text-ink-800">I am a…</span>
+                <div className="flex flex-wrap gap-2">
+                  {ROLES.map((r) => (
                     <button
-                      key={r}
+                      key={r.value}
                       type="button"
-                      onClick={() => field.handleChange(r)}
-                      className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                        field.state.value === r ? "border-brand-blue bg-brand-blue/5" : "hover:border-ink-400"
-                      }`}
+                      onClick={() => field.handleChange(r.value)}
+                      className={
+                        field.state.value === r.value
+                          ? "inline-flex h-11 items-center gap-2 rounded-xl border-2 border-brand-gold bg-brand-gold-light px-4 text-sm font-medium text-ink-900"
+                          : "inline-flex h-11 items-center gap-2 rounded-xl border border-ink-200 bg-white px-4 text-sm text-ink-700 transition-colors hover:border-brand-gold hover:bg-brand-gold-light/40"
+                      }
                     >
-                      <span className="text-sm font-semibold">{ROLE_COPY[r].title}</span>
-                      <span className="block text-xs text-ink-500">{ROLE_COPY[r].desc}</span>
+                      <span aria-hidden="true">{r.icon}</span>
+                      {r.label}
                     </button>
                   ))}
                 </div>
-              </fieldset>
+              </div>
             )}
           </form.Field>
+
           <form.Field name="email">
             {(field) => (
-              <label className="block text-sm">
-                <span className="font-medium">Email</span>
+              <div>
+                <label htmlFor="reg-email" className="mb-1.5 block text-sm font-medium text-ink-800">
+                  Email
+                </label>
                 <input
+                  id="reg-email"
                   type="email"
                   autoComplete="email"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className={INPUT_CLS}
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                 />
                 {field.state.meta.errors?.length ? (
-                  <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
+                  <p className="mt-1.5 text-xs text-red-600">{field.state.meta.errors.join(", ")}</p>
                 ) : null}
-              </label>
+              </div>
             )}
           </form.Field>
-          {refCode && (
-            <p className="rounded-xl bg-brand-blue/5 border border-brand-blue/20 px-4 py-3 text-xs text-brand-blue font-semibold">
-              🎁 You were referred! Code <span className="font-mono">{refCode}</span> will be applied to your account.
-            </p>
-          )}
-          <form.Field name="referral_code">
-            {(field) => (
-              <label className="block text-sm">
-                <span className="font-medium">Referral code (optional)</span>
-                <input
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="e.g. ABC12345 — earn a reward together"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-                />
-              </label>
-            )}
-          </form.Field>
-          <div className="grid grid-cols-2 gap-3">
+
+          <div className="grid grid-cols-2 gap-4">
             <form.Field name="password">
               {(field) => (
-                <label className="block text-sm">
-                  <span className="font-medium">Password</span>
-                  <input
-                    type="password"
-                    autoComplete="new-password"
-                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                </label>
+                <PasswordInput
+                  label="Password"
+                  autoComplete="new-password"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors?.join(", ")}
+                />
               )}
             </form.Field>
             <form.Field name="confirm">
               {(field) => (
-                <label className="block text-sm">
-                  <span className="font-medium">Confirm</span>
-                  <input
-                    type="password"
-                    autoComplete="new-password"
-                    className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  {field.state.meta.errors?.length ? (
-                    <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
-                  ) : null}
-                </label>
+                <PasswordInput
+                  label="Confirm"
+                  autoComplete="new-password"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors?.join(", ")}
+                />
               )}
             </form.Field>
           </div>
-          {error ? (
-            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
+
+          {refCode && (
+            <p className="rounded-lg border border-brand-gold/30 bg-brand-gold-light px-4 py-3 text-xs font-semibold text-brand-gold-dark">
+              🎁 Referral code <span className="font-mono">{refCode}</span> will be applied to your account.
+            </p>
+          )}
+
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
               {error}
             </div>
-          ) : null}
-          <Button type="submit" variant="gold" size="lg" className="w-full" disabled={submitting}>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+          >
             {submitting ? "Creating account…" : "Create account"}
-          </Button>
+          </button>
         </form>
       </div>
     </AuthShell>
@@ -200,7 +197,7 @@ function RegisterInner() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<p className="text-center text-ink-500 py-16">Loading…</p>}>
+    <Suspense fallback={<p className="py-16 text-center text-ink-500">Loading…</p>}>
       <RegisterInner />
     </Suspense>
   );

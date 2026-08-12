@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { requestLoginCode, confirmLoginCode } from "@/features/auth/api";
+import { INPUT_CLS } from "@/components/ui/password-input";
+import { Button } from "@/components/ui/button";
 
 // Magic-link login (phase 18): request a 6-digit code → enter it → session.
 

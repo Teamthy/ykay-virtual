@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { PasswordInput } from "@/components/ui/password-input";
+import { Button } from "@/components/ui/button";
 import { confirmPasswordReset } from "@/features/auth/api";
 
 const resetSchema = z
@@ -73,50 +74,42 @@ function ResetPasswordInner() {
           e.stopPropagation();
           void form.handleSubmit();
         }}
-        className="mt-8 border rounded-2xl p-6 space-y-4"
+        className="mt-6 space-y-4"
         noValidate
       >
         <form.Field name="password">
           {(field) => (
-            <label className="block text-sm">
-              <span className="font-medium">New password</span>
-              <input
-                type="password"
-                autoComplete="new-password"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-              />
-              {field.state.meta.errors?.length ? (
-                <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
-              ) : null}
-            </label>
+            <PasswordInput
+              label="New password"
+              autoComplete="new-password"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              error={field.state.meta.errors?.join(", ")}
+            />
           )}
         </form.Field>
         <form.Field name="confirm">
           {(field) => (
-            <label className="block text-sm">
-              <span className="font-medium">Confirm new password</span>
-              <input
-                type="password"
-                autoComplete="new-password"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-              />
-              {field.state.meta.errors?.length ? (
-                <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
-              ) : null}
-            </label>
+            <PasswordInput
+              label="Confirm new password"
+              autoComplete="new-password"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              error={field.state.meta.errors?.join(", ")}
+            />
           )}
         </form.Field>
         {error ? (
-          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
         ) : null}
-        <Button type="submit" variant="gold" size="lg" className="w-full" disabled={submitting}>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+        >
           {submitting ? "Updating…" : "Update password"}
-        </Button>
-        <Link href="/login" className="block text-center text-sm text-brand-blue font-semibold hover:underline">
+        </button>
+        <Link href="/login" className="block text-center text-sm font-semibold text-brand-gold-dark hover:underline">
           Back to login
         </Link>
       </form>

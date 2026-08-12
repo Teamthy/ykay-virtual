@@ -58,3 +58,24 @@ func TestAuth_LoginCodeFlow(t *testing.T) {
 	assert.Equal(t, "magic@example.com", me.Email)
 	assert.NotEmpty(t, roles2)
 }
+
+// Google OAuth: unconfigured → conflict; configured → consent URL built.
+func TestAuth_GoogleOAuth_Config(t *testing.T) {
+	env, _ := newAuthEnvWithTokens(t)
+	g := NewGoogleAuthService(GoogleOAuthConfig{}, env.svc)
+	assert.False(t, g.Enabled())
+
+	g2 := NewGoogleAuthService(GoogleOAuthConfig{
+		ClientID: "id-123", ClientSecret: "secret", RedirectURL: "http://localhost:8080/api/v1/auth/google/callback",
+	}, env.svc)
+	assert.True(t, g2.Enabled())
+	u, state, err := g2.BuildAuthURL()
+	require.NoError(t, err)
+	assert.Contains(t, u, "accounts.google.com/o/oauth2/v2/auth")
+	assert.Contains(t, u, "client_id=id-123")
+	assert.NotEmpty(t, state)
+
+	// Exchange with a bad state → unauthorized.
+	_, _, _, err = g2.ExchangeCode(context.Background(), "code", "bad-state", "1.2.3.4", "test")
+	assert.ErrorIs(t, err, domain.ErrUnauthorized)
+}

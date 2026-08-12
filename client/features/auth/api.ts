@@ -103,3 +103,10 @@ export async function confirmLoginCode(email: string, code: string): Promise<Cur
   });
   return res.data;
 }
+
+// --- Google OAuth (phase 29) ---
+
+export async function getGoogleAuthURL(): Promise<{ url: string; state: string }> {
+  const res = await apiFetch<{ url: string; state: string }>("/auth/google/url");
+  return res.data;
+}
