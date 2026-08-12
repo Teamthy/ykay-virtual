@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
+import { CategoryRail } from "@/components/layout/CategoryRail";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
@@ -70,7 +71,12 @@ export default function PricingPage() {
       </PageHero>
 
 
-      {TIERS.map((tier) => (
+      <div className="mt-10 grid lg:grid-cols-[220px_1fr] gap-8 items-start">
+        <aside className="lg:sticky lg:top-28">
+          <CategoryRail />
+        </aside>
+        <div>
+{TIERS.map((tier) => (
         <section key={tier.tab} className="mt-12">
           <h2 className="text-2xl font-extrabold mb-5">{tier.tab}</h2>
           <div className="grid md:grid-cols-3 gap-5">
@@ -125,6 +131,8 @@ export default function PricingPage() {
           ))}
         </div>
       </section>
+            </div>
+      </div>
     </main>
   );
 }

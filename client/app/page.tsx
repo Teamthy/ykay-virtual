@@ -2,6 +2,8 @@ import { CategoryPills } from "@/components/home/CategoryPills";
 import { HeroReference } from "@/components/home/HeroReference";
 import { StatsBand } from "@/components/home/StatsBand";
 import { SuccessRateBand } from "@/components/home/SuccessRateBand";
+import { LearningNeeds } from "@/components/home/LearningNeeds";
+import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { HeroSearch } from "@/features/programmes/components/HeroSearch";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
@@ -33,6 +35,7 @@ export default function HomePage() {
       <UpcomingCohorts />
       <HowItWorksStrip />
       <CommunitySection />
+      <LearningNeeds />
       <PartnerSection />
       <ResultsSection />
       <TestimonialsSection />
@@ -42,6 +45,7 @@ export default function HomePage() {
       <SuccessRateBand />
       <LeadershipTeaser />
       <HomeFAQ />
+      <GuaranteeBand />
       <BecomeTutorCTA />
     </>
   );

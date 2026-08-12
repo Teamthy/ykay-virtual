@@ -3,6 +3,9 @@ import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import { CategoryRail } from "@/components/layout/CategoryRail";
+import { StepsToTutor } from "@/components/home/StepsToTutor";
+import { SuccessChampions } from "@/components/home/SuccessChampions";
+import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
@@ -97,6 +100,16 @@ export default function ExamPrepPage() {
           <CohortStrip />
         </div>
       </div>
+          <StepsToTutor
+        title="Get exam-ready in 3 simple steps"
+        steps={[
+          { n: "1", title: "Pick your exam", desc: "Choose WAEC, NECO, JAMB, IGCSE, A-Level or an entrance exam — we cover every major syllabus." },
+          { n: "2", title: "Join your revision cohort", desc: "Match with a vetted subject specialist and a small-group cohort that fits your schedule." },
+          { n: "3", title: "Pass with past papers", desc: "Work through past-paper practice, mocks and weekly progress checks until exam day." },
+        ]}
+      />
+      <SuccessChampions />
+      <GuaranteeBand />
     </main>
   );
 }

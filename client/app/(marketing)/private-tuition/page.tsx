@@ -3,6 +3,8 @@ import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import { CategoryRail } from "@/components/layout/CategoryRail";
+import { StepsToTutor } from "@/components/home/StepsToTutor";
+import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PrivateTuitionWizard } from "@/features/tuition/PrivateTuitionWizard";
 
 export const metadata: Metadata = buildMetadata({
@@ -100,6 +102,15 @@ export default function PrivateTuitionPage() {
       </section>
             </div>
       </div>
+          <StepsToTutor
+        title="Get a tutor in 3 simple steps"
+        steps={[
+          { n: "1", title: "Place a tutor request", desc: "Fill a quick request form and tell us your learner's goals, schedule and the subjects you need help with." },
+          { n: "2", title: "Meet your perfect tutor", desc: "You receive options of expert tutors near you — review profiles, ratings and availability, then select your preferred tutor." },
+          { n: "3", title: "Study and succeed", desc: "Begin lessons immediately with an agreed plan, protected payments and weekly progress reports for parents." },
+        ]}
+      />
+      <GuaranteeBand />
     </main>
   );
 }
