@@ -50,3 +50,18 @@ fmt: ## Format Go code
 
 smoke: ## Boot API with memory fallback and hit health + catalogue
 	@echo "Run: go run ./cmd/api  (then curl localhost:8080/health)"
+
+# ── Production ops (Phase 40) ──────────────────────────────────────────────
+.PHONY: deploy backup restore prod-infra
+
+deploy: ## One-command production deploy (docker compose + migrate + health)
+	bash scripts/deploy.sh
+
+backup: ## Manual database backup (custom format)
+	bash scripts/backup.sh
+
+restore: ## Restore a backup: make restore DUMP=backups/nuvora-<ts>.dump
+	bash scripts/restore.sh "$(DUMP)"
+
+prod-infra: ## Bring up the full production stack
+	docker compose -f docker-compose.prod.yml up -d --build

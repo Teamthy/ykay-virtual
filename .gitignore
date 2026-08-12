@@ -16,3 +16,7 @@ legacy/server/.env
 
 # e2e API binary
 .e2e-api
+
+# Production secrets + local backups
+.env.production
+backups/

@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Self-contained server build for the Docker image (Phase 40).
+  output: "standalone",
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" }

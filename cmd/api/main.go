@@ -102,6 +102,11 @@ type Repositories struct {
 }
 
 func main() {
+	// Container HEALTHCHECK probe: exits 0 when the process is alive.
+	// (scratch images have no wget/curl; the API itself answers the probe.)
+	if len(os.Args) > 1 && os.Args[1] == "-healthcheck" {
+		return
+	}
 	_ = godotenv.Load()
 	cfg := config.Load()
 	if err := cfg.Validate(); err != nil {

@@ -1,0 +1,139 @@
+# NUVORA — production compose stack (Phase 40).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Secrets: put real values in .env.production (gitignored) and reference
+# ${VAR} below; the API refuses to start with dev defaults in production
+# (config.Validate). A reverse proxy (Caddy/Traefik/Nginx) in front of
+# `web:3000` terminates TLS and forwards /api/v1 via the web container's
+# rewrite — the browser only ever talks to the web origin.
+
+name: nuvora-prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nuvora}
+      POSTGRES_USER: ${POSTGRES_USER:-nuvora}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nuvora} -d ${POSTGRES_DB:-nuvora}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No ports exposed to the host — only reachable inside the network.
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["migrate", "--cmd=up"]
+    environment: &api_env
+      ENVIRONMENT: production
+      PORT: "8080"
+      DATABASE_URL: postgres://${POSTGRES_USER:-nuvora}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nuvora}?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      SITE_URL: ${SITE_URL:?set SITE_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      PAYSTACK_SECRET: ${PAYSTACK_SECRET:-}
+      FLUTTERWAVE_SECRET: ${FLUTTERWAVE_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URL: ${SITE_URL}/auth/google/callback
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CHATBOT_ENABLED: ${CHATBOT_ENABLED:-true}
+      EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-no-reply@nuvora.com}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_PUBLIC_BUCKET: ${S3_PUBLIC_BUCKET:-nuvora-public}
+      S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-nuvora-private}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment: *api_env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/api", "-healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    # Scale out: docker compose up -d --scale api=2 (stateless except the
+    # in-memory rate limiter — pin to 1 or add Redis-backed limiting).
+
+  web:
+    build:
+      context: ./client
+      args:
+        API_PROXY_TARGET: http://api:8080
+    restart: unless-stopped
+    environment:
+      # Browser fetches are same-origin via the rewrite; these feed SSR.
+      NEXT_PUBLIC_API_URL: ${SITE_URL}/api/v1
+      NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+      API_PROXY_TARGET: http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000" # bind locally; proxy TLS in front
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    entrypoint: >
+      /bin/sh -c '
+      while true; do
+        ts=$$(date -u +%Y%m%dT%H%M%SZ);
+        pg_dump -h postgres -U ${POSTGRES_USER:-nuvora} -d ${POSTGRES_DB:-nuvora} -Fc \
+          > /backups/nuvora-$$ts.dump;
+        find /backups -name "nuvora-*.dump" -mtime +${BACKUP_RETENTION_DAYS:-14} -delete;
+        sleep ${BACKUP_INTERVAL_HOURS:-24}h;
+      done'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:ro
+      - ./backups:/backups
+
+volumes:
+  postgres_data:
+  redis_data:
