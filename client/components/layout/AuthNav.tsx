@@ -19,14 +19,9 @@ export function AuthNav() {
 
   if (!user) {
     return (
-      <div className="flex items-center gap-3">
-        <Link href="/login" className="text-sm font-semibold text-ink-800 hover:text-brand-blue transition-colors">
-          Log in
-        </Link>
-        <Link href="/register" className="btn-primary !py-2.5 !px-5 text-sm">
-          Join free
-        </Link>
-      </div>
+      <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900">
+        Sign in
+      </Link>
     );
   }
 

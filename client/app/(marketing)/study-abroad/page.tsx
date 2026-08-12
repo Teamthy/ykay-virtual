@@ -153,7 +153,7 @@ export default function StudyAbroadPage() {
                 </Link>
               </div>
             </div>
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-navy to-brand-blue p-8 text-white shadow-card">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#060F26] to-brand-navy p-8 text-white shadow-card">
               <Globe2 size={120} className="absolute -right-6 -bottom-6 text-white/10" />
               <p className="font-display text-5xl tracking-[0.02em]">1600+</p>
               <p className="mt-1 text-white/80">universities &amp; colleges</p>

@@ -20,7 +20,7 @@ export function TutorCard({ tutor }: { tutor: Tutor }) {
               className="h-16 w-16 rounded-full object-cover"
             />
           ) : (
-            <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-brand-navy to-brand-blue font-display text-2xl text-white">
+            <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-[#060F26] to-brand-navy font-display text-2xl text-white">
               {tutor.display_name.slice(0, 1)}
             </div>
           )}

@@ -135,7 +135,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
       noValidate
     >
       {/* Navy summary header (Tuteria payment flow) */}
-      <div className="bg-gradient-to-br from-brand-navy to-brand-blue px-6 py-5 text-white">
+      <div className="bg-gradient-to-br from-[#060F26] to-brand-navy px-6 py-5 text-white">
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="font-display text-xl tracking-[0.02em]">Secure checkout</h2>
           <span className="font-display text-3xl tracking-[0.02em]">

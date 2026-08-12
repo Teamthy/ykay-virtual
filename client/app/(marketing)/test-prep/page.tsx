@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
-import { PageHero } from "@/components/layout/PageHero";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
-import { BookOpenCheck, GraduationCap, Languages, FileCheck } from "lucide-react";
+import { BookOpenCheck, GraduationCap, Languages, FileCheck, ArrowRight } from "lucide-react";
 
 export const revalidate = 600;
 
@@ -35,15 +34,72 @@ export default function TestPrepPage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      <PageHero
-        eyebrow="95% Exam Success Rate"
-        title="Get expert help to ace your exam"
-        subtitle="IELTS, GMAT, ICAN, GRE, ACT, SATs, TOEFL and PTE — proven strategies and top tutors to get the score you need."
-        crumbs={[{ name: "Home", href: "/" }, { name: "Test Prep" }]}
-        align="center"
-      >
-        <a href="#tests" className="btn-gold">Get Started</a>
-      </PageHero>
+      {/* Preline hero: announcement + gradient title + buttons */}
+      <section className="relative overflow-hidden bg-white">
+        <div
+          className="pointer-events-none absolute inset-0 before:absolute before:inset-x-0 before:top-0 before:h-full before:bg-[radial-gradient(ellipse_at_top,rgba(244,180,0,0.10),transparent_55%)]"
+          aria-hidden="true"
+        />
+        <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:px-10 md:pt-20">
+          <div className="flex justify-center">
+            <a
+              href="#tests"
+              className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
+            >
+              Test season is here — 95% success rate
+              <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
+                IELTS · GMAT · GRE
+              </span>
+            </a>
+          </div>
+
+          <div className="mx-auto mt-6 max-w-2xl text-center">
+            <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
+              Get expert help to{" "}
+              <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
+                ace your exam
+              </span>
+            </h1>
+          </div>
+
+          <div className="mx-auto mt-5 max-w-3xl text-center">
+            <p className="text-lg text-ink-600">
+              IELTS, GMAT, ICAN, GRE, ACT, SATs, TOEFL and PTE — proven strategies and top tutors
+              to get the score you need.
+            </p>
+          </div>
+
+          <div className="mt-8 flex justify-center gap-3">
+            <a
+              href="#tests"
+              className="inline-flex items-center gap-x-3 rounded-md bg-gradient-to-tl from-brand-gold-dark to-brand-gold py-3 px-4 text-sm font-medium text-white transition-all hover:from-brand-gold hover:to-brand-gold-hover"
+            >
+              Get Started
+              <ArrowRight size={16} />
+            </a>
+            <a
+              href="/gmat"
+              className="inline-flex items-center gap-x-2 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+            >
+              GMAT Prep →
+            </a>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center justify-center gap-1.5 sm:flex-row sm:gap-3">
+            <div className="flex flex-wrap gap-1 sm:gap-3">
+              <span className="text-sm text-ink-600">Success rate:</span>
+              <span className="text-sm font-bold text-ink-900">95%</span>
+            </div>
+            <svg className="hidden size-5 text-ink-300 sm:block" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round" />
+            </svg>
+            <div className="flex flex-wrap gap-1 sm:gap-3">
+              <span className="text-sm text-ink-600">Score 28+ for US undergrad:</span>
+              <span className="text-sm font-bold text-ink-900">Achievable</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Tests grid */}
       <section id="tests" className="scroll-mt-24 bg-white py-16">

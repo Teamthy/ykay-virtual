@@ -32,7 +32,7 @@ export function Progress({ value, label, showValue = true, size = "md", classNam
       >
         <div
           className={cn(
-            "h-full rounded-full bg-gradient-to-r from-brand-navy to-brand-blue transition-all duration-500",
+            "h-full rounded-full bg-gradient-to-r from-brand-navy to-brand-gold transition-all duration-500",
             barClassName
           )}
           style={{ width: `${clamped}%` }}

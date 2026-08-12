@@ -20,7 +20,7 @@ export function PageHero({ title, subtitle, eyebrow, crumbs, align = "center", c
   return (
     <section
       className={cn(
-        "relative overflow-hidden bg-gradient-to-br from-brand-navy-dark via-brand-navy to-brand-blue text-white",
+        "relative overflow-hidden bg-gradient-to-br from-[#060F26] via-brand-navy to-brand-navy text-white",
         className
       )}
     >
