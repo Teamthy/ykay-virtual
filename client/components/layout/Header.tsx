@@ -15,7 +15,7 @@ const SERVICE_GROUPS = [
     title: "K-12 Academics",
     icon: <GraduationCap size={15} />,
     items: [
-      { label: "Home Tutoring", href: "/private-tuition" },
+      { label: "Home Tutoring", href: "/hometutors" },
       { label: "Group Cohorts", href: "/cohorts" },
       { label: "British Curriculum", href: "/curricula/british" },
       { label: "Nigerian Curriculum", href: "/curricula/nigerian" },

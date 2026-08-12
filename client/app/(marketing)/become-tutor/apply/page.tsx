@@ -27,7 +27,11 @@ export default function BecomeTutorApplyPage() {
   return (
     <main className="container-x py-12 max-w-2xl">
       <Link href="/become-tutor" className="text-sm text-brand-blue font-semibold hover:underline">← Back to Become a Tutor</Link>
-      <div className="mt-4">
+      <div className="mt-6 text-center">
+        <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">You belong here!</p>
+        <p className="mt-2 text-sm text-ink-500">Create your tutor profile and start earning money teaching what you love.</p>
+      </div>
+      <div className="mt-6">
         <OnboardingStepper current={0} />
         <ProfileStep
           userId={user.id}

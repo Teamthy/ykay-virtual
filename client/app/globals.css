@@ -7,7 +7,55 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply font-sans text-ink-800 bg-white antialiased;
+    @apply font-sans text-ink-600 bg-white antialiased;
+  }
+
+  /* Typography defaults (Tuteria brand) */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    color: var(--text-primary, #001028);
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+    font-synthesis: none; /* Anton is a single-weight face — no fake bold */
+  }
+
+  p {
+    color: var(--text-secondary, #4A5568);
+    line-height: 1.7;
+  }
+
+  a {
+    color: var(--text-link, #056FD2);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--text-link-hover, #194F82);
+  }
+
+  button {
+    font-family: var(--font-body), system-ui, sans-serif;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  img,
+  video,
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
 }
 

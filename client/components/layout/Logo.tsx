@@ -17,7 +17,7 @@ export function Logo({ className, dark = false }: { className?: string; dark?: b
       </span>
       <span
         className={cn(
-          "text-[1.35rem] font-extrabold uppercase tracking-[0.08em] leading-none",
+          "font-display text-[1.45rem] uppercase leading-none tracking-[0.02em]",
           dark ? "text-white" : "text-brand-navy"
         )}
       >

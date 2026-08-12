@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 // Study Abroad · Tuteria Plus · Languages equivalent, mapped to NUVORA pages).
 
 const CATEGORIES = [
-  { label: "Home Tutoring", href: "/private-tuition", icon: <Home size={16} /> },
+  { label: "Home Tutoring", href: "/hometutors", icon: <Home size={16} /> },
   { label: "UTME / JAMB Prep", href: "/exam-prep", icon: <FileCheck size={16} /> },
   { label: "Entrance Exams", href: "/exam-prep", icon: <GraduationCap size={16} /> },
   { label: "Online Classes", href: "/online-classes", icon: <MonitorPlay size={16} /> },

@@ -9,41 +9,47 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // NUVORA brand system — modern, calm, premium, academic
+        // Tuteria brand system (v2.tuteria.com palette + prep orange)
         brand: {
-          navy: "#0A1F44",       // Primary — deep academic navy
-          "navy-dark": "#060F26",
-          blue: "#1E5EFF",       // Accent — clear digital blue
-          "blue-dark": "#1648CC",
-          "blue-light": "#E9F0FF",
-          gold: "#C9A227",       // Restrained gold for premium highlights
-          "gold-dark": "#A8841C",
-          "gold-light": "#F7F1DE",
-          green: "#0F7938",      // Success
-          "green-dark": "#0A5C2A",
+          navy: "#194F82",       // Primary — Tuteria navy blue
+          "navy-dark": "#001028",
+          blue: "#056FD2",       // Bright blue accent
+          "blue-dark": "#044e94",
+          "blue-light": "#E6F0FA",
+          sky: "#56ACE0",
+          gold: "#FFC10D",       // Gold accent (ratings)
+          "gold-dark": "#d9a400",
+          "gold-light": "#FFF8E6",
+          orange: "#ED6D20",     // Secondary accent
+          "orange-light": "#FDF0E8",
+          green: "#009A49",      // Success
+          "green-dark": "#007a3a",
+          "green-light": "#F2F9EE",
+          purple: "#0A033C",     // Prep deep purple (tuteriaprep)
+          "prep-orange": "#FF6636",
         },
         ink: {
-          900: "#0B1220",
-          800: "#141B2C",
-          700: "#2B3448",
-          600: "#475069",
-          500: "#5D6B84",
-          400: "#8794AC",
-          300: "#AEB9CE",
-          200: "#D3DCEA",
-          100: "#E8EEF7",
-          50: "#F5F8FD",
+          900: "#001028",
+          800: "#1A202C",
+          700: "#2D3748",
+          600: "#4A5568",
+          500: "#718096",
+          400: "#98A2B3",
+          300: "#CBD5E0",
+          200: "#E3E7ED",
+          100: "#EDF2F7",
+          50: "#F7FAFC",
         },
         surface: {
           DEFAULT: "#ffffff",
-          muted: "#F3F6FB",
-          subtle: "#F8FAFE",
+          muted: "#F5F8FC",
+          subtle: "#FAFCFE",
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        display: ["var(--font-inter)", "Inter", "sans-serif"],
-        serif: ["Georgia", "serif"],
+        sans: ["var(--font-body)", "DM Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        body: ["var(--font-body)", "DM Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        display: ["var(--font-display)", "Anton", "system-ui", "sans-serif"],
       },
       fontSize: {
         "display-xl": ["56px", { lineHeight: "1.1", letterSpacing: "-1.5px", fontWeight: "800" }],

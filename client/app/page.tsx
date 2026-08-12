@@ -1,49 +1,40 @@
-import { CategoryPills } from "@/components/home/CategoryPills";
 import { HeroReference } from "@/components/home/HeroReference";
 import { StatsBand } from "@/components/home/StatsBand";
 import { SuccessRateBand } from "@/components/home/SuccessRateBand";
-import { LearningNeeds } from "@/components/home/LearningNeeds";
+import { ServicesShowcase } from "@/components/home/ServicesShowcase";
+import { ApproachSection } from "@/components/home/ApproachSection";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
-import { HeroSearch } from "@/features/programmes/components/HeroSearch";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
 import { TestimonialsSection } from "@/features/content/components/TestimonialsSection";
-import { TrustLogos } from "@/components/home/TrustLogos";
-import { CommunitySection } from "@/components/home/CommunitySection";
 import { PartnerSection } from "@/components/home/PartnerSection";
 import { ResultsSection } from "@/components/home/ResultsSection";
 import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
-import { StudentQuote } from "@/components/home/StudentQuote";
-import { TestPrepCard } from "@/components/home/TestPrepCard";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
-import { LeadershipTeaser } from "@/components/home/LeadershipTeaser";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
+
+// NUVORA home — Tuteria v2 structure: hero → popular services → stats →
+// programmes/cohorts → how it works → "right way" partner → results (3x) →
+// 5-step approach → testimonials → exam prep → FAQ → guarantee → tutor CTA.
 
 export default function HomePage() {
   return (
     <>
-      <CategoryPills />
       <HeroReference />
+      <ServicesShowcase />
       <StatsBand />
-      <div className="container-x -mt-10 relative z-20">
-        <HeroSearch />
-      </div>
-      <TrustLogos />
       <PopularProgrammes />
       <UpcomingCohorts />
       <HowItWorksStrip />
-      <CommunitySection />
-      <LearningNeeds />
       <PartnerSection />
       <ResultsSection />
+      <ApproachSection />
+      <TestimonialSlider />
       <TestimonialsSection />
       <ExamPrepGrid />
-      <StudentQuote />
-      <TestPrepCard />
       <SuccessRateBand />
-      <LeadershipTeaser />
       <HomeFAQ />
       <GuaranteeBand />
       <BecomeTutorCTA />

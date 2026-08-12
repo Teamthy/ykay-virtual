@@ -54,7 +54,7 @@ export function PageHero({ title, subtitle, eyebrow, crumbs, align = "center", c
           </p>
         )}
 
-        <h1 className={cn("mt-2 text-4xl font-extrabold tracking-tight md:text-5xl", align === "center" && "mx-auto max-w-3xl")}>
+        <h1 className={cn("mt-2 font-display text-4xl tracking-[0.02em] md:text-5xl", align === "center" && "mx-auto max-w-3xl")}>
           {title}
         </h1>
 

@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Anton, DM_Sans } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/layout/ChatWidget";
@@ -32,16 +32,23 @@ export const metadata: Metadata = {
   },
 };
 
-const inter = Inter({
+const anton = Anton({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: "400",
+  variable: "--font-display",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
   display: "swap",
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const orgLd = organizationJsonLd();
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${anton.variable} ${dmSans.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
       </head>

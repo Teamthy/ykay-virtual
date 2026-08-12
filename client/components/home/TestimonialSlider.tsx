@@ -32,7 +32,7 @@ export function TestimonialSlider() {
 
       <div className="max-w-[920px] mx-auto px-6 md:px-10">
         <div className="text-[100px] text-white/12 leading-[0.6] mb-5 font-serif">&ldquo;</div>
-        <h2 className="text-3xl md:text-4xl font-extrabold mb-11 tracking-tight">Parents love NUVORA</h2>
+        <h2 className="font-display mb-11 text-3xl tracking-[0.02em] md:text-4xl">Parents love NUVORA</h2>
         <p key={active} className="text-lg md:text-xl leading-relaxed mb-11 opacity-95 animate-fade-in">
           {testimonials[active].text}
         </p>
