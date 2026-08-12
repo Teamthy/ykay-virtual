@@ -6,11 +6,13 @@ import Link from "next/link";
 
 const PROGRAMMES = [
   { href: "/cohorts", label: "Group Cohorts" },
-  { href: "/curricula/british", label: "British Curriculum" },
-  { href: "/curricula/nigerian", label: "Nigerian Curriculum" },
+  { href: "/utme-2026", label: "UTME 2026 Prep" },
+  { href: "/gmat", label: "GMAT Prep" },
   { href: "/exam-prep", label: "Exam Preparation" },
+  { href: "/study-abroad", label: "Study Abroad" },
+  { href: "/nuvora-plus", label: "NUVORA Plus" },
+  { href: "/healthcare", label: "Healthcare Training" },
   { href: "/private-tuition", label: "Private Tuition" },
-  { href: "/digital-skills", label: "Digital Skills" },
 ];
 
 const COMPANY = [

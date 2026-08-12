@@ -25,8 +25,8 @@ const SERVICE_GROUPS = [
     title: "Tests & Exams",
     icon: <BookOpen size={15} />,
     items: [
-      { label: "UTME / JAMB Prep", href: "/exam-prep" },
-      { label: "IGCSE / GCSE Prep", href: "/curricula/british" },
+      { label: "UTME 2026 Prep", href: "/utme-2026" },
+      { label: "GMAT Prep", href: "/gmat" },
       { label: "WAEC / NECO", href: "/exam-prep" },
       { label: "Entrance Exams", href: "/exam-prep" },
     ],
@@ -45,10 +45,10 @@ const SERVICE_GROUPS = [
     title: "Premium & More",
     icon: <Star size={15} />,
     items: [
-      { label: "NUVORA Plus", href: "/pricing" },
+      { label: "NUVORA Plus", href: "/nuvora-plus" },
+      { label: "Study Abroad", href: "/study-abroad" },
+      { label: "Healthcare Training", href: "/healthcare" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Subjects", href: "/subjects" },
-      { label: "Programmes", href: "/programmes" },
     ],
   },
 ];

@@ -11,13 +11,13 @@ import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
   { label: "Home Tutoring", href: "/hometutors", icon: <Home size={16} /> },
-  { label: "UTME / JAMB Prep", href: "/exam-prep", icon: <FileCheck size={16} /> },
-  { label: "Entrance Exams", href: "/exam-prep", icon: <GraduationCap size={16} /> },
+  { label: "UTME 2026 Prep", href: "/utme-2026", icon: <FileCheck size={16} /> },
+  { label: "GMAT Prep", href: "/gmat", icon: <GraduationCap size={16} /> },
+  { label: "Entrance Exams", href: "/exam-prep", icon: <BookOpenCheck size={16} /> },
   { label: "Online Classes", href: "/online-classes", icon: <MonitorPlay size={16} /> },
-  { label: "Digital Skills", href: "/digital-skills", icon: <BookOpenCheck size={16} /> },
-  { label: "Study Abroad", href: "/for-schools", icon: <Globe2 size={16} /> },
-  { label: "NUVORA Plus", href: "/pricing", icon: <Star size={16} /> },
-  { label: "Languages", href: "/subjects", icon: <Languages size={16} /> },
+  { label: "Study Abroad", href: "/study-abroad", icon: <Globe2 size={16} /> },
+  { label: "NUVORA Plus", href: "/nuvora-plus", icon: <Star size={16} /> },
+  { label: "Healthcare", href: "/healthcare", icon: <Languages size={16} /> },
 ];
 
 export function CategoryRail() {
