@@ -5,7 +5,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { StepsToTutor } from "@/components/home/StepsToTutor";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { GmatLeadForm } from "@/features/programmes/components/GmatLeadForm";
-import { Globe2, Briefcase, MonitorPlay, Check } from "lucide-react";
+import { Globe2, Briefcase, MonitorPlay, Check, ArrowRight } from "lucide-react";
 
 export const revalidate = 600;
 
@@ -38,18 +38,79 @@ export default function GmatPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
 
-      <PageHero
-        eyebrow="GMAT Prep · Score 720+"
-        title="Pass your GMAT exam in one sitting"
-        subtitle="Achieve your target score for MBA or job tests with help from a top-rated GMAT tutor. Give us your details and we will bring success to you!"
-        crumbs={[{ name: "Home", href: "/" }, { name: "GMAT Prep" }]}
-        align="center"
-      >
-        <a href="#lead" className="btn-gold">Get a GMAT tutor</a>
-      </PageHero>
+      {/* Preline hero: announcement + gradient title + buttons */}
+      <section className="relative overflow-hidden bg-white">
+        <div
+          className="pointer-events-none absolute inset-0 before:absolute before:inset-x-0 before:top-0 before:h-full before:bg-[radial-gradient(ellipse_at_top,rgba(244,180,0,0.10),transparent_55%)]"
+          aria-hidden="true"
+        />
+        <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:px-10 md:pt-20">
+          {/* Announcement banner */}
+          <div className="flex justify-center">
+            <a
+              href="#lead"
+              className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
+            >
+              GMAT season is here — 95% success rate
+              <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
+                Score 720+
+              </span>
+            </a>
+          </div>
+
+          {/* Title */}
+          <div className="mx-auto mt-6 max-w-2xl text-center">
+            <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
+              Pass your GMAT exam{" "}
+              <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
+                in one sitting
+              </span>
+            </h1>
+          </div>
+
+          <div className="mx-auto mt-5 max-w-3xl text-center">
+            <p className="text-lg text-ink-600">
+              Achieve your target score for MBA or job tests with help from a top-rated GMAT tutor.
+              Give us your details and we will bring success to you!
+            </p>
+          </div>
+
+          {/* Buttons */}
+          <div className="mt-8 flex justify-center gap-3">
+            <a
+              href="#lead"
+              className="inline-flex items-center gap-x-3 rounded-md bg-gradient-to-tl from-brand-gold-dark to-brand-gold py-3 px-4 text-sm font-medium text-white transition-all hover:from-brand-gold hover:to-brand-gold-hover"
+            >
+              Get a GMAT tutor
+              <ArrowRight size={16} />
+            </a>
+            <a
+              href="#stats"
+              className="inline-flex items-center gap-x-2 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+            >
+              See our results
+            </a>
+          </div>
+
+          {/* Meta row */}
+          <div className="mt-6 flex flex-col items-center justify-center gap-1.5 sm:flex-row sm:gap-3">
+            <div className="flex flex-wrap gap-1 sm:gap-3">
+              <span className="text-sm text-ink-600">Average score:</span>
+              <span className="text-sm font-bold text-ink-900">720</span>
+            </div>
+            <svg className="hidden size-5 text-ink-300 sm:block" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round" />
+            </svg>
+            <div className="flex flex-wrap gap-1 sm:gap-3">
+              <span className="text-sm text-ink-600">GMAT students coached:</span>
+              <span className="text-sm font-bold text-ink-900">350+</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Stats + quote */}
-      <section className="bg-white py-16">
+      <section id="stats" className="scroll-mt-24 bg-white py-16">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-[1fr_1fr] gap-12 items-center">
           <div>
             <div className="grid grid-cols-3 gap-6">

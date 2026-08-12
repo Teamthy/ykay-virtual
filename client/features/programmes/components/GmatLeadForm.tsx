@@ -2,12 +2,24 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 
-// GMAT lead form (reference v2.tuteria.com/gmat): first name, phone,
-// country, email → creates a support ticket visible in the admin queue.
+// GMAT lead form — Preline floating-label style (name / phone / country /
+// email) → creates a support ticket visible in the admin queue.
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+
+const INPUT_CLS =
+  "peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 " +
+  "placeholder:text-transparent focus:border-brand-gold focus:ring-brand-gold disabled:opacity-50 " +
+  "focus:pt-6 focus:pb-2 not-placeholder-shown:pt-6 not-placeholder-shown:pb-2 autofill:pt-6 autofill:pb-2 " +
+  "focus:outline-none transition-colors";
+
+const LABEL_CLS =
+  "absolute top-0 inset-x-0 p-3 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 " +
+  "border border-transparent origin-top-left text-ink-800 " +
+  "peer-focus:scale-90 peer-focus:translate-x-0.5 peer-focus:-translate-y-1.5 peer-focus:text-ink-500 " +
+  "peer-not-placeholder-shown:scale-90 peer-not-placeholder-shown:translate-x-0.5 " +
+  "peer-not-placeholder-shown:-translate-y-1.5 peer-not-placeholder-shown:text-ink-500";
 
 export function GmatLeadForm() {
   const [form, setForm] = useState({ first_name: "", phone: "", country: "Nigeria", email: "" });
@@ -51,12 +63,12 @@ export function GmatLeadForm() {
 
   if (done) {
     return (
-      <div className="rounded-3xl border border-ink-100 bg-white p-8 shadow-card">
-        <h3 className="text-center text-xl font-bold text-brand-navy">Request received 🎉</h3>
-        <p className="mt-2 text-center text-sm text-ink-600">
+      <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
+        <h3 className="text-xl font-bold text-ink-900">Request received 🎉</h3>
+        <p className="mt-2 text-sm text-ink-600">
           Our GMAT advisors will contact <b>{form.first_name}</b> at {form.phone} shortly.
         </p>
-        <button onClick={() => setDone(false)} className="mt-5 w-full text-center text-sm font-semibold text-brand-blue hover:underline">
+        <button onClick={() => setDone(false)} className="mt-4 text-sm font-semibold text-brand-gold-dark hover:underline">
           Submit another request
         </button>
       </div>
@@ -69,38 +81,34 @@ export function GmatLeadForm() {
         e.preventDefault();
         void submit();
       }}
-      className="rounded-3xl border border-ink-100 bg-white p-8 shadow-card"
+      className="rounded-2xl bg-white p-4 shadow-lg sm:p-7"
     >
-      <h3 className="text-lg font-bold text-brand-navy">Get a GMAT tutor</h3>
-      <p className="mt-1 text-sm text-ink-500">Tell us your goal and we&apos;ll match a top-rated tutor.</p>
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-ink-900">Get a GMAT tutor</h3>
+        <p className="mt-2 text-sm text-ink-600">Tell us your goal and we&apos;ll match a top-rated tutor.</p>
+      </div>
 
-      <div className="mt-6 space-y-4">
-        <label className="block text-sm">
-          <span className="font-semibold text-ink-700">First Name</span>
-          <input
-            value={form.first_name}
-            onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-            placeholder="Your first name"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-          />
-        </label>
-        <label className="block text-sm">
-          <span className="font-semibold text-ink-700">Phone Number</span>
-          <input
-            inputMode="tel"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="+234 800 000 0000"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-          />
-        </label>
-        <div className="grid grid-cols-2 gap-4">
-          <label className="block text-sm">
-            <span className="font-semibold text-ink-700">Country</span>
+      <div className="mt-5 grid grid-cols-2 gap-4">
+        <div>
+          <div className="relative">
+            <input
+              type="text"
+              id="gmat-first-name"
+              className={INPUT_CLS}
+              placeholder="John"
+              value={form.first_name}
+              onChange={(e) => setForm({ ...form, first_name: e.target.value })}
+            />
+            <label htmlFor="gmat-first-name" className={LABEL_CLS}>First Name</label>
+          </div>
+        </div>
+        <div>
+          <div className="relative">
             <select
+              id="gmat-country"
+              className="peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 focus:border-brand-gold focus:ring-brand-gold focus:outline-none"
               value={form.country}
               onChange={(e) => setForm({ ...form, country: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
             >
               <option>Nigeria</option>
               <option>Ghana</option>
@@ -108,28 +116,56 @@ export function GmatLeadForm() {
               <option>South Africa</option>
               <option>Other</option>
             </select>
-          </label>
-          <label className="block text-sm">
-            <span className="font-semibold text-ink-700">Email</span>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="Your email"
-              className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-            />
-          </label>
+            <label htmlFor="gmat-country" className="absolute top-0 inset-x-0 p-3 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 border border-transparent origin-top-left text-ink-800 peer-focus:scale-90 peer-focus:translate-x-0.5 peer-focus:-translate-y-1.5 peer-focus:text-ink-500 peer-not-placeholder-shown:scale-90 peer-not-placeholder-shown:translate-x-0.5 peer-not-placeholder-shown:-translate-y-1.5 peer-not-placeholder-shown:text-ink-500">
+                Country
+              </label>
+            </div>
         </div>
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
-        <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy ? "Sending…" : "Send request"}
-        </Button>
-        <p className="text-center text-[11px] text-ink-400">
-          We&apos;ve helped hundreds of people like you pass their GMAT exams.
-        </p>
       </div>
+
+      <div className="relative mt-4">
+        <div className="relative">
+          <input
+            type="tel"
+            id="gmat-phone"
+            className={INPUT_CLS}
+            placeholder="+234 800 000 0000"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
+          <label htmlFor="gmat-phone" className={LABEL_CLS}>Phone Number</label>
+        </div>
+      </div>
+
+      <div className="relative mt-4">
+        <div className="relative">
+          <input
+            type="email"
+            id="gmat-email"
+            className={INPUT_CLS}
+            placeholder="you@email.com"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+          <label htmlFor="gmat-email" className={LABEL_CLS}>Email</label>
+        </div>
+      </div>
+
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+      <div className="mt-5">
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full rounded-lg bg-brand-gold py-3 px-4 text-sm font-medium text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:opacity-50"
+        >
+          {busy ? "Sending…" : "Send request"}
+        </button>
+      </div>
+
+      <p className="mt-4 text-center text-xs text-ink-400">
+        We&apos;ve helped hundreds of people like you pass their GMAT exams.
+      </p>
     </form>
   );
 }

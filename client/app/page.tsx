@@ -1,4 +1,4 @@
-import { HeroReference } from "@/components/home/HeroReference";
+import { HeroSlider } from "@/components/home/HeroSlider";
 import { StatsBand } from "@/components/home/StatsBand";
 import { SuccessRateBand } from "@/components/home/SuccessRateBand";
 import { ServicesShowcase } from "@/components/home/ServicesShowcase";
@@ -25,7 +25,7 @@ import { HomeFAQ } from "@/components/home/HomeFAQ";
 export default function HomePage() {
   return (
     <>
-      <HeroReference />
+      <HeroSlider />
       <ServicesShowcase />
       <StatsBand />
       <PopularProgrammes />

@@ -6,6 +6,18 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
 import { Stepper } from "@/components/ui/stepper";
 
+const FLOAT_INPUT =
+  "peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 " +
+  "placeholder:text-transparent focus:border-brand-gold focus:ring-brand-gold " +
+  "focus:pt-6 focus:pb-2 not-placeholder-shown:pt-6 not-placeholder-shown:pb-2 " +
+  "focus:outline-none transition-colors";
+const FLOAT_LABEL =
+  "absolute top-0 inset-x-0 p-3 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 " +
+  "border border-transparent origin-top-left text-ink-800 " +
+  "peer-focus:scale-90 peer-focus:translate-x-0.5 peer-focus:-translate-y-1.5 peer-focus:text-ink-500 " +
+  "peer-not-placeholder-shown:scale-90 peer-not-placeholder-shown:translate-x-0.5 " +
+  "peer-not-placeholder-shown:-translate-y-1.5 peer-not-placeholder-shown:text-ink-500";
+
 // 7-step private tuition request (per the NUVORA working document §8.7).
 // Submits a structured request via the support pipeline; our advisors match
 // the learner with a vetted tutor (managed matching, Tuteria-style fallback).
@@ -126,11 +138,17 @@ export function PrivateTuitionWizard() {
         {step === 0 && (
           <div className="space-y-4">
             <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Who is this for?</h2>
-            <label className="block text-sm">
-              <span className="font-medium">Learner&apos;s name</span>
-              <input value={form.learnerName} onChange={(e) => set("learnerName", e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
-            </label>
+            <div className="relative">
+              <input
+                id="wiz-learner"
+                type="text"
+                className={FLOAT_INPUT}
+                placeholder="Ada Bello"
+                value={form.learnerName}
+                onChange={(e) => set("learnerName", e.target.value)}
+              />
+              <label htmlFor="wiz-learner" className={FLOAT_LABEL}>Learner&apos;s name</label>
+            </div>
             <div>
               <span className="text-sm font-medium">Current level</span>
               <div className="mt-2 grid sm:grid-cols-2 gap-2">
@@ -225,8 +243,15 @@ export function PrivateTuitionWizard() {
             {!user && (
               <label className="block text-sm">
                 <span className="font-medium">Email</span>
-                <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+                <input
+                  type="email"
+                  id="wiz-email"
+                  className={FLOAT_INPUT}
+                  placeholder="parent@example.com"
+                  value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                />
+                <label htmlFor="wiz-email" className={FLOAT_LABEL}>Email</label>
               </label>
             )}
             {user && <p className="text-sm text-ink-500">We&apos;ll use your account email: <strong>{user.email}</strong></p>}

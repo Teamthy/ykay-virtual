@@ -3,7 +3,7 @@ import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
-import { Globe2, GraduationCap, FileCheck2, Plane, Check } from "lucide-react";
+import { Globe2, GraduationCap, FileCheck2, Plane, Check, ArrowRight } from "lucide-react";
 
 export const revalidate = 600;
 
@@ -42,18 +42,72 @@ export default function StudyAbroadPage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      <PageHero
-        eyebrow="Admissions & Travels"
-        title="Live, work and study abroad"
-        subtitle="Apply to 1600+ universities and colleges in the US, UK, Canada, and Australia. Get expert help to study abroad with ease — from course selection to test scores."
-        crumbs={[{ name: "Home", href: "/" }, { name: "Study Abroad" }]}
-        align="center"
-      >
-        <a href="#services" className="btn-gold">Start your journey</a>
-        <a href="/gmat" className="px-8 py-4 rounded-lg border-2 border-white/40 text-white font-bold text-sm hover:bg-white/10 transition-colors">
-          Test prep →
-        </a>
-      </PageHero>
+      {/* Preline hero: announcement + gradient title + buttons */}
+      <section className="relative overflow-hidden bg-white">
+        <div
+          className="pointer-events-none absolute inset-0 before:absolute before:inset-x-0 before:top-0 before:h-full before:bg-[radial-gradient(ellipse_at_top,rgba(244,180,0,0.10),transparent_55%)]"
+          aria-hidden="true"
+        />
+        <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:px-10 md:pt-20">
+          <div className="flex justify-center">
+            <a
+              href="#services"
+              className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
+            >
+              Admissions &amp; Travels — 1600+ universities
+              <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
+                Apply today
+              </span>
+            </a>
+          </div>
+
+          <div className="mx-auto mt-6 max-w-2xl text-center">
+            <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
+              Live, work and{" "}
+              <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
+                study abroad
+              </span>
+            </h1>
+          </div>
+
+          <div className="mx-auto mt-5 max-w-3xl text-center">
+            <p className="text-lg text-ink-600">
+              Apply to 1600+ universities and colleges in the US, UK, Canada, and Australia.
+              Get expert help to study abroad with ease — from course selection to test scores.
+            </p>
+          </div>
+
+          <div className="mt-8 flex justify-center gap-3">
+            <a
+              href="#services"
+              className="inline-flex items-center gap-x-3 rounded-md bg-gradient-to-tl from-brand-gold-dark to-brand-gold py-3 px-4 text-sm font-medium text-white transition-all hover:from-brand-gold hover:to-brand-gold-hover"
+            >
+              Start your journey
+              <ArrowRight size={16} />
+            </a>
+            <a
+              href="/gmat"
+              className="inline-flex items-center gap-x-2 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+            >
+              Test prep →
+            </a>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center justify-center gap-1.5 sm:flex-row sm:gap-3">
+            <div className="flex flex-wrap gap-1 sm:gap-3">
+              <span className="text-sm text-ink-600">Universities &amp; colleges:</span>
+              <span className="text-sm font-bold text-ink-900">1600+</span>
+            </div>
+            <svg className="hidden size-5 text-ink-300 sm:block" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round" />
+            </svg>
+            <div className="flex flex-wrap gap-1 sm:gap-3">
+              <span className="text-sm text-ink-600">Exam success rate:</span>
+              <span className="text-sm font-bold text-ink-900">95%</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section id="services" className="scroll-mt-24 bg-white py-16">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
