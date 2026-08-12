@@ -77,33 +77,40 @@ export default async function ProgrammeDetailPage({ params }: Props) {
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Programmes", href: "/programmes" }, { name: p.title }]} />
 
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-6">
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-8">
         <div className="max-w-3xl">
           <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wide">
             {[p.curriculum_name, p.level_name, p.exam_name, p.format.replace(/_/g, " ")].filter(Boolean).map((tag) => (
-              <span key={tag} className="bg-brand-blue/10 text-brand-blue px-2.5 py-1 rounded-full">{tag}</span>
+              <span key={tag} className="rounded-full bg-brand-gold-light px-3 py-1 text-brand-gold-dark">{tag}</span>
             ))}
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold mt-3">{p.title}</h1>
+          <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">{p.title}</h1>
           {p.summary && <p className="mt-3 text-ink-600 leading-relaxed">{p.summary}</p>}
           {(p.subjects?.length ?? 0) > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {p.subjects!.map((s) => (
-                <span key={s} className="text-xs bg-ink-50 text-ink-600 px-2.5 py-1 rounded-full">{s}</span>
+                <span key={s} className="rounded-full bg-brand-blue-light px-2.5 py-1 text-xs font-semibold text-brand-blue">{s}</span>
               ))}
             </div>
           )}
         </div>
-        {/* CTAs */}
-        <div className="border rounded-2xl p-5 w-full sm:w-64 space-y-3">
+
+        {/* Sticky CTA card */}
+        <div className="card w-full space-y-4 p-6 sm:w-72">
           {p.next_start && (
-            <p className="text-xs text-ink-500">Next cohort starts <span className="font-semibold text-ink-700">{new Date(p.next_start).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></p>
+            <p className="text-xs text-ink-500">Next cohort starts <span className="font-semibold text-ink-800">{new Date(p.next_start).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></p>
           )}
-          <p className="text-xl font-extrabold text-brand-blue">
+          <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">
             {p.price_min != null ? `${p.currency} ${p.price_min.toLocaleString()}${p.price_max && p.price_max !== p.price_min ? `–${p.price_max.toLocaleString()}` : ""}` : "Price on request"}
           </p>
+          <ul className="space-y-2 text-xs text-ink-600">
+            <li className="flex items-center gap-2"><span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Live lessons with a vetted tutor</li>
+            <li className="flex items-center gap-2"><span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Recordings, resources &amp; homework</li>
+            <li className="flex items-center gap-2"><span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Weekly progress reports for parents</li>
+            <li className="flex items-center gap-2"><span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Escrow-protected payment</li>
+          </ul>
           <a href={`/cohorts?programme_id=${p.id}`} className="btn-primary w-full inline-flex items-center justify-center text-sm">Find a cohort</a>
-          <Link href="/private-tuition" className="btn-gold w-full inline-flex items-center justify-center text-sm">Book private tuition</Link>
+          <Link href="/private-tuition" className="btn-secondary w-full inline-flex items-center justify-center text-sm">Book private tuition</Link>
         </div>
       </div>
 

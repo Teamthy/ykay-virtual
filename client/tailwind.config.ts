@@ -9,41 +9,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Tuteria brand system (v2.tuteria.com palette + prep orange)
+        // Tuteria-inspired brand system (gold/cream design spec)
         brand: {
-          navy: "#194F82",       // Primary — Tuteria navy blue
-          "navy-dark": "#001028",
-          blue: "#056FD2",       // Bright blue accent
-          "blue-dark": "#044e94",
-          "blue-light": "#E6F0FA",
-          sky: "#56ACE0",
-          gold: "#FFC10D",       // Gold accent (ratings)
-          "gold-dark": "#d9a400",
-          "gold-light": "#FFF8E6",
-          orange: "#ED6D20",     // Secondary accent
+          navy: "#0A1F44",       // Dark sections / deep navy
+          "navy-dark": "#111111",
+          blue: "#2563EB",       // Info blue
+          "blue-dark": "#1D4ED8",
+          "blue-light": "#EAF1FF",
+          gold: "#F4B400",       // PRIMARY — Tuteria gold
+          "gold-hover": "#DFA300",
+          "gold-dark": "#B98200",
+          "gold-light": "#FFF3C4",
+          orange: "#ED6D20",
           "orange-light": "#FDF0E8",
-          green: "#009A49",      // Success
-          "green-dark": "#007a3a",
-          "green-light": "#F2F9EE",
+          green: "#198754",      // Success
+          "green-dark": "#146c43",
+          "green-light": "#E8F7EF",
           purple: "#0A033C",     // Prep deep purple (tuteriaprep)
           "prep-orange": "#FF6636",
         },
         ink: {
-          900: "#001028",
-          800: "#1A202C",
-          700: "#2D3748",
-          600: "#4A5568",
-          500: "#718096",
-          400: "#98A2B3",
-          300: "#CBD5E0",
-          200: "#E3E7ED",
-          100: "#EDF2F7",
-          50: "#F7FAFC",
+          900: "#111111",
+          800: "#181818",
+          700: "#333333",
+          600: "#555555",
+          500: "#777777",
+          400: "#999999",
+          300: "#B8B2A6",
+          200: "#E8E3D8",       // border
+          100: "#F0ECE3",       // border-light
+          50: "#F7F5EF",        // muted
         },
         surface: {
-          DEFAULT: "#ffffff",
-          muted: "#F5F8FC",
-          subtle: "#FAFCFE",
+          DEFAULT: "#FFFCF5",   // cream background
+          muted: "#F7F5EF",
+          subtle: "#FFF8E8",
         },
       },
       fontFamily: {
@@ -61,11 +61,11 @@ const config: Config = {
         "4xl": "2rem",
       },
       boxShadow: {
-        "soft": "0 4px 20px rgba(0,0,0,0.04)",
-        "card": "0 8px 30px rgba(0,0,0,0.06)",
-        "lift": "0 20px 50px rgba(0,0,0,0.10)",
+        "soft": "0 2px 8px rgba(0,0,0,0.06)",
+        "card": "0 8px 24px rgba(0,0,0,0.08)",
+        "lift": "0 16px 40px rgba(0,0,0,0.10)",
         "hero": "0 30px 80px rgba(0,0,0,0.15)",
-        "brand": "0 10px 30px rgba(26,79,212,0.25)",
+        "brand": "0 10px 30px rgba(244,180,0,0.25)",
       },
       animation: {
         "slide-down": "slideDown 0.25s ease-out",

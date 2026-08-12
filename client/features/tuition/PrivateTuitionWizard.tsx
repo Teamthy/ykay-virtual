@@ -4,12 +4,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
+import { Stepper } from "@/components/ui/stepper";
 
 // 7-step private tuition request (per the NUVORA working document §8.7).
 // Submits a structured request via the support pipeline; our advisors match
 // the learner with a vetted tutor (managed matching, Tuteria-style fallback).
 
-const STEPS = [
+const STEPS: string[] = [
   "Learner & level",
   "Subject",
   "Goals",
@@ -117,37 +118,25 @@ export function PrivateTuitionWizard() {
   }
 
   return (
-    <div className="border rounded-2xl p-6 md:p-8">
-      {/* Stepper */}
-      <ol className="flex items-center gap-1 text-[11px] mb-8 flex-wrap">
-        {STEPS.map((label, i) => (
-          <li key={label} className="flex items-center gap-1">
-            <span className={`flex h-6 w-6 items-center justify-center rounded-full font-bold ${
-              i < step ? "bg-green-500 text-white" : i === step ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-400"
-            }`}>
-              {i < step ? "✓" : i + 1}
-            </span>
-            <span className={`hidden sm:inline ${i === step ? "font-semibold text-ink-800" : "text-ink-400"}`}>{label}</span>
-            {i < STEPS.length - 1 && <span className="w-3 h-px bg-ink-200 mx-1" />}
-          </li>
-        ))}
-      </ol>
+    <div className="card p-6 md:p-8">
+      {/* Stepper (shared §24.1 component) */}
+      <Stepper steps={STEPS} current={step} className="mb-8" />
 
       <div className="min-h-[260px]">
         {step === 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Who is this for?</h2>
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Who is this for?</h2>
             <label className="block text-sm">
               <span className="font-medium">Learner&apos;s name</span>
               <input value={form.learnerName} onChange={(e) => set("learnerName", e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
             <div>
               <span className="text-sm font-medium">Current level</span>
               <div className="mt-2 grid sm:grid-cols-2 gap-2">
                 {LEVELS.map((l) => (
                   <button key={l} type="button" onClick={() => set("level", l)}
-                    className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.level === l ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                    className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.level === l ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}>
                     {l}
                   </button>
                 ))}
@@ -158,11 +147,11 @@ export function PrivateTuitionWizard() {
 
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Which subject?</h2>
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Which subject?</h2>
             <div className="grid sm:grid-cols-2 gap-2">
               {SUBJECTS.map((s) => (
                 <button key={s} type="button" onClick={() => set("subject", s)}
-                  className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.subject === s ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                  className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.subject === s ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}>
                   {s}
                 </button>
               ))}
@@ -172,26 +161,26 @@ export function PrivateTuitionWizard() {
 
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Goals & challenges</h2>
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Goals & challenges</h2>
             <label className="block text-sm">
               <span className="font-medium">What would you like to achieve? (min 10 characters)</span>
               <textarea rows={4} value={form.goals} onChange={(e) => set("goals", e.target.value)}
                 placeholder="e.g. Improve from C to A in IGCSE Mathematics before the November exams…"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Preferred schedule</h2>
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Preferred schedule</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
                 <span className="text-sm font-medium">Days</span>
                 <div className="mt-2 space-y-2">
                   {DAYS.map((d) => (
                     <button key={d} type="button" onClick={() => set("days", d)}
-                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.days === d ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.days === d ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}>
                       {d}
                     </button>
                   ))}
@@ -202,7 +191,7 @@ export function PrivateTuitionWizard() {
                 <div className="mt-2 space-y-2">
                   {TIMES.map((t) => (
                     <button key={t} type="button" onClick={() => set("time", t)}
-                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.time === t ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.time === t ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}>
                       {t}
                     </button>
                   ))}
@@ -212,17 +201,17 @@ export function PrivateTuitionWizard() {
             <label className="block text-sm">
               <span className="font-medium">Timezone</span>
               <input value={form.timezone} onChange={(e) => set("timezone", e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           </div>
         )}
 
         {step === 4 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Tutor preference (optional)</h2>
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Tutor preference (optional)</h2>
             {["No preference — match me", "Female tutor", "Male tutor", "Specific tutor (I'll name them)"].map((t) => (
               <button key={t} type="button" onClick={() => set("tutorPreference", t)}
-                className={`block w-full rounded-xl border px-4 py-3 text-sm text-left ${form.tutorPreference === t ? "border-brand-blue bg-brand-blue/5 font-semibold" : "hover:border-ink-400"}`}>
+                className={`block w-full rounded-xl border px-4 py-3 text-sm text-left ${form.tutorPreference === t ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}>
                 {t}
               </button>
             ))}
@@ -232,12 +221,12 @@ export function PrivateTuitionWizard() {
 
         {step === 5 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Where should we reach you?</h2>
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Where should we reach you?</h2>
             {!user && (
               <label className="block text-sm">
                 <span className="font-medium">Email</span>
                 <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
               </label>
             )}
             {user && <p className="text-sm text-ink-500">We&apos;ll use your account email: <strong>{user.email}</strong></p>}
@@ -245,14 +234,14 @@ export function PrivateTuitionWizard() {
               <span className="font-medium">Phone / WhatsApp (optional)</span>
               <input value={form.phone} onChange={(e) => set("phone", e.target.value)}
                 placeholder="+234…"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-blue focus:outline-none" />
+                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           </div>
         )}
 
         {step === 6 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold">Review your request</h2>
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Review your request</h2>
             <dl className="rounded-xl bg-ink-50 p-5 text-sm space-y-2">
               <SummaryRow k="Learner" v={form.learnerName} />
               <SummaryRow k="Level" v={form.level} />

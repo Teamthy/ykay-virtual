@@ -2,12 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   TUTERIA-INSPIRED DESIGN SYSTEM (phase 23 spec)
+   ============================================================ */
+:root {
+  --font-display: "Anton", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+
+  --color-primary: #F4B400;
+  --color-primary-hover: #DFA300;
+  --color-primary-dark: #B98200;
+  --color-primary-light: #FFF3C4;
+
+  --color-background: #FFFCF5;
+  --color-background-soft: #FFF8E8;
+  --color-background-muted: #F7F5EF;
+  --color-white: #FFFFFF;
+
+  --color-text: #111111;
+  --color-text-primary: #181818;
+  --color-text-secondary: #555555;
+  --color-text-muted: #777777;
+  --color-text-on-primary: #111111;
+
+  --color-border: #E8E3D8;
+  --color-border-light: #F0ECE3;
+
+  --color-success: #198754;
+  --color-success-light: #E8F7EF;
+  --color-error: #D64545;
+  --color-error-light: #FDECEC;
+  --color-warning: #F4B400;
+  --color-warning-light: #FFF4CC;
+  --color-info: #2563EB;
+  --color-info-light: #EAF1FF;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.10);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+}
+
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
   body {
-    @apply font-sans text-ink-600 bg-white antialiased;
+    @apply font-sans text-ink-900 bg-surface antialiased;
+    background: var(--color-background);
+    color: var(--color-text);
   }
 
   /* Typography defaults (Tuteria brand) */
@@ -64,10 +113,28 @@
     @apply max-w-[1400px] mx-auto px-6 md:px-10;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-brand-blue text-white font-bold text-sm transition-all hover:bg-brand-blue-dark hover:-translate-y-0.5 hover:shadow-brand;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold transition-all;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+  }
+  .btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
   }
   .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-brand-gold text-ink-800 font-bold text-sm transition-all hover:bg-brand-gold-dark hover:-translate-y-0.5 hover:shadow-lift;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold transition-all;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+  }
+  .btn-gold:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold transition-all;
+    background: transparent;
+    color: var(--color-text);
+    border: 1.5px solid var(--color-text);
   }
   .btn-white {
     @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-white text-ink-800 font-bold text-sm transition-all hover:-translate-y-0.5 hover:shadow-lift;
@@ -148,5 +215,36 @@
   }
   html {
     scroll-behavior: auto;
+  }
+}
+
+@layer components {
+  .card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .section-accent {
+    background: var(--color-primary);
+    color: var(--color-text);
+  }
+  .section-dark {
+    background: var(--color-text);
+    color: var(--color-white);
+  }
+  .input {
+    width: 100%;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
   }
 }

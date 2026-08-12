@@ -5,6 +5,9 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { getCohortSSR } from "@/features/cohorts/api/get";
 import { getCohortLessonsSSR } from "@/features/cohorts/api/lessons";
 import Link from "next/link";
+import { CalendarDays, Users, MapPin } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 
 export const revalidate = 300;
 
@@ -22,14 +25,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return buildMetadata({ title: "Cohort Not Found", description: "Cohort not found", path: `/cohorts/${params.id}`, noIndex: true });
   }
 }
-
-const LESSON_STATUS: Record<string, string> = {
-  SCHEDULED: "bg-blue-100 text-blue-700",
-  ONGOING: "bg-green-100 text-green-700",
-  COMPLETED: "bg-ink-100 text-ink-500",
-  CANCELLED: "bg-red-100 text-red-700",
-  RESCHEDULED: "bg-amber-100 text-amber-700",
-};
 
 export default async function CohortDetailPage({ params }: Props) {
   let cohort;
@@ -64,23 +59,24 @@ export default async function CohortDetailPage({ params }: Props) {
       <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-start">
         {/* Left: info + sessions */}
         <div>
-          <span className="inline-block text-[10px] font-bold uppercase tracking-wide text-brand-blue bg-brand-blue/10 px-2.5 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold-light px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-gold-dark">
+            <MapPin size={11} />
             {cohort.location_mode.replace(/_/g, " ").toLowerCase()} · {cohort.timezone}
           </span>
-          <h1 className="text-3xl md:text-4xl font-extrabold mt-3">{cohort.title}</h1>
+          <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">{cohort.title}</h1>
           <p className="mt-3 text-ink-600 leading-relaxed">
             {cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
           </p>
 
           <div className="mt-6 grid sm:grid-cols-3 gap-3">
             {[
-              { label: "Starts", value: new Date(cohort.start_date).toLocaleDateString() },
-              { label: "Ends", value: new Date(cohort.end_date).toLocaleDateString() },
-              { label: "Seats", value: `${cohort.enrolled_count}/${cohort.capacity} taken` },
-            ].map((s) => (
-              <div key={s.label} className="rounded-xl bg-ink-50 p-4 text-center">
-                <div className="text-xs text-ink-500">{s.label}</div>
-                <div className="font-bold mt-0.5">{s.value}</div>
+              { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Starts", value: new Date(cohort.start_date).toLocaleDateString() },
+              { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Ends", value: new Date(cohort.end_date).toLocaleDateString() },
+              { icon: <Users size={14} className="text-brand-gold-dark" />, label: "Seats", value: `${cohort.enrolled_count}/${cohort.capacity} taken` },
+            ].map((st) => (
+              <div key={st.label} className="card p-4 text-center">
+                <div className="flex items-center justify-center gap-1.5 text-xs text-ink-500">{st.icon}{st.label}</div>
+                <div className="font-bold mt-0.5">{st.value}</div>
               </div>
             ))}
           </div>
@@ -107,9 +103,7 @@ export default async function CohortDetailPage({ params }: Props) {
                         </div>
                       </div>
                     </div>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${LESSON_STATUS[l.status] ?? "bg-ink-100"}`}>
-                      {l.status}
-                    </span>
+                    <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                   </li>
                 ))}
               </ul>
@@ -119,21 +113,27 @@ export default async function CohortDetailPage({ params }: Props) {
 
         {/* Right: enrol card */}
         <div className="lg:sticky lg:top-28">
-          <div className="border rounded-2xl p-6 space-y-4">
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-bold text-lg">Enrol in this cohort</h2>
-              <span className="text-2xl font-extrabold text-brand-blue">
+          <div className="card space-y-4 p-6">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Enrol in this cohort</h2>
+              <span className="font-display text-2xl tracking-[0.02em] text-brand-navy">
                 {cohort.currency} {cohort.fee.toLocaleString()}
               </span>
             </div>
-            <p className={`text-sm font-semibold ${full ? "text-red-600" : "text-green-700"}`}>
+            <p className={`text-sm font-semibold ${full ? "text-brand-error" : "text-brand-green"}`}>
               {full ? "Cohort is full" : `${seatsLeft} of ${cohort.capacity} seats available`}
             </p>
+            <Progress
+              value={cohort.capacity ? Math.min((cohort.enrolled_count / cohort.capacity) * 100, 100) : 0}
+              size="sm"
+              showValue={false}
+              barClassName={full ? "!bg-red-500" : undefined}
+            />
             <ul className="space-y-2 text-sm text-ink-600">
-              <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Live lessons with a vetted tutor</li>
-              <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Recordings, resources and homework</li>
-              <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Weekly progress reports for parents</li>
-              <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Escrow-protected payment</li>
+              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Live lessons with a vetted tutor</li>
+              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Recordings, resources and homework</li>
+              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Weekly progress reports for parents</li>
+              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Escrow-protected payment</li>
             </ul>
             {full ? (
               <button disabled className="btn-gold w-full opacity-50 cursor-not-allowed">Cohort full</button>
