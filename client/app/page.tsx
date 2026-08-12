@@ -15,6 +15,7 @@ import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
 import { TravelAndCareBands } from "@/components/home/TravelAndCareBands";
 import { AnnouncementVideo } from "@/components/home/AnnouncementVideo";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
+import { HowItWorksVideo } from "@/components/home/HowItWorksVideo";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 
 // NUVORA home — Tuteria v2 structure: hero → popular services → stats →
@@ -30,6 +31,7 @@ export default function HomePage() {
       <PopularProgrammes />
       <UpcomingCohorts />
       <HowItWorksStrip />
+      <HowItWorksVideo />
       <PartnerSection />
       <ResultsSection />
       <ApproachSection />

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Lock, ShieldCheck, RefreshCcw } from "lucide-react";
 import { qk } from "@/lib/queryClient";
 import { createCohortBooking, initiatePayment } from "@/features/bookings/api/create";
 import type { Cohort } from "@/features/cohorts/api/get";
@@ -130,33 +131,50 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         e.stopPropagation();
         void form.handleSubmit();
       }}
-      className="border rounded-2xl p-6 space-y-5"
+      className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-card"
       noValidate
     >
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 className="text-lg font-bold">Secure checkout</h2>
-        <span className="text-2xl font-extrabold text-brand-blue">
-          ₦{cohort.fee.toLocaleString()}
-          <span className="text-sm font-medium text-ink-500"> {cohort.currency}</span>
-        </span>
+      {/* Navy summary header (Tuteria payment flow) */}
+      <div className="bg-gradient-to-br from-brand-navy to-brand-blue px-6 py-5 text-white">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="font-display text-xl tracking-[0.02em]">Secure checkout</h2>
+          <span className="font-display text-3xl tracking-[0.02em]">
+            ₦{cohort.fee.toLocaleString()}
+            <span className="text-sm font-medium text-white/70"> {cohort.currency}</span>
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-white/70">{cohort.title}</p>
       </div>
 
-      <div className="rounded-xl bg-ink-50 p-4 text-sm text-ink-600 space-y-1">
-        <p className="font-semibold text-ink-800">{cohort.title}</p>
-        <p>
-          {cohort.start_date} → {cohort.end_date} · {cohort.timezone} · {cohort.location_mode}
-        </p>
-        <p className={seatsLeft <= 5 ? "text-amber-700 font-medium" : ""}>
-          {seatsLeft > 0 ? `${seatsLeft} of ${cohort.capacity} seats left` : "Cohort full"}
-        </p>
-      </div>
+      <div className="space-y-5 p-6">
+        <div className="rounded-xl bg-brand-blue-light/50 p-4 text-sm text-ink-600 space-y-1">
+          <p className="font-semibold text-ink-800">{cohort.title}</p>
+          <p>
+            {cohort.start_date} → {cohort.end_date} · {cohort.timezone} · {cohort.location_mode}
+          </p>
+          <p className={seatsLeft <= 5 ? "text-amber-700 font-medium" : ""}>
+            {seatsLeft > 0 ? `${seatsLeft} of ${cohort.capacity} seats left` : "Cohort full"}
+          </p>
+        </div>
 
-      <p className="text-xs text-ink-500 leading-relaxed">
-        Payment is held in escrow and only released to the tutor after delivery is confirmed (or auto-released
-        after 3 days). Your booking order is idempotent — retrying never double-charges.
-      </p>
+        {/* Steps */}
+        <ol className="flex items-center gap-2 text-[11px] font-bold text-ink-500">
+          {["Details", "Pay", "Confirmation"].map((s2, i) => (
+            <li key={s2} className="flex items-center gap-2">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-brand-navy text-white">
+                {i + 1}
+              </span>
+              {s2}
+              {i < 2 && <span className="h-px w-8 bg-ink-200" aria-hidden="true" />}
+            </li>
+          ))}
+        </ol>
 
-      <div className="space-y-4">
+        <p className="text-xs text-ink-500 leading-relaxed">
+          Payment is held in escrow and only released to the tutor after delivery is confirmed (or auto-released
+          after 3 days). Your booking order is idempotent — retrying never double-charges.
+        </p>
+
         <form.Field name="parent_user_id">
           {(field) => (
             <label className="block text-sm">
@@ -235,17 +253,24 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
             </fieldset>
           )}
         </form.Field>
-      </div>
 
-      {step.name === "error" ? (
-        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
-          {step.message}
+        {step.name === "error" ? (
+          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">
+            {step.message}
+          </div>
+        ) : null}
+
+        <Button type="submit" variant="gold" size="lg" className="w-full" disabled={createBooking.isPending || payMutation.isPending}>
+          {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
+        </Button>
+
+        {/* Secure badges */}
+        <div className="flex items-center justify-center gap-5 border-t border-ink-100 pt-4 text-[11px] font-semibold text-ink-400">
+          <span className="flex items-center gap-1.5"><Lock size={12} className="text-brand-green" /> 256-bit SSL</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-brand-green" /> Escrow protected</span>
+          <span className="flex items-center gap-1.5"><RefreshCcw size={12} className="text-brand-green" /> Idempotent orders</span>
         </div>
-      ) : null}
-
-      <Button type="submit" variant="gold" size="lg" className="w-full" disabled={createBooking.isPending || payMutation.isPending}>
-        {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
-      </Button>
+      </div>
     </form>
   );
 }
@@ -254,8 +279,10 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
   const [copied, setCopied] = useState(false);
   return (
     <div className="border rounded-2xl p-8 text-center space-y-4" data-testid="payment-link-card">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl">🔒</div>
-      <h2 className="text-xl font-bold">Order {order.order_number} — ready to pay</h2>
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-brand-green">
+        <ShieldCheck size={26} />
+      </div>
+      <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy">Order {order.order_number} — ready to pay</h2>
       <p className="text-sm text-ink-600">
         {payment.amount.toLocaleString()} {payment.currency} via{" "}
         {payment.provider === "PAYSTACK" ? "Paystack" : "Flutterwave"}.

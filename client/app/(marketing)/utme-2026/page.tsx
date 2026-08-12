@@ -233,6 +233,10 @@ export default function Utme2026Page() {
             <h2 className="font-display text-3xl tracking-[0.02em] text-[#0A033C] md:text-4xl">
               Choose your package
             </h2>
+            <div className="mt-3 flex justify-center gap-4 text-sm font-bold">
+              <Link href="/utme-2026/pricing" className="text-[#FF6636] hover:underline">Pricing details →</Link>
+              <Link href="/utme-2026/faq" className="text-ink-600 hover:text-[#0A033C] hover:underline">FAQ</Link>
+            </div>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-2">
             {PACKAGES.map((p) => (
