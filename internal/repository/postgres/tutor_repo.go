@@ -96,6 +96,12 @@ func (r *TutorRepo) Search(ctx context.Context, p tutor.TutorSearchParams) ([]tu
 	conds = append(conds, "t.status = 'APPROVED'")
 	conds = append(conds, "t.is_public = TRUE")
 
+	if p.Query != "" {
+		conds = append(conds, fmt.Sprintf(`(t.display_name ILIKE $%d OR COALESCE(t.headline,'') ILIKE $%d OR COALESCE(t.bio,'') ILIKE $%d)`,
+			len(args)+1, len(args)+1, len(args)+1))
+		args = append(args, "%"+p.Query+"%")
+	}
+
 	if p.SubjectSlug != "" {
 		// EXISTS against tutor_subjects — no join fan-out, keeps COUNT exact.
 		conds = append(conds, fmt.Sprintf(`EXISTS (

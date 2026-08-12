@@ -102,6 +102,7 @@ func (h *TutorHandler) Search(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	p := ParsePagination(r)
 	params := tutor.TutorSearchParams{
+		Query:       firstNonEmpty(q.Get("q"), q.Get("query"), p.Filters["q"]),
 		SubjectSlug: firstNonEmpty(q.Get("subject"), p.Filters["subject"], p.Filters["subject_slug"]),
 		Location:    firstNonEmpty(q.Get("location"), p.Filters["location"]),
 		Online:      ParseBoolPtr(q.Get("online")),

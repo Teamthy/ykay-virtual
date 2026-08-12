@@ -19,16 +19,23 @@ type UserRepo struct{ db TxQuerier }
 
 func NewUserRepo(db TxQuerier) *UserRepo { return &UserRepo{db: db} }
 
-const userColumns = `id, email, phone, password_hash, status, timezone,
+const userColumns = `id, email, first_name, last_name, phone, password_hash, status, timezone,
 	email_verified_at, phone_verified_at, last_login_at, created_at, updated_at`
 
 func scanUser(row interface{ Scan(...any) error }) (*identity.User, error) {
 	var u identity.User
-	var phone sql.NullString
+	var phone, firstName, lastName sql.NullString
 	var emailVerifiedAt, phoneVerifiedAt, lastLoginAt sql.NullTime
-	if err := row.Scan(&u.ID, &u.Email, &phone, &u.PasswordHash, &u.Status, &u.Timezone,
-		&emailVerifiedAt, &phoneVerifiedAt, &lastLoginAt, &u.CreatedAt, &u.UpdatedAt); err != nil {
+	if err := row.Scan(&u.ID, &u.Email, &firstName, &lastName, &phone, &u.PasswordHash,
+		&u.Status, &u.Timezone, &emailVerifiedAt, &phoneVerifiedAt, &lastLoginAt,
+		&u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
+	}
+	if firstName.Valid {
+		u.FirstName = firstName.String
+	}
+	if lastName.Valid {
+		u.LastName = lastName.String
 	}
 	if phone.Valid {
 		u.Phone = &phone.String
@@ -47,9 +54,9 @@ func scanUser(row interface{ Scan(...any) error }) (*identity.User, error) {
 
 func (r *UserRepo) Create(ctx context.Context, u *identity.User) error {
 	err := r.db.QueryRowContext(ctx, `
-		INSERT INTO users (email, phone, password_hash, status, timezone)
-		VALUES ($1,$2,$3,$4,$5) RETURNING id, created_at, updated_at`,
-		u.Email, u.Phone, u.PasswordHash, u.Status, u.Timezone,
+		INSERT INTO users (email, first_name, last_name, phone, password_hash, status, timezone)
+		VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, created_at, updated_at`,
+		u.Email, u.FirstName, u.LastName, u.Phone, u.PasswordHash, u.Status, u.Timezone,
 	).Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -87,10 +94,10 @@ func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (*identity.User, 
 
 func (r *UserRepo) Update(ctx context.Context, u *identity.User) error {
 	_, err := r.db.ExecContext(ctx, `
-		UPDATE users SET email=$1, phone=$2, password_hash=$3, status=$4, timezone=$5,
-			email_verified_at=$6, phone_verified_at=$7, updated_at=NOW()
-		WHERE id=$8`,
-		u.Email, u.Phone, u.PasswordHash, u.Status, u.Timezone,
+		UPDATE users SET email=$1, first_name=$2, last_name=$3, phone=$4, password_hash=$5,
+			status=$6, timezone=$7, email_verified_at=$8, phone_verified_at=$9, updated_at=NOW()
+		WHERE id=$10`,
+		u.Email, u.FirstName, u.LastName, u.Phone, u.PasswordHash, u.Status, u.Timezone,
 		u.EmailVerifiedAt, u.PhoneVerifiedAt, u.ID)
 	if err != nil {
 		return fmt.Errorf("update user: %w", err)

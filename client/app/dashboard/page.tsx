@@ -12,6 +12,7 @@ import { Modal } from "@/components/ui/modal";
 import { CalendarDays, ReceiptText, MessageSquareText, Wallet, LineChart, CreditCard } from "lucide-react";
 import { unreadCount } from "@/features/messaging/api";
 import { ReferralCard } from "@/features/referrals/ReferralCard";
+import { listProgressReports } from "@/features/learning/api";
 import { listLearners, type Learner } from "@/features/onboarding/api";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
 
@@ -62,6 +63,13 @@ export default function ParentDashboardPage() {
 
   const activeLearner: Learner | undefined = (learners.data ?? []).find((l) => l.id === selectedLearner) ?? (learners.data ?? [])[0];
   const learnerId = activeLearner?.id ?? "";
+
+  const reports = useQuery({
+    queryKey: ["dashboard", "reports", selectedLearner],
+    queryFn: () => listProgressReports(selectedLearner || undefined),
+    enabled: !!selectedLearner,
+    staleTime: 60_000,
+  });
 
   const orders = useQuery({
     queryKey: ["me", "orders"],
@@ -332,15 +340,43 @@ export default function ParentDashboardPage() {
                 )}
               </div>
               <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-                <h2 className="font-bold text-ink-800">Recent tutor notes &amp; feedback</h2>
-                <p className="mt-3 text-sm text-ink-500 rounded-xl border border-dashed border-ink-200 p-6 text-center">
-                  Tutor lesson notes, homework and progress reports appear here as lessons are delivered.
-                </p>
+                <h2 className="font-bold text-ink-800">Progress reports</h2>
+                {reports.isLoading ? (
+                  <Skeleton className="mt-3 h-24 w-full" />
+                ) : (reports.data ?? []).length === 0 ? (
+                  <p className="mt-3 text-sm text-ink-500 rounded-xl border border-dashed border-ink-200 p-6 text-center">
+                    No progress reports yet — your tutor shares them here after lessons begin.
+                  </p>
+                ) : (
+                  <div className="mt-4 space-y-3">
+                    {(reports.data ?? []).map((r) => (
+                      <div key={r.id} className="rounded-xl border border-ink-100 p-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold text-ink-700">
+                            {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
+                          </p>
+                          <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-bold text-brand-navy">
+                            ★ {r.overall_rating}/5
+                          </span>
+                        </div>
+                        {r.strengths && <p className="mt-2 text-sm text-ink-600">💪 {r.strengths}</p>}
+                        {r.weaknesses && <p className="mt-1 text-sm text-ink-600">⚠️ {r.weaknesses}</p>}
+                        {r.recommendations && <p className="mt-1 text-sm text-ink-700">🎯 {r.recommendations}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           <ReferralCard userId={user?.id ?? ""} />
+          <Link
+            href="/account"
+            className="mt-4 block rounded-2xl border border-ink-100 bg-white p-5 shadow-soft text-center text-sm font-bold text-brand-navy hover:border-brand-gold"
+          >
+            ⚙️ Account settings
+          </Link>
         </div>
       </div>
 

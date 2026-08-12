@@ -10,6 +10,7 @@ import (
 // Implementations: internal/repository/postgres, internal/repository/memory.
 
 type TutorSearchParams struct {
+	Query       string // free-text: display name / bio / headline (P0 search)
 	SubjectSlug string
 	Location    string
 	Online      *bool // accepts_online filter when set

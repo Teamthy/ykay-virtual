@@ -111,6 +111,9 @@ export default function StudentDashboardPage() {
         <button onClick={() => router.push("/messages")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
           💬 Messages
         </button>
+        <button onClick={() => router.push("/account")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
+          ⚙️ Account settings
+        </button>
         <button onClick={() => router.push("/notifications")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
           🔔 Notifications
         </button>

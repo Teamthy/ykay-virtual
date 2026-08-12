@@ -2,7 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, ShieldCheck, RefreshCcw } from "lucide-react";
 import { qk } from "@/lib/queryClient";
 import { createCohortBooking, initiatePayment } from "@/features/bookings/api/create";
+import { apiFetch } from "@/lib/api";
 import type { Cohort } from "@/features/cohorts/api/get";
 import type { BookingResponse, InitiatePaymentResponse, Order, PaymentProvider } from "@/features/bookings/types";
 
@@ -277,6 +278,26 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
 
 function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePaymentResponse }) {
   const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<string>(order.status);
+  const [checked, setChecked] = useState(0);
+
+  // Poll the order until it leaves PENDING (webhook round-trip → PAID/CANCELLED).
+  useEffect(() => {
+    if (status !== "PENDING") return;
+    const t = setInterval(async () => {
+      try {
+        const res = await apiFetch<Order>(`/me/orders/${order.id}`);
+        setStatus(res.data.status);
+        setChecked((c) => c + 1);
+      } catch {
+        /* network hiccup — keep polling */
+      }
+    }, 6000);
+    return () => clearInterval(t);
+  }, [status, order.id]);
+
+  const paid = status === "PAID" || status === "COMPLETED";
+  const stillPending = status === "PENDING";
   return (
     <div className="border rounded-2xl p-8 text-center space-y-4" data-testid="payment-link-card">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-brand-green">
@@ -289,27 +310,38 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
         <br />
         Funds are held in escrow until your lessons are delivered.
       </p>
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-        <Button
-          variant="gold"
-          size="lg"
-          onClick={() => {
-            window.location.href = payment.payment_link;
-          }}
-        >
-          Continue to payment gateway
-        </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={() => {
-            void navigator.clipboard?.writeText(payment.payment_link);
-            setCopied(true);
-          }}
-        >
-          {copied ? "Copied ✓" : "Copy payment link"}
-        </Button>
-      </div>
+      {paid ? (
+        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+          ✅ Payment confirmed — your seat is secured! View it in your dashboard.
+        </div>
+      ) : (
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Button
+            variant="gold"
+            size="lg"
+            onClick={() => {
+              window.location.href = payment.payment_link;
+            }}
+          >
+            Continue to payment gateway
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => {
+              void navigator.clipboard?.writeText(payment.payment_link);
+              setCopied(true);
+            }}
+          >
+            {copied ? "Copied ✓" : "Copy payment link"}
+          </Button>
+        </div>
+      )}
+      {stillPending && (
+        <p className="text-xs text-ink-400">
+          Waiting for payment confirmation… {checked > 0 ? `(checked ${checked}×)` : "this page refreshes automatically"}
+        </p>
+      )}
       <p className="text-xs text-ink-400">
         Order reference: <span className="font-mono">{payment.provider_reference}</span>
       </p>

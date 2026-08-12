@@ -417,6 +417,27 @@ c=$(req "$J_ADMIN" GET "/admin/chat/analytics/trends?days=14")
 assert_code "chat trends" 200 "$c"
 grep -q '"date"' /tmp/e2e-body.json && ok "trends fields present" || fail "trends fields missing"
 
+
+# --- P0: /account endpoints + site search ---
+c=$(req "$J_PARENT" PUT /auth/me/profile '{"first_name":"Ada","last_name":"E2E","phone":"+2348000000001","timezone":"Africa/Lagos"}')
+assert_code "update profile" 200 "$c"
+grep -q '"first_name":"Ada"' /tmp/e2e-body.json && ok "profile first_name saved" || fail "profile first_name missing"
+
+c=$(req "$J_PARENT" GET /auth/me)
+assert_code "me includes profile" 200 "$c"
+grep -q '"first_name":"Ada"' /tmp/e2e-body.json && ok "me returns profile fields" || fail "me missing profile fields"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_PARENT" "$BASE/auth/me/export")
+assert_code "data export" 200 "$c"
+grep -q "nuvora-export" /dev/null 2>/dev/null; grep -q '"email"' /tmp/e2e-body.json && ok "export contains user" || fail "export malformed"
+
+c=$(req "$J_PARENT" GET "/tutors/search?q=oluwatobi")
+assert_code "tutor free-text search" 200 "$c"
+grep -qi "oluwatobi" /tmp/e2e-body.json && ok "free-text search finds tutor" || fail "free-text search empty"
+
+c=$(req "$J_LOGOUT" POST /auth/login '{"email":"e2e-parent@test.com","password":"password123"}')
+assert_code "parent relogin after profile edit" 200 "$c"
+
 # ============================================================== SUMMARY ======
 echo
 echo "──────────────────────────────────────────────"

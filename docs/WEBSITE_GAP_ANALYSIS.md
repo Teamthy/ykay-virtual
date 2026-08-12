@@ -10,31 +10,35 @@ Legend: 🔴 launch blocker · 🟠 should-have · 🟢 nice-to-have
 
 ---
 
-## 🔴 P0 — do before launch
+## 🔴 P0 — ✅ DONE in phase 37
 
-1. **Real payment integration on checkout**
-   - Current state: checkout has a Paystack client path, but no live/test
-     key workflow or verified payment round-trip on the web UI; payments are
-     backend-ready (webhooks, escrow, orders).
-   - Work: wire Paystack inline/redirect with test keys end-to-end, verify
-     webhook → order → enrollment, add "pay with card/transfer/USSD"
-     options, receipt email.
+1. **Account & settings hub** (`/account`) — ✅
+   - Profile (first/last name, phone, timezone — new profile fields on the
+     user record, migration 000023), change password, push-device manager,
+     email preferences, **data export** (JSON, GDPR/NDPR export right) and
+     **account deletion** (soft-delete + session revoke + device purge,
+     "type DELETE to confirm"). Backend: `PUT /auth/me/profile`,
+     `GET /auth/me/export`, `POST /auth/me/delete` + AccountService.
+   - Linked from parent/student/tutor dashboards.
 
-2. **Account & settings hub** (`/account`)
-   - Change password, edit profile (name, phone, timezone), manage linked
-     learners, **manage push devices**, email preferences, delete-account
-     (privacy requirement). Currently password changes only exist inside
-     onboarding; devices have API but no UI.
+2. **Parent dashboard — per-child progress** — ✅
+   - Progress section now shows **real progress reports** per selected
+     learner (strengths/weaknesses/recommendations/rating) alongside the
+     attendance summary (was a placeholder).
 
-3. **Parent dashboard — manage learners**
-   - Parents can create/link learners (API exists: `/me/learners`), see
-     progress reports per child, and approve payments. `/dashboard` shows
-     orders today; a per-child view is missing.
+3. **Site-wide search** (`/search`) — ✅
+   - Free-text tutor search added to the backend (`q` on `/tutors/search`,
+     ILIKE on display_name/headline/bio + mock filter); `/search` page
+     groups **Tutors / Programmes / Subjects** with counts and result tabs;
+     header search now routes here.
 
-4. **Search across the site**
-   - Header search is a placeholder; implement subject/tutor/programme
-     search (API exists: `/subjects`, `/tutors/search`) with results page
-     and recent searches.
+4. **Payment round-trip on checkout** — ✅ (web UX)
+   - Checkout now **polls the order** after opening the gateway (every 6s)
+     and shows a green "Payment confirmed — seat secured" state when the
+     webhook flips the order to PAID, plus a "waiting for confirmation"
+     counter. Payment gateway link flow + escrow copy retained.
+   - Note: end-to-end with **live Paystack keys** still requires the
+     merchant's test/live keys (backend webhook + escrow already e2e-tested).
 
 ## 🟠 P1 — high value
 

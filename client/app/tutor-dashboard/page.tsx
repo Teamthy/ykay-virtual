@@ -295,6 +295,7 @@ export default function TutorDashboardPage() {
             <Link href="/messages" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Messages</Link>
             <Link href="/notifications" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Notifications</Link>
             <Link href="/contact" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Support</Link>
+            <Link href="/account" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">⚙️ Account settings</Link>
           </div>
         </aside>
       </div>

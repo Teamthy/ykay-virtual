@@ -8,6 +8,9 @@ import { apiFetch } from "@/lib/api";
 export type CurrentUser = {
   id: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string | null;
   status: string;
   timezone: string;
   roles: string[];

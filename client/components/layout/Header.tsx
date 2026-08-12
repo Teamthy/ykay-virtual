@@ -70,7 +70,7 @@ export function Header() {
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const query = q.trim();
-    router.push(query ? `/tutors?subject=${encodeURIComponent(query)}` : "/tutors");
+    router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
   };
 
   const closeAll = () => {

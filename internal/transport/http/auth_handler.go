@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/middleware"
 	"ykay-virtual/internal/service"
 	"ykay-virtual/pkg"
@@ -34,6 +35,9 @@ func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string
 type userResponse struct {
 	ID        string   `json:"id"`
 	Email     string   `json:"email"`
+	FirstName string   `json:"first_name,omitempty"`
+	LastName  string   `json:"last_name,omitempty"`
+	Phone     *string  `json:"phone,omitempty"`
 	Status    string   `json:"status"`
 	Timezone  string   `json:"timezone"`
 	Roles     []string `json:"roles"`
@@ -42,6 +46,15 @@ type userResponse struct {
 
 func toUserResponse(id, email, status, timezone string, roles []string, createdAt string) userResponse {
 	return userResponse{ID: id, Email: email, Status: status, Timezone: timezone, Roles: roles, CreatedAt: createdAt}
+}
+
+func toUserResponseFull(u *identity.User, roles []string) userResponse {
+	return userResponse{
+		ID: u.ID.String(), Email: u.Email,
+		FirstName: u.FirstName, LastName: u.LastName, Phone: u.Phone,
+		Status: string(u.Status), Timezone: u.Timezone, Roles: roles,
+		CreatedAt: u.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
 }
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -189,10 +202,7 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(
-		user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
-		user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	), nil)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponseFull(user, roles), nil)
 }
 
 func hashToken(raw string) string {

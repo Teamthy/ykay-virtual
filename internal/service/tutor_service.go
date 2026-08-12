@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -97,6 +98,10 @@ func searchParamsKey(v any) string {
 	return fmt.Sprintf("v1-%x", b)
 }
 
+func containsStrFold(hay, needle string) bool {
+	return strings.Contains(strings.ToLower(hay), strings.ToLower(needle))
+}
+
 func containsStr(hay []string, needle string) bool {
 	for _, h := range hay {
 		if h == needle {
@@ -141,6 +146,15 @@ func (s *TutorService) mockSearch(p tutor.TutorSearchParams) ([]tutor.TutorSearc
 	for _, m := range s.mock {
 		if p.SubjectSlug != "" && !containsStr(m.SubjectSlugs, p.SubjectSlug) {
 			continue
+		}
+		if p.Query != "" {
+			headline := ""
+			if m.Profile.Headline != nil {
+				headline = *m.Profile.Headline
+			}
+			if !containsStrFold(m.Profile.DisplayName, p.Query) && !containsStrFold(headline, p.Query) {
+				continue
+			}
 		}
 		out = append(out, m)
 	}

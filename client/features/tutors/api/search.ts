@@ -16,6 +16,7 @@ export type Tutor = {
 };
 
 export type SearchParams = {
+  q?: string;
   subject?: string;
   location?: string;
   online?: boolean;

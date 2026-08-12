@@ -87,6 +87,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/escalate", handlers.Chat.Escalate)
 	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/rating", handlers.Chat.RateThread)
 
+	// Account hub (phase 37)
+	mux.HandleFunc("PUT "+v1+"/auth/me/profile", handlers.Account.UpdateProfile)
+	mux.HandleFunc("GET "+v1+"/auth/me/export", handlers.Account.ExportData)
+	mux.HandleFunc("POST "+v1+"/auth/me/delete", handlers.Account.DeleteAccount)
+
 	// Push devices (M4)
 	mux.HandleFunc("POST "+v1+"/me/devices", handlers.Devices.RegisterDevice)
 	mux.HandleFunc("GET "+v1+"/me/devices", handlers.Devices.ListDevices)
@@ -287,6 +292,7 @@ type Handlers struct {
 	LessonOps    *LessonOpsHandler
 	Chat         *ChatHandler
 	Devices      *DeviceHandler
+	Account      *AccountHandler
 	Onboarding   *OnboardingHandler
 	Portal       *PortalHandler
 	Learning     *LearningHandler

@@ -195,6 +195,9 @@ func main() {
 	pushSvc := service.NewPushService(repos.Devices, service.NewExpoPushSender(cfg.ExpoAccessToken))
 	chatSvc.WithPusher(pushSvc)
 	chatHandler := httpapi.NewChatHandler(chatSvc)
+	accountSvc := service.NewAccountService(repos.Users, repos.Roles, repos.Sessions,
+		repos.Devices, repos.Students, repos.StudentLinks, repos.Chat, audit)
+	accountHandler := httpapi.NewAccountHandler(accountSvc)
 	deviceHandler := httpapi.NewDeviceHandler(pushSvc)
 
 	// --- Transport ---
@@ -220,6 +223,7 @@ func main() {
 		LessonOps:    httpapi.NewLessonOpsHandler(lessonSvc),
 		Chat:         chatHandler,
 		Devices:      deviceHandler,
+		Account:      accountHandler,
 		Onboarding:   httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:       httpapi.NewPortalHandler(portalSvc),
 		Learning:     httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc),
