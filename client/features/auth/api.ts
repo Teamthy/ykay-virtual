@@ -110,3 +110,20 @@ export async function getGoogleAuthURL(): Promise<{ url: string; state: string }
   const res = await apiFetch<{ url: string; state: string }>("/auth/google/url");
   return res.data;
 }
+
+// --- Onboarding helpers (phase 30) ---
+
+export async function setPrimaryRole(role: string): Promise<string[]> {
+  const res = await apiFetch<{ roles: string[] }>("/auth/me/role", {
+    method: "POST",
+    body: JSON.stringify({ role }),
+  });
+  return res.data.roles;
+}
+
+export async function changePassword(newPassword: string): Promise<void> {
+  await apiFetch("/auth/me/password", {
+    method: "POST",
+    body: JSON.stringify({ new_password: newPassword }),
+  });
+}

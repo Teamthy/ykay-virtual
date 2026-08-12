@@ -132,6 +132,58 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 	return user, nil
 }
 
+// SetPrimaryRole — replaces the user's role grants with a single primary role
+// (self-service onboarding step: "select role"). Unknown role names are
+// rejected; the caller must already be authenticated.
+func (s *AuthService) SetPrimaryRole(ctx context.Context, userID uuid.UUID, roleName string) ([]string, error) {
+	roleName = strings.ToUpper(strings.TrimSpace(roleName))
+	role, err := s.roles.FindByName(ctx, roleName)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, fmt.Errorf("%w: unknown role %q", domain.ErrInvalidInput, roleName)
+		}
+		return nil, err
+	}
+	if err := s.roles.RemoveAllForUser(ctx, userID); err != nil {
+		return nil, err
+	}
+	if err := s.roles.AssignToUser(ctx, userID, role.ID); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &userID, identity.AuditUpdate, "user_role",
+		nil, nil, map[string]any{"role": roleName}, nil, nil)
+	list, _ := s.roles.RolesForUser(ctx, userID)
+	out := make([]string, 0, len(list))
+	for _, r := range list {
+		out = append(out, r.Name)
+	}
+	return out, nil
+}
+
+// ChangePassword — sets a new password for the authenticated user (used by the
+// onboarding "complete your profile" step, where accounts are first created
+// with a generated password).
+func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newPassword string) error {
+	if len(newPassword) < 8 {
+		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
+	}
+	user, err := s.users.FindByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcryptCost)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+	user.PasswordHash = string(hash)
+	if err := s.users.Update(ctx, user); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &userID, identity.AuditUpdate, "user",
+		nil, nil, map[string]any{"event": "password_changed"}, nil, nil)
+	return nil
+}
+
 // Login — verifies credentials, creates a session, returns the raw token
 // (the handler puts it in the httpOnly cookie) + the user + roles.
 func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent string) (token string, user *identity.User, roles []string, err error) {

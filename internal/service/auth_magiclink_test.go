@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/identity"
 )
 
 // Magic-link login: request → code emailed (anti-enumeration) → wrong code
@@ -78,4 +79,58 @@ func TestAuth_GoogleOAuth_Config(t *testing.T) {
 	// Exchange with a bad state → unauthorized.
 	_, _, _, err = g2.ExchangeCode(context.Background(), "code", "bad-state", "1.2.3.4", "test")
 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
+}
+
+// Phase 30 onboarding backend: code sign-in proves email ownership (verifies
+// + activates pending accounts), SetPrimaryRole swaps roles, ChangePassword
+// sets a new bcrypt password.
+func TestAuth_OnboardingBackend(t *testing.T) {
+	env, mail := newAuthEnvWithTokens(t)
+	ctx := context.Background()
+
+	// Fresh register → PENDING_VERIFICATION, no verification e-mail yet.
+	_, err := env.svc.Register(ctx, RegisterInput{Email: "ob@example.com", Password: "password123", Roles: []string{"PARENT"}})
+	require.NoError(t, err)
+	u, err := env.store.Users.FindByEmail(ctx, "ob@example.com")
+	require.NoError(t, err)
+	require.Equal(t, identity.UserStatusPending, u.Status)
+	require.Nil(t, u.EmailVerifiedAt)
+
+	// Step 2 — verify email with the 6-digit login code: on success the
+	// account is marked verified AND activated.
+	require.NoError(t, env.svc.RequestLoginCode(ctx, "ob@example.com"))
+	re := regexp.MustCompile(`font-family:monospace;\">([0-9]{6})</span>`)
+	m := re.FindStringSubmatch(mail.sent[0].body)
+	require.Len(t, m, 2)
+	token, _, roles, err := env.svc.ConfirmLoginCode(ctx, "ob@example.com", m[1], "1.2.3.4", "test")
+	require.NoError(t, err)
+	require.NotEmpty(t, token)
+	require.Contains(t, roles, "PARENT")
+	u, err = env.store.Users.FindByEmail(ctx, "ob@example.com")
+	require.NoError(t, err)
+	require.NotNil(t, u.EmailVerifiedAt)
+	require.Equal(t, identity.UserStatusActive, u.Status)
+
+	// Step 3 — swap the primary role to STUDENT.
+	roles, err = env.svc.SetPrimaryRole(ctx, u.ID, "student")
+	require.NoError(t, err)
+	require.Equal(t, []string{"STUDENT"}, roles)
+	roles, err = env.svc.SetPrimaryRole(ctx, u.ID, "TUTOR")
+	require.NoError(t, err)
+	require.Equal(t, []string{"TUTOR"}, roles)
+	// Unknown role → rejected, previous role untouched.
+	_, err = env.svc.SetPrimaryRole(ctx, u.ID, "SPACEFARER")
+	require.ErrorIs(t, err, domain.ErrInvalidInput)
+	got, err := env.store.Roles.RolesForUser(ctx, u.ID)
+	require.NoError(t, err)
+	require.Len(t, got, 1)
+	require.Equal(t, "TUTOR", got[0].Name)
+
+	// Step 5 — set a real password, then log in with it.
+	require.NoError(t, env.svc.ChangePassword(ctx, u.ID, "my-new-password-1"))
+	require.ErrorIs(t, env.svc.ChangePassword(ctx, u.ID, "short"), domain.ErrInvalidInput)
+	_, user, roles, err := env.svc.Login(ctx, "ob@example.com", "my-new-password-1", "1.2.3.4", "test")
+	require.NoError(t, err)
+	require.Equal(t, "ob@example.com", user.Email)
+	require.Contains(t, roles, "TUTOR")
 }

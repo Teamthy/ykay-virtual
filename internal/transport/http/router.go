@@ -50,6 +50,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/login-code/confirm", handlers.Auth.ConfirmLoginCode)
 	mux.HandleFunc("GET "+v1+"/auth/google/url", handlers.Auth.GoogleAuthURL)
 	mux.HandleFunc("GET "+v1+"/auth/google/callback", handlers.Auth.GoogleCallback)
+	mux.HandleFunc("POST "+v1+"/auth/me/role", handlers.Auth.SetRole)
+	mux.HandleFunc("POST "+v1+"/auth/me/password", handlers.Auth.ChangePassword)
 
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)

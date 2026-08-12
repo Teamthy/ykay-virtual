@@ -232,6 +232,13 @@ func (m *RoleMemory) RolesForUser(_ context.Context, userID uuid.UUID) ([]identi
 	return out, nil
 }
 
+func (m *RoleMemory) RemoveAllForUser(_ context.Context, userID uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.userRoles, userID)
+	return nil
+}
+
 var _ identity.RoleRepository = (*RoleMemory)(nil)
 
 // --- Student profiles + parent links ---

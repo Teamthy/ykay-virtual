@@ -93,6 +93,18 @@ func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, use
 	if err := s.tokens.Consume(ctx, t.ID); err != nil {
 		return "", nil, nil, err
 	}
+	// A successful code sign-in proves email ownership: mark the address
+	// verified and activate pending accounts (onboarding "verify email" step).
+	if user.EmailVerifiedAt == nil {
+		now := s.now().UTC()
+		user.EmailVerifiedAt = &now
+		if user.Status == identity.UserStatusPending {
+			user.Status = identity.UserStatusActive
+		}
+		if err := s.users.Update(ctx, user); err != nil {
+			return "", nil, nil, err
+		}
+	}
 	return s.startSession(ctx, user, ip, userAgent)
 }
 

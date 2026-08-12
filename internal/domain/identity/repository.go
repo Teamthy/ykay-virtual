@@ -32,6 +32,9 @@ type RoleRepository interface {
 	FindByName(ctx context.Context, name string) (*Role, error)
 	AssignToUser(ctx context.Context, userID, roleID uuid.UUID) error
 	RolesForUser(ctx context.Context, userID uuid.UUID) ([]Role, error)
+	// RemoveAllForUser — deletes every role grant for the user (used by the
+	// self-service "set my primary role" onboarding step).
+	RemoveAllForUser(ctx context.Context, userID uuid.UUID) error
 }
 
 type ParentProfileRepository interface {

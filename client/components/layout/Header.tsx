@@ -174,7 +174,7 @@ export function Header() {
           <div className="mx-2 h-4 w-px bg-ink-200" aria-hidden="true" />
           <AuthNav />
           <Link
-            href="/register"
+            href="/onboarding"
             className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:bg-brand-gold-hover"
           >
             Get started
@@ -228,7 +228,7 @@ export function Header() {
           </div>
           <div className="mt-3 border-t border-ink-100 pt-3">
             <Link
-              href="/register"
+              href="/onboarding"
               onClick={closeAll}
               className="block rounded-lg bg-brand-gold px-4 py-2.5 text-center text-sm font-medium text-ink-900"
             >

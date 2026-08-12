@@ -205,6 +205,55 @@ func clientIP(r *http.Request) string {
 
 // --- Email verification + password reset (Phase 8) ---
 
+// SetRole — POST /auth/me/role {role} — sets the caller's primary role
+// (stateful onboarding step 3). Requires a valid session.
+func (h *AuthHandler) SetRole(w http.ResponseWriter, r *http.Request) {
+	actor, ok := middleware.ActorFromContext(r.Context())
+	if !ok {
+		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "not authenticated", nil)
+		return
+	}
+	var req struct {
+		Role string `json:"role"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if strings.TrimSpace(req.Role) == "" {
+		WriteAppError(w, pkg.BadRequest("role is required", nil))
+		return
+	}
+	roles, err := h.svc.SetPrimaryRole(r.Context(), actor.UserID, req.Role)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"roles": roles}, nil)
+}
+
+// ChangePassword — POST /auth/me/password {new_password} — sets a new
+// password for the caller (onboarding "complete your profile" step).
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	actor, ok := middleware.ActorFromContext(r.Context())
+	if !ok {
+		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "not authenticated", nil)
+		return
+	}
+	var req struct {
+		NewPassword string `json:"new_password"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.ChangePassword(r.Context(), actor.UserID, req.NewPassword); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"changed": true}, nil)
+}
+
 // ResendVerification — POST /auth/verify-email/request {email}
 func (h *AuthHandler) ResendVerification(w http.ResponseWriter, r *http.Request) {
 	var req struct {

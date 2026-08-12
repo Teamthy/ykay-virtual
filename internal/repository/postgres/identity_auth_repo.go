@@ -253,6 +253,14 @@ func (r *RoleRepo) RolesForUser(ctx context.Context, userID uuid.UUID) ([]identi
 	return out, rows.Err()
 }
 
+func (r *RoleRepo) RemoveAllForUser(ctx context.Context, userID uuid.UUID) error {
+	if _, err := r.db.ExecContext(ctx,
+		`DELETE FROM user_roles WHERE user_id = $1`, userID); err != nil {
+		return fmt.Errorf("remove roles for user: %w", err)
+	}
+	return nil
+}
+
 var _ identity.RoleRepository = (*RoleRepo)(nil)
 
 // --- Student profiles + parent links ---

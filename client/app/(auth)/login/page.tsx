@@ -60,7 +60,7 @@ export default function LoginPage() {
       footer={
         <>
           New to NUVORA?{" "}
-          <Link href="/register" className="font-semibold text-brand-gold-dark hover:underline">
+          <Link href="/onboarding" className="font-semibold text-brand-gold-dark hover:underline">
             Create an account
           </Link>
         </>
