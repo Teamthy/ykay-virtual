@@ -6,8 +6,10 @@
 //   - API calls                 → never cached (money/data safety)
 //   - Unsplash images           → stale-while-revalidate
 
-const CACHE = "nuvora-v2";
-const SHELL = ["/", "/offline"];
+const CACHE = "nuvora-v3";
+// App shell — core routes precached at install so the LMS, chat
+// and dashboards open offline (data still streams from the API when online).
+const SHELL = ["/", "/offline", "/lms", "/chat", "/dashboard", "/login"];
 const API_PREFIX = "/api/";
 
 self.addEventListener("install", (event) => {

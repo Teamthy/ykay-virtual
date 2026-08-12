@@ -5,6 +5,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/layout/ChatWidget";
 import { InstallPrompt } from "@/components/layout/InstallPrompt";
+import { CookieConsent } from "@/components/layout/CookieConsent";
+import { SkipLink } from "@/components/layout/SkipLink";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Providers } from "@/components/providers";
 import { RegisterSW } from "@/components/register-sw";
@@ -68,10 +70,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <Header />
-          <main className="pb-16 lg:pb-0">{children}</main>
+          <main id="main-content" tabIndex={-1} className="pb-16 outline-none lg:pb-0">{children}</main>
           <Footer />
           <ChatWidget />
           <InstallPrompt />
+          <CookieConsent />
+          <SkipLink />
           <MobileNav />
           <RegisterSW />
           <Toaster />

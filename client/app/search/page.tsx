@@ -8,6 +8,7 @@ import { INPUT_CLS } from "@/components/ui/password-input";
 import { searchTutors, type Tutor } from "@/features/tutors/api/search";
 import { listProgrammes, type Programme } from "@/features/programmes/api/list";
 import { listSubjects } from "@/features/subjects/api/list";
+import { useWishlist } from "@/features/wishlist/hook";
 
 // /search — site-wide search (P0): tutors (free-text), programmes and
 // subjects in one place. Header search navigates here.
@@ -20,6 +21,7 @@ function SearchInner() {
   const q = sp.get("q") ?? "";
   const [input, setInput] = useState(q);
   const [activeGroup, setActiveGroup] = useState<ResultGroup>("tutors");
+  const { isSaved, toggle } = useWishlist();
 
   useEffect(() => setInput(q), [q]);
 
@@ -110,25 +112,41 @@ function SearchInner() {
             <div className="mt-4">
               {activeGroup === "tutors" && (
                 <div className="space-y-3">
-                  {(tutors.data?.data ?? []).map((t: Tutor) => (
-                    <Link
-                      key={t.id}
-                      href={`/tutors/${t.slug}`}
-                      className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                    >
-                      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-gold-light font-bold text-brand-navy">
-                        {t.display_name.slice(0, 1)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-brand-navy">{t.display_name}</p>
-                        <p className="truncate text-sm text-ink-500">
-                          {(t.subjects ?? []).map((s) => s.name).join(" · ") || "Tutor"}
-                          {t.rating_avg > 0 ? ` · ★ ${t.rating_avg.toFixed(1)}` : ""}
-                        </p>
+                  {(tutors.data?.data ?? []).map((t: Tutor) => {
+                    const saved = isSaved(t.slug);
+                    return (
+                      <div key={t.id} className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-ink-700 dark:bg-[#141C2E]">
+                        <Link href={`/tutors/${t.slug}`} className="flex min-w-0 flex-1 items-center gap-4">
+                          <span className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-gold-light font-bold text-brand-navy">
+                            {t.display_name.slice(0, 1)}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block font-bold text-brand-navy dark:text-white">{t.display_name}</span>
+                            <span className="block truncate text-sm text-ink-500">
+                              {(t.subjects ?? []).map((s) => s.name).join(" · ") || "Tutor"}
+                              {t.rating_avg > 0 ? ` · ★ ${t.rating_avg.toFixed(1)}` : ""}
+                            </span>
+                          </span>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            toggle({
+                              slug: t.slug,
+                              name: t.display_name,
+                              subjects: (t.subjects ?? []).map((s) => s.name),
+                              rating: t.rating_avg,
+                            })
+                          }
+                          aria-label={saved ? `Remove ${t.display_name} from saved` : `Save ${t.display_name}`}
+                          aria-pressed={saved}
+                          className={`grid size-9 shrink-0 place-items-center rounded-full text-lg transition-transform hover:scale-110 ${saved ? "bg-red-50" : "bg-ink-50"}`}
+                        >
+                          {saved ? "❤️" : "🤍"}
+                        </button>
                       </div>
-                      <span className="text-xs font-bold text-brand-gold-dark">View →</span>
-                    </Link>
-                  ))}
+                    );
+                  })}
                   {tutorCount === 0 && <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">No tutors match “{q}”.</p>}
                 </div>
               )}

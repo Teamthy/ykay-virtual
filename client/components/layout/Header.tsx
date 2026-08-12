@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search, ChevronDown, Menu, X, GraduationCap, BookOpen, MonitorPlay, Star, ArrowRight } from "lucide-react";
 import { AuthNav } from "@/components/layout/AuthNav";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/utils";
 
@@ -172,6 +174,8 @@ export function Header() {
         {/* Divider + buttons */}
         <div className="hidden items-center gap-1.5 lg:flex">
           <div className="mx-2 h-4 w-px bg-ink-200" aria-hidden="true" />
+          <ThemeToggle />
+          <LanguageSwitcher />
           <AuthNav />
           <Link
             href="/onboarding"
@@ -181,6 +185,8 @@ export function Header() {
           </Link>
         </div>
 
+        <ThemeToggle className="lg:hidden" />
+        <LanguageSwitcher className="lg:hidden" />
         {/* Search (mobile-accessible) + toggle */}
         <div className="flex items-center gap-2 lg:hidden">
           <form onSubmit={submitSearch} className="relative hidden sm:block">

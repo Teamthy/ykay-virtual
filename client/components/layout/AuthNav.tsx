@@ -5,11 +5,13 @@ import { useState } from "react";
 import { useSession, useLogout } from "@/hooks/useSession";
 import { isAdmin } from "@/features/auth/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDict } from "@/hooks/useDict";
 
 // Header auth chip: Log in / Register when signed out; account menu (with
 // role-aware links) + logout when signed in.
 export function AuthNav() {
   const { user, isLoading } = useSession();
+  const { t } = useDict();
   const logout = useLogout();
   const [open, setOpen] = useState(false);
 
@@ -19,8 +21,8 @@ export function AuthNav() {
 
   if (!user) {
     return (
-      <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900">
-        Sign in
+      <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900 dark:text-ink-200">
+        {t("auth.login")}
       </Link>
     );
   }

@@ -78,25 +78,33 @@ Also fixed en route: `RelatedContent` crashed on tutor pages (the related
 endpoint serializes Go structs as `Profile.*` — normalized both shapes);
 global rate limit raised 100→300 req/min (suite + real-user headroom).
 
-## 🟢 P2 — polish & scale
+## 🟢 P2 — ✅ DONE in phase 39
 
-11. **Wishlist / saved tutors** — add for retargeting.
-12. **Referral program UI** — API exists (`/referrals`); add invite link +
-    reward copy on dashboards.
-13. **i18n (French/Pidgin) + RTL** — language pill is decorative today.
-14. **Dark mode** — tokens exist; add toggle + persistence.
-15. **SEO content scaling** — more programme/curriculum landing pages,
-    programme FAQs, tutor-verification badge schema markup.
-16. **Accessibility audit** — automated axe CI + manual pass (ARIA on
-    interactive components, contrast checks).
-17. **Performance budgets** — Core Web Vitals CI (Lighthouse job exists in
-    CI; tune budgets + images).
-18. **Cookie consent banner** — now that cookies are disclosed in the
-    privacy policy, add the consent UI (CMP-lite).
-19. **Sitemap/robots expansion** — sitemap exists; add blog + tutors +
-    cohorts entries dynamically (they are; verify coverage).
-20. **Offline-first LMS** — cache course pages via the service worker for
-    offline note-taking.
+11. **Wishlist / saved tutors** — ✅ `useWishlist` (localStorage) + heart
+    toggles on search results + `/saved` page (login-gated).
+12. **Referral program UI** — ✅ already shipped (`ReferralCard` with code,
+    share link + copy); verified.
+13. **i18n** — ✅ lightweight `lib/i18n.ts` (en/fr/yo dicts) + header
+    **LanguageSwitcher** (persisted) + `useDict` applied to auth nav.
+    Full page-content translation = follow-up.
+14. **Dark mode** — ✅ `.dark` class + CSS-variable/utility overrides in
+    globals.css (cards, text, borders, backgrounds), **ThemeToggle** in
+    header (desktop + mobile), persisted + system default, `darkMode:
+    "class"`.
+15. **SEO scaling** — ✅ new landing pages `/sat`, `/ielts-toefl`, `/gre`
+    (metadata + JSON-LD course/FAQ + CTAs) + sitemap entries.
+16. **Accessibility** — ✅ skip-link, focus-visible ring, reduced-motion
+    support, aria pass on icon buttons/toggles, `docs/A11Y_AUDIT.md`
+    checklist + Lighthouse a11y ≥ 90 CI gate.
+17. **Performance budgets** — ✅ lighthouserc extended (byte weight,
+    unused JS, font-display, image-alt).
+18. **Cookie consent** — ✅ banner (accept/dismiss, links to /privacy,
+    persisted).
+19. **Sitemap/robots** — ✅ dynamic sitemap already covered tutors/
+    subjects/programmes/blog; new landing pages added.
+20. **Offline LMS** — ✅ SW v3 precaches `/lms /chat /dashboard /login`
+    app shell; network-first navigations fall back offline (API never
+    cached).
 
 ## Cross-cutting (applies to all above)
 
