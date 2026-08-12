@@ -1,34 +1,63 @@
 "use client";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search, ChevronDown, Menu, X } from "lucide-react";
+import { Search, ChevronDown, Menu, X, GraduationCap, BookOpen, MonitorPlay, Star } from "lucide-react";
 import { AuthNav } from "@/components/layout/AuthNav";
-import { Logo } from "./Logo";
-import { cn } from "@/lib/utils";
+import { Logo } from "@/components/layout/Logo";
 
-// Fully-wired header: every link points at a real route (no dead hrefs).
+// NUVORA header — Tuteria-grade layout: logo · Our Services mega-dropdown ·
+// "What do you want to learn?" search · Contact Us / Become a Tutor / auth.
 
-const SERVICES = [
-  { href: "/programmes", label: "Programmes", desc: "Cohorts, bootcamps & structured courses" },
-  { href: "/cohorts", label: "Group Cohorts", desc: "Scheduled small-group classes" },
-  { href: "/private-tuition", label: "Private Tuition", desc: "One-to-one with a vetted tutor" },
-  { href: "/exam-prep", label: "Exam Preparation", desc: "WAEC, NECO, JAMB, IGCSE, A-Level" },
-  { href: "/digital-skills", label: "Computing & Digital Skills", desc: "CS, Python, AI, Cybersecurity" },
-  { href: "/tutors", label: "Find a Tutor", desc: "Browse approved tutors" },
-];
-
-const CURRICULA = [
-  { href: "/curricula/british", label: "British Curriculum", desc: "Year 7–9, IGCSE, A-Level" },
-  { href: "/curricula/nigerian", label: "Nigerian Curriculum", desc: "JSS1–3, SSS1–3, WAEC/NECO/JAMB" },
+const SERVICE_GROUPS = [
+  {
+    title: "K-12 Academics",
+    icon: <GraduationCap size={15} />,
+    items: [
+      { label: "Home Tutoring", href: "/private-tuition" },
+      { label: "Group Cohorts", href: "/cohorts" },
+      { label: "British Curriculum", href: "/curricula/british" },
+      { label: "Nigerian Curriculum", href: "/curricula/nigerian" },
+    ],
+  },
+  {
+    title: "Tests & Exams",
+    icon: <BookOpen size={15} />,
+    items: [
+      { label: "UTME / JAMB Prep", href: "/exam-prep" },
+      { label: "IGCSE / GCSE Prep", href: "/curricula/british" },
+      { label: "WAEC / NECO", href: "/exam-prep" },
+      { label: "Entrance Exams", href: "/exam-prep" },
+    ],
+  },
+  {
+    title: "Training & Digital",
+    icon: <MonitorPlay size={15} />,
+    items: [
+      { label: "Online Classes", href: "/online-classes" },
+      { label: "Digital Skills", href: "/digital-skills" },
+      { label: "Corporate Training", href: "/corporate-training" },
+      { label: "For Schools", href: "/for-schools" },
+    ],
+  },
+  {
+    title: "Premium & More",
+    icon: <Star size={15} />,
+    items: [
+      { label: "NUVORA Plus", href: "/pricing" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Subjects", href: "/subjects" },
+      { label: "Programmes", href: "/programmes" },
+    ],
+  },
 ];
 
 export function Header() {
+  const router = useRouter();
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [curriculaOpen, setCurriculaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [q, setQ] = useState("");
-  const router = useRouter();
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,88 +67,67 @@ export function Header() {
 
   const closeAll = () => {
     setServicesOpen(false);
-    setCurriculaOpen(false);
     setMobileOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-ink-100">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-4 flex items-center gap-5">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-3.5 flex items-center gap-4">
         {/* Brand */}
         <Link href="/" onClick={closeAll} className="shrink-0" aria-label="NUVORA home">
           <Logo />
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-1">
-          {/* Services dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => { setServicesOpen(!servicesOpen); setCurriculaOpen(false); }}
-              className={cn(
-                "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-ink-800 transition-colors",
-                servicesOpen ? "bg-ink-100" : "hover:bg-ink-100"
-              )}
-            >
-              Our Services <ChevronDown size={14} className={cn("transition-transform", servicesOpen && "rotate-180")} />
-            </button>
-            {servicesOpen && (
-              <div className="absolute left-0 top-full mt-2 w-80 rounded-2xl border border-ink-100 bg-white p-2 shadow-lift">
-                {SERVICES.map((s) => (
-                  <Link key={s.href} href={s.href} onClick={closeAll}
-                    className="block rounded-xl px-4 py-3 hover:bg-ink-50">
-                    <span className="text-sm font-semibold">{s.label}</span>
-                    <span className="block text-xs text-ink-500">{s.desc}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Curricula dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => { setCurriculaOpen(!curriculaOpen); setServicesOpen(false); }}
-              className={cn(
-                "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-ink-800 transition-colors",
-                curriculaOpen ? "bg-ink-100" : "hover:bg-ink-100"
-              )}
-            >
-              Curricula <ChevronDown size={14} className={cn("transition-transform", curriculaOpen && "rotate-180")} />
-            </button>
-            {curriculaOpen && (
-              <div className="absolute left-0 top-full mt-2 w-72 rounded-2xl border border-ink-100 bg-white p-2 shadow-lift">
-                {CURRICULA.map((c) => (
-                  <Link key={c.href} href={c.href} onClick={closeAll}
-                    className="block rounded-xl px-4 py-3 hover:bg-ink-50">
-                    <span className="text-sm font-semibold">{c.label}</span>
-                    <span className="block text-xs text-ink-500">{c.desc}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <Link href="/programmes" onClick={closeAll} className="px-4 py-3 rounded-xl text-sm font-semibold text-ink-800 hover:bg-ink-100 transition-colors">Programmes</Link>
-          <Link href="/private-tuition" onClick={closeAll} className="px-4 py-3 rounded-xl text-sm font-semibold text-ink-800 hover:bg-ink-100 transition-colors">Private Tuition</Link>
-          <Link href="/tutors" onClick={closeAll} className="px-4 py-3 rounded-xl text-sm font-semibold text-ink-800 hover:bg-ink-100 transition-colors">Tutors</Link>
-          <Link href="/about" onClick={closeAll} className="px-4 py-3 rounded-xl text-sm font-semibold text-ink-800 hover:bg-ink-100 transition-colors">About</Link>
-        </nav>
+        {/* Our Services dropdown */}
+        <div className="relative hidden lg:block">
+          <button
+            onClick={() => setServicesOpen(!servicesOpen)}
+            className={cn("flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-ink-800 transition-colors", servicesOpen ? "bg-ink-100" : "hover:bg-ink-100")}
+          >
+            Our Services <ChevronDown size={14} className={cn("transition-transform", servicesOpen && "rotate-180")} />
+          </button>
+          {servicesOpen && (
+            <div className="absolute left-0 top-full mt-2 w-[640px] rounded-2xl border border-ink-100 bg-white p-3 shadow-lift grid grid-cols-2 gap-1">
+              {SERVICE_GROUPS.map((g) => (
+                <div key={g.title} className="rounded-xl p-3">
+                  <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-ink-400 mb-2">
+                    <span className="text-brand-blue">{g.icon}</span>
+                    {g.title}
+                  </p>
+                  {g.items.map((it) => (
+                    <Link key={it.label} href={it.href} onClick={closeAll}
+                      className="block rounded-lg px-2.5 py-1.5 text-sm font-semibold text-ink-700 hover:bg-brand-blue-light/60 hover:text-brand-navy">
+                      {it.label}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Search */}
-        <form onSubmit={submitSearch} className="hidden md:block flex-1 max-w-[420px] relative ml-auto">
-          <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+        <form onSubmit={submitSearch} className="hidden md:block flex-1 max-w-[460px] relative mx-auto">
+          <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
           <input
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search tutors or subjects…"
-            className="w-full pl-12 pr-5 py-3 bg-ink-100 rounded-full text-sm text-ink-700 focus:bg-ink-200 focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all"
+            placeholder="What do you want to learn?"
+            className="w-full pl-10 pr-4 py-2.5 bg-ink-100 rounded-full text-sm text-ink-700 placeholder:text-ink-400 focus:bg-white focus:ring-2 focus:ring-brand-blue/25 outline-none transition-all"
           />
         </form>
 
-        {/* Auth + mobile toggle */}
-        <div className="flex items-center gap-3 ml-auto lg:ml-0">
+        {/* Right side */}
+        <div className="flex items-center gap-1.5 ml-auto lg:ml-0 shrink-0">
+          <Link href="/contact" onClick={closeAll}
+            className="hidden xl:block px-3 py-2.5 rounded-xl text-sm font-semibold text-ink-700 hover:bg-ink-100 transition-colors">
+            Contact Us
+          </Link>
+          <Link href="/become-tutor" onClick={closeAll}
+            className="hidden md:block px-3.5 py-2.5 rounded-xl text-sm font-bold text-brand-blue hover:bg-brand-blue-light transition-colors">
+            Become a Tutor
+          </Link>
           <AuthNav />
           <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden p-2 text-ink-800" aria-label="Menu">
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -131,25 +139,16 @@ export function Header() {
       {mobileOpen && (
         <div className="lg:hidden border-t border-ink-100 bg-white px-6 py-4 space-y-1 max-h-[70vh] overflow-y-auto">
           <p className="pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Learn</p>
-          <MobileLink href="/programmes" label="Programmes" onClose={closeAll} />
-          <MobileLink href="/cohorts" label="Group Cohorts" onClose={closeAll} />
-          <MobileLink href="/private-tuition" label="Private Tuition" onClose={closeAll} />
-          <MobileLink href="/exam-prep" label="Exam Preparation" onClose={closeAll} />
-          <MobileLink href="/digital-skills" label="Digital Skills" onClose={closeAll} />
-          <MobileLink href="/curricula/british" label="British Curriculum" onClose={closeAll} />
-          <MobileLink href="/curricula/nigerian" label="Nigerian Curriculum" onClose={closeAll} />
-          <MobileLink href="/tutors" label="Find a Tutor" onClose={closeAll} />
-          <p className="pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Company</p>
-          <MobileLink href="/about" label="About & Academic Leadership" onClose={closeAll} />
-          <MobileLink href="/how-it-works" label="How It Works" onClose={closeAll} />
-          <MobileLink href="/pricing" label="Pricing" onClose={closeAll} />
-          <MobileLink href="/success-stories" label="Success Stories" onClose={closeAll} />
-          <MobileLink href="/resources" label="Resources" onClose={closeAll} />
-          <MobileLink href="/blog" label="Blog" onClose={closeAll} />
-          <MobileLink href="/contact" label="Contact / Support" onClose={closeAll} />
-          <p className="pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Teach</p>
-          <MobileLink href="/become-tutor" label="Become a Tutor" onClose={closeAll} />
-          <MobileLink href="/tutor-dashboard" label="Tutor Dashboard" onClose={closeAll} />
+          {SERVICE_GROUPS.flatMap((g) => g.items).map((it) => (
+            <Link key={it.label} href={it.href} onClick={closeAll}
+              className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
+              {it.label}
+            </Link>
+          ))}
+          <div className="border-t border-ink-100 mt-2 pt-2">
+            <MobileLink href="/contact" label="Contact Us" onClose={closeAll} />
+            <MobileLink href="/become-tutor" label="Become a Tutor" onClose={closeAll} />
+          </div>
         </div>
       )}
     </header>
@@ -158,8 +157,10 @@ export function Header() {
 
 function MobileLink({ href, label, onClose }: { href: string; label: string; onClose: () => void }) {
   return (
-    <Link href={href} onClick={onClose} className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-800 hover:bg-ink-50">
+    <Link href={href} onClick={onClose} className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink-700 hover:bg-ink-50">
       {label}
     </Link>
   );
 }
+
+import { cn } from "@/lib/utils";

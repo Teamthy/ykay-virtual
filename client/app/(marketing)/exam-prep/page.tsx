@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
+import { CategoryRail } from "@/components/layout/CategoryRail";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
@@ -52,8 +53,12 @@ export default function ExamPrepPage() {
           <Link href="/private-tuition" className="btn-gold">Get private support</Link>
       </PageHero>
 
-
-      <section className="mt-14 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="mt-10 grid lg:grid-cols-[220px_1fr] gap-8 items-start">
+        <aside className="lg:sticky lg:top-28">
+          <CategoryRail />
+        </aside>
+        <div>
+      <section className="mt-2 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {EXAMS.map((e) => (
           <div key={e.code} className="border rounded-2xl p-6 hover:shadow-lift transition-shadow">
             <div className="text-3xl font-extrabold text-brand-blue">{e.code}</div>
@@ -90,6 +95,8 @@ export default function ExamPrepPage() {
         </div>
       </section>
           <CohortStrip />
-</main>
+        </div>
+      </div>
+    </main>
   );
 }

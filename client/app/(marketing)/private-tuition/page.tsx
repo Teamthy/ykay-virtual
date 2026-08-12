@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
+import { CategoryRail } from "@/components/layout/CategoryRail";
 import { PrivateTuitionWizard } from "@/features/tuition/PrivateTuitionWizard";
 
 export const metadata: Metadata = buildMetadata({
@@ -53,8 +54,12 @@ export default function PrivateTuitionPage() {
       >
       </PageHero>
 
-
-      <section className="mt-10 grid lg:grid-cols-[1fr_0.9fr] gap-10 items-start">
+      <div className="mt-10 grid lg:grid-cols-[220px_1fr] gap-8 items-start">
+        <aside className="lg:sticky lg:top-28">
+          <CategoryRail />
+        </aside>
+        <div>
+      <section className="grid lg:grid-cols-[1fr_0.9fr] gap-10 items-start">
         <PrivateTuitionWizard />
         <aside className="space-y-5 lg:sticky lg:top-28">
           <div className="border rounded-2xl p-6">
@@ -93,6 +98,8 @@ export default function PrivateTuitionPage() {
           ))}
         </div>
       </section>
+            </div>
+      </div>
     </main>
   );
 }

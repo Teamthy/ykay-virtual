@@ -1,0 +1,49 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, BookOpenCheck, MonitorPlay, GraduationCap, Globe2, Star, Languages, FileCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+// Category rail — reference-grade left navigation used on product pages
+// (Home Tutoring · UTME 2026 · GMAT Prep · Healthcare · Entrance Exam ·
+// Study Abroad · Tuteria Plus · Languages equivalent, mapped to NUVORA pages).
+
+const CATEGORIES = [
+  { label: "Home Tutoring", href: "/private-tuition", icon: <Home size={16} /> },
+  { label: "UTME / JAMB Prep", href: "/exam-prep", icon: <FileCheck size={16} /> },
+  { label: "Entrance Exams", href: "/exam-prep", icon: <GraduationCap size={16} /> },
+  { label: "Online Classes", href: "/online-classes", icon: <MonitorPlay size={16} /> },
+  { label: "Digital Skills", href: "/digital-skills", icon: <BookOpenCheck size={16} /> },
+  { label: "Study Abroad", href: "/for-schools", icon: <Globe2 size={16} /> },
+  { label: "NUVORA Plus", href: "/pricing", icon: <Star size={16} /> },
+  { label: "Languages", href: "/subjects", icon: <Languages size={16} /> },
+];
+
+export function CategoryRail() {
+  const pathname = usePathname();
+  return (
+    <nav aria-label="Categories" className="rounded-2xl border border-ink-100 bg-white p-2 shadow-soft">
+      <p className="px-3 pb-2 pt-2 text-[10px] font-bold uppercase tracking-wider text-ink-400">Categories</p>
+      <ul className="space-y-0.5">
+        {CATEGORIES.map((c) => {
+          const active = pathname === c.href;
+          return (
+            <li key={`${c.label}-${c.href}`}>
+              <Link
+                href={c.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
+                  active ? "bg-brand-navy text-white" : "text-ink-700 hover:bg-ink-100"
+                )}
+              >
+                <span className={cn(active ? "text-brand-gold" : "text-brand-blue")}>{c.icon}</span>
+                {c.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}

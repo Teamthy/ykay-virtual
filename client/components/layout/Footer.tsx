@@ -31,8 +31,26 @@ const SUPPORT = [
 
 export function Footer() {
   return (
-    <footer className="bg-[#12121e] text-white pt-20 pb-8 mt-16">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+    <footer className="bg-brand-navy-dark text-white mt-16">
+      {/* Learning Advisors contact band (reference 003305) */}
+      <section className="border-b border-white/10">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div>
+            <h3 className="text-xl font-extrabold">Need tutoring help? Speak with our Learning Advisors</h3>
+            <p className="mt-1 text-sm text-white/60">Free advice on programmes, curricula and matching the right tutor.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <a href="tel:+2347063726773" className="rounded-xl bg-white/10 px-5 py-3 text-sm font-bold hover:bg-white/20 transition-colors">
+              📞 +234 706 372 6773
+            </a>
+            <a href="mailto:hello@nuvora.com" className="rounded-xl bg-brand-gold px-5 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
+              ✉️ hello@nuvora.com
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-[1400px] mx-auto px-6 md:px-10 pt-16 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-14 mb-14">
           <div>
             <Link href="/" className="mb-5 inline-block" aria-label="NUVORA home">

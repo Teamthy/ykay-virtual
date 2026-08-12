@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import Link from "next/link";
+import { TutorCommunityStats } from "@/components/home/TutorCommunityStats";
+import { TutorBenefits } from "@/components/home/TutorBenefits";
 
 export const metadata: Metadata = buildMetadata({
   title: "Become a Tutor — Apply to Teach at NUVORA",
@@ -47,6 +49,9 @@ export default function BecomeTutorPage() {
           Start tutor application
         </Link>
       </div>
+
+      <TutorCommunityStats />
+      <TutorBenefits />
 
       <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
         {STEPS.map((s) => (

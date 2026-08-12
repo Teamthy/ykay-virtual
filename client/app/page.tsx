@@ -1,5 +1,7 @@
 import { CategoryPills } from "@/components/home/CategoryPills";
-import { HeroCarousel } from "@/components/home/HeroCarousel";
+import { HeroReference } from "@/components/home/HeroReference";
+import { StatsBand } from "@/components/home/StatsBand";
+import { SuccessRateBand } from "@/components/home/SuccessRateBand";
 import { HeroSearch } from "@/features/programmes/components/HeroSearch";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
@@ -21,7 +23,8 @@ export default function HomePage() {
   return (
     <>
       <CategoryPills />
-      <HeroCarousel />
+      <HeroReference />
+      <StatsBand />
       <div className="container-x -mt-10 relative z-20">
         <HeroSearch />
       </div>
@@ -36,6 +39,7 @@ export default function HomePage() {
       <ExamPrepGrid />
       <StudentQuote />
       <TestPrepCard />
+      <SuccessRateBand />
       <LeadershipTeaser />
       <HomeFAQ />
       <BecomeTutorCTA />
