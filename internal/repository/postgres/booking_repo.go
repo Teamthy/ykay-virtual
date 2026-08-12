@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
@@ -122,6 +123,32 @@ func (r *CohortEnrollmentRepo) Create(ctx context.Context, e *booking.CohortEnro
 		return fmt.Errorf("create enrollment: %w", err)
 	}
 	return nil
+}
+
+func (r *CohortEnrollmentRepo) ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]booking.CohortEnrollment, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, cohort_id, student_profile_id, parent_user_id, order_id, status, enrolled_at, cancelled_at, created_at
+		FROM cohort_enrollments WHERE cohort_id = $1 ORDER BY enrolled_at DESC`, cohortID)
+	if err != nil {
+		return nil, fmt.Errorf("list enrollments: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.CohortEnrollment{}
+	for rows.Next() {
+		var e booking.CohortEnrollment
+		var orderID, cancelledAt *uuid.UUID
+		var cancelled *time.Time
+		if err := rows.Scan(&e.ID, &e.CohortID, &e.StudentProfileID, &e.ParentUserID, &orderID, &e.Status, &e.EnrolledAt, &cancelled, &e.CreatedAt); err != nil {
+			return nil, err
+		}
+		e.OrderID = orderID
+		if cancelled != nil {
+			e.CancelledAt = cancelled
+		}
+		_ = cancelledAt
+		out = append(out, e)
+	}
+	return out, rows.Err()
 }
 
 func (r *CohortEnrollmentRepo) GetByCohortAndStudent(ctx context.Context, cohortID, studentProfileID uuid.UUID) (*booking.CohortEnrollment, error) {

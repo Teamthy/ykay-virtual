@@ -357,6 +357,19 @@ func (m *EnrollmentMemory) Create(_ context.Context, e *booking.CohortEnrollment
 	return nil
 }
 
+func (m *EnrollmentMemory) ListByCohort(_ context.Context, cohortID uuid.UUID) ([]booking.CohortEnrollment, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []booking.CohortEnrollment{}
+	for _, e := range m.rows {
+		if e.CohortID == cohortID {
+			out = append(out, *e)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].EnrolledAt.After(out[j].EnrolledAt) })
+	return out, nil
+}
+
 func (m *EnrollmentMemory) GetByCohortAndStudent(_ context.Context, cohortID, studentProfileID uuid.UUID) (*booking.CohortEnrollment, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

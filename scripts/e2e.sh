@@ -312,6 +312,45 @@ head -1 /tmp/e2e-body.json | grep -q "programme_id" && ok "revenue.csv header" |
 c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/admin/reports/revenue.csv")
 assert_code "revenue.csv (student) → 403" 403 "$c"
 
+
+# ============================================================ CHAT + LMS ====
+note "AI CHAT + LMS AUTHORING"
+# AI assistant: create thread → greeting, send → canned reply (no Gemini key),
+# escalate → ESCALATED + support ticket.
+c=$(req "$J_PARENT" POST /chat/threads '{"title":"e2e fees question"}')
+assert_code "chat create thread" 201 "$c"
+THREAD=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
+[ -n "$THREAD" ] && ok "chat thread id captured" || fail "chat thread id missing"
+
+c=$(req "$J_PARENT" GET "/chat/threads/$THREAD/messages")
+assert_code "chat list messages" 200 "$c"
+grep -q "Nuvora" /tmp/e2e-body.json && ok "chat greeting present" || fail "chat greeting missing"
+
+c=$(req "$J_PARENT" POST "/chat/threads/$THREAD/messages" '{"content":"How much is the UTME cohort?"}')
+assert_code "chat send message" 200 "$c"
+grep -q '"reply"' /tmp/e2e-body.json && ok "chat assistant reply present" || fail "chat reply missing"
+
+c=$(req "$J_STUDENT" GET "/chat/threads/$THREAD/messages")
+assert_code "chat other user → 404" 404 "$c"
+
+c=$(req "$J_PARENT" POST "/chat/threads/$THREAD/escalate" '{"note":"please help"}')
+assert_code "chat escalate" 200 "$c"
+c=$(req "$J_PARENT" GET "/chat/threads")
+assert_code "chat list threads" 200 "$c"
+grep -q "ESCALATED" /tmp/e2e-body.json && ok "chat thread escalated" || fail "chat thread not escalated"
+
+# LMS authoring: create assignment + resource + quiz on the seeded cohort.
+c=$(req "$J_TUTOR" POST /cohorts/00000000-0000-0000-0000-00000000c010/assignments '{"title":"e2e assignment","max_score":10}')
+assert_code "lms create assignment" 201 "$c"
+c=$(req "$J_TUTOR" POST /cohorts/00000000-0000-0000-0000-00000000c010/resources '{"title":"e2e resource","file_url":"https://example.com/notes.pdf"}')
+assert_code "lms create resource" 201 "$c"
+c=$(req "$J_TUTOR" POST /learning/assessments '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","cohort_id":"00000000-0000-0000-0000-00000000c010","title":"e2e quiz","pass_threshold":70,"questions":[{"question":"1+1?","options":["2","3","4"],"correct_index":0}]}')
+assert_code "lms create quiz" 201 "$c"
+c=$(req "$J_TUTOR" GET /cohorts/00000000-0000-0000-0000-00000000c010/enrollments)
+assert_code "lms roster" 200 "$c"
+c=$(req "$J_STUDENT" GET /cohorts/00000000-0000-0000-0000-00000000c010/enrollments)
+assert_code "lms roster (student) → 403" 403 "$c"
+
 # ============================================================== SUMMARY ======
 echo
 echo "──────────────────────────────────────────────"

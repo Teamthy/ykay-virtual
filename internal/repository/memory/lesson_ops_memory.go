@@ -173,6 +173,19 @@ func (m *ResourceMemory) Seed(r booking.Resource) {
 	m.rows = append(m.rows, r)
 }
 
+func (m *ResourceMemory) Create(_ context.Context, r *booking.Resource) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if r.ID == uuid.Nil {
+		r.ID = uuid.New()
+	}
+	if r.CreatedAt.IsZero() {
+		r.CreatedAt = nowUTC()
+	}
+	m.rows = append(m.rows, *r)
+	return nil
+}
+
 func (m *ResourceMemory) ListByCohort(_ context.Context, cohortID uuid.UUID) ([]booking.Resource, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -204,6 +217,19 @@ func (m *AssignmentMemory) Seed(a booking.Assignment) {
 	}
 	a.CreatedAt = nowUTC()
 	m.rows = append(m.rows, a)
+}
+
+func (m *AssignmentMemory) Create(_ context.Context, a *booking.Assignment) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if a.ID == uuid.Nil {
+		a.ID = uuid.New()
+	}
+	if a.CreatedAt.IsZero() {
+		a.CreatedAt = nowUTC()
+	}
+	m.rows = append(m.rows, *a)
+	return nil
 }
 
 func (m *AssignmentMemory) ListByCohort(_ context.Context, cohortID uuid.UUID) ([]booking.Assignment, error) {

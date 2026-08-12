@@ -77,6 +77,13 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/me/role", handlers.Auth.SetRole)
 	mux.HandleFunc("POST "+v1+"/auth/me/password", handlers.Auth.ChangePassword)
 
+	// AI assistant + human handoff (phase 33)
+	mux.HandleFunc("POST "+v1+"/chat/threads", handlers.Chat.CreateThread)
+	mux.HandleFunc("GET "+v1+"/chat/threads", handlers.Chat.ListThreads)
+	mux.HandleFunc("GET "+v1+"/chat/threads/{threadId}/messages", handlers.Chat.ListMessages)
+	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/messages", authRate(handlers.Chat.SendMessage))
+	mux.HandleFunc("POST "+v1+"/chat/threads/{threadId}/escalate", handlers.Chat.Escalate)
+
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)
 	mux.HandleFunc("GET "+v1+"/subjects/{slug}", handlers.Subjects.GetBySlug)
@@ -90,6 +97,9 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/lessons", handlers.LessonOps.ListCohortLessons)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/resources", handlers.LessonOps.ListResources)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/assignments", handlers.LessonOps.ListAssignments)
+	mux.HandleFunc("POST "+v1+"/cohorts/{id}/assignments", handlers.LessonOps.CreateAssignment)
+	mux.HandleFunc("POST "+v1+"/cohorts/{id}/resources", handlers.LessonOps.CreateResource)
+	mux.HandleFunc("GET "+v1+"/cohorts/{id}/enrollments", handlers.LessonOps.ListCohortEnrollments)
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.MarkAttendance)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.ListAttendance)
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.AddNote)
@@ -258,6 +268,7 @@ type Handlers struct {
 	Support      *SupportHandler
 	Growth       *GrowthHandler
 	LessonOps    *LessonOpsHandler
+	Chat         *ChatHandler
 	Onboarding   *OnboardingHandler
 	Portal       *PortalHandler
 	Learning     *LearningHandler

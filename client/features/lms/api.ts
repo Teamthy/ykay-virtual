@@ -161,3 +161,58 @@ export type {
   ProgressReport,
   ReportInput,
 };
+
+// --- Tutor authoring (LMS beyond MVP) ---
+
+export type RosterEntry = {
+  student_profile_id: string;
+  name: string;
+  status: string;
+  enrolled_at: string;
+};
+
+export async function createCohortAssignment(
+  cohortId: string,
+  input: { title: string; instructions?: string; due_at?: string; max_score?: number }
+): Promise<CohortAssignment> {
+  const res = await apiFetch<CohortAssignment>(`/cohorts/${cohortId}/assignments`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
+export async function createCohortResource(
+  cohortId: string,
+  input: { title: string; description?: string; file_url?: string }
+): Promise<CohortResource> {
+  const res = await apiFetch<CohortResource>(`/cohorts/${cohortId}/resources`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
+export async function getCohortEnrollments(cohortId: string): Promise<RosterEntry[]> {
+  const res = await apiFetch<RosterEntry[]>(`/cohorts/${cohortId}/enrollments`);
+  return res.data ?? [];
+}
+
+export type QuizQuestionInput = { question: string; options: string[]; correct_index: number };
+export type QuizInput = {
+  tutor_profile_id: string;
+  cohort_id: string;
+  title: string;
+  instructions?: string;
+  pass_threshold: number;
+  due_at?: string;
+  questions: QuizQuestionInput[];
+};
+
+export async function createAssessment(input: QuizInput): Promise<LearnerAssessment> {
+  const res = await apiFetch<LearnerAssessment>("/learning/assessments", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}

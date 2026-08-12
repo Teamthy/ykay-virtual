@@ -36,6 +36,9 @@ type Config struct {
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
+	GeminiAPIKey       string
+	GeminiModel        string
+	ChatbotEnabled     bool
 }
 
 func Load() Config {
@@ -61,6 +64,9 @@ func Load() Config {
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:8080/api/v1/auth/google/callback"),
+		GeminiAPIKey:       getEnv("GEMINI_API_KEY", ""),
+		GeminiModel:        getEnv("GEMINI_MODEL", "gemini-2.0-flash"),
+		ChatbotEnabled:     strings.ToLower(getEnv("CHATBOT_ENABLED", "true")) != "false",
 	}
 }
 

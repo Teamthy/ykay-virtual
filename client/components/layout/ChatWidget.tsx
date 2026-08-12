@@ -1,28 +1,198 @@
 "use client";
-import { useState } from "react";
-import { X, MessageCircle } from "lucide-react";
+
+import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { X, MessageCircle, Maximize2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  createChatThread,
+  listChatThreads,
+  listChatMessages,
+  sendChatMessage,
+} from "@/features/chat/api";
+import { useSession } from "@/hooks/useSession";
+
+// Floating AI assistant — mini chat panel. Opens the latest thread (or starts
+// a new one), streams replies from the chat API, and links to the full page.
 
 export function ChatWidget() {
-  const [visible, setVisible] = useState(true);
+  const router = useRouter();
+  const qc = useQueryClient();
+  const { user } = useSession();
+  const [open, setOpen] = useState(false);
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const threads = useQuery({
+    queryKey: ["chat", "widget-threads"],
+    queryFn: listChatThreads,
+    enabled: !!user && open,
+  });
+
+  useEffect(() => {
+    if (open && user && !threadId && threads.data?.length) setThreadId(threads.data[0].id);
+  }, [open, user, threads.data, threadId]);
+
+  const messages = useQuery({
+    queryKey: ["chat", "widget-messages", threadId],
+    queryFn: () => listChatMessages(threadId!),
+    enabled: !!threadId && open,
+  });
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.data, sending, open]);
+
+  const startThread = async () => {
+    try {
+      const t = await createChatThread();
+      qc.invalidateQueries({ queryKey: ["chat", "widget-threads"] });
+      setThreadId(t.id);
+    } catch {
+      router.push("/login");
+    }
+  };
+
+  const send = async () => {
+    const text = input.trim();
+    if (!text || sending) return;
+    if (!threadId) {
+      await startThread();
+    }
+    setInput("");
+    setSending(true);
+    const tId = threadId!;
+    try {
+      const { reply } = await sendChatMessage(tId, text);
+      qc.invalidateQueries({ queryKey: ["chat", "widget-messages"] });
+      qc.setQueryData(["chat", "widget-messages", tId], (old: unknown) => {
+        const list = (old as { id: string; role: string; content: string; created_at: string }[] | undefined) ?? [];
+        return [
+          ...list,
+          { id: `u-${Date.now()}`, thread_id: tId, role: "user", content: text, created_at: new Date().toISOString() },
+          { id: `a-${Date.now()}`, thread_id: tId, role: "assistant", content: reply, created_at: new Date().toISOString() },
+        ];
+      });
+    } catch {
+      qc.invalidateQueries({ queryKey: ["chat", "widget-messages"] });
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
-      {visible && (
-        <div className="absolute bottom-20 right-0 bg-white pl-4 pr-10 py-4 rounded-2xl shadow-hero flex items-center gap-3 w-[290px] animate-slide-up">
-          <div
-            className="w-10 h-10 rounded-full bg-cover flex-shrink-0"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80')" }}
-          />
-          <div className="text-xs text-ink-700 leading-snug">
-            Hi there! Need a tutor? Chat with us here.
+    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
+      {open && (
+        <div className="flex h-[480px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xl animate-slide-up">
+          {/* Header */}
+          <div className="flex items-center justify-between bg-brand-navy px-4 py-3 text-white">
+            <div className="flex items-center gap-2">
+              <span className="grid size-8 place-items-center rounded-full bg-brand-gold text-sm">✨</span>
+              <div>
+                <p className="text-sm font-bold leading-tight">Nuvora Assistant</p>
+                <p className="text-[11px] text-white/70">AI support · human handoff available</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => router.push("/chat")}
+                className="grid size-8 place-items-center rounded-lg hover:bg-white/10"
+                aria-label="Open full chat page"
+              >
+                <Maximize2 size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="grid size-8 place-items-center rounded-lg hover:bg-white/10"
+                aria-label="Close chat"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
-          <button onClick={() => setVisible(false)} className="absolute top-2.5 right-2.5 text-ink-400 hover:text-ink-600">
-            <X size={14} />
-          </button>
+
+          {/* Messages */}
+          <div className="flex-1 space-y-3 overflow-y-auto p-4">
+            {!user ? (
+              <p className="py-8 text-center text-sm text-ink-500">
+                <button onClick={() => router.push("/login")} className="font-semibold text-brand-gold-dark hover:underline">
+                  Log in
+                </button>{" "}
+                to chat with Nuvora.
+              </p>
+            ) : (messages.data ?? []).length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-3xl">👋</p>
+                <p className="mt-2 text-sm font-semibold text-ink-700">Hi there! Ask me anything.</p>
+                <p className="mt-1 text-xs text-ink-400">Programmes, cohorts, tutors, fees — or ask for a human.</p>
+              </div>
+            ) : (
+              (messages.data ?? []).map((m) => (
+                <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+                  <div
+                    className={cn(
+                      "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
+                      m.role === "user"
+                        ? "rounded-br-md bg-brand-navy text-white"
+                        : "rounded-bl-md bg-[#FFF8E8] text-ink-800"
+                    )}
+                  >
+                    {m.content}
+                  </div>
+                </div>
+              ))
+            )}
+            {sending && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl rounded-bl-md bg-[#FFF8E8] px-3.5 py-2.5 text-xs text-ink-400">
+                  <span className="inline-flex gap-1">
+                    <span className="size-1.5 animate-bounce rounded-full bg-ink-400" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-ink-400 [animation-delay:120ms]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-ink-400 [animation-delay:240ms]" />
+                  </span>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Composer */}
+          <div className="border-t border-ink-100 p-3">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && void send()}
+                placeholder="Ask Nuvora…"
+                className="h-10 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => void send()}
+                disabled={!input.trim() || sending}
+                className="rounded-lg bg-brand-gold px-4 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+              >
+                Send
+              </button>
+            </div>
+          </div>
         </div>
       )}
-      <button className="w-14 h-14 bg-[#25d366] rounded-full flex items-center justify-center text-white shadow-[0_8px_24px_rgba(37,211,102,0.4)] hover:scale-105 transition-transform">
-        <MessageCircle size={26} fill="white" />
+
+      {/* Launcher */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={open ? "Close chat" : "Open chat"}
+        className="grid size-14 place-items-center rounded-full bg-brand-gold text-ink-900 shadow-[0_8px_24px_rgba(244,180,0,0.45)] transition-transform hover:scale-105"
+      >
+        {open ? <X size={26} /> : <MessageCircle size={26} />}
       </button>
     </div>
   );

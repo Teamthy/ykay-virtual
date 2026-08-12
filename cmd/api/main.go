@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/admin"
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/chat"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
@@ -94,6 +96,7 @@ type Repositories struct {
 	Submissions     booking.SubmissionRepository
 	CohortAdmin     booking.CohortAdminRepository
 	LessonAdmin     booking.LessonAdminRepository
+	Chat            chat.ThreadRepository
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -156,7 +159,8 @@ func main() {
 	dashboardSvc := service.NewDashboardService(
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
-		repos.Resources, repos.Assignments).
+		repos.Resources, repos.Assignments)
+	lessonSvc.WithRoster(repos.Enrollments, repos.Students.FindByID).
 		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
 			return repos.Vetting.GetProfileByID(ctx, id)
 		})
@@ -181,6 +185,14 @@ func main() {
 	paymentSvc.WithReferrals(referralSvc)
 	authSvc.WithReferrals(referralSvc)
 
+	// --- AI assistant (phase 33) ---
+	chatSvc := service.NewChatService(repos.Chat, supportSvc, repos.Users)
+	if cfg.ChatbotEnabled && cfg.GeminiAPIKey != "" {
+		chatSvc.WithProvider(service.NewGeminiProvider(cfg.GeminiAPIKey, cfg.GeminiModel))
+		chatSvc.WithContextBuilder(buildChatContext(programmeSvc, cohortSvc, tutorSvc))
+	}
+	chatHandler := httpapi.NewChatHandler(chatSvc)
+
 	// --- Transport ---
 	handlers := &httpapi.Handlers{
 		Subjects:   httpapi.NewSubjectHandler(subjectSvc),
@@ -202,6 +214,7 @@ func main() {
 		Support:      httpapi.NewSupportHandler(supportSvc),
 		Growth:       httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
 		LessonOps:    httpapi.NewLessonOpsHandler(lessonSvc),
+		Chat:         chatHandler,
 		Onboarding:   httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:       httpapi.NewPortalHandler(portalSvc),
 		Learning:     httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc),
@@ -316,6 +329,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Analytics:       memory.NewAnalyticsMemory(store),
 			Availability:    memory.NewAvailabilityMemory(),
 			Submissions:     store.Submissions,
+			Chat:            memory.NewChatMemory(),
 			CohortAdmin:     store.Cohorts,
 			LessonAdmin:     store.Lessons,
 			StorageBackend:  "memory",
@@ -370,6 +384,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Analytics:       postgres.NewAnalyticsRepo(pg.DB()),
 		Availability:    postgres.NewAvailabilityRepo(pg.DB()),
 		Submissions:     postgres.NewSubmissionRepo(pg.DB()),
+		Chat:            nil, // postgres chat repo: follow-up migration 000021
 		CohortAdmin:     postgres.NewCohortRepo(pg.DB()),
 		LessonAdmin:     postgres.NewLessonRepo(pg.DB()),
 		StorageBackend:  "postgres",
@@ -624,4 +639,46 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 		CreatedAt: now, UpdatedAt: now,
 	}
 	_ = store.Students.Create(context.Background(), &learner)
+}
+
+// buildChatContext — grounding context for the AI assistant: a compact,
+// always-current snapshot of programmes, cohorts and tutors so Gemini answers
+// from live data instead of memory.
+func buildChatContext(programmes *service.ProgrammeService, cohorts *service.CohortService,
+	tutors *service.TutorService) func(ctx context.Context) (string, error) {
+	return func(ctx context.Context) (string, error) {
+		var b strings.Builder
+		if progs, _, err := programmes.List(ctx, academics.ProgrammeListParams{Page: 1, PageSize: 20}); err == nil {
+			b.WriteString("Programmes: ")
+			for i, p := range progs {
+				if i > 0 {
+					b.WriteString("; ")
+				}
+				fmt.Fprintf(&b, "%s (slug %s, %s)", p.Title, p.Slug, p.Format)
+			}
+			b.WriteString(".\n")
+		}
+		if cohortsList, _, err := cohorts.ListPublished(ctx, booking.CohortListParams{Page: 1, PageSize: 20}); err == nil {
+			b.WriteString("Cohorts: ")
+			for i, c := range cohortsList {
+				if i > 0 {
+					b.WriteString("; ")
+				}
+				fmt.Fprintf(&b, "%s (id %s, %s, fee %v %s, %d/%d enrolled)",
+					c.Title, c.ID, c.Status, c.Fee, c.Currency, c.EnrolledCount, c.Capacity)
+			}
+			b.WriteString(".\n")
+		}
+		if tutorList, _, err := tutors.Search(ctx, tutor.TutorSearchParams{Page: 1, PageSize: 10}); err == nil {
+			b.WriteString("Tutors: ")
+			for i, t := range tutorList {
+				if i > 0 {
+					b.WriteString("; ")
+				}
+				fmt.Fprintf(&b, "%s (verified %v, rating %.1f)", t.Profile.DisplayName, t.Profile.VerifiedAt != nil, t.Profile.RatingAvg)
+			}
+			b.WriteString(".\n")
+		}
+		return b.String(), nil
+	}
 }

@@ -12,6 +12,11 @@ import {
   getCohort,
   getCohortLessons,
   getCohortAssignments,
+  getCohortResources,
+  getCohortEnrollments,
+  createCohortAssignment,
+  createCohortResource,
+  createAssessment,
   getLessonAttendance,
   markAttendance,
   type AttendanceRow,
@@ -37,6 +42,81 @@ export default function LmsTutorCohortPage() {
   const [grade, setGrade] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [report, setReport] = useState({ strengths: "", weaknesses: "", recommendations: "", rating: "4" });
+
+  // Authoring forms (LMS beyond MVP)
+  const [quizDraft, setQuizDraft] = useState({
+    title: "",
+    instructions: "",
+    pass_threshold: "70",
+    questions: [{ question: "", options: ["", "", "", ""], correct_index: 0 }],
+  });
+  const [assignmentDraft, setAssignmentDraft] = useState({ title: "", instructions: "", max_score: "10" });
+  const [resourceDraft, setResourceDraft] = useState({ title: "", description: "", file_url: "" });
+  const [showQuizBuilder, setShowQuizBuilder] = useState(false);
+  const [showAssignmentForm, setShowAssignmentForm] = useState(false);
+  const [showResourceForm, setShowResourceForm] = useState(false);
+
+  const roster = useQuery({
+    queryKey: ["lms", "roster", cohortId],
+    queryFn: () => getCohortEnrollments(cohortId),
+  });
+  const resources = useQuery({
+    queryKey: ["lms", "resources", cohortId],
+    queryFn: () => getCohortResources(cohortId),
+  });
+
+  const createQuiz = useMutation({
+    mutationFn: () =>
+      createAssessment({
+        tutor_profile_id: DEMO_TUTOR_PROFILE_ID,
+        cohort_id: cohortId,
+        title: quizDraft.title,
+        instructions: quizDraft.instructions || undefined,
+        pass_threshold: Number(quizDraft.pass_threshold) || 70,
+        questions: quizDraft.questions
+          .filter((q) => q.question.trim())
+          .map((q) => ({ question: q.question, options: q.options, correct_index: q.correct_index })),
+      }),
+    onSuccess: () => {
+      toast.success("Quiz published");
+      setShowQuizBuilder(false);
+      setQuizDraft({ title: "", instructions: "", pass_threshold: "70", questions: [{ question: "", options: ["", "", "", ""], correct_index: 0 }] });
+      qc.invalidateQueries({ queryKey: ["lms", "quizzes"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not create quiz"),
+  });
+
+  const createAssignment = useMutation({
+    mutationFn: () =>
+      createCohortAssignment(cohortId, {
+        title: assignmentDraft.title,
+        instructions: assignmentDraft.instructions || undefined,
+        max_score: Number(assignmentDraft.max_score) || undefined,
+      }),
+    onSuccess: () => {
+      toast.success("Assignment published");
+      setShowAssignmentForm(false);
+      setAssignmentDraft({ title: "", instructions: "", max_score: "10" });
+      qc.invalidateQueries({ queryKey: ["lms", "assignments"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not create assignment"),
+  });
+
+  const createResource = useMutation({
+    mutationFn: () =>
+      createCohortResource(cohortId, {
+        title: resourceDraft.title,
+        description: resourceDraft.description || undefined,
+        file_url: resourceDraft.file_url || undefined,
+      }),
+    onSuccess: () => {
+      toast.success("Resource added");
+      setShowResourceForm(false);
+      setResourceDraft({ title: "", description: "", file_url: "" });
+      qc.invalidateQueries({ queryKey: ["lms", "resources"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not create resource"),
+  });
 
   const cohort = useQuery({ queryKey: ["lms", "cohort", cohortId], queryFn: () => getCohort(cohortId) });
   const lessons = useQuery({ queryKey: ["lms", "lessons", cohortId], queryFn: () => getCohortLessons(cohortId) });
@@ -235,6 +315,115 @@ export default function LmsTutorCohortPage() {
             </div>
           </section>
         </div>
+
+        {/* Roster */}
+        <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-bold text-brand-navy">Class roster ({cohort.data?.enrolled_count ?? roster.data?.length ?? "—"})</h2>
+            <span className="text-xs text-ink-400">Learners enrolled in this cohort</span>
+          </div>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-ink-100 text-xs uppercase tracking-wide text-ink-400">
+                  <th className="py-2 pr-4">Learner</th>
+                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2">Enrolled</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(roster.data ?? []).map((r) => (
+                  <tr key={r.student_profile_id} className="border-b border-ink-50 last:border-0">
+                    <td className="py-2.5 pr-4 font-semibold text-ink-800">{r.name || r.student_profile_id.slice(0, 8) + "…"}</td>
+                    <td className="py-2.5 pr-4">
+                      <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-bold text-brand-navy">{r.status}</span>
+                    </td>
+                    <td className="py-2.5 text-ink-500">{new Date(r.enrolled_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+                {(roster.data ?? []).length === 0 && (
+                  <tr><td colSpan={3} className="py-6 text-center text-ink-400">No enrollments yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Authoring console */}
+        <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-display text-lg font-bold text-brand-navy">Create content</h2>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setShowQuizBuilder((v) => !v)} className="rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-navy/90">+ Quiz</button>
+              <button type="button" onClick={() => setShowAssignmentForm((v) => !v)} className="rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover">+ Assignment</button>
+              <button type="button" onClick={() => setShowResourceForm((v) => !v)} className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-700 hover:border-ink-300">+ Resource</button>
+            </div>
+          </div>
+
+          {showQuizBuilder && (
+            <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
+              <p className="text-sm font-bold text-ink-700">New quiz</p>
+              <div className="grid gap-3 md:grid-cols-3">
+                <input type="text" placeholder="Quiz title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" placeholder="Pass %" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.pass_threshold} onChange={(e) => setQuizDraft((d) => ({ ...d, pass_threshold: e.target.value }))} />
+              </div>
+              <div className="space-y-3">
+                {quizDraft.questions.map((q, qi) => (
+                  <div key={qi} className="rounded-lg border border-ink-100 p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-ink-400">Q{qi + 1}</span>
+                      <input type="text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
+                      <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: d.questions.filter((_, i) => i !== qi) }))} className="text-xs font-bold text-red-500">✕</button>
+                    </div>
+                    <div className="mt-2 grid gap-2 md:grid-cols-2">
+                      {q.options.map((opt, oi) => (
+                        <div key={oi} className="flex items-center gap-2">
+                          <input type="radio" checked={q.correct_index === oi} onChange={() => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, correct_index: oi } : x)) }))} title="Correct answer" />
+                          <input type="text" placeholder={`Option ${String.fromCharCode(65 + oi)}`} className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={opt} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, options: x.options.map((o, j) => (j === oi ? e.target.value : o)) } : x)) }))} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: [...d.questions, { question: "", options: ["", "", "", ""], correct_index: 0 }] }))} className="rounded-lg border border-ink-200 px-3 py-2 text-xs font-bold text-ink-600 hover:border-ink-300">+ Add question</button>
+                <button type="button" disabled={createQuiz.isPending || !quizDraft.title.trim() || quizDraft.questions.filter((q) => q.question.trim()).length === 0} onClick={() => createQuiz.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+                  {createQuiz.isPending ? "Publishing…" : "Publish quiz"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showAssignmentForm && (
+            <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
+              <p className="text-sm font-bold text-ink-700">New assignment</p>
+              <div className="grid gap-3 md:grid-cols-3">
+                <input type="text" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.title} onChange={(e) => setAssignmentDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.instructions} onChange={(e) => setAssignmentDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" placeholder="Max score" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.max_score} onChange={(e) => setAssignmentDraft((d) => ({ ...d, max_score: e.target.value }))} />
+              </div>
+              <button type="button" disabled={createAssignment.isPending || !assignmentDraft.title.trim()} onClick={() => createAssignment.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+                {createAssignment.isPending ? "Publishing…" : "Publish assignment"}
+              </button>
+            </div>
+          )}
+
+          {showResourceForm && (
+            <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
+              <p className="text-sm font-bold text-ink-700">New resource</p>
+              <div className="grid gap-3 md:grid-cols-3">
+                <input type="text" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
+                <input type="url" placeholder="File / link URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
+              </div>
+              <button type="button" disabled={createResource.isPending || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+                {createResource.isPending ? "Adding…" : "Add resource"}
+              </button>
+            </div>
+          )}
+        </section>
 
         {/* Quizzes + progress report */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">

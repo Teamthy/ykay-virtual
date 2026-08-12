@@ -205,6 +205,17 @@ type ResourceRepo struct{ db TxQuerier }
 
 func NewResourceRepo(db TxQuerier) *ResourceRepo { return &ResourceRepo{db: db} }
 
+func (r *ResourceRepo) Create(ctx context.Context, res *booking.Resource) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO resources (id, programme_id, cohort_id, lesson_id, title, description, file_url, is_public)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+		res.ID, res.ProgrammeID, res.CohortID, res.LessonID, res.Title, res.Description, res.FileURL, res.IsPublic)
+	if err != nil {
+		return fmt.Errorf("create resource: %w", err)
+	}
+	return nil
+}
+
 func (r *ResourceRepo) ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]booking.Resource, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id, programme_id, cohort_id, lesson_id, title, description, file_url, is_public, created_at
@@ -245,6 +256,17 @@ var _ booking.ResourceRepository = (*ResourceRepo)(nil)
 type AssignmentRepo struct{ db TxQuerier }
 
 func NewAssignmentRepo(db TxQuerier) *AssignmentRepo { return &AssignmentRepo{db: db} }
+
+func (r *AssignmentRepo) Create(ctx context.Context, a *booking.Assignment) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO assignments (id, cohort_id, lesson_id, title, instructions, due_at, max_score)
+		VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+		a.ID, a.CohortID, a.LessonID, a.Title, a.Instructions, a.DueAt, a.MaxScore)
+	if err != nil {
+		return fmt.Errorf("create assignment: %w", err)
+	}
+	return nil
+}
 
 func (r *AssignmentRepo) ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]booking.Assignment, error) {
 	rows, err := r.db.QueryContext(ctx, `

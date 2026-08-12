@@ -24,6 +24,8 @@ type CohortEnrollmentRepository interface {
 	Create(ctx context.Context, e *CohortEnrollment) error
 	GetByCohortAndStudent(ctx context.Context, cohortID, studentProfileID uuid.UUID) (*CohortEnrollment, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status EnrollmentStatus) error
+	// ListByCohort — roster for the tutor console (LMS).
+	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]CohortEnrollment, error)
 }
 
 type PrivateTuitionRequestRepository interface {
@@ -99,6 +101,7 @@ type LessonNote struct {
 // ResourceRepository — read side for learning resources (migration 000006).
 type ResourceRepository interface {
 	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]Resource, error)
+	Create(ctx context.Context, r *Resource) error
 }
 
 type Resource struct {
@@ -118,6 +121,7 @@ type AssignmentRepository interface {
 	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]Assignment, error)
 	// ListByStudent — assignments for cohorts the student is enrolled in.
 	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Assignment, error)
+	Create(ctx context.Context, a *Assignment) error
 }
 
 type Assignment struct {
