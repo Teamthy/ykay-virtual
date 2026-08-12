@@ -27,8 +27,8 @@ const SERVICE_GROUPS = [
     items: [
       { label: "UTME 2026 Prep", href: "/utme-2026" },
       { label: "GMAT Prep", href: "/gmat" },
-      { label: "WAEC / NECO", href: "/exam-prep" },
-      { label: "Entrance Exams", href: "/exam-prep" },
+      { label: "Test Prep Hub", href: "/test-prep" },
+      { label: "Entrance Exams", href: "/entrance-exam" },
     ],
   },
   {

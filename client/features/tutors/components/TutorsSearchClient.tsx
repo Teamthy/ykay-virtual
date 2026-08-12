@@ -7,6 +7,8 @@ import { searchTutors, type SearchParams } from "@/features/tutors/api/search";
 import { TutorCard } from "@/features/tutors/components/TutorCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Users } from "lucide-react";
 
 /**
  * TutorsSearchClient — URL-driven filters (SSR-compatible state), infinite
@@ -60,7 +62,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
     <div className="grid lg:grid-cols-[280px_1fr] gap-8 items-start">
       {/* Filters */}
       <aside className="border rounded-2xl p-5 space-y-5 lg:sticky lg:top-28">
-        <h2 className="font-bold">Filters</h2>
+        <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Filters</h2>
         <label className="block text-sm">
           <span className="font-medium">Subject</span>
           <input
@@ -126,9 +128,11 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
             Could not load tutors. Please try again.
           </div>
         ) : tutors.length === 0 ? (
-          <div className="border rounded-2xl p-10 text-center text-ink-500">
-            No tutors match your filters yet — new vetted tutors join weekly.
-          </div>
+          <EmptyState
+            icon={<Users size={20} />}
+            title="No tutors match your filters yet"
+            description="New vetted tutors join weekly — try widening your subject or rate filters."
+          />
         ) : (
           <>
             <p className="text-sm text-ink-500 mb-4">

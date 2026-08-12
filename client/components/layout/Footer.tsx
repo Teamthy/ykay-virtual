@@ -8,6 +8,8 @@ const PROGRAMMES = [
   { href: "/cohorts", label: "Group Cohorts" },
   { href: "/utme-2026", label: "UTME 2026 Prep" },
   { href: "/gmat", label: "GMAT Prep" },
+  { href: "/entrance-exam", label: "Entrance Exams" },
+  { href: "/test-prep", label: "Test Prep" },
   { href: "/exam-prep", label: "Exam Preparation" },
   { href: "/study-abroad", label: "Study Abroad" },
   { href: "/nuvora-plus", label: "NUVORA Plus" },
@@ -60,8 +62,8 @@ export function Footer() {
               <Logo dark />
             </Link>
             <p className="text-sm text-white/65 leading-relaxed mb-3 max-w-xs">
-              Learning beyond boundaries. British &amp; Nigerian curricula, exam preparation,
-              private tuition and live cohorts — one academically governed platform.
+              Africa&apos;s largest &amp; most trusted tutoring platform — British &amp; Nigerian
+              curricula, exam preparation, private tuition and live cohorts.
             </p>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold mb-6">
               Learning beyond boundaries

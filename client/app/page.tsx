@@ -13,6 +13,7 @@ import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
 import { TravelAndCareBands } from "@/components/home/TravelAndCareBands";
+import { AnnouncementVideo } from "@/components/home/AnnouncementVideo";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 
@@ -33,6 +34,7 @@ export default function HomePage() {
       <ResultsSection />
       <ApproachSection />
       <TestimonialSlider />
+      <AnnouncementVideo />
       <TestimonialsSection />
       <ExamPrepGrid />
       <SuccessRateBand />
