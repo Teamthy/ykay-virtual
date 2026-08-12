@@ -9,10 +9,12 @@ import { cn } from "@/lib/utils";
 import {
   listAllChatThreads,
   getChatAnalytics,
+  getChatTrends,
   listChatMessages,
   agentReply,
   closeChatThread,
   type ChatThread,
+  type ChatTrendPoint,
 } from "@/features/chat/api";
 import { useSession } from "@/hooks/useSession";
 
@@ -33,6 +35,7 @@ export default function AdminChatPage() {
 
   const threads = useQuery({ queryKey: ["admin", "chat", "threads"], queryFn: listAllChatThreads });
   const analytics = useQuery({ queryKey: ["admin", "chat", "analytics"], queryFn: getChatAnalytics });
+  const trends = useQuery({ queryKey: ["admin", "chat", "trends"], queryFn: () => getChatTrends(14) });
 
   useEffect(() => {
     if (!activeId && threads.data?.length) setActiveId(threads.data[0].id);
@@ -92,6 +95,15 @@ export default function AdminChatPage() {
           <a href="/api/v1/admin/chat/csat.csv" className="font-semibold text-brand-gold-dark hover:underline">export CSV ↓</a>
         </p>
       </header>
+
+      {/* Trends (last 14 days) */}
+      <div className="mt-5 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-bold text-brand-navy">CSAT & volume — last 14 days</h2>
+          <span className="text-xs text-ink-400">CSAT = % of that day&apos;s ratings ≥ 4★</span>
+        </div>
+        <TrendChart data={trends.data ?? []} />
+      </div>
 
       {/* Analytics */}
       <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-6">
@@ -230,5 +242,35 @@ export default function AdminChatPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+function TrendChart({ data }: { data: ChatTrendPoint[] }) {
+  const maxThreads = Math.max(1, ...data.map((d) => d.threads));
+  const barW = 100 / Math.max(data.length, 1);
+  return (
+    <div className="mt-4">
+      <div className="flex items-end gap-1" style={{ height: 120 }}>
+        {data.map((d) => (
+          <div key={d.date} className="flex flex-1 flex-col items-center justify-end gap-1" style={{ width: `${barW}%` }}>
+            <span className="text-[10px] font-bold text-brand-navy">
+              {d.rated > 0 ? `${Math.round(d.csat)}%` : "—"}
+            </span>
+            <div
+              className="w-full rounded-t bg-brand-gold transition-all"
+              style={{ height: `${Math.max(3, (d.threads / maxThreads) * 100)}px` }}
+              title={`${d.date}: ${d.threads} threads · ${d.rated} rated · CSAT ${d.csat}%`}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="mt-1 flex gap-1 text-[9px] text-ink-400">
+        {data.map((d) => (
+          <span key={d.date} className="flex-1 truncate text-center">
+            {d.date.slice(5)}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

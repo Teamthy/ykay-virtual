@@ -122,3 +122,41 @@ func TestChatService_AgentInboxAndAnalytics(t *testing.T) {
 }
 
 func ptrString(s string) *string { return &s }
+
+// C6 extra — daily CSAT/volume trends.
+func TestChatService_Trends(t *testing.T) {
+	env := newAuthEnv(t)
+	ctx := context.Background()
+	svc := NewChatService(memory.NewChatMemory(), nil, env.store.Users)
+
+	user, err := env.svc.Register(ctx, RegisterInput{Email: "trends@example.com", Password: "password123", Roles: []string{"PARENT"}})
+	require.NoError(t, err)
+
+	t1, _ := svc.CreateThread(ctx, user.ID, "A")
+	_, _, _ = svc.SendMessage(ctx, user.ID, t1.ID, "I need a human please")
+	require.NoError(t, svc.RateThread(ctx, user.ID, t1.ID, 5, nil))
+	t2, _ := svc.CreateThread(ctx, user.ID, "B")
+	require.NoError(t, svc.RateThread(ctx, user.ID, t2.ID, 2, nil))
+
+	points, err := svc.AdminTrends(ctx, 14)
+	require.NoError(t, err)
+	require.Len(t, points, 14)
+
+	today := points[len(points)-1]
+	assert.Equal(t, 2, today.Threads)
+	assert.Equal(t, 1, today.Escalated)
+	assert.Equal(t, 2, today.Rated)
+	assert.InDelta(t, 3.5, today.AvgRating, 0.01)
+	assert.InDelta(t, 50.0, today.CSAT, 0.01)
+
+	// 30 days capped at 90, negative defaults to 14.
+	require.Len(t, mustTrends(t, svc, 0), 14)
+	require.Len(t, mustTrends(t, svc, 30), 30)
+}
+
+func mustTrends(t *testing.T, svc *ChatService, days int) []TrendPoint {
+	t.Helper()
+	p, err := svc.AdminTrends(context.Background(), days)
+	require.NoError(t, err)
+	return p
+}

@@ -7,6 +7,12 @@
     "scheme": "nuvora",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#FFFCF5",
+      "resizeMode": "contain"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.nuvora.app",
@@ -18,17 +24,14 @@
     "android": {
       "package": "com.nuvora.app",
       "adaptiveIcon": {
-        "backgroundColor": "#FFFCF5"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A1F44"
       },
       "permissions": ["INTERNET", "CAMERA", "READ_MEDIA_IMAGES"]
     },
     "web": {
       "bundler": "metro",
       "name": "NUVORA"
-    },
-    "splash": {
-      "backgroundColor": "#FFFCF5",
-      "resizeMode": "contain"
     },
     "extra": {
       "apiUrl": "http://localhost:8080/api/v1",

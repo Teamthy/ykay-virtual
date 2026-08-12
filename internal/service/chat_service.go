@@ -303,6 +303,62 @@ type ChatAnalytics struct {
 	DeflectionRate   float64 `json:"deflection_rate"` // 1 - escalated / total
 }
 
+// TrendPoint — one day of chat activity for the trends report.
+type TrendPoint struct {
+	Date      string  `json:"date"` // YYYY-MM-DD (UTC)
+	Threads   int     `json:"threads"`
+	Escalated int     `json:"escalated"`
+	Rated     int     `json:"rated"`
+	AvgRating float64 `json:"avg_rating"`
+	CSAT      float64 `json:"csat"` // 0..100, 0 when no ratings that day
+}
+
+// AdminTrends — per-day CSAT/volume series for the last N days (C6 extra).
+func (s *ChatService) AdminTrends(ctx context.Context, days int) ([]TrendPoint, error) {
+	if days <= 0 || days > 90 {
+		days = 14
+	}
+	threads, err := s.threads.ListAllThreads(ctx)
+	if err != nil {
+		return nil, err
+	}
+	now := s.now().UTC()
+	points := make([]TrendPoint, days)
+	idx := map[string]int{}
+	for i := 0; i < days; i++ {
+		d := now.AddDate(0, 0, -(days - 1 - i))
+		key := d.Format("2006-01-02")
+		idx[key] = i
+		points[i].Date = key
+	}
+	for _, t := range threads {
+		created := t.CreatedAt.UTC().Format("2006-01-02")
+		if i, ok := idx[created]; ok {
+			points[i].Threads++
+			if t.Status == chat.ThreadEscalated {
+				points[i].Escalated++
+			}
+		}
+		if t.Rating != nil {
+			rated := t.UpdatedAt.UTC().Format("2006-01-02")
+			if i, ok := idx[rated]; ok {
+				points[i].Rated++
+				points[i].AvgRating += float64(*t.Rating)
+				if *t.Rating >= 4 {
+					points[i].CSAT++
+				}
+			}
+		}
+	}
+	for i := range points {
+		if points[i].Rated > 0 {
+			points[i].AvgRating = round1(points[i].AvgRating / float64(points[i].Rated))
+			points[i].CSAT = round1(points[i].CSAT / float64(points[i].Rated) * 100)
+		}
+	}
+	return points, nil
+}
+
 // CSATRow — one rated thread for the CSV export.
 type CSATRow struct {
 	ThreadID uuid.UUID `json:"thread_id"`
@@ -428,4 +484,8 @@ func cannedReply(userText string) string {
 	default:
 		return "Thanks for your message! I'm currently in offline training mode, but your message has been saved and our support team will get back to you shortly."
 	}
+}
+
+func round1(v float64) float64 {
+	return float64(int(v*10+0.5)) / 10
 }

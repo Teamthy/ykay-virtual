@@ -84,6 +84,10 @@ export function Footer() {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-3 text-xs text-white/55">
           <span>© 2026 NUVORA. All rights reserved.</span>
           <span className="flex gap-4">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+          </span>
+          <span className="flex gap-4">
             <Link href="/about" className="hover:text-white">Safeguarding</Link>
             <Link href="/contact" className="hover:text-white">Terms & Privacy</Link>
           </span>

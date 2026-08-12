@@ -102,3 +102,17 @@ export async function agentReply(threadId: string, content: string): Promise<Cha
 export async function closeChatThread(threadId: string): Promise<void> {
   await apiFetch(`/admin/chat/threads/${threadId}/close`, { method: "POST" });
 }
+
+export type ChatTrendPoint = {
+  date: string;
+  threads: number;
+  escalated: number;
+  rated: number;
+  avg_rating: number;
+  csat: number;
+};
+
+export async function getChatTrends(days = 14): Promise<ChatTrendPoint[]> {
+  const res = await apiFetch<ChatTrendPoint[]>(`/admin/chat/analytics/trends?days=${days}`);
+  return res.data ?? [];
+}

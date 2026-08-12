@@ -412,6 +412,11 @@ c=$(req "$J_ADMIN" GET /admin/chat/analytics)
 assert_code "analytics incl csat" 200 "$c"
 grep -q '"csat"' /tmp/e2e-body.json && ok "csat field present" || fail "csat field missing"
 
+
+c=$(req "$J_ADMIN" GET "/admin/chat/analytics/trends?days=14")
+assert_code "chat trends" 200 "$c"
+grep -q '"date"' /tmp/e2e-body.json && ok "trends fields present" || fail "trends fields missing"
+
 # ============================================================== SUMMARY ======
 echo
 echo "──────────────────────────────────────────────"

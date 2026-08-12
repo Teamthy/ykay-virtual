@@ -3,6 +3,7 @@ package httpapi
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"ykay-virtual/internal/middleware"
@@ -232,6 +233,25 @@ func (h *ChatHandler) ChatAnalytics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, a, nil)
+}
+
+// ChatTrends — GET /admin/chat/analytics/trends?days=14
+func (h *ChatHandler) ChatTrends(w http.ResponseWriter, r *http.Request) {
+	if !h.requireAdmin(w, r) {
+		return
+	}
+	days := 14
+	if v := r.URL.Query().Get("days"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			days = n
+		}
+	}
+	points, err := h.svc.AdminTrends(r.Context(), days)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, points, nil)
 }
 
 // CSATExport — GET /admin/chat/csat.csv

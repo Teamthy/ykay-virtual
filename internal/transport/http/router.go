@@ -99,6 +99,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/chat/threads/{threadId}/close", handlers.Chat.CloseThread)
 	mux.HandleFunc("GET "+v1+"/admin/chat/analytics", handlers.Chat.ChatAnalytics)
 	mux.HandleFunc("GET "+v1+"/admin/chat/csat.csv", handlers.Chat.CSATExport)
+	mux.HandleFunc("GET "+v1+"/admin/chat/analytics/trends", handlers.Chat.ChatTrends)
 
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)

@@ -24,6 +24,22 @@ jobs:
         working-directory: legacy/server
         run: go test ./...
 
+  prompt-evals:
+    name: Prompt evals (chat rubric)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Run CI eval suite (deterministic rubric)
+        run: go test ./internal/service/ -run 'TestChatPromptEvals_CI|TestChatService_|TestPushService_' -v
+      - name: Live evals against Gemini (when key provided)
+        if: env.GEMINI_API_KEY != ''
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: go test ./internal/service/ -run 'TestChatPromptEvals_Live' -v
+
   e2e:
     name: E2E — API suite (scripts/e2e.sh)
     runs-on: ubuntu-latest
