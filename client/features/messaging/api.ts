@@ -84,7 +84,7 @@ export async function listNotifications(page = 1): Promise<Envelope<Notification
 
 export async function unreadCount(): Promise<number> {
   const res = await apiFetch<{ unread: number }>("/me/notifications/unread-count");
-  return res.data.unread;
+  return res.data?.unread ?? 0; // null-safe: fresh accounts receive data:null
 }
 
 export async function markNotificationRead(id: string): Promise<void> {

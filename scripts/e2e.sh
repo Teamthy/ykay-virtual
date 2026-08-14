@@ -34,19 +34,23 @@ json() { python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
 BIN="${ROOT}/.e2e-api"
 (cd "$ROOT" && rm -f "$BIN" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
 
-if curl -sf -m 2 "$BASE/../health" >/dev/null 2>&1 || curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
-  echo "API already running on :${PORT} — reusing it"
-else
-  echo "Starting API on :${PORT} (in-memory mode)…"
-  PORT="$PORT" SEED_DEMO_DATA=true DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" "$BIN" >/tmp/e2e-api.log 2>&1 &
-  API_PID=$!
-  for i in $(seq 1 30); do
-    curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break
-    sleep 0.5
-  done
-  if ! curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
-    echo "API failed to start"; tail -5 /tmp/e2e-api.log; exit 1
-  fi
+# Always boot a FRESH API for deterministic runs — a stale instance would
+# carry state from previous runs (409s, cached sessions) and poison results.
+if curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
+  echo "Stale API on :${PORT} — killing for a fresh run"
+  pkill -f "$BIN" 2>/dev/null || true
+  sleep 1
+fi
+trap 'kill $API_PID 2>/dev/null || true' EXIT
+echo "Starting API on :${PORT} (in-memory mode)…"
+PORT="$PORT" SEED_DEMO_DATA=true DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" "$BIN" >/tmp/e2e-api.log 2>&1 &
+API_PID=$!
+for i in $(seq 1 30); do
+  curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break
+  sleep 0.5
+done
+if ! curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
+  echo "API failed to start"; tail -5 /tmp/e2e-api.log; exit 1
 fi
 
 J_PARENT=/tmp/e2e-parent.jar
@@ -568,6 +572,31 @@ c=$(req "$J_PARENT" GET /auth/me)
 [ "$(cat /tmp/e2e-body.json | json 'd["data"]["onboarded"]')" = "True" ] && ok "onboarded flag flips to true" || fail "onboarded flag not set"
 c=$(req "$J_STUDENT" GET /me/recommendations)
 assert_code "student recommendations" 200 "$c"
+
+# ========================================= SESSION SYNC (WEB ↔ MOBILE) ======
+note "G6 SESSION SYNC — one session row serves web cookie AND mobile bearer"
+
+J_SYNC=/tmp/e2e-sync.jar; rm -f "$J_SYNC"
+c=$(req "$J_SYNC" POST /auth/register '{"email":"sync-test@test.com","password":"password123","roles":["PARENT"]}')
+assert_code "register sync user" 201 "$c"
+TOKEN=$(curl -s -X POST "$BASE/auth/login/mobile" -H 'Content-Type: application/json' -d '{"email":"sync-test@test.com","password":"password123"}' | json 'd["data"]["token"]')
+[ -n "$TOKEN" ] && ok "mobile login returns raw session token" || fail "mobile login token missing"
+
+# Same token via Bearer (mobile transport) →
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$BASE/auth/me")
+assert_code "mobile bearer /auth/me" 200 "$c"
+grep -q "sync-test@test.com" /tmp/e2e-body.json && ok "bearer resolves the same user" || fail "bearer user mismatch"
+
+# Same token as the WEB COOKIE value → identical session row.
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "nuvora_session=$TOKEN" "$BASE/auth/me")
+assert_code "web cookie with mobile token" 200 "$c"
+grep -q "sync-test@test.com" /tmp/e2e-body.json && ok "cookie resolves the same user (one session row)" || fail "cookie user mismatch"
+
+# Logout on WEB revokes the row → the mobile bearer dies too.
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "nuvora_session=$TOKEN" -X POST "$BASE/auth/logout")
+assert_code "web logout" 200 "$c"
+c=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$BASE/auth/me")
+assert_code "mobile bearer revoked after web logout" 401 "$c"
 
 # ============================================================== SUMMARY ======
 echo

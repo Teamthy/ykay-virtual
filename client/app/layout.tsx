@@ -8,6 +8,7 @@ import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { ShellVisibility } from "@/components/layout/ShellVisibility";
 import { Providers } from "@/components/providers";
 import { RegisterSW } from "@/components/register-sw";
 import { Toaster } from "@/components/toaster";
@@ -69,14 +70,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
-          <Header />
+          {/* Marketing chrome renders ONLY on public routes; dashboards use
+              their own personalized DashboardShell (Batch 1). */}
+          <ShellVisibility>
+            <Header />
+            <MobileNav />
+          </ShellVisibility>
           <main id="main-content" tabIndex={-1} className="pb-16 outline-none lg:pb-0">{children}</main>
-          <Footer />
-          <ChatWidget />
-          <InstallPrompt />
-          <CookieConsent />
+          <ShellVisibility>
+            <Footer />
+            <ChatWidget />
+            {/* Consent + install banners are public-route chrome; on
+                dashboards they overlay form buttons (wizard "Finish"). */}
+            <InstallPrompt />
+            <CookieConsent />
+          </ShellVisibility>
           <SkipLink />
-          <MobileNav />
           <RegisterSW />
           <Toaster />
         </Providers>

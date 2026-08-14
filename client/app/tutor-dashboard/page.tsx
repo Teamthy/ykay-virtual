@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/vetting/api";
 import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 // Tutor portal (working-doc §11): status + profile completion, availability,
 // today's lessons, attendance roster, lesson notes, earnings, support.
@@ -113,6 +114,7 @@ export default function TutorDashboardPage() {
   const profileCompletion = p ? Math.min(100, 40 + (p.bio ? 20 : 0) + (p.headline ? 10 : 0) + ((p.hourly_rate_min ?? 0) > 0 ? 15 : 0) + (p.accepts_online || p.accepts_in_person ? 15 : 0)) : 0;
 
   return (
+    <DashboardShell>
     <main className="container-x py-10">
       <RoleGate page="/tutor-dashboard" />
       <RecommendationsForYou />
@@ -291,5 +293,6 @@ export default function TutorDashboardPage() {
         </aside>
       </div>
     </main>
+    </DashboardShell>
   );
 }

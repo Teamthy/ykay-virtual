@@ -20,6 +20,13 @@ type CohortRepository interface {
 	IncrementEnrolledCount(ctx context.Context, id uuid.UUID, delta int) error
 }
 
+// LessonParticipantLinker — connects a learner to a cohort's upcoming
+// lessons. Called when an enrollment is confirmed (payment settled) so the
+// student's LMS reflects their cohort immediately; idempotent.
+type LessonParticipantLinker interface {
+	LinkStudentToCohortLessons(ctx context.Context, cohortID, studentProfileID uuid.UUID, from time.Time) (int64, error)
+}
+
 type CohortEnrollmentRepository interface {
 	Create(ctx context.Context, e *CohortEnrollment) error
 	GetByCohortAndStudent(ctx context.Context, cohortID, studentProfileID uuid.UUID) (*CohortEnrollment, error)

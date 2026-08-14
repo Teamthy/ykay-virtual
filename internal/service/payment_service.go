@@ -335,7 +335,15 @@ func (s *PaymentService) confirmEnrollment(ctx context.Context, uow repository.U
 		if enrollment.Status == booking.EnrollmentConfirmed {
 			return nil
 		}
-		return uow.Enrollments().UpdateStatus(ctx, enrollment.ID, booking.EnrollmentConfirmed)
+		if err := uow.Enrollments().UpdateStatus(ctx, enrollment.ID, booking.EnrollmentConfirmed); err != nil {
+			return err
+		}
+		// Enrolled students see their cohort immediately: link the learner to
+		// every upcoming lesson of the cohort (idempotent).
+		if _, err := uow.LessonLinks().LinkStudentToCohortLessons(ctx, it.ReferenceID, *order.StudentID, now); err != nil {
+			return err
+		}
+		return nil
 	}
 	return nil
 }

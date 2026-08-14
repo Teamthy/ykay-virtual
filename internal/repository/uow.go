@@ -32,6 +32,7 @@ type UnitOfWork interface {
 	Vetting() vetting.VettingRepository
 	TutorSubjects() tutor.TutorSubjectRepository
 	AuditLogs() identity.AuditLogRepository
+	LessonLinks() booking.LessonParticipantLinker
 	Commit(ctx context.Context) error
 	Rollback()
 }
