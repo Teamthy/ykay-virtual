@@ -5,11 +5,12 @@ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getCohortSSR } from "@/features/cohorts/api/get";
 import { CheckoutClient } from "@/features/bookings/components/CheckoutClient";
 
-type Props = { params: { cohortId: string } };
+type Props = { params: Promise<{ cohortId: string }> };
 
 export const revalidate = 300;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   return buildMetadata({
     title: "Checkout — Enrol securely",
     description: "Pay securely. Funds are held in escrow until lessons are delivered.",
@@ -18,7 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function CheckoutPage({ params }: Props) {
+export default async function CheckoutPage(props: Props) {
+  const params = await props.params;
   let cohort;
   try {
     cohort = await getCohortSSR(params.cohortId);

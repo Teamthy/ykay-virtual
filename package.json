@@ -9,7 +9,7 @@
         "migrate": "go run ./cmd/migrate --cmd=up",
         "build:web": "npm --prefix client run build",
         "typecheck": "npm --prefix client exec tsc -- --noEmit",
-        "test:web": "echo \"Vitest not yet configured (Phase 5 testing rollout)\"",
+        "test:web": "npm --prefix client run test",
         "test:api": "go test ./...",
         "test": "go test ./... && cd legacy/server && go test ./...",
         "lighthouse": "lhci autorun --config=./lighthouserc.json"

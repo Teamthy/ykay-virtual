@@ -18,7 +18,8 @@ export default function Lms() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch<Lesson[]>("/me/lessons?student_profile_id=00000000-0000-0000-0000-000000000001");
+      // G1: the learner profile resolves from the bearer session server-side.
+      const res = await apiFetch<Lesson[]>("/me/lessons");
       const map = new Map<string, Lesson[]>();
       for (const l of res.data ?? []) {
         const cid = l.cohort_id ?? "none";

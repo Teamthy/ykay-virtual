@@ -34,7 +34,6 @@ export default function BecomeTutorApplyPage() {
       <div className="mt-6">
         <OnboardingStepper current={0} />
         <ProfileStep
-          userId={user.id}
           onCreated={(p) => {
             save({ profileId: p.id, step: "subjects" });
             router.push("/become-tutor/subjects");

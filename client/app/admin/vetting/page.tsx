@@ -17,8 +17,6 @@ import {
 } from "@/features/vetting/api";
 import type { ProfileDetail, TutorProfile, TutorStatus } from "@/features/vetting/types";
 
-const DEV_ADMIN = "00000000-0000-0000-0000-0000000000b1";
-
 const STATUSES: TutorStatus[] = ["SUBMITTED", "UNDER_REVIEW", "INTERVIEW", "VERIFICATION", "HOLD", "APPROVED", "REJECTED"];
 
 const STATUS_LABEL: Record<string, string> = {
@@ -40,7 +38,7 @@ export default function AdminVettingPage() {
   const queue = useQuery({
     queryKey: ["admin", "vetting", "queue", status],
     queryFn: async () => {
-      const res = await listVettingQueue(DEV_ADMIN, status, 1);
+      const res = await listVettingQueue(status, 1);
       return res.data;
     },
     staleTime: 15_000,
@@ -48,7 +46,7 @@ export default function AdminVettingPage() {
 
   const detail = useQuery({
     queryKey: ["admin", "vetting", "profile", selected],
-    queryFn: async () => (selected ? getVettingProfile(DEV_ADMIN, selected) : null),
+    queryFn: async () => (selected ? getVettingProfile(selected) : null),
     enabled: !!selected,
     staleTime: 10_000,
   });
@@ -62,7 +60,6 @@ export default function AdminVettingPage() {
             Review applications: documents, competency results, and full transition history.
           </p>
         </div>
-        <span className="text-xs text-ink-400">Dev auth: admin id {DEV_ADMIN.slice(0, 8)}…</span>
       </div>
 
       <div className="flex gap-2 flex-wrap mb-6">
@@ -113,7 +110,7 @@ export default function AdminVettingPage() {
             ))}
           </ul>
 
-          <div>{selected && detail.data && <Dossier adminId={DEV_ADMIN} detail={detail.data} onChanged={() => void queue.refetch()} />}</div>
+          <div>{selected && detail.data && <Dossier detail={detail.data} onChanged={() => void queue.refetch()} />}</div>
         </div>
       )}
     </div>
@@ -121,11 +118,9 @@ export default function AdminVettingPage() {
 }
 
 function Dossier({
-  adminId,
   detail,
   onChanged,
 }: {
-  adminId: string;
   detail: ProfileDetail;
   onChanged: () => void;
 }) {
@@ -135,7 +130,7 @@ function Dossier({
 
   const act = useMutation({
     mutationFn: async ({ action, r }: { action: AdminAction; r?: string }) => {
-      await adminAction(adminId, detail.profile.id, action, r ?? reason);
+      await adminAction(detail.profile.id, action, r ?? reason);
     },
     onSuccess: () => {
       setReason("");
@@ -150,7 +145,7 @@ function Dossier({
 
   const reviewDoc = useMutation({
     mutationFn: async ({ docId, approve, r }: { docId: string; approve: boolean; r?: string }) => {
-      await reviewDocument(adminId, docId, approve, r ?? "");
+      await reviewDocument(docId, approve, r ?? "");
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "vetting"] });

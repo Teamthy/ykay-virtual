@@ -298,7 +298,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [type, parent_user_id, student_id]
+              required: [type, student_id]  # parent_user_id derived from the session (G1)
               properties:
                 type: { type: string, enum: [PRIVATE, COHORT] }
                 cohort_id: { type: string, format: uuid }
@@ -688,7 +688,7 @@ paths:
       summary: Lessons for a linked student (student portal)
       security: [{ actorHeader: [] }]
       parameters:
-        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Lessons }
 
@@ -698,7 +698,7 @@ paths:
       summary: Lessons for a tutor profile
       security: [{ actorHeader: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Lessons }
 
@@ -708,7 +708,7 @@ paths:
       summary: Tutor earnings (escrow holds + payouts)
       security: [{ actorHeader: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Earnings summary }
 
@@ -1105,7 +1105,7 @@ paths:
       summary: Tutor recurring availability slots
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Slots }
     post:
@@ -1118,7 +1118,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [tutor_profile_id, day_of_week, start_time, end_time]
+              required: [day_of_week, start_time, end_time]  # tutor_profile_id session-resolved (G1)
               properties:
                 tutor_profile_id: { type: string, format: uuid }
                 day_of_week: { type: integer, minimum: 0, maximum: 6 }
@@ -1133,7 +1133,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Deleted }
 
@@ -1143,7 +1143,7 @@ paths:
       summary: Tutor availability exceptions (days off / ad-hoc availability)
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Exceptions }
     post:
@@ -1156,7 +1156,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [tutor_profile_id, exception_date]
+              required: [exception_date]  # tutor_profile_id session-resolved (G1)
               properties:
                 tutor_profile_id: { type: string, format: uuid }
                 exception_date: { type: string, format: date }
@@ -1173,7 +1173,7 @@ paths:
       summary: Assignments for a student's confirmed cohorts
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Assignments }
 
@@ -1184,7 +1184,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       requestBody:
         required: true
         content:
@@ -1202,7 +1202,7 @@ paths:
       summary: Student attendance summary (present/absent/late/excused/rate)
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Summary }
 
@@ -1534,7 +1534,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200':
           description: Attempt started
@@ -1552,7 +1552,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       requestBody:
         required: true
         content:

@@ -44,6 +44,7 @@ type AuthService struct {
 	email     notification.EmailSender
 	audit     identity.AuditService
 	referrals ReferralApplier
+	students  identity.StudentProfileRepository
 	now       func() time.Time
 }
 
@@ -71,6 +72,44 @@ func (s *AuthService) WithEmailSender(email notification.EmailSender) *AuthServi
 func (s *AuthService) WithReferrals(r ReferralApplier) *AuthService {
 	s.referrals = r
 	return s
+}
+
+// WithStudentProfiles wires the student-profile repository so self-registered
+// STUDENT accounts get a linked profile (G1: session-resolved identity).
+func (s *AuthService) WithStudentProfiles(students identity.StudentProfileRepository) *AuthService {
+	s.students = students
+	return s
+}
+
+// ensureStudentProfile — creates the user's own student profile when the
+// STUDENT role is granted and none exists yet. Best-effort: failures are
+// logged to audit but never block auth flows.
+func (s *AuthService) ensureStudentProfile(ctx context.Context, user *identity.User) {
+	if s.students == nil || user == nil {
+		return
+	}
+	if existing, err := s.students.FindByUserID(ctx, user.ID); err == nil && existing != nil {
+		return
+	}
+	uid := user.ID
+	firstName := strings.TrimSpace(user.FirstName)
+	if firstName == "" {
+		if at := strings.IndexByte(user.Email, '@'); at > 0 {
+			firstName = user.Email[:at]
+		} else {
+			firstName = "Learner"
+		}
+	}
+	profile := &identity.StudentProfile{
+		UserID:    &uid,
+		FirstName: firstName,
+		LastName:  strings.TrimSpace(user.LastName),
+		Timezone:  user.Timezone,
+	}
+	if err := s.students.Create(ctx, profile); err == nil {
+		_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditCreate, "student_profile",
+			&profile.ID, nil, map[string]any{"self": true}, nil, nil)
+	}
 }
 
 type RegisterInput struct {
@@ -121,6 +160,9 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 			continue // unknown role names are ignored (defensive)
 		}
 		_ = s.roles.AssignToUser(ctx, user.ID, role.ID)
+		if roleName == "STUDENT" {
+			s.ensureStudentProfile(ctx, user)
+		}
 	}
 	if s.referrals != nil && strings.TrimSpace(in.ReferralCode) != "" {
 		// Record the referral (best-effort — never blocks registration).
@@ -152,6 +194,11 @@ func (s *AuthService) SetPrimaryRole(ctx context.Context, userID uuid.UUID, role
 	}
 	_ = s.audit.LogStateChange(ctx, &userID, identity.AuditUpdate, "user_role",
 		nil, nil, map[string]any{"role": roleName}, nil, nil)
+	if roleName == "STUDENT" {
+		if user, err := s.users.FindByID(ctx, userID); err == nil {
+			s.ensureStudentProfile(ctx, user)
+		}
+	}
 	list, _ := s.roles.RolesForUser(ctx, userID)
 	out := make([]string, 0, len(list))
 	for _, r := range list {

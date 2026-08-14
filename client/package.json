@@ -5,30 +5,39 @@
     "scripts": {
         "dev": "next dev",
         "build": "next build",
-        "start": "next start"
+        "start": "next start",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "dependencies": {
-        "@tanstack/react-form": "^0.48.2",
+        "@tanstack/react-form": "^1.0.0",
         "@tanstack/react-query": "^5.101.4",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "lucide-react": "^1.31.0",
-        "next": "14.2.15",
+        "next": "^15.5.23",
+        "postcss": "^8.5.26",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "sonner": "^2.0.8",
         "tailwind-merge": "^3.6.0",
-        "uuid": "^9.0.1",
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
         "@types/node": "^20.19.43",
         "@types/react": "18.3.12",
         "@types/react-dom": "18.3.1",
-        "@types/uuid": "^9.0.8",
+        "@vitejs/plugin-react": "^6.0.5",
         "autoprefixer": "^10.5.4",
-        "postcss": "^8.5.26",
+        "jsdom": "^29.1.1",
         "tailwindcss": "^3.4.1",
-        "typescript": "5.6.3"
+        "typescript": "5.6.3",
+        "vitest": "^4.1.10"
+    },
+    "overrides": {
+        "postcss": "^8.5.26",
+        "sharp": "^0.35.0"
     }
 }

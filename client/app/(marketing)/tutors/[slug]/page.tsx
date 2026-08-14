@@ -1,86 +1,107 @@
 import type { Metadata } from "next";
-import { buildMetadata, personJsonLd, reviewJsonLd } from "@/lib/seo";
+import { buildMetadata, personJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { RelatedContent } from "@/components/RelatedContent";
 import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
 import { PrivateBookingForm } from "@/features/tuition/PrivateBookingForm";
+import { apiFetchSSR } from "@/lib/server-api";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
-// Mock - in prod fetch from /api/v1/tutors/[slug] with SSG+ISR revalidate 3600
-const TUTOR_IDS: Record<string, string> = {
-  "chinasa": "00000000-0000-0000-0000-000000000101",
-  "oluwatobi": "00000000-0000-0000-0000-000000000102",
+// G1 (phase 43): the page fetches the REAL tutor from /api/v1/tutors/{slug}
+// (ISR 1h) — no fixture UUIDs or hard-coded tutor content.
+type TutorDTO = {
+  id: string;
+  slug: string;
+  display_name: string;
+  headline?: string;
+  bio?: string;
+  hourly_rate_min?: number;
+  hourly_rate_max?: number;
+  currency?: string;
+  rating_avg: number;
+  rating_count: number;
+  location?: string;
+  subjects?: string[];
+  years_experience?: number;
+  total_hours_taught?: number;
+  total_students?: number;
 };
 
-const tutors: Record<string, any> = {
-  "chinasa": { name: "Chinasa", bio: "M.Ed Mathematics Education UNILAG. Teaches British & Nigerian Syllabus Grades 1-6. 10+ years, 2548 hours, 34 students.", rating: 4.87, count: 28, subjects: ["Mathematics", "English"], verified: true, location: "Lagos" },
-  "oluwatobi": { name: "Oluwatobi", bio: "Build student's confidence in Mathematics and Sciences. Common Entrance, Checkpoint, WAEC, NECO, UTME...", rating: 4.6, count: 20, subjects: ["Mathematics", "Physics"], verified: true, location: "Lagos" },
-};
+async function fetchTutor(slug: string): Promise<TutorDTO | null> {
+  try {
+    const res = await apiFetchSSR<TutorDTO>(`/tutors/${slug}`);
+    return res.data ?? null;
+  } catch {
+    return null;
+  }
+}
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = tutors[params.slug];
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
+  const t = await fetchTutor(params.slug);
   if (!t) return buildMetadata({ title: "Tutor Not Found", description: "Tutor not found", path: `/tutors/${params.slug}`, noIndex: true });
+  const subjectNames = t.subjects ?? [];
   return buildMetadata({
-    title: `${t.name} — ${t.subjects.join(", ")} Tutor | NUVORA`,
-    description: t.bio.slice(0, 155),
+    title: `${t.display_name}${subjectNames.length ? ` — ${subjectNames.join(", ")} Tutor` : ""} | NUVORA`,
+    description: (t.bio ?? t.headline ?? `${t.display_name} teaches on NUVORA.`).slice(0, 155),
     path: `/tutors/${params.slug}`,
   });
 }
 
-export default function TutorPage({ params }: Props) {
-  const tutor = tutors[params.slug];
+export default async function TutorPage(props: Props) {
+  const params = await props.params;
+  const tutor = await fetchTutor(params.slug);
   if (!tutor) return notFound();
 
+  const subjectNames = tutor.subjects ?? [];
 
   const person = personJsonLd({
-    name: tutor.name,
-    description: tutor.bio,
-    ratingValue: tutor.rating,
-    ratingCount: tutor.count,
+    name: tutor.display_name,
+    description: tutor.bio ?? tutor.headline ?? "",
+    ratingValue: tutor.rating_avg,
+    ratingCount: tutor.rating_count,
     url: `https://nuvora.com/tutors/${params.slug}`,
     image: "https://nuvora.com/og-default.jpg",
   });
 
-  const review = reviewJsonLd({
-    itemName: tutor.name,
-    ratingValue: tutor.rating,
-    author: "Mrs. Soetan",
-    reviewBody: "My daughter scored among the highest... now contends with top students.",
-  });
-
   return (
     <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors", href: "/tutors" }, { name: tutor.name }]} />
+      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors", href: "/tutors" }, { name: tutor.display_name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(review) }} />
 
       <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10">
         <div>
           <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide bg-green-50 text-green-700 px-3 py-1 rounded-full">✓ ID Verified • Background Checked</div>
-          <h1 className="mt-4 text-4xl font-extrabold">{tutor.name}</h1>
-          <p className="mt-2 text-ink-600">{tutor.bio}</p>
-          <div className="mt-4 flex items-center gap-2">
-            <span className="font-bold">{tutor.rating}</span><span className="text-ink-500">({tutor.count} reviews)</span>
-            <span className="ml-4 text-sm">📍 {tutor.location}</span>
-            <span className="ml-2 text-sm">Subjects: {tutor.subjects.join(", ")}</span>
+          <h1 className="mt-4 text-4xl font-extrabold">{tutor.display_name}</h1>
+          {tutor.headline && <p className="mt-1 text-lg text-ink-700">{tutor.headline}</p>}
+          {tutor.bio && <p className="mt-2 text-ink-600">{tutor.bio}</p>}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {tutor.rating_count > 0 && (
+              <>
+                <span className="font-bold">{tutor.rating_avg.toFixed(2)}</span>
+                <span className="text-ink-500">({tutor.rating_count} reviews)</span>
+              </>
+            )}
+            {tutor.location && <span className="ml-4 text-sm">📍 {tutor.location}</span>}
+            {subjectNames.length > 0 && <span className="ml-2 text-sm">Subjects: {subjectNames.join(", ")}</span>}
           </div>
 
           <section className="mt-8 border rounded-2xl p-6">
             <h3 className="font-bold">Child-Centered Teaching Approach</h3>
-            <p className="mt-2 text-sm text-ink-600">Tuteria parity: Adaptive Learning Plans, Child-Centered, Periodic Evaluation. NUVORA adds: progress reports with strengths/weaknesses/recommendations, audited.</p>
+            <p className="mt-2 text-sm text-ink-600">Adaptive learning plans, child-centered delivery and periodic evaluation — plus NUVORA progress reports with strengths, weaknesses and recommendations, all audited.</p>
           </section>
 
           <div className="mt-10">
-        <PrivateBookingForm
-          tutorProfileId={TUTOR_IDS[params.slug] ?? "00000000-0000-0000-0000-000000000102"}
-          subjects={tutors[params.slug]?.subjects ?? []}
-          defaultRate={5000}
-        />
-      </div>
+            <PrivateBookingForm
+              tutorProfileId={tutor.id}
+              subjects={subjectNames}
+              defaultRate={tutor.hourly_rate_min ?? 5000}
+            />
+          </div>
 
-      <ReviewsSection tutorSlug={params.slug} tutorId={tutor.id ?? params.slug} />
+          <ReviewsSection tutorSlug={params.slug} tutorId={tutor.id} />
         </div>
 
         <div className="border rounded-2xl p-6 h-fit lg:sticky lg:top-28">
@@ -90,7 +111,7 @@ export default function TutorPage({ params }: Props) {
           <div className="mt-4 text-xs text-ink-500">Good Fit Guarantee: first hour protected.</div>
         </div>
       </div>
-      <RelatedContent subjectSlug={(tutor.subjects?.[0] ?? "mathematics").toLowerCase().replace(/\s+/g, "-")} />
+      <RelatedContent subjectSlug={(subjectNames[0] ?? "mathematics").toLowerCase().replace(/\s+/g, "-")} />
     </main>
   );
 }

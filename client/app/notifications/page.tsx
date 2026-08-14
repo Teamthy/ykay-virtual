@@ -24,18 +24,18 @@ export default function NotificationsPage() {
 
   const notifs = useQuery({
     queryKey: ["notifications", userId],
-    queryFn: () => listNotifications(userId),
+    queryFn: () => listNotifications(),
     enabled: !!userId,
     staleTime: 15_000,
     refetchInterval: 30_000,
   });
 
   const markRead = useMutation({
-    mutationFn: (id: string) => markNotificationRead(userId, id),
+    mutationFn: (id: string) => markNotificationRead(id),
     onSettled: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
   const markAll = useMutation({
-    mutationFn: () => markAllNotificationsRead(userId),
+    mutationFn: () => markAllNotificationsRead(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
 

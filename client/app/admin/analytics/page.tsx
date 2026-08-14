@@ -60,12 +60,19 @@ export default function AdminAnalyticsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <a
-            href={`${API_BASE}/admin/reports/attendance.csv?lesson_id=00000000-0000-0000-0000-000000000010`}
+          {/* G1: the export needs a real lesson id — prompt instead of a fixture UUID. */}
+          <button
+            type="button"
+            onClick={() => {
+              const lessonId = window.prompt("Lesson ID for the attendance export:");
+              if (lessonId?.trim()) {
+                window.open(`${API_BASE}/admin/reports/attendance.csv?lesson_id=${encodeURIComponent(lessonId.trim())}`, "_blank");
+              }
+            }}
             className="rounded-xl border px-4 py-2 text-sm font-semibold hover:bg-ink-50"
           >
             ⬇ Attendance CSV
-          </a>
+          </button>
           <a
             href={`${API_BASE}/admin/reports/revenue.csv`}
             className="rounded-xl bg-brand-gold px-4 py-2 text-sm font-semibold text-white hover:opacity-90"

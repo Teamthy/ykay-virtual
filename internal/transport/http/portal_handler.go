@@ -25,15 +25,46 @@ import (
 //   - GET  /me/orders/{orderId}                          (parent receipt)
 
 type PortalHandler struct {
-	svc *service.PortalService
+	svc   *service.PortalService
+	authz *ProfileAuthorizer
 }
 
-func NewPortalHandler(svc *service.PortalService) *PortalHandler { return &PortalHandler{svc: svc} }
+func NewPortalHandler(svc *service.PortalService, authz *ProfileAuthorizer) *PortalHandler {
+	return &PortalHandler{svc: svc, authz: authz}
+}
+
+// resolveTutor / resolveStudent — G1: every profile-scoped portal endpoint
+// resolves the acting profile through the session; browser-supplied IDs are
+// only honoured when they belong to the caller (or the caller is an admin).
+func (h *PortalHandler) resolveTutor(w http.ResponseWriter, r *http.Request, raw string) (uuid.UUID, bool) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return uuid.Nil, false
+	}
+	id, err := h.authz.ResolveTutor(r.Context(), actor, raw)
+	if err != nil {
+		WriteAppError(w, err)
+		return uuid.Nil, false
+	}
+	return id, true
+}
+
+func (h *PortalHandler) resolveStudent(w http.ResponseWriter, r *http.Request, raw string) (uuid.UUID, bool) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return uuid.Nil, false
+	}
+	id, err := h.authz.ResolveStudent(r.Context(), actor, raw)
+	if err != nil {
+		WriteAppError(w, err)
+		return uuid.Nil, false
+	}
+	return id, true
+}
 
 func (h *PortalHandler) ListAvailability(w http.ResponseWriter, r *http.Request) {
-	tutorID, err := uuid.Parse(r.URL.Query().Get("tutor_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id query param is required", nil))
+	tutorID, ok := h.resolveTutor(w, r, r.URL.Query().Get("tutor_profile_id"))
+	if !ok {
 		return
 	}
 	list, err := h.svc.ListAvailability(r.Context(), tutorID)
@@ -45,10 +76,6 @@ func (h *PortalHandler) ListAvailability(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *PortalHandler) UpsertAvailability(w http.ResponseWriter, r *http.Request) {
-	actor := requireActor(w, r)
-	if actor == nil {
-		return
-	}
 	var req struct {
 		TutorProfileID string `json:"tutor_profile_id"`
 		DayOfWeek      int    `json:"day_of_week"`
@@ -60,9 +87,8 @@ func (h *PortalHandler) UpsertAvailability(w http.ResponseWriter, r *http.Reques
 		WriteAppError(w, err)
 		return
 	}
-	tutorID, err := uuid.Parse(req.TutorProfileID)
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+	tutorID, ok := h.resolveTutor(w, r, req.TutorProfileID)
+	if !ok {
 		return
 	}
 	a, err := h.svc.UpsertAvailability(r.Context(), service.AvailabilityInput{
@@ -77,9 +103,8 @@ func (h *PortalHandler) UpsertAvailability(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *PortalHandler) DeleteAvailability(w http.ResponseWriter, r *http.Request) {
-	tutorID, err := uuid.Parse(r.URL.Query().Get("tutor_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id query param is required", nil))
+	tutorID, ok := h.resolveTutor(w, r, r.URL.Query().Get("tutor_profile_id"))
+	if !ok {
 		return
 	}
 	id, err := ParseUUID(r, "id")
@@ -95,9 +120,8 @@ func (h *PortalHandler) DeleteAvailability(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *PortalHandler) ListExceptions(w http.ResponseWriter, r *http.Request) {
-	tutorID, err := uuid.Parse(r.URL.Query().Get("tutor_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id query param is required", nil))
+	tutorID, ok := h.resolveTutor(w, r, r.URL.Query().Get("tutor_profile_id"))
+	if !ok {
 		return
 	}
 	list, err := h.svc.ListAvailabilityExceptions(r.Context(), tutorID)
@@ -121,9 +145,8 @@ func (h *PortalHandler) UpsertException(w http.ResponseWriter, r *http.Request) 
 		WriteAppError(w, err)
 		return
 	}
-	tutorID, err := uuid.Parse(req.TutorProfileID)
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+	tutorID, ok := h.resolveTutor(w, r, req.TutorProfileID)
+	if !ok {
 		return
 	}
 	e, err := h.svc.UpsertAvailabilityException(r.Context(), service.ExceptionInput{
@@ -138,9 +161,8 @@ func (h *PortalHandler) UpsertException(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *PortalHandler) DeleteException(w http.ResponseWriter, r *http.Request) {
-	tutorID, err := uuid.Parse(r.URL.Query().Get("tutor_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id query param is required", nil))
+	tutorID, ok := h.resolveTutor(w, r, r.URL.Query().Get("tutor_profile_id"))
+	if !ok {
 		return
 	}
 	id, err := ParseUUID(r, "id")
@@ -158,9 +180,8 @@ func (h *PortalHandler) DeleteException(w http.ResponseWriter, r *http.Request) 
 // --- Student ---
 
 func (h *PortalHandler) MyAssignments(w http.ResponseWriter, r *http.Request) {
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("student_profile_id query param is required", nil))
+	studentID, ok := h.resolveStudent(w, r, r.URL.Query().Get("student_profile_id"))
+	if !ok {
 		return
 	}
 	list, err := h.svc.AssignmentsForStudent(r.Context(), studentID)
@@ -172,9 +193,8 @@ func (h *PortalHandler) MyAssignments(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PortalHandler) SubmitAssignment(w http.ResponseWriter, r *http.Request) {
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("student_profile_id query param is required", nil))
+	studentID, ok := h.resolveStudent(w, r, r.URL.Query().Get("student_profile_id"))
+	if !ok {
 		return
 	}
 	assignmentID, err := ParseUUID(r, "assignmentId")
@@ -198,9 +218,8 @@ func (h *PortalHandler) SubmitAssignment(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *PortalHandler) MySubmissions(w http.ResponseWriter, r *http.Request) {
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("student_profile_id query param is required", nil))
+	studentID, ok := h.resolveStudent(w, r, r.URL.Query().Get("student_profile_id"))
+	if !ok {
 		return
 	}
 	list, err := h.svc.ListMySubmissions(r.Context(), studentID)
@@ -212,9 +231,8 @@ func (h *PortalHandler) MySubmissions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PortalHandler) AttendanceSummary(w http.ResponseWriter, r *http.Request) {
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("student_profile_id query param is required", nil))
+	studentID, ok := h.resolveStudent(w, r, r.URL.Query().Get("student_profile_id"))
+	if !ok {
 		return
 	}
 	summary, err := h.svc.AttendanceSummary(r.Context(), studentID)

@@ -23,13 +23,14 @@ export type AvailabilityException = {
   reason?: string;
 };
 
-export async function listAvailability(tutorProfileId: string): Promise<Availability[]> {
-  const res = await apiFetch<Availability[]>(`/me/availability?tutor_profile_id=${tutorProfileId}`);
+export async function listAvailability(tutorProfileId?: string): Promise<Availability[]> {
+  const q = tutorProfileId ? `?tutor_profile_id=${tutorProfileId}` : "";
+  const res = await apiFetch<Availability[]>(`/me/availability${q}`);
   return res.data ?? [];
 }
 
 export async function upsertAvailability(input: {
-  tutor_profile_id: string;
+  tutor_profile_id?: string;
   day_of_week: number;
   start_time: string;
   end_time: string;
@@ -39,17 +40,19 @@ export async function upsertAvailability(input: {
   return res.data;
 }
 
-export async function deleteAvailability(id: string, tutorProfileId: string): Promise<void> {
-  await apiFetch(`/me/availability/${id}?tutor_profile_id=${tutorProfileId}`, { method: "DELETE" });
+export async function deleteAvailability(id: string, tutorProfileId?: string): Promise<void> {
+  const q = tutorProfileId ? `?tutor_profile_id=${tutorProfileId}` : "";
+  await apiFetch(`/me/availability/${id}${q}`, { method: "DELETE" });
 }
 
-export async function listAvailabilityExceptions(tutorProfileId: string): Promise<AvailabilityException[]> {
-  const res = await apiFetch<AvailabilityException[]>(`/me/availability-exceptions?tutor_profile_id=${tutorProfileId}`);
+export async function listAvailabilityExceptions(tutorProfileId?: string): Promise<AvailabilityException[]> {
+  const q = tutorProfileId ? `?tutor_profile_id=${tutorProfileId}` : "";
+  const res = await apiFetch<AvailabilityException[]>(`/me/availability-exceptions${q}`);
   return res.data ?? [];
 }
 
 export async function upsertAvailabilityException(input: {
-  tutor_profile_id: string;
+  tutor_profile_id?: string;
   exception_date: string;
   is_available: boolean;
   start_time?: string;
@@ -92,26 +95,30 @@ export type AttendanceSummary = {
   rate: number;
 };
 
-export async function listMyAssignments(studentProfileId: string): Promise<Assignment[]> {
-  const res = await apiFetch<Assignment[]>(`/me/assignments?student_profile_id=${studentProfileId}`);
+export async function listMyAssignments(studentProfileId?: string): Promise<Assignment[]> {
+  const q = studentProfileId ? `?student_profile_id=${studentProfileId}` : "";
+  const res = await apiFetch<Assignment[]>(`/me/assignments${q}`);
   return res.data ?? [];
 }
 
-export async function submitAssignment(studentProfileId: string, assignmentId: string, content: string): Promise<Submission> {
-  const res = await apiFetch<Submission>(`/me/assignments/${assignmentId}/submit?student_profile_id=${studentProfileId}`, {
+export async function submitAssignment(studentProfileId: string | undefined, assignmentId: string, content: string): Promise<Submission> {
+  const q = studentProfileId ? `?student_profile_id=${studentProfileId}` : "";
+  const res = await apiFetch<Submission>(`/me/assignments/${assignmentId}/submit${q}`, {
     method: "POST",
     body: JSON.stringify({ content }),
   });
   return res.data;
 }
 
-export async function listMySubmissions(studentProfileId: string): Promise<Submission[]> {
-  const res = await apiFetch<Submission[]>(`/me/submissions?student_profile_id=${studentProfileId}`);
+export async function listMySubmissions(studentProfileId?: string): Promise<Submission[]> {
+  const q = studentProfileId ? `?student_profile_id=${studentProfileId}` : "";
+  const res = await apiFetch<Submission[]>(`/me/submissions${q}`);
   return res.data ?? [];
 }
 
-export async function getAttendanceSummary(studentProfileId: string): Promise<AttendanceSummary> {
-  const res = await apiFetch<AttendanceSummary>(`/me/attendance-summary?student_profile_id=${studentProfileId}`);
+export async function getAttendanceSummary(studentProfileId?: string): Promise<AttendanceSummary> {
+  const q = studentProfileId ? `?student_profile_id=${studentProfileId}` : "";
+  const res = await apiFetch<AttendanceSummary>(`/me/attendance-summary${q}`);
   return res.data;
 }
 

@@ -9,11 +9,9 @@ import type {
   VettingDocument,
 } from "./types";
 
-// Dev-auth bridge headers until Phase 7 sessions: X-User-ID + X-User-Roles.
-// The API's service layer enforces owner/admin authorization regardless.
-function actorHeaders(userId: string, roles: string[] = ["STUDENT"]) {
-  return { "X-User-ID": userId, "X-User-Roles": roles.join(",") };
-}
+// G1 (phase 43): the dev-auth header bridge is gone — the API resolves the
+// actor exclusively from the httpOnly session cookie. No caller-supplied
+// user IDs; object-level authorization is enforced server-side.
 
 export type CreateProfileInput = {
   display_name: string;
@@ -28,46 +26,40 @@ export type CreateProfileInput = {
   accepts_in_person?: boolean;
 };
 
-export async function createTutorProfile(userId: string, input: CreateProfileInput): Promise<TutorProfile> {
+export async function createTutorProfile(input: CreateProfileInput): Promise<TutorProfile> {
   const res = await apiFetch<TutorProfile>("/tutors/me/vetting/profile", {
     method: "POST",
-    headers: actorHeaders(userId, ["TUTOR"]),
     body: JSON.stringify(input),
   });
   return res.data;
 }
 
-export async function getMyProfile(userId: string): Promise<TutorProfile | null> {
+export async function getMyProfile(): Promise<TutorProfile | null> {
   try {
-    const res = await apiFetch<TutorProfile>("/tutors/me/vetting/profile", {
-      headers: actorHeaders(userId, ["TUTOR"]),
-    });
+    const res = await apiFetch<TutorProfile>("/tutors/me/vetting/profile");
     return res.data;
   } catch {
     return null; // no profile yet
   }
 }
 
-export async function addSubject(userId: string, profileId: string, subjectId: string): Promise<void> {
+export async function addSubject(profileId: string, subjectId: string): Promise<void> {
   await apiFetch(`/tutors/me/vetting/profiles/${profileId}/subjects`, {
     method: "POST",
-    headers: actorHeaders(userId, ["TUTOR"]),
     body: JSON.stringify({ subject_id: subjectId }),
   });
 }
 
-export async function listMySubjects(userId: string, profileId: string): Promise<TutorSubjectEntry[]> {
+export async function listMySubjects(profileId: string): Promise<TutorSubjectEntry[]> {
   const res = await apiFetch<TutorSubjectEntry[]>(
-    `/tutors/me/vetting/profiles/${profileId}/subjects`,
-    { headers: actorHeaders(userId, ["TUTOR"]) }
+    `/tutors/me/vetting/profiles/${profileId}/subjects`
   );
   return res.data;
 }
 
-export async function submitForReview(userId: string, profileId: string): Promise<void> {
+export async function submitForReview(profileId: string): Promise<void> {
   await apiFetch(`/tutors/me/vetting/profiles/${profileId}/submit`, {
     method: "POST",
-    headers: actorHeaders(userId, ["TUTOR"]),
   });
 }
 
@@ -77,7 +69,6 @@ export type DocumentUploadResult = {
 };
 
 export async function requestDocumentUpload(
-  userId: string,
   profileId: string,
   type: DocumentType,
   fileName: string,
@@ -85,14 +76,12 @@ export async function requestDocumentUpload(
 ): Promise<DocumentUploadResult> {
   const res = await apiFetch<DocumentUploadResult>(`/tutors/me/vetting/profiles/${profileId}/documents`, {
     method: "POST",
-    headers: actorHeaders(userId, ["TUTOR"]),
     body: JSON.stringify({ type, file_name: fileName, mime_type: mimeType }),
   });
   return res.data;
 }
 
 export async function startAssessment(
-  userId: string,
   profileId: string,
   subjectId: string
 ): Promise<AttemptWithQuestions> {
@@ -100,7 +89,6 @@ export async function startAssessment(
     `/tutors/me/vetting/profiles/${profileId}/assessments`,
     {
       method: "POST",
-      headers: actorHeaders(userId, ["TUTOR"]),
       body: JSON.stringify({ subject_id: subjectId }),
     }
   );
@@ -110,59 +98,46 @@ export async function startAssessment(
 export type AnswerInput = { question_id: string; chosen_index: number };
 
 export async function submitAssessment(
-  userId: string,
   attemptId: string,
   answers: AnswerInput[]
 ): Promise<AssessmentResult> {
   const res = await apiFetch<AssessmentResult>(`/tutors/me/vetting/assessments/${attemptId}/submit`, {
     method: "POST",
-    headers: actorHeaders(userId, ["TUTOR"]),
     body: JSON.stringify({ answers }),
   });
   return res.data;
 }
 
-// --- Admin ---
+// --- Admin (session must carry an admin role) ---
 
-export async function listVettingQueue(
-  adminId: string,
-  status: string,
-  page = 1
-): Promise<Envelope<TutorProfile[]>> {
+export async function listVettingQueue(status: string, page = 1): Promise<Envelope<TutorProfile[]>> {
   const qs = new URLSearchParams();
   if (status) qs.set("status", status);
   qs.set("page", String(page));
-  return apiFetch<TutorProfile[]>(`/admin/vetting/queue?${qs}`, {
-    headers: actorHeaders(adminId, ["ADMIN"]),
-  });
+  return apiFetch<TutorProfile[]>(`/admin/vetting/queue?${qs}`);
 }
 
-export async function getVettingProfile(adminId: string, profileId: string): Promise<ProfileDetail> {
-  const res = await apiFetch<ProfileDetail>(`/admin/vetting/profiles/${profileId}`, {
-    headers: actorHeaders(adminId, ["ADMIN"]),
-  });
+export async function getVettingProfile(profileId: string): Promise<ProfileDetail> {
+  const res = await apiFetch<ProfileDetail>(`/admin/vetting/profiles/${profileId}`);
   return res.data;
 }
 
 export type AdminAction = "review" | "interview" | "verify" | "approve" | "reject" | "hold" | "suspend";
 
-export async function adminAction(adminId: string, profileId: string, action: AdminAction, reason = ""): Promise<void> {
+export async function adminAction(profileId: string, action: AdminAction, reason = ""): Promise<void> {
   await apiFetch(`/admin/vetting/profiles/${profileId}/${action}`, {
     method: "POST",
-    headers: actorHeaders(adminId, ["ADMIN"]),
     body: JSON.stringify({ reason }),
   });
 }
 
 export async function reviewDocument(
-  adminId: string,
   documentId: string,
   approve: boolean,
   reason = ""
 ): Promise<void> {
   await apiFetch(`/admin/vetting/documents/${documentId}/review`, {
     method: "POST",
-    headers: actorHeaders(adminId, ["ADMIN"]),
     body: JSON.stringify({ approve, reason }),
   });
 }

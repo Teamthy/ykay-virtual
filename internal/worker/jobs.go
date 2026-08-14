@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 )
 
@@ -25,18 +26,21 @@ const (
 )
 
 type Job struct {
-	ID       string
-	Type     JobType
-	Payload  []byte
-	Attempts int
+	ID          string          `json:"id"`
+	Type        JobType         `json:"type"`
+	Payload     json.RawMessage `json:"payload,omitempty"`
+	Attempts    int             `json:"attempts"`
+	MaxAttempts int             `json:"max_attempts"`
+	LastError   string          `json:"last_error,omitempty"`
 }
 
+// Worker is kept for backwards compatibility with earlier call sites; the
+// durable implementations live in queue.go (RedisQueue / MemoryQueue).
 type Worker struct{}
 
 func New() *Worker { return &Worker{} }
 
 func (w *Worker) Process(ctx context.Context, job Job) error {
 	log.Printf("processing job %s type %s", job.ID, job.Type)
-	// idempotent handling placeholder
 	return nil
 }

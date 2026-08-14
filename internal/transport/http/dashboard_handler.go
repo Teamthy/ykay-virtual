@@ -5,8 +5,6 @@ import (
 
 	"ykay-virtual/internal/service"
 	"ykay-virtual/pkg"
-
-	"github.com/google/uuid"
 )
 
 // DashboardHandler — portal read endpoints:
@@ -16,11 +14,12 @@ import (
 //   - GET /api/v1/me/tutor-lessons     (tutor's lessons via tutor_profile_id)
 
 type DashboardHandler struct {
-	svc *service.DashboardService
+	svc   *service.DashboardService
+	authz *ProfileAuthorizer
 }
 
-func NewDashboardHandler(svc *service.DashboardService) *DashboardHandler {
-	return &DashboardHandler{svc: svc}
+func NewDashboardHandler(svc *service.DashboardService, authz *ProfileAuthorizer) *DashboardHandler {
+	return &DashboardHandler{svc: svc, authz: authz}
 }
 
 func (h *DashboardHandler) MyOrders(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +41,9 @@ func (h *DashboardHandler) MyLessons(w http.ResponseWriter, r *http.Request) {
 	if actor == nil {
 		return
 	}
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
+	studentID, err := h.authz.ResolveStudent(r.Context(), actor, r.URL.Query().Get("student_profile_id"))
 	if err != nil {
-		WriteAppError(w, pkg.BadRequest("student_profile_id query param is required", nil))
+		WriteAppError(w, err)
 		return
 	}
 	lessons, err := h.svc.StudentLessons(r.Context(), studentID, 50)
@@ -60,9 +59,9 @@ func (h *DashboardHandler) MyTutorLessons(w http.ResponseWriter, r *http.Request
 	if actor == nil {
 		return
 	}
-	tutorID, err := uuid.Parse(r.URL.Query().Get("tutor_profile_id"))
+	tutorID, err := h.authz.ResolveTutor(r.Context(), actor, r.URL.Query().Get("tutor_profile_id"))
 	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id query param is required", nil))
+		WriteAppError(w, err)
 		return
 	}
 	lessons, err := h.svc.TutorLessons(r.Context(), tutorID, 50)
@@ -78,9 +77,9 @@ func (h *DashboardHandler) MyEarnings(w http.ResponseWriter, r *http.Request) {
 	if actor == nil {
 		return
 	}
-	tutorID, err := uuid.Parse(r.URL.Query().Get("tutor_profile_id"))
+	tutorID, err := h.authz.ResolveTutor(r.Context(), actor, r.URL.Query().Get("tutor_profile_id"))
 	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id query param is required", nil))
+		WriteAppError(w, err)
 		return
 	}
 	earnings, err := h.svc.TutorEarnings(r.Context(), tutorID)

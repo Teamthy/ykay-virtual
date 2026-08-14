@@ -3,6 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   // Self-contained server build for the Docker image (Phase 40).
   output: "standalone",
+  // Monorepo root (Go + client) — silences multi-lockfile inference (Next 15).
+  outputFileTracingRoot: require("path").join(__dirname, ".."),
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" }

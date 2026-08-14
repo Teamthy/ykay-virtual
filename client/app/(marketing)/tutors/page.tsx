@@ -6,9 +6,10 @@ import { TutorsSearchClient } from "@/features/tutors/components/TutorsSearchCli
 
 export const revalidate = 60;
 
-type Props = { searchParams: Record<string, string | string[] | undefined> };
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-export function generateMetadata({ searchParams }: Props): Metadata {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const searchParams = await props.searchParams;
   const s = searchParams;
   const filterCount = [
     s.subject, s.online, s.in_person, s.min_price, s.max_price, s.location,
@@ -31,7 +32,8 @@ export function generateMetadata({ searchParams }: Props): Metadata {
   });
 }
 
-export default function TutorsPage({ searchParams }: Props) {
+export default async function TutorsPage(props: Props) {
+  const searchParams = await props.searchParams;
   const subject = typeof searchParams.subject === "string" ? searchParams.subject : undefined;
   const marketplaceEnabled = process.env.NEXT_PUBLIC_MARKETPLACE_ENABLED !== "false";
 

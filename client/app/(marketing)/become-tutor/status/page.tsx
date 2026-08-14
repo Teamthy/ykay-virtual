@@ -19,7 +19,7 @@ export default function BecomeTutorStatusPage() {
 
   const profile = useQuery({
     queryKey: ["vetting", "me", user?.id],
-    queryFn: () => getMyProfile(user?.id ?? ""),
+    queryFn: () => getMyProfile(),
     enabled: !!user,
     staleTime: 30_000,
   });

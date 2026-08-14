@@ -8,7 +8,7 @@ import { ProgrammeDetailTabs } from "@/features/programmes/components/ProgrammeD
 
 export const revalidate = 300;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 type ProgrammeDetail = {
   id: string;
@@ -28,7 +28,8 @@ type ProgrammeDetail = {
   next_start?: string;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   let p: ProgrammeDetail | null = null;
   try {
     const res = await apiFetchSSR<ProgrammeDetail>(`/programmes/${params.slug}`);
@@ -49,7 +50,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // Reusable programme detail template (working-doc §8.3): breadcrumb, title
 // with curriculum/level/subject, ENROL/BOOK CTAs, tabs (Overview | Topics |
 // Cohorts | Private Tuition | Tutors | FAQ).
-export default async function ProgrammeDetailPage({ params }: Props) {
+export default async function ProgrammeDetailPage(props: Props) {
+  const params = await props.params;
   let p: ProgrammeDetail | null = null;
   try {
     const res = await apiFetchSSR<ProgrammeDetail>(`/programmes/${params.slug}`);

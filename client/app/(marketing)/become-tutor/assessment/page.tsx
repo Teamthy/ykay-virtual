@@ -30,7 +30,6 @@ export default function BecomeTutorAssessmentPage() {
       <div className="mt-4">
         <OnboardingStepper current={3} />
         <AssessmentStep
-          userId={user.id}
           profileId={state.profileId}
           onDone={() => {
             save({ step: "status" });

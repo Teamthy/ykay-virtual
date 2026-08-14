@@ -42,7 +42,7 @@ export function OnboardingStepper({ current }: { current: number }) {
   return <Stepper steps={["Profile", "Subjects", "Documents", "Quiz", "In review"]} current={current} className="mb-8" />;
 }
 
-export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: (p: TutorProfile) => void }) {
+export function ProfileStep({ onCreated }: { onCreated: (p: TutorProfile) => void }) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -67,7 +67,7 @@ export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: 
           currency: "NGN", timezone: "Africa/Lagos",
           accepts_online: value.accepts_online, accepts_in_person: value.accepts_in_person,
         };
-        const p = await createTutorProfile(userId, input);
+        const p = await createTutorProfile(input);
         onCreated(p);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not create profile");
@@ -142,7 +142,7 @@ export function ProfileStep({ userId, onCreated }: { userId: string; onCreated: 
   );
 }
 
-export function SubjectsStep({ userId, profileId, onNext }: { userId: string; profileId: string; onNext: () => void }) {
+export function SubjectsStep({ profileId, onNext }: { profileId: string; onNext: () => void }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -168,7 +168,7 @@ export function SubjectsStep({ userId, profileId, onNext }: { userId: string; pr
     setSaving(true);
     setError(null);
     try {
-      for (const id of selected) await addSubject(userId, profileId, id);
+      for (const id of selected) await addSubject(profileId, id);
       onNext();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save subjects");
@@ -204,7 +204,7 @@ export function SubjectsStep({ userId, profileId, onNext }: { userId: string; pr
   );
 }
 
-export function DocumentsStep({ userId, profileId, onNext }: { userId: string; profileId: string; onNext: () => void }) {
+export function DocumentsStep({ profileId, onNext }: { profileId: string; onNext: () => void }) {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -216,7 +216,7 @@ export function DocumentsStep({ userId, profileId, onNext }: { userId: string; p
     setError(null);
     try {
       for (const f of files) {
-        const res = await requestDocumentUpload(userId, profileId, "GOVT_ID", f.name, "application/pdf");
+        const res = await requestDocumentUpload(profileId, "GOVT_ID", f.name, "application/pdf");
         if (res.upload_url) {
           try { await fetch(res.upload_url, { method: "PUT", body: new Blob([`dev-upload:${f.name}`]) }); } catch { /* ignore */ }
         }
@@ -285,7 +285,7 @@ export function DocumentsStep({ userId, profileId, onNext }: { userId: string; p
   );
 }
 
-export function AssessmentStep({ userId, profileId, onDone }: { userId: string; profileId: string; onDone: () => void }) {
+export function AssessmentStep({ profileId, onDone }: { profileId: string; onDone: () => void }) {
   const [attempt, setAttempt] = useState<Awaited<ReturnType<typeof startAssessment>> | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<Awaited<ReturnType<typeof submitAssessment>> | null>(null);
@@ -294,7 +294,7 @@ export function AssessmentStep({ userId, profileId, onDone }: { userId: string; 
 
   const mySubjects = useQuery({
     queryKey: ["vetting", "subjects", profileId],
-    queryFn: () => listMySubjects(userId, profileId),
+    queryFn: () => listMySubjects(profileId),
     staleTime: 60_000,
   });
 
@@ -302,7 +302,7 @@ export function AssessmentStep({ userId, profileId, onDone }: { userId: string; 
     setBusy(true);
     setError(null);
     try {
-      const a = await startAssessment(userId, profileId, subject);
+      const a = await startAssessment(profileId, subject);
       setAttempt(a);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start quiz");
@@ -317,7 +317,7 @@ export function AssessmentStep({ userId, profileId, onDone }: { userId: string; 
     setError(null);
     try {
       const inputs: AnswerInput[] = attempt.questions.map((q) => ({ question_id: q.id, chosen_index: answers[q.id] ?? 0 }));
-      const r = await submitAssessment(userId, attempt.attempt.id, inputs);
+      const r = await submitAssessment(attempt.attempt.id, inputs);
       setResult(r);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not submit quiz");

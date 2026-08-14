@@ -7,7 +7,7 @@ import { CheckoutClient } from "@/features/bookings/components/CheckoutClient";
 
 export const revalidate = 120;
 
-type Props = { params: { id: string } };
+type Props = { params: Promise<{ id: string }> };
 
 export const metadata: Metadata = buildMetadata({
   title: "Enrol — Secure Checkout",
@@ -16,7 +16,8 @@ export const metadata: Metadata = buildMetadata({
   noIndex: true,
 });
 
-export default async function CohortEnrollPage({ params }: Props) {
+export default async function CohortEnrollPage(props: Props) {
+  const params = await props.params;
   let cohort;
   try {
     cohort = await getCohortSSR(params.id);

@@ -99,7 +99,7 @@ export default function ParentDashboardPage() {
 
   const unread = useQuery({
     queryKey: ["notifications", "unread"],
-    queryFn: () => unreadCount(user?.id ?? ""),
+    queryFn: () => unreadCount(),
     enabled: !!user,
     staleTime: 15_000,
   });

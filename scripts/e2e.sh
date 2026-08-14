@@ -196,21 +196,28 @@ st=$(cat /tmp/e2e-body.json | json 'd["data"]["status"]')
 
 # ======================================================== 5. AVAILABILITY ====
 note "AVAILABILITY"
-# seeded marketplace tutor 0000…102 exists in memory mode
-c=$(req "$J_TUTOR" POST /me/availability '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","day_of_week":1,"start_time":"16:00","end_time":"17:00","is_recurring":true}')
-if [ "$c" = "200" ] || [ "$c" = "201" ]; then ok "upsert availability (HTTP $c)"; else fail "upsert availability — expected 200/201, got $c"; fi
+# G1: profile IDs resolve from the session — no fixture UUIDs. Omitting the
+# ID resolves the tutor's own profile; a foreign ID must be rejected.
+c=$(req "$J_TUTOR" POST /me/availability '{"day_of_week":1,"start_time":"16:00","end_time":"17:00","is_recurring":true}')
+if [ "$c" = "200" ] || [ "$c" = "201" ]; then ok "upsert availability (session-resolved, HTTP $c)"; else fail "upsert availability — expected 200/201, got $c"; fi
+c=$(req "$J_TUTOR" GET "/me/availability")
+assert_code "list availability (session-resolved)" 200 "$c"
+c=$(req "$J_TUTOR" GET "/me/availability?tutor_profile_id=${PROFILE_ID}")
+assert_code "list availability (own explicit id)" 200 "$c"
 c=$(req "$J_TUTOR" GET "/me/availability?tutor_profile_id=00000000-0000-0000-0000-000000000102")
-assert_code "list availability" 200 "$c"
+assert_code "foreign tutor_profile_id → 403" 403 "$c"
+c=$(req "$J_PARENT" GET "/me/availability")
+assert_code "non-tutor availability → 403" 403 "$c"
 
 # ============================================ 6. LEARNING — ASSESSMENTS ======
 note "LEARNING — ASSESSMENTS (phase 11c)"
 COHORT_ID="00000000-0000-0000-0000-00000000c010"
 A1=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
-  -d "{\"tutor_profile_id\":\"00000000-0000-0000-0000-000000000102\",\"cohort_id\":\"${COHORT_ID}\",\"title\":\"E2E Maths Quiz\",\"instructions\":\"No calculators\",\"pass_threshold\":0.5,\"questions\":[{\"question\":\"2+2?\",\"options\":[\"3\",\"4\",\"5\"],\"correct_index\":1,\"explanation\":\"2+2=4\"},{\"question\":\"Capital of Nigeria?\",\"options\":[\"Lagos\",\"Abuja\",\"Kano\"],\"correct_index\":1}]}" \
+  -d "{\"cohort_id\":\"${COHORT_ID}\",\"title\":\"E2E Maths Quiz\",\"instructions\":\"No calculators\",\"pass_threshold\":0.5,\"questions\":[{\"question\":\"2+2?\",\"options\":[\"3\",\"4\",\"5\"],\"correct_index\":1,\"explanation\":\"2+2=4\"},{\"question\":\"Capital of Nigeria?\",\"options\":[\"Lagos\",\"Abuja\",\"Kano\"],\"correct_index\":1}]}" \
   | json 'd["data"]["id"]')
-[ -n "$A1" ] && ok "tutor creates assessment" || fail "assessment create failed"
+[ -n "$A1" ] && ok "tutor creates assessment (session-resolved profile)" || fail "assessment create failed"
 A1_LEAK=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
-  -d '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","title":"Leak Check","questions":[{"question":"Q","options":["A","B"],"correct_index":0}]}' \
+  -d '{"title":"Leak Check","questions":[{"question":"Q","options":["A","B"],"correct_index":0}]}' \
   | python3 -c "import json,sys; d=json.load(sys.stdin)['data']; print(len(d['questions']) if 'questions' in d else 'n/a')")
 ok "assessment body never leaks questions (tutor view has $A1_LEAK question fields)"
 
@@ -224,8 +231,16 @@ assert_code "student lists assessments" 200 "$c"
 listed=$(cat /tmp/e2e-body.json | json 'len(d["data"])')
 [ "$listed" -ge 1 ] && ok "assessments listed ($listed)" || fail "no assessments listed"
 
+# G1: the student session's own profile id (auto-created at registration).
+MY_STUDENT_ID=$(curl -s -b "$J_STUDENT" "$BASE/auth/me/context" | json 'd["data"]["student"]["id"]')
+[ -n "$MY_STUDENT_ID" ] && ok "student profile resolved from session context" || fail "session context missing student profile"
+
 # start → questions must NOT contain the answer key
-START=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/start?student_profile_id=${STUDENT_ID}")
+# G1: the student's profile resolves from the session (no query param), and a
+# foreign student_profile_id is rejected.
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/start?student_profile_id=${STUDENT_ID}")
+assert_code "start with foreign student id → 403" 403 "$c"
+START=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/start")
 ATTEMPT_ID=$(echo "$START" | json 'd["data"]["attempt"]["id"]')
 Q1=$(echo "$START" | json 'd["data"]["questions"][0]["id"]')
 Q2=$(echo "$START" | json 'd["data"]["questions"][1]["id"]')
@@ -237,28 +252,25 @@ else
 fi
 
 # submit 1 correct + 1 wrong → auto-grade 1/2 = 50% → passed (inclusive threshold)
-c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/submit?student_profile_id=${STUDENT_ID}" \
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/submit" \
   -H 'Content-Type: application/json' \
   -d "{\"answers\":[{\"question_id\":\"${Q1}\",\"chosen_index\":1},{\"question_id\":\"${Q2}\",\"chosen_index\":0}]}")
-assert_code "submit + auto-grade" 200 "$c"
+assert_code "submit + auto-grade (session-resolved)" 200 "$c"
 res=$(cat /tmp/e2e-body.json)
 [ "$(echo "$res" | json 'd["data"]["correct"]')" = "1" ] && ok "graded 1 correct" || fail "expected 1 correct"
 [ "$(echo "$res" | json 'd["data"]["total"]')" = "2" ] && ok "total = 2" || fail "total ≠ 2"
 [ "$(echo "$res" | json 'd["data"]["passed"]')" = "True" ] && ok "passed at 50% (inclusive)" || fail "pass logic wrong"
 
-c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/submit?student_profile_id=${STUDENT_ID}" \
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A1}/submit" \
   -H 'Content-Type: application/json' -d "{\"answers\":[{\"question_id\":\"${Q1}\",\"chosen_index\":1}]}")
 assert_code "resubmit → 409 conflict" 409 "$c"
 
-# cross-assessment rejection: second assessment, its question ID used on A1's attempt…(no attempt exists) →
-# build fresh attempt on A1 with a question from a DIFFERENT assessment
+# cross-assessment rejection: submit a question ID from a DIFFERENT assessment
 A2=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
-  -d '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","title":"E2E Other Quiz","questions":[{"question":"2+3?","options":["5","6","7"],"correct_index":0}]}' \
+  -d '{"title":"E2E Other Quiz","questions":[{"question":"2+3?","options":["5","6","7"],"correct_index":0}]}' \
   | json 'd["data"]["id"]')
-Q2A=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/start?student_profile_id=00000000-0000-0000-0000-000000000001" \
-  | json 'd["data"]["questions"][0]["id"]')
-ST2=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/start?student_profile_id=${STUDENT_ID}" | json 'd["data"]["attempt"]["id"]')
-c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/submit?student_profile_id=${STUDENT_ID}" \
+ST2=$(curl -s -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/start" | json 'd["data"]["attempt"]["id"]')
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X POST "$BASE/learning/assessments/${A2}/submit" \
   -H 'Content-Type: application/json' -d "{\"answers\":[{\"question_id\":\"${Q1}\",\"chosen_index\":0}]}")
 assert_code "cross-assessment answer → 400" 400 "$c"
 
@@ -266,14 +278,20 @@ assert_code "cross-assessment answer → 400" 400 "$c"
 note "LEARNING — PROGRESS REPORTS"
 c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_TUTOR" -X POST "$BASE/learning/progress-reports" \
   -H 'Content-Type: application/json' \
-  -d "{\"student_profile_id\":\"${STUDENT_ID}\",\"tutor_profile_id\":\"00000000-0000-0000-0000-000000000102\",\"period_start\":\"2026-08-01\",\"period_end\":\"2026-08-11\",\"strengths\":\"Algebra\",\"weaknesses\":\"Geometry\",\"recommendations\":\"Daily practice\",\"overall_rating\":4}")
+  -d "{\"student_profile_id\":\"${MY_STUDENT_ID}\",\"tutor_profile_id\":\"${PROFILE_ID}\",\"period_start\":\"2026-08-01\",\"period_end\":\"2026-08-11\",\"strengths\":\"Algebra\",\"weaknesses\":\"Geometry\",\"recommendations\":\"Daily practice\",\"overall_rating\":4}")
 assert_code "tutor writes progress report" 201 "$c"
 
-c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/learning/progress-reports?student_profile_id=${STUDENT_ID}")
-assert_code "student lists reports" 200 "$c"
+# G1: tutor cannot write a report under another tutor's profile id
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_TUTOR" -X POST "$BASE/learning/progress-reports" \
+  -H 'Content-Type: application/json' \
+  -d "{\"student_profile_id\":\"${MY_STUDENT_ID}\",\"tutor_profile_id\":\"00000000-0000-0000-0000-000000000102\",\"period_start\":\"2026-08-01\",\"period_end\":\"2026-08-11\"}")
+assert_code "report as foreign tutor → 403" 403 "$c"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/learning/progress-reports")
+assert_code "student lists reports (session-resolved)" 200 "$c"
 [ "$(cat /tmp/e2e-body.json | json 'len(d["data"])')" = "1" ] && ok "student sees the report" || fail "student report count ≠ 1"
 
-c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_TUTOR" -X GET "$BASE/learning/progress-reports?tutor_profile_id=00000000-0000-0000-0000-000000000102")
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_TUTOR" -X GET "$BASE/learning/progress-reports?tutor_profile_id=${PROFILE_ID}")
 assert_code "tutor-scoped list" 200 "$c"
 [ "$(cat /tmp/e2e-body.json | json 'len(d["data"])')" -ge 1 ] && ok "tutor sees reports" || fail "tutor report count = 0"
 
@@ -346,7 +364,7 @@ c=$(req "$J_TUTOR" POST /cohorts/00000000-0000-0000-0000-00000000c010/assignment
 assert_code "lms create assignment" 201 "$c"
 c=$(req "$J_TUTOR" POST /cohorts/00000000-0000-0000-0000-00000000c010/resources '{"title":"e2e resource","file_url":"https://example.com/notes.pdf"}')
 assert_code "lms create resource" 201 "$c"
-c=$(req "$J_TUTOR" POST /learning/assessments '{"tutor_profile_id":"00000000-0000-0000-0000-000000000102","cohort_id":"00000000-0000-0000-0000-00000000c010","title":"e2e quiz","pass_threshold":70,"questions":[{"question":"1+1?","options":["2","3","4"],"correct_index":0}]}')
+c=$(req "$J_TUTOR" POST /learning/assessments '{"cohort_id":"00000000-0000-0000-0000-00000000c010","title":"e2e quiz","pass_threshold":70,"questions":[{"question":"1+1?","options":["2","3","4"],"correct_index":0}]}')
 assert_code "lms create quiz" 201 "$c"
 c=$(req "$J_TUTOR" GET /cohorts/00000000-0000-0000-0000-00000000c010/enrollments)
 assert_code "lms roster" 200 "$c"
@@ -465,8 +483,11 @@ assert_code "refund order (admin)" 200 "$c"
 c=$(req "$J_STUDENT" GET "/admin/orders?page=1")
 assert_code "admin orders (student) → 403" 403 "$c"
 
+c=$(req "$J_TUTOR" GET "/me/earnings")
+assert_code "tutor earnings (session-resolved)" 200 "$c"
 c=$(req "$J_TUTOR" GET "/me/earnings?tutor_profile_id=00000000-0000-0000-0000-000000000102")
-assert_code "tutor earnings" 200 "$c"
+assert_code "foreign earnings id → 403" 403 "$c"
+c=$(req "$J_TUTOR" GET "/me/earnings")
 grep -q '"held_total"' /tmp/e2e-body.json && ok "earnings fields present" || fail "earnings fields missing"
 
 c=$(req "$J_LOGOUT" POST /auth/google/exchange '{"code":"bad","state":"bad"}')

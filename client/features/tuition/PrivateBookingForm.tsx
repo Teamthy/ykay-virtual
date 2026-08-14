@@ -7,16 +7,12 @@ import { toast } from "sonner";
 import { INPUT_CLS } from "@/components/ui/password-input";
 import { createPrivateBooking, initiatePayment } from "@/features/bookings/api/create";
 import { listLearners } from "@/features/onboarding/api";
+import { listSubjects } from "@/features/subjects/api/list";
 import { useSession } from "@/hooks/useSession";
 
 // Direct private-tuition booking (P1): pick subject/sessions/duration and
 // pay via the escrow-protected order flow. Works for the tutor's subjects.
-
-const SUBJECT_IDS: Record<string, string> = {
-  Mathematics: "00000000-0000-0000-0000-00000000c001",
-  English: "00000000-0000-0000-0000-00000000c002",
-  Physics: "00000000-0000-0000-0000-00000000c003",
-};
+// G1: subject IDs come from the live catalogue — no fixture UUIDs.
 
 export function PrivateBookingForm({
   tutorProfileId,
@@ -34,6 +30,11 @@ export function PrivateBookingForm({
     queryFn: listLearners,
     enabled: !!user,
     staleTime: 30_000,
+  });
+  const catalogue = useQuery({
+    queryKey: ["subjects", "catalogue"],
+    queryFn: () => listSubjects(),
+    staleTime: 300_000,
   });
 
   const [subject, setSubject] = useState(subjects[0] ?? "Mathematics");
@@ -62,7 +63,10 @@ export function PrivateBookingForm({
   }
 
   const submit = async () => {
-    if (!subject || !studentId || sessions < 1 || price <= 0) {
+    const subjectId = (catalogue.data?.data ?? []).find(
+      (s) => s.name.toLowerCase() === subject.toLowerCase() || s.slug === subject.toLowerCase()
+    )?.id;
+    if (!subject || !subjectId || !studentId || sessions < 1 || price <= 0) {
       toast.error("Complete all fields — subject, learner, sessions and price.");
       return;
     }
@@ -73,7 +77,7 @@ export function PrivateBookingForm({
         parent_user_id: user.id,
         student_id: studentId,
         tutor_profile_id: tutorProfileId,
-        subject_id: SUBJECT_IDS[subject] ?? SUBJECT_IDS.Mathematics,
+        subject_id: subjectId,
         total_sessions: sessions,
         session_duration_minutes: duration,
         price_per_session: price,

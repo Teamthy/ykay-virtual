@@ -68,6 +68,10 @@ func toOrderDTO(orderID uuid.UUID, status string, subtotal, discount, total floa
 }
 
 func (h *BookingHandler) Create(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
 	var req createBookingRequest
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -76,10 +80,20 @@ func (h *BookingHandler) Create(w http.ResponseWriter, r *http.Request) {
 	reqID := requestIDString(r)
 	traceID := reqID
 
-	parentID, err := uuid.Parse(req.ParentUserID)
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("parent_user_id must be a valid UUID", nil))
-		return
+	// G1: the paying parent is ALWAYS the session user. A body-supplied
+	// parent_user_id is only allowed when it matches (or the caller is admin).
+	parentID := actor.UserID
+	if req.ParentUserID != "" {
+		supplied, err := uuid.Parse(req.ParentUserID)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("parent_user_id must be a valid UUID", nil))
+			return
+		}
+		if supplied != actor.UserID && !actor.IsAdmin {
+			WriteAppError(w, pkg.Forbidden("parent_user_id does not match the authenticated user"))
+			return
+		}
+		parentID = supplied
 	}
 	studentID, err := uuid.Parse(req.StudentID)
 	if err != nil {

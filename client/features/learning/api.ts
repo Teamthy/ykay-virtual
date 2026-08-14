@@ -105,9 +105,10 @@ export async function listAssessments(cohortId?: string) {
   return res.data ?? [];
 }
 
-export async function startAssessment(assessmentId: string, studentProfileId: string) {
+export async function startAssessment(assessmentId: string, studentProfileId?: string) {
+  const q = studentProfileId ? `?student_profile_id=${studentProfileId}` : "";
   const res = await apiFetch<AssessmentStart>(
-    `/learning/assessments/${assessmentId}/start?student_profile_id=${studentProfileId}`,
+    `/learning/assessments/${assessmentId}/start${q}`,
     { method: "POST" }
   );
   return res.data;
@@ -115,9 +116,10 @@ export async function startAssessment(assessmentId: string, studentProfileId: st
 
 export type AnswerPayload = { question_id: string; chosen_index: number };
 
-export async function submitAssessment(assessmentId: string, studentProfileId: string, answers: AnswerPayload[]) {
+export async function submitAssessment(assessmentId: string, studentProfileId: string | undefined, answers: AnswerPayload[]) {
+  const q = studentProfileId ? `?student_profile_id=${studentProfileId}` : "";
   const res = await apiFetch<AssessmentResult>(
-    `/learning/assessments/${assessmentId}/submit?student_profile_id=${studentProfileId}`,
+    `/learning/assessments/${assessmentId}/submit${q}`,
     { method: "POST", body: JSON.stringify({ answers }) }
   );
   return res.data;
@@ -142,7 +144,7 @@ export async function gradeSubmission(submissionId: string, score: number, feedb
 
 export type ReportInput = {
   student_profile_id: string;
-  tutor_profile_id: string;
+  tutor_profile_id?: string;
   period_start: string;
   period_end: string;
   strengths?: string;

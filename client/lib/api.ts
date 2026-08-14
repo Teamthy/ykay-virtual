@@ -1,7 +1,5 @@
 "use client";
 
-import { v4 as uuidv4 } from "uuid";
-
 // Minimal client per AGENTS.md: trace-id header, response envelope handling.
 //
 // Browser fetches use a RELATIVE /api/v1 base so the request goes through the
@@ -36,7 +34,11 @@ export type ErrorEnvelope = {
 
 function getTraceId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
-  return uuidv4 ? uuidv4() : Math.random().toString(36).slice(2);
+  // RFC4122-ish fallback for very old runtimes (no external dependency).
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Envelope<T>> {
