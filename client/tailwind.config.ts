@@ -34,8 +34,8 @@ const config: Config = {
           800: "#181818",
           700: "#333333",
           600: "#555555",
-          500: "#777777",
-          400: "#999999",
+          500: "#6B6B6B",       // ≥4.5:1 on cream/white (WCAG AA body text)
+          400: "#737373",       // ≥4.5:1 on cream/white (WCAG AA secondary)
           300: "#B8B2A6",
           200: "#E8E3D8",       // border
           100: "#F0ECE3",       // border-light

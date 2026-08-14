@@ -82,3 +82,16 @@ ON CONFLICT (id) DO NOTHING;
 -- (Assessment questions are seeded earlier via the deterministic Mathematics
 -- bank — the legacy assessment_id-based insert was removed when the schema
 -- moved to subject-scoped questions.)
+
+-- Consented + published testimonials (G5.3 semantics: consent evidence
+-- recorded at creation) — the web carousel consumes these through the
+-- consent-gated /content/testimonials endpoint.
+INSERT INTO testimonials (author_name, author_location, body, rating, is_featured, consent_given, is_public, consent_source, consent_date, published_at)
+VALUES
+  ('Mrs. Soetan', 'Lekki, Lagos',
+   'My daughter scored among the highest in her common entrance exam into a top school and got admitted the same day!', 5, TRUE, TRUE, TRUE,
+   'seed-consent-form-v1', NOW(), NOW()),
+  ('Mrs. Alice', 'Uyo, AkwaIbom',
+   'The lessons have been very productive. My son''s grades have really improved, and even his school teachers commend his new confidence.', 5, TRUE, TRUE, TRUE,
+   'seed-consent-form-v1', NOW(), NOW())
+ON CONFLICT DO NOTHING;

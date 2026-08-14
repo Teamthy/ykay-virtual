@@ -183,10 +183,11 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 	if err != nil {
 		return nil, err
 	}
-	defer uow.Rollback()
+	// Rollback is a no-op after a successful Commit (and on the memory UoW).
+	defer func() { uow.Rollback() }()
 
 	// Idempotent insert: UNIQUE provider_reference. A concurrent duplicate
-	// delivery hits ErrAlreadyExists and we just replay the existing state.
+	// delivery hits ErrAlreadyExists and we replay the existing state.
 	webhook := &payment.PaymentWebhook{
 		Provider:          providerName,
 		ProviderReference: reference,
@@ -194,18 +195,26 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 		SignatureValid:    valid,
 	}
 	if err := uow.Webhooks().Create(ctx, webhook); err != nil {
-		if errors.Is(err, domain.ErrAlreadyExists) {
-			existing, gerr := uow.Webhooks().GetByProviderReference(ctx, providerName, reference)
-			if gerr != nil {
-				return nil, gerr
-			}
-			if existing.Processed {
-				return &WebhookResult{Processed: true, Duplicate: true, Reason: "already_processed"}, nil
-			}
-			webhook = existing // unprocessed duplicate: continue processing
-		} else {
+		if !errors.Is(err, domain.ErrAlreadyExists) {
 			return nil, err
 		}
+		// Duplicate delivery: the failed INSERT aborted this transaction.
+		// Discard it and continue on a FRESH transaction reading the
+		// winner's row (a lookup on the aborted tx returns
+		// "current transaction is aborted" — load-test verified).
+		uow.Rollback()
+		uow, err = s.uows.Begin(ctx)
+		if err != nil {
+			return nil, err
+		}
+		existing, gerr := uow.Webhooks().GetByProviderReference(ctx, providerName, reference)
+		if gerr != nil {
+			return nil, gerr
+		}
+		if existing.Processed {
+			return &WebhookResult{Processed: true, Duplicate: true, Reason: "already_processed"}, nil
+		}
+		webhook = existing // unprocessed duplicate: continue processing
 	}
 
 	if !valid {

@@ -156,33 +156,9 @@ export const accordionItems = [
   { num: "5", title: "Progress Reports & Reviews", content: "Detailed reports after every lesson so you always know exactly how your child is performing and where to focus next." },
 ];
 
-export const testimonials = [
-  {
-    text: "My daughter scored among the highest in her common entrance exam into a top school and got admitted the same day! It's been very gratifying to see her improve under her tutor, to the point where she now contends with the top students in class.",
-    name: "Mrs. Soetan",
-    location: "Lekki, Lagos",
-  },
-  {
-    text: "The lessons have been very productive. My son's grades have really improved, and even his school teachers commend his new confidence. He now answers questions in class, and scores higher than most of his classmates.",
-    name: "Mrs. Alice",
-    location: "Uyo, AkwaIbom",
-  },
-  {
-    text: "My son's tutor, Tobi, is very detailed, professional and at the same time gentle with the kids. He takes his time to explain in detail and my kids' results have improved.",
-    name: "Mrs Ayowunmi",
-    location: "Berger, Lagos",
-  },
-  {
-    text: "Mr. Wisdom who is teaching my son is very knowledgeable in his field. He is also very patient and has been able to make my son always look forward to having learning sessions with him.",
-    name: "Pamilerin",
-    location: "Wuse, Abuja",
-  },
-  {
-    text: "Tosin is very professional. He knows how to get the lessons across to be effective. My little boy has started reading 2 and 3 letter words and is doing very well with numeracy.",
-    name: "Daniel",
-    location: "Ajah, Lagos",
-  },
-];
+// Fixture testimonials removed (G5.3): the homepage carousel and the
+// TestimonialsSection now render only consent-gated rows from
+// /content/testimonials.
 
 export const examCards = [
   { title: "IELTS Prep" },

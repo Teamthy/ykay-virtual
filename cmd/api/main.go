@@ -361,6 +361,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			seedMemoryCatalogue(store)
 			seedDemoUsers(store, getEnvDefault("DEMO_PASSWORD", "password123"))
 			seedLMSDemo(store)
+			seedConsentedTestimonials(store)
 		}
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
@@ -493,6 +494,38 @@ func (a sessionResolverAdapter) Me(ctx context.Context, tokenHash string) (uuid.
 }
 
 var _ middleware.SessionResolver = (*sessionResolverAdapter)(nil)
+
+// seedConsentedTestimonials — dev-mode testimonials that MIRROR PRODUCTION
+// RULES: every row has consent_given + a consent source recorded, and only
+// then is it published (G5.3). The web carousel consumes these through the
+// consent-gated /content/testimonials endpoint — identical data path to prod.
+func seedConsentedTestimonials(store *memory.MemoryStore) {
+	now := time.Now()
+	store.Testimonials.Seed(content.Testimonial{
+		AuthorName: "Mrs. Soetan", AuthorLocation: strPtr("Lekki, Lagos"),
+		Body:   "My daughter scored among the highest in her common entrance exam into a top school and got admitted the same day! It's been very gratifying to see her improve under her tutor, to the point where she now contends with the top students in class.",
+		Rating: intPtr(5), IsFeatured: true, ConsentGiven: true, IsPublic: true,
+		ConsentSource: strPtr("demo-consent-form-v1"), ConsentDate: &now,
+		PublishedAt: &now, CreatedAt: now,
+	})
+	store.Testimonials.Seed(content.Testimonial{
+		AuthorName: "Mrs. Alice", AuthorLocation: strPtr("Uyo, AkwaIbom"),
+		Body:   "The lessons have been very productive. My son's grades have really improved, and even his school teachers commend his new confidence. He now answers questions in class, and scores higher than most of his classmates.",
+		Rating: intPtr(5), IsFeatured: true, ConsentGiven: true, IsPublic: true,
+		ConsentSource: strPtr("demo-consent-form-v1"), ConsentDate: &now,
+		PublishedAt: &now, CreatedAt: now,
+	})
+	store.Testimonials.Seed(content.Testimonial{
+		AuthorName: "Pamilerin", AuthorLocation: strPtr("Wuse, Abuja"),
+		Body:   "Mr. Wisdom who is teaching my son is very knowledgeable in his field. He is also very patient and has been able to make my son always look forward to having learning sessions with him.",
+		Rating: intPtr(5), IsFeatured: false, ConsentGiven: true, IsPublic: true,
+		ConsentSource: strPtr("demo-consent-form-v1"), ConsentDate: &now,
+		PublishedAt: &now, CreatedAt: now,
+	})
+}
+
+func strPtr(s string) *string { return &s }
+func intPtr(i int) *int       { return &i }
 
 // seedMemoryTutors — explicit local-development fixture data (matches the frontend mock
 // tutors chinasa/oluwatobi) so reviews, search and profiles work without

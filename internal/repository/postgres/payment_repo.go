@@ -496,10 +496,20 @@ func (r *WalletRepo) Debit(ctx context.Context, userID uuid.UUID, amount float64
 
 var _ payment.WalletRepository = (*WalletRepo)(nil)
 
+// isUniqueViolation — recognizes Postgres 23505 (unique_violation) across
+// both driver shapes: pgx-style errors with a Code() method AND lib/pq
+// errors with a SQLState() method (latent bug: lib/pq's *pq.Error only has
+// SQLState, so duplicate webhooks/orders used to surface as raw 500s).
 func isUniqueViolation(err error) bool {
+	var code string
 	var pgErr interface{ Code() string }
 	if errors.As(err, &pgErr) {
-		return pgErr.Code() == "23505"
+		code = pgErr.Code()
+	} else {
+		var sqlState interface{ SQLState() string }
+		if errors.As(err, &sqlState) {
+			code = sqlState.SQLState()
+		}
 	}
-	return false
+	return code == "23505"
 }

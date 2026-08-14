@@ -8,12 +8,16 @@ plus parent/payment support. **Status: planning — execution next tranche.**
 
 | Screen | Has | Missing (standard-LMS gap) |
 |---|---|---|
-| `index.tsx` / `home.tsx` | dashboard shell | real session data everywhere, learner switcher |
-| `lms.tsx`, `lms/[cohortId].tsx` | session-resolved lessons (G1.2) | quizzes, assignments, resources, attendance, progress per learner |
-| `chat.tsx` | chat UI | thread list, escalation, unread badges |
-| `login.tsx` | auth | magic-link flow, verification screen, forgot password |
-| `onboarding.tsx` | role select | learner creation flow, parent↔learner linking UI |
-| `_layout.tsx` | navigation | deep links for notifications |
+| `index.tsx` / `home.tsx` | session greeting, unread badge, hub nav | learner switcher |
+| `lms.tsx`, `lms/[cohortId].tsx` | session-resolved lessons, resources, assignments, attendance | — |
+| `quizzes.tsx` + `quizzes/[assessmentId].tsx` | ✅ NEW (Phase 48): quiz list + full player (start/submit/result) | timer |
+| `progress.tsx` | ✅ NEW (Phase 48): attendance gauge + tutor reports | — |
+| `notifications.tsx` | ✅ NEW (Phase 48): centre + mark read/read-all | — |
+| `account.tsx` | ✅ NEW (Phase 48): profile, learners, logout | — |
+| `chat.tsx` | chat UI | thread list, unread badges |
+| `login.tsx` | auth + push registration | magic-link flow, forgot password |
+| `onboarding.tsx` | role select | learner creation flow |
+| `_layout.tsx` | all routes registered | deep links for notifications |
 
 ## Target screen map (standard LMS parity)
 

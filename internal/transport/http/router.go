@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -34,7 +35,9 @@ func NewRouter(version string, handlers *Handlers, sessionAuth func(http.Handler
 // liveness/readiness endpoints and optional frame blocking (production).
 func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string, sessionAuth func(http.Handler) http.Handler, readyCheck func() error, blockFrames bool) *Router {
 	mux := http.NewServeMux()
-	rl := middleware.NewRateLimiter(300, time.Minute)    // sliding window: 300 req/min default
+	// RATE_LIMIT_PER_MINUTE tunes the global per-IP window (default 300;
+	// load tests raise it to measure raw throughput — see scripts/loadtest.sh).
+	rl := middleware.NewRateLimiter(rateLimitPerMinute(), time.Minute)
 	authRL := middleware.NewRateLimiter(40, time.Minute) // auth endpoints: 40 req/min per IP (SEC-005)
 	authRate := func(h http.HandlerFunc) http.HandlerFunc { return authRL.Middleware(h).ServeHTTP }
 
@@ -321,4 +324,15 @@ type Handlers struct {
 	Portal         *PortalHandler
 	Learning       *LearningHandler
 	Objects        *ObjectHandler
+}
+
+// rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
+func rateLimitPerMinute() int {
+	if v := os.Getenv("RATE_LIMIT_PER_MINUTE"); v != "" {
+		var n int
+		if _, err := fmt.Sscanf(v, "%d", &n); err == nil && n > 0 {
+			return n
+		}
+	}
+	return 300
 }

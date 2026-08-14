@@ -1,5 +1,7 @@
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
 
 // NUVORA mobile API client — talks to the same /api/v1 backend as the web
 // app. The web uses httpOnly session cookies; the native app uses a bearer
@@ -28,9 +30,6 @@ export async function setToken(token: string | null): Promise<void> {
 // to the device registry. Best-effort — notifications are progressive.
 export async function registerDevice(): Promise<void> {
   try {
-    const Notifications = await import("expo-notifications");
-    const { default: Platform } = await import("react-native");
-    const { default: Constants } = await import("expo-constants");
     if (!Constants.isDevice) return; // push tokens are device-only
     const perms = await Notifications.requestPermissionsAsync();
     if (!perms.granted) return;
