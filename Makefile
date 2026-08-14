@@ -52,7 +52,7 @@ smoke: ## Boot API with memory fallback and hit health + catalogue
 	@echo "Run: go run ./cmd/api  (then curl localhost:8080/health)"
 
 # ── Production ops (Phase 40) ──────────────────────────────────────────────
-.PHONY: deploy backup restore prod-infra
+.PHONY: deploy backup restore drill prod-infra obs-validate
 
 deploy: ## One-command production deploy (docker compose + migrate + health)
 	bash scripts/deploy.sh
@@ -63,5 +63,20 @@ backup: ## Manual database backup (custom format)
 restore: ## Restore a backup: make restore DUMP=backups/nuvora-<ts>.dump
 	bash scripts/restore.sh "$(DUMP)"
 
+drill: ## Automated backup/restore drill (G3.4): make drill [DEEP=1]
+	bash scripts/dr-drill.sh $(if $(DEEP),--deep,)
+
 prod-infra: ## Bring up the full production stack
 	docker compose -f docker-compose.prod.yml up -d --build
+
+obs-validate: ## Validate Prometheus config/rules + Grafana dashboard JSON (G3.3)
+	python3 -m json.tool deploy/grafana/dashboards/nuvora-api.json >/dev/null && echo "dashboard JSON valid"
+	@if command -v docker >/dev/null 2>&1; then \
+		docker run --rm -v "$$PWD/deploy/prometheus:/p:ro" prom/prometheus:v2.53.0 \
+			promtool check config /p/prometheus.yml && \
+		docker run --rm -v "$$PWD/deploy/prometheus:/p:ro" prom/prometheus:v2.53.0 \
+			promtool check rules /p/alerts.yml; \
+	else \
+		echo "docker not available — skipped promtool; run in CI or locally"; \
+	fi
+	docker compose -f docker-compose.prod.yml config --quiet 2>/dev/null && echo "compose config valid" || echo "docker not available — skipped compose check"

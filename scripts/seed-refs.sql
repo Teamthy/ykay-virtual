@@ -51,7 +51,7 @@ ON CONFLICT (slug) DO UPDATE SET id = EXCLUDED.id;
 
 -- Lessons for c010 (3 sessions)
 INSERT INTO lessons (id, cohort_id, tutor_profile_id, title, description, start_at, end_at, timezone, status)
-SELECT g.id, '00000000-0000-0000-0000-00000000c010', '00000000-0000-0000-0000-000000000102',
+SELECT g.id::uuid, '00000000-0000-0000-0000-00000000c010', '00000000-0000-0000-0000-000000000102',
        g.title, 'Live session',
        CURRENT_TIMESTAMP + (25 + g.i * 7) * INTERVAL '1 day',
        CURRENT_TIMESTAMP + (25 + g.i * 7) * INTERVAL '1 day' + INTERVAL '90 minutes',
@@ -79,12 +79,6 @@ VALUES ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-0000000
         '00000000-0000-0000-0000-000000000102', 'Week 1 diagnostic quiz',
         'You have 10 minutes. Passing mark: 70%.', 70, 'PUBLISHED', NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO assessment_questions (id, assessment_id, question, options, correct_index, sort_order)
-SELECT g.id, '00000000-0000-0000-0000-000000000031', g.q, g.o, 1, g.i
-FROM (VALUES
-  ('00000000-0000-0000-0000-000000000041', 0, 'What is 7 × 6?', ARRAY['36','42','48','54']),
-  ('00000000-0000-0000-0000-000000000042', 1, 'Solve for x: 2x + 4 = 12', ARRAY['2','4','6','8']),
-  ('00000000-0000-0000-0000-000000000043', 2, 'What is 15% of 200?', ARRAY['20','30','35','40'])
-) AS g(id, i, q, o)
-ON CONFLICT (id) DO NOTHING;
+-- (Assessment questions are seeded earlier via the deterministic Mathematics
+-- bank — the legacy assessment_id-based insert was removed when the schema
+-- moved to subject-scoped questions.)

@@ -1,0 +1,134 @@
+# NUVORA — Prometheus alerting rules (G3.3).
+#
+# Severities: "page" = wake someone (SLO broken or money/access at risk),
+# "ticket" = triage next working slot. Every alert has a runbook reference:
+# docs/OPS_MONITORING.md (diagnosis) and docs/DR_RUNBOOK.md (restore drills).
+groups:
+  - name: nuvora-availability
+    rules:
+      - alert: NuvoraApiDown
+        expr: up{job="nuvora-api"} == 0
+        for: 2m
+        labels:
+          severity: page
+        annotations:
+          summary: "NUVORA API unreachable for 2 minutes"
+          description: "Prometheus cannot scrape {{ $labels.instance }}. Check docker compose ps, api logs and the proxy in front of web:3000."
+          runbook: "docs/OPS_MONITORING.md#api-down"
+
+      - alert: NuvoraHigh5xxRate
+        expr: |
+          sum(rate(nuvora_http_requests_total{code=~"5.."}[5m]))
+            / clamp_min(sum(rate(nuvora_http_requests_total[5m])), 0.001) > 0.05
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: ">5% of API requests are 5xx ({{ $value | humanizePercentage }})"
+          description: "Sustained server errors. Correlate with deploys, DB/Redis health and the recover middleware logs."
+          runbook: "docs/OPS_MONITORING.md#high-5xx"
+
+      - alert: NuvoraHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(nuvora_http_request_duration_seconds_bucket[10m])) by (le)) > 1
+        for: 10m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "API p95 latency above 1s for 10 minutes"
+          description: "p95 = {{ $value }}s. Check DB slow queries, Redis latency and OTel traces (Tempo) for the slowest routes."
+          runbook: "docs/OPS_MONITORING.md#high-latency"
+
+  - name: nuvora-jobs
+    rules:
+      - alert: NuvoraQueueBacklog
+        expr: nuvora_queue_depth{state="ready"} > 100
+        for: 15m
+        labels:
+          severity: page
+        annotations:
+          summary: "Job queue backlog: {{ $value }} ready jobs on backend {{ $labels.backend }}"
+          description: "Workers are not keeping up (or the worker service is down — check up{job=\"nuvora-worker\"})."
+          runbook: "docs/OPS_MONITORING.md#queue-backlog"
+
+      - alert: NuvoraDeadLetterBuildup
+        expr: nuvora_queue_depth{state="dead"} > 10
+        for: 15m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $value }} jobs dead-lettered on backend {{ $labels.backend }}"
+          description: "Jobs exhausted retries. Inspect with queue DeadLetters and replay/fix the handler before data drift (payouts, reminders)."
+          runbook: "docs/OPS_MONITORING.md#dead-letters"
+
+      - alert: NuvoraJobErrorSpike
+        expr: sum(rate(nuvora_jobs_retried_total[15m])) > 0.1
+        for: 15m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "Elevated job retry rate ({{ $value }}/s)"
+          description: "Transient provider errors usually — but sustained retries mean a broken integration (email/SMS/payouts)."
+          runbook: "docs/OPS_MONITORING.md#job-errors"
+
+  - name: nuvora-crons
+    rules:
+      # expire_stale_booking_holds runs every 15m → stale after 2h.
+      - alert: NuvoraCronStale_Holds
+        expr: time() - nuvora_worker_cron_last_success_timestamp{cron="expire_stale_booking_holds"} > 7200
+        for: 15m
+        labels:
+          severity: page
+        annotations:
+          summary: "Booking-hold expiry cron has not succeeded for over 2 hours"
+          description: "Stale escrow holds stop being released — bookings and tutor capacity will drift."
+          runbook: "docs/OPS_MONITORING.md#stale-cron"
+
+      # process_weekly_tutor_payouts runs every 7d → stale after 8d.
+      - alert: NuvoraCronStale_Payouts
+        expr: time() - nuvora_worker_cron_last_success_timestamp{cron="process_weekly_tutor_payouts"} > 691200
+        for: 1h
+        labels:
+          severity: page
+        annotations:
+          summary: "Tutor payout cron has not succeeded for over 8 days"
+          description: "Tutors are not being paid. Do not run payouts manually without checking each payout's ledger state first."
+          runbook: "docs/OPS_MONITORING.md#stale-cron"
+
+      # compute_tutor_ranking_score runs every 24h → stale after 30h.
+      - alert: NuvoraCronStale_Ranking
+        expr: time() - nuvora_worker_cron_last_success_timestamp{cron="compute_tutor_ranking_score"} > 108000
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: "Tutor ranking recompute has not succeeded for over 30 hours"
+          description: "Search ordering drifts until the next successful run."
+          runbook: "docs/OPS_MONITORING.md#stale-cron"
+
+  - name: nuvora-data-protection
+    rules:
+      - alert: NuvoraBackupStale
+        expr: |
+          (time() - nuvora_backup_last_success_timestamp > 93600) or
+          (nuvora_backup_last_success_timestamp == 0)
+        for: 30m
+        labels:
+          severity: page
+        annotations:
+          summary: "No successful database backup for over 26 hours"
+          description: "RPO is at risk (target ≤24h). Check the backup service logs and scripts/backup.sh output, then run the DR drill."
+          runbook: "docs/DR_RUNBOOK.md#backup-failure"
+
+      - alert: NuvoraDrillOverdue
+        expr: |
+          (time() - nuvora_dr_drill_last_success_timestamp > 691200) or
+          (nuvora_dr_drill_last_success_timestamp == 0)
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: "No successful restore drill for over 8 days"
+          description: "Weekly drill required (docs/DR_RUNBOOK.md). Untested backups are not backups."
+          runbook: "docs/DR_RUNBOOK.md#drill-schedule"

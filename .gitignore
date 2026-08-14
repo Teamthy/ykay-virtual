@@ -20,3 +20,6 @@ legacy/server/.env
 # Production secrets + local backups
 .env.production
 backups/
+
+# Prometheus textfile heartbeats (backup/drill)
+metrics-textfile/

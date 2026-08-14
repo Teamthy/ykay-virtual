@@ -115,6 +115,7 @@ func main() {
 	ctx := context.Background()
 	shutdownTracer := telemetry.InitTracer(ctx, cfg.OtelEndpoint)
 	defer shutdownTracer()
+	telemetry.DefaultMetrics().MarkBuild(Version)
 
 	// --- Cache: Redis real → InMemory fallback (AGENTS.md) ---
 	cacheBackend := setupCache(ctx, cfg.RedisURL)

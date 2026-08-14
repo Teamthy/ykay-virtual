@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,6 +21,7 @@ import (
 	"ykay-virtual/internal/repository/postgres"
 	"ykay-virtual/internal/service"
 	"ykay-virtual/internal/storage"
+	"ykay-virtual/internal/telemetry"
 	"ykay-virtual/internal/worker"
 
 	goredis "github.com/redis/go-redis/v9"
@@ -113,11 +115,17 @@ func main() {
 
 	// Run once at boot so restarts immediately recover stale holds + attempts.
 	go func() {
-		if n, err := paymentSvc.ExpireStaleHolds(ctx, 200); err == nil && n > 0 {
-			log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
+		if _, err := paymentSvc.ExpireStaleHolds(ctx, 200); err != nil {
+			log.Printf("cron[expire_stale_booking_holds] boot error: %v", err)
+			telemetry.CronRun("expire_stale_booking_holds", false)
+		} else {
+			telemetry.CronRun("expire_stale_booking_holds", true)
 		}
-		if n, err := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); err == nil && n > 0 {
-			log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
+		if _, err := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); err != nil {
+			log.Printf("cron[expire_stale_learning_attempts] boot error: %v", err)
+			telemetry.CronRun("expire_stale_learning_attempts", false)
+		} else {
+			telemetry.CronRun("expire_stale_learning_attempts", true)
 		}
 	}()
 
@@ -130,12 +138,18 @@ func main() {
 				n, err := paymentSvc.ExpireStaleHolds(ctx, 200)
 				if err != nil {
 					log.Printf("cron[expire_stale_booking_holds] error: %v", err)
-					continue
+					telemetry.CronRun("expire_stale_booking_holds", false)
+				} else {
+					telemetry.CronRun("expire_stale_booking_holds", true)
 				}
 				if n, aerr := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); aerr != nil {
 					log.Printf("cron[expire_stale_learning_attempts] error: %v", aerr)
-				} else if n > 0 {
-					log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
+					telemetry.CronRun("expire_stale_learning_attempts", false)
+				} else {
+					telemetry.CronRun("expire_stale_learning_attempts", true)
+					if n > 0 {
+						log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
+					}
 				}
 				if n > 0 {
 					log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
@@ -144,19 +158,32 @@ func main() {
 				n, err := paymentSvc.PayoutSvc.ProcessPendingPayouts(ctx, 200)
 				if err != nil {
 					log.Printf("cron[process_weekly_tutor_payouts] error: %v", err)
+					telemetry.CronRun("process_weekly_tutor_payouts", false)
 					continue
 				}
+				telemetry.CronRun("process_weekly_tutor_payouts", true)
 				log.Printf("cron[process_weekly_tutor_payouts]: paid %d payout(s)", n)
 			case <-rankingTicker.C:
 				n, err := vettingSvc.RecomputeAllRankings(ctx)
 				if err != nil {
 					log.Printf("cron[compute_tutor_ranking_score] error: %v", err)
+					telemetry.CronRun("compute_tutor_ranking_score", false)
 					continue
 				}
+				telemetry.CronRun("compute_tutor_ranking_score", true)
 				log.Printf("cron[compute_tutor_ranking_score]: updated %d ranking(s)", n)
 			}
 		}
 	}()
+
+	// --- Metrics HTTP endpoint (G3.3) ---
+	// The worker's only HTTP surface: cron heartbeats + queue depths for
+	// Prometheus. Disable with WORKER_METRICS_PORT=0.
+	metricsPort := os.Getenv("WORKER_METRICS_PORT")
+	if metricsPort == "" {
+		metricsPort = "8081"
+	}
+	metricsSrv := serveMetrics(metricsPort, os.Getenv("METRICS_TOKEN"))
 
 	log.Println("Worker started — crons: expire_stale_booking_holds (15m), process_weekly_tutor_payouts (7d), compute_tutor_ranking_score (24h)")
 
@@ -164,6 +191,34 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Worker shutting down...")
+	if metricsSrv != nil {
+		shCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		_ = metricsSrv.Shutdown(shCtx)
+	}
+}
+
+// serveMetrics starts the worker's Prometheus scrape endpoint. The worker
+// has no other HTTP surface; this handler exposes cron heartbeats and queue
+// depths for alerting (G3.3). Returns nil when the port is empty/"0".
+func serveMetrics(port, token string) *http.Server {
+	if port == "" || port == "0" {
+		return nil
+	}
+	mux := http.NewServeMux()
+	mux.Handle("GET /metrics", telemetry.DefaultMetrics().HandlerWithToken(token))
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
+	})
+	srv := &http.Server{Addr: ":" + port, Handler: mux}
+	go func() {
+		log.Printf("Worker metrics listening on :%s", port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("worker metrics server: %v", err)
+		}
+	}()
+	return srv
 }
 
 func setupRepos(ctx context.Context, cfg config.Config) *repos {

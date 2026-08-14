@@ -1,0 +1,14 @@
+# Grafana provisioning — dashboard provider (G3.3).
+apiVersion: 1
+
+providers:
+  - name: nuvora
+    orgId: 1
+    folder: NUVORA
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

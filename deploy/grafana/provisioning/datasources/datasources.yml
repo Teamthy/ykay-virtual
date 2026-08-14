@@ -1,0 +1,12 @@
+# Grafana provisioning — Prometheus datasource (G3.3).
+# The uid "prometheus" is referenced by dashboards/nuvora-api.json.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false

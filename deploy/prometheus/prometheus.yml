@@ -1,0 +1,33 @@
+# NUVORA — Prometheus configuration (G3.3, remediation plan).
+# Mounted read-only into the prometheus service in docker-compose.prod.yml.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+  # Attach the compose project as an external label for Grafana filters.
+  external_labels:
+    env: production
+
+rule_files:
+  - "/etc/prometheus/alerts.yml"
+
+scrape_configs:
+  - job_name: nuvora-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api:8080"]
+    # When METRICS_TOKEN is set on the API, provide it here.
+    # authorization:
+    #   type: Bearer
+    #   credentials: ${METRICS_TOKEN}
+
+  - job_name: nuvora-worker
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["worker:8081"]
+
+  # Host-level metrics (CPU/mem/disk) + the backup/drill heartbeat textfiles
+  # written by scripts/backup.sh, scripts/dr-drill.sh and the compose backup
+  # service into ./metrics-textfile.
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
