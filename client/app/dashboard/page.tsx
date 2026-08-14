@@ -29,6 +29,7 @@ type Order = {
   total_amount: number;
   currency: string;
   created_at: string;
+  checkout_cohort_id?: string; // resumable checkout (Batch 4)
 };
 
 type Lesson = {
@@ -222,7 +223,7 @@ export default function ParentDashboardPage() {
                   <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} · completes your booking</p>
                 </div>
               </div>
-              <a href={`/checkout/${nextPayment.id}`} className="rounded-xl bg-brand-gold px-6 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
+              <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-brand-gold px-6 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
                 Complete payment
               </a>
             </div>

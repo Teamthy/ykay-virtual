@@ -225,3 +225,65 @@ test("first-time wizard: 3 steps then the role dashboard", async ({ page, reques
   await expect(page).toHaveURL(/dashboard/, { timeout: 20_000 });
   await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
 });
+
+test("become-a-tutor: marketing page + apply step creates the vetting profile", async ({ page, request }) => {
+  const email = uniq("tutor-apply");
+  // Register + verify + onboard a TUTOR via API (session cookie planted
+  // below), then walk the real onboarding UI.
+  const reg = await request.post(`${API}/auth/register`, {
+    data: { email, password: "password123", roles: ["TUTOR"] },
+  });
+  expect(reg.status()).toBe(201);
+  await completeVerification(request, email);
+  // Log in via the API (session cookie jar) BEFORE marking onboarded —
+  // the endpoint requires an authenticated session.
+  const login = await request.post(`${API}/auth/login`, {
+    data: { email, password: "password123" },
+  });
+  expect(login.status()).toBe(200);
+  const ob = await request.post(`${API}/auth/me/onboarded`);
+  expect(ob.status(), "mark tutor onboarded").toBe(200);
+
+  // Marketing page (public, no session needed).
+  await page.goto("/become-tutor");
+  await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+
+  // Sign in, then start the application.
+  await page.goto("/login");
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill("password123");
+  await page.locator('input[type="password"]').press("Enter");
+  await expect(page).toHaveURL(/tutor-dashboard/, { timeout: 20_000 });
+
+  await page.goto("/become-tutor/apply");
+  await page.getByLabel("Display name").fill("Ade Tutor");
+  await page.getByLabel("Headline").fill("Mathematics & Physics specialist");
+  await page.getByLabel("Bio").fill("Five years teaching WAEC and IGCSE maths.");
+  await page.getByRole("button", { name: /Create profile & continue/ }).click({ noWaitAfter: true });
+  await expect(page).toHaveURL(/become-tutor\/subjects/, { timeout: 20_000 });
+  await expect(page.getByText(/subjects/i).first()).toBeVisible();
+});
+
+test("page sweep: every public surface renders (no application errors)", async ({ page }) => {
+  const routes = [
+    "/", "/tutors", "/cohorts", "/programmes", "/subjects", "/pricing",
+    "/how-it-works", "/about", "/contact", "/become-tutor", "/hometutors",
+    "/private-tuition", "/exam-prep", "/test-prep", "/study-abroad",
+    "/nuvora-plus", "/for-schools", "/online-classes", "/digital-skills",
+    "/entrance-exam", "/utme-2026", "/success-stories", "/download",
+    "/login", "/register",
+  ];
+  for (const route of routes) {
+    const errors: string[] = [];
+    const onError = (e: Error) => errors.push(String(e));
+    page.on("pageerror", onError);
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(300);
+    const body = await page.content();
+    if (body.includes("Application error")) errors.push(`${route}: app error`);
+    const heading = await page.getByRole("heading", { level: 1 }).count();
+    if (heading === 0) errors.push(`${route}: no h1`);
+    page.off("pageerror", onError);
+    expect(errors, errors.join("; ")).toEqual([]);
+  }
+});

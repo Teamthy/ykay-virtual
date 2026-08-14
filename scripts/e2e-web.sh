@@ -70,6 +70,13 @@ GW_PID=$!
 for i in $(seq 1 20); do curl -sf -m 1 "http://localhost:$GW_PORT/health" >/dev/null 2>&1 && break; sleep 0.3; done
 
 # ── 2. API (PG when reachable, else memory + demo seed) ────────────────────
+# Kill stale API squatters on the port (a previous run's binary would serve
+# stale code/state and poison the run — same guard as next-server below).
+if curl -sf -m 2 "http://localhost:${API_PORT}/health" >/dev/null 2>&1; then
+  echo "e2e-web: stale API on :${API_PORT} — killing for a fresh boot"
+  pkill -f "[.]e2e-api" 2>/dev/null || true
+  sleep 1
+fi
 rm -f .e2e-api && "${GO:-go}" build -o .e2e-api ./cmd/api
 API_ENV=(PORT="$API_PORT" SEED_DEMO_DATA=true
   PAYSTACK_SECRET="$WEBHOOK_SECRET" FLUTTERWAVE_SECRET="$WEBHOOK_SECRET"

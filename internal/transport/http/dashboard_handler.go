@@ -28,7 +28,7 @@ func (h *DashboardHandler) MyOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := ParsePagination(r)
-	orders, total, err := h.svc.ParentOrders(r.Context(), actor.UserID, p.Page, p.PageSize)
+	orders, total, err := h.svc.ParentOrdersView(r.Context(), actor.UserID, p.Page, p.PageSize)
 	if err != nil {
 		WriteAppError(w, err)
 		return

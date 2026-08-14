@@ -39,17 +39,6 @@ store + `SEED_DEMO_DATA=true` demo fixtures (tutor `tutor@nuvora.com`,
 parent `parent@nuvora.com`, student `student@nuvora.com`,
 admin `admin@nuvora.com`, password `password123`) — no Docker needed.
 
-**Dev codes in the terminal:** in development, login codes, verification
-links and password-reset links print plainly to the API log:
-`🔑 login code for you@example.com: 123456` — no need to parse the
-branded email. (Disabled in production.)
-
-**`next dev` running out of memory (Windows):** the dev webpack cache is
-already disabled in next.config.js. If you still see
-`Array buffer allocation failed`, stop Docker Desktop (or limit WSL
-memory) and restart dev with a bounded heap:
-`$env:NODE_OPTIONS="--max-old-space-size=2048"; npm --prefix client run dev`
-
 ## 3. Useful targets
 
 ```bash
@@ -67,9 +56,34 @@ make obs-validate  # Prometheus/Grafana config checks (Docker)
 ## 4. Windows (PowerShell) notes
 
 - Use `docker compose` (v2 syntax). WSL2 backend recommended.
-- `make` works via Git Bash or `choco install make`; otherwise run the
-  raw commands shown above.
+- `make` is not bundled with Windows — use the PowerShell helper instead
+  (same workflows, one file, no install):
+
+```powershell
+.\dev.ps1 infra        # start Postgres + Redis (Docker)
+.\dev.ps1 migrate      # apply migrations
+.\dev.ps1 api          # Terminal 1: API  (http://localhost:8080)
+.\dev.ps1 worker       # Terminal 2: worker (queue + crons)
+.\dev.ps1 web          # Terminal 3: web   (http://localhost:3000)
+.\dev.ps1 test / build # CI-parity checks
+```
+
+- Or run the raw commands (what `dev.ps1` does):
+
+```powershell
+docker compose up -d postgres redis
+go run ./cmd/migrate --cmd=up
+go run ./cmd/api          # Terminal 1
+go run ./cmd/worker       # Terminal 2
+cd client; npm install; npm run dev   # Terminal 3
+```
+
+- **No Go yet?** Install Go 1.22+ from https://go.dev/dl/ (the API,
+  worker and migrations are Go binaries).
 - Ports: API 8080 · web 3000 · worker metrics 8081 · PG 5432 · Redis 6379.
+- The dev compose already provisions `nuvora/nuvora/nuvora`, which is
+  exactly the API's dev default `DATABASE_URL` — zero configuration
+  needed.
 
 ## 5. Deploy (Vercel web + Render API) — already wired
 
