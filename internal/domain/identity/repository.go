@@ -45,6 +45,7 @@ type ParentProfileRepository interface {
 type StudentProfileRepository interface {
 	Create(ctx context.Context, profile *StudentProfile) error
 	FindByID(ctx context.Context, id uuid.UUID) (*StudentProfile, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) (*StudentProfile, error)
 	ListByParentUserID(ctx context.Context, parentUserID uuid.UUID) ([]StudentProfile, error)
 }
 

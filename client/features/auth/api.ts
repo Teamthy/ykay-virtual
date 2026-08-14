@@ -130,3 +130,32 @@ export async function changePassword(newPassword: string): Promise<void> {
     body: JSON.stringify({ new_password: newPassword }),
   });
 }
+
+export type SessionLearner = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  timezone: string;
+};
+
+export type SessionTutorProfile = { id: string; status: string };
+
+// Authoritative role/profile mapping for authenticated UI surfaces. IDs in
+// this response are derived server-side from the session and must replace all
+// fixture UUIDs in dashboards, LMS and mobile clients.
+export type SessionContext = {
+  user_id: string;
+  roles: string[];
+  learners: SessionLearner[];
+  student?: SessionLearner;
+  tutor_profile?: SessionTutorProfile;
+};
+
+export async function getSessionContext(): Promise<SessionContext | null> {
+  try {
+    const res = await apiFetch<SessionContext>("/auth/me/context", { cache: "no-store" });
+    return res.data;
+  } catch {
+    return null;
+  }
+}

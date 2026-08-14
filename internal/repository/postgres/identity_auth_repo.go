@@ -288,6 +288,18 @@ func (r *StudentProfileRepo) Create(ctx context.Context, p *identity.StudentProf
 	return nil
 }
 
+func (r *StudentProfileRepo) FindByUserID(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error) {
+	var id uuid.UUID
+	err := r.db.QueryRowContext(ctx, `SELECT id FROM student_profiles WHERE user_id = $1 ORDER BY created_at LIMIT 1`, userID).Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, fmt.Errorf("find student profile by user: %w", err)
+	}
+	return r.FindByID(ctx, id)
+}
+
 func (r *StudentProfileRepo) FindByID(ctx context.Context, id uuid.UUID) (*identity.StudentProfile, error) {
 	var p identity.StudentProfile
 	var userID uuidNull
