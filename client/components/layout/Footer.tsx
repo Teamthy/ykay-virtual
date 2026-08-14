@@ -13,7 +13,6 @@ const PROGRAMMES = [
   { href: "/exam-prep", label: "Exam Preparation" },
   { href: "/study-abroad", label: "Study Abroad" },
   { href: "/nuvora-plus", label: "NUVORA Plus" },
-  { href: "/healthcare", label: "Healthcare Training" },
   { href: "/private-tuition", label: "Private Tuition" },
 ];
 

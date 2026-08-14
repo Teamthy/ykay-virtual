@@ -3,7 +3,6 @@ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { ArrowRight } from "lucide-react";
 import { StatsBand } from "@/components/home/StatsBand";
 import { LearningNeeds } from "@/components/home/LearningNeeds";
-import { PartnerSection } from "@/components/home/PartnerSection";
 import { ApproachSection } from "@/components/home/ApproachSection";
 import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";

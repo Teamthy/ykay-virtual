@@ -28,6 +28,13 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" }
     ]
   },
+  async redirects() {
+    return [
+      // Healthcare offering retired (Batch 2) — old links land on the
+      // closest live offering instead of a 404.
+      { source: "/healthcare", destination: "/digital-skills", permanent: true },
+    ];
+  },
   async rewrites() {
     // Browser-side /api/v1 calls are proxied to the API server. Point
     // API_PROXY_TARGET at the API in production deployments.

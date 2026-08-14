@@ -7,10 +7,10 @@ import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
 import { TestimonialsSection } from "@/features/content/components/TestimonialsSection";
-import { PartnerSection } from "@/components/home/PartnerSection";
 import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
+import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 import { TravelAndCareBands } from "@/components/home/TravelAndCareBands";
 import { AnnouncementVideo } from "@/components/home/AnnouncementVideo";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
@@ -31,7 +31,6 @@ export default function HomePage() {
       <UpcomingCohorts />
       <HowItWorksStrip />
       <HowItWorksVideo />
-      <PartnerSection />
       <ApproachSection />
       <TestimonialSlider />
       <AnnouncementVideo />
@@ -41,6 +40,7 @@ export default function HomePage() {
       <TravelAndCareBands />
       <HomeFAQ />
       <GuaranteeBand />
+      <DownloadAppCTA />
       <BecomeTutorCTA />
     </>
   );
