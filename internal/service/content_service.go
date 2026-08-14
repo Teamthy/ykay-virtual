@@ -210,9 +210,10 @@ func (s *ContentService) CreateTestimonial(ctx context.Context, adminID uuid.UUI
 	if strings.TrimSpace(t.AuthorName) == "" || strings.TrimSpace(t.Body) == "" {
 		return nil, fmt.Errorf("%w: author_name and body are required", domain.ErrInvalidInput)
 	}
-	if !t.ConsentGiven {
-		return nil, fmt.Errorf("%w: consent_given is required before publishing", domain.ErrInvalidInput)
-	}
+	// G5.3 workflow: a testimonial may be CREATED as a draft without consent
+	// on file (e.g. importing a submitted quote), but it can never go PUBLIC
+	// without consent — enforced here at create time and again by
+	// AdminService.SetTestimonialPublic at approval time.
 	if t.IsPublic && !t.ConsentGiven {
 		return nil, fmt.Errorf("%w: cannot publish without consent", domain.ErrConflict)
 	}

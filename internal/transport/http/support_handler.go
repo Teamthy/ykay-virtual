@@ -23,9 +23,11 @@ func NewSupportHandler(svc *service.SupportService) *SupportHandler {
 
 func (h *SupportHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Email   string `json:"email"`
-		Subject string `json:"subject"`
-		Message string `json:"message"`
+		Email    string `json:"email"`
+		Subject  string `json:"subject"`
+		Message  string `json:"message"`
+		Category string `json:"category,omitempty"` // GENERAL | SAFEGUARDING | FINANCE | ACADEMIC
+		Severity string `json:"severity,omitempty"` // LOW | MEDIUM | HIGH | URGENT
 	}
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -35,7 +37,7 @@ func (h *SupportHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 	if actor, ok := middleware.ActorFromContext(r.Context()); ok && actor.UserID != uuid.Nil {
 		userID = &actor.UserID
 	}
-	ticket, err := h.svc.OpenTicket(r.Context(), userID, req.Email, req.Subject, req.Message)
+	ticket, err := h.svc.OpenTicketWithMeta(r.Context(), userID, req.Email, req.Subject, req.Message, req.Category, req.Severity)
 	if err != nil {
 		WriteAppError(w, err)
 		return

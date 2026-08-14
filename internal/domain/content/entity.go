@@ -63,5 +63,10 @@ type Testimonial struct {
 	IsFeatured     bool      `json:"is_featured"`
 	ConsentGiven   bool      `json:"consent_given"`
 	IsPublic       bool      `json:"is_public"`
-	CreatedAt      time.Time `json:"created_at"`
+	// Consent evidence + publication sign-off (G5.3, migration 000029).
+	ConsentSource *string    `json:"consent_source,omitempty"`
+	ConsentDate   *time.Time `json:"consent_date,omitempty"`
+	PublishedAt   *time.Time `json:"published_at,omitempty"`
+	PublishedBy   *uuid.UUID `json:"published_by,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
 }

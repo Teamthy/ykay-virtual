@@ -7,7 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/admin"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/content"
@@ -26,18 +28,21 @@ import (
 // All entry points are admin-gated at the transport layer.
 
 type AdminService struct {
-	stats        admin.StatsRepository
-	blog         content.AdminBlogRepository
-	institutions institution.InstitutionRepository
-	referrals    referral.ReferralRepository
-	reviews      review.ReviewRepository
-	support      content.SupportTicketRepository
-	cohortAdmin  booking.CohortAdminRepository
-	lessonAdmin  booking.LessonAdminRepository
-	orders       payment.OrderRepository
-	payouts      payment.PayoutRepository
-	audit        identity.AuditService
-	now          func() time.Time
+	stats          admin.StatsRepository
+	blog           content.AdminBlogRepository
+	institutions   institution.InstitutionRepository
+	referrals      referral.ReferralRepository
+	reviews        review.ReviewRepository
+	support        content.SupportTicketRepository
+	cohortAdmin    booking.CohortAdminRepository
+	lessonAdmin    booking.LessonAdminRepository
+	testimonials   content.TestimonialRepository
+	programmes     academics.ProgrammeLifecycleRepository
+	catalogueCache cache.Cache
+	orders         payment.OrderRepository
+	payouts        payment.PayoutRepository
+	audit          identity.AuditService
+	now            func() time.Time
 }
 
 func NewAdminService(stats admin.StatsRepository, blog content.AdminBlogRepository,
@@ -66,6 +71,22 @@ func (s *AdminService) WithSupport(support content.SupportTicketRepository) *Adm
 func (s *AdminService) WithCohortAdmin(cohorts booking.CohortAdminRepository, lessons booking.LessonAdminRepository) *AdminService {
 	s.cohortAdmin = cohorts
 	s.lessonAdmin = lessons
+	return s
+}
+
+// WithContentSignoff wires the G5.3 catalogue sign-off surfaces:
+// programme publish workflow + testimonial publication.
+func (s *AdminService) WithContentSignoff(testimonials content.TestimonialRepository,
+	programmes academics.ProgrammeLifecycleRepository) *AdminService {
+	s.testimonials = testimonials
+	s.programmes = programmes
+	return s
+}
+
+// WithCatalogueCache wires cache invalidation: publish/unpublish must flush
+// the programme list cache so the catalogue updates immediately (G5.3).
+func (s *AdminService) WithCatalogueCache(c cache.Cache) *AdminService {
+	s.catalogueCache = c
 	return s
 }
 
@@ -271,6 +292,14 @@ func NewSupportService(tickets content.SupportTicketRepository) *SupportService 
 
 // OpenTicket — creates a support ticket (public + signed-in users).
 func (s *SupportService) OpenTicket(ctx context.Context, userID *uuid.UUID, email, subject, message string) (*content.SupportTicket, error) {
+	return s.OpenTicketWithMeta(ctx, userID, email, subject, message, "", "")
+}
+
+// OpenTicketWithMeta — categorised intake (G5.2). SAFEGUARDING tickets get
+// a 4-hour SLA; URGENT/HIGH severity tickets 8 hours; everything else 24.
+// Severity is normalised (default LOW); unknown categories are rejected so
+// the triage queues stay meaningful.
+func (s *SupportService) OpenTicketWithMeta(ctx context.Context, userID *uuid.UUID, email, subject, message, category, severity string) (*content.SupportTicket, error) {
 	if strings.TrimSpace(email) == "" || !validEmail(email) {
 		return nil, fmt.Errorf("%w: a valid email is required", domain.ErrInvalidInput)
 	}
@@ -283,10 +312,42 @@ func (s *SupportService) OpenTicket(ctx context.Context, userID *uuid.UUID, emai
 	if s.tickets == nil {
 		return nil, errors.New("support store unavailable")
 	}
+
+	if category == "" {
+		category = string(content.CategoryGeneral)
+	}
+	if !content.ValidTicketCategory(category) {
+		return nil, fmt.Errorf("%w: unknown category %q", domain.ErrInvalidInput, category)
+	}
+	switch strings.ToUpper(strings.TrimSpace(severity)) {
+	case "", "LOW":
+		severity = "LOW"
+	case "MEDIUM", "HIGH", "URGENT":
+		severity = strings.ToUpper(strings.TrimSpace(severity))
+	default:
+		return nil, fmt.Errorf("%w: severity must be LOW, MEDIUM, HIGH or URGENT", domain.ErrInvalidInput)
+	}
+
+	// Safeguarding concerns always carry a 4h SLA and minimum MEDIUM
+	// severity — a LOW safeguarding concern is not a thing.
+	if content.TicketCategory(category) == content.CategorySafeguarding {
+		if severity == "LOW" {
+			severity = "MEDIUM"
+		}
+	}
+
+	now := s.now().UTC()
+	sla := now.Add(24 * time.Hour)
+	if content.TicketCategory(category) == content.CategorySafeguarding {
+		sla = now.Add(4 * time.Hour)
+	} else if severity == "HIGH" || severity == "URGENT" {
+		sla = now.Add(8 * time.Hour)
+	}
+
 	ticket := &content.SupportTicket{
 		UserID: userID, Email: strings.TrimSpace(email),
 		Subject: strings.TrimSpace(subject), Message: strings.TrimSpace(message),
-		Status: "OPEN",
+		Status: "OPEN", Category: category, Severity: severity, SLADueAt: &sla,
 	}
 	if err := s.tickets.Create(ctx, ticket); err != nil {
 		return nil, err
@@ -314,6 +375,95 @@ func (s *AdminService) ListSupportTickets(ctx context.Context, status string, pa
 		return []content.SupportTicket{}, 0, nil
 	}
 	return s.support.List(ctx, status, page, pageSize)
+}
+
+// ListSupportByCategory — triage queue (G5.2): the safeguarding queue is
+// reviewed by the named safeguarding owner every working cycle.
+func (s *AdminService) ListSupportByCategory(ctx context.Context, category string, page, pageSize int) ([]content.SupportTicket, int64, error) {
+	if s.support == nil {
+		return []content.SupportTicket{}, 0, nil
+	}
+	if !content.ValidTicketCategory(category) {
+		return nil, 0, fmt.Errorf("%w: unknown ticket category %q", domain.ErrInvalidInput, category)
+	}
+	return s.support.ListByCategory(ctx, category, page, pageSize)
+}
+
+// SetProgrammeStatusAdmin — publish/unpublish a programme without a code
+// deployment (G5.3 acceptance). Publishing stamps published_at and sets the
+// review cadence (90 days); unpublishing clears both. Every transition is
+// audited with the acting admin.
+func (s *AdminService) SetProgrammeStatusAdmin(ctx context.Context, adminID, programmeID uuid.UUID, status string) error {
+	if s.programmes == nil {
+		return errors.New("programme lifecycle store unavailable")
+	}
+	var target academics.ProgrammeStatus
+	switch academics.ProgrammeStatus(status) {
+	case academics.ProgrammePublished, academics.ProgrammeDraft, academics.ProgrammeArchived:
+		target = academics.ProgrammeStatus(status)
+	default:
+		return fmt.Errorf("%w: status must be DRAFT, PUBLISHED or ARCHIVED", domain.ErrInvalidInput)
+	}
+
+	life, err := s.programmes.GetLifecycle(ctx, programmeID)
+	if err != nil {
+		return err
+	}
+
+	now := s.now().UTC()
+	life.Status = target
+	if target == academics.ProgrammePublished {
+		ts := now
+		life.PublishedAt = &ts
+		due := now.Add(90 * 24 * time.Hour)
+		life.ReviewDueAt = &due
+	} else {
+		life.PublishedAt = nil
+		life.ReviewDueAt = nil
+	}
+	if err := s.programmes.SetLifecycle(ctx, *life); err != nil {
+		return err
+	}
+	// Catalogue state changed → flush the cached list immediately (G5.3).
+	if s.catalogueCache != nil {
+		_ = s.catalogueCache.DelPrefix(ctx, "programme")
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "programme",
+		&programmeID, nil, map[string]any{"status": string(target)}, nil, nil)
+	return nil
+}
+
+// SetTestimonialPublic — publication sign-off (G5.3). Approval requires the
+// consent rule (consent_given=true) — marketing content cannot go live on a
+// fixture or an unconsented claim. Withdrawal is always allowed.
+func (s *AdminService) SetTestimonialPublic(ctx context.Context, adminID, testimonialID uuid.UUID, isPublic bool) error {
+	if s.testimonials == nil {
+		return errors.New("testimonial store unavailable")
+	}
+	if isPublic {
+		// The consent rule is enforced here because the repo interface is
+		// write-only for is_public; ListPublic only ever returns rows with
+		// consent_given=TRUE AND is_public=TRUE anyway (defence in depth).
+		if !s.testimonialConsented(ctx, testimonialID) {
+			return fmt.Errorf("%w: testimonial has no recorded consent — refusing to publish", domain.ErrForbidden)
+		}
+	}
+	if err := s.testimonials.SetPublic(ctx, testimonialID, isPublic, &adminID); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "testimonial",
+		&testimonialID, nil, map[string]any{"is_public": isPublic}, nil, nil)
+	return nil
+}
+
+// testimonialConsented — the consent rule: a testimonial may go public only
+// when consent_given was recorded at creation (G5.3 publication sign-off).
+func (s *AdminService) testimonialConsented(ctx context.Context, id uuid.UUID) bool {
+	t, err := s.testimonials.GetByID(ctx, id)
+	if err != nil {
+		return false
+	}
+	return t.ConsentGiven
 }
 
 // SetSupportStatus — admin resolves/closes a ticket.

@@ -353,6 +353,12 @@ func (m *SupportMemory) Create(_ context.Context, t *content.SupportTicket) erro
 	if t.ID == uuid.Nil {
 		t.ID = uuid.New()
 	}
+	if t.Category == "" {
+		t.Category = string(content.CategoryGeneral)
+	}
+	if t.Severity == "" {
+		t.Severity = "LOW"
+	}
 	t.CreatedAt = nowUTC()
 	t.UpdatedAt = t.CreatedAt
 	m.rows[t.ID] = t
@@ -377,19 +383,35 @@ func (m *SupportMemory) SetStatus(_ context.Context, id uuid.UUID, status string
 		return domain.ErrNotFound
 	}
 	t.Status = status
+	if status == "RESOLVED" || status == "CLOSED" {
+		ts := nowUTC()
+		t.ResolvedAt = &ts
+	}
 	t.UpdatedAt = nowUTC()
 	return nil
 }
 
 func (m *SupportMemory) List(_ context.Context, status string, page, pageSize int) ([]content.SupportTicket, int64, error) {
+	return m.listWhere(func(t *content.SupportTicket) bool {
+		return status == "" || t.Status == status
+	}, page, pageSize)
+}
+
+// ListByCategory — safeguarding/other triage queues (G5.2).
+func (m *SupportMemory) ListByCategory(_ context.Context, category string, page, pageSize int) ([]content.SupportTicket, int64, error) {
+	return m.listWhere(func(t *content.SupportTicket) bool {
+		return t.Category == category
+	}, page, pageSize)
+}
+
+func (m *SupportMemory) listWhere(match func(*content.SupportTicket) bool, page, pageSize int) ([]content.SupportTicket, int64, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var out []content.SupportTicket
 	for _, t := range m.rows {
-		if status != "" && t.Status != status {
-			continue
+		if match(t) {
+			out = append(out, *t)
 		}
-		out = append(out, *t)
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
 	total := int64(len(out))

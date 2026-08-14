@@ -285,6 +285,16 @@ func (h *AdminHandler) ListSupport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := ParsePagination(r)
+	category := firstNonEmpty(r.URL.Query().Get("category"), p.Filters["category"])
+	if category != "" {
+		tickets, total, err := h.svc.ListSupportByCategory(r.Context(), category, p.Page, p.PageSize)
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		pkg.WriteSuccess(w, http.StatusOK, tickets, p.Meta(total))
+		return
+	}
 	tickets, total, err := h.svc.ListSupportTickets(r.Context(),
 		firstNonEmpty(r.URL.Query().Get("status"), p.Filters["status"]), p.Page, p.PageSize)
 	if err != nil {
@@ -317,6 +327,60 @@ func (h *AdminHandler) SetSupportStatus(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"status": req.Status}, nil)
+}
+
+// SetProgrammeStatus — publish/unpublish a programme (G5.3): the launch
+// catalogue is operable without a code deployment, and every transition is
+// audited against the acting admin.
+func (h *AdminHandler) SetProgrammeStatus(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	programmeID, err := ParseUUID(r, "programmeId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Status string `json:"status"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetProgrammeStatusAdmin(r.Context(), *adminID, programmeID, req.Status); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"id": programmeID, "status": req.Status}, nil)
+}
+
+// SetTestimonialPublic — approve/withdraw a testimonial (G5.3). Approval
+// enforces the consent rule server-side; non-admin callers are rejected by
+// requireAdmin.
+func (h *AdminHandler) SetTestimonialPublic(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	testimonialID, err := ParseUUID(r, "testimonialId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		IsPublic bool `json:"is_public"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetTestimonialPublic(r.Context(), *adminID, testimonialID, req.IsPublic); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"id": testimonialID, "is_public": req.IsPublic}, nil)
 }
 
 // ListCohorts — all cohorts (any status).

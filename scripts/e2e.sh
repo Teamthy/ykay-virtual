@@ -54,7 +54,8 @@ J_TUTOR=/tmp/e2e-tutor.jar
 J_STUDENT=/tmp/e2e-student.jar
 J_ADMIN=/tmp/e2e-admin.jar
 J_LOGOUT=/tmp/e2e-logout.jar
-rm -f "$J_PARENT" "$J_TUTOR" "$J_STUDENT" "$J_ADMIN" "$J_LOGOUT"
+J_PUB=/tmp/e2e-pub.jar
+rm -f "$J_PARENT" "$J_TUTOR" "$J_STUDENT" "$J_ADMIN" "$J_LOGOUT" "$J_PUB"
 
 req() { # req <jar> <method> <path> <body?>  → prints HTTP code
   local jar="$1" method="$2" path="$3" body="${4:-}"
@@ -492,6 +493,63 @@ grep -q '"held_total"' /tmp/e2e-body.json && ok "earnings fields present" || fai
 
 c=$(req "$J_LOGOUT" POST /auth/google/exchange '{"code":"bad","state":"bad"}')
 assert_code "google exchange unconfigured → 409" 409 "$c"
+
+# ===================================================== G5 — SAFEGUARDING ====
+note "G5 SAFEGUARDING + CONTENT SIGN-OFF"
+
+# Safeguarding ticket: 4h SLA, severity floored at MEDIUM.
+c=$(req "$J_PUB" POST /support/tickets '{"email":"concerned@test.com","subject":"safeguarding concern","message":"a learner reported inappropriate contact","category":"SAFEGUARDING","severity":"LOW"}')
+assert_code "create safeguarding ticket" 201 "$c"
+grep -q '"category":"SAFEGUARDING"' /tmp/e2e-body.json && ok "ticket category recorded" || fail "ticket category missing"
+grep -q '"severity":"MEDIUM"' /tmp/e2e-body.json && ok "safeguarding severity floored to MEDIUM" || fail "severity not floored"
+grep -q '"sla_due_at"' /tmp/e2e-body.json && ok "SLA due recorded" || fail "sla_due_at missing"
+SGTICKET=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
+
+# Unknown category rejected.
+c=$(req "$J_PUB" POST /support/tickets '{"email":"x@test.com","subject":"x","message":"y","category":"NONSENSE"}')
+assert_code "unknown ticket category rejected" 400 "$c"
+
+# Admin triage queue (RBAC).
+c=$(req "$J_ADMIN" GET "/admin/support?category=SAFEGUARDING")
+assert_code "admin safeguarding queue" 200 "$c"
+grep -q "$SGTICKET" /tmp/e2e-body.json && ok "safeguarding ticket in queue" || fail "ticket missing from queue"
+c=$(req "$J_STUDENT" GET "/admin/support?category=SAFEGUARDING")
+assert_code "student cannot see safeguarding queue → 403" 403 "$c"
+
+# Resolve → resolved_at stamped.
+c=$(req "$J_ADMIN" POST "/admin/support/$SGTICKET/status" '{"status":"RESOLVED"}')
+assert_code "admin resolves safeguarding ticket" 200 "$c"
+c=$(req "$J_ADMIN" GET "/admin/support?category=SAFEGUARDING&status=RESOLVED")
+grep -q '"resolved_at"' /tmp/e2e-body.json && ok "resolved_at stamped" || fail "resolved_at missing"
+
+# Testimonial publication sign-off (G5.3): consented draft → approve → public.
+c=$(req "$J_ADMIN" POST /admin/testimonials '{"author_name":"Chiamaka O.","body":"The UTME cohort raised my daughter from 210 to 289.","rating":5,"consent_given":true,"is_public":false}')
+assert_code "admin creates consented testimonial (draft)" 201 "$c"
+TID=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
+c=$(curl -s -b "" "$BASE/content/testimonials" -o /tmp/e2e-body.json -w '%{http_code}')
+grep -q "$TID" /tmp/e2e-body.json && fail "draft testimonial leaked to public" || ok "draft testimonial hidden from public"
+c=$(req "$J_ADMIN" POST "/admin/testimonials/$TID/public" '{"is_public":true}')
+assert_code "admin approves testimonial" 200 "$c"
+curl -s "$BASE/content/testimonials" -o /tmp/e2e-body.json
+grep -q "$TID" /tmp/e2e-body.json && ok "approved testimonial now public" || fail "approved testimonial missing from public list"
+
+# Consent rule: unconsented testimonial cannot be approved.
+c=$(req "$J_ADMIN" POST /admin/testimonials '{"author_name":"Unknown","body":"unconsented","consent_given":false,"is_public":false}')
+TID2=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
+c=$(req "$J_ADMIN" POST "/admin/testimonials/$TID2/public" '{"is_public":true}')
+assert_code "publish without consent rejected" 403 "$c"
+
+# Programme publish workflow: archive → hidden from public → republish.
+c=$(req "$J_ADMIN" POST "/admin/programmes/00000000-0000-0000-0000-00000000d001/status" '{"status":"ARCHIVED"}')
+assert_code "admin archives programme" 200 "$c"
+curl -s "$BASE/programmes" -o /tmp/e2e-body.json
+grep -q "nigerian-curriculum" /tmp/e2e-body.json && fail "archived programme still public" || ok "archived programme hidden from catalogue"
+c=$(req "$J_ADMIN" POST "/admin/programmes/00000000-0000-0000-0000-00000000d001/status" '{"status":"PUBLISHED"}')
+assert_code "admin republishes programme" 200 "$c"
+curl -s "$BASE/programmes" -o /tmp/e2e-body.json
+grep -q "nigerian-curriculum" /tmp/e2e-body.json && ok "republished programme visible again" || fail "republished programme missing"
+c=$(req "$J_STUDENT" POST "/admin/programmes/00000000-0000-0000-0000-00000000d001/status" '{"status":"ARCHIVED"}')
+assert_code "student cannot change catalogue status → 403" 403 "$c"
 
 # ============================================================== SUMMARY ======
 echo

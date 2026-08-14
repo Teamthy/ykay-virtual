@@ -246,4 +246,41 @@ func (m *TestimonialMemory) Create(_ context.Context, t *content.Testimonial) er
 	return nil
 }
 
+// GetByID returns one testimonial regardless of publication state (used by
+// the admin consent rule, G5.3).
+func (m *TestimonialMemory) GetByID(_ context.Context, id uuid.UUID) (*content.Testimonial, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for i := range m.rows {
+		if m.rows[i].ID == id {
+			cp := m.rows[i]
+			return &cp, nil
+		}
+	}
+	return nil, domain.ErrNotFound
+}
+
+// SetPublic — publication sign-off (G5.3): records when/by whom the
+// testimonial was approved or withdrawn.
+func (m *TestimonialMemory) SetPublic(_ context.Context, id uuid.UUID, isPublic bool, publishedBy *uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for i := range m.rows {
+		if m.rows[i].ID != id {
+			continue
+		}
+		m.rows[i].IsPublic = isPublic
+		ts := nowUTC()
+		if isPublic {
+			m.rows[i].PublishedAt = &ts
+			m.rows[i].PublishedBy = publishedBy
+		} else {
+			m.rows[i].PublishedAt = nil
+			m.rows[i].PublishedBy = nil
+		}
+		return nil
+	}
+	return domain.ErrNotFound
+}
+
 var _ content.TestimonialRepository = (*TestimonialMemory)(nil)
