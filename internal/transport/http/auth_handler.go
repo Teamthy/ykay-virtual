@@ -15,7 +15,7 @@ import (
 
 // AuthHandler — register / login / logout / me with httpOnly-cookie sessions:
 //   - POST /api/v1/auth/register   {email, password, roles[]}
-//   - POST /api/v1/auth/login      {email, password} → Set-Cookie ykay_session
+//   - POST /api/v1/auth/login      {email, password} → Set-Cookie nuvora_session
 //   - POST /api/v1/auth/logout     (clears cookie, revokes session)
 //   - GET  /api/v1/auth/me         current user + roles
 

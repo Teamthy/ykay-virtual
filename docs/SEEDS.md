@@ -1,9 +1,14 @@
-# NUVORA — Working Seed / Demo Accounts (dev mode)
+# NUVORA — Local fixture data (development only)
 
-All accounts are seeded **only** when Postgres is unavailable (in-memory dev
-fallback). Password defaults to `password123` and is overridable via the
-`DEMO_PASSWORD` env var. In production, no demo accounts exist and the API
-fails fast if the database is unreachable.
+> **Never use these accounts in a shared environment.** Fixture data is now
+> disabled by default, including when the API uses its in-memory development
+> fallback. It exists only as a temporary local visual-development aid while
+> the E2E suite is migrated to dynamically created records.
+
+To opt in locally, set both `ENVIRONMENT=development` and
+`SEED_DEMO_DATA=true`. Password defaults to `password123` and is overridable
+through `DEMO_PASSWORD`. Production validation rejects `SEED_DEMO_DATA=true`;
+production must use an empty, real PostgreSQL database with real identities.
 
 ## Accounts (all verified working)
 

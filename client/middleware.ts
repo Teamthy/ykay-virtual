@@ -17,7 +17,7 @@ const AUTH_PAGES = ["/login", "/register"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const hasSession = req.cookies.has("ykay_session");
+  const hasSession = req.cookies.has("nuvora_session");
 
   if (PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     if (!hasSession) {

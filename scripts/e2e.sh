@@ -38,7 +38,7 @@ if curl -sf -m 2 "$BASE/../health" >/dev/null 2>&1 || curl -sf -m 2 "http://loca
   echo "API already running on :${PORT} — reusing it"
 else
   echo "Starting API on :${PORT} (in-memory mode)…"
-  PORT="$PORT" DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" "$BIN" >/tmp/e2e-api.log 2>&1 &
+  PORT="$PORT" SEED_DEMO_DATA=true DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" "$BIN" >/tmp/e2e-api.log 2>&1 &
   API_PID=$!
   for i in $(seq 1 30); do
     curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break

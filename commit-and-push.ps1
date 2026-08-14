@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  YKAY Virtual School — Root Folder Sync, Commit & Remote Push Helper (Waves 1–5)
+  NUVORA — Root Folder Sync, Commit & Remote Push Helper (Waves 1–5)
 
 .DESCRIPTION
   This PowerShell script is designed to be executed directly from your repository root folder:
@@ -118,7 +118,7 @@ git push -u origin $BranchName --tags
 
 if ($LASTEXITCODE -eq 0) {
     Write-OK "Successfully pushed '$BranchName' and tags ('v1.0.0-waves1-5') to GitHub remote!"
-    Write-Step "YKAY Virtual School deployment push complete!"
+    Write-Step "NUVORA deployment push complete!"
 } else {
     Write-Fail "Push failed (exit code $LASTEXITCODE). Authentication required."
     Write-Host "`n=== GITHUB AUTHENTICATION HINT ===" -ForegroundColor Yellow

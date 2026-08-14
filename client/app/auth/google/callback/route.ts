@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // 1. Browser is redirected here by Google with ?code=&state=
 // 2. We exchange code+state with the API server-side (never expose the
 //    token to the browser), getting the raw session token back.
-// 3. We set the ykay_session httpOnly cookie on this host and send the user
+// 3. We set the nuvora_session httpOnly cookie on this host and send the user
 //    to their dashboard (or onboarding for fresh accounts).
 
 const API_BASE =
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     const response = NextResponse.redirect(
       new URL(user.roles.length ? "/dashboard" : "/onboarding", url.origin)
     );
-    response.cookies.set("ykay_session", token, {
+    response.cookies.set("nuvora_session", token, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",

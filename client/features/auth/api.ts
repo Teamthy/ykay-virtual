@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 
-// Auth API — session-cookie based (httpOnly `ykay_session` cookie).
+// Auth API — session-cookie based (httpOnly `nuvora_session` cookie).
 // The cookie is set/cleared by the server; the client never touches the raw
 // token. `credentials: "include"` is set by apiFetch so cookies flow on
 // same-origin and cross-origin (dev) requests.

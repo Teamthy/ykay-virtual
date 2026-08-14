@@ -1,4 +1,4 @@
-# YKAY Virtual School — developer workflow
+# NUVORA — developer workflow
 
 GO ?= go
 NPM ?= npm

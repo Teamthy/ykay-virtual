@@ -13,7 +13,7 @@ import (
 
 // SessionAuth — resolves the actor from the httpOnly session cookie OR a
 // mobile bearer token (`Authorization: Bearer <raw>`):
-//   1. Reads the raw token from the `ykay_session` cookie or the header
+//   1. Reads the raw token from the `nuvora_session` cookie or the header
 //   2. Hashes it (SHA-256) and looks the session up via the AuthService
 //   3. Puts the actor (user id + roles) in the request context
 // There is no fallback bridge: without a valid session no actor is
@@ -89,7 +89,7 @@ type CookieConfig struct {
 }
 
 func DefaultCookieConfig(secure bool) CookieConfig {
-	return CookieConfig{Name: "ykay_session", Secure: secure, MaxAge: int((30 * 24 * time.Hour).Seconds()), Path: "/"}
+	return CookieConfig{Name: "nuvora_session", Secure: secure, MaxAge: int((30 * 24 * time.Hour).Seconds()), Path: "/"}
 }
 
 func SetSessionCookie(w http.ResponseWriter, cfg CookieConfig, token string) {
