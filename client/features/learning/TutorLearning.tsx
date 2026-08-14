@@ -11,12 +11,11 @@ import { Inbox } from "lucide-react";
 import { listCohorts } from "@/features/cohorts/api/list";
 import { getCohortAssignments } from "@/features/cohorts/api/lessons";
 import { createProgressReport, gradeSubmission, listProgressReports, listSubmissions } from "./api";
-import { STUDENT_ID } from "./StudentQuizzes";
+import { useSession } from "@/hooks/useSession";
 
 // Tutor learning surface (working-doc §13): gradebook (score + feedback per
 // submission) and progress-report writer (released to student + linked parent).
 
-export const TUTOR_PROFILE_ID = "00000000-0000-0000-0000-000000000102";
 
 export function TutorGradebook() {
   const qc = useQueryClient();
@@ -165,8 +164,10 @@ export function TutorGradebook() {
 
 export function TutorProgressReports() {
   const qc = useQueryClient();
+  const { context, isLoading: sessionLoading } = useSession();
+  const tutorProfileId = context?.tutor_profile?.id;
   const [form, setForm] = useState({
-    student_profile_id: STUDENT_ID,
+    student_profile_id: "",
     period_start: "",
     period_end: "",
     strengths: "",
@@ -177,14 +178,15 @@ export function TutorProgressReports() {
 
   const reports = useQuery({
     queryKey: ["tutor", "progress-reports"],
-    queryFn: () => listProgressReports(undefined, TUTOR_PROFILE_ID),
+    queryFn: () => listProgressReports(undefined, tutorProfileId!),
+    enabled: !!tutorProfileId,
     staleTime: 30_000,
   });
 
   const create = useMutation({
     mutationFn: () =>
       createProgressReport({
-        tutor_profile_id: TUTOR_PROFILE_ID,
+        tutor_profile_id: tutorProfileId!,
         student_profile_id: form.student_profile_id,
         period_start: form.period_start,
         period_end: form.period_end,
@@ -219,6 +221,7 @@ export function TutorProgressReports() {
           <div className="grid md:grid-cols-3 gap-3">
             <label className="block">
               <span className="text-xs font-semibold text-ink-500">Student profile ID</span>
+              <p className="mt-1 text-xs text-ink-400">Use the learner ID from an assigned cohort roster.</p>
               <input
                 value={form.student_profile_id}
                 onChange={(e) => set("student_profile_id", e.target.value)}
@@ -289,7 +292,7 @@ export function TutorProgressReports() {
               </select>
             </label>
             <Button
-              disabled={create.isPending || !form.period_start || !form.period_end}
+              disabled={sessionLoading || create.isPending || !tutorProfileId || !form.student_profile_id || !form.period_start || !form.period_end}
               onClick={() => create.mutate()}
             >
               {create.isPending ? "Releasing…" : "Release report"}

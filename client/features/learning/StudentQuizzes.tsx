@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ClipboardList, FileText } from "lucide-react";
+import { useSession } from "@/hooks/useSession";
 import {
   listAssessments,
   listProgressReports,
@@ -20,9 +21,9 @@ import {
 // Student quizzes + released progress reports (working-doc §13): one attempt
 // per assessment, auto-graded on submit, results visible instantly.
 
-export const STUDENT_ID = "00000000-0000-0000-0000-000000000001";
-
-export function StudentQuizzes() {
+export function StudentQuizzes({ studentId }: { studentId?: string }) {
+  const { context, isLoading: sessionLoading } = useSession();
+  const resolvedStudentId = studentId ?? context?.student?.id ?? context?.learners[0]?.id;
   const qc = useQueryClient();
   const [session, setSession] = useState<AssessmentStart | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -36,12 +37,13 @@ export function StudentQuizzes() {
 
   const reports = useQuery({
     queryKey: ["student", "progress-reports"],
-    queryFn: () => listProgressReports(STUDENT_ID),
+    queryFn: () => listProgressReports(resolvedStudentId!),
+    enabled: !!resolvedStudentId,
     staleTime: 30_000,
   });
 
   const start = useMutation({
-    mutationFn: (id: string) => startAssessment(id, STUDENT_ID),
+    mutationFn: (id: string) => startAssessment(id, resolvedStudentId!),
     onSuccess: (data) => {
       setSession(data);
       setResult(null);
@@ -57,7 +59,7 @@ export function StudentQuizzes() {
         question_id: questionId,
         chosen_index: chosenIndex,
       }));
-      return submitAssessment(session!.attempt.assessment_id, STUDENT_ID, payload);
+      return submitAssessment(session!.attempt.assessment_id, resolvedStudentId!, payload);
     },
     onSuccess: (data) => {
       setResult(data);
@@ -67,6 +69,9 @@ export function StudentQuizzes() {
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not submit quiz"),
   });
+
+  if (sessionLoading) return <Skeleton className="h-32 w-full" />;
+  if (!resolvedStudentId) return <EmptyState icon={<ClipboardList size={20} />} title="No learner profile yet" description="Complete learner onboarding or ask your parent to link your learner profile." />;
 
   const answered = Object.keys(answers).length;
   const allAnswered = session ? answered === session.questions.length : false;
