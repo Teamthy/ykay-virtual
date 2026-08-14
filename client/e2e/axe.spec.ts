@@ -19,7 +19,8 @@ test("no critical a11y violations on landing, login and dashboard", async ({ pag
   console.log(`[/] axe: ${results.violations.length} violations (${critical.length} critical, ${serious.length} serious)`);
   for (const v of critical)
     console.log(`[/] CRITICAL: ${v.id} — targets: ${JSON.stringify(v.nodes.map((n) => n.target))}`);
-  for (const v of serious.slice(0, 20)) console.log(`[/] serious: ${v.id} — ${v.nodes.length} node(s) on ${v.help}`);
+  for (const v of serious.slice(0, 8))
+    console.log(`[/] SERIOUS: ${v.id} — ${v.nodes.length} nodes — targets: ${JSON.stringify(v.nodes.slice(0, 5).map((n) => n.target))}`);
   expect(critical, "critical violations on /").toEqual([]);
 
   // Login
@@ -58,4 +59,17 @@ test("no critical a11y violations on landing, login and dashboard", async ({ pag
   const crit = results.violations.filter((v) => v.impact === "critical");
   console.log(`[/dashboard] axe: ${results.violations.length} violations (${crit.length} critical)`);
   expect(crit, "critical violations on /dashboard").toEqual([]);
+
+  // App surfaces: LMS hub + checkout (the conversion path).
+  await page.goto("/lms");
+  results = await new AxeBuilder({ page }).analyze();
+  const lmsCrit = results.violations.filter((v) => v.impact === "critical");
+  console.log(`[/lms] axe: ${results.violations.length} violations (${lmsCrit.length} critical)`);
+  expect(lmsCrit, "critical violations on /lms").toEqual([]);
+
+  await page.goto("/checkout/00000000-0000-0000-0000-00000000c010");
+  results = await new AxeBuilder({ page }).analyze();
+  const coCrit = results.violations.filter((v) => v.impact === "critical");
+  console.log(`[/checkout] axe: ${results.violations.length} violations (${coCrit.length} critical)`);
+  expect(coCrit, "critical violations on /checkout").toEqual([]);
 });

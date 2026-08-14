@@ -20,6 +20,11 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding" options={{ title: "Get started", headerBackVisible: false }} />
         <Stack.Screen name="home" options={{ title: "NUVORA", headerBackVisible: false }} />
         <Stack.Screen name="chat" options={{ title: "Chat with Nuvora" }} />
+        <Stack.Screen name="quizzes" options={{ title: "Quizzes" }} />
+        <Stack.Screen name="quizzes/[assessmentId]" options={{ title: "Quiz" }} />
+        <Stack.Screen name="progress" options={{ title: "Progress" }} />
+        <Stack.Screen name="notifications" options={{ title: "Notifications" }} />
+        <Stack.Screen name="account" options={{ title: "Account" }} />
       </Stack>
     </SafeAreaProvider>
   );

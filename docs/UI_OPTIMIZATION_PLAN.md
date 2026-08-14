@@ -4,11 +4,18 @@
 pages and the app shell. **Status: planning + first wins shipped —
 execution next tranche.**
 
-## Already shipped this tranche (G6)
+## Already shipped (Phase 47 → 48)
 
 - TestimonialSlider a11y fix (aria-labels + aria-current — the axe gate's
   critical violation).
-- Browser E2E proving catalogue → checkout → LMS flows render correctly.
+- **Consent-gated testimonials (Phase 48):** carousel + section now fetch
+  /content/testimonials; fixture export deleted; demo/staging seeds carry
+  consent evidence. (Finding #2 closed.)
+- **Contrast tokens (Phase 48):** ink-500/ink-400 darkened to AA —
+  landing serious violations 52 → 31 nodes. (Finding #1 partially —
+  remaining 31 are trust-logo spans + italic/font-light accents.)
+- Browser E2E proving catalogue → checkout → LMS flows render correctly
+  (Phase 47).
 
 ## Known findings (measured, not guessed)
 
