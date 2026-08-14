@@ -15,6 +15,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+# Deterministic runs: clear shared Redis caches/limiters left by other
+# suites (memory-mode runs would otherwise poison the PG catalogue cache).
+if command -v redis-cli >/dev/null 2>&1; then
+  redis-cli -u "${REDIS_URL:-redis://localhost:6379/0}" flushdb >/dev/null 2>&1 || true
+fi
+
 # ── 0. Web build FIRST — Next 15's build is memory-hungry; running it
 # before Postgres/API/gateway reduces peak RAM on constrained machines
 # (bus-error/OOM otherwise). CI needs the lockfile-exact install; local

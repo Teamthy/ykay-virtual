@@ -10,12 +10,15 @@ import { Stepper } from "@/components/ui/stepper";
 import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
 import { GoogleButton } from "@/components/ui/google-button";
 import { useSession } from "@/hooks/useSession";
+import { useQueryClient } from "@tanstack/react-query";
+import { safeNextPath } from "@/lib/safe-next";
 import {
   register,
   requestLoginCode,
   confirmLoginCode,
   setPrimaryRole,
   changePassword,
+  markOnboarded,
 } from "@/features/auth/api";
 
 // ── Stateful 7-step onboarding (phase 30) — hardened (phase 32) ───────────
@@ -48,6 +51,7 @@ type ObState = {
   phone?: string;
   bio?: string;
   language?: string;
+  next?: string;
 };
 
 const ROLES = [
@@ -169,6 +173,7 @@ function Step1({
             id="ob-name"
             type="text"
             autoComplete="name"
+            autoFocus
             placeholder="e.g. Adaeze Okonkwo"
             className={INPUT_CLS}
             value={state.name}
@@ -187,6 +192,7 @@ function Step1({
             className={INPUT_CLS}
             value={state.email}
             onChange={(e) => save({ email: e.target.value })}
+            onKeyDown={(e) => e.key === "Enter" && void onContinue()}
           />
         </div>
         <button
@@ -200,8 +206,14 @@ function Step1({
       </div>
       <p className="text-xs leading-5 text-ink-400">
         We&apos;ll send a 6-digit code to your email to verify it. By continuing you agree to our{" "}
-        <span className="text-brand-gold-dark">Terms</span> and{" "}
-        <span className="text-brand-gold-dark">Privacy Policy</span>.
+        <Link href="/terms" className="font-medium text-brand-gold-dark hover:underline">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="font-medium text-brand-gold-dark hover:underline">
+          Privacy Policy
+        </Link>
+        .
       </p>
     </div>
   );
@@ -242,6 +254,7 @@ function Step2({
           id="ob-code"
           inputMode="numeric"
           autoComplete="one-time-code"
+          autoFocus
           maxLength={6}
           placeholder="000000"
           className={cn(INPUT_CLS, "font-mono text-lg tracking-[0.35em]")}
@@ -704,6 +717,7 @@ function Loading() {
 function OnboardingInner() {
   const router = useRouter();
   const sp = useSearchParams();
+  const qc = useQueryClient();
   const { user, isLoading: sessionLoading } = useSession();
 
   const [state, setState] = useState<ObState>(() => {
@@ -737,6 +751,22 @@ function OnboardingInner() {
       return next;
     });
   };
+
+  // Carry a ?next= deep-link target through the whole signup journey.
+  useEffect(() => {
+    const target = safeNextPath(sp.get("next"));
+    if (target && !state.next) save({ next: target });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sp]);
+
+  // Finished accounts never see the signup steps again — straight through.
+  // Reads state.next (persisted) because the step URLs drop the ?next= param.
+  useEffect(() => {
+    if (!sessionLoading && user?.onboarded) {
+      router.replace(safeNextPath(state.next) ?? dashboardFor(user.roles[0]));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionLoading, user, router, state.next]);
 
   const step = useMemo(() => {
     const raw = Number(sp.get("step"));
@@ -780,12 +810,23 @@ function OnboardingInner() {
     }
   };
 
+  // The verify step promises "we emailed you" — so send the code the moment
+  // the step opens instead of making the user click "Send code" first.
+  useEffect(() => {
+    if (step === 2 && !codeSent && !submitting && state.email) void sendCode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
   const verifyCode = async () => {
     if (code.length !== 6) return;
     setSubmitting(true);
     setError(null);
     try {
       const user = await confirmLoginCode(state.email, code);
+      // The confirm planted the session cookie — sync the session cache
+      // immediately so the page's own guards see the signed-in user.
+      qc.setQueryData(["session"], user);
+      void qc.invalidateQueries({ queryKey: ["session", "context"] });
       save({ verified: true, userId: user.id });
       toast.success("Email verified — welcome to NUVORA!");
       go(3);
@@ -940,7 +981,27 @@ function OnboardingInner() {
       {step === 4 && <Step4 state={state} save={save} onNext={() => go(5)} />}
       {step === 5 && <Step5 state={state} save={save} submitting={submitting} onDone={finishStep5} setError={setError} />}
       {step === 6 && <Step6 state={state} save={save} onNext={() => go(7)} />}
-      {step === 7 && <Step7 state={state} onDone={() => router.push(dashboardFor(state.role))} />}
+      {step === 7 && (
+        <Step7
+          state={state}
+          onDone={async () => {
+            // Complete the first-time flow server-side so the next login
+            // goes straight to the dashboard (never the wizard again).
+            try {
+              await markOnboarded();
+              void qc.invalidateQueries({ queryKey: ["session"] });
+            } catch {
+              /* never trap the user on the finish line */
+            }
+            try {
+              window.localStorage.removeItem(STORAGE_KEY);
+            } catch {
+              /* ignore */
+            }
+            router.push(safeNextPath(state.next) ?? dashboardFor(state.role));
+          }}
+        />
+      )}
     </AuthShell>
   );
 }

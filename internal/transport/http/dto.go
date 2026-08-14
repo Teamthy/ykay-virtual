@@ -115,6 +115,17 @@ func DecodeJSON(r *http.Request, dst any) error {
 	return nil
 }
 
+// sentinelMessage surfaces the specific reason a wrapped sentinel error
+// carries ("unauthorized: invalid credentials" → "invalid credentials"),
+// falling back to the generic text for a bare sentinel.
+func sentinelMessage(err, sentinel error, fallback string) string {
+	prefix := sentinel.Error() + ": "
+	if msg := err.Error(); strings.HasPrefix(msg, prefix) {
+		return msg[len(prefix):]
+	}
+	return fallback
+}
+
 // WriteAppError maps any error to the response envelope at the transport edge
 // (typed errors → HTTP only here, per AGENTS.md). Sentinel errors are matched
 // with errors.Is FIRST so messages like "invalid credentials" cannot be
@@ -126,11 +137,11 @@ func WriteAppError(w http.ResponseWriter, err error) {
 	}
 	switch {
 	case errors.Is(err, domain.ErrUnauthorized):
-		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "unauthorized", nil)
+		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), sentinelMessage(err, domain.ErrUnauthorized, "unauthorized"), nil)
 	case errors.Is(err, domain.ErrForbidden):
-		pkg.WriteError(w, http.StatusForbidden, string(pkg.CodeForbidden), "forbidden", nil)
+		pkg.WriteError(w, http.StatusForbidden, string(pkg.CodeForbidden), sentinelMessage(err, domain.ErrForbidden, "forbidden"), nil)
 	case errors.Is(err, domain.ErrNotFound):
-		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), "resource not found", nil)
+		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), sentinelMessage(err, domain.ErrNotFound, "resource not found"), nil)
 	case errors.Is(err, domain.ErrAlreadyExists):
 		pkg.WriteError(w, http.StatusConflict, string(pkg.CodeConflict), err.Error(), nil)
 	case errors.Is(err, domain.ErrConflict), errors.Is(err, domain.ErrCapacityFull):

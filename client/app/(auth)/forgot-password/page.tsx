@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { INPUT_CLS } from "@/components/ui/password-input";
 import { requestPasswordReset } from "@/features/auth/api";
+import { safeNextPath, withNext } from "@/lib/safe-next";
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordInner() {
+  const sp = useSearchParams();
+  const next = safeNextPath(sp.get("next"));
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +43,7 @@ export default function ForgotPasswordPage() {
             If an account exists for <strong>{email}</strong>, a password reset link is on its way. The link
             expires in 24 hours.
           </p>
-          <Link href="/login" className="mt-4 block text-sm text-brand-blue font-semibold hover:underline">
+          <Link href={withNext("/login", next)} className="mt-4 block text-sm text-brand-blue font-semibold hover:underline">
             Back to login
           </Link>
         </div>
@@ -54,7 +58,7 @@ export default function ForgotPasswordPage() {
       footer={
         <>
           Remembered it?{" "}
-          <Link href="/login" className="text-brand-blue font-semibold hover:underline">
+          <Link href={withNext("/login", next)} className="text-brand-blue font-semibold hover:underline">
             Back to login
           </Link>
         </>
@@ -66,6 +70,8 @@ export default function ForgotPasswordPage() {
           <input
             id="fp-email"
             type="email"
+            autoComplete="email"
+            autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && void submit()}
@@ -85,5 +91,13 @@ export default function ForgotPasswordPage() {
         </button>
       </div>
     </AuthShell>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ForgotPasswordInner />
+    </Suspense>
   );
 }

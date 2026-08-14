@@ -1,166 +1,231 @@
-# NUVORA — Deploy: Vercel (web) + Render/Fly (API) + Cloudflare + .com domain
+# NUVORA Production Deploy — Vercel (web) + Render (API/data)
 
-The exact plan, verified against how the codebase works. TL;DR: **yes, it
-works** — with the caveats below and the CI/CD already wired in
-(`.github/workflows/deploy.yml`).
+Pilot target architecture. Everything below was verified against the local
+production-shaped stack (Dockerfile image, production config validation,
+e2e-web with real Postgres + Redis).
 
 ---
 
-## 1. Architecture (what actually happens)
+## 0. Monorepo — how the split works (read this first)
+
+The repo is one git repository with three deployables:
 
 ```
-            Cloudflare (DNS + CDN + WAF, free)
-            ├── app.yourdomain.com ──► Vercel (Next.js, free hobby)
-            │        └── /api/v1/*  ──► rewritten server-side to the API
-            └── api.yourdomain.com ──► Render web service (Go API)
-                     └── postgres (Render managed, or Supabase/Fly)
+ykay-virtual/
+├── cmd/ internal/ migrations/  → Render   (Go API + worker)
+├── client/                     → Vercel   (Next.js web app)
+└── mobile/                     → EAS/Expo (mobile app)
 ```
 
-Key point: **the browser only ever talks to Vercel** — the Next.js rewrite
-in `next.config.js` (`API_PROXY_TARGET`) proxies `/api/v1` to the API
-server-side. That means:
+Each platform builds ONLY its slice — you configure which slice once:
 
-- **No CORS headaches** — same-origin from the browser's perspective.
-- **Cookies work** — the `ykay_session` httpOnly cookie is set on your
-  domain (through the proxy) and sent same-origin.
-- **No IP exposure** — your API origin stays behind Cloudflare.
-
-## 2. Vercel (frontend) — free hobby is fine
-
-1. Push the repo to GitHub and **Import** in Vercel (Framework: Next.js).
-2. Set project env vars (Build):
-
-| Variable | Value |
-|---|---|
-| `API_PROXY_TARGET` | `https://api.yourdomain.com` (or the Render `.onrender.com` URL) |
-| `NEXT_PUBLIC_API_URL` | same API origin (used by SSR fetches) |
-| `NEXT_PUBLIC_SITE_URL` | `https://app.yourdomain.com` |
-
-3. Build command `npm run build` (already configured) — the rewrite picks
-   up `API_PROXY_TARGET` at build time.
-4. Custom domain: add `app.yourdomain.com` in Vercel → DNS (see §4).
-
-> Free hobby limits: 100 GB bandwidth/mo, 10s function duration — fine for
-> this app (mostly static/ISR + small API calls). The rewrite counts toward
-> bandwidth, not function time.
-
-## 3. Backend — Render (free) vs Fly.io (cheap, always-on)
-
-### Option A — Render (free, but with gotchas)
-
-| Gotcha | Impact | Mitigation |
+| | Vercel | Render |
 |---|---|---|
-| **Free Postgres expires after 30 days** | Total data loss | Use `starter` Postgres ($7/mo) OR Supabase/Neon free PG (never expires; set `DATABASE_URL` with `sslmode=require`) |
-| **Free web service sleeps after 15 min idle** | First request after sleep takes ~30–60 s | Free UptimeRobot ping every 10 min (keeps it warm enough); or `starter` |
-| Free tier = 1 instance | In-memory rate limiter fine (single instance) | Don't `--scale` until Redis-backed limiting ships |
-| No custom domain on free? | — | Free services DO support custom domains |
+| What it builds | `client/` only | Go backend only |
+| How it knows | **Root Directory = `client`** (set in the Vercel UI during import) | Blueprint at repo root reads `render.yaml`; each Docker service builds the root `Dockerfile` (the image compiles the Go binaries — nothing else) |
+| Config files | `client/vercel.json` (regions, install cmd, deploys on `main` only) | `render.yaml` (services + databases) |
+| Monorepo gotchas handled | `next.config.js` auto-detects Vercel (`process.env.VERCEL`) and skips the standalone-output + single-CPU workarounds that exist for low-memory hosts | `.dockerignore` keeps `client/node_modules`, `.next`, mobile, `.env*` out of the build context; migrations are EMBEDDED in the binaries (scratch image has no files) |
+| Deploy trigger | auto on push to `main` | auto on push to `main` |
 
-Setup: push to GitHub → Render dashboard → **New + → Blueprint** →
-paste `render.yaml` (in repo) → it creates the API service + Postgres and
-asks for the `sync:false` secrets (SITE_URL, ALLOWED_ORIGINS, PAYSTACK,
-GOOGLE, GEMINI, EXPO, SMTP). Or create the web service manually: runtime
-**Docker**, repo root, `Dockerfile`.
+**Why the client uses a proxy instead of calling the API directly:**
+session cookies. The browser only talks to the web origin (Vercel);
+`/api/v1/*` is rewritten server-side to `API_PROXY_TARGET` (the Render
+API). `SITE_URL` must therefore be the WEB origin — it sets the cookie
+Domain and the links inside emails. `ALLOWED_ORIGINS` (fail-closed,
+required in production) lists the web origin.
 
-Deploy automation: dashboard → service → **Events → Deploy Hook** → copy
-the URL into the repo secret `RENDER_DEPLOY_HOOK`; the `deploy` workflow
-fires it on every push to main.
+---
 
-### Option B — Fly.io (no free tier, but ~$3–6/mo, always-on)
+```
+                         ┌──────────────────────────────┐
+   Browser (Lagos …) ───▶│  VERCEL — Next.js client     │
+                         │  nuvora.vercel.app (or your  │
+                         │  domain)  Root Directory:    │
+                         │  client/                    │
+                         └──────────────┬───────────────┘
+                                        │ rewrite /api/v1/* → API_PROXY_TARGET
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │  RENDER — nuvora-api (Docker)│
+                         │  Go API :8080                │
+                         └──────┬──────────────┬────────┘
+                                │              │
+                 ┌──────────────▼──┐    ┌──────▼───────────────┐
+                 │ nuvora-db       │    │ nuvora-redis         │
+                 │ PostgreSQL      │    │ sessions/cache/queue │
+                 └─────────────────┘    └──────────┬───────────┘
+                                                   │ BRPOPLPUSH
+                                    ┌──────────────▼───────────┐
+                                    │ nuvora-worker (Docker)   │
+                                    │ outbound email/SMS/push  │
+                                    └──────────────────────────┘
+
+   Mobile app (Expo) ── bearer token ──▶ nuvora-api directly
+```
+
+Key wiring facts (why the config below is shaped this way):
+
+- **Session cookies**: the browser only ever talks to the *web origin*
+  (Vercel); `/api/v1` is proxied server-side. `SITE_URL` must therefore be
+  the WEB origin — it sets the cookie Domain and the links inside emails.
+- **ALLOWED_ORIGINS** is fail-closed and REQUIRED in production: list the
+  web origin (and the API host if you call it directly from a browser).
+- **Worker**: in production, outbound email is routed through the
+  Redis-backed dispatch queue — deploy `nuvora-worker` or receipts,
+  reminders and invite emails will never leave the queue.
+- **Migrations**: the chain is embedded in both the `migrate` and `api`
+  binaries. `render.yaml` ships `MIGRATE_ON_BOOT=true`, so the FIRST API
+  deploy creates the schema automatically. Set it to `false` afterwards.
+
+---
+
+## 0. Prerequisites — secrets to create BEFORE you start
+
+| Secret | Where to get it | Notes |
+|---|---|---|
+| Paystack keys | dashboard.paystack.com → Settings → API Keys | **Use TEST keys first** (sk_test_…). The pilot gate requires a real test-key transaction before live keys. |
+| Flutterwave keys | dashboard.flutterwave.com → Settings → API | Test keys first (FLWSECK_TEST-…). |
+| SMTP (Postmark/Brevo/Resend) | e.g. account.postmarkapp.com | Free tiers are fine for pilot volume. |
+| Termii API key | termii.com → dashboard | SMS provider; optional but configured. |
+| Whereby | whereby.com → developer | Meetings; optional — `MEETING_PROVIDER=stub` works without it. |
+| Google OAuth | console.cloud.google.com → OAuth client | Optional. Redirect URL: `https://<web origin>/auth/google/callback`. |
+| Gemini API key | aistudio.google.com | Optional (chat assistant). |
+| EXPO_ACCESS_TOKEN | expo.dev → Access tokens | Optional (push notifications). |
+| METRICS_TOKEN / WEBHOOK_SECRET | generate: `openssl rand -hex 32` | Webhook secret must match what you give Paystack later. |
+
+---
+
+## 1. Render — backend (do this FIRST)
+
+1. Push `main` to GitHub (the CI run must be green first — see the
+   checklist gates).
+2. Render → **New → Blueprint** → select the repo → it reads `render.yaml`
+   and creates: `nuvora-db`, `nuvora-redis`, `nuvora-api`, `nuvora-worker`.
+   - Edit the `repo:` lines in `render.yaml` to your GitHub path if you
+     haven't already (`YOUR_ORG`).
+3. Open `nuvora-api` → **Environment** and fill every `sync:false` value:
+   - `SITE_URL` = `https://nuvora.vercel.app` (use the *actual* Vercel URL
+     from step 2 — you can update it after the first deploy)
+   - `ALLOWED_ORIGINS` = `https://nuvora.vercel.app`
+   - the payment/email/SMS/webhook secrets from the table above.
+4. Migrations — automatic on the first deploy: `render.yaml` ships
+   `MIGRATE_ON_BOOT=true`, so the first `nuvora-api` boot applies the
+   embedded chain and creates the schema. After the first successful
+   deploy, set it to `false` in the dashboard (prevents concurrent-boot
+   races if you ever scale to multiple replicas).
+   - Manual fallback (any time): Render → `nuvora-api` → **Shell** →
+     `/usr/local/bin/migrate --cmd=up` (the chain is embedded in the
+     binary; no filesystem needed).
+5. Health checks:
+   - `https://nuvora-api.onrender.com/health` → `200 ok`
+   - `https://nuvora-api.onrender.com/health/ready` → `200` (Postgres
+     reachable). First hit may take 30–60s if the free instance slept.
+
+> Upgrade path for the pilot: Postgres `starter` ($7/mo) before day 30 of
+> the free tier; keep Redis free; API/worker `starter` if cold starts hurt.
+
+---
+
+## 2. Vercel — web client
+
+1. vercel.com → **Add New Project** → import the same repo.
+2. Settings to set during import:
+   - **Root Directory**: `client`
+   - Framework: Next.js (auto-detected; `client/vercel.json` sets `fra1`
+     region — Frankfurt, best latency to Lagos).
+3. **Environment Variables** (Project → Settings → Environment Variables,
+   apply to Production):
+   | Key | Value |
+   |---|---|
+   | `API_PROXY_TARGET` | `https://nuvora-api.onrender.com` |
+   | `NEXT_PUBLIC_API_URL` | `https://nuvora-api.onrender.com/api/v1` |
+   These are read at BUILD time (rewrites + SSR fetches) — changing them
+   triggers a redeploy.
+4. Deploy. Then **update Render** `SITE_URL` + `ALLOWED_ORIGINS` to the
+   real `https://<project>.vercel.app` URL and let the API redeploy.
+
+---
+
+## 3. Post-deploy smoke tests (run every one — 10 minutes)
 
 ```bash
-fly launch --name nuvora-api --dockerfile Dockerfile   # from repo root
-fly secrets set ENVIRONMENT=production SITE_URL=https://app.yourdomain.com \
-  ALLOWED_ORIGINS=https://app.yourdomain.com DATABASE_URL=...
-fly deploy
-# Postgres: fly postgres create --name nuvora-db   (~$15/mo) — or keep
-# Render/Supabase Postgres and point DATABASE_URL at it.
+API=https://nuvora-api.onrender.com
+WEB=https://<project>.vercel.app
+
+# 1. liveness + readiness
+curl -s $API/health && curl -s $API/health/ready
+
+# 2. catalogue renders (public, cached)
+curl -s $API/api/v1/subjects | head -c 200; echo
+curl -s $WEB/tutors -o /dev/null -w "tutors=%{http_code}\n"
+
+# 3. signup + emailed verification code (proves SMTP end to end)
+curl -s -X POST $API/api/v1/auth/register -H 'Content-Type: application/json' \
+  -d '{"email":"pilot1@yourdomain.com","password":"password123","roles":["PARENT"]}' -w "\nregister=%{http_code}\n"
+curl -s -X POST $API/api/v1/login-code/request -H 'Content-Type: application/json' \
+  -d '{"email":"pilot1@yourdomain.com"}' -w "\ncode-sent=%{http_code}\n"
+# → the 6-digit code must arrive in the inbox, then:
+curl -s -X POST $API/api/v1/auth/login-code/confirm -H 'Content-Type: application/json' \
+  -d '{"email":"pilot1@yourdomain.com","code":"123456"}' -w "\nconfirm=%{http_code}\n"
+
+# 4. browser: /login?next=/cohorts → login → returns to /cohorts
+# 5. browser: /onboarding → full 7-step signup → dashboard
+# 6. payments: initiate a checkout (test key) and confirm the sandbox
+#    authorization page opens (Paystack test card 4084 0840 8408 4081)
 ```
 
-Deploy automation: add `FLY_API_TOKEN` secret and a step in
-`deploy.yml`:
-```yaml
-- uses: superfly/flyctl-actions/setup-flyctl@master
-- run: flyctl deploy --remote-only
+---
+
+## 4. Custom domain (when ready)
+
+1. **Vercel** → Project → Settings → Domains → add `www.yourdomain.com`
+   (+ root). Update your DNS CNAME/ALIAS as Vercel instructs. SSL is
+   automatic.
+2. **Render** → `nuvora-api` → Settings → Custom Domain → add
+   `api.yourdomain.com` → CNAME in your DNS → SSL auto-provisions.
+3. Update EVERYTHING that references the old origins, then redeploy both:
+   - Render: `SITE_URL`, `ALLOWED_ORIGINS`, `GOOGLE_REDIRECT_URL`
+   - Vercel: `API_PROXY_TARGET`, `NEXT_PUBLIC_API_URL`
+   - Mobile app: `apiUrl` (below)
+
+---
+
+## 5. Mobile app (NUVORA on the go)
+
+The app reads its API base from Expo config
+(`mobile/app.json` → `expo.extra.apiUrl`):
+
+```json
+{ "expo": { "extra": { "apiUrl": "https://api.yourdomain.com/api/v1" } } }
 ```
 
-### Which one?
-- **Demo / pre-launch:** Render free + Supabase free Postgres (no expiry)
-  — zero cost, accept cold starts.
-- **Semi-serious:** Render `starter` web + `starter` postgres — ~$14/mo,
-  no sleep, no expiry, one click.
-- **You like Fly:** Fly machines (~$3/mo) + Supabase PG — always-on, cheap.
+Build via EAS (`eas build --profile production`). The API allows the app
+because it authenticates with bearer tokens (`/auth/login/mobile`) — no
+CORS/origin work needed; no cookie involved.
 
-## 4. Cloudflare + the .com domain
+---
 
-1. Buy the domain at **Cloudflare Registrar** (at-cost, no markup) or any
-   registrar, then move nameservers to Cloudflare (free plan).
-2. DNS records (proxy ON / orange cloud):
+## 6. Rollback + day-2 ops
 
-| Type | Name | Target |
+- **Vercel**: Deployments tab → ⋯ → *Promote/Rollback* (instant).
+- **Render**: `nuvora-api` → Manual Deploy → *Deploy latest commit* or pick
+  a previous successful deploy.
+- **Database**: Render PG takes automatic daily snapshots; restore from
+  the dashboard (or use the repo's `scripts/backup.sh` against
+  `BACKUP_METRICS_DIR`-style paths if self-hosting ops).
+- **Monitor**: `nuvora-api` logs + `/metrics` (bearer = `METRICS_TOKEN`).
+  Grafana/Prometheus are in `docker-compose.prod.yml` if you later move to
+  a VPS.
+
+## 7. Pilot cost (free/cheap tiers)
+
+| Item | Plan | Cost |
 |---|---|---|
-| CNAME | app | `cname.vercel-dns.com` |
-| CNAME | api | `<your-service>.onrender.com` (or Fly `.fly.dev`) |
+| Vercel | Hobby | $0 |
+| Render API + worker + Redis | Free (sleeps) | $0 |
+| Render Postgres | Starter (before day 30) | ~$7/mo |
+| SMTP (Postmark) | Free tier | $0 |
 
-3. SSL/TLS: **Full (strict optional)** — Cloudflare terminates TLS and
-   re-encrypts to Vercel/Render (both provide valid certs).
-4. Vercel: add `app.yourdomain.com` as the custom domain (it verifies
-   via the CNAME).
-5. Render: add `api.yourdomain.com` under Settings → Custom Domains.
-6. Wait 5–30 min for DNS propagation, then:
-
-```bash
-curl https://app.yourdomain.com/api/v1/health/ready   # → {"status":"ready"}
-```
-
-## 5. Google OAuth (when you're ready)
-
-- `GOOGLE_REDIRECT_URL=https://app.yourdomain.com/auth/google/callback`
-  (the Next.js callback route sets the cookie on your domain — this is the
-  fixed phase-38 flow).
-- Register that exact URL in Google Cloud Console → OAuth consent screen →
-  Authorized redirect URIs. Add `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
-  secrets on Render/Fly.
-
-## 6. Android APK — local download (no Play Store)
-
-1. Build the APK:
-   ```bash
-   cd mobile
-   npx eas build -p android --profile preview   # → .apk (internal)
-   ```
-   (or `expo run:android` / `gradlew assembleRelease` with a keystore).
-2. Download the artifact from Expo → rename to `nuvora-app.apk`.
-3. Host it: drop it in `client/public/` (served by Vercel — this is what
-   `/download` links to), or Cloudflare R2/Drive for bigger files.
-4. The `/download` page explains sideloading ("Install unknown apps").
-5. Point the app at production: `mobile/app.json` → `extra.apiUrl` →
-   `https://api.yourdomain.com/api/v1`.
-
-> iOS: no store, no sideload on iPhones — web app only until TestFlight/
-> App Store (kit in `docs/STORE_SUBMISSION.md`).
-
-## 7. CI/CD — already fixed and wired
-
-- **`ci.yml`**: `e2e-pg` job now runs the FULL suite against a real
-  Postgres 16 service container (was memory-only); the Lighthouse job was
-  broken (API died between steps) — now boots API + web + lhci in one step
-  and serves the web via the standalone server; prompt evals + Go + TS
-  gates unchanged.
-- **`deploy.yml`** (new): push to main → deploy web to Vercel (via
-  `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets) and trigger
-  Render via `RENDER_DEPLOY_HOOK` (skips gracefully if unset). Manual run
-  supported.
-- **`render.yaml`** (new): Render Blueprint for API + Postgres with the
-  secret placeholders.
-
-## 8. First-launch checklist (this plan)
-
-- [ ] Cloudflare nameservers active; DNS records live (app + api)
-- [ ] Vercel project imported, env vars set, domain verified
-- [ ] Render service up (`/health/ready` = ready) or Fly deployed
-- [ ] `https://app.yourdomain.com` loads; login through the proxy works
-- [ ] `ALLOWED_ORIGINS` = your web origin (required by fail-fast config)
-- [ ] Postgres: Supabase/Neon or paid Render (never the 30-day free one)
-- [ ] Backup: `scripts/backup.sh` on a cron (or managed PG backups)
-- [ ] APK built, hosted, `/download` works on a phone
-- [ ] CI green on main; deploy workflow triggers both targets
+Total ≈ **$7/mo** for the pilot. Upgrade API to `starter` ($7/mo) when
+cold starts annoy real users; move to the VPS compose stack
+(`docker-compose.prod.yml`) when volume justifies it.

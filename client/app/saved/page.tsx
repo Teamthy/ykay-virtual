@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { loginWithReturn } from "@/lib/safe-next";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useWishlist } from "@/features/wishlist/hook";
@@ -14,7 +15,7 @@ export default function SavedPage() {
   const { saved, remove } = useWishlist();
 
   useEffect(() => {
-    if (!isLoading && !user) router.replace("/login");
+    if (!isLoading && !user) router.replace(loginWithReturn());
   }, [isLoading, user, router]);
 
   return (

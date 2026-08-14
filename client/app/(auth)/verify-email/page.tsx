@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { confirmVerification, resendVerificationEmail } from "@/features/auth/api";
+import { safeNextPath, withNext } from "@/lib/safe-next";
 
 type State =
   | { phase: "working" }
@@ -19,6 +20,7 @@ function VerifyEmailInner() {
   const qc = useQueryClient();
   const sp = useSearchParams();
   const token = sp.get("token");
+  const next = safeNextPath(sp.get("next"));
   const [state, setState] = useState<State>({ phase: "working" });
   const [email, setEmail] = useState("");
 
@@ -47,7 +49,7 @@ function VerifyEmailInner() {
         <div className="text-5xl">✅</div>
         <h1 className="text-2xl font-extrabold">Email verified!</h1>
         <p className="text-ink-600">Your account is now active. Welcome to NUVORA.</p>
-        <Button variant="gold" onClick={() => router.push("/dashboard")}>
+        <Button variant="gold" onClick={() => router.push(next ?? "/dashboard")}>
           Go to dashboard
         </Button>
       </div>
@@ -87,7 +89,7 @@ function VerifyEmailInner() {
         >
           Resend verification email
         </Button>
-        <Link href="/login" className="block text-center text-sm text-brand-blue font-semibold hover:underline">
+        <Link href={withNext("/login", next)} className="block text-center text-sm text-brand-blue font-semibold hover:underline">
           Back to login
         </Link>
       </div>

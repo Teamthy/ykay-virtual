@@ -4,25 +4,51 @@ import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
 import { GoogleButton } from "@/components/ui/google-button";
-import { login } from "@/features/auth/api";
+import { login, type CurrentUser } from "@/features/auth/api";
+import { useSession } from "@/hooks/useSession";
+import { safeNextPath, withNext } from "@/lib/safe-next";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
-  password: z.string().min(8, "Password is at least 8 characters"),
+  password: z.string().min(1, "Enter your password"),
 });
 
-export default function LoginPage() {
+/** Where a successful (or already-authenticated) user should land. */
+function destinationFor(user: CurrentUser, next: string | null): string {
+  if (user.status === "PENDING_VERIFICATION") return withNext("/verify-email?sent=1", next);
+  if (!user.onboarded) return withNext("/onboarding/wizard", next);
+  return safeNextPath(next) ?? homeForRoles(user.roles);
+}
+
+function friendlyError(raw: string): string {
+  if (/invalid credentials/i.test(raw))
+    return "Email or password is incorrect. Try again, or reset your password below.";
+  if (/not active/i.test(raw)) return "This account isn't active yet — check your inbox for the verification email.";
+  if (/rate limit|too many/i.test(raw)) return "Too many attempts. Wait a minute, then try again.";
+  if (/failed to fetch|network|fetch/i.test(raw)) return "Can't reach NUVORA right now. Check your connection and try again.";
+  return raw;
+}
+
+function LoginInner() {
   const router = useRouter();
   const qc = useQueryClient();
+  const sp = useSearchParams();
+  const next = safeNextPath(sp.get("next") ?? sp.get("returnTo"));
+  const { user, isLoading } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Already signed in? Don't show the form — go where you're headed.
+  useEffect(() => {
+    if (!isLoading && user) router.replace(destinationFor(user, next));
+  }, [user, isLoading, next, router]);
 
   const form = useForm({
     defaultValues: { email: "", password: "" },
@@ -36,21 +62,13 @@ export default function LoginPage() {
       setSubmitting(true);
       setError(null);
       try {
-        const user = await login(value.email, value.password);
+        const email = value.email.trim();
+        const user = await login(email, value.password);
         qc.setQueryData(["session"], user);
         toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
-        if (user.status === "PENDING_VERIFICATION") {
-          router.push("/verify-email?sent=1");
-          return;
-        }
-        // First-time users walk the 3-step wizard before their dashboard.
-        if (!user.onboarded) {
-          router.push("/onboarding/wizard");
-          return;
-        }
-        router.push(homeForRoles(user.roles));
+        router.push(destinationFor(user, next));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Login failed");
+        setError(friendlyError(err instanceof Error ? err.message : "Login failed"));
       } finally {
         setSubmitting(false);
       }
@@ -64,7 +82,7 @@ export default function LoginPage() {
       footer={
         <>
           New to NUVORA?{" "}
-          <Link href="/onboarding" className="font-semibold text-brand-gold-dark hover:underline">
+          <Link href={withNext("/onboarding", next)} className="font-semibold text-brand-gold-dark hover:underline">
             Create an account
           </Link>
         </>
@@ -96,6 +114,7 @@ export default function LoginPage() {
                   id="login-email"
                   type="email"
                   autoComplete="email"
+                  autoFocus
                   className={INPUT_CLS}
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
@@ -137,15 +156,23 @@ export default function LoginPage() {
           </button>
 
           <div className="flex items-center justify-between text-sm">
-            <Link href="/forgot-password" className="font-medium text-brand-gold-dark hover:underline">
+            <Link href={withNext("/forgot-password", next)} className="font-medium text-brand-gold-dark hover:underline">
               Forgot your password?
             </Link>
-            <Link href="/login-code" className="font-medium text-ink-500 hover:text-ink-800 hover:underline">
+            <Link href={withNext("/login-code", next)} className="font-medium text-ink-500 hover:text-ink-800 hover:underline">
               Log in with a code
             </Link>
           </div>
         </form>
       </div>
     </AuthShell>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginInner />
+    </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { loginWithReturn } from "@/lib/safe-next";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -30,7 +31,7 @@ export default function AdminChatPage() {
   const [replyText, setReplyText] = useState("");
 
   useEffect(() => {
-    if (!isLoading && !user) router.replace("/login");
+    if (!isLoading && !user) router.replace(loginWithReturn());
   }, [isLoading, user, router]);
 
   const threads = useQuery({ queryKey: ["admin", "chat", "threads"], queryFn: listAllChatThreads });
