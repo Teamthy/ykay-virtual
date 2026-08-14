@@ -20,7 +20,7 @@ test("no critical a11y violations on landing, login and dashboard", async ({ pag
   for (const v of critical)
     console.log(`[/] CRITICAL: ${v.id} — targets: ${JSON.stringify(v.nodes.map((n) => n.target))}`);
   for (const v of serious.slice(0, 8))
-    console.log(`[/] SERIOUS: ${v.id} — ${v.nodes.length} nodes — targets: ${JSON.stringify(v.nodes.slice(0, 5).map((n) => n.target))}`);
+    console.log(`[/] SERIOUS: ${v.id} — ${v.nodes.length} nodes — targets: ${JSON.stringify(v.nodes.slice(0, 5).map((n) => ({ t: n.target, s: n.failureSummary })))}`);
   expect(critical, "critical violations on /").toEqual([]);
 
   // Login

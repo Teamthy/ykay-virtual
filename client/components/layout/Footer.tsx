@@ -46,7 +46,7 @@ export function Footer() {
             <p className="mt-1 text-sm text-white/60">Free advice on programmes, curricula and matching the right tutor.</p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
-            <a href="tel:+2347063726773" className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold hover:bg-white/20 transition-colors">
+            <a href="tel:+2347063726773" className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold text-white hover:bg-white/30 transition-colors">
               <Phone size={15} /> +234 706 372 6773
             </a>
             <a href="mailto:hello@nuvora.com" className="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-hover-dark transition-colors">
@@ -82,15 +82,15 @@ export function Footer() {
           <FooterCol title="Company" links={COMPANY} />
           <FooterCol title="Support" links={SUPPORT} />
         </div>
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-3 text-xs text-white/55">
+        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-3 text-xs text-ink-300">
           <span>© 2026 NUVORA. All rights reserved.</span>
           <span className="flex gap-4">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="text-ink-300 hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="text-ink-300 hover:text-white transition-colors">Terms of Service</Link>
           </span>
           <span className="flex gap-4">
-            <Link href="/about" className="hover:text-white">Safeguarding</Link>
-            <Link href="/contact" className="hover:text-white">Terms & Privacy</Link>
+            <Link href="/about" className="text-ink-300 hover:text-white">Safeguarding</Link>
+            <Link href="/contact" className="text-ink-300 hover:text-white">Terms & Privacy</Link>
           </span>
         </div>
       </div>

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
@@ -15,6 +16,47 @@ import (
 // AuditLogRepo — persists every audit entry created by the AuditService.
 
 type AuditLogRepo struct{ db TxQuerier }
+
+// ArchiveOlderThan — G7.3: moves expired audit rows to audit_logs_archive
+// in bounded batches. Idempotent: the archive insert is ON CONFLICT-safe,
+// so a crashed/interrupted run resumes cleanly on the next pass.
+func (r *AuditLogRepo) ArchiveOlderThan(ctx context.Context, cutoff time.Time, batchSize int) (int64, error) {
+	if batchSize < 1 || batchSize > 10000 {
+		batchSize = 1000
+	}
+	var moved int64
+	for {
+		res, err := r.db.ExecContext(ctx, `
+			INSERT INTO audit_logs_archive
+			SELECT * FROM audit_logs
+			WHERE created_at < $1
+			ORDER BY created_at ASC
+			LIMIT $2
+			ON CONFLICT (id) DO NOTHING`, cutoff, batchSize)
+		if err != nil {
+			return moved, fmt.Errorf("archive audit logs (insert): %w", err)
+		}
+		n, _ := res.RowsAffected()
+		if n == 0 {
+			break
+		}
+		if _, err := r.db.ExecContext(ctx, `
+			DELETE FROM audit_logs
+			WHERE id IN (
+				SELECT id FROM audit_logs
+				WHERE created_at < $1
+				ORDER BY created_at ASC
+				LIMIT $2
+			)`, cutoff, batchSize); err != nil {
+			return moved, fmt.Errorf("archive audit logs (delete): %w", err)
+		}
+		moved += n
+		if n < int64(batchSize) {
+			break
+		}
+	}
+	return moved, nil
+}
 
 func NewAuditLogRepo(db TxQuerier) *AuditLogRepo { return &AuditLogRepo{db: db} }
 

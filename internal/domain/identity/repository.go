@@ -57,6 +57,9 @@ type ParentStudentLinkRepository interface {
 type AuditLogRepository interface {
 	Create(ctx context.Context, log *AuditLog) error
 	ListByTarget(ctx context.Context, targetType string, targetID uuid.UUID, limit int) ([]AuditLog, error)
+	// ArchiveOlderThan moves audit rows older than cutoff into the archive
+	// table in bounded batches (G7.3); returns the number moved.
+	ArchiveOlderThan(ctx context.Context, cutoff time.Time, batchSize int) (int64, error)
 }
 
 type AuditService interface {

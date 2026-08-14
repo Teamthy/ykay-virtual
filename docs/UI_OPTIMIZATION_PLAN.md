@@ -19,6 +19,11 @@ execution next tranche.**
 
 ## Known findings (measured, not guessed)
 
+> Phase 49 closed the landing-page contrast backlog: PressLogos +
+> AnnouncementVideo strips bumped to AA inks — landing axe serious → 0.
+> The announcement band's award claims remain G5.3 register items
+> (press/award claims need founder sign-off before launch).
+
 | # | Finding | Source | Action |
 |---|---|---|---|
 | 1 | **52 color-contrast nodes** on the landing page (serious, axe) | e2e/axe.spec.ts | fix text/ink-on-gold combos OR formal acceptance register with dates (G6.2) |

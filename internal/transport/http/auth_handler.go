@@ -179,9 +179,11 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(h.cfg.Name); err == nil && cookie.Value != "" {
 		_ = h.svc.Logout(r.Context(), hashToken(cookie.Value))
+		middleware.InvalidateRawToken(cookie.Value) // G7.1: drop cached session
 	}
 	if raw := middleware.BearerToken(r); raw != "" {
 		_ = h.svc.Logout(r.Context(), hashToken(raw))
+		middleware.InvalidateRawToken(raw)
 	}
 	middleware.ClearSessionCookie(w, h.cfg)
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"logged_out": true}, nil)
@@ -270,6 +272,14 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	if err := h.svc.ChangePassword(r.Context(), actor.UserID, req.NewPassword); err != nil {
 		WriteAppError(w, err)
 		return
+	}
+	// G7.1: drop the cached session for the presented token so the change
+	// takes effect immediately for this client (other sessions expire
+	// within the 30s cache TTL after their rows are revoked).
+	if raw := middleware.BearerToken(r); raw != "" {
+		middleware.InvalidateRawToken(raw)
+	} else if cookie, cerr := r.Cookie(h.cfg.Name); cerr == nil {
+		middleware.InvalidateRawToken(cookie.Value)
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"changed": true}, nil)
 }

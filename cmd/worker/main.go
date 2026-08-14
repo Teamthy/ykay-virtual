@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -120,6 +121,13 @@ func main() {
 			}
 			return err
 		})
+		queue.Register(worker.JobArchiveAuditLogs, func(jctx context.Context, _ worker.Job) error {
+			n, err := r.auditRepo.ArchiveOlderThan(jctx, auditCutoff(), 1000)
+			if err == nil && n > 0 {
+				log.Printf("job[archive_audit_logs]: archived %d row(s)", n)
+			}
+			return err
+		})
 		go queue.Run(ctx)
 		log.Println("Worker: durable Redis queue consuming (retry + dead-letter enabled)")
 	} else {
@@ -133,6 +141,8 @@ func main() {
 	defer payoutTicker.Stop()
 	rankingTicker := time.NewTicker(24 * time.Hour)
 	defer rankingTicker.Stop()
+	archiveTicker := time.NewTicker(24 * time.Hour) // G7.3 audit retention
+	defer archiveTicker.Stop()
 
 	// Run once at boot so restarts immediately recover stale holds + attempts.
 	go func() {
@@ -193,6 +203,17 @@ func main() {
 				}
 				telemetry.CronRun("compute_tutor_ranking_score", true)
 				log.Printf("cron[compute_tutor_ranking_score]: updated %d ranking(s)", n)
+			case <-archiveTicker.C:
+				n, err := r.auditRepo.ArchiveOlderThan(ctx, auditCutoff(), 1000)
+				if err != nil {
+					log.Printf("cron[archive_audit_logs] error: %v", err)
+					telemetry.CronRun("archive_audit_logs", false)
+					continue
+				}
+				telemetry.CronRun("archive_audit_logs", true)
+				if n > 0 {
+					log.Printf("cron[archive_audit_logs]: archived %d audit row(s)", n)
+				}
 			}
 		}
 	}()
@@ -265,4 +286,17 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 		devices:    postgres.NewDeviceRepo(pg.DB()),
 		users:      postgres.NewUserRepo(pg.DB()),
 	}
+}
+
+// auditCutoff — G7.3: rows older than AUDIT_RETENTION_DAYS (default 180)
+// become eligible for archival into audit_logs_archive.
+func auditCutoff() time.Time {
+	days := 180
+	if v := os.Getenv("AUDIT_RETENTION_DAYS"); v != "" {
+		var n int
+		if _, err := fmt.Sscanf(v, "%d", &n); err == nil && n > 0 {
+			days = n
+		}
+	}
+	return time.Now().UTC().AddDate(0, 0, -days)
 }

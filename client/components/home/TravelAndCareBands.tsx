@@ -29,7 +29,7 @@ export function TravelAndCareBands() {
           </Link>
         </div>
         <div className="overflow-hidden rounded-3xl bg-[#111111] p-8 text-white shadow-card">
-          <p className="font-display text-5xl tracking-[0.02em]">1600+</p>
+          <p className="font-display text-5xl tracking-[0.02em] text-white">1600+</p>
           <p className="mt-1 text-white/80">universities &amp; colleges in the US, UK, Canada &amp; Australia</p>
           <div className="mt-6 flex flex-wrap gap-2">
             {["IELTS", "GRE", "GMAT", "TOEFL", "SAT"].map((t) => (
@@ -58,7 +58,7 @@ export function TravelAndCareBands() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4 justify-start lg:justify-end">
-            <span className="rounded-full bg-brand-green-light px-4 py-1.5 text-xs font-bold text-brand-green">
+            <span className="rounded-full bg-brand-green-light px-4 py-1.5 text-xs font-bold text-brand-green-dark">
               180+ students enrolled
             </span>
             <Link

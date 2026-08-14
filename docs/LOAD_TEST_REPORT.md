@@ -22,13 +22,13 @@ raw-throughput measurement (default 300/min unchanged in production).
 - The 10k-user estimate is ~60k authenticated calls/day with a 5–12 req/s
   peak. **One instance serves this with >40× headroom** even on the
   slowest measured path (440 req/s ≈ 38M req/day).
-- The **session-resolution read path is the bottleneck** (44.7 ms vs
-  3.7 ms cached) — when horizontal scale is ever needed (G7), a Redis
-  token→(user, roles) cache on SessionAuth is the first lever, not more
-  Postgres.
+- The **session-resolution read path was the bottleneck** (44.7 ms vs
+  3.7 ms cached) — **shipped in Phase 49**: a 30s Redis-backed session
+  cache (G7.1) now fronts SessionAuth; rerun the harness with Redis up
+  to confirm the drop.
 - The auth rate limiter demonstrably engages (42/80 → 429); the global
-  limiter is now env-tunable (RATE_LIMIT_PER_MINUTE) for tuning and
-  future distributed replacement.
+  limiter is env-tunable (RATE_LIMIT_PER_MINUTE), and Phase 49 shipped
+  the Redis-backed distributed limiter pair (G7.2).
 
 ## Defects found and fixed by this test
 

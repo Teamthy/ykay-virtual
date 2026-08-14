@@ -33,7 +33,7 @@ export function SuccessRateBand() {
               <Progress label={`${r.subject} success rate`} value={r.pct} />
             </div>
           ))}
-          <p className="pt-2 text-xs text-ink-400">
+          <p className="pt-2 text-xs text-ink-500">
             Success rate across our 2025–26 exam cohorts (WAEC, NECO, Common Entrance, SAT).
           </p>
         </div>

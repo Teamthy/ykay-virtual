@@ -95,6 +95,12 @@ func NewAuditLogMemory() *AuditLogMemory {
 	return &AuditLogMemory{rows: map[uuid.UUID]*identity.AuditLog{}}
 }
 
+// ArchiveOlderThan — dev no-op (the in-memory store has no retention need;
+// parity with the postgres archive job).
+func (m *AuditLogMemory) ArchiveOlderThan(context.Context, time.Time, int) (int64, error) {
+	return 0, nil
+}
+
 func (m *AuditLogMemory) Create(_ context.Context, l *identity.AuditLog) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
