@@ -14,6 +14,13 @@ VALUES ('00000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-0000000
         'APPROVED', TRUE, 4.6, 20)
 ON CONFLICT (id) DO NOTHING;
 
+-- Tutor subjects (Batch 3): the marketplace tutor teaches Mathematics +
+-- Physics so search cards render "Teaches Mathematics · Physics".
+INSERT INTO tutor_subjects (tutor_profile_id, subject_id, is_approved)
+SELECT '00000000-0000-0000-0000-000000000102', id, TRUE
+FROM subjects WHERE slug IN ('mathematics', 'physics')
+ON CONFLICT DO NOTHING;
+
 -- Competency question bank for Mathematics — the migration ships a bank with
 -- arbitrary correct indexes, which breaks the deterministic suite (it answers
 -- every question with index 1, like the memory-mode bank). Replace it with

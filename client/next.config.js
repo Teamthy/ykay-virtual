@@ -23,6 +23,12 @@ const nextConfig = {
     workerThreads: false,
     cpus: 1,
   },
+  // Constrained hosts (2GB sandboxes, small VMs) OOM during next build's
+  // duplicate type-check pass. CI's frontend job runs `npx tsc --noEmit`
+  // BEFORE the build as the authoritative gate, so the in-build duplicate
+  // check and lint pass are skipped here deliberately.
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" }

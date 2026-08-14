@@ -64,7 +64,7 @@ export function HeroReference() {
         <div className="relative mx-auto w-full max-w-[520px]">
           <div className="relative overflow-hidden rounded-[1.75rem] shadow-card ring-1 ring-ink-100">
             <Image
-              src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80"
+              src="/hero/home-tutoring.jpg"
               alt="Student learning with a NUVORA tutor"
               width={1040}
               height={780}

@@ -54,25 +54,31 @@ type TutorHandler struct{ svc *service.TutorService }
 
 func NewTutorHandler(svc *service.TutorService) *TutorHandler { return &TutorHandler{svc: svc} }
 
+// TutorSubjectDTO — subject teaching summary on tutor cards/search results.
+type TutorSubjectDTO struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
 type TutorDTO struct {
-	ID               string   `json:"id"`
-	Slug             string   `json:"slug"`
-	DisplayName      string   `json:"display_name"`
-	Headline         *string  `json:"headline,omitempty"`
-	Bio              *string  `json:"bio,omitempty"`
-	HourlyRateMin    *float64 `json:"hourly_rate_min,omitempty"`
-	HourlyRateMax    *float64 `json:"hourly_rate_max,omitempty"`
-	Currency         string   `json:"currency"`
-	RatingAvg        float64  `json:"rating_avg"`
-	RatingCount      int      `json:"rating_count"`
-	RankingScore     float64  `json:"ranking_score"`
-	Location         *string  `json:"location,omitempty"`
-	AcceptsOnline    bool     `json:"accepts_online"`
-	Subjects         []string `json:"subjects"`
-	Timezone         string   `json:"timezone"`
-	YearsExperience  int      `json:"years_experience"`
-	TotalHoursTaught int      `json:"total_hours_taught"`
-	TotalStudents    int      `json:"total_students"`
+	ID               string            `json:"id"`
+	Slug             string            `json:"slug"`
+	DisplayName      string            `json:"display_name"`
+	Headline         *string           `json:"headline,omitempty"`
+	Bio              *string           `json:"bio,omitempty"`
+	HourlyRateMin    *float64          `json:"hourly_rate_min,omitempty"`
+	HourlyRateMax    *float64          `json:"hourly_rate_max,omitempty"`
+	Currency         string            `json:"currency"`
+	RatingAvg        float64           `json:"rating_avg"`
+	RatingCount      int               `json:"rating_count"`
+	RankingScore     float64           `json:"ranking_score"`
+	Location         *string           `json:"location,omitempty"`
+	AcceptsOnline    bool              `json:"accepts_online"`
+	Subjects         []TutorSubjectDTO `json:"subjects"`
+	Timezone         string            `json:"timezone"`
+	YearsExperience  int               `json:"years_experience"`
+	TotalHoursTaught int               `json:"total_hours_taught"`
+	TotalStudents    int               `json:"total_students"`
 }
 
 func toTutorDTO(res tutor.TutorSearchResult) TutorDTO {
@@ -90,12 +96,25 @@ func toTutorDTO(res tutor.TutorSearchResult) TutorDTO {
 		RankingScore:     res.Profile.RankingScore,
 		Location:         res.LocationLabel,
 		AcceptsOnline:    res.Profile.AcceptsOnline,
-		Subjects:         res.Subjects,
+		Subjects:         toSubjectDTOs(res.Subjects, res.SubjectSlugs),
 		Timezone:         res.Profile.Timezone,
 		YearsExperience:  res.Profile.YearsExperience,
 		TotalHoursTaught: res.Profile.TotalHoursTaught,
 		TotalStudents:    res.Profile.TotalStudents,
 	}
+}
+
+// toSubjectDTOs — pairs subject names with slugs (defensive when counts drift).
+func toSubjectDTOs(names, slugs []string) []TutorSubjectDTO {
+	out := []TutorSubjectDTO{}
+	for i, name := range names {
+		slug := ""
+		if i < len(slugs) {
+			slug = slugs[i]
+		}
+		out = append(out, TutorSubjectDTO{Name: name, Slug: slug})
+	}
+	return out
 }
 
 func (h *TutorHandler) Search(w http.ResponseWriter, r *http.Request) {

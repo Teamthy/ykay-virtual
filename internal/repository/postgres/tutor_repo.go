@@ -11,6 +11,7 @@ import (
 	"ykay-virtual/internal/domain/tutor"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type TutorRepo struct{ db TxQuerier }
@@ -173,14 +174,57 @@ func (r *TutorRepo) Search(ctx context.Context, p tutor.TutorSearchParams) ([]tu
 	defer rows.Close()
 
 	out := []tutor.TutorSearchResult{}
+	ids := []uuid.UUID{}
 	for rows.Next() {
 		res, err := scanTutorResult(rows)
 		if err != nil {
 			return nil, 0, err
 		}
 		out = append(out, *res)
+		ids = append(ids, res.Profile.ID)
 	}
-	return out, total, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+	// Hydrate subjects in one batch query (no join fan-out on the list scan).
+	if len(ids) > 0 {
+		if err := r.hydrateSubjects(ctx, out, ids); err != nil {
+			return nil, 0, err
+		}
+	}
+	return out, total, nil
+}
+
+// hydrateSubjects — batch-loads subject names/slugs per tutor so search
+// cards render "Teaches Mathematics · Physics" (Batch 3).
+func (r *TutorRepo) hydrateSubjects(ctx context.Context, out []tutor.TutorSearchResult, ids []uuid.UUID) error {
+	subjRows, err := r.db.QueryContext(ctx, `
+		SELECT ts.tutor_profile_id, s.name, s.slug
+		FROM tutor_subjects ts
+		JOIN subjects s ON s.id = ts.subject_id
+		WHERE ts.tutor_profile_id = ANY($1::uuid[])
+		ORDER BY ts.created_at ASC`, pq.Array(ids))
+	if err != nil {
+		return fmt.Errorf("hydrate tutor subjects: %w", err)
+	}
+	defer subjRows.Close()
+
+	byID := make(map[uuid.UUID][]int)
+	for i := range out {
+		byID[out[i].Profile.ID] = append(byID[out[i].Profile.ID], i)
+	}
+	for subjRows.Next() {
+		var tid uuid.UUID
+		var name, slug string
+		if err := subjRows.Scan(&tid, &name, &slug); err != nil {
+			return err
+		}
+		for _, i := range byID[tid] {
+			out[i].Subjects = append(out[i].Subjects, name)
+			out[i].SubjectSlugs = append(out[i].SubjectSlugs, slug)
+		}
+	}
+	return subjRows.Err()
 }
 
 func (r *TutorRepo) GetBySlug(ctx context.Context, slug string) (*tutor.TutorProfile, error) {
