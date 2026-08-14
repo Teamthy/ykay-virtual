@@ -18,6 +18,7 @@ import (
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/notification"
+	"ykay-virtual/internal/worker"
 )
 
 // AuthService — registration, session-based login (httpOnly cookie bound),
@@ -42,6 +43,7 @@ type AuthService struct {
 	roles     identity.RoleRepository
 	tokens    identity.AuthTokenRepository
 	email     notification.EmailSender
+	queue     worker.Queue // durable dispatch when available (G4)
 	audit     identity.AuditService
 	referrals ReferralApplier
 	students  identity.StudentProfileRepository
@@ -54,6 +56,26 @@ func NewAuthService(users identity.UserRepository, sessions identity.SessionRepo
 		users: users, sessions: sessions, roles: roles, audit: audit,
 		tokens: nil, email: notification.NewEmailSender(), now: time.Now,
 	}
+}
+
+// WithQueue routes outbound emails through the durable job queue when one is
+// configured (G4.1); without a queue, delivery stays synchronous.
+func (s *AuthService) WithQueue(q worker.Queue) *AuthService {
+	s.queue = q
+	return s
+}
+
+// sendEmail — durable-queue first, direct SMTP/console fallback. The queue
+// handler is idempotent and retries with backoff (at-least-once).
+func (s *AuthService) sendEmail(ctx context.Context, to, subject, htmlBody string) error {
+	if s.queue != nil {
+		payload := map[string]string{"to": to, "subject": subject, "body": htmlBody}
+		if _, err := s.queue.Enqueue(ctx, worker.JobSendEmail, payload); err != nil {
+			return s.email.Send(ctx, to, subject, htmlBody) // queue down → direct
+		}
+		return nil
+	}
+	return s.email.Send(ctx, to, subject, htmlBody)
 }
 
 // WithAuthTokens wires the token repository (email verification + reset).

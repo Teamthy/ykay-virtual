@@ -69,8 +69,8 @@ func (s *PushService) RemoveDevice(ctx context.Context, id, userID uuid.UUID) er
 // NotifyUser — pushes to every device of the user. Best-effort: sender
 // errors are returned to the caller for logging but never fatal.
 func (s *PushService) NotifyUser(ctx context.Context, userID uuid.UUID, title, body string, data map[string]string) error {
-	if s.sender == nil {
-		return nil
+	if s == nil || s.sender == nil || s.devices == nil {
+		return nil // push not wired — best-effort no-op
 	}
 	devices, err := s.devices.ListByUser(ctx, userID)
 	if err != nil || len(devices) == 0 {

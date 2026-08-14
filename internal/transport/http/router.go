@@ -136,6 +136,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.AddNote)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.ListNotes)
 
+	// Meeting links (G4.2) — tutor opens/refreshes, participants join
+	// inside the server-enforced join window.
+	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/meeting-link", handlers.Meeting.OpenOrRefresh)
+	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/meeting-link", handlers.Meeting.Join)
+
 	// Bookings + payments (Phase 3)
 	mux.HandleFunc("POST "+v1+"/bookings", handlers.Bookings.Create)
 	mux.HandleFunc("POST "+v1+"/payments/initiate", handlers.Payments.Initiate)
@@ -304,6 +309,7 @@ type Handlers struct {
 	Support        *SupportHandler
 	Growth         *GrowthHandler
 	LessonOps      *LessonOpsHandler
+	Meeting        *MeetingHandler
 	Chat           *ChatHandler
 	Devices        *DeviceHandler
 	Account        *AccountHandler

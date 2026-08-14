@@ -40,27 +40,38 @@ type Config struct {
 	GeminiModel        string
 	ChatbotEnabled     bool
 	ExpoAccessToken    string
+	TermiiAPIKey       string
+	TermiiSenderID     string
+	TermiiFrom         string
+	MeetingProvider    string
+	WherebyAPIKey      string
+	// AI guardrails (G4.3): per-request token cap + daily budget. When the
+	// budget is exhausted the assistant degrades to a canned fallback reply
+	// instead of failing the chat.
+	AIMaxTokensPerRequest int
+	AIDailyBudgetTokens   int
 	// SeedDemoData enables fixture accounts/catalogue only for explicit local development.
 	// It must never be enabled in production.
 	SeedDemoData bool
 }
 
 func Load() Config {
-	return Config{
-		Port:            getEnv("PORT", DevPort),
-		DatabaseURL:     getEnv("DATABASE_URL", DevDatabaseURL),
-		RedisURL:        getEnv("REDIS_URL", "redis://localhost:6379/0"),
-		S3Endpoint:      getEnv("S3_ENDPOINT", ""),
-		S3PublicBucket:  getEnv("S3_PUBLIC_BUCKET", "nuvora-public"),
-		S3PrivateBucket: getEnv("S3_PRIVATE_BUCKET", "nuvora-private"),
-		S3Region:        getEnv("S3_REGION", "us-east-1"),
-		S3AccessKey:     getEnv("S3_ACCESS_KEY", ""),
-		S3SecretKey:     getEnv("S3_SECRET_KEY", ""),
-		PaymentProvider: getEnv("PAYMENT_PROVIDER", "PAYSTACK"),
-		PaystackSecret:  getEnv("PAYSTACK_SECRET", ""),
-		Environment:     getEnv("ENVIRONMENT", "development"),
-		OtelEndpoint:    getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
-		SiteURL:         getEnv("SITE_URL", DevSiteURL),
+	cfg := Config{
+		Port:              getEnv("PORT", DevPort),
+		DatabaseURL:       getEnv("DATABASE_URL", DevDatabaseURL),
+		RedisURL:          getEnv("REDIS_URL", "redis://localhost:6379/0"),
+		S3Endpoint:        getEnv("S3_ENDPOINT", ""),
+		S3PublicBucket:    getEnv("S3_PUBLIC_BUCKET", "nuvora-public"),
+		S3PrivateBucket:   getEnv("S3_PRIVATE_BUCKET", "nuvora-private"),
+		S3Region:          getEnv("S3_REGION", "us-east-1"),
+		S3AccessKey:       getEnv("S3_ACCESS_KEY", ""),
+		S3SecretKey:       getEnv("S3_SECRET_KEY", ""),
+		PaymentProvider:   getEnv("PAYMENT_PROVIDER", "PAYSTACK"),
+		PaystackSecret:    getEnv("PAYSTACK_SECRET", ""),
+		FlutterwaveSecret: getEnv("FLUTTERWAVE_SECRET", ""),
+		Environment:       getEnv("ENVIRONMENT", "development"),
+		OtelEndpoint:      getEnv("OTEL_EXPORTER_OTLP_ENDPOINT", ""),
+		SiteURL:           getEnv("SITE_URL", DevSiteURL),
 		// CORS is fail-closed: empty allowlist means NO cross-origin headers
 		// are emitted (the web app talks to the API same-origin through the
 		// Next.js rewrite). Production must set explicit origins.
@@ -72,8 +83,24 @@ func Load() Config {
 		GeminiModel:        getEnv("GEMINI_MODEL", "gemini-2.0-flash"),
 		ChatbotEnabled:     strings.ToLower(getEnv("CHATBOT_ENABLED", "true")) != "false",
 		ExpoAccessToken:    getEnv("EXPO_ACCESS_TOKEN", ""),
+		TermiiAPIKey:       getEnv("TERMII_API_KEY", ""),
+		TermiiSenderID:     getEnv("TERMII_SENDER_ID", ""),
+		TermiiFrom:         getEnv("TERMII_FROM", ""),
+		MeetingProvider:    getEnv("MEETING_PROVIDER", "stub"),
+		WherebyAPIKey:      getEnv("WHEREBY_API_KEY", ""),
 		SeedDemoData:       strings.EqualFold(getEnv("SEED_DEMO_DATA", "false"), "true"),
 	}
+	if v := getEnvInt("AI_MAX_TOKENS_PER_REQUEST", 1024); v > 0 {
+		cfg.AIMaxTokensPerRequest = v
+	} else {
+		cfg.AIMaxTokensPerRequest = 1024
+	}
+	if v := getEnvInt("AI_DAILY_BUDGET_TOKENS", 200000); v > 0 {
+		cfg.AIDailyBudgetTokens = v
+	} else {
+		cfg.AIDailyBudgetTokens = 200000
+	}
+	return cfg
 }
 
 // Validate — fail-fast guard rails for production deployments. Development
@@ -109,6 +136,17 @@ func (c Config) Validate() error {
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
+	}
+	return fallback
+}
+
+// getEnvInt parses an integer env var; returns fallback on parse failure.
+func getEnvInt(key string, fallback int) int {
+	if v := os.Getenv(key); v != "" {
+		var n int
+		if _, err := fmt.Sscanf(v, "%d", &n); err == nil {
+			return n
+		}
 	}
 	return fallback
 }

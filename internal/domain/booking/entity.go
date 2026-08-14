@@ -130,22 +130,29 @@ func (p *PrivatePackage) RemainingSessions() int {
 }
 
 type Lesson struct {
-	ID               uuid.UUID    `json:"id"`
-	CohortID         *uuid.UUID   `json:"cohort_id,omitempty"`
-	PrivatePackageID *uuid.UUID   `json:"private_package_id,omitempty"`
-	TutorProfileID   uuid.UUID    `json:"tutor_profile_id"`
-	Title            string       `json:"title"`
-	Description      *string      `json:"description,omitempty"`
-	StartAt          time.Time    `json:"start_at"`
-	EndAt            time.Time    `json:"end_at"`
-	Timezone         string       `json:"timezone"`
-	MeetingURL       *string      `json:"meeting_url,omitempty"`
-	MeetingProvider  string       `json:"meeting_provider"`
-	LocationID       *uuid.UUID   `json:"location_id,omitempty"`
-	Status           LessonStatus `json:"status"`
-	CreatedBy        *uuid.UUID   `json:"created_by,omitempty"`
-	CreatedAt        time.Time    `json:"created_at"`
-	UpdatedAt        time.Time    `json:"updated_at"`
+	ID               uuid.UUID  `json:"id"`
+	CohortID         *uuid.UUID `json:"cohort_id,omitempty"`
+	PrivatePackageID *uuid.UUID `json:"private_package_id,omitempty"`
+	TutorProfileID   uuid.UUID  `json:"tutor_profile_id"`
+	Title            string     `json:"title"`
+	Description      *string    `json:"description,omitempty"`
+	StartAt          time.Time  `json:"start_at"`
+	EndAt            time.Time  `json:"end_at"`
+	Timezone         string     `json:"timezone"`
+	MeetingURL       *string    `json:"meeting_url,omitempty"`
+	MeetingProvider  string     `json:"meeting_provider"`
+	// Meeting-link lifecycle (000028): provider reference for idempotent
+	// refresh, link expiry and the participant join window. Internal state —
+	// never serialized into lesson API payloads (MeetingService exposes
+	// these through the dedicated meeting endpoints).
+	MeetingRef        string       `json:"-"`
+	MeetingExpiresAt  *time.Time   `json:"-"`
+	JoinWindowMinutes int          `json:"-"`
+	LocationID        *uuid.UUID   `json:"location_id,omitempty"`
+	Status            LessonStatus `json:"status"`
+	CreatedBy         *uuid.UUID   `json:"created_by,omitempty"`
+	CreatedAt         time.Time    `json:"created_at"`
+	UpdatedAt         time.Time    `json:"updated_at"`
 }
 
 func (l *Lesson) Overlaps(other Lesson) bool {

@@ -103,3 +103,31 @@ func splitEnv(kv string) (string, string) {
 	}
 	return kv, ""
 }
+
+// TestG4EnvSurface — regression for the FlutterwaveSecret bug (declared but
+// never loaded: webhook verification always failed) + the G4.3 AI caps.
+func TestG4EnvSurface(t *testing.T) {
+	os.Clearenv()
+	defer os.Clearenv()
+	t.Setenv("FLUTTERWAVE_SECRET", "FW_SECRET_TEST_1")
+	t.Setenv("PAYSTACK_SECRET", "sk_test_1")
+	t.Setenv("TERMII_API_KEY", "TL_xxx")
+	t.Setenv("MEETING_PROVIDER", "whereby")
+	t.Setenv("WHEREBY_API_KEY", "wk_1")
+	t.Setenv("AI_MAX_TOKENS_PER_REQUEST", "2048")
+	t.Setenv("AI_DAILY_BUDGET_TOKENS", "99999")
+
+	cfg := Load()
+	if cfg.FlutterwaveSecret != "FW_SECRET_TEST_1" {
+		t.Fatalf("FlutterwaveSecret not loaded from env (webhook verification would break): %q", cfg.FlutterwaveSecret)
+	}
+	if cfg.PaystackSecret != "sk_test_1" {
+		t.Fatalf("PaystackSecret = %q", cfg.PaystackSecret)
+	}
+	if cfg.TermiiAPIKey != "TL_xxx" || cfg.MeetingProvider != "whereby" || cfg.WherebyAPIKey != "wk_1" {
+		t.Fatalf("G4.2 env surface not loaded: %+v", cfg)
+	}
+	if cfg.AIMaxTokensPerRequest != 2048 || cfg.AIDailyBudgetTokens != 99999 {
+		t.Fatalf("AI caps not loaded: max=%d budget=%d", cfg.AIMaxTokensPerRequest, cfg.AIDailyBudgetTokens)
+	}
+}

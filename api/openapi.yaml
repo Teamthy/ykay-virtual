@@ -1071,6 +1071,48 @@ paths:
       responses:
         '200': { description: Notes }
 
+  /lessons/{lessonId}/meeting-link:
+    post:
+      tags: [lessons]
+      summary: Open or refresh the live-class meeting room (tutor, own lesson only)
+      description: |
+        G4.2 meeting-link lifecycle. Creates the room on the configured
+        provider (MEETING_PROVIDER=whereby|stub) the first time and reuses it
+        while unexpired; refreshes when the previous link expired. The tutor
+        profile is resolved from the session — no profile ID is accepted from
+        the caller.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Meeting link (host=true)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lesson_id: { type: string, format: uuid }
+                  provider: { type: string }
+                  meeting_url: { type: string }
+                  expires_at: { type: string, format: date-time }
+                  host: { type: boolean }
+        '403': { description: Not this tutor's lesson, or no tutor profile }
+    get:
+      tags: [lessons]
+      summary: Join link for a lesson (participant; join window enforced)
+      description: |
+        Learners receive the join link only while the server-enforced window
+        is open (start − join_window … end + 30m grace). The student profile
+        is resolved from the session (G1.2). Tutors receive the host link.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Join link }
+        '403':
+          description: Join window closed, not a participant, or link not ready yet
+
   /me/learners:
     post:
       tags: [identity]

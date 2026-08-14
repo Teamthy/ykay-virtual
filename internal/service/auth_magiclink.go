@@ -57,7 +57,7 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 	}
 
 	if s.email != nil {
-		_ = s.email.Send(ctx, user.Email, "Your NUVORA login code",
+		_ = s.sendEmail(ctx, user.Email, "Your NUVORA login code",
 			notification.BrandEmail(
 				"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Your login code</h1>"+
 					"<p style=\"margin:0 0 16px;\">Hi,</p>"+
