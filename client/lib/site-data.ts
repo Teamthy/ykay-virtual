@@ -33,7 +33,7 @@ export const heroSlides = [
     ctaSecondary: "Learn how it works",
     bg: "#194F82",
     label: "Home Tutoring",
-    img: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=900&q=80",
+    img: "/hero/home-tutoring.jpg",
   },
   {
     tag: "Trusted by Families Across 4 Continents",
@@ -42,7 +42,7 @@ export const heroSlides = [
     cta: "Book a Tutor Today",
     bg: "#056FD2",
     label: "International",
-    img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=900&q=80",
+    img: "/hero/international.jpg",
   },
   {
     tag: "Highest Score: 345 in 2025 Prep Cohort",
@@ -51,7 +51,7 @@ export const heroSlides = [
     cta: "Enroll for UTME 2026 Prep",
     bg: "#0A033C",
     label: "UTME 2026",
-    img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=900&q=80",
+    img: "/hero/utme.jpg",
   },
   {
     tag: "95% Exam Success Rate",
@@ -60,7 +60,7 @@ export const heroSlides = [
     cta: "Start your Journey today",
     bg: "#B3470B",
     label: "Test Prep",
-    img: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=900&q=80",
+    img: "/hero/test-prep.jpg",
   },
   {
     tag: "Top 5% of Tutors Nationwide",
@@ -69,7 +69,7 @@ export const heroSlides = [
     cta: "Unlock Premium Tutoring",
     bg: "#194F82",
     label: "NUVORA Plus",
-    img: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=900&q=80",
+    img: "/hero/nuvora-plus.jpg",
   },
   {
     tag: "95% Success Rate",
@@ -78,7 +78,7 @@ export const heroSlides = [
     cta: "Book a Slot",
     bg: "#005A2B",
     label: "Entrance Exam",
-    img: "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=900&q=80",
+    img: "/hero/entrance-exam.jpg",
   },
 ];
 

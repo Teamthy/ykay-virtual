@@ -39,6 +39,17 @@ store + `SEED_DEMO_DATA=true` demo fixtures (tutor `tutor@nuvora.com`,
 parent `parent@nuvora.com`, student `student@nuvora.com`,
 admin `admin@nuvora.com`, password `password123`) — no Docker needed.
 
+**Dev codes in the terminal:** in development, login codes, verification
+links and password-reset links print plainly to the API log:
+`🔑 login code for you@example.com: 123456` — no need to parse the
+branded email. (Disabled in production.)
+
+**`next dev` running out of memory (Windows):** the dev webpack cache is
+already disabled in next.config.js. If you still see
+`Array buffer allocation failed`, stop Docker Desktop (or limit WSL
+memory) and restart dev with a bounded heap:
+`$env:NODE_OPTIONS="--max-old-space-size=2048"; npm --prefix client run dev`
+
 ## 3. Useful targets
 
 ```bash

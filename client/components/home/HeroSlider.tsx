@@ -18,7 +18,7 @@ const SLIDES = [
     desc: "Get personalized home tutoring designed to guide your children toward exam success, boost their confidence, and get better school grades.",
     cta: "Get Started",
     href: "/hometutors",
-    img: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1600&q=80",
+    img: "/hero/home-tutoring.jpg",
     alt: "Tutor helping a young student at home",
   },
   {
@@ -27,7 +27,7 @@ const SLIDES = [
     desc: "Give your child the quality of education families abroad pay thousands for — delivered by top Nigerian tutors at up to 70% less.",
     cta: "Book a Tutor Today",
     href: "/nuvora-plus",
-    img: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1600&q=80",
+    img: "/hero/international.jpg",
     alt: "Graduates celebrating international success",
   },
   {
@@ -36,7 +36,7 @@ const SLIDES = [
     desc: "Weekly mock CBT, 200+ practice tests, remedial support and a ₦20M scholarship pool. Be UTME-ready and set for admission success.",
     cta: "Enroll for UTME 2026 Prep",
     href: "/utme-2026",
-    img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1600&q=80",
+    img: "/hero/utme.jpg",
     alt: "Student writing answers during exam preparation",
   },
   {
@@ -45,7 +45,7 @@ const SLIDES = [
     desc: "Prepare for IELTS, GRE, GMAT, TEF and more with proven strategies and top tutors — 95% exam success rate.",
     cta: "Start your Journey today",
     href: "/test-prep",
-    img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1600&q=80",
+    img: "/hero/test-prep.jpg",
     alt: "Student taking notes while preparing for tests",
   },
   {
@@ -54,7 +54,7 @@ const SLIDES = [
     desc: "Give your child the ultimate learning advantage with NUVORA Plus — our premium tutoring service designed for families who want the best.",
     cta: "Unlock Premium Tutoring",
     href: "/nuvora-plus",
-    img: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&q=80",
+    img: "/hero/nuvora-plus.jpg",
     alt: "Tutor guiding a young learner one-on-one",
   },
 ];

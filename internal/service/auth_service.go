@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -48,6 +49,7 @@ type AuthService struct {
 	referrals ReferralApplier
 	students  identity.StudentProfileRepository
 	now       func() time.Time
+	devLog    func(format string, args ...any) // nil outside development
 }
 
 func NewAuthService(users identity.UserRepository, sessions identity.SessionRepository,
@@ -63,6 +65,26 @@ func NewAuthService(users identity.UserRepository, sessions identity.SessionRepo
 func (s *AuthService) WithQueue(q worker.Queue) *AuthService {
 	s.queue = q
 	return s
+}
+
+// WithDevLogging enables plain-text dev logging of login codes, verification
+// and password-reset links (so developers can copy them from the terminal
+// without parsing the branded email). NEVER enabled in production.
+func (s *AuthService) WithDevLogging(enabled bool) *AuthService {
+	if enabled {
+		s.devLog = func(format string, args ...any) {
+			log.Printf("🔑 "+format, args...)
+		}
+	} else {
+		s.devLog = nil
+	}
+	return s
+}
+
+func (s *AuthService) logDev(format string, args ...any) {
+	if s.devLog != nil {
+		s.devLog(format, args...)
+	}
 }
 
 // sendEmail — durable-queue first, direct SMTP/console fallback. The queue

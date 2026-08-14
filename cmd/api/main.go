@@ -155,7 +155,8 @@ func main() {
 	// --- Auth + sessions ---
 	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit).
 		WithAuthTokens(repos.AuthTokens).
-		WithStudentProfiles(repos.Students)
+		WithStudentProfiles(repos.Students).
+		WithDevLogging(cfg.Environment != "production") // plain-text codes/links in dev
 
 	// --- Durable dispatch queue (G4.1): in PRODUCTION, Redis-up routes
 	// outbound email through the worker queue (sync fallback when Redis is
