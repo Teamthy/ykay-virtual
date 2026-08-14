@@ -243,6 +243,10 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/admin/cohorts", handlers.Admin.ListCohorts)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts", handlers.Admin.CreateCohort)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/status", handlers.Admin.SetCohortStatus)
+	// G5.3 — catalogue sign-off: publish/unpublish programmes and
+	// testimonials without a code deployment (admin-only, audited).
+	mux.HandleFunc("POST "+v1+"/admin/programmes/{programmeId}/status", handlers.Admin.SetProgrammeStatus)
+	mux.HandleFunc("POST "+v1+"/admin/testimonials/{testimonialId}/public", handlers.Admin.SetTestimonialPublic)
 	mux.HandleFunc("GET "+v1+"/admin/lessons/today", handlers.Admin.LessonsToday)
 	mux.HandleFunc("POST "+v1+"/admin/orders/{orderId}/confirm-payment", handlers.Admin.ConfirmManualPayment)
 	mux.HandleFunc("GET "+v1+"/admin/orders", handlers.Admin.ListOrders)

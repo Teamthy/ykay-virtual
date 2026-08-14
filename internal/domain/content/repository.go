@@ -40,15 +40,38 @@ type RedirectRepository interface {
 }
 
 // SupportTicket — customer support enquiries (migration 000010_content).
+// TicketCategory — support ticket routing (G5.2). SAFEGUARDING tickets get
+// a 4h SLA and appear in the admin safeguarding queue.
+type TicketCategory string
+
+const (
+	CategoryGeneral      TicketCategory = "GENERAL"
+	CategorySafeguarding TicketCategory = "SAFEGUARDING"
+	CategoryFinance      TicketCategory = "FINANCE"
+	CategoryAcademic     TicketCategory = "ACADEMIC"
+)
+
+func ValidTicketCategory(c string) bool {
+	switch TicketCategory(c) {
+	case CategoryGeneral, CategorySafeguarding, CategoryFinance, CategoryAcademic:
+		return true
+	}
+	return false
+}
+
 type SupportTicket struct {
-	ID        uuid.UUID  `json:"id"`
-	UserID    *uuid.UUID `json:"user_id,omitempty"`
-	Email     string     `json:"email"`
-	Subject   string     `json:"subject"`
-	Message   string     `json:"message"`
-	Status    string     `json:"status"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID         uuid.UUID  `json:"id"`
+	UserID     *uuid.UUID `json:"user_id,omitempty"`
+	Email      string     `json:"email"`
+	Subject    string     `json:"subject"`
+	Message    string     `json:"message"`
+	Status     string     `json:"status"`
+	Category   string     `json:"category"`
+	Severity   string     `json:"severity"`
+	SLADueAt   *time.Time `json:"sla_due_at,omitempty"`
+	ResolvedAt *time.Time `json:"resolved_at,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
 }
 
 type SupportTicketRepository interface {
@@ -56,6 +79,8 @@ type SupportTicketRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*SupportTicket, error)
 	SetStatus(ctx context.Context, id uuid.UUID, status string) error
 	List(ctx context.Context, status string, page, pageSize int) ([]SupportTicket, int64, error)
+	// ListByCategory — the safeguarding/other triage queues (G5.2).
+	ListByCategory(ctx context.Context, category string, page, pageSize int) ([]SupportTicket, int64, error)
 }
 
 // Testimonial — consent-gated public testimonial (migration 000010).
@@ -63,4 +88,8 @@ type TestimonialRepository interface {
 	// ListPublic returns consent-given + public testimonials only (featured first).
 	ListPublic(ctx context.Context, featuredOnly bool, limit int) ([]Testimonial, error)
 	Create(ctx context.Context, t *Testimonial) error
+	GetByID(ctx context.Context, id uuid.UUID) (*Testimonial, error)
+	// SetPublic — publication sign-off (G5.3). Callers enforce the consent
+	// rule before approving; the repo records when/by whom.
+	SetPublic(ctx context.Context, id uuid.UUID, isPublic bool, publishedBy *uuid.UUID) error
 }

@@ -736,6 +736,82 @@ paths:
                     rating: { type: integer }
                     is_featured: { type: boolean }
 
+  /support/tickets:
+    post:
+      tags: [support]
+      summary: Open a support ticket (G5.2 — categorised intake with SLA)
+      description: |
+        SAFEGUARDING tickets get a 4-hour SLA and severity floored at MEDIUM;
+        HIGH/URGENT get 8h; default 24h. Unknown categories are rejected.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, subject, message]
+              properties:
+                email: { type: string, format: email }
+                subject: { type: string }
+                message: { type: string }
+                category:
+                  type: string
+                  enum: [GENERAL, SAFEGUARDING, FINANCE, ACADEMIC]
+                severity:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, URGENT]
+      responses:
+        '201': { description: Ticket created (includes category, severity, sla_due_at) }
+        '400': { description: Unknown category/severity or invalid input }
+
+  /admin/testimonials/{testimonialId}/public:
+    post:
+      tags: [admin]
+      summary: Approve/withdraw a testimonial for public display (G5.3 sign-off)
+      description: |
+        Publication sign-off. Approval REQUIRES consent_given on the
+        testimonial (403 otherwise); the acting admin is recorded.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: testimonialId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [is_public]
+              properties:
+                is_public: { type: boolean }
+      responses:
+        '200': { description: Publication state updated }
+        '403': { description: No consent on file, or not an admin }
+
+  /admin/programmes/{programmeId}/status:
+    post:
+      tags: [admin]
+      summary: Publish/unpublish a programme (G5.3 — catalogue operable without deploys)
+      description: |
+        DRAFT/PUBLISHED/ARCHIVED transitions. Publishing stamps published_at
+        and a 90-day review_due_at; unpublishing clears both and flushes the
+        cached catalogue. Audited against the acting admin.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: programmeId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [DRAFT, PUBLISHED, ARCHIVED] }
+      responses:
+        '200': { description: Status updated }
+        '403': { description: Not an admin }
+        '404': { description: Unknown programme }
+
   /admin/testimonials:
     post:
       tags: [admin]

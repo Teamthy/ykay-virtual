@@ -128,6 +128,16 @@ func (s *ProgrammeService) ListWithMeta(ctx context.Context, p academics.Program
 }
 
 // GetDetailBySlug — enriched single programme (tabs page).
+// InvalidateCatalogue — drops every cached programme list variant. Called
+// after admin publish/unpublish (G5.3) so catalogue state changes are
+// visible immediately, not after the 180s TTL.
+func (s *ProgrammeService) InvalidateCatalogue(ctx context.Context) error {
+	if s.cache == nil {
+		return nil
+	}
+	return s.cache.DelPrefix(ctx, programmeCachePrefix)
+}
+
 func (s *ProgrammeService) GetDetailBySlug(ctx context.Context, slug string) (*academics.ProgrammeDetail, error) {
 	enriched, ok := s.repo.(EnrichedProgrammeRepo)
 	if !ok || enriched == nil {
