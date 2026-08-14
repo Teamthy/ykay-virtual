@@ -108,7 +108,13 @@ test("parent pilot journey: register → learner → booking → webhook → LMS
   await page.goto("/dashboard");
   await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
   // Suggestions engine renders the "For you" shelf on the dashboard.
-  await expect(page.getByText("For you")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "For you" })).toBeVisible();
+
+  // Personalized dashboard shell: marketing chrome must NOT appear here
+  // (the homepage navbar stays on marketing pages only).
+  await expect(page.getByRole("link", { name: "Programmes" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
 
   await page.goto("/lms");
   await expect(page.getByText(/UTME 2026/i).first()).toBeVisible();
@@ -178,7 +184,9 @@ test("first-time wizard: 3 steps then the role dashboard", async ({ page, reques
 
   // Step 3 → finish lands on the parent dashboard.
   await page.getByRole("button", { name: /Exam success/ }).click();
-  await page.getByRole("button", { name: /Finish/ }).click();
+  // The button re-renders to a disabled "Saving…" while the finish POST is
+  // in flight — click without waiting for navigation, then assert the URL.
+  await page.getByRole("button", { name: /Finish/ }).click({ noWaitAfter: true });
   await expect(page).toHaveURL(/dashboard/, { timeout: 20_000 });
   await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
 });

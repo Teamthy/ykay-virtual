@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { MessageCenter } from "@/features/messaging/components/MessageCenter";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export const metadata: Metadata = buildMetadata({
   title: "Messages",
@@ -11,6 +12,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default function MessagesPage() {
   return (
+    <DashboardShell>
     <main className="container-x py-10">
       <div className="mb-6">
         <h1 className="text-3xl font-extrabold">Messages</h1>
@@ -20,5 +22,6 @@ export default function MessagesPage() {
       </div>
       <MessageCenter />
     </main>
+    </DashboardShell>
   );
 }

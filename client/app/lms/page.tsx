@@ -16,6 +16,7 @@ import {
 import { listAssessments, listProgressReports } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
 import { RoleGate } from "@/components/dashboard/RoleGate";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 // Student LMS hub — my courses, attendance, assignments, quizzes, reports.
 
@@ -86,6 +87,7 @@ export default function LmsHomePage() {
     .length;
 
   return (
+    <DashboardShell>
     <main className="min-h-screen bg-[#FFFCF5] pb-16">
       {/* Header */}
       <header className="border-b border-ink-100 bg-white">
@@ -234,5 +236,6 @@ export default function LmsHomePage() {
       </div>
 
     </main>
+    </DashboardShell>
   );
 }

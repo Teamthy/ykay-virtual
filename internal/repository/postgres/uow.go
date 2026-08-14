@@ -31,8 +31,10 @@ type PgUnitOfWork struct {
 	vetting     *VettingRepo
 	tutorSubj   *TutorSubjectRepo
 	auditLogs   *AuditLogRepo
+	lessonLinks *LessonRepo
 }
 
+func (u *PgUnitOfWork) LessonLinks() booking.LessonParticipantLinker             { return u.lessonLinks }
 func (u *PgUnitOfWork) Orders() payment.OrderRepository                          { return u.orders }
 func (u *PgUnitOfWork) Payments() payment.PaymentRepository                      { return u.payments }
 func (u *PgUnitOfWork) Webhooks() payment.PaymentWebhookRepository               { return u.webhooks }
@@ -82,6 +84,7 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
 		vetting:     NewVettingRepo(tx),
 		tutorSubj:   NewTutorSubjectRepo(tx),
 		auditLogs:   NewAuditLogRepo(tx),
+		lessonLinks: NewLessonRepo(tx),
 	}, nil
 }
 

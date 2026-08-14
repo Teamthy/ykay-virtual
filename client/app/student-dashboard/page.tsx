@@ -17,6 +17,7 @@ import {
 import { StudentQuizzes } from "@/features/learning/StudentQuizzes";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 // Student portal (working-doc §9): side nav, Today panel, progress,
 // assignments with submission, resources, announcements, support.
@@ -130,6 +131,7 @@ export default function StudentDashboardPage() {
   );
 
   return (
+    <DashboardShell>
     <main className="container-x py-10">
       <RoleGate page="/student-dashboard" />
       <RecommendationsForYou />
@@ -367,6 +369,7 @@ export default function StudentDashboardPage() {
         </div>
       </div>
     </main>
+    </DashboardShell>
   );
 }
 

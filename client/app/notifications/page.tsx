@@ -11,6 +11,7 @@ import { listNotifications, markAllNotificationsRead, markNotificationRead } fro
 import { useSession } from "@/hooks/useSession";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export default function NotificationsPage() {
   const qc = useQueryClient();
@@ -42,6 +43,7 @@ export default function NotificationsPage() {
   const unread = (notifs.data?.data ?? []).filter((n) => !n.is_read).length;
 
   return (
+    <DashboardShell>
     <main className="container-x py-10 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -102,5 +104,6 @@ export default function NotificationsPage() {
         </ul>
       )}
     </main>
+    </DashboardShell>
   );
 }

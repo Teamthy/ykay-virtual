@@ -9,11 +9,19 @@ const nextConfig = {
   // serializing on constrained machines (Windows dev + Docker running →
   // "Array buffer allocation failed" / heap OOM crashes in `next dev`).
   // Disable the persistent cache in dev; production builds keep it.
+  // Parallelism is bounded for production builds too: constrained hosts
+  // (2GB sandboxes/CI, small VMs) SIGBUS/OOM when jest-worker + static-gen
+  // workers multiply peak memory.
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false;
     }
+    config.parallelism = 1;
     return config;
+  },
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
   },
   images: {
     remotePatterns: [

@@ -126,6 +126,12 @@ sig=$(printf '%s' "$payload" | openssl dgst -sha512 -hmac "$SECRET" -hex | awk '
 c=$(curl -s -o /tmp/stg-body.json -w '%{http_code}' -X POST "$BASE/payments/webhooks/PAYSTACK" -H 'Content-Type: application/json' -H "X-Paystack-Signature: $sig" -d "$payload")
 assert_code "valid signed webhook settles" 200 "$c"
 
+# Enrolled learners see their cohort's lessons immediately (participant link).
+c=$(req "$J_P" GET /me/lessons)
+assert_code "learner lessons after settlement" 200 "$c"
+NL=$(cat /tmp/stg-body.json | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or []; print(len(d) if isinstance(d, list) else 0)" 2>/dev/null)
+[ "$NL" -ge 1 ] && ok "learner linked to $NL upcoming lesson(s)" || fail "learner has no lessons after enrolment (linker failed)"
+
 c=$(curl -s -o /tmp/stg-body.json -w '%{http_code}' -X POST "$BASE/payments/webhooks/PAYSTACK" -H 'Content-Type: application/json' -H "X-Paystack-Signature: $sig" -d "$payload")
 assert_code "duplicate webhook (idempotent)" 200 "$c"
 DUP=$(cat /tmp/stg-body.json | json 'd["data"]["duplicate"]' 2>/dev/null || echo "")

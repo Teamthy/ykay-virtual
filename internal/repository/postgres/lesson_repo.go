@@ -4,11 +4,28 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
 	"ykay-virtual/internal/domain/booking"
 )
+
+// LinkStudentToCohortLessons — connects a learner to the cohort's lessons
+// starting at or after `from`. Idempotent (ON CONFLICT DO NOTHING).
+func (r *LessonRepo) LinkStudentToCohortLessons(ctx context.Context, cohortID, studentProfileID uuid.UUID, from time.Time) (int64, error) {
+	res, err := r.db.ExecContext(ctx, `
+		INSERT INTO lesson_participants (lesson_id, student_profile_id, joined_at, created_at)
+		SELECT id, $2, NOW(), NOW() FROM lessons
+		WHERE cohort_id = $1 AND start_at >= $3
+		ON CONFLICT (lesson_id, student_profile_id) DO NOTHING`,
+		cohortID, studentProfileID, from)
+	if err != nil {
+		return 0, fmt.Errorf("link student to cohort lessons: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	return n, nil
+}
 
 // LessonRepo — read side for lesson lists (dashboards).
 

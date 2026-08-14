@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 	"sync"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
@@ -61,6 +62,31 @@ func (m *LessonMemory) GetByID(_ context.Context, id uuid.UUID) (*booking.Lesson
 		return &cp, nil
 	}
 	return nil, domain.ErrNotFound
+}
+
+// LinkStudentToCohortLessons — dev parity with the postgres linker: adds the
+// learner to every future lesson of the cohort (idempotent).
+func (m *LessonMemory) LinkStudentToCohortLessons(_ context.Context, cohortID, studentProfileID uuid.UUID, from time.Time) (int64, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	var n int64
+	for _, l := range m.rows {
+		if l.CohortID == nil || *l.CohortID != cohortID || l.StartAt.Before(from) {
+			continue
+		}
+		found := false
+		for _, sid := range m.student[studentProfileID] {
+			if sid == l.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			m.student[studentProfileID] = append(m.student[studentProfileID], l.ID)
+			n++
+		}
+	}
+	return n, nil
 }
 
 // --- Lessons by cohort (extends LessonMemory) ---

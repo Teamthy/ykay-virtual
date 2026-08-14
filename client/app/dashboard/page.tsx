@@ -17,6 +17,7 @@ import { listLearners, type Learner } from "@/features/onboarding/api";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 // Parent portal — Tuteria bookings-style (tuteria.com/users/bookings):
 // sidebar nav + status-filtered booking cards + payments with receipts.
@@ -128,6 +129,7 @@ export default function ParentDashboardPage() {
   const paidCount = (orders.data ?? []).filter((o) => o.status === "PAID").length;
 
   return (
+    <DashboardShell>
     <main className="bg-surface-muted min-h-screen">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-10 grid lg:grid-cols-[240px_1fr] gap-8 items-start">
         {/* Sidebar nav */}
@@ -427,5 +429,6 @@ export default function ParentDashboardPage() {
         )}
       </Modal>
     </main>
+    </DashboardShell>
   );
 }

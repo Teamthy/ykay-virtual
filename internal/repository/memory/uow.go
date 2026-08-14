@@ -29,8 +29,10 @@ type MemoryUnitOfWork struct {
 	vetting     *VettingMemory
 	tutorSubj   *VettingTutorSubjectMemory
 	auditLogs   *AuditLogMemory
+	lessonLinks *LessonMemory
 }
 
+func (u *MemoryUnitOfWork) LessonLinks() booking.LessonParticipantLinker    { return u.lessonLinks }
 func (u *MemoryUnitOfWork) Orders() payment.OrderRepository                 { return u.orders }
 func (u *MemoryUnitOfWork) Payments() payment.PaymentRepository             { return u.payments }
 func (u *MemoryUnitOfWork) Webhooks() payment.PaymentWebhookRepository      { return u.webhooks }
@@ -73,6 +75,7 @@ func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWor
 		vetting:     f.store.Vetting,
 		tutorSubj:   f.store.TutorSubj,
 		auditLogs:   f.store.AuditLogs,
+		lessonLinks: f.store.Lessons,
 	}, nil
 }
 

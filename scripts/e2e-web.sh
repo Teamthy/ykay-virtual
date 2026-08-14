@@ -15,6 +15,15 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+# ── 0. Web build FIRST — Next 15's build is memory-hungry; running it
+# before Postgres/API/gateway reduces peak RAM on constrained machines
+# (bus-error/OOM otherwise). CI needs the lockfile-exact install; local
+# reruns reuse node_modules (E2E_WEB_NPM_CI=1 forces the strict path).
+if [ "${E2E_WEB_NPM_CI:-}" = "1" ] || [ ! -x client/node_modules/.bin/next ]; then
+  (cd client && npm ci --no-audit --no-fund >/dev/null)
+fi
+(cd client && TMPDIR=/var/tmp rm -rf .next && TMPDIR=/var/tmp npm run build >/tmp/e2e-web-build.log 2>&1)
+
 API_PORT=8080
 WEB_PORT=3000
 GW_PORT=9990
@@ -90,7 +99,6 @@ curl -sf -m 1 "http://localhost:$API_PORT/health" >/dev/null || { echo "API fail
 pkill -f "next-server" 2>/dev/null || true
 pkill -f "standalone.*server" 2>/dev/null || true
 sleep 1
-(cd client && npm ci --no-audit --no-fund >/dev/null   && rm -rf .next   && npm run build >/tmp/e2e-web-build.log 2>&1)
 # outputFileTracingRoot spans the monorepo → Next nests the server under
 # standalone/client/; be tolerant of both layouts, and copy the static
 # assets (they are not traced into standalone).
