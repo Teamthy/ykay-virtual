@@ -64,6 +64,29 @@ test("public catalogue renders seeded tutor and profile", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 }).first()).toContainText(/oluwatobi/i);
 });
 
+test("home page: batch-2 sections present, healthcare gone, exam cards link", async ({ page }) => {
+  await page.goto("/");
+
+  // Healthcare removed everywhere on the home page.
+  await expect(page.getByText(/healthcare/i)).toHaveCount(0);
+  await expect(page.getByText("We do home tutoring the right way")).toHaveCount(0);
+
+  // Become-a-tutor section rebuilt on the requested template.
+  await expect(page.getByText("Teach what you love.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Apply to teach" })).toBeVisible();
+
+  // Download-on-the-go section.
+  await expect(page.getByText("Your classroom, in your pocket.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Download for Android/ })).toBeVisible();
+
+  // Exam prep cards link to their fully built pages (blue hover + CTA).
+  const satCard = page.getByRole("link", { name: /SATs Prep/ });
+  await expect(satCard).toBeVisible();
+  await satCard.hover();
+  await expect(satCard.getByText(/Get Started/)).toBeVisible();
+  await expect(satCard).toHaveAttribute("href", "/sat");
+});
+
 test("parent pilot journey: register → learner → booking → webhook → LMS", async ({ page, request }) => {
   const email = uniq("pilot-parent");
 

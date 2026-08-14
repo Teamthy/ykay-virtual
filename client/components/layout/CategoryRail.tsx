@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookOpenCheck, MonitorPlay, GraduationCap, Globe2, Star, Languages, FileCheck } from "lucide-react";
+import { Home, BookOpenCheck, MonitorPlay, GraduationCap, Globe2, Star, FileCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Category rail — reference-grade left navigation used on product pages
@@ -18,7 +18,6 @@ const CATEGORIES = [
   { label: "Online Classes", href: "/online-classes", icon: <MonitorPlay size={16} /> },
   { label: "Study Abroad", href: "/study-abroad", icon: <Globe2 size={16} /> },
   { label: "NUVORA Plus", href: "/nuvora-plus", icon: <Star size={16} /> },
-  { label: "Healthcare", href: "/healthcare", icon: <Languages size={16} /> },
 ];
 
 export function CategoryRail() {

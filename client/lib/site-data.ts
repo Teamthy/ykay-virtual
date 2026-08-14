@@ -134,19 +134,7 @@ export const stats = [
   { num: "38k+", label: "Students supported" },
 ];
 
-export const partnerFeatures = [
-  "Learn with the top 1% of vetted tutors",
-  "British & Nigerian curriculum coverage",
-  "Tutors come to your home or online",
-];
 
-export const kidImages = [
-  { url: "https://images.unsplash.com/photo-1610484826967-09c5720778c7?w=500&q=80", cls: "kid-1" },
-  { url: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=500&q=80", cls: "kid-2" },
-  { url: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&q=80", cls: "kid-3" },
-  { url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&q=80", cls: "kid-4" },
-  { url: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=500&q=80", cls: "kid-5" },
-];
 
 export const accordionItems = [
   { num: "1", title: "NUVORA Insights™ Assessment", content: "Comprehensive evaluation of your child's current academic level, learning style and knowledge gaps to build a strong foundation." },
@@ -160,15 +148,16 @@ export const accordionItems = [
 // TestimonialsSection now render only consent-gated rows from
 // /content/testimonials.
 
+// Each exam card links to its fully built prep page (Batch 2).
 export const examCards = [
-  { title: "IELTS Prep" },
-  { title: "GMAT Classes" },
-  { title: "ICAN Prep" },
-  { title: "GRE Classes" },
-  { title: "SATs Prep" },
-  { title: "TOEFL Prep" },
-  { title: "PTE Prep" },
-  { title: "ACT Prep", featured: true, subtitle: "Score 28+ for US Undergraduate Admission" },
+  { title: "IELTS Prep", href: "/ielts-toefl" },
+  { title: "GMAT Classes", href: "/gmat" },
+  { title: "ICAN Prep", href: "/test-prep" },
+  { title: "GRE Classes", href: "/gre" },
+  { title: "SATs Prep", href: "/sat" },
+  { title: "TOEFL Prep", href: "/ielts-toefl" },
+  { title: "PTE Prep", href: "/ielts-toefl" },
+  { title: "ACT Prep", href: "/sat", featured: true, subtitle: "Score 28+ for US Undergraduate Admission" },
 ];
 
 export const trustLogos = ["MIT | SOLVE", "Forbes", "COBIS", "Cambridge Assessment", "Pearson Edexcel"];

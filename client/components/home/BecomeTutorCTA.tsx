@@ -1,32 +1,59 @@
-import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, ArrowRight } from "lucide-react";
+
+// Become-a-tutor section (Batch 2) — rebuilt on the PrebuiltUI hero
+// template: grid-pattern background, centered announcement pill, oversized
+// headline, dual CTAs. No photo hotlinks; the grid is an inline SVG.
+
+const GRID_BG =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M40 0H0v40' fill='none' stroke='%23F4B400' stroke-opacity='0.10' stroke-width='1'/%3E%3C/svg%3E\")";
 
 export function BecomeTutorCTA() {
   return (
-    <section className="py-20 md:py-24 bg-surface-muted">
-      <div className="container-x">
-        <div className="bg-brand-blue rounded-3xl px-8 md:px-16 py-20 md:py-24 relative overflow-hidden min-h-[420px] flex items-center justify-center shadow-brand">
-          <div className="absolute inset-0 pointer-events-none opacity-30"
-            style={{
-              backgroundImage: "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 2px, transparent 2px)",
-              backgroundSize: "80px 80px"
-            }}
-          />
-          <div
-            className="hidden lg:block absolute top-1/2 -translate-y-1/2 left-20 w-72 h-96 bg-cover bg-center rounded-xl"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500&q=85')" }}
-          />
-          <div
-            className="hidden lg:block absolute top-1/2 -translate-y-1/2 right-20 w-72 h-96 bg-cover bg-center rounded-xl"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&q=85')" }}
-          />
-          <div className="relative z-10 text-center text-white">
-            <h2 className="text-3xl md:text-4xl font-extrabold leading-tight mb-9">
-              Become a tutor and<br />earn money teaching<br />what you love
-            </h2>
-            <a href="/become-tutor" className="btn-outline-white inline-flex items-center gap-2">
-              Apply to Teach <ChevronRight size={14} />
-            </a>
-          </div>
+    <section
+      className="w-full bg-no-repeat bg-cover bg-center pb-20 pt-24 md:pb-28 md:pt-32"
+      style={{ backgroundImage: GRID_BG, backgroundColor: "#FFFCF5" }}
+    >
+      <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 text-center">
+        {/* Announcement pill */}
+        <div className="flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-2 text-sm shadow-sm">
+          <span className="font-semibold text-ink-700">
+            New: tutors keep up to 90% of every lesson fee
+          </span>
+          <Link href="/become-tutor" className="flex items-center gap-1 font-bold text-brand-blue hover:text-brand-navy">
+            <span>Read more</span>
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        {/* Oversized headline */}
+        <h2 className="mt-8 max-w-[850px] font-display text-4xl tracking-[0.02em] text-brand-navy md:text-6xl">
+          Teach what you love.
+          <br />
+          Get paid to do it.
+        </h2>
+
+        <p className="mx-auto mt-6 max-w-2xl text-sm text-ink-600 md:text-base">
+          Join NUVORA&apos;s community of vetted tutors. Set your own rates and schedule,
+          teach online or in person, and get paid weekly — while we handle the
+          bookings, payments and students for you.
+        </p>
+
+        {/* Dual CTAs */}
+        <div className="mx-auto mt-8 flex w-full flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/become-tutor"
+            className="rounded-full bg-brand-blue px-8 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-navy"
+          >
+            Apply to teach
+          </Link>
+          <Link
+            href="/how-it-works"
+            className="flex items-center gap-2 rounded-full border border-ink-300 px-8 py-3.5 text-sm font-bold text-ink-800 transition hover:bg-ink-100"
+          >
+            <span>Learn how it works</span>
+            <ChevronRight size={15} className="text-ink-400" />
+          </Link>
         </div>
       </div>
     </section>
