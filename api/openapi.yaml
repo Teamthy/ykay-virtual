@@ -28,6 +28,417 @@ tags:
   - name: analytics
 
 paths:
+
+# ── contract-generated (G6.1): routed endpoints not previously documented ──
+  /admin/chat/analytics:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /admin/chat/analytics/trends:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /admin/chat/csat.csv:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /admin/chat/threads:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /admin/chat/threads/{threadId}/close:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/chat/threads/{threadId}/messages:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /admin/chat/threads/{threadId}/reply:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/orders:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /admin/orders/{orderId}/refund:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/payouts:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /admin/vetting/profiles/{profileId}/approve:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/vetting/profiles/{profileId}/hold:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/vetting/profiles/{profileId}/interview:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/vetting/profiles/{profileId}/reject:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/vetting/profiles/{profileId}/review:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/vetting/profiles/{profileId}/suspend:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /admin/vetting/profiles/{profileId}/verify:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/google/callback:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /auth/google/exchange:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/google/url:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /auth/login-code/confirm:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/login-code/mobile/confirm:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/login-code/request:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/login/mobile:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/me/context:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /auth/me/delete:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/me/export:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /auth/me/password:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /auth/me/profile:
+    put:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /auth/me/role:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /chat/threads:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /chat/threads/{threadId}/escalate:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /chat/threads/{threadId}/messages:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /chat/threads/{threadId}/rating:
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /cohorts/{id}/enrollments:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /me/availability-exceptions/{id}:
+    delete:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /me/availability/{id}:
+    delete:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /me/devices:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+    post:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+        '201': { description: Created }
+
+  /me/devices/{deviceId}:
+    delete:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /me/submissions:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /programmes/{slug}:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /health:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /health/live:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /health/ready:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /metrics:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
+  /objects/{bucket}/{key...}:
+    get:
+      tags: []
+      summary: "Routed endpoint (contract-generated — expand me)"
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: OK }
+
   /auth/register:
     post:
       tags: [identity]

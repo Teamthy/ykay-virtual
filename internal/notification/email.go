@@ -75,7 +75,16 @@ func truncate(s string, n int) string {
 	if len(s) <= n {
 		return s
 	}
-	return s[:n] + "…"
+	// Keep the TAIL — dev logs exist to expose codes/links, which live at
+	// the end of the branded email shell (verification/reset links).
+	head := 200
+	if n <= head+50 {
+		head = 0
+	}
+	if head == 0 {
+		return "…" + s[len(s)-n:]
+	}
+	return s[:head] + " …[truncated]… " + s[len(s)-(n-head):]
 }
 
 // BrandEmail — wraps an HTML body in the NUVORA email shell (navy header,
