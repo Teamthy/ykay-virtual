@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { getAdminStats2 } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RoleGate } from "@/components/dashboard/RoleGate";
 
 // Admin dashboard (working-doc §12): KPI cards — active learners | tutors |
 // cohorts | lessons this week | revenue + pending applications/enrolments,
@@ -28,7 +29,7 @@ export default function AdminOverviewPage() {
 
   if (stats.isLoading) {
     return (
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"><RoleGate page="/admin" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
@@ -41,6 +42,7 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="space-y-8">
+      <RoleGate page="/admin" />
       <div>
         <h1 className="text-3xl font-extrabold">Operations overview</h1>
         <p className="text-ink-500 text-sm mt-1">Live platform health — learners, tutors, cohorts, lessons, revenue.</p>

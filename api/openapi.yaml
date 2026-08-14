@@ -28,6 +28,26 @@ tags:
   - name: analytics
 
 paths:
+  /auth/me/onboarded:
+    post:
+      tags: [identity]
+      summary: Complete the first-time wizard (idempotent onboarding flag)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: "Onboarded flag set" }
+
+  /me/recommendations:
+    get:
+      tags: [portal]
+      summary: Session-scoped suggestions (cohorts, programmes, tutors ranked for the session's learners)
+      description: |
+        Suggestions engine: cohorts open for enrolment ordered by start date
+        and fill rate, featured programmes level-matched to the learner, and
+        top-ranked tutors. Includes a human-readable personalisation basis.
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Recommendations }
+
 
 # ── contract-generated (G6.1): routed endpoints not previously documented ──
   /admin/chat/analytics:

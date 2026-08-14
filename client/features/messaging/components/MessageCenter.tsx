@@ -33,14 +33,20 @@ export function MessageCenter() {
     refetchInterval: 10_000,
   });
 
+  // Envelope-normalised data (apiFetch returns {data, meta}; a fresh account
+  // can receive `data: null` from the API — never deref without a default).
+  // listConversations keeps the envelope; listMessages already unwraps.
+  const conversationList: Conversation[] = conversations.data?.data ?? [];
+  const messageList: Message[] = messages.data ?? [];
+
   // Mark read when opening a conversation.
   useEffect(() => {
     if (selected) void markConversationRead(selected);
-  }, [selected, messages.data?.length]);
+  }, [selected, messageList.length]);
 
   useEffect(() => {
     listEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.data?.length]);
+  }, [messageList.length]);
 
   const qc = useQueryClient();
   const send = useMutation({
@@ -89,11 +95,11 @@ export function MessageCenter() {
             <Skeleton className="h-14 w-full" />
             <Skeleton className="h-14 w-full" />
           </div>
-        ) : (conversations.data?.data.length ?? 0) === 0 ? (
+        ) : conversationList.length === 0 ? (
           <p className="p-6 text-sm text-ink-500">No conversations yet. Book a tutor to start one.</p>
         ) : (
           <ul>
-            {conversations.data?.data.map((c: Conversation) => (
+            {conversationList.map((c) => (
               <li key={c.id}>
                 <button
                   onClick={() => setSelected(c.id)}
@@ -130,10 +136,10 @@ export function MessageCenter() {
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.isLoading ? (
                 <Skeleton className="h-16 w-2/3" />
-              ) : (messages.data?.length ?? 0) === 0 ? (
+              ) : messageList.length === 0 ? (
                 <p className="text-sm text-ink-400 text-center pt-10">No messages yet — say hello!</p>
               ) : (
-                [...(messages.data ?? [])].reverse().map((m) => {
+                [...messageList].reverse().map((m) => {
                   const mine = m.sender_user_id === currentUserId;
                   return (
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>

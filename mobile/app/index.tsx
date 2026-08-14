@@ -1,10 +1,58 @@
-import { Link } from "expo-router";
-import { ScrollView, StyleSheet, Text, View, Pressable } from "react-native";
+import { Link, router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
+import { apiFetch, getToken } from "@/src/lib/api";
 
-// Welcome screen — the app's landing: brand, value props, CTAs.
+// Welcome screen — session-aware: signed-in users route straight to their
+// dashboard (or the first-time wizard); guests see the brand landing.
+type Me = { id: string; email: string; roles: string[]; onboarded: boolean };
 
 export default function Welcome() {
+  const [checking, setChecking] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      (async () => {
+        try {
+          const token = await getToken();
+          if (!token) return;
+          const res = await apiFetch<Me>("/auth/me");
+          if (cancelled) return;
+          const u = res.data;
+          if (!u.onboarded) {
+            router.replace("/wizard");
+            return;
+          }
+          router.replace(u.roles.includes("STUDENT") ? "/lms" : "/home");
+        } catch {
+          // no valid session — stay on the welcome screen
+        } finally {
+          if (!cancelled) setChecking(false);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    // If there is no token at all, stop the spinner immediately.
+    void getToken().then((t) => {
+      if (!t) setChecking(false);
+    });
+  }, []);
+
+  if (checking) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={colors.gold} size="large" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.brandRow}>
@@ -40,6 +88,7 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.cream },
   root: { flex: 1, backgroundColor: colors.cream },
   content: { padding: 24, paddingTop: 64, flexGrow: 1 },
   brandRow: { alignItems: "center", gap: 4 },

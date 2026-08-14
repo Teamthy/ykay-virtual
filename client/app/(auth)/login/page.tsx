@@ -2,6 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
+import { homeForRoles } from "@/hooks/useDashboardRoute";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -42,9 +43,12 @@ export default function LoginPage() {
           router.push("/verify-email?sent=1");
           return;
         }
-        if (user.roles.includes("TUTOR")) router.push("/tutor-dashboard");
-        else if (user.roles.includes("PARENT")) router.push("/dashboard");
-        else router.push("/student-dashboard");
+        // First-time users walk the 3-step wizard before their dashboard.
+        if (!user.onboarded) {
+          router.push("/onboarding/wizard");
+          return;
+        }
+        router.push(homeForRoles(user.roles));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Login failed");
       } finally {

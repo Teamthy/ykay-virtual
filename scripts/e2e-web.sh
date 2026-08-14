@@ -61,7 +61,7 @@ GW_PID=$!
 for i in $(seq 1 20); do curl -sf -m 1 "http://localhost:$GW_PORT/health" >/dev/null 2>&1 && break; sleep 0.3; done
 
 # ── 2. API (PG when reachable, else memory + demo seed) ────────────────────
-"${GO:-go}" build -o .e2e-api ./cmd/api
+rm -f .e2e-api && "${GO:-go}" build -o .e2e-api ./cmd/api
 API_ENV=(PORT="$API_PORT" SEED_DEMO_DATA=true
   PAYSTACK_SECRET="$WEBHOOK_SECRET" FLUTTERWAVE_SECRET="$WEBHOOK_SECRET"
   PAYSTACK_BASE_URL="http://localhost:$GW_PORT" FLUTTERWAVE_BASE_URL="http://localhost:$GW_PORT"
@@ -84,7 +84,13 @@ for i in $(seq 1 30); do curl -sf -m 1 "http://localhost:$API_PORT/health" >/dev
 curl -sf -m 1 "http://localhost:$API_PORT/health" >/dev/null || { echo "API failed"; tail -20 /tmp/e2e-web-api.log; exit 1; }
 
 # ── 3. Web standalone ──────────────────────────────────────────────────────
-(cd client && npm ci --no-audit --no-fund >/dev/null && npm run build >/tmp/e2e-web-build.log 2>&1)
+# Kill stale servers squatting on the ports (Next renames its process title
+# to "next-server" — generic pgreps miss them and poison the run with a
+# stale build). CI ports are clean; this protects local reruns.
+pkill -f "next-server" 2>/dev/null || true
+pkill -f "standalone.*server" 2>/dev/null || true
+sleep 1
+(cd client && npm ci --no-audit --no-fund >/dev/null   && rm -rf .next   && npm run build >/tmp/e2e-web-build.log 2>&1)
 # outputFileTracingRoot spans the monorepo → Next nests the server under
 # standalone/client/; be tolerant of both layouts, and copy the static
 # assets (they are not traced into standalone).
@@ -97,6 +103,12 @@ if [ -d client/public ]; then mkdir -p "$STANDALONE_DIR/public"; cp -r client/pu
 API_PROXY_TARGET="http://localhost:$API_PORT" PORT="$WEB_PORT" HOSTNAME=0.0.0.0 \
   node "$SERVER_JS" >/tmp/e2e-web-server.log 2>&1 &
 WEB_PID=$!
+sleep 1
+if ! kill -0 "$WEB_PID" 2>/dev/null; then
+  echo "web server exited at boot — port $WEB_PORT likely occupied by a stale process"
+  tail -20 /tmp/e2e-web-server.log
+  exit 1
+fi
 for i in $(seq 1 30); do curl -sf -m 1 "http://localhost:$WEB_PORT/" >/dev/null 2>&1 && break; sleep 0.5; done
 curl -sf -m 1 "http://localhost:$WEB_PORT/" >/dev/null || { echo "web failed"; tail -20 /tmp/e2e-web-server.log; exit 1; }
 

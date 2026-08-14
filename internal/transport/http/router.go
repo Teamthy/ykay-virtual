@@ -84,6 +84,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
 	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
 	mux.HandleFunc("GET "+v1+"/auth/me/context", handlers.SessionContext.Get)
+	mux.HandleFunc("POST "+v1+"/auth/me/onboarded", handlers.Auth.MarkOnboarded)
+	mux.HandleFunc("GET "+v1+"/me/recommendations", handlers.Recommendations.Get)
 	mux.HandleFunc("POST "+v1+"/auth/verify-email/request", authRate(handlers.Auth.ResendVerification))
 	mux.HandleFunc("POST "+v1+"/auth/verify-email/confirm", handlers.Auth.ConfirmVerification)
 	mux.HandleFunc("POST "+v1+"/auth/password-reset/request", authRate(handlers.Auth.RequestPasswordReset))
@@ -317,31 +319,32 @@ func (rt *Router) Handler() http.Handler {
 
 // Handlers — dependency container so the router stays declarative.
 type Handlers struct {
-	Subjects       *SubjectHandler
-	Tutors         *TutorHandler
-	Programmes     *ProgrammeHandler
-	Cohorts        *CohortHandler
-	Bookings       *BookingHandler
-	Payments       *PaymentHandler
-	Vetting        *VettingHandler
-	AdminVetting   *AdminVettingHandler
-	Messaging      *MessagingHandler
-	Dashboard      *DashboardHandler
-	Content        *ContentHandler
-	Auth           *AuthHandler
-	SessionContext *SessionContextHandler
-	Admin          *AdminHandler
-	Support        *SupportHandler
-	Growth         *GrowthHandler
-	LessonOps      *LessonOpsHandler
-	Meeting        *MeetingHandler
-	Chat           *ChatHandler
-	Devices        *DeviceHandler
-	Account        *AccountHandler
-	Onboarding     *OnboardingHandler
-	Portal         *PortalHandler
-	Learning       *LearningHandler
-	Objects        *ObjectHandler
+	Subjects        *SubjectHandler
+	Tutors          *TutorHandler
+	Programmes      *ProgrammeHandler
+	Cohorts         *CohortHandler
+	Bookings        *BookingHandler
+	Payments        *PaymentHandler
+	Vetting         *VettingHandler
+	AdminVetting    *AdminVettingHandler
+	Messaging       *MessagingHandler
+	Dashboard       *DashboardHandler
+	Recommendations *RecommendationHandler
+	Content         *ContentHandler
+	Auth            *AuthHandler
+	SessionContext  *SessionContextHandler
+	Admin           *AdminHandler
+	Support         *SupportHandler
+	Growth          *GrowthHandler
+	LessonOps       *LessonOpsHandler
+	Meeting         *MeetingHandler
+	Chat            *ChatHandler
+	Devices         *DeviceHandler
+	Account         *AccountHandler
+	Onboarding      *OnboardingHandler
+	Portal          *PortalHandler
+	Learning        *LearningHandler
+	Objects         *ObjectHandler
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).

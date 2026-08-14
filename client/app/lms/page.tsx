@@ -15,6 +15,7 @@ import {
 } from "@/features/lms/api";
 import { listAssessments, listProgressReports } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
+import { RoleGate } from "@/components/dashboard/RoleGate";
 
 // Student LMS hub — my courses, attendance, assignments, quizzes, reports.
 
@@ -112,6 +113,7 @@ export default function LmsHomePage() {
       </header>
 
       <div className="mx-auto max-w-6xl px-6">
+        <RoleGate page="/lms" />
         {/* Stats */}
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Stat label="Active courses" value={courses.length || "—"} hint="Cohorts you're enrolled in" />

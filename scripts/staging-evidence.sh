@@ -71,7 +71,7 @@ fi
 
 # ---------------------------------------------------------------- boot API ---
 BIN="${ROOT}/.staging-api"
-(cd "$ROOT" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
+(cd "$ROOT" && rm -f "$BIN" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
 if curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
   echo "API already running on :${PORT} — reusing it"
 else

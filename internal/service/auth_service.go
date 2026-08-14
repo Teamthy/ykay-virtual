@@ -320,6 +320,11 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 }
 
 // Me — resolves the current user + roles from a session token hash.
+// MarkOnboarded — first-time wizard completion marker (idempotent).
+func (s *AuthService) MarkOnboarded(ctx context.Context, userID uuid.UUID) error {
+	return s.users.SetOnboarded(ctx, userID, s.now().UTC())
+}
+
 func (s *AuthService) Me(ctx context.Context, tokenHash string) (*identity.User, []string, error) {
 	session, err := s.sessions.FindByTokenHash(ctx, tokenHash)
 	if err != nil {

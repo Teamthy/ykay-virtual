@@ -102,7 +102,7 @@ export function ReferralCard({ userId }: { userId: string }) {
         <ul className="mt-5 space-y-2">
           {(mine.data ?? []).slice(0, 5).map((r) => (
             <li key={r.id} className="flex items-center justify-between text-sm border-b border-ink-100 pb-2">
-              <span className="font-mono text-xs text-ink-500">{r.referred_user_id.slice(0, 13)}…</span>
+              <span className="font-mono text-xs text-ink-500">{(r.referred_user_id ?? "").slice(0, 13)}…</span>
               <span className="flex items-center gap-2">
                 <span className="font-semibold">₦{r.reward_amount.toLocaleString()}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_BADGE[r.status] ?? "bg-ink-100"}`}>

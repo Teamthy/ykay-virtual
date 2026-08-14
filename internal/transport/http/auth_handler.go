@@ -39,23 +39,39 @@ type userResponse struct {
 	FirstName string   `json:"first_name,omitempty"`
 	LastName  string   `json:"last_name,omitempty"`
 	Phone     *string  `json:"phone,omitempty"`
+	Onboarded bool     `json:"onboarded"`
 	Status    string   `json:"status"`
 	Timezone  string   `json:"timezone"`
 	Roles     []string `json:"roles"`
 	CreatedAt string   `json:"created_at"`
 }
 
-func toUserResponse(id, email, status, timezone string, roles []string, createdAt string) userResponse {
-	return userResponse{ID: id, Email: email, Status: status, Timezone: timezone, Roles: roles, CreatedAt: createdAt}
-}
-
-func toUserResponseFull(u *identity.User, roles []string) userResponse {
+func toUserResponse(u *identity.User, roles []string) userResponse {
 	return userResponse{
 		ID: u.ID.String(), Email: u.Email,
 		FirstName: u.FirstName, LastName: u.LastName, Phone: u.Phone,
 		Status: string(u.Status), Timezone: u.Timezone, Roles: roles,
 		CreatedAt: u.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		Onboarded: u.OnboardedAt != nil,
 	}
+}
+
+func toUserResponseFull(u *identity.User, roles []string) userResponse {
+	return toUserResponse(u, roles)
+}
+
+// MarkOnboarded — completes the first-time wizard for the session user
+// (idempotent). Wired to POST /auth/me/onboarded.
+func (h *AuthHandler) MarkOnboarded(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	if err := h.svc.MarkOnboarded(r.Context(), actor.UserID); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"onboarded": true}, nil)
 }
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -69,10 +85,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	pkg.WriteSuccess(w, http.StatusCreated, toUserResponse(
-		user.ID.String(), user.Email, string(user.Status), user.Timezone, req.Roles,
-		user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	), nil)
+	pkg.WriteSuccess(w, http.StatusCreated, toUserResponse(user, req.Roles), nil)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -91,10 +104,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	middleware.SetSessionCookie(w, h.cfg, token)
-	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(
-		user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
-		user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	), nil)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
 }
 
 func (h *AuthHandler) RequestLoginCode(w http.ResponseWriter, r *http.Request) {
@@ -133,10 +143,7 @@ func (h *AuthHandler) ConfirmLoginCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	middleware.SetSessionCookie(w, h.cfg, token)
-	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(
-		user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
-		user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	), nil)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
 }
 
 func (h *AuthHandler) GoogleAuthURL(w http.ResponseWriter, r *http.Request) {
@@ -170,10 +177,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	middleware.SetSessionCookie(w, h.cfg, token)
-	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(
-		user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
-		user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-	), nil)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
@@ -373,10 +377,7 @@ func (h *AuthHandler) MobileLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
 		"token": token,
-		"user": toUserResponse(
-			user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
-			user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		),
+		"user":  toUserResponse(user, roles),
 	}, nil)
 }
 
@@ -399,10 +400,7 @@ func (h *AuthHandler) MobileLoginCodeConfirm(w http.ResponseWriter, r *http.Requ
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
 		"token": token,
-		"user": toUserResponse(
-			user.ID.String(), user.Email, string(user.Status), user.Timezone, roles,
-			user.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		),
+		"user":  toUserResponse(user, roles),
 	}, nil)
 }
 

@@ -32,7 +32,7 @@ json() { python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
 
 # ---------------------------------------------------------------- boot API ---
 BIN="${ROOT}/.e2e-api"
-(cd "$ROOT" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
+(cd "$ROOT" && rm -f "$BIN" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
 
 if curl -sf -m 2 "$BASE/../health" >/dev/null 2>&1 || curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
   echo "API already running on :${PORT} — reusing it"
@@ -550,6 +550,24 @@ curl -s "$BASE/programmes" -o /tmp/e2e-body.json
 grep -q "nigerian-curriculum" /tmp/e2e-body.json && ok "republished programme visible again" || fail "republished programme missing"
 c=$(req "$J_STUDENT" POST "/admin/programmes/00000000-0000-0000-0000-00000000d001/status" '{"status":"ARCHIVED"}')
 assert_code "student cannot change catalogue status → 403" 403 "$c"
+
+# ============================================ SUGGESTIONS + ONBOARDING ======
+note "G6 SUGGESTIONS ENGINE + FIRST-TIME WIZARD FLAG"
+
+c=$(req "$J_PARENT" GET /me/recommendations)
+assert_code "parent recommendations" 200 "$c"
+grep -q '"cohorts"' /tmp/e2e-body.json && ok "cohort recommendations present" || fail "cohort recommendations missing"
+grep -q '"programmes"' /tmp/e2e-body.json && ok "programme recommendations present" || fail "programme recommendations missing"
+grep -q '"tutors"' /tmp/e2e-body.json && ok "tutor recommendations present" || fail "tutor recommendations missing"
+grep -q '"basis"' /tmp/e2e-body.json && ok "personalisation basis present" || fail "basis missing"
+
+c=$(req "$J_PARENT" GET /auth/me)
+c=$(req "$J_PARENT" POST /auth/me/onboarded)
+assert_code "mark onboarded" 200 "$c"
+c=$(req "$J_PARENT" GET /auth/me)
+[ "$(cat /tmp/e2e-body.json | json 'd["data"]["onboarded"]')" = "True" ] && ok "onboarded flag flips to true" || fail "onboarded flag not set"
+c=$(req "$J_STUDENT" GET /me/recommendations)
+assert_code "student recommendations" 200 "$c"
 
 # ============================================================== SUMMARY ======
 echo

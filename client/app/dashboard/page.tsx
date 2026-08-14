@@ -14,6 +14,8 @@ import { unreadCount } from "@/features/messaging/api";
 import { ReferralCard } from "@/features/referrals/ReferralCard";
 import { listProgressReports } from "@/features/learning/api";
 import { listLearners, type Learner } from "@/features/onboarding/api";
+import { RoleGate } from "@/components/dashboard/RoleGate";
+import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
 
 // Parent portal — Tuteria bookings-style (tuteria.com/users/bookings):
@@ -175,6 +177,9 @@ export default function ParentDashboardPage() {
 
         {/* Main */}
         <div className="space-y-6">
+          <RoleGate page="/dashboard" />
+          <RecommendationsForYou />
+
           {/* Header row */}
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>

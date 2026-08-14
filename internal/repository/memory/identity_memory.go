@@ -73,6 +73,19 @@ func (m *UserMemory) FindByID(_ context.Context, id uuid.UUID) (*identity.User, 
 	return nil, domain.ErrNotFound
 }
 
+// SetOnboarded — marks the first-time wizard complete (000031).
+func (m *UserMemory) SetOnboarded(_ context.Context, id uuid.UUID, at time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	u, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	u.OnboardedAt = &at
+	u.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
 func (m *UserMemory) Update(_ context.Context, u *identity.User) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

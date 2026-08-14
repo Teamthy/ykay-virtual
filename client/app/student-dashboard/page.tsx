@@ -15,6 +15,8 @@ import {
   getAttendanceSummary,
 } from "@/features/portal/api";
 import { StudentQuizzes } from "@/features/learning/StudentQuizzes";
+import { RoleGate } from "@/components/dashboard/RoleGate";
+import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 
 // Student portal (working-doc §9): side nav, Today panel, progress,
 // assignments with submission, resources, announcements, support.
@@ -129,6 +131,8 @@ export default function StudentDashboardPage() {
 
   return (
     <main className="container-x py-10">
+      <RoleGate page="/student-dashboard" />
+      <RecommendationsForYou />
       <h1 className="text-3xl font-extrabold">Student dashboard</h1>
       <p className="text-ink-500 text-sm mt-1">
         {user ? `Signed in as ${user.email}` : "Your classes, resources and progress."}
