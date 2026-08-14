@@ -157,17 +157,25 @@ func main() {
 		WithAuthTokens(repos.AuthTokens).
 		WithStudentProfiles(repos.Students)
 
-	// --- Durable dispatch queue (G4.1): Redis up → outbound email/SMS/push
-	// jobs enqueue for the worker; down → synchronous direct delivery. ---
-	if jobQueue := setupJobQueue(cfg.RedisURL); jobQueue != nil {
-		authSvc.WithQueue(jobQueue)
+	// --- Durable dispatch queue (G4.1): in PRODUCTION, Redis-up routes
+	// outbound email through the worker queue (sync fallback when Redis is
+	// down). Dev/staging keep synchronous delivery so console-sent codes
+	// and links stay visible without a running worker. ---
+	if cfg.Environment == "production" {
+		if jobQueue := setupJobQueue(cfg.RedisURL); jobQueue != nil {
+			authSvc.WithQueue(jobQueue)
+		}
 	}
 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
 		RedirectURL:  cfg.GoogleRedirectURL,
 	}, authSvc)
-	sessionAuth := middleware.SessionAuth(sessionResolverAdapter{svc: authSvc}, "nuvora_session")
+	// G7.1 session cache: 30s resolution cache in front of the DB-backed
+	// resolver (logout invalidates the exact token immediately).
+	sessionCache := middleware.NewCachingSessionResolver(sessionResolverAdapter{svc: authSvc}, cacheBackend)
+	middleware.SetSessionCache(sessionCache)
+	sessionAuth := middleware.SessionAuth(sessionCache, "nuvora_session")
 
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
 	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit)
@@ -277,6 +285,18 @@ func main() {
 		Objects:        httpapi.NewObjectHandler(localStore),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth, readyCheck, cfg.Environment == "production")
+
+	// G7.2 distributed rate limiting: Redis-backed counters shared across
+	// API instances; the in-memory limiters remain when Redis is absent.
+	if rc, ok := cacheBackend.(*cache.RedisCache); ok {
+		router.SetRateLimiters(
+			middleware.NewRedisRateLimiter(rc.Raw(), httpapi.RateLimitPerMinute(), time.Minute, "rl:global"),
+			middleware.NewRedisRateLimiter(rc.Raw(), 40, time.Minute, "rl:auth"),
+		)
+		log.Println("ratelimit: Redis-backed limiters active (distributed)")
+	} else {
+		log.Println("ratelimit: in-memory limiters (single instance)")
+	}
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,

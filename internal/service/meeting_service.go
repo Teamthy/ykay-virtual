@@ -2,12 +2,12 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 
+	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/meeting"
 )
@@ -49,7 +49,7 @@ func (s *MeetingService) GetOrCreateTutorLink(ctx context.Context, lessonID, tut
 		return nil, err
 	}
 	if lesson.TutorProfileID != tutorProfileID {
-		return nil, errors.New("forbidden: not this tutor's lesson")
+		return nil, fmt.Errorf("%w: not this tutor's lesson", domain.ErrForbidden)
 	}
 
 	now := time.Now().UTC()
@@ -89,11 +89,11 @@ func (s *MeetingService) GetParticipantLink(ctx context.Context, lessonID, stude
 		return nil, err
 	}
 	if !ok {
-		return nil, errors.New("forbidden: not a participant of this lesson")
+		return nil, fmt.Errorf("%w: not a participant of this lesson", domain.ErrForbidden)
 	}
 	m, err := s.repo.GetMeeting(ctx, lessonID)
 	if err != nil || m == nil || m.MeetingURL == "" {
-		return nil, errors.New("meeting link not ready yet — the tutor has not opened the room")
+		return nil, fmt.Errorf("%w: meeting link not ready yet — the tutor has not opened the room", domain.ErrNotFound)
 	}
 	if !m.JoinWindowOpen(lesson.StartAt, lesson.EndAt, time.Now().UTC()) {
 		return nil, meeting.ErrJoinWindowClosed

@@ -77,3 +77,7 @@ func (c *RedisCache) Exists(ctx context.Context, key string) (bool, error) {
 
 // Key helpers — stable namespaced cache keys.
 func CacheKey(parts ...string) string { return strings.Join(parts, ":") }
+
+// Raw exposes the underlying client for infrastructure that needs it
+// directly (distributed rate limiting, G7).
+func (c *RedisCache) Raw() *redis.Client { return c.client }

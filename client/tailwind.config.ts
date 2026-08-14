@@ -19,7 +19,7 @@ const config: Config = {
           "blue-light": "#EAF1FF",
           gold: "#F4B400",       // PRIMARY — Tuteria gold
           "gold-hover": "#DFA300",
-          "gold-dark": "#B98200",
+          "gold-dark": "#8A6000",
           "gold-light": "#FFF3C4",
           orange: "#ED6D20",
           "orange-light": "#FDF0E8",

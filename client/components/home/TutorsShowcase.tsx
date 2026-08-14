@@ -91,7 +91,7 @@ export function TutorsShowcase() {
                     <Star size={13} className="text-brand-gold" fill="currentColor" strokeWidth={0} />
                     {t.rating}
                   </span>
-                  <span className="text-xs text-ink-400">{t.reviews}</span>
+                  <span className="text-xs text-ink-500">{t.reviews}</span>
                 </div>
               </div>
             </Link>

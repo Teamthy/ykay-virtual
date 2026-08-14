@@ -23,7 +23,7 @@ export function ExamPrepGrid() {
                 <>
                   <div className="text-2xl md:text-[26px] font-extrabold">{card.title}</div>
                   <div className="text-xs md:text-sm opacity-95 leading-relaxed max-w-[220px]">{card.subtitle}</div>
-                  <div className="bg-white/20 px-5 py-1.5 rounded-full text-xs font-semibold mt-2">Get Started</div>
+                  <div className="bg-white px-5 py-1.5 rounded-full text-xs font-bold text-brand-blue mt-2">Get Started</div>
                 </>
               ) : (
                 card.title

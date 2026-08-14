@@ -82,6 +82,7 @@ else
     YKAY_STORAGE_BASE_URL="http://localhost:$PORT" \
     "$BIN" >/tmp/staging-api.log 2>&1 &
   API_PID=$!
+  trap 'kill $API_PID ${GW_PID:-} 2>/dev/null || true' EXIT
   for i in $(seq 1 30); do curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break; sleep 0.5; done
   curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null || { echo "API failed"; tail -5 /tmp/staging-api.log; exit 1; }
 fi

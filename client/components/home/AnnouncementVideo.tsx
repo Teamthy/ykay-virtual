@@ -36,7 +36,7 @@ export function AnnouncementVideo() {
             className="group grid h-24 w-24 place-items-center rounded-full bg-[#111111] text-white shadow-card transition-transform hover:scale-105"
             aria-label="Watch the announcement video on YouTube"
           >
-            <span className="grid h-16 w-16 place-items-center rounded-full bg-white/10 transition-colors group-hover:bg-white/20">
+            <span className="grid h-16 w-16 place-items-center rounded-full bg-ink-800 transition-colors group-hover:bg-ink-700">
               <Play size={26} className="ml-1" fill="currentColor" />
             </span>
           </a>
@@ -44,7 +44,7 @@ export function AnnouncementVideo() {
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
           {AWARDS.map((a) => (
-            <span key={a} className="text-sm font-extrabold uppercase tracking-wide text-ink-300">
+            <span key={a} className="text-sm font-extrabold uppercase tracking-wide text-ink-500">
               {a}
             </span>
           ))}

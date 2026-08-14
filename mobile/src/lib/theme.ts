@@ -2,7 +2,7 @@
 export const colors = {
   gold: "#F4B400",
   goldHover: "#DFA300",
-  goldDark: "#B98200",
+  goldDark: "#8A6000",
   goldLight: "#FFF3C4",
   cream: "#FFFCF5",
   creamAlt: "#FFF8E8",

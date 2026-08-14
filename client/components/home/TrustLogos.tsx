@@ -4,7 +4,7 @@ export function TrustLogos() {
   return (
     <section className="py-14 bg-white text-center">
       <div className="container-x">
-        <p className="text-xs text-ink-400 uppercase tracking-[2px] font-semibold mb-8">
+        <p className="text-xs text-ink-500 uppercase tracking-[2px] font-semibold mb-8">
           Trusted educators. Recognised curricula. Vetted delivery.
         </p>
         <div className="flex justify-center items-center gap-14 flex-wrap grayscale opacity-55">

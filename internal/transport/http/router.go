@@ -15,10 +15,17 @@ import (
 // Router assembles the API: middleware chain (request-id → logger → recover →
 // rate-limit) + versioned routes per api/openapi.yaml.
 
+// HTTPRateLimiter — common contract for the in-memory and Redis-backed
+// limiters (G7.2). The router defaults to in-memory; main swaps in the
+// Redis-backed pair when a shared Redis is available.
+type HTTPRateLimiter interface {
+	Middleware(http.Handler) http.Handler
+}
+
 type Router struct {
 	mux            *http.ServeMux
-	rateLimiter    *middleware.RateLimiter
-	authLimiter    *middleware.RateLimiter
+	rateLimiter    HTTPRateLimiter
+	authLimiter    HTTPRateLimiter
 	Version        string
 	allowedOrigins string
 	sessionAuth    func(http.Handler) http.Handler
@@ -37,7 +44,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux := http.NewServeMux()
 	// RATE_LIMIT_PER_MINUTE tunes the global per-IP window (default 300;
 	// load tests raise it to measure raw throughput — see scripts/loadtest.sh).
-	rl := middleware.NewRateLimiter(rateLimitPerMinute(), time.Minute)
+	rl := middleware.NewRateLimiter(RateLimitPerMinute(), time.Minute)
 	authRL := middleware.NewRateLimiter(40, time.Minute) // auth endpoints: 40 req/min per IP (SEC-005)
 	authRate := func(h http.HandlerFunc) http.HandlerFunc { return authRL.Middleware(h).ServeHTTP }
 
@@ -282,6 +289,17 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	return &Router{mux: mux, rateLimiter: rl, authLimiter: authRL, Version: version, allowedOrigins: allowedOrigins, sessionAuth: sessionAuth, readyCheck: readyCheck, blockFrames: blockFrames}
 }
 
+// SetRateLimiters swaps in alternate limiter implementations (G7.2: the
+// Redis-backed pair when a shared Redis is available). Call before serving.
+func (rt *Router) SetRateLimiters(global, auth HTTPRateLimiter) {
+	if global != nil {
+		rt.rateLimiter = global
+	}
+	if auth != nil {
+		rt.authLimiter = auth
+	}
+}
+
 func (rt *Router) Handler() http.Handler {
 	var h http.Handler = rt.mux
 	h = telemetry.DefaultMetrics().Middleware(h)
@@ -327,7 +345,7 @@ type Handlers struct {
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
-func rateLimitPerMinute() int {
+func RateLimitPerMinute() int {
 	if v := os.Getenv("RATE_LIMIT_PER_MINUTE"); v != "" {
 		var n int
 		if _, err := fmt.Sscanf(v, "%d", &n); err == nil && n > 0 {

@@ -8,7 +8,7 @@ export function TestPrepCard() {
         <h2 className="text-3xl md:text-5xl font-extrabold text-ink-800 mb-11 tracking-tight">
           Get top grades in tests & examinations
         </h2>
-        <div className="bg-brand-green rounded-3xl p-10 md:p-16 text-white grid lg:grid-cols-2 gap-14 items-center relative overflow-hidden shadow-lift">
+        <div className="bg-brand-green-dark rounded-3xl p-10 md:p-16 text-white grid lg:grid-cols-2 gap-14 items-center relative overflow-hidden shadow-lift">
           <div className="absolute inset-0 pointer-events-none opacity-30"
             style={{
               backgroundImage: "radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05) 2px, transparent 2px)",
@@ -25,7 +25,7 @@ export function TestPrepCard() {
             <div className="mb-9 space-y-3.5">
               {["95% success rate", "Rigorous practice & mock exams", "Covers entire syllabus"].map((f) => (
                 <div key={f} className="flex items-center gap-3 text-sm md:text-base">
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center flex-shrink-0">
                     <Check size={10} strokeWidth={2.5} />
                   </div>
                   {f}

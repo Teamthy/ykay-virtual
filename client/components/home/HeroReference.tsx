@@ -84,7 +84,7 @@ export function HeroReference() {
               ))}
             </div>
             <p className="mt-1.5 text-xs font-semibold text-ink-600">4.87 average tutor rating</p>
-            <p className="text-[10px] text-ink-400">28 verified reviews</p>
+            <p className="text-[10px] text-ink-500">28 verified reviews</p>
           </div>
 
           <div className="animate-hero-in-late absolute -right-3 top-6 flex items-center gap-2 rounded-full border border-ink-100 bg-white px-4 py-2 text-xs font-bold text-brand-navy shadow-soft">

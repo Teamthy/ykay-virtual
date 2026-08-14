@@ -16,7 +16,7 @@ export function PressLogos({ className = "" }: { className?: string }) {
       {LOGOS.map((l) => (
         <span
           key={l.name}
-          className={`select-none text-lg text-ink-300 transition-colors hover:text-ink-500 ${l.cls}`}
+          className={`select-none text-lg text-ink-500 transition-colors hover:text-ink-700 ${l.cls}`}
           aria-label={l.name}
         >
           {l.name}

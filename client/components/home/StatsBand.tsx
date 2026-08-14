@@ -25,7 +25,7 @@ export function StatsBand() {
             </div>
           ))}
         </div>
-        <p className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-ink-400">
+        <p className="mt-10 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-ink-500">
           We are backed by
         </p>
         <div className="mt-4">

@@ -23,6 +23,7 @@ const (
 	JobCleanupExpiredUploads   JobType = "cleanup_expired_uploads"
 	JobRegenerateSitemaps      JobType = "regenerate_sitemaps"
 	JobPublishScheduledPosts   JobType = "publish_scheduled_blog_posts"
+	JobArchiveAuditLogs        JobType = "archive_audit_logs" // G7.3 retention
 )
 
 type Job struct {
