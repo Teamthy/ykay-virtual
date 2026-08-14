@@ -40,6 +40,9 @@ type Config struct {
 	GeminiModel        string
 	ChatbotEnabled     bool
 	ExpoAccessToken    string
+	// SeedDemoData enables fixture accounts/catalogue only for explicit local development.
+	// It must never be enabled in production.
+	SeedDemoData       bool
 }
 
 func Load() Config {
@@ -69,6 +72,7 @@ func Load() Config {
 		GeminiModel:        getEnv("GEMINI_MODEL", "gemini-2.0-flash"),
 		ChatbotEnabled:     strings.ToLower(getEnv("CHATBOT_ENABLED", "true")) != "false",
 		ExpoAccessToken:    getEnv("EXPO_ACCESS_TOKEN", ""),
+		SeedDemoData:       strings.EqualFold(getEnv("SEED_DEMO_DATA", "false"), "true"),
 	}
 }
 
@@ -78,6 +82,9 @@ func Load() Config {
 func (c Config) Validate() error {
 	if c.Environment != "production" {
 		return nil
+	}
+	if c.SeedDemoData {
+		return errors.New("production: SEED_DEMO_DATA must be false")
 	}
 	if c.AllowedOrigins == "" {
 		return errors.New("production: ALLOWED_ORIGINS must be an explicit comma-separated list (CORS is fail-closed; empty disables cross-origin entirely)")

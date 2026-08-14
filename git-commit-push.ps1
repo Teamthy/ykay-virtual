@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  YKAY Virtual School — commit & push helper with professional git workflow.
+  NUVORA — commit & push helper with professional git workflow.
 
 .DESCRIPTION
   Safe wrapper around git for pushing YKAY work to GitHub:
@@ -224,7 +224,7 @@ if ($MergeToMain -and $TargetBranch -ne $BaseBranch) {
 # ---------------------------------------------------------------- tag
 if ($Tag) {
     Write-Step "Tagging $Tag"
-    & git tag -a $Tag -m "YKAY Virtual School — $Tag"
+    & git tag -a $Tag -m "NUVORA — $Tag"
     & git push origin $Tag
     Write-OK "Tag pushed: $Tag"
 }

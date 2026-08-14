@@ -33,7 +33,7 @@ import (
 const (
 	SessionTTL    = 30 * 24 * time.Hour
 	bcryptCost    = 10
-	SessionCookie = "ykay_session"
+	SessionCookie = "nuvora_session"
 )
 
 type AuthService struct {

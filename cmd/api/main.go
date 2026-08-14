@@ -141,7 +141,7 @@ func main() {
 		ClientSecret: cfg.GoogleClientSecret,
 		RedirectURL:  cfg.GoogleRedirectURL,
 	}, authSvc)
-	sessionAuth := middleware.SessionAuth(sessionResolverAdapter{svc: authSvc}, "ykay_session")
+	sessionAuth := middleware.SessionAuth(sessionResolverAdapter{svc: authSvc}, "nuvora_session")
 
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
 	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit)
@@ -292,11 +292,16 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		}
 		log.Printf("storage: postgres unavailable — using in-memory store (dev mode)")
 		store := memory.NewMemoryStore()
-		store.Roles.Seed()      // mirror migration 000001 role inserts
-		seedMemoryTutors(store) // mock marketplace tutors (chinasa, oluwatobi)
-		seedMemoryCatalogue(store)
-		seedDemoUsers(store, getEnvDefault("DEMO_PASSWORD", "password123"))
-		seedLMSDemo(store) // LMS demo content (assignments, quiz, attendance)
+		store.Roles.Seed() // mirror migration 000001 role inserts
+		// Fixture data is opt-in. It is useful for local visual development but
+		// never represents launch data and must not be present by default.
+		if cfg.SeedDemoData {
+			log.Println("storage: explicit development fixture seed enabled")
+			seedMemoryTutors(store)
+			seedMemoryCatalogue(store)
+			seedDemoUsers(store, getEnvDefault("DEMO_PASSWORD", "password123"))
+			seedLMSDemo(store)
+		}
 		convMem := memory.NewConversationMemory()
 		return &Repositories{
 			UoWFactory:      memory.NewMemoryUnitOfWorkFactory(store),
@@ -425,7 +430,7 @@ func (a sessionResolverAdapter) Me(ctx context.Context, tokenHash string) (uuid.
 
 var _ middleware.SessionResolver = (*sessionResolverAdapter)(nil)
 
-// seedMemoryTutors — dev-mode marketplace seeds (matches the frontend mock
+// seedMemoryTutors — explicit local-development fixture data (matches the frontend mock
 // tutors chinasa/oluwatobi) so reviews, search and profiles work without
 // Postgres.
 func seedMemoryTutors(store *memory.MemoryStore) {
@@ -616,8 +621,8 @@ func seedLMSDemo(store *memory.MemoryStore) {
 	})
 }
 
-// seedDemoUsers — one account per role so every dashboard is reachable in
-// dev mode. Password for all: password123.
+// seedDemoUsers — explicit local-development fixtures only. Never enable these
+// accounts in staging or production. Password is provided only through DEMO_PASSWORD.
 func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(demoPassword), bcrypt.DefaultCost)
 	now := time.Now()

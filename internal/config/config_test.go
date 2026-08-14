@@ -48,8 +48,21 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 		require.NoError(t, Load().Validate())
 	})
 
+	t.Run("demo fixture seed rejected in production", func(t *testing.T) {
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			cfg[k] = v
+		}
+		cfg["SEED_DEMO_DATA"] = "true"
+		set(cfg)
+		assert.Error(t, Load().Validate())
+	})
+
 	t.Run("wildcard origins rejected in production", func(t *testing.T) {
-		cfg := prodOK
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			cfg[k] = v
+		}
 		cfg["ALLOWED_ORIGINS"] = "*"
 		set(cfg)
 		assert.Error(t, Load().Validate())

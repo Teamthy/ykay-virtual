@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: YKAY Virtual School API
+  title: NUVORA API
   version: 1.0.0
   description: |
     Full commercial, SEO-first, curriculum-governed tutoring marketplace and virtual school.
@@ -8,7 +8,7 @@ info:
 servers:
   - url: http://localhost:8080/api/v1
     description: Local
-  - url: https://api.ykay.com/api/v1
+  - url: https://api.nuvora.com/api/v1
     description: Production
 
 tags:
@@ -59,7 +59,7 @@ paths:
       tags: [identity]
       summary: >-
         Log in with email + password. Verifies bcrypt hash, creates a session
-        and returns an httpOnly `ykay_session` cookie (raw token never leaves
+        and returns an httpOnly `nuvora_session` cookie (raw token never leaves
         the cookie; only its SHA-256 hash is stored).
       requestBody:
         required: true
@@ -73,7 +73,7 @@ paths:
                 password: { type: string }
       responses:
         '200':
-          description: Logged in — sets httpOnly ykay_session cookie
+          description: Logged in — sets httpOnly nuvora_session cookie
           content:
             application/json:
               schema:
@@ -1710,7 +1710,7 @@ components:
     sessionCookie:
       type: apiKey
       in: cookie
-      name: ykay_session
+      name: nuvora_session
       description: httpOnly session cookie set by /auth/login.
   schemas:
     User:
