@@ -272,6 +272,18 @@ func (m *StudentProfileMemory) Create(_ context.Context, p *identity.StudentProf
 	return nil
 }
 
+func (m *StudentProfileMemory) FindByUserID(_ context.Context, userID uuid.UUID) (*identity.StudentProfile, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, p := range m.rows {
+		if p.UserID != nil && *p.UserID == userID {
+			cp := *p
+			return &cp, nil
+		}
+	}
+	return nil, domain.ErrNotFound
+}
+
 func (m *StudentProfileMemory) FindByID(_ context.Context, id uuid.UUID) (*identity.StudentProfile, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

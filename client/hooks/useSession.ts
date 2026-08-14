@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getCurrentUser, logout, type CurrentUser } from "@/features/auth/api";
+import { getCurrentUser, getSessionContext, logout, type CurrentUser } from "@/features/auth/api";
 
 // Session hook — resolves the httpOnly-cookie session via /auth/me.
 // Used by the header nav and any authenticated surface.
@@ -13,9 +13,17 @@ export function useSession() {
     staleTime: 60_000,
     retry: false,
   });
+  const context = useQuery({
+    queryKey: ["session", "context"],
+    queryFn: getSessionContext,
+    enabled: !!query.data,
+    staleTime: 60_000,
+    retry: false,
+  });
   return {
     user: query.data ?? null,
-    isLoading: query.isLoading,
+    context: context.data ?? null,
+    isLoading: query.isLoading || context.isLoading,
     isAuthenticated: !!query.data,
   };
 }

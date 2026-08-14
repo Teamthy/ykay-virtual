@@ -42,7 +42,7 @@ type Config struct {
 	ExpoAccessToken    string
 	// SeedDemoData enables fixture accounts/catalogue only for explicit local development.
 	// It must never be enabled in production.
-	SeedDemoData       bool
+	SeedDemoData bool
 }
 
 func Load() Config {

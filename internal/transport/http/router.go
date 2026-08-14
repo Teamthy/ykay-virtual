@@ -66,6 +66,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/login", authRate(handlers.Auth.Login))
 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
 	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
+	mux.HandleFunc("GET "+v1+"/auth/me/context", handlers.SessionContext.Get)
 	mux.HandleFunc("POST "+v1+"/auth/verify-email/request", authRate(handlers.Auth.ResendVerification))
 	mux.HandleFunc("POST "+v1+"/auth/verify-email/confirm", handlers.Auth.ConfirmVerification)
 	mux.HandleFunc("POST "+v1+"/auth/password-reset/request", authRate(handlers.Auth.RequestPasswordReset))
@@ -278,27 +279,28 @@ func (rt *Router) Handler() http.Handler {
 
 // Handlers — dependency container so the router stays declarative.
 type Handlers struct {
-	Subjects     *SubjectHandler
-	Tutors       *TutorHandler
-	Programmes   *ProgrammeHandler
-	Cohorts      *CohortHandler
-	Bookings     *BookingHandler
-	Payments     *PaymentHandler
-	Vetting      *VettingHandler
-	AdminVetting *AdminVettingHandler
-	Messaging    *MessagingHandler
-	Dashboard    *DashboardHandler
-	Content      *ContentHandler
-	Auth         *AuthHandler
-	Admin        *AdminHandler
-	Support      *SupportHandler
-	Growth       *GrowthHandler
-	LessonOps    *LessonOpsHandler
-	Chat         *ChatHandler
-	Devices      *DeviceHandler
-	Account      *AccountHandler
-	Onboarding   *OnboardingHandler
-	Portal       *PortalHandler
-	Learning     *LearningHandler
-	Objects      *ObjectHandler
+	Subjects       *SubjectHandler
+	Tutors         *TutorHandler
+	Programmes     *ProgrammeHandler
+	Cohorts        *CohortHandler
+	Bookings       *BookingHandler
+	Payments       *PaymentHandler
+	Vetting        *VettingHandler
+	AdminVetting   *AdminVettingHandler
+	Messaging      *MessagingHandler
+	Dashboard      *DashboardHandler
+	Content        *ContentHandler
+	Auth           *AuthHandler
+	SessionContext *SessionContextHandler
+	Admin          *AdminHandler
+	Support        *SupportHandler
+	Growth         *GrowthHandler
+	LessonOps      *LessonOpsHandler
+	Chat           *ChatHandler
+	Devices        *DeviceHandler
+	Account        *AccountHandler
+	Onboarding     *OnboardingHandler
+	Portal         *PortalHandler
+	Learning       *LearningHandler
+	Objects        *ObjectHandler
 }
