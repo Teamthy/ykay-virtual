@@ -11,9 +11,10 @@ import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 
 export const revalidate = 300;
 
-type Props = { params: { id: string } };
+type Props = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   try {
     const cohort = await getCohortSSR(params.id);
     return buildMetadata({
@@ -26,7 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function CohortDetailPage({ params }: Props) {
+export default async function CohortDetailPage(props: Props) {
+  const params = await props.params;
   let cohort;
   try {
     cohort = await getCohortSSR(params.id);

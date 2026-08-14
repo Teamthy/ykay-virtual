@@ -6,24 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listConversations, listMessages, markConversationRead, sendMessage } from "@/features/messaging/api";
 import type { Conversation, Message } from "@/features/messaging/api";
+import { useSession } from "@/hooks/useSession";
 
-const DEV_USER = "00000000-0000-0000-0000-0000000000a1";
-
+// G1: the acting user comes from the session — the API scopes conversations
+// to the authenticated cookie; no fixture user IDs.
 export function MessageCenter() {
+  const { user } = useSession();
+  const currentUserId = user?.id ?? "";
   const [selected, setSelected] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const listEndRef = useRef<HTMLDivElement>(null);
 
   const conversations = useQuery({
-    queryKey: ["conversations", DEV_USER],
-    queryFn: () => listConversations(DEV_USER),
+    queryKey: ["conversations", currentUserId],
+    queryFn: () => listConversations(),
+    enabled: !!currentUserId,
     staleTime: 30_000,
     refetchInterval: 15_000, // dev polling; Redis pub/sub in prod
   });
 
   const messages = useQuery({
     queryKey: ["messages", selected],
-    queryFn: () => (selected ? listMessages(DEV_USER, selected) : Promise.resolve([])),
+    queryFn: () => (selected ? listMessages(selected) : Promise.resolve([])),
     enabled: !!selected,
     staleTime: 10_000,
     refetchInterval: 10_000,
@@ -31,7 +35,7 @@ export function MessageCenter() {
 
   // Mark read when opening a conversation.
   useEffect(() => {
-    if (selected) void markConversationRead(DEV_USER, selected);
+    if (selected) void markConversationRead(selected);
   }, [selected, messages.data?.length]);
 
   useEffect(() => {
@@ -40,7 +44,7 @@ export function MessageCenter() {
 
   const qc = useQueryClient();
   const send = useMutation({
-    mutationFn: (body: string) => sendMessage(DEV_USER, selected!, body),
+    mutationFn: (body: string) => sendMessage(selected!, body),
     onMutate: async (body) => {
       if (!selected) return;
       // Optimistic insert (AGENTS.md: optimistic updates for messaging).
@@ -49,7 +53,7 @@ export function MessageCenter() {
       const optimistic: Message = {
         id: `temp-${Date.now()}`,
         conversation_id: selected,
-        sender_user_id: DEV_USER,
+        sender_user_id: currentUserId,
         type: "TEXT",
         body,
         is_edited: false,
@@ -130,7 +134,7 @@ export function MessageCenter() {
                 <p className="text-sm text-ink-400 text-center pt-10">No messages yet — say hello!</p>
               ) : (
                 [...(messages.data ?? [])].reverse().map((m) => {
-                  const mine = m.sender_user_id === DEV_USER;
+                  const mine = m.sender_user_id === currentUserId;
                   return (
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                       <div

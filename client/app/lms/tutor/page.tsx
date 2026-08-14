@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
-  DEMO_TUTOR_PROFILE_ID,
   getMyTutorLessons,
   getTutorEarnings,
   getCohort,
@@ -15,10 +14,10 @@ import { useSession } from "@/hooks/useSession";
 // Tutor LMS hub — cohorts I teach, pending grading, quick actions.
 
 export default function LmsTutorHomePage() {
+  // G1: the tutor profile is session-resolved server-side.
   const { user } = useSession();
-  const tutorId = DEMO_TUTOR_PROFILE_ID;
 
-  const lessons = useQuery({ queryKey: ["lms", "tutor-lessons"], queryFn: () => getMyTutorLessons(tutorId) });
+  const lessons = useQuery({ queryKey: ["lms", "tutor-lessons"], queryFn: () => getMyTutorLessons(), enabled: !!user });
 
   // Group by cohort, fetch cohort metadata.
   const groups = (() => {
@@ -53,7 +52,8 @@ export default function LmsTutorHomePage() {
   // Pending grading across the first assignment of each cohort.
   const earnings = useQuery({
     queryKey: ["lms", "tutor-earnings"],
-    queryFn: () => getTutorEarnings(DEMO_TUTOR_PROFILE_ID),
+    queryFn: () => getTutorEarnings(),
+    enabled: !!user,
   });
 
   const pendingGrading = useQuery({

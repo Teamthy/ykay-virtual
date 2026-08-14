@@ -7,7 +7,7 @@ import { RelatedContent } from "@/components/RelatedContent";
 
 export const revalidate = 600;
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 type BlogPostDTO = {
   id: string;
@@ -38,7 +38,8 @@ const fallback: Record<string, BlogPostDTO> = {
   },
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   let post: BlogPostDTO | null = null;
   try {
     const res = await apiFetchSSR<BlogPostDTO>(`/content/blog/${params.slug}`);
@@ -56,7 +57,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function BlogSlugPage({ params }: Props) {
+export default async function BlogSlugPage(props: Props) {
+  const params = await props.params;
   let post: BlogPostDTO | null = null;
   try {
     const res = await apiFetchSSR<BlogPostDTO>(`/content/blog/${params.slug}`);

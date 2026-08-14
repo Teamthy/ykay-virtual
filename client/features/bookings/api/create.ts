@@ -3,7 +3,6 @@ import type { BookingResponse, InitiatePaymentResponse, PaymentProvider } from "
 
 export type CreateCohortBookingParams = {
   cohort_id: string;
-  parent_user_id: string;
   student_id: string;
   idempotency_key: string;
 };
@@ -15,10 +14,10 @@ export type CreateCohortBookingParams = {
 export async function createCohortBooking(params: CreateCohortBookingParams): Promise<BookingResponse> {
   const res = await apiFetch<BookingResponse>("/bookings", {
     method: "POST",
+    // G1: the paying parent is derived from the session server-side.
     body: JSON.stringify({
       type: "COHORT",
       cohort_id: params.cohort_id,
-      parent_user_id: params.parent_user_id,
       student_id: params.student_id,
       idempotency_key: params.idempotency_key,
     }),

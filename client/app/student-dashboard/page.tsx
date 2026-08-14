@@ -40,11 +40,10 @@ type Cohort = {
 const SECTIONS = ["Dashboard", "My Classes", "Calendar", "Resources", "Assignments", "Quizzes", "Progress"] as const;
 type Section = (typeof SECTIONS)[number];
 
-const STUDENT_ID = "00000000-0000-0000-0000-000000000001";
-
 export default function StudentDashboardPage() {
   const router = useRouter();
   const qc = useQueryClient();
+  // G1: the learner profile resolves from the session server-side.
   const { user } = useSession();
   const [section, setSection] = useState<Section>("Dashboard");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -52,33 +51,37 @@ export default function StudentDashboardPage() {
   const lessons = useQuery({
     queryKey: ["student", "lessons"],
     queryFn: async () => {
-      const res = await apiFetch<Lesson[]>("/me/lessons?student_profile_id=" + STUDENT_ID);
+      const res = await apiFetch<Lesson[]>("/me/lessons");
       return res.data ?? [];
     },
+    enabled: !!user,
     staleTime: 30_000,
   });
 
   const assignments = useQuery({
     queryKey: ["student", "assignments"],
-    queryFn: () => listMyAssignments(STUDENT_ID),
+    queryFn: () => listMyAssignments(),
+    enabled: !!user,
     staleTime: 30_000,
   });
 
   const submissions = useQuery({
     queryKey: ["student", "submissions"],
-    queryFn: () => listMySubmissions(STUDENT_ID),
+    queryFn: () => listMySubmissions(),
+    enabled: !!user,
     staleTime: 30_000,
   });
 
   const attendance = useQuery({
     queryKey: ["student", "attendance"],
-    queryFn: () => getAttendanceSummary(STUDENT_ID),
+    queryFn: () => getAttendanceSummary(),
+    enabled: !!user,
     staleTime: 30_000,
   });
 
   const submit = useMutation({
     mutationFn: ({ assignmentId, content }: { assignmentId: string; content: string }) =>
-      submitAssignment(STUDENT_ID, assignmentId, content),
+      submitAssignment(undefined, assignmentId, content),
     onSuccess: () => {
       toast.success("Assignment submitted!");
       qc.invalidateQueries({ queryKey: ["student", "assignments"] });

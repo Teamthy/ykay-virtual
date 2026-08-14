@@ -33,9 +33,8 @@ import {
 } from "@/features/learning/api";
 
 // ── LMS API (phase 32) — student + tutor portals over the learning surface ──
-
-export const DEMO_STUDENT_ID = "00000000-0000-0000-0000-000000000001";
-export const DEMO_TUTOR_PROFILE_ID = "00000000-0000-0000-0000-000000000102";
+// G1 (phase 43): profile IDs are session-resolved server-side; the optional
+// parameters below exist only for admin views acting on an explicit profile.
 
 export type LessonNote = {
   id: string;
@@ -66,13 +65,15 @@ export async function getCohortLessons(cohortId: string): Promise<CohortLesson[]
   return res.data ?? [];
 }
 
-export async function getMyLessons(studentProfileId: string): Promise<CohortLesson[]> {
-  const res = await apiFetch<CohortLesson[]>(`/me/lessons?student_profile_id=${studentProfileId}`);
+export async function getMyLessons(studentProfileId?: string): Promise<CohortLesson[]> {
+  const q = studentProfileId ? `?student_profile_id=${studentProfileId}` : "";
+  const res = await apiFetch<CohortLesson[]>(`/me/lessons${q}`);
   return res.data ?? [];
 }
 
-export async function getMyTutorLessons(tutorProfileId: string): Promise<CohortLesson[]> {
-  const res = await apiFetch<CohortLesson[]>(`/me/tutor-lessons?tutor_profile_id=${tutorProfileId}`);
+export async function getMyTutorLessons(tutorProfileId?: string): Promise<CohortLesson[]> {
+  const q = tutorProfileId ? `?tutor_profile_id=${tutorProfileId}` : "";
+  const res = await apiFetch<CohortLesson[]>(`/me/tutor-lessons${q}`);
   return res.data ?? [];
 }
 
@@ -200,7 +201,7 @@ export async function getCohortEnrollments(cohortId: string): Promise<RosterEntr
 
 export type QuizQuestionInput = { question: string; options: string[]; correct_index: number };
 export type QuizInput = {
-  tutor_profile_id: string;
+  tutor_profile_id?: string;
   cohort_id: string;
   title: string;
   instructions?: string;
@@ -250,7 +251,8 @@ export type TutorEarnings = {
   paid_total: number;
 };
 
-export async function getTutorEarnings(tutorProfileId: string): Promise<TutorEarnings> {
-  const res = await apiFetch<TutorEarnings>(`/me/earnings?tutor_profile_id=${tutorProfileId}`);
+export async function getTutorEarnings(tutorProfileId?: string): Promise<TutorEarnings> {
+  const q = tutorProfileId ? `?tutor_profile_id=${tutorProfileId}` : "";
+  const res = await apiFetch<TutorEarnings>(`/me/earnings${q}`);
   return res.data;
 }

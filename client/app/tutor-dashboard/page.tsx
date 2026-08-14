@@ -41,16 +41,15 @@ const STATUS_BADGE: Record<string, string> = {
   HOLD: "bg-ink-100 text-ink-600",
 };
 
-const TUTOR_PROFILE_ID = "00000000-0000-0000-0000-000000000102";
-
 export default function TutorDashboardPage() {
   const qc = useQueryClient();
+  // G1: the tutor profile resolves from the session server-side.
   const { user } = useSession();
   const [newSlot, setNewSlot] = useState({ day_of_week: 1, start_time: "16:00", end_time: "17:00" });
 
   const profile = useQuery({
     queryKey: ["vetting", "me", user?.id],
-    queryFn: () => getMyProfile(user?.id ?? ""),
+    queryFn: () => getMyProfile(),
     enabled: !!user,
     staleTime: 30_000,
   });
@@ -58,9 +57,10 @@ export default function TutorDashboardPage() {
   const lessons = useQuery({
     queryKey: ["tutor", "lessons"],
     queryFn: async () => {
-      const res = await apiFetch<Lesson[]>(`/me/tutor-lessons?tutor_profile_id=${TUTOR_PROFILE_ID}`);
+      const res = await apiFetch<Lesson[]>("/me/tutor-lessons");
       return res.data ?? [];
     },
+    enabled: !!user,
     staleTime: 30_000,
   });
 
@@ -76,14 +76,14 @@ export default function TutorDashboardPage() {
 
   const availability = useQuery({
     queryKey: ["tutor", "availability"],
-    queryFn: () => listAvailability(TUTOR_PROFILE_ID),
+    queryFn: () => listAvailability(),
+    enabled: !!user,
     staleTime: 30_000,
   });
 
   const addSlot = useMutation({
     mutationFn: () =>
       upsertAvailability({
-        tutor_profile_id: TUTOR_PROFILE_ID,
         day_of_week: newSlot.day_of_week,
         start_time: newSlot.start_time,
         end_time: newSlot.end_time,
@@ -97,22 +97,10 @@ export default function TutorDashboardPage() {
   });
 
   const removeSlot = useMutation({
-    mutationFn: (id: string) => deleteAvailability(id, TUTOR_PROFILE_ID),
+    mutationFn: (id: string) => deleteAvailability(id),
     onSuccess: () => {
       toast.success("Slot removed");
       qc.invalidateQueries({ queryKey: ["tutor", "availability"] });
-    },
-  });
-
-  const markAttendance = useMutation({
-    mutationFn: ({ lessonId, studentId, status }: { lessonId: string; studentId: string; status: string }) =>
-      apiFetch(`/lessons/${lessonId}/attendance`, {
-        method: "POST",
-        body: JSON.stringify({ student_profile_id: studentId, status }),
-      }),
-    onSuccess: () => {
-      toast.success("Attendance marked");
-      qc.invalidateQueries({ queryKey: ["tutor", "attendance"] });
     },
   });
 
@@ -200,16 +188,15 @@ export default function TutorDashboardPage() {
                       </div>
                       <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Mark attendance</span>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {["PRESENT", "LATE", "ABSENT", "EXCUSED"].map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => markAttendance.mutate({ lessonId: l.id, studentId: "00000000-0000-0000-0000-000000000001", status: s })}
-                          className="rounded-full border border-ink-200 px-3 py-1.5 text-xs font-semibold hover:border-brand-blue transition-colors"
-                        >
-                          {s}
-                        </button>
-                      ))}
+                    <div className="mt-3">
+                      {/* G1: attendance is marked per learner from the class roster
+                          in the teaching console (no fixture learner IDs). */}
+                      <Link
+                        href="/lms/tutor"
+                        className="inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-brand-blue transition-colors"
+                      >
+                        Open roster to mark attendance →
+                      </Link>
                     </div>
                   </li>
                 ))}

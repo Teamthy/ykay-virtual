@@ -19,8 +19,7 @@ import {
 
 // Student quizzes + released progress reports (working-doc §13): one attempt
 // per assessment, auto-graded on submit, results visible instantly.
-
-export const STUDENT_ID = "00000000-0000-0000-0000-000000000001";
+// G1: the learner identity is session-resolved server-side.
 
 export function StudentQuizzes() {
   const qc = useQueryClient();
@@ -36,12 +35,12 @@ export function StudentQuizzes() {
 
   const reports = useQuery({
     queryKey: ["student", "progress-reports"],
-    queryFn: () => listProgressReports(STUDENT_ID),
+    queryFn: () => listProgressReports(),
     staleTime: 30_000,
   });
 
   const start = useMutation({
-    mutationFn: (id: string) => startAssessment(id, STUDENT_ID),
+    mutationFn: (id: string) => startAssessment(id),
     onSuccess: (data) => {
       setSession(data);
       setResult(null);
@@ -57,7 +56,7 @@ export function StudentQuizzes() {
         question_id: questionId,
         chosen_index: chosenIndex,
       }));
-      return submitAssessment(session!.attempt.assessment_id, STUDENT_ID, payload);
+      return submitAssessment(session!.attempt.assessment_id, undefined, payload);
     },
     onSuccess: (data) => {
       setResult(data);

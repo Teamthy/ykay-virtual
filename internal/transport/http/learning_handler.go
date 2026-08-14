@@ -30,14 +30,15 @@ type LearningHandler struct {
 	svc        *service.LearningService
 	an         *service.AnalyticsService
 	attendance bookingAttendanceLister
+	authz      *ProfileAuthorizer
 }
 
 type bookingAttendanceLister interface {
 	ListLessonAttendance(ctx context.Context, lessonID uuid.UUID) ([]booking.Attendance, error)
 }
 
-func NewLearningHandler(svc *service.LearningService, an *service.AnalyticsService, attendance bookingAttendanceLister) *LearningHandler {
-	return &LearningHandler{svc: svc, an: an, attendance: attendance}
+func NewLearningHandler(svc *service.LearningService, an *service.AnalyticsService, attendance bookingAttendanceLister, authz *ProfileAuthorizer) *LearningHandler {
+	return &LearningHandler{svc: svc, an: an, attendance: attendance, authz: authz}
 }
 
 // --- Assessments ---
@@ -60,9 +61,9 @@ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Reques
 		WriteAppError(w, err)
 		return
 	}
-	tutorID, err := uuid.Parse(req.TutorProfileID)
+	tutorID, err := h.authz.ResolveTutor(r.Context(), actor, req.TutorProfileID)
 	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+		WriteAppError(w, err)
 		return
 	}
 	var cohortID *uuid.UUID
@@ -115,14 +116,18 @@ func (h *LearningHandler) ListAssessments(w http.ResponseWriter, r *http.Request
 }
 
 func (h *LearningHandler) StartAssessment(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
 	assessmentID, err := ParseUUID(r, "id")
 	if err != nil {
 		WriteAppError(w, err)
 		return
 	}
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
+	studentID, err := h.authz.ResolveStudent(r.Context(), actor, r.URL.Query().Get("student_profile_id"))
 	if err != nil {
-		WriteAppError(w, pkg.BadRequest("student_profile_id query param is required", nil))
+		WriteAppError(w, err)
 		return
 	}
 	start, err := h.svc.StartAssessment(r.Context(), studentID, assessmentID)
@@ -134,14 +139,18 @@ func (h *LearningHandler) StartAssessment(w http.ResponseWriter, r *http.Request
 }
 
 func (h *LearningHandler) SubmitAssessment(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
 	assessmentID, err := ParseUUID(r, "id")
 	if err != nil {
 		WriteAppError(w, err)
 		return
 	}
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
+	studentID, err := h.authz.ResolveStudent(r.Context(), actor, r.URL.Query().Get("student_profile_id"))
 	if err != nil {
-		WriteAppError(w, pkg.BadRequest("student_profile_id query param is required", nil))
+		WriteAppError(w, err)
 		return
 	}
 	var req struct {
@@ -227,9 +236,9 @@ func (h *LearningHandler) CreateProgressReport(w http.ResponseWriter, r *http.Re
 		WriteAppError(w, pkg.BadRequest("student_profile_id must be a valid UUID", nil))
 		return
 	}
-	tutorID, err := uuid.Parse(req.TutorProfileID)
+	tutorID, err := h.authz.ResolveTutor(r.Context(), actor, req.TutorProfileID)
 	if err != nil {
-		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+		WriteAppError(w, err)
 		return
 	}
 	start, err := time.Parse("2006-01-02", req.PeriodStart)
@@ -269,8 +278,17 @@ func (h *LearningHandler) CreateProgressReport(w http.ResponseWriter, r *http.Re
 }
 
 func (h *LearningHandler) ListProgressReports(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
 	// Tutor-scoped listing (reports the tutor has written)…
-	if tutorID, err := uuid.Parse(r.URL.Query().Get("tutor_profile_id")); err == nil {
+	if raw := r.URL.Query().Get("tutor_profile_id"); raw != "" {
+		tutorID, err := h.authz.ResolveTutor(r.Context(), actor, raw)
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
 		list, err := h.svc.ListProgressByTutor(r.Context(), tutorID)
 		if err != nil {
 			WriteAppError(w, err)
@@ -279,10 +297,31 @@ func (h *LearningHandler) ListProgressReports(w http.ResponseWriter, r *http.Req
 		pkg.WriteSuccess(w, http.StatusOK, list, nil)
 		return
 	}
-	// …else student/parent-scoped listing.
-	studentID, err := uuid.Parse(r.URL.Query().Get("student_profile_id"))
-	if err != nil {
+	// …a bare TUTOR session lists its own written reports…
+	rawStudent := r.URL.Query().Get("student_profile_id")
+	if rawStudent == "" && hasSessionRole(actor.Roles, "TUTOR") &&
+		!hasSessionRole(actor.Roles, "STUDENT") && !hasSessionRole(actor.Roles, "PARENT") {
+		tutorID, err := h.authz.ResolveTutor(r.Context(), actor, "")
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		list, err := h.svc.ListProgressByTutor(r.Context(), tutorID)
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		pkg.WriteSuccess(w, http.StatusOK, list, nil)
+		return
+	}
+	// …else student/parent-scoped listing (session-resolved learner).
+	if rawStudent == "" && !hasSessionRole(actor.Roles, "STUDENT") && !hasSessionRole(actor.Roles, "PARENT") {
 		WriteAppError(w, pkg.BadRequest("student_profile_id or tutor_profile_id query param is required", nil))
+		return
+	}
+	studentID, err := h.authz.ResolveStudent(r.Context(), actor, rawStudent)
+	if err != nil {
+		WriteAppError(w, err)
 		return
 	}
 	list, err := h.svc.ListProgressByStudent(r.Context(), studentID)

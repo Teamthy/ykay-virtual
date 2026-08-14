@@ -10,14 +10,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, ShieldCheck, RefreshCcw } from "lucide-react";
 import { qk } from "@/lib/queryClient";
 import { createCohortBooking, initiatePayment } from "@/features/bookings/api/create";
+import { listLearners } from "@/features/onboarding/api";
+import { useSession } from "@/hooks/useSession";
+import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type { Cohort } from "@/features/cohorts/api/get";
 import type { BookingResponse, InitiatePaymentResponse, Order, PaymentProvider } from "@/features/bookings/types";
 
 // Zod schema — client + server validation parity (AGENTS.md).
+// G1: the paying parent is the session user (server-derived); the learner is
+// picked from the parent's linked learners.
 const checkoutSchema = z.object({
-  parent_user_id: z.string().uuid("A valid parent user id is required"),
-  student_id: z.string().uuid("A valid student id is required"),
+  student_id: z.string().uuid("Select the learner you are enrolling"),
   email: z.string().email("A valid email is required"),
   provider: z.enum(["PAYSTACK", "FLUTTERWAVE"]),
 });
@@ -33,6 +37,13 @@ type Step =
 
 export function CheckoutClient({ cohort }: { cohort: Cohort }) {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+  const learners = useQuery({
+    queryKey: ["onboarding", "learners"],
+    queryFn: listLearners,
+    enabled: !!user,
+    staleTime: 30_000,
+  });
   const [step, setStep] = useState<Step>({ name: "form" });
   const [idempotencyKey] = useState(() =>
     typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `ck-${Date.now()}`
@@ -58,7 +69,6 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
 
   const form = useForm({
     defaultValues: {
-      parent_user_id: "",
       student_id: "",
       email: "",
       provider: "PAYSTACK" as PaymentProvider,
@@ -78,7 +88,6 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
       try {
         const booking = await createBooking.mutateAsync({
           cohort_id: cohort.id,
-          parent_user_id: value.parent_user_id,
           student_id: value.student_id,
           idempotency_key: idempotencyKey,
         });
@@ -176,35 +185,28 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           after 3 days). Your booking order is idempotent — retrying never double-charges.
         </p>
 
-        <form.Field name="parent_user_id">
-          {(field) => (
-            <label className="block text-sm">
-              <span className="font-medium">Parent user id</span>
-              <input
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
-                placeholder="e.g. 3f2c…-a1b2"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-              />
-              {field.state.meta.errors?.length ? (
-                <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
-              ) : null}
-            </label>
-          )}
-        </form.Field>
-
         <form.Field name="student_id">
           {(field) => (
             <label className="block text-sm">
-              <span className="font-medium">Student id</span>
-              <input
+              <span className="font-medium">Learner</span>
+              <select
                 className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
-                placeholder="e.g. 9c41…-d5e6"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
-              />
+              >
+                <option value="">Select the learner to enrol…</option>
+                {(learners.data ?? []).map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.first_name} {l.last_name}
+                  </option>
+                ))}
+              </select>
+              {(learners.data ?? []).length === 0 && !learners.isLoading ? (
+                <span className="mt-1 block text-xs text-ink-500">
+                  No learners linked yet — <a href="/onboarding/learner" className="font-semibold text-brand-blue hover:underline">add a learner</a> first.
+                </span>
+              ) : null}
               {field.state.meta.errors?.length ? (
                 <span className="mt-1 block text-xs text-red-600">{field.state.meta.errors.join(", ")}</span>
               ) : null}

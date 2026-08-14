@@ -20,7 +20,26 @@ import (
 	"ykay-virtual/internal/repository/postgres"
 	"ykay-virtual/internal/service"
 	"ykay-virtual/internal/storage"
+	"ykay-virtual/internal/worker"
+
+	goredis "github.com/redis/go-redis/v9"
 )
+
+// newRedisClient — returns nil when Redis is unreachable (dev fallback).
+func newRedisClient(url string) *goredis.Client {
+	opts, err := goredis.ParseURL(url)
+	if err != nil {
+		return nil
+	}
+	client := goredis.NewClient(opts)
+	pingCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := client.Ping(pingCtx).Err(); err != nil {
+		_ = client.Close()
+		return nil
+	}
+	return client
+}
 
 // Worker — background jobs + crons per AGENTS.md:
 //   - expire_stale_booking_holds   (every 15 min; Tuteria 3-day auto-release)
@@ -52,6 +71,37 @@ func main() {
 	}
 	paymentSvc := service.NewPaymentService(r.uowFactory, providers, audit, r.escrowRead)
 	vettingSvc := service.NewVettingService(r.uowFactory, storage.NewLocalStorage(), audit, nil, nil)
+
+	// --- Durable job queue (G3.1) ---
+	// Redis-backed with retries + dead-letter; consumers are idempotent.
+	if redisClient := newRedisClient(cfg.RedisURL); redisClient != nil {
+		queue := worker.NewRedisQueue(redisClient)
+		queue.Register(worker.JobExpireStaleBookingHolds, func(jctx context.Context, _ worker.Job) error {
+			n, err := paymentSvc.ExpireStaleHolds(jctx, 200)
+			if err == nil && n > 0 {
+				log.Printf("job[expire_stale_booking_holds]: released %d hold(s)", n)
+			}
+			return err
+		})
+		queue.Register(worker.JobProcessWeeklyPayouts, func(jctx context.Context, _ worker.Job) error {
+			n, err := paymentSvc.PayoutSvc.ProcessPendingPayouts(jctx, 200)
+			if err == nil {
+				log.Printf("job[process_weekly_tutor_payouts]: paid %d payout(s)", n)
+			}
+			return err
+		})
+		queue.Register(worker.JobComputeTutorRanking, func(jctx context.Context, _ worker.Job) error {
+			n, err := vettingSvc.RecomputeAllRankings(jctx)
+			if err == nil {
+				log.Printf("job[compute_tutor_ranking_score]: updated %d ranking(s)", n)
+			}
+			return err
+		})
+		go queue.Run(ctx)
+		log.Println("Worker: durable Redis queue consuming (retry + dead-letter enabled)")
+	} else {
+		log.Println("Worker: Redis unavailable — cron-only mode (no durable queue)")
+	}
 
 	// --- Cron scheduler ---
 	expireTicker := time.NewTicker(15 * time.Minute)

@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { cn } from "@/lib/utils";
 import {
-  DEMO_STUDENT_ID,
   getMyLessons,
   getCohortLessons,
   getCohort,
@@ -42,15 +41,16 @@ function Section({ title, children, action }: { title: string; children: React.R
 }
 
 export default function LmsHomePage() {
-  const { user } = useSession();
-  const studentId = DEMO_STUDENT_ID;
+  // G1: profile IDs resolve from the session server-side (no fixture UUIDs).
+  const { user, context } = useSession();
+  const ready = !!user && !!context;
 
-  const lessons = useQuery({ queryKey: ["lms", "my-lessons"], queryFn: () => getMyLessons(studentId) });
-  const attendance = useQuery({ queryKey: ["lms", "attendance"], queryFn: () => getAttendanceSummary(studentId) });
-  const assignments = useQuery({ queryKey: ["lms", "assignments"], queryFn: () => listMyAssignments(studentId) });
-  const submissions = useQuery({ queryKey: ["lms", "submissions"], queryFn: () => listMySubmissions(studentId) });
-  const quizzes = useQuery({ queryKey: ["lms", "quizzes"], queryFn: () => listAssessments() });
-  const reports = useQuery({ queryKey: ["lms", "reports"], queryFn: () => listProgressReports(studentId) });
+  const lessons = useQuery({ queryKey: ["lms", "my-lessons"], queryFn: () => getMyLessons(), enabled: ready });
+  const attendance = useQuery({ queryKey: ["lms", "attendance"], queryFn: () => getAttendanceSummary(), enabled: ready });
+  const assignments = useQuery({ queryKey: ["lms", "assignments"], queryFn: () => listMyAssignments(), enabled: ready });
+  const submissions = useQuery({ queryKey: ["lms", "submissions"], queryFn: () => listMySubmissions(), enabled: ready });
+  const quizzes = useQuery({ queryKey: ["lms", "quizzes"], queryFn: () => listAssessments(), enabled: ready });
+  const reports = useQuery({ queryKey: ["lms", "reports"], queryFn: () => listProgressReports(), enabled: ready });
 
   const [cohortMeta, setCohortMeta] = React.useState<Record<string, { title: string; href: string }>>({});
 

@@ -11,12 +11,10 @@ import { Inbox } from "lucide-react";
 import { listCohorts } from "@/features/cohorts/api/list";
 import { getCohortAssignments } from "@/features/cohorts/api/lessons";
 import { createProgressReport, gradeSubmission, listProgressReports, listSubmissions } from "./api";
-import { STUDENT_ID } from "./StudentQuizzes";
 
 // Tutor learning surface (working-doc §13): gradebook (score + feedback per
 // submission) and progress-report writer (released to student + linked parent).
-
-export const TUTOR_PROFILE_ID = "00000000-0000-0000-0000-000000000102";
+// G1: the tutor profile is session-resolved server-side.
 
 export function TutorGradebook() {
   const qc = useQueryClient();
@@ -166,7 +164,7 @@ export function TutorGradebook() {
 export function TutorProgressReports() {
   const qc = useQueryClient();
   const [form, setForm] = useState({
-    student_profile_id: STUDENT_ID,
+    student_profile_id: "",
     period_start: "",
     period_end: "",
     strengths: "",
@@ -177,14 +175,13 @@ export function TutorProgressReports() {
 
   const reports = useQuery({
     queryKey: ["tutor", "progress-reports"],
-    queryFn: () => listProgressReports(undefined, TUTOR_PROFILE_ID),
+    queryFn: () => listProgressReports(),
     staleTime: 30_000,
   });
 
   const create = useMutation({
     mutationFn: () =>
       createProgressReport({
-        tutor_profile_id: TUTOR_PROFILE_ID,
         student_profile_id: form.student_profile_id,
         period_start: form.period_start,
         period_end: form.period_end,

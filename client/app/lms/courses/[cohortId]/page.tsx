@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useSession } from "@/hooks/useSession";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  DEMO_STUDENT_ID,
   getCohort,
   getCohortLessons,
   getCohortResources,
@@ -38,7 +38,9 @@ export default function LmsCoursePage() {
   const params = useParams<{ cohortId: string }>();
   const cohortId = params.cohortId;
   const qc = useQueryClient();
-  const studentId = DEMO_STUDENT_ID;
+  // G1: the learner identity is session-resolved server-side.
+  const { context } = useSession();
+  const studentId = context?.student?.id;
 
   const [quiz, setQuiz] = useState<QuizState>({ phase: "idle" });
   const [noteText, setNoteText] = useState("");
@@ -50,7 +52,7 @@ export default function LmsCoursePage() {
   const resources = useQuery({ queryKey: ["lms", "resources", cohortId], queryFn: () => getCohortResources(cohortId) });
   const assignments = useQuery({ queryKey: ["lms", "assignments", cohortId], queryFn: () => getCohortAssignments(cohortId) });
   const quizzes = useQuery({ queryKey: ["lms", "quizzes", cohortId], queryFn: () => listAssessments(cohortId) });
-  const reports = useQuery({ queryKey: ["lms", "reports", cohortId], queryFn: () => listProgressReports(studentId) });
+  const reports = useQuery({ queryKey: ["lms", "reports", cohortId], queryFn: () => listProgressReports() });
   const notes = useQuery({
     queryKey: ["lms", "notes", cohortId],
     queryFn: async () => {

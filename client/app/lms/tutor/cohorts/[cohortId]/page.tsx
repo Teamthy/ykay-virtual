@@ -7,8 +7,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  DEMO_STUDENT_ID,
-  DEMO_TUTOR_PROFILE_ID,
   getCohort,
   getCohortLessons,
   getCohortAssignments,
@@ -42,6 +40,7 @@ export default function LmsTutorCohortPage() {
   const [grade, setGrade] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [report, setReport] = useState({ strengths: "", weaknesses: "", recommendations: "", rating: "4" });
+  const [reportStudentId, setReportStudentId] = useState("");
 
   // Authoring forms (LMS beyond MVP)
   const [quizDraft, setQuizDraft] = useState({
@@ -68,7 +67,6 @@ export default function LmsTutorCohortPage() {
   const createQuiz = useMutation({
     mutationFn: () =>
       createAssessment({
-        tutor_profile_id: DEMO_TUTOR_PROFILE_ID,
         cohort_id: cohortId,
         title: quizDraft.title,
         instructions: quizDraft.instructions || undefined,
@@ -161,8 +159,7 @@ export default function LmsTutorCohortPage() {
   const createReport = useMutation({
     mutationFn: () =>
       createProgressReport({
-        student_profile_id: DEMO_STUDENT_ID,
-        tutor_profile_id: DEMO_TUTOR_PROFILE_ID,
+        student_profile_id: reportStudentId,
         period_start: new Date(Date.now() - 7 * 864e5).toISOString(),
         period_end: new Date().toISOString(),
         strengths: report.strengths,
@@ -446,6 +443,18 @@ export default function LmsTutorCohortPage() {
           <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
             <h2 className="font-display text-lg font-bold text-brand-navy">New progress report</h2>
             <div className="mt-3 space-y-3">
+              <select
+                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                value={reportStudentId}
+                onChange={(e) => setReportStudentId(e.target.value)}
+              >
+                <option value="">Select learner…</option>
+                {(roster.data ?? []).map((r) => (
+                  <option key={r.student_profile_id} value={r.student_profile_id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
                 placeholder="Strengths (e.g. strong grasp of algebra)"
@@ -485,7 +494,7 @@ export default function LmsTutorCohortPage() {
               </div>
               <button
                 type="button"
-                disabled={createReport.isPending || !report.strengths}
+                disabled={createReport.isPending || !report.strengths || !reportStudentId}
                 onClick={() => createReport.mutate()}
                 className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
               >

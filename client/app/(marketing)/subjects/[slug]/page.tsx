@@ -5,7 +5,7 @@ import { RelatedContent } from "@/components/RelatedContent";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 const subjects: Record<string, any> = {
   mathematics: { name: "Mathematics", category: "Academic", desc: "From Basic to A-Level, WAEC/NECO/JAMB focused.", exams: ["WAEC", "IGCSE", "JAMB"] },
@@ -13,7 +13,8 @@ const subjects: Record<string, any> = {
   "ielts-prep": { name: "IELTS Preparation", category: "Professional", desc: "8.0+ average band, 95% success, 750+ students — Tuteria parity + structured mocks.", exams: ["IELTS"] },
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const s = subjects[params.slug];
   if (!s) return buildMetadata({ title: "Subject Not Found", description: "Not found", path: `/subjects/${params.slug}`, noIndex: true });
   return buildMetadata({
@@ -23,7 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default function SubjectPage({ params }: Props) {
+export default async function SubjectPage(props: Props) {
+  const params = await props.params;
   const subject = subjects[params.slug];
   if (!subject) return notFound();
 

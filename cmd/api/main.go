@@ -135,7 +135,8 @@ func main() {
 
 	// --- Auth + sessions ---
 	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit).
-		WithAuthTokens(repos.AuthTokens)
+		WithAuthTokens(repos.AuthTokens).
+		WithStudentProfiles(repos.Students)
 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
@@ -207,6 +208,8 @@ func main() {
 	deviceHandler := httpapi.NewDeviceHandler(pushSvc)
 
 	// --- Transport ---
+	// G1: object-level authorization — profile IDs resolve through the session.
+	profileAuthz := httpapi.NewProfileAuthorizer(repos.Students, repos.Vetting)
 	handlers := &httpapi.Handlers{
 		Subjects:   httpapi.NewSubjectHandler(subjectSvc),
 		Tutors:     httpapi.NewTutorHandler(tutorSvc),
@@ -220,7 +223,7 @@ func main() {
 		Vetting:        httpapi.NewVettingHandler(vettingSvc),
 		AdminVetting:   httpapi.NewAdminVettingHandler(vettingSvc),
 		Messaging:      httpapi.NewMessagingHandler(messagingSvc),
-		Dashboard:      httpapi.NewDashboardHandler(dashboardSvc),
+		Dashboard:      httpapi.NewDashboardHandler(dashboardSvc, profileAuthz),
 		Content:        httpapi.NewContentHandler(contentSvc),
 		Auth:           httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL, googleAuth),
 		SessionContext: httpapi.NewSessionContextHandler(repos.Students, repos.Vetting),
@@ -232,8 +235,8 @@ func main() {
 		Devices:        deviceHandler,
 		Account:        accountHandler,
 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
-		Portal:         httpapi.NewPortalHandler(portalSvc),
-		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc),
+		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
+		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
 		Objects:        httpapi.NewObjectHandler(store),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth, readyCheck, cfg.Environment == "production")
@@ -654,15 +657,22 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 		}
 	}
 
-	// Demo learner linked to the parent account (student dashboard + portal).
+	// Demo learner: owned by the demo STUDENT account (a4) and linked to the
+	// demo PARENT account (a2) via a parent_student_link — mirrors the G1
+	// session-resolution rules (student sees own profile; parent sees links).
 	parentID := uuid.MustParse("00000000-0000-0000-0000-0000000000a2")
+	studentUserID := uuid.MustParse("00000000-0000-0000-0000-0000000000a4")
 	learner := identity.StudentProfile{
 		ID:     uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-		UserID: &parentID, FirstName: "Ada", LastName: "Bello",
+		UserID: &studentUserID, FirstName: "Ada", LastName: "Bello",
 		Timezone: "Africa/Lagos", GuardianConsent: true,
 		CreatedAt: now, UpdatedAt: now,
 	}
 	_ = store.Students.Create(context.Background(), &learner)
+	_ = store.StudentLinks.Create(context.Background(), &identity.ParentStudentLink{
+		ID: uuid.New(), ParentUserID: parentID, StudentProfileID: learner.ID,
+		Relationship: "PARENT", IsPrimary: true, CreatedAt: now,
+	})
 }
 
 // buildChatContext — grounding context for the AI assistant: a compact,

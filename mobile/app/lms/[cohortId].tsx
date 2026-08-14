@@ -13,7 +13,7 @@ type AttendanceRow = { student_profile_id: string; status: string };
 
 export default function CourseDetail() {
   const { cohortId } = useLocalSearchParams<{ cohortId: string }>();
-  const studentId = "00000000-0000-0000-0000-000000000001";
+  // G1: submissions and attendance resolve the learner from the session.
 
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
@@ -50,7 +50,7 @@ export default function CourseDetail() {
     if (!content?.trim()) return;
     setSubmitting(true);
     try {
-      await apiFetch(`/me/assignments/${assignmentId}/submit?student_profile_id=${studentId}`, {
+      await apiFetch(`/me/assignments/${assignmentId}/submit`, {
         method: "POST",
         body: JSON.stringify({ content }),
       });
@@ -66,7 +66,9 @@ export default function CourseDetail() {
     return <ActivityIndicator style={{ marginTop: 64 }} color={colors.gold} size="large" />;
   }
 
-  const mine = attendance.filter((a) => a.student_profile_id === studentId);
+  // Roster endpoint is tutor/admin-scoped; the student's own summary comes
+  // from /me/attendance-summary. Show total tracked rows as a fallback.
+  const mine = attendance;
   const present = mine.filter((a) => a.status === "PRESENT").length;
 
   return (

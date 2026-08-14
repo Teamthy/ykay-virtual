@@ -29,7 +29,7 @@ export default function BecomeTutorDocumentsPage() {
       <Link href="/become-tutor/subjects" className="text-sm text-brand-blue font-semibold hover:underline">← Back</Link>
       <div className="mt-4">
         <OnboardingStepper current={2} />
-        <DocumentsStep userId={user.id} profileId={state.profileId} onNext={() => router.push("/become-tutor/assessment")} />
+        <DocumentsStep profileId={state.profileId} onNext={() => router.push("/become-tutor/assessment")} />
       </div>
     </main>
   );
