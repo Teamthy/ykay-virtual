@@ -25,6 +25,7 @@ const (
 )
 
 // RequestLoginCode — emails a 6-digit sign-in code. Always returns nil for a
+//
 // syntactically valid email so the response does not reveal account existence.
 func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error {
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -56,6 +57,7 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 		return err
 	}
 
+	s.logDev("login code for %s: %s (expires in 10 minutes)", user.Email, code)
 	if s.email != nil {
 		_ = s.sendEmail(ctx, user.Email, "Your NUVORA login code",
 			notification.BrandEmail(

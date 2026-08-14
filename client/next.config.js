@@ -5,6 +5,16 @@ const nextConfig = {
   output: "standalone",
   // Monorepo root (Go + client) — silences multi-lockfile inference (Next 15).
   outputFileTracingRoot: require("path").join(__dirname, ".."),
+  // Dev-mode webpack pack-file cache allocates very large gzip buffers while
+  // serializing on constrained machines (Windows dev + Docker running →
+  // "Array buffer allocation failed" / heap OOM crashes in `next dev`).
+  // Disable the persistent cache in dev; production builds keep it.
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.cache = false;
+    }
+    return config;
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" }

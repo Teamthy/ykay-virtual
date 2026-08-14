@@ -120,8 +120,11 @@ jobs:
         working-directory: client
         run: |
           set -e
-          (cd .. && PORT=8080 go run ./cmd/api > /tmp/api.log 2>&1 &)
-          for i in $(seq 1 30); do curl -sf -m 1 localhost:8080/health >/dev/null 2>&1 && break; sleep 1; done
+          # Pre-build the API binary so the health window isn't racing a
+          # cold `go run` compile.
+          (cd .. && go build -o /tmp/nuvora-api ./cmd/api)
+          (PORT=8080 /tmp/nuvora-api > /tmp/api.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf -m 1 localhost:8080/health >/dev/null 2>&1 && break; sleep 1; done
           curl -sf -m 1 localhost:8080/health >/dev/null || { echo "API failed"; tail -20 /tmp/api.log; exit 1; }
           npm run build
           SERVER_JS=.next/standalone/server.js
@@ -129,9 +132,18 @@ jobs:
           mkdir -p "$(dirname "$SERVER_JS")/.next"
           cp -r .next/static "$(dirname "$SERVER_JS")/.next/static"
           API_PROXY_TARGET=http://localhost:8080 PORT=3000 HOSTNAME=0.0.0.0 node "$SERVER_JS" > /tmp/web.log 2>&1 &
-          for i in $(seq 1 30); do curl -sf -m 1 localhost:3000/ >/dev/null 2>&1 && break; sleep 1; done
+          for i in $(seq 1 60); do curl -sf -m 1 localhost:3000/ >/dev/null 2>&1 && break; sleep 1; done
           curl -sf -m 1 localhost:3000/ >/dev/null || { echo "web failed"; tail -20 /tmp/web.log; exit 1; }
-          lhci autorun --config=../lighthouserc.json
+          # lhci must be on PATH in THIS step: install here and export the
+          # npm prefix (global installs from earlier steps aren't reliably
+          # on PATH after the Node 20→24 runner migration).
+          npm install -g @lhci/cli@0.14.x >/dev/null 2>&1 || true
+          export PATH="$(npm config get prefix)/bin:$PATH"
+          if command -v lhci >/dev/null 2>&1; then
+            lhci autorun --config=../lighthouserc.json
+          else
+            npx --yes @lhci/cli@0.14.x autorun --config=../lighthouserc.json
+          fi
 
   drill:
     name: DR drill — backup → restore → verify (real PostgreSQL, G3.4)
@@ -183,10 +195,12 @@ jobs:
         run: go test ./internal/telemetry/ ./internal/worker/
       - name: Validate Prometheus config + alert rules (promtool)
         run: |
-          docker run --rm -v "$PWD/deploy/prometheus:/p:ro" prom/prometheus:v2.53.0 \
-            promtool check config /p/prometheus.yml
-          docker run --rm -v "$PWD/deploy/prometheus:/p:ro" prom/prometheus:v2.53.0 \
-            promtool check rules /p/alerts.yml
+          # Mount at /etc/prometheus: prometheus.yml references its rules at
+          # /etc/prometheus/alerts.yml (the path the compose service uses).
+          docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" prom/prometheus:v2.53.0 \
+            promtool check config /etc/prometheus/prometheus.yml
+          docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" prom/prometheus:v2.53.0 \
+            promtool check rules /etc/prometheus/alerts.yml
       - name: Validate Grafana dashboard JSON
         run: python3 -m json.tool deploy/grafana/dashboards/nuvora-api.json > /dev/null
       - name: Validate production compose stack
@@ -200,8 +214,9 @@ jobs:
         env:
           PORT: "8080"
         run: |
-          (go run ./cmd/api > /tmp/api.log 2>&1 &)
-          for i in $(seq 1 30); do curl -sf -m 1 localhost:8080/health >/dev/null 2>&1 && break; sleep 1; done
+          go build -o /tmp/nuvora-api ./cmd/api
+          (PORT=8080 /tmp/nuvora-api > /tmp/api.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf -m 1 localhost:8080/health >/dev/null 2>&1 && break; sleep 1; done
           curl -sf localhost:8080/metrics | grep -q 'nuvora_build_info' || { echo "metrics scrape missing build info"; tail -20 /tmp/api.log; exit 1; }
           curl -s localhost:8080/health > /dev/null
           curl -sf localhost:8080/metrics | grep -q 'nuvora_http_requests_total' || { echo "metrics scrape missing http counters"; exit 1; }
