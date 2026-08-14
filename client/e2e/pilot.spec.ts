@@ -1,0 +1,149 @@
+// G6.1 — browser pilot E2E: parent journey (register → learner → booking →
+// webhook settlement → LMS), cross-family isolation, role tampering, and the
+// public catalogue. All identities are generated per run (G1.3 rule: no
+// fixture users); the seeded CATALOGUE rows (tutor 0102, cohort c010) are
+// the marketplace fixtures shared with scripts/e2e.sh.
+import { test, expect, request, APIRequestContext } from "@playwright/test";
+import crypto from "crypto";
+
+const API = process.env.API_BASE_URL || "http://localhost:8080/api/v1";
+const SECRET = process.env.WEBHOOK_SECRET || "e2e-browser-secret";
+const COHORT_ID = "00000000-0000-0000-0000-00000000c010";
+
+function uniq(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@test.com`;
+}
+
+function hmac512(body: string): string {
+  return crypto.createHmac("sha512", SECRET).update(body).digest("hex");
+}
+
+async function registerAndLogin(ctx: APIRequestContext, email: string, roles: string[]) {
+  const reg = await ctx.post(`${API}/auth/register`, {
+    data: { email, password: "password123", roles },
+  });
+  expect(reg.status(), `register ${email}: ${await reg.text()}`).toBe(201);
+  const login = await ctx.post(`${API}/auth/login`, {
+    data: { email, password: "password123" },
+  });
+  expect(login.status(), "login").toBe(200);
+}
+
+async function uiLogin(page: import("@playwright/test").Page, email: string) {
+  await page.goto("/login");
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill("password123");
+  await page.locator('input[type="password"]').press("Enter");
+  await expect(page).toHaveURL(/dashboard|student-dashboard/, { timeout: 20_000 });
+}
+
+// The web client redirects unverified accounts to /verify-email, so complete
+// the real verification flow: request a code, read the link the dev console
+// email sender prints to the API log, confirm with the token.
+async function completeVerification(ctx: APIRequestContext, email: string) {
+  const r = await ctx.post(`${API}/auth/verify-email/request`, { data: { email } });
+  expect(r.status(), "verify request").toBe(200);
+  const fs = await import("fs");
+  const log = fs.readFileSync(process.env.API_LOG || "/tmp/e2e-web-api.log", "utf8");
+  const matches = [...log.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
+  expect(matches.length, "verification link printed to API log").toBeGreaterThan(0);
+  const token = decodeURIComponent(matches[matches.length - 1][1]);
+  const c = await ctx.post(`${API}/auth/verify-email/confirm`, { data: { token } });
+  expect(c.status(), `verify confirm: ${await c.text()}`).toBe(200);
+}
+
+test("public catalogue renders seeded tutor and profile", async ({ page }) => {
+  await page.goto("/tutors");
+  await expect(page.getByText("Oluwatobi").first()).toBeVisible();
+
+  await page.goto("/tutors/oluwatobi");
+  await expect(page.getByRole("heading", { level: 1 }).first()).toContainText(/oluwatobi/i);
+});
+
+test("parent pilot journey: register → learner → booking → webhook → LMS", async ({ page, request }) => {
+  const email = uniq("pilot-parent");
+
+  // Seed via API (same contract the UI uses).
+  await registerAndLogin(request, email, ["PARENT"]);
+  const learner = await request.post(`${API}/me/learners`, {
+    data: {
+      first_name: "Kemi", last_name: "Ade", date_of_birth: "2013-01-15",
+      current_level: "JSS2", relationship: "MOTHER",
+    },
+  });
+  expect(learner.status()).toBe(201);
+  const sid = (await learner.json()).data.id;
+
+  const booking = await request.post(`${API}/bookings`, {
+    data: { type: "COHORT", cohort_id: COHORT_ID, student_id: sid, idempotency_key: `bw-${Date.now()}` },
+  });
+  expect(booking.status()).toBe(201);
+  const oid = (await booking.json()).data.order.id;
+
+  const init = await request.post(`${API}/payments/initiate`, {
+    data: { order_id: oid, provider: "PAYSTACK", email },
+  });
+  expect(init.status()).toBe(201);
+  const { provider_reference: ref, amount } = (await init.json()).data;
+
+  // Signed webhook settles the order (kobo minor units for Paystack).
+  const payload = JSON.stringify({
+    event: "charge.success",
+    data: { reference: ref, amount: Math.round(amount * 100), status: "success" },
+  });
+  const wh = await request.post(`${API}/payments/webhooks/PAYSTACK`, {
+    data: payload,
+    headers: { "Content-Type": "application/json", "X-Paystack-Signature": hmac512(payload) },
+  });
+  expect(wh.status()).toBe(200);
+
+  // UI: sign in as the parent — the dashboard renders its bookings shell
+  // and the settled enrolment shows up in the LMS hub.
+  await completeVerification(request, email);
+  await uiLogin(page, email);
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
+
+  await page.goto("/lms");
+  await expect(page.getByText(/UTME 2026/i).first()).toBeVisible();
+
+  // The checkout learner picker resolves the session's learners (G1.2).
+  await page.goto(`/checkout/${COHORT_ID}`);
+  await expect(page.locator("select").first()).toContainText("Kemi");
+});
+
+test("cross-family isolation: parent B cannot see parent A's learner", async ({ request }) => {
+  await registerAndLogin(request, uniq("fam-a"), ["PARENT"]);
+  const lr = await request.post(`${API}/me/learners`, {
+    data: {
+      first_name: "Amara", last_name: "Obi", date_of_birth: "2012-05-05",
+      current_level: "JSS3", relationship: "FATHER",
+    },
+  });
+  expect(lr.status()).toBe(201);
+
+  // Switch session to parent B.
+  await registerAndLogin(request, uniq("fam-b"), ["PARENT"]);
+  const learnersB = await request.get(`${API}/me/learners`);
+  expect(learnersB.status()).toBe(200);
+  expect(JSON.stringify(await learnersB.json())).not.toContain("Amara");
+
+  // Foreign learner ID is rejected outright (G1.3 tamper path).
+  const sidA = (await lr.json()).data.id;
+  const tamper = await request.get(`${API}/me/lessons?student_profile_id=${sidA}`);
+  expect(tamper.status()).toBe(403);
+});
+
+test("student role cannot reach admin surfaces", async ({ page, request }) => {
+  const email = uniq("stu");
+  await registerAndLogin(request, email, ["STUDENT"]);
+
+  const q = await request.get(`${API}/admin/support?category=SAFEGUARDING`);
+  expect(q.status()).toBe(403);
+
+  await completeVerification(request, email);
+  await uiLogin(page, email);
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/dashboard/);
+  await expect(page.getByText(/Hi|Welcome|Kemi|dashboard/i).first()).toBeVisible();
+});

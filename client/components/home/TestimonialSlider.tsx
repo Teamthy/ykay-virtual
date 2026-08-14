@@ -19,12 +19,14 @@ export function TestimonialSlider() {
     <section className="py-24 md:py-28 bg-brand-gold text-ink-900 text-center relative">
       <button
         onClick={prev}
+        aria-label="Previous testimonial"
         className="hidden md:flex absolute left-[6%] top-1/2 -translate-y-1/2 w-12 h-12 bg-ink-900 text-white rounded-full items-center justify-center hover:bg-black hover:scale-105 transition-all"
       >
         <ChevronLeft size={22} />
       </button>
       <button
         onClick={next}
+        aria-label="Next testimonial"
         className="hidden md:flex absolute right-[6%] top-1/2 -translate-y-1/2 w-12 h-12 bg-ink-900 text-white rounded-full items-center justify-center hover:bg-black hover:scale-105 transition-all"
       >
         <ChevronRight size={22} />
@@ -45,6 +47,8 @@ export function TestimonialSlider() {
             <button
               key={i}
               onClick={() => setActive(i)}
+              aria-label={`Show testimonial ${i + 1} of ${testimonials.length}`}
+              aria-current={i === active ? "true" : undefined}
               className={cn(
                 "h-2 rounded-full transition-all cursor-pointer",
                 i === active ? "w-6 bg-white" : "w-2 bg-white/25"
