@@ -25,6 +25,8 @@ export default function RootLayout() {
         <Stack.Screen name="progress" options={{ title: "Progress" }} />
         <Stack.Screen name="notifications" options={{ title: "Notifications" }} />
         <Stack.Screen name="account" options={{ title: "Account" }} />
+        <Stack.Screen name="wizard" options={{ title: "Welcome", headerBackVisible: false }} />
+        <Stack.Screen name="recommendations" options={{ title: "For you" }} />
       </Stack>
     </SafeAreaProvider>
   );

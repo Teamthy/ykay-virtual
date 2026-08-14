@@ -76,13 +76,13 @@ export function ProgrammesClient() {
         </div>
       ) : programmes.isError ? (
         <div className="border rounded-2xl p-10 text-center text-red-600">Could not load programmes.</div>
-      ) : (programmes.data?.data.length ?? 0) === 0 ? (
+      ) : (programmes.data?.data ?? []).length === 0 ? (
         <div className="border rounded-2xl p-10 text-center text-ink-500">
           No programmes match yet — new cohorts launch regularly.
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {programmes.data?.data.map((p) => (
+          {(programmes.data?.data ?? []).map((p) => (
             <Link
               key={p.id}
               href={`/programmes/${p.slug}`}

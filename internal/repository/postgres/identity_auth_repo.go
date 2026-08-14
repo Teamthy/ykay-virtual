@@ -20,14 +20,14 @@ type UserRepo struct{ db TxQuerier }
 func NewUserRepo(db TxQuerier) *UserRepo { return &UserRepo{db: db} }
 
 const userColumns = `id, email, first_name, last_name, phone, password_hash, status, timezone,
-	email_verified_at, phone_verified_at, last_login_at, created_at, updated_at`
+	email_verified_at, phone_verified_at, last_login_at, onboarded_at, created_at, updated_at`
 
 func scanUser(row interface{ Scan(...any) error }) (*identity.User, error) {
 	var u identity.User
 	var phone, firstName, lastName sql.NullString
-	var emailVerifiedAt, phoneVerifiedAt, lastLoginAt sql.NullTime
+	var emailVerifiedAt, phoneVerifiedAt, lastLoginAt, onboardedAt sql.NullTime
 	if err := row.Scan(&u.ID, &u.Email, &firstName, &lastName, &phone, &u.PasswordHash,
-		&u.Status, &u.Timezone, &emailVerifiedAt, &phoneVerifiedAt, &lastLoginAt,
+		&u.Status, &u.Timezone, &emailVerifiedAt, &phoneVerifiedAt, &lastLoginAt, &onboardedAt,
 		&u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
 	}
@@ -49,7 +49,19 @@ func scanUser(row interface{ Scan(...any) error }) (*identity.User, error) {
 	if lastLoginAt.Valid {
 		u.LastLoginAt = &lastLoginAt.Time
 	}
+	if onboardedAt.Valid {
+		u.OnboardedAt = &onboardedAt.Time
+	}
 	return &u, nil
+}
+
+func (r *UserRepo) SetOnboarded(ctx context.Context, id uuid.UUID, at time.Time) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE users SET onboarded_at = $2, updated_at = NOW() WHERE id = $1`, id, at)
+	if err != nil {
+		return fmt.Errorf("set onboarded: %w", err)
+	}
+	return nil
 }
 
 func (r *UserRepo) Create(ctx context.Context, u *identity.User) error {

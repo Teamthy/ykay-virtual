@@ -6,6 +6,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
+import { RoleGate } from "@/components/dashboard/RoleGate";
+import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/vetting/api";
@@ -112,6 +114,8 @@ export default function TutorDashboardPage() {
 
   return (
     <main className="container-x py-10">
+      <RoleGate page="/tutor-dashboard" />
+      <RecommendationsForYou />
       <h1 className="text-3xl font-extrabold">Tutor dashboard</h1>
       <p className="text-ink-500 text-sm mt-1">Your application, schedule, attendance and earnings.</p>
 

@@ -49,6 +49,8 @@ test("no critical a11y violations on landing, login and dashboard", async ({ pag
   const token = decodeURIComponent(matches[matches.length - 1][1]);
   const vc = await request.post(`${API}/auth/verify-email/confirm`, { data: { token } });
   expect(vc.status()).toBe(200);
+  const ob = await request.post(`${API}/auth/me/onboarded`);
+  expect(ob.status(), "mark onboarded").toBe(200);
 
   await page.goto("/login");
   await page.locator('input[type="email"]').fill(email);

@@ -12,6 +12,7 @@ type Me = { id: string; email: string; roles: string[]; first_name?: string };
 type Unread = { unread: number };
 
 const internal = [
+  { href: "/recommendations", title: "For you", desc: "Cohorts, programmes & tutors picked for you", icon: "✨" },
   { href: "/lms", title: "My Learning", desc: "Lessons, resources, assignments", icon: "📚" },
   { href: "/quizzes", title: "Quizzes", desc: "Auto-graded assessments", icon: "📝" },
   { href: "/progress", title: "Progress", desc: "Attendance + tutor reports", icon: "📈" },

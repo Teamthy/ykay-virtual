@@ -14,8 +14,13 @@ export type CurrentUser = {
   status: string;
   timezone: string;
   roles: string[];
+  onboarded: boolean;
   created_at: string;
 };
+
+export async function markOnboarded(): Promise<void> {
+  await apiFetch("/auth/me/onboarded", { method: "POST" });
+}
 
 export type RegisterInput = {
   email: string;

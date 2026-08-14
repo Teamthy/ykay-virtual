@@ -55,7 +55,7 @@ PYEOF
 fi
 
 # ── Boot API ───────────────────────────────────────────────────────────────
-"${GO:-go}" build -o .loadtest-api ./cmd/api
+rm -f .loadtest-api && "${GO:-go}" build -o .loadtest-api ./cmd/api
 API_ENV=(PORT="$API_PORT" SEED_DEMO_DATA=true
   PAYSTACK_SECRET="$SECRET" DATABASE_URL="${DATABASE_URL:-postgres://bad:bad@localhost:5999/none?sslmode=disable}"
   PAYSTACK_BASE_URL="http://localhost:$GW_PORT" FLUTTERWAVE_BASE_URL="http://localhost:$GW_PORT")

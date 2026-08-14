@@ -27,6 +27,10 @@ async function registerAndLogin(ctx: APIRequestContext, email: string, roles: st
     data: { email, password: "password123" },
   });
   expect(login.status(), "login").toBe(200);
+  // Returning-user path: complete the first-time wizard via the API so the
+  // UI routes straight to the dashboard (the wizard has its own test).
+  const ob = await ctx.post(`${API}/auth/me/onboarded`);
+  expect(ob.status(), "mark onboarded").toBe(200);
 }
 
 async function uiLogin(page: import("@playwright/test").Page, email: string) {
@@ -103,6 +107,8 @@ test("parent pilot journey: register → learner → booking → webhook → LMS
   await uiLogin(page, email);
   await page.goto("/dashboard");
   await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
+  // Suggestions engine renders the "For you" shelf on the dashboard.
+  await expect(page.getByText("For you")).toBeVisible();
 
   await page.goto("/lms");
   await expect(page.getByText(/UTME 2026/i).first()).toBeVisible();
@@ -146,4 +152,33 @@ test("student role cannot reach admin surfaces", async ({ page, request }) => {
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/dashboard/);
   await expect(page.getByText(/Hi|Welcome|Kemi|dashboard/i).first()).toBeVisible();
+});
+
+test("first-time wizard: 3 steps then the role dashboard", async ({ page, request }) => {
+  const email = uniq("wizard");
+  // Register + login WITHOUT marking onboarded — the wizard must appear.
+  const reg = await request.post(`${API}/auth/register`, {
+    data: { email, password: "password123", roles: ["PARENT"] },
+  });
+  expect(reg.status()).toBe(201);
+  await completeVerification(request, email);
+
+  // Fresh account (not onboarded) → login lands on the wizard.
+  await page.goto("/login");
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill("password123");
+  await page.locator('input[type="password"]').press("Enter");
+  await expect(page).toHaveURL(/onboarding\/wizard/, { timeout: 20_000 });
+
+  // Step 1 → 2: add the first learner.
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByPlaceholder("e.g. Kemi").fill("Wiz");
+  await page.getByRole("button", { name: "JSS2" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  // Step 3 → finish lands on the parent dashboard.
+  await page.getByRole("button", { name: /Exam success/ }).click();
+  await page.getByRole("button", { name: /Finish/ }).click();
+  await expect(page).toHaveURL(/dashboard/, { timeout: 20_000 });
+  await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
 });

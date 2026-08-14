@@ -74,11 +74,11 @@ export function SubjectsClient() {
         </div>
       ) : subjects.isError ? (
         <div className="border rounded-2xl p-10 text-center text-red-600">Could not load subjects.</div>
-      ) : (subjects.data?.data.length ?? 0) === 0 ? (
+      ) : (subjects.data?.data ?? []).length === 0 ? (
         <div className="border rounded-2xl p-10 text-center text-ink-500">No subjects match your search.</div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {subjects.data?.data.map((s) => (
+          {(subjects.data?.data ?? []).map((s) => (
             <Link
               key={s.id}
               href={`/subjects/${s.slug}`}

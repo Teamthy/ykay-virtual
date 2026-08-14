@@ -18,6 +18,8 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*User, error)
 	Update(ctx context.Context, user *User) error
 	UpdateLastLogin(ctx context.Context, id uuid.UUID, at time.Time) error
+	// SetOnboarded marks the first-time wizard complete (000031).
+	SetOnboarded(ctx context.Context, id uuid.UUID, at time.Time) error
 }
 
 type SessionRepository interface {

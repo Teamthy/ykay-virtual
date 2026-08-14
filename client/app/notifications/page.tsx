@@ -62,7 +62,7 @@ export default function NotificationsPage() {
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
         </div>
-      ) : (notifs.data?.data.length ?? 0) === 0 ? (
+      ) : (notifs.data?.data ?? []).length === 0 ? (
         <EmptyState
           icon={<Inbox size={20} />}
           title="No notifications yet"
@@ -70,7 +70,7 @@ export default function NotificationsPage() {
         />
       ) : (
         <ul className="space-y-2.5">
-          {notifs.data?.data.map((n) => (
+          {(notifs.data?.data ?? []).map((n) => (
             <li key={n.id}>
               <Card
                 className={
