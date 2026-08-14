@@ -11,6 +11,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+
+	"ykay-virtual/internal/telemetry"
 )
 
 // Durable job queue (G3.1, remediation plan).
@@ -31,6 +33,10 @@ const (
 	keyDead       = "nuvora:jobs:dead"
 
 	DefaultMaxAttempts = 5
+
+	// Metrics backend labels (internal/telemetry).
+	backendRedis  = "redis"
+	backendMemory = "memory"
 )
 
 // Handler processes one job. Return nil on success; any error triggers retry
@@ -95,6 +101,8 @@ func (q *RedisQueue) Enqueue(ctx context.Context, jobType JobType, payload any) 
 	if err := q.client.LPush(ctx, keyReady, marshalJob(job)).Err(); err != nil {
 		return "", fmt.Errorf("enqueue %s: %w", jobType, err)
 	}
+	telemetry.JobEnqueued(string(jobType), backendRedis)
+	q.refreshDepth(ctx)
 	return job.ID, nil
 }
 
@@ -107,7 +115,26 @@ func (q *RedisQueue) EnqueueIn(ctx context.Context, delay time.Duration, jobType
 	if err := q.client.ZAdd(ctx, keyDelayed, redis.Z{Score: score, Member: marshalJob(job)}).Err(); err != nil {
 		return "", fmt.Errorf("enqueue delayed %s: %w", jobType, err)
 	}
+	telemetry.JobEnqueued(string(jobType), backendRedis)
+	q.refreshDepth(ctx)
 	return job.ID, nil
+}
+
+// refreshDepth mirrors the four queue states into Prometheus gauges so
+// backlog/dead-letter alerts can fire (G3.3). All calls are O(1) Redis ops.
+func (q *RedisQueue) refreshDepth(ctx context.Context) {
+	if ready, err := q.client.LLen(ctx, keyReady).Result(); err == nil {
+		telemetry.SetQueueDepth(backendRedis, "ready", float64(ready))
+	}
+	if processing, err := q.client.LLen(ctx, keyProcessing).Result(); err == nil {
+		telemetry.SetQueueDepth(backendRedis, "processing", float64(processing))
+	}
+	if delayed, err := q.client.ZCard(ctx, keyDelayed).Result(); err == nil {
+		telemetry.SetQueueDepth(backendRedis, "delayed", float64(delayed))
+	}
+	if dead, err := q.client.LLen(ctx, keyDead).Result(); err == nil {
+		telemetry.SetQueueDepth(backendRedis, "dead", float64(dead))
+	}
 }
 
 // Run consumes jobs until ctx is cancelled. Call in a goroutine per worker.
@@ -150,16 +177,21 @@ func (q *RedisQueue) promoteLoop(ctx context.Context) {
 				pipe.LPush(ctx, keyReady, m)
 				_, _ = pipe.Exec(ctx)
 			}
+			q.refreshDepth(ctx)
 		}
 	}
 }
 
 func (q *RedisQueue) process(ctx context.Context, raw string) {
-	defer q.client.LRem(ctx, keyProcessing, 1, raw)
+	defer func() {
+		q.client.LRem(ctx, keyProcessing, 1, raw)
+		q.refreshDepth(ctx)
+	}()
 
 	var job Job
 	if err := json.Unmarshal([]byte(raw), &job); err != nil {
 		log.Printf("worker: malformed job dropped: %v", err)
+		telemetry.JobDropped("malformed", backendRedis)
 		q.client.LPush(ctx, keyDead, raw)
 		return
 	}
@@ -169,6 +201,7 @@ func (q *RedisQueue) process(ctx context.Context, raw string) {
 	q.mu.RUnlock()
 	if !ok {
 		log.Printf("worker: no handler for %s — dead-lettered", job.Type)
+		telemetry.JobDropped(string(job.Type), backendRedis)
 		q.client.LPush(ctx, keyDead, raw)
 		return
 	}
@@ -181,6 +214,7 @@ func (q *RedisQueue) process(ctx context.Context, raw string) {
 		if job.Attempts >= job.MaxAttempts {
 			job.LastError = err.Error()
 			q.client.LPush(ctx, keyDead, marshalJob(job))
+			telemetry.JobDeadLettered(string(job.Type), backendRedis)
 			log.Printf("worker: job %s (%s) dead after %d attempts: %v", job.ID, job.Type, job.Attempts, err)
 			return
 		}
@@ -188,9 +222,11 @@ func (q *RedisQueue) process(ctx context.Context, raw string) {
 		delay := backoff(job.Attempts)
 		score := float64(time.Now().Add(delay).Unix())
 		q.client.ZAdd(ctx, keyDelayed, redis.Z{Score: score, Member: marshalJob(job)})
+		telemetry.JobRetried(string(job.Type), backendRedis)
 		log.Printf("worker: job %s (%s) attempt %d failed, retry in %s: %v", job.ID, job.Type, job.Attempts, delay, err)
 		return
 	}
+	telemetry.JobCompleted(string(job.Type), backendRedis)
 }
 
 // DeadLetters returns up to n dead jobs (operator inspection).
@@ -218,10 +254,20 @@ type MemoryQueue struct {
 	dead      []Job
 	wg        sync.WaitGroup
 	backoffFn func(int) time.Duration
+
+	// Depth tracking (mirrors Redis list sizes) for queue gauges.
+	ready, processing, delayed, deadN int
 }
 
 func NewMemoryQueue() *MemoryQueue {
 	return &MemoryQueue{handlers: map[JobType]Handler{}, backoffFn: backoff}
+}
+
+func (q *MemoryQueue) refreshDepth() {
+	telemetry.SetQueueDepth(backendMemory, "ready", float64(q.ready))
+	telemetry.SetQueueDepth(backendMemory, "processing", float64(q.processing))
+	telemetry.SetQueueDepth(backendMemory, "delayed", float64(q.delayed))
+	telemetry.SetQueueDepth(backendMemory, "dead", float64(q.deadN))
 }
 
 func (q *MemoryQueue) Register(jobType JobType, h Handler) {
@@ -239,44 +285,84 @@ func (q *MemoryQueue) EnqueueIn(ctx context.Context, delay time.Duration, jobTyp
 	if err != nil {
 		return "", err
 	}
+	telemetry.JobEnqueued(string(jobType), backendMemory)
+	q.mu.Lock()
+	if delay > 0 {
+		q.delayed++
+	} else {
+		q.ready++
+	}
+	q.mu.Unlock()
+	q.refreshDepth()
 	q.wg.Add(1)
 	go func() {
 		defer q.wg.Done()
 		if delay > 0 {
 			select {
 			case <-ctx.Done():
+				q.mu.Lock()
+				q.delayed--
+				q.mu.Unlock()
+				q.refreshDepth()
 				return
 			case <-time.After(delay):
 			}
 		}
-		q.run(ctx, job)
+		q.run(ctx, job, delay > 0)
 	}()
 	return job.ID, nil
 }
 
-func (q *MemoryQueue) run(ctx context.Context, job Job) {
+func (q *MemoryQueue) run(ctx context.Context, job Job, wasDelayed bool) {
+	q.mu.Lock()
+	if wasDelayed {
+		q.delayed--
+	} else {
+		q.ready--
+	}
+	q.processing++
+	q.mu.Unlock()
+	q.refreshDepth()
+
+	defer func() {
+		q.mu.Lock()
+		q.processing--
+		q.mu.Unlock()
+		q.refreshDepth()
+	}()
+
 	q.mu.Lock()
 	handler, ok := q.handlers[job.Type]
 	q.mu.Unlock()
 	if !ok {
 		q.mu.Lock()
 		q.dead = append(q.dead, job)
+		q.deadN++
 		q.mu.Unlock()
+		q.refreshDepth()
+		telemetry.JobDropped(string(job.Type), backendMemory)
 		return
 	}
 	for {
 		job.Attempts++
 		err := handler(ctx, job)
 		if err == nil {
+			telemetry.JobCompleted(string(job.Type), backendMemory)
 			return
 		}
 		job.LastError = err.Error()
 		if job.Attempts >= job.MaxAttempts {
 			q.mu.Lock()
 			q.dead = append(q.dead, job)
+			q.deadN++
 			q.mu.Unlock()
+			q.refreshDepth()
+			telemetry.JobDeadLettered(string(job.Type), backendMemory)
 			return
 		}
+		// The job stays in-flight (processing) across the backoff sleep,
+		// mirroring the Redis model where it is re-promoted from delayed.
+		telemetry.JobRetried(string(job.Type), backendMemory)
 		select {
 		case <-ctx.Done():
 			return

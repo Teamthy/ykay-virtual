@@ -116,3 +116,77 @@ jobs:
           for i in $(seq 1 30); do curl -sf -m 1 localhost:3000/ >/dev/null 2>&1 && break; sleep 1; done
           curl -sf -m 1 localhost:3000/ >/dev/null || { echo "web failed"; tail -20 /tmp/web.log; exit 1; }
           lhci autorun --config=../lighthouserc.json
+
+  drill:
+    name: DR drill — backup → restore → verify (real PostgreSQL, G3.4)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nuvora
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Install postgres client (psql/pg_dump/pg_restore)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Migrate + seed deterministic rows
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nuvora?sslmode=disable
+        run: |
+          go run ./cmd/migrate --cmd=up
+          psql "$DATABASE_URL" -f scripts/seed-refs.sql
+      - name: Backup → automated restore drill (deep checksums)
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nuvora?sslmode=disable
+          BACKUP_MAX_AGE_HOURS: "1"
+        run: |
+          BACKUP_RETENTION_DAYS=1 bash scripts/backup.sh
+          bash scripts/dr-drill.sh --deep
+
+  observability:
+    name: Metrics + alerts config validation (G3.3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Metrics unit tests (telemetry + queue instrumentation)
+        run: go test ./internal/telemetry/ ./internal/worker/
+      - name: Validate Prometheus config + alert rules (promtool)
+        run: |
+          docker run --rm -v "$PWD/deploy/prometheus:/p:ro" prom/prometheus:v2.53.0 \
+            promtool check config /p/prometheus.yml
+          docker run --rm -v "$PWD/deploy/prometheus:/p:ro" prom/prometheus:v2.53.0 \
+            promtool check rules /p/alerts.yml
+      - name: Validate Grafana dashboard JSON
+        run: python3 -m json.tool deploy/grafana/dashboards/nuvora-api.json > /dev/null
+      - name: Validate production compose stack
+        env:
+          POSTGRES_PASSWORD: ci-check
+          GRAFANA_ADMIN_PASSWORD: ci-check
+          SITE_URL: https://nuvora.com
+          ALLOWED_ORIGINS: https://nuvora.com
+        run: docker compose -f docker-compose.prod.yml config --quiet
+      - name: Metrics endpoint smoke (API boots + scrape responds)
+        env:
+          PORT: "8080"
+        run: |
+          (go run ./cmd/api > /tmp/api.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf -m 1 localhost:8080/health >/dev/null 2>&1 && break; sleep 1; done
+          curl -sf localhost:8080/metrics | grep -q 'nuvora_build_info' || { echo "metrics scrape missing build info"; tail -20 /tmp/api.log; exit 1; }
+          curl -s localhost:8080/health > /dev/null
+          curl -sf localhost:8080/metrics | grep -q 'nuvora_http_requests_total' || { echo "metrics scrape missing http counters"; exit 1; }
+          echo "metrics smoke OK"

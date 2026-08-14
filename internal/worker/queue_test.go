@@ -6,6 +6,11 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/testutil"
+
+	"ykay-virtual/internal/telemetry"
 )
 
 // The durable-queue semantics (G3.1): success path, retry-with-backoff and
@@ -104,5 +109,56 @@ func TestBackoffCapped(t *testing.T) {
 	}
 	if backoff(30) != 5*time.Minute {
 		t.Fatalf("backoff must cap at 5m, got %s", backoff(30))
+	}
+}
+
+// TestMemoryQueue_Metrics — G3.3: the queue path must emit job counters and
+// depth gauges so backlog/dead-letter alerts have data to fire on.
+func TestMemoryQueue_Metrics(t *testing.T) {
+	m := telemetry.NewMetrics(prometheus.NewRegistry())
+	restore := telemetry.SetMetrics(m)
+	defer restore()
+
+	q := NewMemoryQueue()
+	q.backoffFn = func(int) time.Duration { return time.Millisecond }
+	okCalls := 0
+	q.Register(JobSendEmail, func(ctx context.Context, job Job) error {
+		okCalls++
+		return nil
+	})
+	if _, err := q.Enqueue(context.Background(), JobSendEmail, nil); err != nil {
+		t.Fatalf("enqueue: %v", err)
+	}
+	q.Wait()
+
+	if got := testutil.ToFloat64(m.JobsEnqueuedTotal.WithLabelValues("send_email", "memory")); got != 1 {
+		t.Errorf("enqueued = %v, want 1", got)
+	}
+	if got := testutil.ToFloat64(m.JobsCompletedTotal.WithLabelValues("send_email", "memory")); got != 1 {
+		t.Errorf("completed = %v, want 1", got)
+	}
+	if got := testutil.ToFloat64(m.QueueDepth.WithLabelValues("memory", "ready")); got != 0 {
+		t.Errorf("ready depth = %v, want 0 after drain", got)
+	}
+	if got := testutil.ToFloat64(m.QueueDepth.WithLabelValues("memory", "processing")); got != 0 {
+		t.Errorf("processing depth = %v, want 0 after drain", got)
+	}
+	if okCalls != 1 {
+		t.Fatalf("handler ran %d times, want 1", okCalls)
+	}
+
+	// A failing job → dead-letter counters + depth.
+	q2 := NewMemoryQueue()
+	q2.backoffFn = func(int) time.Duration { return time.Millisecond }
+	q2.Register(JobSendSMS, func(ctx context.Context, job Job) error { return errors.New("boom") })
+	if _, err := q2.Enqueue(context.Background(), JobSendSMS, nil); err != nil {
+		t.Fatalf("enqueue: %v", err)
+	}
+	q2.Wait()
+	if got := testutil.ToFloat64(m.JobsDeadLetteredTotal.WithLabelValues("send_sms", "memory")); got != 1 {
+		t.Errorf("dead-lettered = %v, want 1", got)
+	}
+	if got := testutil.ToFloat64(m.QueueDepth.WithLabelValues("memory", "dead")); got != 1 {
+		t.Errorf("dead depth = %v, want 1", got)
 	}
 }

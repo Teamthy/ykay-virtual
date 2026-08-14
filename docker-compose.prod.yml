@@ -1,4 +1,6 @@
-# NUVORA — production compose stack (Phase 40).
+# NUVORA — production compose stack (Phase 40) with observability stack
+# (Prometheus + Grafana + node-exporter, G3.3) and a durable worker service
+# (G3.1).
 #
 #   docker compose -f docker-compose.prod.yml up -d --build
 #
@@ -64,6 +66,7 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       EMAIL_FROM: ${EMAIL_FROM:-no-reply@nuvora.com}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
       S3_ENDPOINT: ${S3_ENDPOINT:-}
       S3_PUBLIC_BUCKET: ${S3_PUBLIC_BUCKET:-nuvora-public}
       S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-nuvora-private}
@@ -93,6 +96,21 @@ services:
       retries: 3
     # Scale out: docker compose up -d --scale api=2 (stateless except the
     # in-memory rate limiter — pin to 1 or add Redis-backed limiting).
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/usr/local/bin/worker"]
+    restart: unless-stopped
+    environment: *api_env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    # Consumes the durable Redis queue (G3.1) + runs crons; exposes cron
+    # heartbeats and queue depths on :8081 for Prometheus (G3.3).
 
   web:
     build:
@@ -125,15 +143,66 @@ services:
       /bin/sh -c '
       while true; do
         ts=$$(date -u +%Y%m%dT%H%M%SZ);
-        pg_dump -h postgres -U ${POSTGRES_USER:-nuvora} -d ${POSTGRES_DB:-nuvora} -Fc \
-          > /backups/nuvora-$$ts.dump;
+        out=/backups/nuvora-$$ts.dump;
+        if pg_dump -h postgres -U ${POSTGRES_USER:-nuvora} -d ${POSTGRES_DB:-nuvora} -Fc > $$out; then
+          printf "nuvora_backup_last_success_timestamp %s\nnuvora_backup_size_bytes %s\n" \
+            "$$(date +%s)" "$$(stat -c%s $$out)" > /metrics-textfile/nuvora_backup.prom;
+        else
+          printf "nuvora_backup_last_failure_timestamp %s\n" "$$(date +%s)" > /metrics-textfile/nuvora_backup.prom.fail;
+        fi;
         find /backups -name "nuvora-*.dump" -mtime +${BACKUP_RETENTION_DAYS:-14} -delete;
         sleep ${BACKUP_INTERVAL_HOURS:-24}h;
       done'
     volumes:
       - postgres_data:/var/lib/postgresql/data:ro
       - ./backups:/backups
+      - ./metrics-textfile:/metrics-textfile
+
+  # ── Observability (G3.3) ────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090" # local only; put auth/ingress in front if exposed
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3001:3000" # local only; proxy in front for remote access
+    depends_on:
+      - prometheus
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    restart: unless-stopped
+    command:
+      - "--collector.textfile.directory=/textfile"
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+    volumes:
+      - ./metrics-textfile:/textfile:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
 
 volumes:
   postgres_data:
   redis_data:
+  prometheus_data:
+  grafana_data:

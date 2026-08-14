@@ -3,9 +3,11 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 
 	"ykay-virtual/internal/middleware"
+	"ykay-virtual/internal/telemetry"
 	"ykay-virtual/pkg"
 )
 
@@ -58,6 +60,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 		}
 		_ = json.NewEncoder(w).Encode(map[string]any{"status": "ready"})
 	})
+
+	// Metrics scrape endpoint (G3.3). Fail-closed: when METRICS_TOKEN is set
+	// the endpoint requires Authorization: Bearer <token>; empty = open
+	// (dev). The route is excluded from its own instrumentation.
+	mux.Handle("GET /metrics", telemetry.DefaultMetrics().HandlerWithToken(os.Getenv("METRICS_TOKEN")))
 
 	v1 := "/api/v1"
 
@@ -265,6 +272,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 
 func (rt *Router) Handler() http.Handler {
 	var h http.Handler = rt.mux
+	h = telemetry.DefaultMetrics().Middleware(h)
 	h = middleware.RequestID(h)
 	h = middleware.Logger(h)
 	h = middleware.Recover(h)
