@@ -14,11 +14,16 @@ import (
 	_ "github.com/lib/pq"
 
 	"ykay-virtual/internal/config"
+	"ykay-virtual/migrations"
 )
 
 // cmd/migrate — dependency-free migration runner using lib/pq:
 // applies numbered /migrations/*.up.sql in order (transactions), tracks
 // applied versions in schema_migrations, rolls back via *.down.sql.
+//
+// Without --dir it uses the EMBEDDED migration chain (works anywhere,
+// including the scratch release image). Pass --dir=migrations to run from
+// a local checkout against files on disk (identical content).
 //
 //	Usage: go run ./cmd/migrate --cmd=up|down|status [--dir=../../migrations]
 
@@ -27,15 +32,8 @@ func main() {
 	cfg := config.Load()
 
 	cmd := flag.String("cmd", "up", "migrate command: up, down, status")
-	dir := flag.String("dir", "", "migrations directory (default: ./migrations)")
+	dir := flag.String("dir", "", "migrations directory (default: embedded chain)")
 	flag.Parse()
-
-	if *dir == "" {
-		*dir = "migrations"
-	}
-	if strings.HasPrefix(*dir, "./") {
-		*dir = strings.TrimPrefix(*dir, "./")
-	}
 
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
@@ -46,21 +44,48 @@ func main() {
 		log.Fatalf("ping db: %v — is postgres running? (docker compose up -d postgres)", err)
 	}
 
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
-		version BIGINT PRIMARY KEY,
-		name TEXT NOT NULL,
-		applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-	)`); err != nil {
-		log.Fatalf("ensure schema_migrations: %v", err)
+	source := "embedded"
+	all := make([]migration, 0)
+	if *dir == "" {
+		if err := migrations.EnsureTable(db); err != nil {
+			log.Fatalf("ensure schema_migrations: %v", err)
+		}
+		files, err := migrations.Files()
+		if err != nil {
+			log.Fatalf("embedded migrations: %v", err)
+		}
+		seen := map[int]*migration{}
+		for _, f := range files {
+			m := seen[f.Version]
+			if m == nil {
+				m = &migration{version: f.Version}
+				seen[f.Version] = m
+			}
+			if f.Up {
+				m.upName, m.upSQL = f.Name, f.SQL
+			} else {
+				m.downName, m.downSQL = f.Name, f.SQL
+			}
+		}
+		for _, m := range seen {
+			all = append(all, *m)
+		}
+	} else {
+		source = *dir
+		if err := migrations.EnsureTable(db); err != nil {
+			log.Fatalf("ensure schema_migrations: %v", err)
+		}
+		all = listMigrationsFromDisk(*dir)
 	}
+	sort.Slice(all, func(i, j int) bool { return all[i].version < all[j].version })
 
 	switch *cmd {
 	case "up":
-		up(db, *dir)
+		up(db, all, source)
 	case "down":
-		down(db, *dir)
+		down(db, all, source)
 	case "status":
-		status(db, *dir)
+		status(db, all, source)
 	default:
 		log.Fatalf("unknown cmd %q (use up, down, status)", *cmd)
 	}
@@ -68,11 +93,13 @@ func main() {
 
 type migration struct {
 	version  int
-	upPath   string
-	downPath string
+	upName   string
+	upSQL    string
+	downName string
+	downSQL  string
 }
 
-func listMigrations(dir string) []migration {
+func listMigrationsFromDisk(dir string) []migration {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		log.Fatalf("read migrations dir %s: %v", dir, err)
@@ -91,13 +118,17 @@ func listMigrations(dir string) []migration {
 		if _, err := fmt.Sscanf(parts[0], "%06d", &version); err != nil {
 			continue
 		}
+		content, err := os.ReadFile(filepath.Join(dir, name))
+		if err != nil {
+			log.Fatalf("read %s: %v", name, err)
+		}
 		m := seen[version]
 		m.version = version
 		switch {
 		case strings.HasSuffix(name, ".up.sql"):
-			m.upPath = filepath.Join(dir, name)
+			m.upName, m.upSQL = name, string(content)
 		case strings.HasSuffix(name, ".down.sql"):
-			m.downPath = filepath.Join(dir, name)
+			m.downName, m.downSQL = name, string(content)
 		}
 		seen[version] = m
 	}
@@ -126,64 +157,55 @@ func appliedVersions(db *sql.DB) map[int]bool {
 	return out
 }
 
-func up(db *sql.DB, dir string) {
+func up(db *sql.DB, all []migration, source string) {
 	applied := appliedVersions(db)
-	for _, m := range listMigrations(dir) {
+	for _, m := range all {
 		if applied[m.version] {
 			continue
 		}
-		if m.upPath == "" {
+		if m.upSQL == "" {
 			log.Printf("skip %06d: no up file", m.version)
 			continue
-		}
-		sqlBytes, err := os.ReadFile(m.upPath)
-		if err != nil {
-			log.Fatalf("read %s: %v", m.upPath, err)
 		}
 		tx, err := db.Begin()
 		if err != nil {
 			log.Fatalf("begin tx: %v", err)
 		}
-		if _, err := tx.Exec(string(sqlBytes)); err != nil {
+		if _, err := tx.Exec(m.upSQL); err != nil {
 			_ = tx.Rollback()
-			log.Fatalf("apply %s: %v", filepath.Base(m.upPath), err)
+			log.Fatalf("apply %s: %v", m.upName, err)
 		}
 		if _, err := tx.Exec("INSERT INTO schema_migrations (version, name) VALUES ($1, $2)",
-			m.version, filepath.Base(m.upPath)); err != nil {
+			m.version, m.upName); err != nil {
 			_ = tx.Rollback()
 			log.Fatalf("record %06d: %v", m.version, err)
 		}
 		if err := tx.Commit(); err != nil {
 			log.Fatalf("commit %06d: %v", m.version, err)
 		}
-		log.Printf("applied %06d %s", m.version, filepath.Base(m.upPath))
+		log.Printf("applied %06d %s (%s)", m.version, m.upName, source)
 	}
 	log.Println("migrate up complete")
 }
 
-func down(db *sql.DB, dir string) {
+func down(db *sql.DB, all []migration, source string) {
 	applied := appliedVersions(db)
-	all := listMigrations(dir)
 	for i := len(all) - 1; i >= 0; i-- {
 		m := all[i]
 		if !applied[m.version] {
 			continue
 		}
-		if m.downPath == "" {
+		if m.downSQL == "" {
 			log.Printf("skip %06d: no down file", m.version)
 			continue
-		}
-		sqlBytes, err := os.ReadFile(m.downPath)
-		if err != nil {
-			log.Fatalf("read %s: %v", m.downPath, err)
 		}
 		tx, err := db.Begin()
 		if err != nil {
 			log.Fatalf("begin tx: %v", err)
 		}
-		if _, err := tx.Exec(string(sqlBytes)); err != nil {
+		if _, err := tx.Exec(m.downSQL); err != nil {
 			_ = tx.Rollback()
-			log.Fatalf("rollback %s: %v", filepath.Base(m.downPath), err)
+			log.Fatalf("rollback %s: %v", m.downName, err)
 		}
 		if _, err := tx.Exec("DELETE FROM schema_migrations WHERE version = $1", m.version); err != nil {
 			_ = tx.Rollback()
@@ -192,18 +214,22 @@ func down(db *sql.DB, dir string) {
 		if err := tx.Commit(); err != nil {
 			log.Fatalf("commit %06d: %v", m.version, err)
 		}
-		log.Printf("rolled back %06d %s", m.version, filepath.Base(m.downPath))
+		log.Printf("rolled back %06d %s (%s)", m.version, m.downName, source)
 	}
 	log.Println("migrate down complete")
 }
 
-func status(db *sql.DB, dir string) {
+func status(db *sql.DB, all []migration, source string) {
 	applied := appliedVersions(db)
-	for _, m := range listMigrations(dir) {
+	pending := 0
+	for _, m := range all {
 		state := "pending"
 		if applied[m.version] {
 			state = "applied"
+		} else {
+			pending++
 		}
-		fmt.Printf("%06d  %-8s  %s\n", m.version, state, filepath.Base(m.upPath))
+		log.Printf("%06d %-7s %s", m.version, state, m.upName)
 	}
+	log.Printf("migrate status: %d applied, %d pending (%s)", len(applied), pending, source)
 }

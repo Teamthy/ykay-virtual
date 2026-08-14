@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { loginWithReturn } from "@/lib/safe-next";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
@@ -20,7 +21,7 @@ export default function NotificationsPage() {
   const userId = user?.id ?? "";
 
   useEffect(() => {
-    if (!isLoading && !user) router.replace("/login");
+    if (!isLoading && !user) router.replace(loginWithReturn());
   }, [isLoading, user, router]);
 
   const notifs = useQuery({

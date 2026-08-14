@@ -28,6 +28,11 @@ test("no critical a11y violations on landing, login and dashboard", async ({ pag
   results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.filter((v) => v.impact === "critical")).toEqual([]);
 
+  // Signup (7-step onboarding)
+  await page.goto("/onboarding");
+  results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations.filter((v) => v.impact === "critical")).toEqual([]);
+
   // Dashboard (authenticated parent)
   const email = uniq("axe");
   const reg = await request.post(`${API}/auth/register`, {

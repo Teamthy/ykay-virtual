@@ -15,6 +15,12 @@ PORT="${1:-8099}"
 BASE="http://localhost:${PORT}/api/v1"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
+# Deterministic runs: a shared Redis must not leak caches/rate-limit
+# counters from earlier suites into this one (no-op without redis-cli).
+if command -v redis-cli >/dev/null 2>&1; then
+  redis-cli -u "${REDIS_URL:-redis://localhost:6379/0}" flushdb >/dev/null 2>&1 || true
+fi
+
 PASS=0
 FAIL=0
 declare -a FAILURES
@@ -43,7 +49,10 @@ if curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
 fi
 trap 'kill $API_PID 2>/dev/null || true' EXIT
 echo "Starting API on :${PORT} (in-memory mode)…"
-PORT="$PORT" SEED_DEMO_DATA=true DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" "$BIN" >/tmp/e2e-api.log 2>&1 &
+# RATE_LIMIT_PER_MINUTE: the suite intentionally exceeds the production
+# per-IP window from 127.0.0.1; with Redis present the counters persist
+# across boots, so pin a high limit for deterministic repeat runs.
+PORT="$PORT" SEED_DEMO_DATA=true DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" RATE_LIMIT_PER_MINUTE=1000000 "$BIN" >/tmp/e2e-api.log 2>&1 &
 API_PID=$!
 for i in $(seq 1 30); do
   curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break
@@ -95,6 +104,11 @@ assert_code "login admin" 200 "$c"
 
 c=$(req /dev/null POST /auth/login '{"email":"e2e-parent@test.com","password":"wrong-pass"}')
 assert_code "wrong password → 401" 401 "$c"
+[ "$(cat /tmp/e2e-body.json | json 'd["error"]["message"]')" = "invalid credentials" ] && ok "401 says 'invalid credentials' (user-facing)" || fail "401 message not user-facing: $(cat /tmp/e2e-body.json | head -c 300)"
+
+# Friction lock: login must tolerate CASE and stray whitespace in the email.
+c=$(req "$J_PARENT" POST /auth/login '{"email":"  E2E-PARENT@TEST.COM ","password":"password123"}')
+assert_code "login with CASE/whitespace email" 200 "$c"
 
 c=$(req "$J_PARENT" GET /auth/me)
 assert_code "me (parent)" 200 "$c"

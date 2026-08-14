@@ -12,6 +12,7 @@ import {
   sendChatMessage,
 } from "@/features/chat/api";
 import { useSession } from "@/hooks/useSession";
+import { loginWithReturn } from "@/lib/safe-next";
 
 // Floating AI assistant — mini chat panel. Opens the latest thread (or starts
 // a new one), streams replies from the chat API, and links to the full page.
@@ -52,7 +53,7 @@ export function ChatWidget() {
       qc.invalidateQueries({ queryKey: ["chat", "widget-threads"] });
       setThreadId(t.id);
     } catch {
-      router.push("/login");
+      router.push(loginWithReturn());
     }
   };
 
@@ -120,7 +121,7 @@ export function ChatWidget() {
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {!user ? (
               <p className="py-8 text-center text-sm text-ink-500">
-                <button onClick={() => router.push("/login")} className="font-semibold text-brand-gold-dark hover:underline">
+                <button onClick={() => router.push(loginWithReturn())} className="font-semibold text-brand-gold-dark hover:underline">
                   Log in
                 </button>{" "}
                 to chat with Nuvora.

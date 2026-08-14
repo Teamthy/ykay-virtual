@@ -1,24 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthShell } from "@/components/layout/AuthShell";
-import { requestLoginCode, confirmLoginCode } from "@/features/auth/api";
+import { requestLoginCode, confirmLoginCode, type CurrentUser } from "@/features/auth/api";
 import { INPUT_CLS } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/hooks/useSession";
+import { useQueryClient } from "@tanstack/react-query";
+import { homeForRoles } from "@/hooks/useDashboardRoute";
+import { safeNextPath, withNext } from "@/lib/safe-next";
 
 // Magic-link login (phase 18): request a 6-digit code → enter it → session.
+// Honors ?next= like the password login page.
 
-export default function LoginCodePage() {
+function destinationFor(user: CurrentUser, next: string | null): string {
+  if (user.status === "PENDING_VERIFICATION") return withNext("/verify-email?sent=1", next);
+  if (!user.onboarded) return withNext("/onboarding/wizard", next);
+  return safeNextPath(next) ?? homeForRoles(user.roles);
+}
+
+function LoginCodeInner() {
   const router = useRouter();
+  const qc = useQueryClient();
+  const sp = useSearchParams();
+  const next = safeNextPath(sp.get("next") ?? sp.get("returnTo"));
+  const { user, isLoading } = useSession();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+
+  // Already signed in? Go where you're headed.
+  useEffect(() => {
+    if (!isLoading && user) router.replace(destinationFor(user, next));
+  }, [user, isLoading, next, router]);
 
   const request = async () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
@@ -58,10 +78,9 @@ export default function LoginCodePage() {
     setError(null);
     try {
       const user = await confirmLoginCode(email.trim(), code.trim());
+      qc.setQueryData(["session"], user);
       toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
-      if (user.roles.includes("TUTOR")) router.push("/tutor-dashboard");
-      else if (user.roles.includes("PARENT")) router.push("/dashboard");
-      else router.push("/student-dashboard");
+      router.push(destinationFor(user, next));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid code");
     } finally {
@@ -80,7 +99,7 @@ export default function LoginCodePage() {
       footer={
         <>
           Prefer a password?{" "}
-          <Link href="/login" className="text-brand-blue font-semibold hover:underline">
+          <Link href={withNext("/login", next)} className="text-brand-blue font-semibold hover:underline">
             Log in instead
           </Link>
         </>
@@ -94,6 +113,7 @@ export default function LoginCodePage() {
               <input
                 type="email"
                 autoComplete="email"
+                autoFocus
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && void request()}
@@ -113,6 +133,7 @@ export default function LoginCodePage() {
               <input
                 inputMode="numeric"
                 autoFocus
+                autoComplete="one-time-code"
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(e) => e.key === "Enter" && void confirm()}
@@ -137,5 +158,13 @@ export default function LoginCodePage() {
         )}
       </div>
     </AuthShell>
+  );
+}
+
+export default function LoginCodePage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginCodeInner />
+    </Suspense>
   );
 }

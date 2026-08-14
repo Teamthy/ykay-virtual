@@ -9,6 +9,7 @@ import { AuthShell } from "@/components/layout/AuthShell";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { confirmPasswordReset } from "@/features/auth/api";
+import { safeNextPath, withNext } from "@/lib/safe-next";
 
 const resetSchema = z
   .object({
@@ -21,6 +22,7 @@ function ResetPasswordInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const token = sp.get("token") ?? "";
+  const next = safeNextPath(sp.get("next"));
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -57,7 +59,7 @@ function ResetPasswordInner() {
         <div className="text-5xl">🔒</div>
         <h1 className="text-2xl font-extrabold">Password updated</h1>
         <p className="text-ink-600 text-sm">Your password was changed. All other sessions were signed out.</p>
-        <Button variant="gold" onClick={() => router.push("/login")}>
+        <Button variant="gold" onClick={() => router.push(withNext("/login", next))}>
           Log in with your new password
         </Button>
       </div>
@@ -109,7 +111,7 @@ function ResetPasswordInner() {
         >
           {submitting ? "Updating…" : "Update password"}
         </button>
-        <Link href="/login" className="block text-center text-sm font-semibold text-brand-gold-dark hover:underline">
+        <Link href={withNext("/login", next)} className="block text-center text-sm font-semibold text-brand-gold-dark hover:underline">
           Back to login
         </Link>
       </form>

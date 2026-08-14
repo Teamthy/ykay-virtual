@@ -9,6 +9,7 @@ import { createPrivateBooking, initiatePayment } from "@/features/bookings/api/c
 import { listLearners } from "@/features/onboarding/api";
 import { listSubjects } from "@/features/subjects/api/list";
 import { useSession } from "@/hooks/useSession";
+import { loginWithReturn } from "@/lib/safe-next";
 
 // Direct private-tuition booking (P1): pick subject/sessions/duration and
 // pay via the escrow-protected order flow. Works for the tutor's subjects.
@@ -53,7 +54,7 @@ export function PrivateBookingForm({
         <p className="text-sm text-ink-600">Book private lessons with this tutor.</p>
         <button
           type="button"
-          onClick={() => router.push("/login")}
+          onClick={() => router.push(loginWithReturn())}
           className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
         >
           Log in to book

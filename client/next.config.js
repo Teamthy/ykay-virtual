@@ -1,10 +1,25 @@
 /** @type {import('next').NextConfig} */
+const path = require("path");
+
+// Vercel builds the client with Root Directory = client. On Vercel we want
+// a STANDARD build: no standalone output (Vercel serves .next itself and
+// standalone + outputFileTracingRoot across the monorepo boundary is the
+// classic source of "Application error" on Vercel), and default worker
+// parallelism (Vercel build machines have real memory). The constrained-
+// host workarounds below stay ON for local dev, the sandbox and CI.
+const isVercel = !!process.env.VERCEL;
+
 const nextConfig = {
   reactStrictMode: true,
-  // Self-contained server build for the Docker image (Phase 40).
-  output: "standalone",
-  // Monorepo root (Go + client) — silences multi-lockfile inference (Next 15).
-  outputFileTracingRoot: require("path").join(__dirname, ".."),
+  // Self-contained server build for the Docker image (Phase 40) — skipped
+  // on Vercel, which does not need it.
+  ...(isVercel
+    ? {}
+    : {
+        output: "standalone",
+        // Monorepo root (Go + client) — silences multi-lockfile inference (Next 15).
+        outputFileTracingRoot: path.join(__dirname, ".."),
+      }),
   // Dev-mode webpack pack-file cache allocates very large gzip buffers while
   // serializing on constrained machines (Windows dev + Docker running →
   // "Array buffer allocation failed" / heap OOM crashes in `next dev`).
@@ -16,13 +31,19 @@ const nextConfig = {
     if (dev) {
       config.cache = false;
     }
-    config.parallelism = 1;
+    if (!isVercel) {
+      config.parallelism = 1;
+    }
     return config;
   },
-  experimental: {
-    workerThreads: false,
-    cpus: 1,
-  },
+  ...(isVercel
+    ? {}
+    : {
+        experimental: {
+          workerThreads: false,
+          cpus: 1,
+        },
+      }),
   // Constrained hosts (2GB sandboxes, small VMs) OOM during next build's
   // duplicate type-check pass. CI's frontend job runs `npx tsc --noEmit`
   // BEFORE the build as the authoritative gate, so the in-build duplicate

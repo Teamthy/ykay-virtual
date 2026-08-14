@@ -1,0 +1,34 @@
+# Render/Docker build context — the image only ships the Go binaries
+# (scratch stage), so exclude everything that would bloat the upload or
+# leak local state. (This list is also used by `docker compose build`.)
+.git
+.github
+.arena
+*.bundle
+*.log
+.env
+.env.*
+!.env.production.example
+
+# Web client (deployed separately on Vercel)
+client/node_modules
+client/.next
+client/out
+client/test-results
+client/playwright-report
+client/public/hero/*.jpg
+client/public/tutors/*.jpg
+
+# Mobile app (deployed separately via EAS)
+mobile/node_modules
+mobile/.expo
+mobile/dist
+
+# Docs/scripts are not needed inside the image
+docs
+scripts
+
+# Local dev artifacts
+*.tmp
+tmp
+coverage

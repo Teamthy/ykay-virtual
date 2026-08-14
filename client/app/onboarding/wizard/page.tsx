@@ -5,14 +5,15 @@
 // Idempotent: completing it POSTs /auth/me/onboarded; returning users
 // with the flag set are redirected straight through.
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/useSession";
 import { markOnboarded } from "@/features/auth/api";
 import { createLearner } from "@/features/onboarding/api";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
+import { safeNextPath, withNext } from "@/lib/safe-next";
 import { Button } from "@/components/ui/button";
 
 const GOALS = [
@@ -23,10 +24,12 @@ const GOALS = [
   { id: "digital", label: "Digital & tech skills", icon: "💻" },
 ];
 
-export default function WizardPage() {
+function WizardInner() {
   const { user, isLoading } = useSession();
   const router = useRouter();
   const qc = useQueryClient();
+  const sp = useSearchParams();
+  const next = safeNextPath(sp.get("next"));
   const [step, setStep] = useState(0);
   const [firstName, setFirstName] = useState("");
   const [level, setLevel] = useState("");
@@ -41,18 +44,18 @@ export default function WizardPage() {
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.replace("/login");
+      router.replace(withNext("/login", next));
       return;
     }
-    if (user.onboarded) router.replace(homeForRoles(user.roles));
-  }, [user, isLoading, router]);
+    if (user.onboarded) router.replace(next ?? homeForRoles(user.roles));
+  }, [user, isLoading, router, next]);
 
   const complete = useMutation({
     mutationFn: markOnboarded,
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["session"] });
       toast.success("You're all set — welcome to NUVORA!");
-      router.replace(homeForRoles(user?.roles ?? []));
+      router.replace(next ?? homeForRoles(user?.roles ?? []));
     },
     onError: () => toast.error("Could not save — please try again"),
   });
@@ -239,5 +242,13 @@ export default function WizardPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function WizardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-surface" />}>
+      <WizardInner />
+    </Suspense>
   );
 }

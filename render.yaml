@@ -1,13 +1,22 @@
-# Render Blueprint (phase 42) — one-click setup of the NUVORA API + Postgres.
-#   https://dashboard.render.com/blueprints → "New Blueprint Instance" → this file.
+# Render Blueprint (phase 42, expanded for the Vercel + Render split) —
+# one-click setup of the NUVORA production backend:
+#   nuvora-api      Docker API (migrations run at boot via readyCheck gate)
+#   nuvora-worker   Docker worker (Redis-backed dispatch queue — outbound
+#                   email is routed through it in production)
+#   nuvora-redis    Redis 7 (rate limiting, session cache, catalogue cache,
+#                   job queue)
+#   nuvora-db       PostgreSQL (managed)
+#
+#   https://dashboard.render.com/blueprints → "New Blueprint Instance" →
+#   this file.
 #
 # Notes:
-#   - The free Postgres plan EXPIRES after 30 days. Use `starter` ($7/mo) for
-#     anything persistent, or accept re-seeding for a short-lived demo.
-#   - Free web services sleep after 15 min idle → first request after sleep
-#     takes ~30–60s. Keep warm with a free UptimeRobot ping, or use starter.
-#   - Environment values marked with sync:false are secrets you set once in
-#     the dashboard (Render won't overwrite them on redeploy).
+#   - The free Postgres plan EXPIRES after 30 days. Use `starter` ($7/mo)
+#     for anything persistent, or accept re-seeding for a short demo.
+#   - Free web services sleep after 15 min idle → first request after
+#     sleep takes ~30–60s. Keep warm with UptimeRobot, or use `starter`.
+#   - Values marked sync:false are secrets you set ONCE in the dashboard
+#     (Render won't overwrite them on redeploy).
 
 services:
   - type: web
@@ -16,44 +25,129 @@ services:
     repo: https://github.com/YOUR_ORG/ykay-virtual
     plan: free # or: starter
     dockerfilePath: ./Dockerfile
+    healthCheckPath: /health/ready
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: PORT
         value: "8080"
+      # ── Public surface ────────────────────────────────────────────────
+      # SITE_URL is the WEB origin (the Vercel app, e.g. https://nuvora.vercel.app):
+      # it drives the session-cookie Domain and the links inside emails.
+      - key: SITE_URL
+        sync: false
+      # CORS allowlist: the web origin (+ the API's own host). Comma-separated.
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # ── Data ───────────────────────────────────────────────────────────
       - key: DATABASE_URL
         fromDatabase:
           name: nuvora-db
           property: connectionString
-      - key: SITE_URL
-        sync: false # set to https://app.yourdomain.com in the dashboard
-      - key: ALLOWED_ORIGINS
-        sync: false # set to https://app.yourdomain.com
+      - key: REDIS_URL
+        fromService:
+          name: nuvora-redis
+          type: redis
+          property: connectionString
+      # ── Migrations ─────────────────────────────────────────────────────
+      # "true" on the FIRST deploy applies the embedded migration chain at
+      # boot (fresh database). Set to "false" afterwards — concurrent boots
+      # on scaled replicas must not race schema_migrations.
+      - key: MIGRATE_ON_BOOT
+        value: "true"
+      # ── Payments — START WITH TEST KEYS (staging gate G4.1) ───────────
+      - key: PAYMENT_PROVIDER
+        value: PAYSTACK
       - key: PAYSTACK_SECRET
         sync: false
       - key: FLUTTERWAVE_SECRET
         sync: false
+      - key: WEBHOOK_SECRET
+        sync: false # HMAC key for payment-webhook signatures
+      # ── Email (magic-link codes, verification, receipts) ───────────────
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false # e.g. NUVORA <no-reply@yourdomain.com>
+      # ── SMS (Termii) ───────────────────────────────────────────────────
+      - key: TERMII_API_KEY
+        sync: false
+      - key: TERMII_SENDER_ID
+        value: Nuvora
+      # ── Meetings (Whereby) ─────────────────────────────────────────────
+      - key: MEETING_PROVIDER
+        value: whereby # "stub" works without credentials
+      - key: WHEREBY_API_KEY
+        sync: false
+      # ── OAuth (optional — Google sign-in) ──────────────────────────────
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_REDIRECT_URL
-        sync: false # set to https://app.yourdomain.com/auth/google/callback
-      - key: GEMINI_API_KEY
-        sync: false
+        sync: false # https://<web origin>/auth/google/callback
+      # ── AI assistant ───────────────────────────────────────────────────
       - key: CHATBOT_ENABLED
         value: "true"
+      - key: GEMINI_API_KEY
+        sync: false
+      # ── Mobile push (Expo) ─────────────────────────────────────────────
       - key: EXPO_ACCESS_TOKEN
         sync: false
+      # ── Observability ──────────────────────────────────────────────────
+      - key: METRICS_TOKEN
+        sync: false # bearer required to scrape /metrics
+
+  - type: web
+    name: nuvora-worker
+    runtime: docker
+    repo: https://github.com/YOUR_ORG/ykay-virtual
+    plan: free # or: starter
+    dockerfilePath: ./Dockerfile
+    # Render supports `dockerCommand` for Docker runtimes. If your account
+    # rejects it, create the worker manually: Dockerfile image + command
+    # "/usr/local/bin/worker".
+    dockerCommand: /usr/local/bin/worker
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nuvora-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: nuvora-redis
+          type: redis
+          property: connectionString
       - key: SMTP_HOST
         sync: false
+      - key: SMTP_PORT
+        value: "587"
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
         sync: false
       - key: EMAIL_FROM
         sync: false
-    healthCheckPath: /health/ready
+      - key: TERMII_API_KEY
+        sync: false
+      - key: EXPO_ACCESS_TOKEN
+        sync: false
+      - key: SITE_URL
+        sync: false
+
+  - type: redis
+    name: nuvora-redis
+    plan: free
+    ipAllowList: [] # Render-internal only
 
 databases:
   - name: nuvora-db
