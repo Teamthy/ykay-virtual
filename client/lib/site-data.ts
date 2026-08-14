@@ -82,21 +82,15 @@ export const heroSlides = [
   },
 ];
 
+// Local portrait pool (Batch 3) — the community collage cycles these;
+// no remote hotlinks on the home page.
 export const tutorImages = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80",
-  "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80",
-  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80",
-  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&q=80",
-  "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80",
-  "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80",
-  "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=200&q=80",
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80",
-  "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=200&q=80",
-  "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=200&q=80",
-  "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&q=80",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&q=80",
-  "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?w=200&q=80",
-  "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80",
+  "/tutors/chinasa.jpg",
+  "/tutors/oluwatobi.jpg",
+  "/tutors/olanike.jpg",
+  "/tutors/adewale.jpg",
+  "/tutors/judith.jpg",
+  "/tutors/demilola.jpg",
 ];
 
 export const tutorPositions = [
@@ -125,7 +119,7 @@ export const featuredTutor = {
   students: 34,
   qualification: "M.Ed in Mathematics Education from UNILAG",
   teaches: "Teaches the British & Nigerian Syllabus for Grades 1-6.",
-  photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=85",
+  photo: "/tutors/chinasa.jpg",
 };
 
 export const stats = [

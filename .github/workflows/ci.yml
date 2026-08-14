@@ -95,7 +95,7 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
-      - run: npx tsc --noEmit
+      - run: npx tsc --noEmit   # authoritative type gate (build skips its duplicate pass)
       - run: npm run test        # Vitest — session-authz regression suite (G1)
       - run: npm audit --audit-level=high   # dependency gate (G2)
       - run: npm run build

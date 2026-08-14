@@ -60,6 +60,18 @@ test("public catalogue renders seeded tutor and profile", async ({ page }) => {
   await page.goto("/tutors");
   await expect(page.getByText("Oluwatobi").first()).toBeVisible();
 
+  // Batch-3 card design: vetted badge + subject teaching + message CTA.
+  await expect(page.getByText("Vetted").first()).toBeVisible();
+  await expect(page.getByText(/Teaches/).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "message" }).first()).toBeVisible();
+  // No contact details are ever exposed on the CARD (page chrome emails
+  // like the footer contact address are legitimate).
+  const card = page.locator("div").filter({ has: page.getByRole("link", { name: "message", exact: true }) }).first();
+  await expect(card.getByText(/@/)).toHaveCount(0);
+
+  // Inner-page hero uses the grid template (eyebrow pill + headline).
+  await expect(page.getByRole("heading", { name: "Find your perfect tutor" })).toBeVisible();
+
   await page.goto("/tutors/oluwatobi");
   await expect(page.getByRole("heading", { level: 1 }).first()).toContainText(/oluwatobi/i);
 });

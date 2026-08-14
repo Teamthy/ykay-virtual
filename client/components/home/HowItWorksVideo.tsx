@@ -45,7 +45,7 @@ export function HowItWorksVideo() {
             aria-label="Watch how NUVORA works"
           >
             <Image
-              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80"
+              src="/hero/international.jpg"
               alt="Students learning together on NUVORA"
               width={1040}
               height={585}

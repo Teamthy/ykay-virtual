@@ -47,7 +47,7 @@ export function ApproachSection() {
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="aspect-[16/9] lg:aspect-auto">
             <Image
-              src="https://images.unsplash.com/photo-1587614203976-365c74645e83?w=960&q=80"
+              src="/hero/test-prep.jpg"
               alt="Tutor working with a student"
               width={960}
               height={720}

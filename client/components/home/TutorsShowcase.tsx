@@ -12,7 +12,7 @@ const TUTORS = [
     role: "Maths & English · Grades 1–6",
     rating: "4.87",
     reviews: "28 reviews",
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=320&q=80",
+    img: "/tutors/chinasa.jpg",
     href: "/tutors/chinasa",
   },
   {
@@ -20,7 +20,7 @@ const TUTORS = [
     role: "Mathematics & Sciences",
     rating: "4.6",
     reviews: "20 reviews",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=320&q=80",
+    img: "/tutors/oluwatobi.jpg",
     href: "/tutors/oluwatobi",
   },
   {
@@ -28,7 +28,7 @@ const TUTORS = [
     role: "Expert Mathematics Teacher",
     rating: "5",
     reviews: "8 reviews",
-    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=320&q=80",
+    img: "/tutors/olanike.jpg",
     href: "/tutors",
   },
   {
@@ -36,7 +36,7 @@ const TUTORS = [
     role: "GMAT & Test Prep Tutor",
     rating: "4.8",
     reviews: "15 reviews",
-    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=320&q=80",
+    img: "/tutors/adewale.jpg",
     href: "/tutors",
   },
   {
@@ -44,7 +44,7 @@ const TUTORS = [
     role: "German Language Tutor",
     rating: "4.9",
     reviews: "11 reviews",
-    img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=320&q=80",
+    img: "/tutors/judith.jpg",
     href: "/tutors",
   },
   {
@@ -52,7 +52,7 @@ const TUTORS = [
     role: "Fashion Design Tutor",
     rating: "4.7",
     reviews: "9 reviews",
-    img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=320&q=80",
+    img: "/tutors/demilola.jpg",
     href: "/tutors",
   },
 ];
