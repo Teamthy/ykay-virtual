@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -32,9 +34,15 @@ type PaystackProvider struct {
 }
 
 func NewPaystack(secret string) *PaystackProvider {
+	base := "https://api.paystack.co"
+	// PAYSTACK_BASE_URL — staging sandbox override (vendor sandbox, gateway
+	// mock, or a local simulator). Never set in production.
+	if v := os.Getenv("PAYSTACK_BASE_URL"); v != "" {
+		base = strings.TrimRight(v, "/")
+	}
 	return &PaystackProvider{
 		Secret:     secret,
-		BaseURL:    "https://api.paystack.co",
+		BaseURL:    base,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -105,9 +113,14 @@ type FlutterwaveProvider struct {
 }
 
 func NewFlutterwave(secret string) *FlutterwaveProvider {
+	base := "https://api.flutterwave.com/v3"
+	// FLUTTERWAVE_BASE_URL — staging sandbox override (see NewPaystack).
+	if v := os.Getenv("FLUTTERWAVE_BASE_URL"); v != "" {
+		base = strings.TrimRight(v, "/")
+	}
 	return &FlutterwaveProvider{
 		Secret:     secret,
-		BaseURL:    "https://api.flutterwave.com/v3",
+		BaseURL:    base,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }

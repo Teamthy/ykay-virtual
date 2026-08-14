@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"ykay-virtual/internal/domain/chat"
@@ -25,10 +26,56 @@ import (
 
 const geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent"
 
+// FallbackReply — canned assistant message when the AI budget is exhausted
+// or the provider is unavailable (G4.3: degrade, never fail the chat).
+const FallbackReply = "I'm briefly unavailable right now — a human from the NUVORA team will pick this up shortly. You can also email support@nuvora.com."
+
+// AIGuard — per-request token cap + daily budget tracker (G4.3).
+// The counter is process-local (fine for a single-instance pilot; move to
+// Redis/atomic when the API scales horizontally). Budget resets daily UTC.
+type AIGuard struct {
+	mu          sync.Mutex
+	day         string
+	used        int
+	dailyBudget int
+}
+
+func NewAIGuard(dailyBudget int) *AIGuard {
+	if dailyBudget <= 0 {
+		dailyBudget = 200000
+	}
+	return &AIGuard{dailyBudget: dailyBudget}
+}
+
+// TrySpend reserves n tokens against the daily budget; false = exhausted.
+func (g *AIGuard) TrySpend(n int) bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	today := time.Now().UTC().Format("2006-01-02")
+	if g.day != today {
+		g.day = today
+		g.used = 0
+	}
+	if g.used+n > g.dailyBudget {
+		return false
+	}
+	g.used += n
+	return true
+}
+
+// Used reports tokens spent today (observability/tests).
+func (g *AIGuard) Used() int {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.used
+}
+
 type GeminiProvider struct {
-	apiKey string
-	model  string
-	client *http.Client
+	apiKey    string
+	model     string
+	client    *http.Client
+	maxTokens int      // per-request output cap
+	guard     *AIGuard // daily budget (nil = uncapped)
 }
 
 func NewGeminiProvider(apiKey, model string) *GeminiProvider {
@@ -36,15 +83,28 @@ func NewGeminiProvider(apiKey, model string) *GeminiProvider {
 		model = "gemini-2.0-flash"
 	}
 	return &GeminiProvider{
-		apiKey: apiKey,
-		model:  model,
-		client: &http.Client{Timeout: 30 * time.Second},
+		apiKey:    apiKey,
+		model:     model,
+		client:    &http.Client{Timeout: 30 * time.Second},
+		maxTokens: 500,
 	}
+}
+
+// WithGuard applies the G4.3 guardrails: per-request token cap + daily budget.
+func (g *GeminiProvider) WithGuard(maxTokensPerRequest, dailyBudgetTokens int) *GeminiProvider {
+	if maxTokensPerRequest > 0 {
+		g.maxTokens = maxTokensPerRequest
+	}
+	g.guard = NewAIGuard(dailyBudgetTokens)
+	return g
 }
 
 func (g *GeminiProvider) Reply(ctx context.Context, history []chat.Message, grounding string) (string, error) {
 	if g.apiKey == "" {
 		return "", fmt.Errorf("gemini: no API key configured")
+	}
+	if g.guard != nil && !g.guard.TrySpend(g.maxTokens) {
+		return FallbackReply, nil // budget exhausted → canned human-handoff reply
 	}
 
 	system := "You are Nuvora, the friendly AI assistant for NUVORA, a Nigerian/British " +
@@ -74,7 +134,7 @@ func (g *GeminiProvider) Reply(ctx context.Context, history []chat.Message, grou
 		"contents":          contents,
 		"generationConfig": map[string]any{
 			"temperature":     0.4,
-			"maxOutputTokens": 500,
+			"maxOutputTokens": g.maxTokens,
 		},
 	}
 	raw, err := json.Marshal(body)

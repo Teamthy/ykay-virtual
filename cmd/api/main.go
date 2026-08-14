@@ -31,6 +31,7 @@ import (
 	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
+	"ykay-virtual/internal/meeting"
 	"ykay-virtual/internal/middleware"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
@@ -40,6 +41,9 @@ import (
 	"ykay-virtual/internal/storage"
 	"ykay-virtual/internal/telemetry"
 	httpapi "ykay-virtual/internal/transport/http"
+	"ykay-virtual/internal/worker"
+
+	goredis "github.com/redis/go-redis/v9"
 )
 
 const Version = "0.4.0"
@@ -98,6 +102,7 @@ type Repositories struct {
 	LessonAdmin     booking.LessonAdminRepository
 	Chat            chat.ThreadRepository
 	Devices         identity.DeviceRepository
+	Meeting         service.LessonMeetingRepo
 	StorageBackend  string // "postgres" | "memory"
 }
 
@@ -120,8 +125,20 @@ func main() {
 	// --- Cache: Redis real → InMemory fallback (AGENTS.md) ---
 	cacheBackend := setupCache(ctx, cfg.RedisURL)
 
-	store := storage.NewLocalStorage()
-	_ = store
+	// --- Object storage: real S3/MinIO when configured, local otherwise.
+	// In dev the guard wraps the SAME LocalStorage instance that serves the
+	// /objects route, so HMAC presign signatures match. ---
+	localStore := storage.NewLocalStorage()
+	var store storage.Storage = localStore
+	if os.Getenv("S3_ENDPOINT") != "" {
+		guarded, gErr := storage.NewGuardedStorageFromEnv()
+		if gErr != nil {
+			log.Fatalf("storage: %v", gErr)
+		}
+		store = guarded
+	} else {
+		store = storage.NewUploadGuard(localStore, nil, 0)
+	}
 
 	// --- Repositories: Postgres → in-memory fallback (dev mode) ---
 	repos, readyCheck := setupRepositories(ctx, cfg)
@@ -138,6 +155,12 @@ func main() {
 	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit).
 		WithAuthTokens(repos.AuthTokens).
 		WithStudentProfiles(repos.Students)
+
+	// --- Durable dispatch queue (G4.1): Redis up → outbound email/SMS/push
+	// jobs enqueue for the worker; down → synchronous direct delivery. ---
+	if jobQueue := setupJobQueue(cfg.RedisURL); jobQueue != nil {
+		authSvc.WithQueue(jobQueue)
+	}
 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
@@ -197,7 +220,8 @@ func main() {
 	// --- AI assistant (phase 33) ---
 	chatSvc := service.NewChatService(repos.Chat, supportSvc, repos.Users)
 	if cfg.ChatbotEnabled && cfg.GeminiAPIKey != "" {
-		chatSvc.WithProvider(service.NewGeminiProvider(cfg.GeminiAPIKey, cfg.GeminiModel))
+		chatSvc.WithProvider(service.NewGeminiProvider(cfg.GeminiAPIKey, cfg.GeminiModel).
+			WithGuard(cfg.AIMaxTokensPerRequest, cfg.AIDailyBudgetTokens))
 		chatSvc.WithContextBuilder(buildChatContext(programmeSvc, cohortSvc, tutorSvc))
 	}
 	pushSvc := service.NewPushService(repos.Devices, service.NewExpoPushSender(cfg.ExpoAccessToken))
@@ -211,6 +235,14 @@ func main() {
 	// --- Transport ---
 	// G1: object-level authorization — profile IDs resolve through the session.
 	profileAuthz := httpapi.NewProfileAuthorizer(repos.Students, repos.Vetting)
+
+	// --- Meeting links (G4.2): stub in dev, Whereby when configured ---
+	meetingProvider := meeting.Provider(meeting.StubMeetingProvider{})
+	if strings.EqualFold(cfg.MeetingProvider, "whereby") && cfg.WherebyAPIKey != "" {
+		meetingProvider = meeting.NewWhereby(cfg.WherebyAPIKey)
+	}
+	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
+
 	handlers := &httpapi.Handlers{
 		Subjects:   httpapi.NewSubjectHandler(subjectSvc),
 		Tutors:     httpapi.NewTutorHandler(tutorSvc),
@@ -232,13 +264,14 @@ func main() {
 		Support:        httpapi.NewSupportHandler(supportSvc),
 		Growth:         httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
 		LessonOps:      httpapi.NewLessonOpsHandler(lessonSvc),
+		Meeting:        httpapi.NewMeetingHandler(meetingSvc, profileAuthz),
 		Chat:           chatHandler,
 		Devices:        deviceHandler,
 		Account:        accountHandler,
 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
 		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
-		Objects:        httpapi.NewObjectHandler(store),
+		Objects:        httpapi.NewObjectHandler(localStore),
 	}
 	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth, readyCheck, cfg.Environment == "production")
 
@@ -276,6 +309,25 @@ func setupCache(ctx context.Context, redisURL string) cache.Cache {
 	}
 	log.Println("cache: redis unavailable — falling back to in-memory cache")
 	return cache.NewInMemoryCache()
+}
+
+// setupJobQueue — enqueue-side durable queue for the API (G4.1). Returns
+// nil when Redis is unreachable (synchronous fallback everywhere).
+func setupJobQueue(redisURL string) worker.Queue {
+	opts, err := goredis.ParseURL(redisURL)
+	if err != nil {
+		return nil
+	}
+	client := goredis.NewClient(opts)
+	pingCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := client.Ping(pingCtx).Err(); err != nil {
+		_ = client.Close()
+		log.Println("jobs: redis unavailable — direct dispatch (no queue)")
+		return nil
+	}
+	log.Println("jobs: redis queue connected — outbound messages enqueue for the worker")
+	return worker.NewRedisQueue(client)
 }
 
 // getEnvDefault — env value or fallback (demo credentials are overridable;
@@ -359,6 +411,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Devices:         memory.NewDeviceMemory(),
 			CohortAdmin:     store.Cohorts,
 			LessonAdmin:     store.Lessons,
+			Meeting:         memory.NewMeetingMemory(store.Lessons),
 			StorageBackend:  "memory",
 		}, func() error { return nil } // in-memory store is always "ready"
 	}
@@ -415,6 +468,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Devices:         postgres.NewDeviceRepo(pg.DB()),
 		CohortAdmin:     postgres.NewCohortRepo(pg.DB()),
 		LessonAdmin:     postgres.NewLessonRepo(pg.DB()),
+		Meeting:         postgres.NewMeetingRepo(pg.DB()),
 		StorageBackend:  "postgres",
 	}, func() error { return pg.DB().PingContext(ctx) }
 }
@@ -440,14 +494,25 @@ var _ middleware.SessionResolver = (*sessionResolverAdapter)(nil)
 // Postgres.
 func seedMemoryTutors(store *memory.MemoryStore) {
 	oluwatobi := uuid.MustParse("00000000-0000-0000-0000-000000000102")
+	demoTutorUser := uuid.MustParse("00000000-0000-0000-0000-0000000000a3")
 	store.Tutors.Seed(tutor.TutorSearchResult{
 		Profile: tutor.TutorProfile{
-			ID: oluwatobi, Slug: "oluwatobi", DisplayName: "Oluwatobi",
+			ID: oluwatobi, UserID: demoTutorUser, Slug: "oluwatobi", DisplayName: "Oluwatobi",
 			Status: tutor.TutorStatusApproved, IsPublic: true,
 			RatingAvg: 4.6, RatingCount: 20, RankingScore: 95.2,
 			AcceptsOnline: true, AcceptsInPerson: true,
 		},
 		Subjects: []string{"Mathematics", "Physics"}, SubjectSlugs: []string{"mathematics", "physics"},
+	})
+	// Mirror into the vetting store so the demo tutor's SESSION resolves to
+	// this profile (G1.2: ResolveTutor → GetProfileByUserID). Without this
+	// link the demo tutor's own-lesson/earnings surfaces 403 in dev.
+	store.Vetting.SeedProfile(&tutor.TutorProfile{
+		ID: oluwatobi, UserID: demoTutorUser, Slug: "oluwatobi",
+		DisplayName: "Oluwatobi", Status: tutor.TutorStatusApproved, IsPublic: true,
+		RatingAvg: 4.6, RatingCount: 20, RankingScore: 95.2, Currency: "NGN",
+		Timezone: "Africa/Lagos", AcceptsOnline: true, AcceptsInPerson: true,
+		CreatedAt: time.Now(), UpdatedAt: time.Now(),
 	})
 	chinasa := uuid.MustParse("00000000-0000-0000-0000-000000000101")
 	store.Tutors.Seed(tutor.TutorSearchResult{

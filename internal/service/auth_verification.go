@@ -58,7 +58,7 @@ func (s *AuthService) RequestEmailVerification(ctx context.Context, email string
 		return err
 	}
 	link := fmt.Sprintf("%s/verify-email?token=%s", stringsTrimSlash(siteURL), url.QueryEscape(raw))
-	return s.email.Send(ctx, user.Email, "Verify your NUVORA email",
+	return s.sendEmail(ctx, user.Email, "Verify your NUVORA email",
 		notification.BrandEmail(
 			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#111111;\">Welcome to NUVORA</h1>"+
 				"<p style=\"margin:0 0 16px;\">Hi,</p>"+
@@ -138,7 +138,7 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email, siteURL s
 		return err
 	}
 	link := fmt.Sprintf("%s/reset-password?token=%s", stringsTrimSlash(siteURL), url.QueryEscape(raw))
-	return s.email.Send(ctx, user.Email, "Reset your NUVORA password",
+	return s.sendEmail(ctx, user.Email, "Reset your NUVORA password",
 		notification.BrandEmail(
 			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#111111;\">Reset your password</h1>"+
 				"<p style=\"margin:0 0 16px;\">Hi,</p>"+

@@ -15,6 +15,7 @@ import (
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/notification"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
 	"ykay-virtual/internal/repository/memory"
@@ -55,6 +56,8 @@ type repos struct {
 	escrowRead payment.EscrowHoldRepository
 	auditRepo  identity.AuditLogRepository
 	learning   learning.AssessmentRepository
+	devices    identity.DeviceRepository
+	users      identity.UserRepository
 }
 
 func main() {
@@ -74,10 +77,28 @@ func main() {
 	paymentSvc := service.NewPaymentService(r.uowFactory, providers, audit, r.escrowRead)
 	vettingSvc := service.NewVettingService(r.uowFactory, storage.NewLocalStorage(), audit, nil, nil)
 
+	// --- Notification dispatch (G4): email/SMS/push adapters ---
+	pushSvc := service.NewPushService(r.devices, service.NewExpoPushSender(cfg.ExpoAccessToken))
+	dispatchSvc := service.NewDispatchService(
+		notification.NewEmailSender(),
+		notification.NewSMSSender(),
+		pushSvc,
+		r.users,
+	)
+
 	// --- Durable job queue (G3.1) ---
 	// Redis-backed with retries + dead-letter; consumers are idempotent.
 	if redisClient := newRedisClient(cfg.RedisURL); redisClient != nil {
 		queue := worker.NewRedisQueue(redisClient)
+		queue.Register(worker.JobSendEmail, func(jctx context.Context, job worker.Job) error {
+			return dispatchSvc.HandleSendEmail(jctx, job.Payload)
+		})
+		queue.Register(worker.JobSendSMS, func(jctx context.Context, job worker.Job) error {
+			return dispatchSvc.HandleSendSMS(jctx, job.Payload)
+		})
+		queue.Register(worker.JobSendPush, func(jctx context.Context, job worker.Job) error {
+			return dispatchSvc.HandleSendPush(jctx, job.Payload)
+		})
 		queue.Register(worker.JobExpireStaleBookingHolds, func(jctx context.Context, _ worker.Job) error {
 			n, err := paymentSvc.ExpireStaleHolds(jctx, 200)
 			if err == nil && n > 0 {
@@ -231,6 +252,8 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 			escrowRead: store.Escrow,
 			auditRepo:  store.AuditLogs,
 			learning:   store.Learning,
+			devices:    memory.NewDeviceMemory(),
+			users:      store.Users,
 		}
 	}
 	_ = ctx
@@ -239,5 +262,7 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 		escrowRead: postgres.NewEscrowHoldRepo(pg.DB()),
 		auditRepo:  postgres.NewAuditLogRepo(pg.DB()),
 		learning:   postgres.NewAssessmentRepo(pg.DB()),
+		devices:    postgres.NewDeviceRepo(pg.DB()),
+		users:      postgres.NewUserRepo(pg.DB()),
 	}
 }
