@@ -90,8 +90,10 @@ assert_code "register parent" 201 "$c"
 c=$(req "$J_TUTOR" POST /auth/register '{"email":"e2e-tutor@test.com","password":"password123","roles":["TUTOR"]}')
 assert_code "register tutor" 201 "$c"
 
+# CF-1 security regression: self-service SUPER_ADMIN registration must be
+# rejected (previously an anonymous attacker could self-escalate).
 c=$(req "$J_ADMIN" POST /auth/register '{"email":"e2e-admin@test.com","password":"password123","roles":["SUPER_ADMIN"]}')
-assert_code "register admin" 201 "$c"
+assert_code "register admin rejected (no self-escalation)" 403 "$c"
 
 c=$(req "$J_PARENT" POST /auth/login '{"email":"e2e-parent@test.com","password":"password123"}')
 assert_code "login parent" 200 "$c"
@@ -99,8 +101,11 @@ assert_code "login parent" 200 "$c"
 c=$(req "$J_TUTOR" POST /auth/login '{"email":"e2e-tutor@test.com","password":"password123"}')
 assert_code "login tutor" 200 "$c"
 
-c=$(req "$J_ADMIN" POST /auth/login '{"email":"e2e-admin@test.com","password":"password123"}')
-assert_code "login admin" 200 "$c"
+# Admin flows authenticate as the SEEDED demo admin (e2e.sh boots in-memory
+# SEED_DEMO_DATA=true mode, which creates admin@nuvora.com / password123 as
+# SUPER_ADMIN). Self-registering an admin is deliberately impossible.
+c=$(req "$J_ADMIN" POST /auth/login '{"email":"admin@nuvora.com","password":"password123"}')
+assert_code "login admin (seeded demo)" 200 "$c"
 
 c=$(req /dev/null POST /auth/login '{"email":"e2e-parent@test.com","password":"wrong-pass"}')
 assert_code "wrong password → 401" 401 "$c"

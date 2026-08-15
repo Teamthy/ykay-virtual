@@ -120,6 +120,9 @@ jobs:
         working-directory: client
         run: |
           set -e
+          # Install the web app dependencies BEFORE build — without `npm ci`,
+          # `next` is not on PATH and `npm run build` fails with "next: not found".
+          npm ci --no-audit --no-fund
           # Pre-build the API binary so the health window isn't racing a
           # cold `go run` compile.
           (cd .. && go build -o /tmp/nuvora-api ./cmd/api)
@@ -198,10 +201,14 @@ jobs:
         run: |
           # Mount at /etc/prometheus: prometheus.yml references its rules at
           # /etc/prometheus/alerts.yml (the path the compose service uses).
+          # Use the explicit /bin/promtool path: the prom/prometheus image
+          # ENTRYPOINT is /bin/prometheus, so passing `promtool` as a bare
+          # argument is consumed as a prometheus subcommand and fails with
+          # "unexpected promtool". /bin/promtool is a separate binary.
           docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" prom/prometheus:v2.53.0 \
-            promtool check config /etc/prometheus/prometheus.yml
+            /bin/promtool check config /etc/prometheus/prometheus.yml
           docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" prom/prometheus:v2.53.0 \
-            promtool check rules /etc/prometheus/alerts.yml
+            /bin/promtool check rules /etc/prometheus/alerts.yml
       - name: Validate Grafana dashboard JSON
         run: python3 -m json.tool deploy/grafana/dashboards/nuvora-api.json > /dev/null
       - name: Validate production compose stack
