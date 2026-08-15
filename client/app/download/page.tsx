@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buildMetadata } from "@/lib/seo";
+import { DownloadHero } from "@/components/layout/DownloadHero";
 
 export const metadata: Metadata = buildMetadata({
   title: "Download the NUVORA Android App",
@@ -16,19 +17,8 @@ const APK_URL = "/nuvora-app.apk";
 
 export default function DownloadPage() {
   return (
-    <main className="min-h-screen bg-[#FFFCF5] pb-16 dark:bg-[#0B1220]">
-      <header className="border-b border-ink-100 bg-white dark:border-ink-700 dark:bg-[#141C2E]">
-        <div className="mx-auto max-w-3xl px-6 py-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold-dark">NUVORA mobile</p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy dark:text-white">
-            Get the Android app
-          </h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-ink-500">
-            Learn anywhere — tutors, live cohorts, quizzes, progress reports and the AI assistant
-            in one app. This is the direct APK download (Play Store listing coming soon).
-          </p>
-        </div>
-      </header>
+    <main className="relative min-h-screen bg-[#FFFCF5] pb-16 dark:bg-[#0B1220]">
+      <DownloadHero />
 
       <div className="mx-auto max-w-3xl px-6 py-10">
         <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center shadow-sm dark:border-ink-700 dark:bg-[#141C2E]">

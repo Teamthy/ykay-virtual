@@ -1,0 +1,450 @@
+diff --git a/client/app/download/page.tsx b/client/app/download/page.tsx
+index edf92d8..3ce5dbe 100644
+--- a/client/app/download/page.tsx
++++ b/client/app/download/page.tsx
+@@ -1,6 +1,7 @@
+ import type { Metadata } from "next";
+ import Link from "next/link";
+ import { buildMetadata } from "@/lib/seo";
++import { DownloadHero } from "@/components/layout/DownloadHero";
+ 
+ export const metadata: Metadata = buildMetadata({
+   title: "Download the NUVORA Android App",
+@@ -16,19 +17,8 @@ const APK_URL = "/nuvora-app.apk";
+ 
+ export default function DownloadPage() {
+   return (
+-    <main className="min-h-screen bg-[#FFFCF5] pb-16 dark:bg-[#0B1220]">
+-      <header className="border-b border-ink-100 bg-white dark:border-ink-700 dark:bg-[#141C2E]">
+-        <div className="mx-auto max-w-3xl px-6 py-10 text-center">
+-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold-dark">NUVORA mobile</p>
+-          <h1 className="mt-2 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy dark:text-white">
+-            Get the Android app
+-          </h1>
+-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-ink-500">
+-            Learn anywhere — tutors, live cohorts, quizzes, progress reports and the AI assistant
+-            in one app. This is the direct APK download (Play Store listing coming soon).
+-          </p>
+-        </div>
+-      </header>
++    <main className="relative min-h-screen bg-[#FFFCF5] pb-16 dark:bg-[#0B1220]">
++      <DownloadHero />
+ 
+       <div className="mx-auto max-w-3xl px-6 py-10">
+         <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center shadow-sm dark:border-ink-700 dark:bg-[#141C2E]">
+diff --git a/client/app/layout.tsx b/client/app/layout.tsx
+index 7d6c456..4e552c8 100644
+--- a/client/app/layout.tsx
++++ b/client/app/layout.tsx
+@@ -1,6 +1,6 @@
+ import "./globals.css";
+ import type { Metadata } from "next";
+-import { Anton, DM_Sans } from "next/font/google";
++import { Anton, DM_Sans, Poppins } from "next/font/google";
+ import { Header } from "@/components/layout/Header";
+ import { Footer } from "@/components/layout/Footer";
+ import { ChatWidget } from "@/components/layout/ChatWidget";
+@@ -61,10 +61,17 @@ const dmSans = DM_Sans({
+   display: "swap",
+ });
+ 
++const poppins = Poppins({
++  subsets: ["latin"],
++  weight: ["400", "500", "600", "700", "800"],
++  variable: "--font-poppins",
++  display: "swap",
++});
++
+ export default function RootLayout({ children }: { children: React.ReactNode }) {
+   const orgLd = organizationJsonLd();
+   return (
+-    <html lang="en" className={`${anton.variable} ${dmSans.variable}`}>
++    <html lang="en" className={`${anton.variable} ${dmSans.variable} ${poppins.variable}`}>
+       <head>
+         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
+       </head>
+diff --git a/client/components/layout/DownloadHero.tsx b/client/components/layout/DownloadHero.tsx
+new file mode 100644
+index 0000000..6914289
+--- /dev/null
++++ b/client/components/layout/DownloadHero.tsx
+@@ -0,0 +1,93 @@
++import Link from "next/link";
++
++// DownloadHero — "NUVORA on the go" hero, matching the PrebuiltUI app-download
++// template (gradient grid background, Poppins type, Apple/Google store CTAs,
++// and a small social-proof avatar row). Replaces the old plain header on
++// /download.
++
++const GRADIENT_BG =
++  "url('https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/gradient-bg-with-grid.png')";
++
++const AVATARS = [
++  "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200",
++  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200",
++  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&h=200&auto=format&fit=crop",
++  "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200&auto=format&fit=crop&q=60",
++  "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&auto=format&fit=crop&q=60",
++];
++
++const APK_URL = "/nuvora-app.apk";
++
++export function DownloadHero() {
++  return (
++    <section className="w-full bg-cover bg-center bg-no-repeat pb-32 font-poppins text-sm text-slate-800 md:pb-44">
++      <div
++        className="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat"
++        style={{ backgroundImage: GRADIENT_BG }}
++        aria-hidden
++      />
++      <div className="mx-auto mt-12 flex max-w-6xl flex-col-reverse gap-10 px-4 md:mt-32 md:flex-row md:px-16 lg:px-24 xl:px-32">
++        <div className="max-w-xl text-center md:text-left">
++          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">NUVORA mobile</p>
++          <h1 className="mt-4 text-4xl font-semibold text-slate-900 md:text-6xl/[76px]">
++            Download NUVORA on the go
++          </h1>
++          <p className="mx-auto mt-6 max-w-md text-sm text-slate-600 md:mx-0 md:text-base">
++            Learn anywhere — tutors, live cohorts, quizzes, progress reports and the AI assistant in one app.
++          </p>
++          <div className="mt-6 flex items-center justify-center gap-4 md:justify-start">
++            <Link href={APK_URL} download aria-label="Download the Android APK">
++              <img
++                className="w-40 rounded-lg md:w-44"
++                src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/appDownload/googlePlayBtn.svg"
++                alt="Get it on Google Play"
++              />
++            </Link>
++            <button
++              type="button"
++              aria-label="Apple App Store (coming soon)"
++              className="opacity-60"
++              title="App Store listing coming soon — use the Android APK for now."
++            >
++              <img
++                className="w-40 rounded-lg md:w-44"
++                src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/appDownload/appleStoreBtn.svg"
++                alt="Download on the App Store"
++              />
++            </button>
++          </div>
++          <div className="mt-9 flex items-center justify-center gap-4 md:justify-start">
++            <div className="flex -space-x-3.5 pr-3">
++              {AVATARS.map((src, i) => (
++                <img
++                  key={i}
++                  src={src}
++                  alt=""
++                  className="size-10 rounded-full border-2 border-white transition hover:-translate-y-px"
++                  style={{ zIndex: i + 1 }}
++                />
++              ))}
++            </div>
++            <div className="text-left">
++              <div className="flex items-center gap-px">
++                {Array.from({ length: 5 }).map((_, i) => (
++                  <svg key={i} width="13" height="12" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
++                    <path d="M5.85536 0.463527C6.00504 0.00287118 6.65674 0.00287028 6.80642 0.463526L7.82681 3.60397C7.89375 3.80998 8.08572 3.94946 8.30234 3.94946H11.6044C12.0888 3.94946 12.2901 4.56926 11.8983 4.85397L9.22687 6.79486C9.05162 6.92219 8.97829 7.14787 9.04523 7.35388L10.0656 10.4943C10.2153 10.955 9.68806 11.338 9.2962 11.0533L6.62478 9.11244C6.44954 8.98512 6.21224 8.98512 6.037 9.11244L3.36558 11.0533C2.97372 11.338 2.44648 10.955 2.59616 10.4943L3.61655 7.35388C3.68349 7.14787 3.61016 6.92219 3.43491 6.79486L0.763497 4.85397C0.37164 4.56927 0.573027 3.94946 1.05739 3.94946H4.35944C4.57606 3.94946 4.76803 3.80998 4.83497 3.60397L5.85536 0.463527Z" fill="#FF8F20" />
++                  </svg>
++                ))}
++              </div>
++              <p className="text-sm text-slate-500">Loved by 1,000+ learners</p>
++            </div>
++          </div>
++        </div>
++        <div className="mx-auto w-full max-w-xs md:max-w-sm">
++          <img
++            className="h-auto w-full"
++            src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/users-group.png"
++            alt="NUVORA learners"
++          />
++        </div>
++      </div>
++    </section>
++  );
++}
+diff --git a/client/components/layout/PageHero.tsx b/client/components/layout/PageHero.tsx
+index 293134e..b3488a0 100644
+--- a/client/components/layout/PageHero.tsx
++++ b/client/components/layout/PageHero.tsx
+@@ -1,52 +1,71 @@
+ import Link from "next/link";
+ import { cn } from "@/lib/utils";
+ 
+-// PageHero — inner-page hero on the PrebuiltUI grid template (Batch 3):
+-// grid-pattern background, breadcrumbs, optional eyebrow pill, oversized
+-// headline, subtitle, CTA row. No photo hotlinks; the grid is an inline
+-// SVG. (The HOMEPAGE keeps its own image slider — this template is for
+-// every other page, per the brand directive.)
++// PageHero — the PrebuiltUI hero template, applied to EVERY non-home page
++// (the HOMEPAGE keeps its own image slider). Matches the reference template
++// exactly: grid background, Poppins type, optional announcement pill, oversized
++// headline, subtitle and a CTA row. The app's global Header/MobileNav render
++// separately (the template's own nav is NOT duplicated here).
+ 
+ const GRID_BG =
+-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M40 0H0v40' fill='none' stroke='%23F4B400' stroke-opacity='0.08' stroke-width='1'/%3E%3C/svg%3E\")";
++  "url('https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/gridBackground.png')";
+ 
+ export type Crumb = { name: string; href?: string };
++export type HeroCTA = { label: string; href: string; primary?: boolean };
+ 
+ export type PageHeroProps = {
+   title: string;
+   subtitle?: string;
++  /** Small pill shown above the headline ("New announcement…"). */
++  announcement?: string;
++  /** Eyebrow pill (kept for existing callers that pass `eyebrow`). */
+   eyebrow?: string;
+   crumbs?: Crumb[];
++  ctas?: HeroCTA[];
+   align?: "left" | "center";
+   children?: React.ReactNode;
+   className?: string;
+ };
+ 
+-export function PageHero({ title, subtitle, eyebrow, crumbs, align = "left", children, className }: PageHeroProps) {
++export function PageHero({
++  title,
++  subtitle,
++  announcement,
++  eyebrow,
++  crumbs,
++  ctas,
++  align = "center",
++  children,
++  className,
++}: PageHeroProps) {
++  const pill = announcement ?? eyebrow;
+   const centered = align === "center";
+   return (
+     <section
+-      className={cn("w-full bg-no-repeat bg-center", className)}
+-      style={{ backgroundImage: GRID_BG, backgroundColor: "#FFFCF5" }}
++      className={cn(
++        "w-full bg-no-repeat bg-cover bg-center font-poppins text-sm",
++        className
++      )}
++      style={{ backgroundImage: GRID_BG }}
+     >
+       <div
+         className={cn(
+-          "mx-auto max-w-[1400px] px-6 py-12 md:px-10 md:py-16",
++          "mx-auto max-w-[1100px] px-6 pb-28 pt-16 md:pb-40 md:pt-24",
+           centered && "flex flex-col items-center text-center"
+         )}
+       >
+         {crumbs && crumbs.length > 0 && (
+-          <nav aria-label="Breadcrumb" className="mb-4 text-xs text-ink-500">
++          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-ink-500">
+             <ol className="flex flex-wrap items-center gap-1.5">
+               {crumbs.map((c, i) => (
+                 <li key={c.name} className="flex items-center gap-1.5">
+                   {i > 0 && <span aria-hidden="true" className="text-ink-300">/</span>}
+                   {c.href ? (
+-                    <Link href={c.href} className="hover:text-brand-gold-dark hover:underline underline-offset-2">
++                    <Link href={c.href} className="hover:text-ink-700 hover:underline underline-offset-2">
+                       {c.name}
+                     </Link>
+                   ) : (
+-                    <span className="font-semibold text-ink-700">{c.name}</span>
++                    <span className="font-medium text-ink-700">{c.name}</span>
+                   )}
+                 </li>
+               ))}
+@@ -54,23 +73,60 @@ export function PageHero({ title, subtitle, eyebrow, crumbs, align = "left", chi
+           </nav>
+         )}
+ 
+-        {eyebrow && (
+-          <p className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark shadow-sm">
+-            {eyebrow}
+-          </p>
++        {pill && (
++          <div
++            className={cn(
++              "flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-ink-700 hover:border-slate-400/70",
++              centered ? "mx-auto" : ""
++            )}
++          >
++            <span>{pill}</span>
++            <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
++              <path d="M3.959 9.5h11.083m0 0L9.501 3.958M15.042 9.5l-5.541 5.54" stroke="#050040" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
++            </svg>
++          </div>
+         )}
+ 
+-        <h1 className={cn("mt-4 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl", centered && "mx-auto max-w-3xl")}>
++        <h1
++          className={cn(
++            "mt-8 text-4xl font-medium tracking-tight text-slate-900 md:text-7xl",
++            centered && "mx-auto max-w-[850px]"
++          )}
++        >
+           {title}
+         </h1>
+ 
+         {subtitle && (
+-          <p className={cn("mt-4 max-w-2xl leading-relaxed text-ink-600", centered && "mx-auto")}>{subtitle}</p>
++          <p className={cn("mt-6 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base", centered && "mx-auto")}>
++            {subtitle}
++          </p>
+         )}
+ 
+-        {children && (
+-          <div className={cn("mt-7 flex flex-wrap gap-3", centered && "justify-center")}>{children}</div>
++        {(ctas && ctas.length > 0) && (
++          <div className={cn("mt-7 flex flex-wrap items-center gap-3", centered && "justify-center")}>
++            {ctas.map((cta) =>
++              cta.primary ? (
++                <Link
++                  key={cta.label}
++                  href={cta.href}
++                  className="rounded-full bg-slate-800 px-6 py-3 font-medium text-white transition hover:bg-black"
++                >
++                  {cta.label}
++                </Link>
++              ) : (
++                <Link
++                  key={cta.label}
++                  href={cta.href}
++                  className="flex items-center gap-2 rounded-full border border-slate-300 px-6 py-3 font-medium transition hover:bg-slate-200/30"
++                >
++                  {cta.label}
++                </Link>
++              )
++            )}
++          </div>
+         )}
++
++        {children && <div className={cn("mt-7 flex flex-wrap gap-3", centered && "justify-center")}>{children}</div>}
+       </div>
+     </section>
+   );
+diff --git a/client/tailwind.config.ts b/client/tailwind.config.ts
+index cb277d8..a27131e 100644
+--- a/client/tailwind.config.ts
++++ b/client/tailwind.config.ts
+@@ -51,6 +51,7 @@ const config: Config = {
+         sans: ["var(--font-body)", "DM Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+         body: ["var(--font-body)", "DM Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+         display: ["var(--font-display)", "Anton", "system-ui", "sans-serif"],
++        poppins: ["var(--font-poppins)", "Poppins", "sans-serif"],
+       },
+       fontSize: {
+         "display-xl": ["56px", { lineHeight: "1.1", letterSpacing: "-1.5px", fontWeight: "800" }],
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index 87446d1..e89873c 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -808,7 +808,13 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
+ 		_ = store.Users.Create(context.Background(), &identity.User{
+ 			ID: u.id, Email: u.email, PasswordHash: string(hash),
+ 			Status: identity.UserStatusActive, Timezone: "Africa/Lagos",
+-			EmailVerifiedAt: &verified, CreatedAt: now, UpdatedAt: now,
++			EmailVerifiedAt: &verified,
++			// OnboardedAt set so demo logins route straight to the role
++			// dashboard instead of the first-time onboarding wizard (G6 fix:
++			// "login not routing properly" — seed accounts were active but not
++			// marked onboarded, so destinationFor sent them to /onboarding).
++			OnboardedAt: &now,
++			CreatedAt:   now, UpdatedAt: now,
+ 		})
+ 		role, _ := store.Roles.FindByName(context.Background(), u.role)
+ 		if role != nil {
+diff --git a/migrations/000034_seed_demo_users.down.sql b/migrations/000034_seed_demo_users.down.sql
+new file mode 100644
+index 0000000..cac5213
+--- /dev/null
++++ b/migrations/000034_seed_demo_users.down.sql
+@@ -0,0 +1,21 @@
++-- 000034 (down) — remove the dev/Staging demo users seeded by the up migration.
++DELETE FROM parent_student_link WHERE parent_user_id IN (
++  '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000b2',
++  '00000000-0000-0000-0000-0000000000b3','00000000-0000-0000-0000-0000000000b4'
++);
++DELETE FROM user_roles WHERE user_id IN (
++  '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000b2',
++  '00000000-0000-0000-0000-0000000000b3','00000000-0000-0000-0000-0000000000b4'
++);
++DELETE FROM tutor_profiles WHERE user_id IN (
++  '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000b2',
++  '00000000-0000-0000-0000-0000000000b3','00000000-0000-0000-0000-0000000000b4'
++);
++DELETE FROM student_profiles WHERE user_id IN (
++  '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000b2',
++  '00000000-0000-0000-0000-0000000000b3','00000000-0000-0000-0000-0000000000b4'
++);
++DELETE FROM users WHERE id IN (
++  '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000b2',
++  '00000000-0000-0000-0000-0000000000b3','00000000-0000-0000-0000-0000000000b4'
++);
+diff --git a/migrations/000034_seed_demo_users.up.sql b/migrations/000034_seed_demo_users.up.sql
+new file mode 100644
+index 0000000..cd3c6dc
+--- /dev/null
++++ b/migrations/000034_seed_demo_users.up.sql
+@@ -0,0 +1,64 @@
++-- 000034 — Seed login-able demo users for every role (Postgres mode).
++--
++-- The earlier fixtures (000019) were retired by 000027 (security hardening:
++-- no default credentials in production). For LOCAL DEV/STAGING convenience this
++-- forward-only migration re-adds fresh demo identities that are ACTIVE,
++-- email-verified AND onboarding-complete, so a developer can log in and land
++-- straight on the right dashboard instead of the email-verification or wizard
++-- screens. This is DEV/STAGING ONLY — never run against production (mirrors
++-- the SEED_DEMO_DATA=true in-memory seed).
++--
++-- Credentials for all four: password123
++--   admin@nuvora.com  → SUPER_ADMIN   (lands on /admin)
++--   parent@nuvora.com → PARENT        (lands on /dashboard)
++--   tutor@nuvora.com  → TUTOR         (lands on /tutor-dashboard)
++--   student@nuvora.com→ STUDENT       (lands on /student-dashboard)
++--
++-- bcrypt hash below is for "password123" (same as the retired 000019 fixtures).
++
++DO $$
++DECLARE
++  pwd TEXT := '$2a$10$L1nxlPVZP1enrb3DrCulHuXRCscyduEgYWl9oPII4o3BJ9i9aCT2y';
++  nowt TIMESTAMPTZ := NOW();
++  uid  UUID;
++BEGIN
++  -- Insert each demo user if the email isn't already taken.
++  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@nuvora.com' AND deleted_at IS NULL) THEN
++    INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
++    VALUES ('00000000-0000-0000-0000-0000000000b1', 'admin@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
++    RETURNING id INTO uid;
++    INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'SUPER_ADMIN';
++  END IF;
++
++  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'parent@nuvora.com' AND deleted_at IS NULL) THEN
++    INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
++    VALUES ('00000000-0000-0000-0000-0000000000b2', 'parent@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
++    RETURNING id INTO uid;
++    INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'PARENT';
++    INSERT INTO student_profiles (id, user_id, first_name, last_name, timezone, guardian_consent, created_at, updated_at)
++    VALUES ('00000000-0000-0000-0000-0000000000c1', uid, 'Ada', 'Bello', 'Africa/Lagos', true, nowt, nowt)
++    ON CONFLICT (id) DO NOTHING;
++    INSERT INTO parent_student_link (id, parent_user_id, student_profile_id, relationship, is_primary, created_at)
++    SELECT uuid_generate_v4(), uid, '00000000-0000-0000-0000-0000000000c1', 'PARENT', true, nowt
++    FROM student_profiles WHERE id = '00000000-0000-0000-0000-0000000000c1';
++  END IF;
++
++  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'tutor@nuvora.com' AND deleted_at IS NULL) THEN
++    INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
++    VALUES ('00000000-0000-0000-0000-0000000000b3', 'tutor@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
++    RETURNING id INTO uid;
++    INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
++    INSERT INTO tutor_profiles (id, user_id, slug, display_name, bio, status, is_public, rating_avg, rating_count, created_at, updated_at)
++    VALUES ('00000000-0000-0000-0000-0000000000c2', uid, 'oluwatobi', 'Oluwatobi', 'Mathematics and Sciences tutor.', 'APPROVED', true, 4.6, 20, nowt, nowt)
++    ON CONFLICT (id) DO NOTHING;
++    INSERT INTO tutor_subjects (tutor_profile_id, subject_id, is_approved)
++    SELECT '00000000-0000-0000-0000-0000000000c2', id, true FROM subjects WHERE slug IN ('mathematics','physics') ON CONFLICT DO NOTHING;
++  END IF;
++
++  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'student@nuvora.com' AND deleted_at IS NULL) THEN
++    INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
++    VALUES ('00000000-0000-0000-0000-0000000000b4', 'student@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
++    RETURNING id INTO uid;
++    INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'STUDENT';
++  END IF;
++END $$;

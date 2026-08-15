@@ -808,7 +808,13 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 		_ = store.Users.Create(context.Background(), &identity.User{
 			ID: u.id, Email: u.email, PasswordHash: string(hash),
 			Status: identity.UserStatusActive, Timezone: "Africa/Lagos",
-			EmailVerifiedAt: &verified, CreatedAt: now, UpdatedAt: now,
+			EmailVerifiedAt: &verified,
+			// OnboardedAt set so demo logins route straight to the role
+			// dashboard instead of the first-time onboarding wizard (G6 fix:
+			// "login not routing properly" — seed accounts were active but not
+			// marked onboarded, so destinationFor sent them to /onboarding).
+			OnboardedAt: &now,
+			CreatedAt:   now, UpdatedAt: now,
 		})
 		role, _ := store.Roles.FindByName(context.Background(), u.role)
 		if role != nil {

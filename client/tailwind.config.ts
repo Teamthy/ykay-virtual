@@ -51,6 +51,7 @@ const config: Config = {
         sans: ["var(--font-body)", "DM Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
         body: ["var(--font-body)", "DM Sans", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
         display: ["var(--font-display)", "Anton", "system-ui", "sans-serif"],
+        poppins: ["var(--font-poppins)", "Poppins", "sans-serif"],
       },
       fontSize: {
         "display-xl": ["56px", { lineHeight: "1.1", letterSpacing: "-1.5px", fontWeight: "800" }],
