@@ -151,7 +151,7 @@ export const examCards = [
   { title: "SATs Prep", href: "/sat" },
   { title: "TOEFL Prep", href: "/ielts-toefl" },
   { title: "PTE Prep", href: "/ielts-toefl" },
-  { title: "ACT Prep", href: "/sat", featured: true, subtitle: "Score 28+ for US Undergraduate Admission" },
+  { title: "ACT Prep", href: "/sat" },
 ];
 
 export const trustLogos = ["MIT | SOLVE", "Forbes", "COBIS", "Cambridge Assessment", "Pearson Edexcel"];

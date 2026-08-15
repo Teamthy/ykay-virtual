@@ -116,10 +116,10 @@ export function Header() {
             </button>
 
             {servicesOpen && (
-              <div className="absolute right-0 top-full z-20 mt-2 w-[700px] overflow-hidden rounded-xl border border-ink-200 bg-white shadow-lg">
-                <div className="grid grid-cols-4">
+              <div className="absolute left-0 right-0 top-full z-20 mt-2 w-[min(92vw,700px)] overflow-hidden rounded-xl border border-ink-200 bg-white shadow-lg sm:left-auto sm:right-0">
+                <div className="grid grid-cols-1 sm:grid-cols-4">
                   {/* Groups */}
-                  <div className="col-span-3 grid grid-cols-2 gap-0.5 p-3">
+                  <div className="grid grid-cols-1 gap-0.5 p-3 sm:col-span-3 sm:grid-cols-2">
                     {SERVICE_GROUPS.map((g) => (
                       <div key={g.title} className="p-2">
                         <span className="ms-2.5 mb-2 block text-xs font-semibold uppercase tracking-wide text-ink-500">
@@ -141,7 +141,7 @@ export function Header() {
                   </div>
 
                   {/* Promo column */}
-                  <div className="col-span-1 flex flex-col bg-ink-50 p-4">
+                  <div className="flex flex-col bg-ink-50 p-4 sm:col-span-1">
                     <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
                       Customer stories
                     </span>

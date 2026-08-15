@@ -85,44 +85,13 @@ export function DownloadAppCTA() {
           </div>
         </div>
 
-        {/* Phone mockup (kept) */}
-        <div className="mx-auto lg:max-w-xs">
-          <div className="relative h-[460px] w-[228px] rounded-[2.6rem] border border-slate-200 bg-white p-3 shadow-2xl">
-            <div className="absolute left-1/2 top-2.5 h-5 w-24 -translate-x-1/2 rounded-full bg-slate-200" />
-            <div className="flex h-full w-full flex-col overflow-hidden rounded-[2rem] bg-white">
-              {/* App header */}
-              <div className="bg-slate-900 px-4 pb-3 pt-7">
-                <div className="flex items-center justify-between">
-                  <span className="font-display text-sm font-bold tracking-[0.15em] text-white">NUVORA</span>
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-amber-400 text-[11px] font-extrabold text-slate-900">K</span>
-                </div>
-                <p className="mt-3 text-lg font-extrabold text-white">Welcome back, Kemi 👋</p>
-                <p className="mt-0.5 text-[11px] text-white/70">What would you like to do today?</p>
-              </div>
-              {/* App cards */}
-              <div className="space-y-2.5 bg-[#FFFCF5] p-4">
-                {[
-                  { icon: "📚", title: "My Learning", desc: "Lessons, resources, assignments" },
-                  { icon: "📝", title: "Quizzes", desc: "Auto-graded assessments" },
-                  { icon: "📈", title: "Progress", desc: "Attendance + tutor reports" },
-                  { icon: "🔔", title: "Notifications", desc: "Reminders and updates", badge: "3" },
-                ].map((c) => (
-                  <div key={c.title} className="flex items-center gap-3 rounded-xl border border-[#E8E4DA] bg-white p-3">
-                    <span className="text-base">{c.icon}</span>
-                    <span className="flex-1">
-                      <span className="block text-xs font-bold text-ink-900">{c.title}</span>
-                      <span className="block text-[10px] text-ink-500">{c.desc}</span>
-                    </span>
-                    {c.badge ? (
-                      <span className="grid h-5 min-w-5 place-items-center rounded-full bg-amber-400 px-1 text-[10px] font-extrabold text-slate-900">
-                        {c.badge}
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        {/* African student image */}
+        <div className="mx-auto w-full max-w-[420px] lg:max-w-md">
+          <img
+            src="/hero/african-student.png"
+            alt="African student with her school bag, learning on the NUVORA app"
+            className="w-full rounded-3xl object-cover shadow-2xl"
+          />
         </div>
       </div>
     </section>

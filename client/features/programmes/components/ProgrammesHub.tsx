@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { listProgrammes, type ProgrammeListParams } from "@/features/programmes/api/list";
 import { ProgrammeCard, type ProgrammeCardData } from "@/features/programmes/components/ProgrammeCard";
+import { hideDemo } from "@/lib/content-filter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
@@ -56,7 +57,7 @@ export function ProgrammesHub() {
     staleTime: 120_000,
   });
 
-  const programmes = (query.data?.pages.flatMap((p) => p.data) ?? []) as ProgrammeCardData[];
+  const programmes = hideDemo((query.data?.pages.flatMap((p) => p.data) ?? []) as ProgrammeCardData[]);
 
   const filterChip = (label: string, value: string, current: string, onChange: (v: string) => void, param: string) => (
     <button

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
+import { hideDemo } from "@/lib/content-filter";
 import { ProgrammeCard, type ProgrammeCardData } from "@/features/programmes/components/ProgrammeCard";
 
 // Home "Popular programmes" (working-doc §8.1): featured first, cards with
@@ -7,8 +8,8 @@ import { ProgrammeCard, type ProgrammeCardData } from "@/features/programmes/com
 export async function PopularProgrammes() {
   let programmes: ProgrammeCardData[] = [];
   try {
-    const res = await apiFetchSSR<ProgrammeCardData[]>("/programmes?page=1&page_size=6&sort=newest");
-    programmes = res.data ?? [];
+    const res = await apiFetchSSR<ProgrammeCardData[]>("/programmes?page=1&page_size=12&sort=newest");
+    programmes = hideDemo(res.data ?? []);
   } catch {
     programmes = [];
   }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
+import { hideDemo } from "@/lib/content-filter";
 import { CohortCard, type CohortCardData } from "@/features/cohorts/components/CohortCard";
 
 // Home "Upcoming cohorts" strip (working-doc §8.1): capacity/status,
@@ -7,6 +8,7 @@ import { CohortCard, type CohortCardData } from "@/features/cohorts/components/C
 
 type Cohort = {
   id: string;
+  slug?: string;
   title: string;
   start_date: string;
   end_date: string;
@@ -22,8 +24,8 @@ type Cohort = {
 export async function UpcomingCohorts() {
   let cohorts: Cohort[] = [];
   try {
-    const res = await apiFetchSSR<Cohort[]>("/cohorts?page=1&page_size=6");
-    cohorts = (res.data ?? []).filter((c) => c.status === "PUBLISHED");
+    const res = await apiFetchSSR<Cohort[]>("/cohorts?page=1&page_size=12");
+    cohorts = hideDemo((res.data ?? []).filter((c) => c.status === "PUBLISHED"));
   } catch {
     cohorts = [];
   }

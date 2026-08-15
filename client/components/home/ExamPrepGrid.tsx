@@ -17,32 +17,13 @@ export function ExamPrepGrid() {
             <Link
               key={i}
               href={card.href}
-              className={cn(
-                "group relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-2xl p-8 text-center transition-all duration-300",
-                card.featured
-                  ? "bg-brand-blue text-white shadow-lift hover:-translate-y-1.5"
-                  : "bg-white text-ink-800 shadow-soft hover:-translate-y-1.5 hover:bg-brand-blue hover:text-white hover:shadow-lift"
-              )}
+              className="group relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-white p-8 text-center text-ink-800 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:bg-brand-blue hover:text-white hover:shadow-lift"
             >
-              {card.featured ? (
-                <>
-                  <div className="text-2xl font-extrabold md:text-[26px]">{card.title}</div>
-                  <div className="mt-3 max-w-[220px] text-xs leading-relaxed opacity-95 md:text-sm">
-                    {card.subtitle}
-                  </div>
-                  <div className="mt-3 rounded-full bg-white px-5 py-1.5 text-xs font-bold text-brand-blue">
-                    Get Started
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-lg font-extrabold md:text-2xl">{card.title}</div>
-                  {/* Revealed on hover — the blue hover with the CTA */}
-                  <div className="mt-3 translate-y-1 rounded-full border border-white/40 px-5 py-1.5 text-xs font-bold opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                    Get Started →
-                  </div>
-                </>
-              )}
+              <div className="text-lg font-extrabold md:text-2xl">{card.title}</div>
+              {/* Revealed on hover — the blue hover with the CTA */}
+              <div className="mt-3 translate-y-1 rounded-full border border-white/40 px-5 py-1.5 text-xs font-bold opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                Get Started →
+              </div>
             </Link>
           ))}
         </div>
