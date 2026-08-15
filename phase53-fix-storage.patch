@@ -1,0 +1,34 @@
+diff --git a/internal/storage/s3.go b/internal/storage/s3.go
+index 2bd5585..a5953b4 100644
+--- a/internal/storage/s3.go
++++ b/internal/storage/s3.go
+@@ -37,15 +37,28 @@ type LocalStorage struct {
+ 	secret  []byte
+ }
+ 
++// devStorageSecret is the signing secret used when YKAY_STORAGE_SECRET is not
++// configured. It is intentionally a well-known, non-secret value: LocalStorage
++// is a development/testing facility and its object-serving route (/objects) is
++// gated OFF in production (NewObjectHandlerForEnvironment), so there is no
++// production file-read exposure. A non-empty secret keeps presigned-URL
++// issuance working in dev and CI without an explicit env var. Operators who
++// want additional isolation can still set YKAY_STORAGE_SECRET explicitly.
++const devStorageSecret = "nuvora-local-dev-secret"
++
+ func NewLocalStorage() *LocalStorage {
+ 	root := os.Getenv("YKAY_STORAGE_ROOT")
+ 	if root == "" {
+ 		root = filepath.Join(os.TempDir(), "ykay-storage")
+ 	}
++	secret := os.Getenv("YKAY_STORAGE_SECRET")
++	if secret == "" {
++		secret = devStorageSecret
++	}
+ 	return &LocalStorage{
+ 		Root:    root,
+ 		BaseURL: os.Getenv("YKAY_STORAGE_BASE_URL"), // e.g. http://localhost:8080
+-		secret:  []byte(os.Getenv("YKAY_STORAGE_SECRET")),
++		secret:  []byte(secret),
+ 	}
+ }
+ 

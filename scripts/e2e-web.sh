@@ -84,14 +84,18 @@ if curl -sf -m 2 "http://localhost:${API_PORT}/health" >/dev/null 2>&1; then
   sleep 1
 fi
 rm -f .e2e-api && "${GO:-go}" build -o .e2e-api ./cmd/api
+# Raise the rate limits for browser E2E: the auth-journey spec runs many
+# auth steps in a burst and would otherwise trip the 40/min auth limiter.
 API_ENV=(PORT="$API_PORT" SEED_DEMO_DATA=true
   PAYSTACK_SECRET="$WEBHOOK_SECRET" FLUTTERWAVE_SECRET="$WEBHOOK_SECRET"
   PAYSTACK_BASE_URL="http://localhost:$GW_PORT" FLUTTERWAVE_BASE_URL="http://localhost:$GW_PORT"
+  AUTH_RATE_LIMIT_PER_MINUTE=100000 RATE_LIMIT_PER_MINUTE=100000
   DATABASE_URL="${DATABASE_URL:-postgres://bad:bad@localhost:5999/none?sslmode=disable}")
 if [ -n "${DATABASE_URL:-}" ] && psql "$DATABASE_URL" -c "SELECT 1" >/dev/null 2>&1; then
   API_ENV=(PORT="$API_PORT" SEED_DEMO_DATA=false
     PAYSTACK_SECRET="$WEBHOOK_SECRET" FLUTTERWAVE_SECRET="$WEBHOOK_SECRET"
     PAYSTACK_BASE_URL="http://localhost:$GW_PORT" FLUTTERWAVE_BASE_URL="http://localhost:$GW_PORT"
+    AUTH_RATE_LIMIT_PER_MINUTE=100000 RATE_LIMIT_PER_MINUTE=100000
     DATABASE_URL="$DATABASE_URL")
   psql "$DATABASE_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" >/dev/null 2>&1
   "${GO:-go}" run ./cmd/migrate --cmd=up >/dev/null

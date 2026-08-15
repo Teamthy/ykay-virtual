@@ -31,7 +31,7 @@ psql "$DBURL" -f scripts/seed-refs.sql
 
 echo "== 3/3 Booting API on :$PORT (postgres mode) =="
 rm -f .e2e-api && "$GO" build -o .e2e-api ./cmd/api
-PORT="$PORT" SEED_DEMO_DATA=false DATABASE_URL="$DBURL" RATE_LIMIT_PER_MINUTE=1000000 ./.e2e-api > /tmp/e2e-api.log 2>&1 &
+PORT="$PORT" SEED_DEMO_DATA=false DATABASE_URL="$DBURL" AUTH_RATE_LIMIT_PER_MINUTE=1000000 RATE_LIMIT_PER_MINUTE=1000000 ./.e2e-api > /tmp/e2e-api.log 2>&1 &
 API_PID=$!
 trap 'kill $API_PID 2>/dev/null || true' EXIT
 for i in $(seq 1 30); do

@@ -45,7 +45,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// RATE_LIMIT_PER_MINUTE tunes the global per-IP window (default 300;
 	// load tests raise it to measure raw throughput — see scripts/loadtest.sh).
 	rl := middleware.NewRateLimiter(RateLimitPerMinute(), time.Minute)
-	authRL := middleware.NewRateLimiter(40, time.Minute) // auth endpoints: 40 req/min per IP (SEC-005)
+	// auth endpoints: 40 req/min per IP by default (SEC-005). Env-tunable via
+	// AUTH_RATE_LIMIT_PER_MINUTE so test harnesses (browser E2E runs many auth
+	// steps in a burst) can raise the window without weakening production
+	// (default stays 40 unless explicitly overridden).
+	authRL := middleware.NewRateLimiter(AuthRateLimitPerMinute(), time.Minute)
 	rt := &Router{
 		mux: mux, rateLimiter: rl, authLimiter: authRL, Version: version,
 		allowedOrigins: allowedOrigins, sessionAuth: sessionAuth,
@@ -358,11 +362,24 @@ type Handlers struct {
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
 func RateLimitPerMinute() int {
-	if v := os.Getenv("RATE_LIMIT_PER_MINUTE"); v != "" {
+	return envInt("RATE_LIMIT_PER_MINUTE", 300)
+}
+
+// AuthRateLimitPerMinute — per-IP rate limit for authentication endpoints
+// (default 40/min, SEC-005). Env-tunable via AUTH_RATE_LIMIT_PER_MINUTE so
+// browser E2E can raise the window for its auth-heavy journey tests.
+func AuthRateLimitPerMinute() int {
+	return envInt("AUTH_RATE_LIMIT_PER_MINUTE", 40)
+}
+
+// envInt reads a positive integer env var, falling back to def on empty/parse
+// failure or non-positive values.
+func envInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
 		var n int
 		if _, err := fmt.Sscanf(v, "%d", &n); err == nil && n > 0 {
 			return n
 		}
 	}
-	return 300
+	return def
 }
