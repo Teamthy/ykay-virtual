@@ -1,5 +1,5 @@
 -- 000034 (down) — remove the dev/Staging demo users seeded by the up migration.
-DELETE FROM parent_student_link WHERE parent_user_id IN (
+DELETE FROM parent_student_links WHERE parent_user_id IN (
   '00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000b2',
   '00000000-0000-0000-0000-0000000000b3','00000000-0000-0000-0000-0000000000b4'
 );

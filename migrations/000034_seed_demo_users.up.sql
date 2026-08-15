@@ -38,7 +38,7 @@ BEGIN
     INSERT INTO student_profiles (id, user_id, first_name, last_name, timezone, guardian_consent, created_at, updated_at)
     VALUES ('00000000-0000-0000-0000-0000000000c1', uid, 'Ada', 'Bello', 'Africa/Lagos', true, nowt, nowt)
     ON CONFLICT (id) DO NOTHING;
-    INSERT INTO parent_student_link (id, parent_user_id, student_profile_id, relationship, is_primary, created_at)
+    INSERT INTO parent_student_links (id, parent_user_id, student_profile_id, relationship, is_primary, created_at)
     SELECT uuid_generate_v4(), uid, '00000000-0000-0000-0000-0000000000c1', 'PARENT', true, nowt
     FROM student_profiles WHERE id = '00000000-0000-0000-0000-0000000000c1';
   END IF;
