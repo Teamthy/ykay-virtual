@@ -1,0 +1,32 @@
+[
+  {
+    "path": ".github/workflows/deploy.yml",
+    "before": "7eaaf5df2c1872e0aa901b175e94a0a8cf50e306390751c5bcca1a17a9c8e57c",
+    "after": "0ddfffab5f817b5018dc94a77aae9fca945fca6345cd4eca935dc45abebd1ae4",
+    "new": false
+  },
+  {
+    "path": "docs/PHASE_53_BATCH2_DELIVERY.md",
+    "before": null,
+    "after": "96259091155fac0ac37dbd059abc81099f8e4929456349c6c413674ada3ed706",
+    "new": true
+  },
+  {
+    "path": "internal/transport/http/dto.go",
+    "before": "cf522358822da2714845991e781fd9f44e02d2747c12586315ec8af56175b9f7",
+    "after": "1d5fca54e8beb32a62d24365d09ff291c58482e1431f3477c864c7ad55d4ae49",
+    "new": false
+  },
+  {
+    "path": "migrations/000033_user_roles_role_index.down.sql",
+    "before": null,
+    "after": "253d0fc78df55c69b7c5379f3599549418d0e9da65169a18e600903cc0191064",
+    "new": true
+  },
+  {
+    "path": "migrations/000033_user_roles_role_index.up.sql",
+    "before": null,
+    "after": "64a916eb01fe4c94cd808610e90a081dc031291854b2d461fe82ef037c9e42cd",
+    "new": true
+  }
+]
