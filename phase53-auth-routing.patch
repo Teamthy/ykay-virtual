@@ -1,0 +1,41 @@
+diff --git a/client/app/onboarding/page.tsx b/client/app/onboarding/page.tsx
+index f91595a..4e46fea 100644
+--- a/client/app/onboarding/page.tsx
++++ b/client/app/onboarding/page.tsx
+@@ -902,24 +902,19 @@ function OnboardingInner() {
+     }
+   };
+ 
+-  // Logged-in guard for steps ≥ 3 (session is created in step 2).
++  // Session-lost recovery for steps ≥ 3 (session is created in step 2).
++  // If a user reaches a signed-in-only step without a session, they already
++  // have an account (their email was verified earlier) — route them to login
++  // so they can sign back in and continue, instead of trapping them on a
++  // dead-end "Hold on — sign in first" screen.
++  useEffect(() => {
++    if (!sessionLoading && !user && step >= 3 && step <= 6) {
++      router.replace("/login");
++    }
++  }, [sessionLoading, user, step, router]);
++
+   if (!sessionLoading && !user && step >= 3 && step <= 6) {
+-    return (
+-      <AuthShell title="Hold on — sign in first" subtitle="We need your session to keep setting up your account.">
+-        <div className="space-y-4">
+-          <p className="text-sm text-ink-600">
+-            Your account details were found, but the session was lost. Verify your email again to continue.
+-          </p>
+-          <button
+-            type="button"
+-            onClick={() => go(2)}
+-            className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover"
+-          >
+-            Back to email verification
+-          </button>
+-        </div>
+-      </AuthShell>
+-    );
++    return <Loading />;
+   }
+ 
+   const skip = (() => {
