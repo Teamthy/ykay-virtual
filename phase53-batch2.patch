@@ -1,0 +1,59 @@
+diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+index a258b9d..812eddc 100644
+--- a/.github/workflows/deploy.yml
++++ b/.github/workflows/deploy.yml
+@@ -29,6 +29,17 @@ jobs:
+       - uses: actions/setup-node@v4
+         with:
+           node-version: "20"
++      - name: Install dependencies
++        working-directory: client
++        run: npm ci
++      # CF-4: the production build ignores type errors (next.config sets
++      # ignoreBuildErrors to keep constrained CI builds fast), so the ONLY
++      # type gate for what actually ships is this explicit tsc run. It must
++      # happen in the deploy path too — not just CI — or broken code can reach
++      # production.
++      - name: Type-check (authoritative type gate)
++        working-directory: client
++        run: npx tsc --noEmit
+       - name: Deploy to Vercel (production)
+         env:
+           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+diff --git a/internal/transport/http/dto.go b/internal/transport/http/dto.go
+index b6244f6..3f5b8f4 100644
+--- a/internal/transport/http/dto.go
++++ b/internal/transport/http/dto.go
+@@ -105,8 +105,14 @@ func ParseFloatPtr(s string) *float64 {
+ 	return &f
+ }
+ 
++// maxRequestBodyBytes bounds the size of a decoded JSON body. Requests larger
++// than this are rejected before unbounded buffering can occur (perf/memory
++// hardening — prevents oversized-payload abuse of the API).
++const maxRequestBodyBytes = 1 << 20 // 1 MiB
++
+ // DecodeJSON reads and strictly validates a JSON body into dst.
+ func DecodeJSON(r *http.Request, dst any) error {
++	r.Body = http.MaxBytesReader(nil, r.Body, maxRequestBodyBytes)
+ 	dec := json.NewDecoder(r.Body)
+ 	dec.DisallowUnknownFields()
+ 	if err := dec.Decode(dst); err != nil {
+diff --git a/migrations/000033_user_roles_role_index.down.sql b/migrations/000033_user_roles_role_index.down.sql
+new file mode 100644
+index 0000000..cce5a01
+--- /dev/null
++++ b/migrations/000033_user_roles_role_index.down.sql
+@@ -0,0 +1 @@
++DROP INDEX IF EXISTS idx_user_roles_role_id;
+diff --git a/migrations/000033_user_roles_role_index.up.sql b/migrations/000033_user_roles_role_index.up.sql
+new file mode 100644
+index 0000000..9a2a72e
+--- /dev/null
++++ b/migrations/000033_user_roles_role_index.up.sql
+@@ -0,0 +1,5 @@
++-- 000033: index user_roles(role_id) — role-scoped queries (e.g. "every
++-- SUPER_ADMIN", admin inbox lookups, RolesForUser joins by role) currently scan
++-- the whole table because only the composite UNIQUE(user_id, role_id) index
++-- exists. Adds a small covering index for role-first lookups.
++CREATE INDEX IF NOT EXISTS idx_user_roles_role_id ON user_roles(role_id);

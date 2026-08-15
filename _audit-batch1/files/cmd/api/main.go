@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -43,7 +42,6 @@ import (
 	"ykay-virtual/internal/telemetry"
 	httpapi "ykay-virtual/internal/transport/http"
 	"ykay-virtual/internal/worker"
-	"ykay-virtual/migrations"
 
 	goredis "github.com/redis/go-redis/v9"
 )
@@ -106,9 +104,7 @@ type Repositories struct {
 	Devices            identity.DeviceRepository
 	Meeting            service.LessonMeetingRepo
 	ProgrammeLifecycle academics.ProgrammeLifecycleRepository
-	StorageBackend     string  // "postgres" | "memory"
-	CachePrefix        string  // namespaces the shared cache per backend
-	DB                 *sql.DB // raw handle (nil in memory mode) — boot migrations
+	StorageBackend     string // "postgres" | "memory"
 }
 
 func main() {
@@ -128,7 +124,7 @@ func main() {
 	telemetry.DefaultMetrics().MarkBuild(Version)
 
 	// --- Cache: Redis real → InMemory fallback (AGENTS.md) ---
-	rawCache := setupCache(ctx, cfg.RedisURL)
+	cacheBackend := setupCache(ctx, cfg.RedisURL)
 
 	// --- Object storage: real S3/MinIO when configured, local otherwise.
 	// In dev the guard wraps the SAME LocalStorage instance that serves the
@@ -151,26 +147,6 @@ func main() {
 		log.Println("storage: postgres connected")
 	} else {
 		log.Println("storage: postgres unavailable — using in-memory store (dev mode)")
-	}
-	// Namespace the shared cache per storage backend: a Redis shared between
-	// a PG instance and a memory-mode dev instance must never serve each
-	// other's catalogue rows (memory seeds use synthetic ids like ...c001).
-	cacheBackend := cache.WithPrefix(rawCache, repos.CachePrefix)
-
-	// MIGRATE_ON_BOOT=true applies the embedded migration chain before the
-	// server starts — the release image is a scratch container without the
-	// migrations folder, and a fresh Render DB needs this first deploy.
-	// Keep it on for the FIRST deploy only (then set false): concurrent
-	// boots on multiple replicas would race the schema_migrations table.
-	if getEnvDefault("MIGRATE_ON_BOOT", "") == "true" && repos.DB != nil {
-		log.Println("migrate: MIGRATE_ON_BOOT enabled — applying pending migrations")
-		if n, err := migrations.ApplyUp(repos.DB); err != nil {
-			log.Fatalf("migrate: %v", err)
-		} else if n > 0 {
-			log.Printf("migrate: applied %d migration(s)", n)
-		} else {
-			log.Println("migrate: schema already up to date")
-		}
 	}
 
 	// --- Services ---
@@ -320,7 +296,7 @@ func main() {
 
 	// G7.2 distributed rate limiting: Redis-backed counters shared across
 	// API instances; the in-memory limiters remain when Redis is absent.
-	if rc, ok := rawCache.(*cache.RedisCache); ok {
+	if rc, ok := cacheBackend.(*cache.RedisCache); ok {
 		router.SetRateLimiters(
 			middleware.NewRedisRateLimiter(rc.Raw(), httpapi.RateLimitPerMinute(), time.Minute, "rl:global"),
 			middleware.NewRedisRateLimiter(rc.Raw(), 40, time.Minute, "rl:auth"),
@@ -470,7 +446,6 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Meeting:            memory.NewMeetingMemory(store.Lessons),
 			ProgrammeLifecycle: memory.NewProgrammeLifecycleMemory(store.Programmes),
 			StorageBackend:     "memory",
-			CachePrefix:        "mem:",
 		}, func() error { return nil } // in-memory store is always "ready"
 	}
 	_ = ctx
@@ -529,8 +504,6 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Meeting:            postgres.NewMeetingRepo(pg.DB()),
 		ProgrammeLifecycle: postgres.NewProgrammeLifecycleRepo(pg.DB()),
 		StorageBackend:     "postgres",
-		CachePrefix:        "pg:",
-		DB:                 pg.DB(),
 	}, func() error { return pg.DB().PingContext(ctx) }
 }
 

@@ -1,0 +1,64 @@
+name: Deploy
+
+# Production deploy on push to main (phase 42):
+#   - web  → Vercel (needs VERCEL_TOKEN + VERCEL_ORG_ID + VERCEL_PROJECT_ID
+#             secrets; set API_PROXY_TARGET / NEXT_PUBLIC_* in the project)
+#   - api  → Render (needs RENDER_DEPLOY_HOOK secret — a Deploy Hook URL from
+#             the Render dashboard for the api service). Fly.io alternative:
+#             set FLY_API_TOKEN + app name and swap the step.
+# Manual trigger also available: Actions → Deploy → Run workflow.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-web:
+    name: Deploy web → Vercel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+      # CF-4: the production build ignores type errors (next.config sets
+      # ignoreBuildErrors to keep constrained CI builds fast), so the ONLY
+      # type gate for what actually ships is this explicit tsc run. It must
+      # happen in the deploy path too — not just CI — or broken code can reach
+      # production.
+      - name: Type-check (authoritative type gate)
+        working-directory: client
+        run: npx tsc --noEmit
+      - name: Deploy to Vercel (production)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: client
+        run: |
+          npx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+          npx vercel@latest build --prod --token="$VERCEL_TOKEN"
+          npx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+  deploy-api:
+    name: Deploy API → Render
+    runs-on: ubuntu-latest
+    if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK" || { echo "Render hook failed"; exit 1; }
+          echo "Render deploy triggered — monitor https://dashboard.render.com"

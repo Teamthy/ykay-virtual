@@ -1,0 +1,68 @@
+[
+  {
+    "path": "cmd/api/main.go",
+    "before": "7f59455c44a9fa5993b0d9de7c9c3ba89a2855782841ce0ecfbdcb1d286771ee",
+    "after": "4ee890470363f6099d55e6c0975a2f2bf7b714e343f502f33f25bc96398646a9",
+    "new": false
+  },
+  {
+    "path": "docs/PHASE_53_BATCH1_DELIVERY.md",
+    "before": null,
+    "after": "abfeb319e09e1b50c140b2a214ee71a97f54164884ea364561dd4d74d56f78a7",
+    "new": true
+  },
+  {
+    "path": "internal/middleware/ratelimit.go",
+    "before": "eb515d5b44812ce2909e2aa10643860cc0493fd4c8f21db5110f453303e05412",
+    "after": "82116d9ac423b07b1ebedc30ed0aab684efed79aa5521db7f219bc339174b0d6",
+    "new": false
+  },
+  {
+    "path": "internal/service/auth_service.go",
+    "before": "7196abdc4e200996e04265cb648441be3b6ff65f75938028dc8d23a9695ed1bd",
+    "after": "6e70d6d335e285e49c5f388416eaaa85e120e4fd025a6984a338f22068eb6a00",
+    "new": false
+  },
+  {
+    "path": "internal/service/auth_service_test.go",
+    "before": "38062674471e1031df9a32e7553bd76c3bb017bfe42b4b320e4936a60aff607c",
+    "after": "7a6f35b90e6b7139a89bbfd236934ae539f16d96f6cefc4289c08c720645bdc8",
+    "new": false
+  },
+  {
+    "path": "internal/service/vetting_service_test.go",
+    "before": "93057c5b1fd7c9fe511f92a35f7cba7b7ba87485cd514edc8b31d3c507c37847",
+    "after": "9f38d92a68ba08ed91514bf37732fad1356473cdbdbff06f4df6e7d554212868",
+    "new": false
+  },
+  {
+    "path": "internal/storage/s3.go",
+    "before": "54904d9a732f06f5bd41c2774607c9b47688a2ac62350ee1c2def9afbdde6897",
+    "after": "4cc277d315beee23fd5e1e1be78eb3ea6febab92aef898271398b77f92d47617",
+    "new": false
+  },
+  {
+    "path": "internal/storage/s3_test.go",
+    "before": null,
+    "after": "31417dad29c6fc1d2047bfcace895548ed4fccc4cd10d6f0428d2c13b4d2c99f",
+    "new": true
+  },
+  {
+    "path": "internal/transport/http/object_handler.go",
+    "before": "7fd4dbade49e459a649bdf8cc49cc22df7fbd3d80289cfa9f5575b42640a91a1",
+    "after": "d5b54d88bccb1e11b91f80136d5a2d01e27921bc0fab6c41b822a80c7b24011a",
+    "new": false
+  },
+  {
+    "path": "internal/transport/http/object_handler_test.go",
+    "before": null,
+    "after": "8bfa6822a2f8fa5062cd87dff4b14af512e99fdd10376aa1a4e8a23b4b35410b",
+    "new": true
+  },
+  {
+    "path": "internal/transport/http/router.go",
+    "before": "bd9c9009735dd80830631d1c07fe5d02eafdc46e7ae403865ecb9bede30c63a4",
+    "after": "74b68e86768e666ca658aaab2823b1071ba9c3efc3c345f91e6774e889030040",
+    "new": false
+  }
+]
