@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { InnerHero } from "@/components/layout/InnerHero";
 import { RelatedContent } from "@/components/RelatedContent";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -46,14 +47,16 @@ export default async function SubjectPage(props: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqs) }} />
 
-      <div className="text-xs uppercase font-bold tracking-wide text-brand-blue">{subject.category}</div>
-      <h1 className="mt-2 text-4xl font-extrabold">{subject.name} — Expert Tutors</h1>
-      <p className="mt-4 text-ink-600 max-w-3xl">{subject.desc}</p>
-      <div className="mt-4 flex gap-2">
-        {subject.exams.map((e: string) => (
-          <span key={e} className="text-xs bg-ink-100 px-3 py-1 rounded-full">{e}</span>
-        ))}
-      </div>
+      <InnerHero>
+        <div className="text-xs uppercase font-bold tracking-wide text-brand-blue">{subject.category}</div>
+        <h1 className="mt-2 text-4xl font-extrabold">{subject.name} — Expert Tutors</h1>
+        <p className="mt-4 text-ink-600 max-w-3xl">{subject.desc}</p>
+        <div className="mt-4 flex gap-2">
+          {subject.exams.map((e: string) => (
+            <span key={e} className="text-xs bg-ink-100 px-3 py-1 rounded-full">{e}</span>
+          ))}
+        </div>
+      </InnerHero>
 
       <div className="mt-10 grid md:grid-cols-3 gap-6">
         <div className="border rounded-2xl p-6">

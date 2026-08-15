@@ -3,6 +3,7 @@ import { buildMetadata, articleJsonLd } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { InnerHero } from "@/components/layout/InnerHero";
 import { RelatedContent } from "@/components/RelatedContent";
 
 export const revalidate = 600;
@@ -82,15 +83,17 @@ export default async function BlogSlugPage(props: Props) {
     <main className="container-x py-12 max-w-4xl">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Blog", href: "/blog" }, { name: post.title }]} />
-      <div className="text-xs uppercase font-semibold text-brand-blue">
-        {(post.exam_slugs ?? []).join(" • ")}
-      </div>
-      <h1 className="text-3xl md:text-4xl font-extrabold mt-2 leading-tight">{post.title}</h1>
-      {post.published_at && (
-        <div className="mt-3 text-sm text-ink-400">
-          Published {new Date(post.published_at).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" })}
+      <InnerHero>
+        <div className="text-xs uppercase font-semibold text-brand-blue">
+          {(post.exam_slugs ?? []).join(" • ")}
         </div>
-      )}
+        <h1 className="mt-2 text-3xl font-extrabold leading-tight md:text-4xl">{post.title}</h1>
+        {post.published_at && (
+          <div className="mt-3 text-sm text-ink-400">
+            Published {new Date(post.published_at).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" })}
+          </div>
+        )}
+      </InnerHero>
       <article className="mt-8 prose prose-lg max-w-none text-ink-700 leading-relaxed whitespace-pre-line">
         {post.content}
       </article>

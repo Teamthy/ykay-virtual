@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check, Minus } from "lucide-react";
+import { PageHero } from "@/components/layout/PageHero";
 
 // NUVORA pricing — Preline-style: billing switch, 4 plan cards, comparison
 // table (desktop table + mobile per-plan sections). Gold highlights.
@@ -94,14 +95,11 @@ export default function PricingPage() {
 
   return (
     <main className="bg-surface pb-20">
-      {/* Title */}
-      <div className="mx-auto max-w-2xl px-6 pt-14 text-center md:px-10">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark">Clear, honest pricing</p>
-        <h1 className="mt-2 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">Pricing</h1>
-        <p className="mt-3 text-ink-600">
-          Whatever your status, our offers evolve according to your needs — every payment is escrow-protected.
-        </p>
-      </div>
+      <PageHero
+        announcement="Clear, honest pricing"
+        title="Pricing"
+        subtitle="Whatever your status, our offers evolve according to your needs — every payment is escrow-protected."
+      />
 
       {/* Switch */}
       <div className="mt-8 flex items-center justify-center gap-x-3">

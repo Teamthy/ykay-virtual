@@ -3,6 +3,7 @@ import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import Link from "next/link";
 import { TutorCommunityStats } from "@/components/home/TutorCommunityStats";
 import { TutorBenefits } from "@/components/home/TutorBenefits";
+import { PageHero } from "@/components/layout/PageHero";
 
 export const metadata: Metadata = buildMetadata({
   title: "Become a Tutor — Apply to Teach at NUVORA",
@@ -37,17 +38,12 @@ export default function BecomeTutorPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
 
-      <div className="text-center max-w-2xl mx-auto">
-        <p className="tag-handwritten">Earn from what you love</p>
-        <h1 className="text-4xl font-extrabold mt-2">Become a NUVORA tutor</h1>
-        <p className="mt-3 text-ink-600">
-          A five-step, stateful application: build your profile, pick your subjects, verify your
-          identity, pass a short competency quiz — then track your application live.
-        </p>
-        <Link href="/become-tutor/apply" className="btn-gold mt-6 inline-block">
-          Start tutor application
-        </Link>
-      </div>
+      <PageHero
+        announcement="Earn from what you love"
+        title="Become a NUVORA tutor"
+        subtitle="A five-step, stateful application: build your profile, pick your subjects, verify your identity, pass a short competency quiz — then track your application live."
+        ctas={[{ label: "Start tutor application", href: "/become-tutor/apply", primary: true }]}
+      />
 
       <TutorCommunityStats />
       <TutorBenefits />

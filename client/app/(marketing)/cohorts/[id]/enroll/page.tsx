@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { buildMetadata } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { getCohortSSR } from "@/features/cohorts/api/get";
 import { CheckoutClient } from "@/features/bookings/components/CheckoutClient";
 
@@ -34,14 +35,14 @@ export default async function CohortEnrollPage(props: Props) {
         { name: cohort.title, href: `/cohorts/${cohort.id}` },
         { name: "Enrol" },
       ]} />
+      <PageHero
+        title={`Enrol in ${cohort.title}`}
+        subtitle={`Your enrolment is confirmed instantly after payment. Lessons follow the published cohort schedule in ${cohort.timezone}. Your payment is protected by our escrow guarantee.`}
+      />
+
       <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-start">
         <div>
-          <h1 className="text-3xl font-extrabold">Enrol in {cohort.title}</h1>
-          <p className="mt-3 text-ink-600 leading-relaxed">
-            Your enrolment is confirmed instantly after payment. Lessons follow the published cohort
-            schedule in {cohort.timezone}. Your payment is protected by our escrow guarantee.
-          </p>
-          <section className="mt-8 rounded-2xl border p-6">
+          <section className="mt-0 rounded-2xl border p-6">
             <h2 className="font-bold">What you get</h2>
             <ul className="mt-3 space-y-2 text-sm text-ink-600 list-disc pl-5">
               <li>Live lessons with an approved, vetted tutor</li>

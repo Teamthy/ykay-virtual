@@ -1,0 +1,589 @@
+diff --git a/client/app/(marketing)/become-tutor/page.tsx b/client/app/(marketing)/become-tutor/page.tsx
+index b78586b..f52d843 100644
+--- a/client/app/(marketing)/become-tutor/page.tsx
++++ b/client/app/(marketing)/become-tutor/page.tsx
+@@ -3,6 +3,7 @@ import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+ import Link from "next/link";
+ import { TutorCommunityStats } from "@/components/home/TutorCommunityStats";
+ import { TutorBenefits } from "@/components/home/TutorBenefits";
++import { PageHero } from "@/components/layout/PageHero";
+ 
+ export const metadata: Metadata = buildMetadata({
+   title: "Become a Tutor — Apply to Teach at NUVORA",
+@@ -37,17 +38,12 @@ export default function BecomeTutorPage() {
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+ 
+-      <div className="text-center max-w-2xl mx-auto">
+-        <p className="tag-handwritten">Earn from what you love</p>
+-        <h1 className="text-4xl font-extrabold mt-2">Become a NUVORA tutor</h1>
+-        <p className="mt-3 text-ink-600">
+-          A five-step, stateful application: build your profile, pick your subjects, verify your
+-          identity, pass a short competency quiz — then track your application live.
+-        </p>
+-        <Link href="/become-tutor/apply" className="btn-gold mt-6 inline-block">
+-          Start tutor application
+-        </Link>
+-      </div>
++      <PageHero
++        announcement="Earn from what you love"
++        title="Become a NUVORA tutor"
++        subtitle="A five-step, stateful application: build your profile, pick your subjects, verify your identity, pass a short competency quiz — then track your application live."
++        ctas={[{ label: "Start tutor application", href: "/become-tutor/apply", primary: true }]}
++      />
+ 
+       <TutorCommunityStats />
+       <TutorBenefits />
+diff --git a/client/app/(marketing)/blog/[slug]/page.tsx b/client/app/(marketing)/blog/[slug]/page.tsx
+index b3544b4..acd6370 100644
+--- a/client/app/(marketing)/blog/[slug]/page.tsx
++++ b/client/app/(marketing)/blog/[slug]/page.tsx
+@@ -3,6 +3,7 @@ import { buildMetadata, articleJsonLd } from "@/lib/seo";
+ import { notFound } from "next/navigation";
+ import { API_BASE, apiFetchSSR } from "@/lib/server-api";
+ import { Breadcrumbs } from "@/components/Breadcrumbs";
++import { InnerHero } from "@/components/layout/InnerHero";
+ import { RelatedContent } from "@/components/RelatedContent";
+ 
+ export const revalidate = 600;
+@@ -82,15 +83,17 @@ export default async function BlogSlugPage(props: Props) {
+     <main className="container-x py-12 max-w-4xl">
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }} />
+       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Blog", href: "/blog" }, { name: post.title }]} />
+-      <div className="text-xs uppercase font-semibold text-brand-blue">
+-        {(post.exam_slugs ?? []).join(" • ")}
+-      </div>
+-      <h1 className="text-3xl md:text-4xl font-extrabold mt-2 leading-tight">{post.title}</h1>
+-      {post.published_at && (
+-        <div className="mt-3 text-sm text-ink-400">
+-          Published {new Date(post.published_at).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" })}
++      <InnerHero>
++        <div className="text-xs uppercase font-semibold text-brand-blue">
++          {(post.exam_slugs ?? []).join(" • ")}
+         </div>
+-      )}
++        <h1 className="mt-2 text-3xl font-extrabold leading-tight md:text-4xl">{post.title}</h1>
++        {post.published_at && (
++          <div className="mt-3 text-sm text-ink-400">
++            Published {new Date(post.published_at).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" })}
++          </div>
++        )}
++      </InnerHero>
+       <article className="mt-8 prose prose-lg max-w-none text-ink-700 leading-relaxed whitespace-pre-line">
+         {post.content}
+       </article>
+diff --git a/client/app/(marketing)/cohorts/[id]/enroll/page.tsx b/client/app/(marketing)/cohorts/[id]/enroll/page.tsx
+index 01bfa3c..9e407a2 100644
+--- a/client/app/(marketing)/cohorts/[id]/enroll/page.tsx
++++ b/client/app/(marketing)/cohorts/[id]/enroll/page.tsx
+@@ -2,6 +2,7 @@ import type { Metadata } from "next";
+ import { notFound } from "next/navigation";
+ import { buildMetadata } from "@/lib/seo";
+ import { Breadcrumbs } from "@/components/Breadcrumbs";
++import { PageHero } from "@/components/layout/PageHero";
+ import { getCohortSSR } from "@/features/cohorts/api/get";
+ import { CheckoutClient } from "@/features/bookings/components/CheckoutClient";
+ 
+@@ -34,14 +35,14 @@ export default async function CohortEnrollPage(props: Props) {
+         { name: cohort.title, href: `/cohorts/${cohort.id}` },
+         { name: "Enrol" },
+       ]} />
++      <PageHero
++        title={`Enrol in ${cohort.title}`}
++        subtitle={`Your enrolment is confirmed instantly after payment. Lessons follow the published cohort schedule in ${cohort.timezone}. Your payment is protected by our escrow guarantee.`}
++      />
++
+       <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-start">
+         <div>
+-          <h1 className="text-3xl font-extrabold">Enrol in {cohort.title}</h1>
+-          <p className="mt-3 text-ink-600 leading-relaxed">
+-            Your enrolment is confirmed instantly after payment. Lessons follow the published cohort
+-            schedule in {cohort.timezone}. Your payment is protected by our escrow guarantee.
+-          </p>
+-          <section className="mt-8 rounded-2xl border p-6">
++          <section className="mt-0 rounded-2xl border p-6">
+             <h2 className="font-bold">What you get</h2>
+             <ul className="mt-3 space-y-2 text-sm text-ink-600 list-disc pl-5">
+               <li>Live lessons with an approved, vetted tutor</li>
+diff --git a/client/app/(marketing)/cohorts/[id]/page.tsx b/client/app/(marketing)/cohorts/[id]/page.tsx
+index 7e38332..1aa2600 100644
+--- a/client/app/(marketing)/cohorts/[id]/page.tsx
++++ b/client/app/(marketing)/cohorts/[id]/page.tsx
+@@ -5,7 +5,8 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
+ import { getCohortSSR } from "@/features/cohorts/api/get";
+ import { getCohortLessonsSSR } from "@/features/cohorts/api/lessons";
+ import Link from "next/link";
+-import { CalendarDays, Users, MapPin } from "lucide-react";
++import { PageHero } from "@/components/layout/PageHero";
++import { CalendarDays, Users } from "lucide-react";
+ import { Progress } from "@/components/ui/progress";
+ import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+ 
+@@ -58,18 +59,16 @@ export default async function CohortDetailPage(props: Props) {
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
+       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title }]} />
+ 
++      <PageHero
++        announcement={`${cohort.location_mode.replace(/_/g, " ").toLowerCase()} · ${cohort.timezone}`}
++        title={cohort.title}
++        subtitle={cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
++        ctas={[{ label: "Enrol in this cohort", href: `/cohorts/${cohort.id}/enroll`, primary: true }]}
++      />
++
+       <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-start">
+         {/* Left: info + sessions */}
+         <div>
+-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold-light px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-gold-dark">
+-            <MapPin size={11} />
+-            {cohort.location_mode.replace(/_/g, " ").toLowerCase()} · {cohort.timezone}
+-          </span>
+-          <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">{cohort.title}</h1>
+-          <p className="mt-3 text-ink-600 leading-relaxed">
+-            {cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
+-          </p>
+-
+           <div className="mt-6 grid sm:grid-cols-3 gap-3">
+             {[
+               { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Starts", value: new Date(cohort.start_date).toLocaleDateString() },
+diff --git a/client/app/(marketing)/hometutors/page.tsx b/client/app/(marketing)/hometutors/page.tsx
+index fb6ea15..d4691e1 100644
+--- a/client/app/(marketing)/hometutors/page.tsx
++++ b/client/app/(marketing)/hometutors/page.tsx
+@@ -1,6 +1,6 @@
+ import type { Metadata } from "next";
+ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
+-import { ArrowRight } from "lucide-react";
++import { PageHero } from "@/components/layout/PageHero";
+ import { StatsBand } from "@/components/home/StatsBand";
+ import { LearningNeeds } from "@/components/home/LearningNeeds";
+ import { ApproachSection } from "@/components/home/ApproachSection";
+@@ -27,79 +27,16 @@ export default function HomeTutorsPage() {
+     <main>
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+ 
+-      {/* Preline hero: announcement + gradient title + buttons */}
+-      <section className="relative overflow-hidden bg-white">
+-        <div
+-          className="pointer-events-none absolute inset-0 before:absolute before:inset-x-0 before:top-0 before:h-full before:bg-[radial-gradient(ellipse_at_top,rgba(244,180,0,0.10),transparent_55%)]"
+-          aria-hidden="true"
+-        />
+-        <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:px-10 md:pt-20">
+-          <div className="flex justify-center">
+-            <a
+-              href="/tutors"
+-              className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
+-            >
+-              Home tutoring done right
+-              <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
+-                Top 1% of vetted tutors
+-              </span>
+-            </a>
+-          </div>
+-
+-          <div className="mx-auto mt-6 max-w-2xl text-center">
+-            <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
+-              Better, Brighter{" "}
+-              <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
+-                Future For Your Kids.
+-              </span>
+-            </h1>
+-          </div>
+-
+-          <div className="mx-auto mt-5 max-w-3xl text-center">
+-            <p className="text-lg text-ink-600">
+-              Get personalized home tutoring that is designed to guide your children toward exam
+-              success, boost their confidence, and get better school grades.
+-            </p>
+-          </div>
+-
+-          <div className="mt-8 flex justify-center gap-3">
+-            <a
+-              href="/tutors"
+-              className="inline-flex items-center gap-x-3 rounded-md bg-gradient-to-tl from-brand-gold-dark to-brand-gold py-3 px-4 text-sm font-medium text-white transition-all hover:from-brand-gold hover:to-brand-gold-hover"
+-            >
+-              Get Started
+-              <ArrowRight size={16} />
+-            </a>
+-            <a
+-              href="#how"
+-              className="inline-flex items-center gap-x-2 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+-            >
+-              Learn how it works
+-            </a>
+-          </div>
+-
+-          <div className="mt-6 flex flex-col items-center justify-center gap-1.5 sm:flex-row sm:gap-3">
+-            <div className="flex flex-wrap gap-1 sm:gap-3">
+-              <span className="text-sm text-ink-600">Vetted tutors:</span>
+-              <span className="text-sm font-bold text-ink-900">1%</span>
+-            </div>
+-            <svg className="hidden size-5 text-ink-300 sm:block" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+-              <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round" />
+-            </svg>
+-            <div className="flex flex-wrap gap-1 sm:gap-3">
+-              <span className="text-sm text-ink-600">Success rate:</span>
+-              <span className="text-sm font-bold text-ink-900">98%</span>
+-            </div>
+-            <svg className="hidden size-5 text-ink-300 sm:block" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+-              <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round" />
+-            </svg>
+-            <div className="flex flex-wrap gap-1 sm:gap-3">
+-              <span className="text-sm text-ink-600">Lessons delivered:</span>
+-              <span className="text-sm font-bold text-ink-900">280k+</span>
+-            </div>
+-          </div>
+-        </div>
+-      </section>
++      {/* Hero — PrebuiltUI template */}
++      <PageHero
++        announcement="Home tutoring done right · Top 1% of vetted tutors"
++        title="Better, Brighter Future For Your Kids."
++        subtitle="Get personalized home tutoring that is designed to guide your children toward exam success, boost their confidence, and get better school grades."
++        ctas={[
++          { label: "Get Started", href: "/tutors", primary: true },
++          { label: "Learn how it works", href: "#how" },
++        ]}
++      />
+ 
+       <StatsBand />
+       <LearningNeeds />
+diff --git a/client/app/(marketing)/pricing/page.tsx b/client/app/(marketing)/pricing/page.tsx
+index a29029c..9751f84 100644
+--- a/client/app/(marketing)/pricing/page.tsx
++++ b/client/app/(marketing)/pricing/page.tsx
+@@ -3,6 +3,7 @@
+ import { useState } from "react";
+ import Link from "next/link";
+ import { Check, Minus } from "lucide-react";
++import { PageHero } from "@/components/layout/PageHero";
+ 
+ // NUVORA pricing — Preline-style: billing switch, 4 plan cards, comparison
+ // table (desktop table + mobile per-plan sections). Gold highlights.
+@@ -94,14 +95,11 @@ export default function PricingPage() {
+ 
+   return (
+     <main className="bg-surface pb-20">
+-      {/* Title */}
+-      <div className="mx-auto max-w-2xl px-6 pt-14 text-center md:px-10">
+-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark">Clear, honest pricing</p>
+-        <h1 className="mt-2 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">Pricing</h1>
+-        <p className="mt-3 text-ink-600">
+-          Whatever your status, our offers evolve according to your needs — every payment is escrow-protected.
+-        </p>
+-      </div>
++      <PageHero
++        announcement="Clear, honest pricing"
++        title="Pricing"
++        subtitle="Whatever your status, our offers evolve according to your needs — every payment is escrow-protected."
++      />
+ 
+       {/* Switch */}
+       <div className="mt-8 flex items-center justify-center gap-x-3">
+diff --git a/client/app/(marketing)/privacy/page.tsx b/client/app/(marketing)/privacy/page.tsx
+index b458b3b..420e78b 100644
+--- a/client/app/(marketing)/privacy/page.tsx
++++ b/client/app/(marketing)/privacy/page.tsx
+@@ -1,5 +1,6 @@
+ import type { Metadata } from "next";
+ import { buildMetadata } from "@/lib/seo";
++import { PageHero } from "@/components/layout/PageHero";
+ 
+ export const metadata: Metadata = buildMetadata({
+   title: "Privacy Policy",
+@@ -58,13 +59,11 @@ const SECTIONS = [
+ export default function PrivacyPage() {
+   return (
+     <main className="mx-auto max-w-3xl px-6 py-14">
+-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold-dark">
+-        Legal
+-      </p>
+-      <h1 className="mt-2 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">
+-        Privacy Policy
+-      </h1>
+-      <p className="mt-2 text-sm text-ink-500">Last updated: August 2026</p>
++      <PageHero
++        announcement="Legal"
++        title="Privacy Policy"
++        subtitle="Last updated: August 2026"
++      />
+ 
+       <div className="mt-8 space-y-8">
+         {SECTIONS.map((s) => (
+diff --git a/client/app/(marketing)/programmes/[slug]/page.tsx b/client/app/(marketing)/programmes/[slug]/page.tsx
+index fa1ae30..5a06e95 100644
+--- a/client/app/(marketing)/programmes/[slug]/page.tsx
++++ b/client/app/(marketing)/programmes/[slug]/page.tsx
+@@ -2,6 +2,7 @@ import type { Metadata } from "next";
+ import { notFound } from "next/navigation";
+ import { buildMetadata, courseJsonLd, faqJsonLd } from "@/lib/seo";
+ import { Breadcrumbs } from "@/components/Breadcrumbs";
++import { InnerHero } from "@/components/layout/InnerHero";
+ import { API_BASE, apiFetchSSR } from "@/lib/server-api";
+ import Link from "next/link";
+ import { ProgrammeDetailTabs } from "@/features/programmes/components/ProgrammeDetailTabs";
+@@ -78,8 +79,9 @@ export default async function ProgrammeDetailPage(props: Props) {
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Programmes", href: "/programmes" }, { name: p.title }]} />
+ 
+-      {/* Header */}
+-      <div className="mt-4 flex flex-wrap items-start justify-between gap-8">
++      {/* Header — PrebuiltUI template background (InnerHero preserves content) */}
++      <InnerHero>
++      <div className="flex flex-wrap items-start justify-between gap-8">
+         <div className="max-w-3xl">
+           <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wide">
+             {[p.curriculum_name, p.level_name, p.exam_name, p.format.replace(/_/g, " ")].filter(Boolean).map((tag) => (
+@@ -115,6 +117,7 @@ export default async function ProgrammeDetailPage(props: Props) {
+           <Link href="/private-tuition" className="btn-secondary w-full inline-flex items-center justify-center text-sm">Book private tuition</Link>
+         </div>
+       </div>
++      </InnerHero>
+ 
+       {/* Tabs */}
+       <div className="mt-10">
+diff --git a/client/app/(marketing)/subjects/[slug]/page.tsx b/client/app/(marketing)/subjects/[slug]/page.tsx
+index 3fc7c6f..3580754 100644
+--- a/client/app/(marketing)/subjects/[slug]/page.tsx
++++ b/client/app/(marketing)/subjects/[slug]/page.tsx
+@@ -1,6 +1,7 @@
+ import type { Metadata } from "next";
+ import { buildMetadata, courseJsonLd, faqJsonLd } from "@/lib/seo";
+ import { Breadcrumbs } from "@/components/Breadcrumbs";
++import { InnerHero } from "@/components/layout/InnerHero";
+ import { RelatedContent } from "@/components/RelatedContent";
+ import Link from "next/link";
+ import { notFound } from "next/navigation";
+@@ -46,14 +47,16 @@ export default async function SubjectPage(props: Props) {
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqs) }} />
+ 
+-      <div className="text-xs uppercase font-bold tracking-wide text-brand-blue">{subject.category}</div>
+-      <h1 className="mt-2 text-4xl font-extrabold">{subject.name} — Expert Tutors</h1>
+-      <p className="mt-4 text-ink-600 max-w-3xl">{subject.desc}</p>
+-      <div className="mt-4 flex gap-2">
+-        {subject.exams.map((e: string) => (
+-          <span key={e} className="text-xs bg-ink-100 px-3 py-1 rounded-full">{e}</span>
+-        ))}
+-      </div>
++      <InnerHero>
++        <div className="text-xs uppercase font-bold tracking-wide text-brand-blue">{subject.category}</div>
++        <h1 className="mt-2 text-4xl font-extrabold">{subject.name} — Expert Tutors</h1>
++        <p className="mt-4 text-ink-600 max-w-3xl">{subject.desc}</p>
++        <div className="mt-4 flex gap-2">
++          {subject.exams.map((e: string) => (
++            <span key={e} className="text-xs bg-ink-100 px-3 py-1 rounded-full">{e}</span>
++          ))}
++        </div>
++      </InnerHero>
+ 
+       <div className="mt-10 grid md:grid-cols-3 gap-6">
+         <div className="border rounded-2xl p-6">
+diff --git a/client/app/(marketing)/terms/page.tsx b/client/app/(marketing)/terms/page.tsx
+index 356eae4..ab9400c 100644
+--- a/client/app/(marketing)/terms/page.tsx
++++ b/client/app/(marketing)/terms/page.tsx
+@@ -1,5 +1,6 @@
+ import type { Metadata } from "next";
+ import { buildMetadata } from "@/lib/seo";
++import { PageHero } from "@/components/layout/PageHero";
+ 
+ export const metadata: Metadata = buildMetadata({
+   title: "Terms of Service",
+@@ -54,13 +55,11 @@ const SECTIONS = [
+ export default function TermsPage() {
+   return (
+     <main className="mx-auto max-w-3xl px-6 py-14">
+-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold-dark">
+-        Legal
+-      </p>
+-      <h1 className="mt-2 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">
+-        Terms of Service
+-      </h1>
+-      <p className="mt-2 text-sm text-ink-500">Last updated: August 2026</p>
++      <PageHero
++        announcement="Legal"
++        title="Terms of Service"
++        subtitle="Last updated: August 2026"
++      />
+ 
+       <div className="mt-8 space-y-8">
+         {SECTIONS.map((s) => (
+diff --git a/client/app/(marketing)/test-prep/page.tsx b/client/app/(marketing)/test-prep/page.tsx
+index b9bf2a1..668a913 100644
+--- a/client/app/(marketing)/test-prep/page.tsx
++++ b/client/app/(marketing)/test-prep/page.tsx
+@@ -1,8 +1,9 @@
+ import type { Metadata } from "next";
+ import Link from "next/link";
+ import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
++import { PageHero } from "@/components/layout/PageHero";
+ import { GuaranteeBand } from "@/components/home/GuaranteeBand";
+-import { BookOpenCheck, GraduationCap, Languages, FileCheck, ArrowRight } from "lucide-react";
++import { BookOpenCheck, GraduationCap, Languages, FileCheck } from "lucide-react";
+ 
+ export const revalidate = 600;
+ 
+@@ -34,72 +35,15 @@ export default function TestPrepPage() {
+     <main>
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+ 
+-      {/* Preline hero: announcement + gradient title + buttons */}
+-      <section className="relative overflow-hidden bg-white">
+-        <div
+-          className="pointer-events-none absolute inset-0 before:absolute before:inset-x-0 before:top-0 before:h-full before:bg-[radial-gradient(ellipse_at_top,rgba(244,180,0,0.10),transparent_55%)]"
+-          aria-hidden="true"
+-        />
+-        <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:px-10 md:pt-20">
+-          <div className="flex justify-center">
+-            <a
+-              href="#tests"
+-              className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
+-            >
+-              Test season is here — 95% success rate
+-              <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
+-                IELTS · GMAT · GRE
+-              </span>
+-            </a>
+-          </div>
+-
+-          <div className="mx-auto mt-6 max-w-2xl text-center">
+-            <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
+-              Get expert help to{" "}
+-              <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
+-                ace your exam
+-              </span>
+-            </h1>
+-          </div>
+-
+-          <div className="mx-auto mt-5 max-w-3xl text-center">
+-            <p className="text-lg text-ink-600">
+-              IELTS, GMAT, ICAN, GRE, ACT, SATs, TOEFL and PTE — proven strategies and top tutors
+-              to get the score you need.
+-            </p>
+-          </div>
+-
+-          <div className="mt-8 flex justify-center gap-3">
+-            <a
+-              href="#tests"
+-              className="inline-flex items-center gap-x-3 rounded-md bg-gradient-to-tl from-brand-gold-dark to-brand-gold py-3 px-4 text-sm font-medium text-white transition-all hover:from-brand-gold hover:to-brand-gold-hover"
+-            >
+-              Get Started
+-              <ArrowRight size={16} />
+-            </a>
+-            <a
+-              href="/gmat"
+-              className="inline-flex items-center gap-x-2 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+-            >
+-              GMAT Prep →
+-            </a>
+-          </div>
+-
+-          <div className="mt-6 flex flex-col items-center justify-center gap-1.5 sm:flex-row sm:gap-3">
+-            <div className="flex flex-wrap gap-1 sm:gap-3">
+-              <span className="text-sm text-ink-600">Success rate:</span>
+-              <span className="text-sm font-bold text-ink-900">95%</span>
+-            </div>
+-            <svg className="hidden size-5 text-ink-300 sm:block" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+-              <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round" />
+-            </svg>
+-            <div className="flex flex-wrap gap-1 sm:gap-3">
+-              <span className="text-sm text-ink-600">Score 28+ for US undergrad:</span>
+-              <span className="text-sm font-bold text-ink-900">Achievable</span>
+-            </div>
+-          </div>
+-        </div>
+-      </section>
++      <PageHero
++        announcement="Test season is here — 95% success rate"
++        title="Get expert help to ace your exam"
++        subtitle="IELTS, GMAT, ICAN, GRE, ACT, SATs, TOEFL and PTE — proven strategies and top tutors to get the score you need."
++        ctas={[
++          { label: "Get Started", href: "#tests", primary: true },
++          { label: "GMAT Prep", href: "/gmat" },
++        ]}
++      />
+ 
+       {/* Tests grid */}
+       <section id="tests" className="scroll-mt-24 bg-white py-16">
+diff --git a/client/app/(marketing)/tutors/[slug]/page.tsx b/client/app/(marketing)/tutors/[slug]/page.tsx
+index e835f2c..187ef7f 100644
+--- a/client/app/(marketing)/tutors/[slug]/page.tsx
++++ b/client/app/(marketing)/tutors/[slug]/page.tsx
+@@ -1,6 +1,7 @@
+ import type { Metadata } from "next";
+ import { buildMetadata, personJsonLd } from "@/lib/seo";
+ import { Breadcrumbs } from "@/components/Breadcrumbs";
++import { InnerHero } from "@/components/layout/InnerHero";
+ import { RelatedContent } from "@/components/RelatedContent";
+ import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
+ import { notFound } from "next/navigation";
+@@ -71,6 +72,7 @@ export default async function TutorPage(props: Props) {
+       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors", href: "/tutors" }, { name: tutor.display_name }]} />
+       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
+ 
++      <InnerHero>
+       <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10">
+         <div>
+           <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide bg-green-50 text-green-700 px-3 py-1 rounded-full">✓ ID Verified • Background Checked</div>
+@@ -111,6 +113,7 @@ export default async function TutorPage(props: Props) {
+           <div className="mt-4 text-xs text-ink-500">Good Fit Guarantee: first hour protected.</div>
+         </div>
+       </div>
++      </InnerHero>
+       <RelatedContent subjectSlug={(subjectNames[0] ?? "mathematics").toLowerCase().replace(/\s+/g, "-")} />
+     </main>
+   );
+diff --git a/client/components/layout/InnerHero.tsx b/client/components/layout/InnerHero.tsx
+new file mode 100644
+index 0000000..4ccf67d
+--- /dev/null
++++ b/client/components/layout/InnerHero.tsx
+@@ -0,0 +1,34 @@
++import { cn } from "@/lib/utils";
++
++// InnerHero — the PrebuiltUI template's background treatment (grid pattern,
++// Poppins type) applied as a wrapper around a page's EXISTING header content.
++// Used on data-rich detail pages (programmes/[slug], subjects/[slug],
++// tutors/[slug], cohorts/[id], blog/[slug], …) where a full marketing hero
++// with forced title/CTAs would discard essential content (tags, CTA cards,
++// stats, avatars). The grid + Poppins keep it visually consistent with the
++// template on every non-home page.
++
++const GRID_BG =
++  "url('https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/gridBackground.png')";
++
++export function InnerHero({
++  children,
++  className,
++}: {
++  children: React.ReactNode;
++  className?: string;
++}) {
++  return (
++    <section
++      className={cn(
++        "w-full bg-no-repeat bg-cover bg-center font-poppins text-sm",
++        className
++      )}
++      style={{ backgroundImage: GRID_BG }}
++    >
++      <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-12 md:px-10 md:pb-14 md:pt-16">
++        {children}
++      </div>
++    </section>
++  );
++}
+diff --git a/client/package.json b/client/package.json
+index cd160c4..ff2733e 100644
+--- a/client/package.json
++++ b/client/package.json
+@@ -8,7 +8,8 @@
+         "start": "next start",
+         "test": "vitest run",
+         "test:watch": "vitest",
+-        "test:e2e": "playwright test"
++        "test:e2e": "playwright test",
++        "typecheck": "tsc --noEmit"
+     },
+     "dependencies": {
+         "@tanstack/react-form": "^1.0.0",

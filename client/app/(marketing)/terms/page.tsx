@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { PageHero } from "@/components/layout/PageHero";
 
 export const metadata: Metadata = buildMetadata({
   title: "Terms of Service",
@@ -54,13 +55,11 @@ const SECTIONS = [
 export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-14">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold-dark">
-        Legal
-      </p>
-      <h1 className="mt-2 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">
-        Terms of Service
-      </h1>
-      <p className="mt-2 text-sm text-ink-500">Last updated: August 2026</p>
+      <PageHero
+        announcement="Legal"
+        title="Terms of Service"
+        subtitle="Last updated: August 2026"
+      />
 
       <div className="mt-8 space-y-8">
         {SECTIONS.map((s) => (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { buildMetadata, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { InnerHero } from "@/components/layout/InnerHero";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import Link from "next/link";
 import { ProgrammeDetailTabs } from "@/features/programmes/components/ProgrammeDetailTabs";
@@ -78,8 +79,9 @@ export default async function ProgrammeDetailPage(props: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Programmes", href: "/programmes" }, { name: p.title }]} />
 
-      {/* Header */}
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-8">
+      {/* Header — PrebuiltUI template background (InnerHero preserves content) */}
+      <InnerHero>
+      <div className="flex flex-wrap items-start justify-between gap-8">
         <div className="max-w-3xl">
           <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wide">
             {[p.curriculum_name, p.level_name, p.exam_name, p.format.replace(/_/g, " ")].filter(Boolean).map((tag) => (
@@ -115,6 +117,7 @@ export default async function ProgrammeDetailPage(props: Props) {
           <Link href="/private-tuition" className="btn-secondary w-full inline-flex items-center justify-center text-sm">Book private tuition</Link>
         </div>
       </div>
+      </InnerHero>
 
       {/* Tabs */}
       <div className="mt-10">

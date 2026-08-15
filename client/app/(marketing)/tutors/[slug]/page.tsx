@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { InnerHero } from "@/components/layout/InnerHero";
 import { RelatedContent } from "@/components/RelatedContent";
 import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
@@ -71,6 +72,7 @@ export default async function TutorPage(props: Props) {
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors", href: "/tutors" }, { name: tutor.display_name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
 
+      <InnerHero>
       <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10">
         <div>
           <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide bg-green-50 text-green-700 px-3 py-1 rounded-full">✓ ID Verified • Background Checked</div>
@@ -111,6 +113,7 @@ export default async function TutorPage(props: Props) {
           <div className="mt-4 text-xs text-ink-500">Good Fit Guarantee: first hour protected.</div>
         </div>
       </div>
+      </InnerHero>
       <RelatedContent subjectSlug={(subjectNames[0] ?? "mathematics").toLowerCase().replace(/\s+/g, "-")} />
     </main>
   );

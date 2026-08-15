@@ -5,7 +5,8 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { getCohortSSR } from "@/features/cohorts/api/get";
 import { getCohortLessonsSSR } from "@/features/cohorts/api/lessons";
 import Link from "next/link";
-import { CalendarDays, Users, MapPin } from "lucide-react";
+import { PageHero } from "@/components/layout/PageHero";
+import { CalendarDays, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 
@@ -58,18 +59,16 @@ export default async function CohortDetailPage(props: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title }]} />
 
+      <PageHero
+        announcement={`${cohort.location_mode.replace(/_/g, " ").toLowerCase()} · ${cohort.timezone}`}
+        title={cohort.title}
+        subtitle={cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
+        ctas={[{ label: "Enrol in this cohort", href: `/cohorts/${cohort.id}/enroll`, primary: true }]}
+      />
+
       <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-start">
         {/* Left: info + sessions */}
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold-light px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-gold-dark">
-            <MapPin size={11} />
-            {cohort.location_mode.replace(/_/g, " ").toLowerCase()} · {cohort.timezone}
-          </span>
-          <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">{cohort.title}</h1>
-          <p className="mt-3 text-ink-600 leading-relaxed">
-            {cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
-          </p>
-
           <div className="mt-6 grid sm:grid-cols-3 gap-3">
             {[
               { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Starts", value: new Date(cohort.start_date).toLocaleDateString() },
