@@ -29,6 +29,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+      # CF-4: the production build ignores type errors (next.config sets
+      # ignoreBuildErrors to keep constrained CI builds fast), so the ONLY
+      # type gate for what actually ships is this explicit tsc run. It must
+      # happen in the deploy path too — not just CI — or broken code can reach
+      # production.
+      - name: Type-check (authoritative type gate)
+        working-directory: client
+        run: npx tsc --noEmit
       - name: Deploy to Vercel (production)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

@@ -105,8 +105,14 @@ func ParseFloatPtr(s string) *float64 {
 	return &f
 }
 
+// maxRequestBodyBytes bounds the size of a decoded JSON body. Requests larger
+// than this are rejected before unbounded buffering can occur (perf/memory
+// hardening — prevents oversized-payload abuse of the API).
+const maxRequestBodyBytes = 1 << 20 // 1 MiB
+
 // DecodeJSON reads and strictly validates a JSON body into dst.
 func DecodeJSON(r *http.Request, dst any) error {
+	r.Body = http.MaxBytesReader(nil, r.Body, maxRequestBodyBytes)
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(dst); err != nil {
