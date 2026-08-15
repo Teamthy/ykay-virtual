@@ -361,8 +361,12 @@ type Handlers struct {
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
+// Default raised from 300 to 1200/min per IP to comfortably absorb legitimate
+// concurrent bursts (e.g. a shared proxy/NAT concentrating many users behind
+// one IP) while still protecting against abuse. Override per environment via
+// RATE_LIMIT_PER_MINUTE.
 func RateLimitPerMinute() int {
-	return envInt("RATE_LIMIT_PER_MINUTE", 300)
+	return envInt("RATE_LIMIT_PER_MINUTE", 1200)
 }
 
 // AuthRateLimitPerMinute — per-IP rate limit for authentication endpoints

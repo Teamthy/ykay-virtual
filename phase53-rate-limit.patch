@@ -1,0 +1,37 @@
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index bf5f62b..2ed43a6 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -361,8 +361,12 @@ type Handlers struct {
+ }
+ 
+ // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
++// Default raised from 300 to 1200/min per IP to comfortably absorb legitimate
++// concurrent bursts (e.g. a shared proxy/NAT concentrating many users behind
++// one IP) while still protecting against abuse. Override per environment via
++// RATE_LIMIT_PER_MINUTE.
+ func RateLimitPerMinute() int {
+-	return envInt("RATE_LIMIT_PER_MINUTE", 300)
++	return envInt("RATE_LIMIT_PER_MINUTE", 1200)
+ }
+ 
+ // AuthRateLimitPerMinute — per-IP rate limit for authentication endpoints
+diff --git a/render.yaml b/render.yaml
+index c9d3f0f..df2f199 100644
+--- a/render.yaml
++++ b/render.yaml
+@@ -49,6 +49,14 @@ services:
+           name: nuvora-redis
+           type: redis
+           property: connectionString
++      # ── Rate limiting ──────────────────────────────────────────────────
++      # Global per-IP window raised for production (default now 1200/min).
++      # Explicit here so a deployed instance never silently falls back to the
++      # old 300/min default under legitimate concurrent bursts.
++      - key: RATE_LIMIT_PER_MINUTE
++        value: "1200"
++      - key: AUTH_RATE_LIMIT_PER_MINUTE
++        value: "120"
+       # ── Migrations ─────────────────────────────────────────────────────
+       # "true" on the FIRST deploy applies the embedded migration chain at
+       # boot (fresh database). Set to "false" afterwards — concurrent boots

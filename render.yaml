@@ -49,6 +49,14 @@ services:
           name: nuvora-redis
           type: redis
           property: connectionString
+      # ── Rate limiting ──────────────────────────────────────────────────
+      # Global per-IP window raised for production (default now 1200/min).
+      # Explicit here so a deployed instance never silently falls back to the
+      # old 300/min default under legitimate concurrent bursts.
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "1200"
+      - key: AUTH_RATE_LIMIT_PER_MINUTE
+        value: "120"
       # ── Migrations ─────────────────────────────────────────────────────
       # "true" on the FIRST deploy applies the embedded migration chain at
       # boot (fresh database). Set to "false" afterwards — concurrent boots
