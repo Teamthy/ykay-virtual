@@ -14,6 +14,13 @@
 -- Safe to re-run.
 -- =============================================================================
 
+-- Windows encoding guard: psql on Windows defaults its client encoding to the
+-- console code page (WIN1252). Applying this UTF-8 file under WIN1252 corrupts
+-- every non-ASCII character (the em dash "—" becomes "â€" + '"' in the DB and
+-- renders as mojibake across the whole site). This forces UTF-8 decoding for
+-- the rest of the file. (Alternative: run with PGCLIENTENCODING=UTF8.)
+SET client_encoding = 'UTF8';
+
 BEGIN;
 
 -- ── 1. Demo users (safe: randomized passwords, no default creds) ────────────

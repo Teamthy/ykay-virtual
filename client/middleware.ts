@@ -6,6 +6,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Authenticated surfaces. Any page here requires a session; unauthenticated
 // visitors are sent to /login with a `next` return target.
+//
+// NOTE: /onboarding (the exact path) is the PUBLIC create-account entry — its
+// step 1 registers the account, so it must be reachable WITHOUT a session.
+// Previously "/onboarding" was in this list, which made the flow
+// /register → /onboarding → (no session) → /login: clicking "Create an
+// account" bounced straight back to the login page, users could never create
+// an account, and — because no account could ever be onboarded — login kept
+// sending every user to the wizard instead of their dashboard. The post-login
+// steps (/onboarding/wizard and /onboarding/learner) stay protected.
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/student-dashboard",
@@ -14,9 +23,17 @@ const PROTECTED_PREFIXES = [
   "/account",
   "/messages",
   "/notifications",
-  "/onboarding",
+  "/onboarding/wizard",
+  "/onboarding/learner",
   "/admin",
   "/checkout",
+  // A-25: saved (wishlist) and chat are authenticated surfaces. They were
+  // previously only guarded by a client-side redirect AFTER hydration, so an
+  // unauthenticated visitor got a 200 + page flash before being bounced to
+  // /login. Guarding at the middleware makes the redirect instant and keeps
+  // SSR from rendering an empty authenticated shell.
+  "/saved",
+  "/chat",
 ];
 
 export function middleware(req: NextRequest) {
@@ -50,8 +67,11 @@ export const config = {
     "/account/:path*",
     "/messages/:path*",
     "/notifications/:path*",
-    "/onboarding/:path*",
+    "/onboarding/wizard/:path*",
+    "/onboarding/learner/:path*",
     "/admin/:path*",
     "/checkout/:path*",
+    "/saved/:path*",
+    "/chat/:path*",
   ],
 };

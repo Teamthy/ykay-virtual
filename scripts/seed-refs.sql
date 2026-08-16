@@ -4,6 +4,11 @@
 -- Run after `make migrate` on a fresh database, before scripts/e2e.sh.
 -- Dev/demo data only — never run against production.
 
+-- Windows encoding guard: forces UTF-8 decoding (psql on Windows defaults to
+-- WIN1252, which corrupts non-ASCII characters in this file). Keep this as
+-- the first statement. (Alternative: run with PGCLIENTENCODING=UTF8.)
+SET client_encoding = 'UTF8';
+
 -- Subjects: migrations pre-seed them (random UUIDs); the e2e suite resolves
 -- the Mathematics subject id dynamically, so nothing to do here.
 
