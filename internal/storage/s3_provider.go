@@ -17,7 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 
 	"net/url"
 	"os"
@@ -140,7 +140,7 @@ func (s *MinioStorage) MoveToQuarantine(ctx context.Context, b BucketType, key s
 		return fmt.Errorf("storage: quarantine copy: %w", err)
 	}
 	if err := s.client.RemoveObject(ctx, s.bucket(b), key, minio.RemoveObjectOptions{}); err != nil {
-		log.Printf("storage: quarantine: original %s/%s not removed: %v", b, key, err)
+		slog.Warn("quarantine: original object not removed", "bucket", b, "key", key, "error", err)
 	}
 	return nil
 }

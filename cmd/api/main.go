@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,6 +34,7 @@ import (
 	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
+	"ykay-virtual/internal/logx"
 	"ykay-virtual/internal/meeting"
 	"ykay-virtual/internal/middleware"
 	payment_provider "ykay-virtual/internal/payment"
@@ -122,8 +123,9 @@ func main() {
 	}
 	_ = godotenv.Load()
 	cfg := config.Load()
+	logx.Setup(cfg.Environment)
 	if err := cfg.Validate(); err != nil {
-		log.Fatalf("config: %v", err)
+		logx.Fatal("config invalid", "error", err)
 	}
 	ctx := context.Background()
 	shutdownTracer := telemetry.InitTracer(ctx, cfg.OtelEndpoint)
@@ -141,7 +143,7 @@ func main() {
 	if os.Getenv("S3_ENDPOINT") != "" {
 		guarded, gErr := storage.NewGuardedStorageFromEnv()
 		if gErr != nil {
-			log.Fatalf("storage: %v", gErr)
+			logx.Fatal("storage init failed", "error", gErr)
 		}
 		store = guarded
 	} else {
@@ -151,9 +153,9 @@ func main() {
 	// --- Repositories: Postgres → in-memory fallback (dev mode) ---
 	repos, readyCheck := setupRepositories(ctx, cfg)
 	if repos.StorageBackend == "postgres" {
-		log.Println("storage: postgres connected")
+		slog.Info("storage connected", "backend", "postgres")
 	} else {
-		log.Println("storage: postgres unavailable — using in-memory store (dev mode)")
+		slog.Warn("postgres unavailable — using in-memory store (dev mode)")
 	}
 	// Namespace the shared cache per storage backend: a Redis shared between
 	// a PG instance and a memory-mode dev instance must never serve each
@@ -166,13 +168,13 @@ func main() {
 	// Keep it on for the FIRST deploy only (then set false): concurrent
 	// boots on multiple replicas would race the schema_migrations table.
 	if getEnvDefault("MIGRATE_ON_BOOT", "") == "true" && repos.DB != nil {
-		log.Println("migrate: MIGRATE_ON_BOOT enabled — applying pending migrations")
+		slog.Info("migrations: MIGRATE_ON_BOOT enabled, applying pending migrations")
 		if n, err := migrations.ApplyUp(repos.DB); err != nil {
-			log.Fatalf("migrate: %v", err)
+			logx.Fatal("migrations failed", "error", err)
 		} else if n > 0 {
-			log.Printf("migrate: applied %d migration(s)", n)
+			slog.Info("migrations applied", "count", n)
 		} else {
-			log.Println("migrate: schema already up to date")
+			slog.Info("migrations: schema already up to date")
 		}
 	}
 
@@ -314,7 +316,7 @@ func main() {
 	// team can't mistake a misconfigured Whereby key for a working classroom.
 	telemetry.MeetingProviderStub(strings.ToLower(cfg.MeetingProvider), meetingStub)
 	if meetingStub && cfg.Environment == "production" {
-		log.Println("WARNING: meeting provider resolved to STUB — live classroom links will be fake meet.nuvora.local URLs. Set MEETING_PROVIDER=whereby and WHEREBY_API_KEY.")
+		slog.Warn("meeting provider resolved to STUB — live classroom links will be fake meet.nuvora.local URLs", "fix", "set MEETING_PROVIDER=whereby and WHEREBY_API_KEY")
 	}
 	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
 
@@ -364,9 +366,9 @@ func main() {
 			middleware.NewRedisRateLimiter(rc.Raw(), httpapi.RateLimitPerMinute(), time.Minute, "rl:global"),
 			middleware.NewRedisRateLimiter(rc.Raw(), 40, time.Minute, "rl:auth"),
 		)
-		log.Println("ratelimit: Redis-backed limiters active (distributed)")
+		slog.Info("ratelimit: Redis-backed limiters active (distributed)")
 	} else {
-		log.Println("ratelimit: in-memory limiters (single instance)")
+		slog.Info("ratelimit: in-memory limiters (single instance)")
 	}
 
 	srv := &http.Server{
@@ -378,16 +380,16 @@ func main() {
 	}
 
 	go func() {
-		fmt.Printf("NUVORA API v%s listening on :%s env=%s\n", Version, cfg.Port, cfg.Environment)
+		slog.Info("API listening", "version", Version, "port", cfg.Port, "env", cfg.Environment)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen failed: %v", err)
+			logx.Fatal("listen failed", "error", err)
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down...")
+	slog.Info("shutting down")
 	ctxShutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = srv.Shutdown(ctxShutdown)
@@ -396,7 +398,7 @@ func main() {
 func setupCache(ctx context.Context, redisURL string) cache.Cache {
 	if rc, err := cache.NewRedis(redisURL); err == nil {
 		if err := rc.Ping(ctx); err == nil {
-			log.Printf("cache: redis connected %s", redisURL)
+			slog.Info("cache: redis connected", "url", redisURL)
 			telemetry.RedisConnected(true)
 			return rc
 		}
@@ -406,7 +408,7 @@ func setupCache(ctx context.Context, redisURL string) cache.Cache {
 	// caching and the job queue to per-instance/direct behaviour — publish a
 	// metric so ops alerting can fire on it.
 	telemetry.RedisConnected(false)
-	log.Println("cache: redis unavailable — falling back to in-memory cache")
+	slog.Warn("cache: redis unavailable — falling back to in-memory cache")
 	return cache.NewInMemoryCache()
 }
 
@@ -422,10 +424,10 @@ func setupJobQueue(redisURL string) worker.Queue {
 	defer cancel()
 	if err := client.Ping(pingCtx).Err(); err != nil {
 		_ = client.Close()
-		log.Println("jobs: redis unavailable — direct dispatch (no queue)")
+		slog.Warn("jobs: redis unavailable — direct dispatch (no queue)")
 		return nil
 	}
-	log.Println("jobs: redis queue connected — outbound messages enqueue for the worker")
+	slog.Info("jobs: redis queue connected — outbound messages enqueue for the worker")
 	return worker.NewRedisQueue(client)
 }
 
@@ -444,15 +446,15 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		if cfg.Environment == "production" {
 			// Never silently fall back to in-memory in production: a failed
 			// database means the service must not serve stale/empty data.
-			log.Fatalf("storage: %v", err)
+			logx.Fatal("storage init failed", "error", err)
 		}
-		log.Printf("storage: postgres unavailable — using in-memory store (dev mode)")
+		slog.Warn("postgres unavailable — using in-memory store (dev mode)")
 		store := memory.NewMemoryStore()
 		store.Roles.Seed() // mirror migration 000001 role inserts
 		// Fixture data is opt-in. It is useful for local visual development but
 		// never represents launch data and must not be present by default.
 		if cfg.SeedDemoData {
-			log.Println("storage: explicit development fixture seed enabled")
+			slog.Warn("explicit development fixture seed enabled")
 			seedMemoryTutors(store)
 			seedMemoryCatalogue(store)
 			seedDemoUsers(store, getEnvDefault("DEMO_PASSWORD", "password123"))

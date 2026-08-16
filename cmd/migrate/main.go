@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -14,6 +14,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"ykay-virtual/internal/config"
+	"ykay-virtual/internal/logx"
 	"ykay-virtual/migrations"
 )
 
@@ -30,6 +31,7 @@ import (
 func main() {
 	_ = godotenv.Load()
 	cfg := config.Load()
+	logx.Setup(cfg.Environment)
 
 	cmd := flag.String("cmd", "up", "migrate command: up, down, status")
 	dir := flag.String("dir", "", "migrations directory (default: embedded chain)")
@@ -37,22 +39,22 @@ func main() {
 
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("open db: %v", err)
+		logx.Fatal("open db", "error", err)
 	}
 	defer db.Close()
 	if err := db.Ping(); err != nil {
-		log.Fatalf("ping db: %v — is postgres running? (docker compose up -d postgres)", err)
+		logx.Fatal("ping db", "error", err, "hint", "is postgres running? (docker compose up -d postgres)")
 	}
 
 	source := "embedded"
 	all := make([]migration, 0)
 	if *dir == "" {
 		if err := migrations.EnsureTable(db); err != nil {
-			log.Fatalf("ensure schema_migrations: %v", err)
+			logx.Fatal("ensure schema_migrations", "error", err)
 		}
 		files, err := migrations.Files()
 		if err != nil {
-			log.Fatalf("embedded migrations: %v", err)
+			logx.Fatal("embedded migrations", "error", err)
 		}
 		seen := map[int]*migration{}
 		for _, f := range files {
@@ -73,7 +75,7 @@ func main() {
 	} else {
 		source = *dir
 		if err := migrations.EnsureTable(db); err != nil {
-			log.Fatalf("ensure schema_migrations: %v", err)
+			logx.Fatal("ensure schema_migrations", "error", err)
 		}
 		all = listMigrationsFromDisk(*dir)
 	}
@@ -87,7 +89,7 @@ func main() {
 	case "status":
 		status(db, all, source)
 	default:
-		log.Fatalf("unknown cmd %q (use up, down, status)", *cmd)
+		logx.Fatal("unknown cmd", "cmd", *cmd, "hint", "use up, down, status")
 	}
 }
 
@@ -102,7 +104,7 @@ type migration struct {
 func listMigrationsFromDisk(dir string) []migration {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		log.Fatalf("read migrations dir %s: %v", dir, err)
+		logx.Fatal("read migrations dir", "dir", dir, "error", err)
 	}
 	seen := map[int]migration{}
 	for _, e := range entries {
@@ -120,7 +122,7 @@ func listMigrationsFromDisk(dir string) []migration {
 		}
 		content, err := os.ReadFile(filepath.Join(dir, name))
 		if err != nil {
-			log.Fatalf("read %s: %v", name, err)
+			logx.Fatal("read migration", "name", name, "error", err)
 		}
 		m := seen[version]
 		m.version = version
@@ -143,14 +145,14 @@ func listMigrationsFromDisk(dir string) []migration {
 func appliedVersions(db *sql.DB) map[int]bool {
 	rows, err := db.Query("SELECT version FROM schema_migrations")
 	if err != nil {
-		log.Fatalf("query schema_migrations: %v", err)
+		logx.Fatal("query schema_migrations", "error", err)
 	}
 	defer rows.Close()
 	out := map[int]bool{}
 	for rows.Next() {
 		var v int
 		if err := rows.Scan(&v); err != nil {
-			log.Fatalf("scan version: %v", err)
+			logx.Fatal("scan version", "error", err)
 		}
 		out[v] = true
 	}
@@ -164,28 +166,28 @@ func up(db *sql.DB, all []migration, source string) {
 			continue
 		}
 		if m.upSQL == "" {
-			log.Printf("skip %06d: no up file", m.version)
+			slog.Warn("skipping migration: no up file", "version", m.version)
 			continue
 		}
 		tx, err := db.Begin()
 		if err != nil {
-			log.Fatalf("begin tx: %v", err)
+			logx.Fatal("begin tx", "error", err)
 		}
 		if _, err := tx.Exec(m.upSQL); err != nil {
 			_ = tx.Rollback()
-			log.Fatalf("apply %s: %v", m.upName, err)
+			logx.Fatal("apply migration", "name", m.upName, "error", err)
 		}
 		if _, err := tx.Exec("INSERT INTO schema_migrations (version, name) VALUES ($1, $2)",
 			m.version, m.upName); err != nil {
 			_ = tx.Rollback()
-			log.Fatalf("record %06d: %v", m.version, err)
+			logx.Fatal("record migration", "version", m.version, "error", err)
 		}
 		if err := tx.Commit(); err != nil {
-			log.Fatalf("commit %06d: %v", m.version, err)
+			logx.Fatal("commit migration", "version", m.version, "error", err)
 		}
-		log.Printf("applied %06d %s (%s)", m.version, m.upName, source)
+		slog.Info("migration applied", "version", m.version, "name", m.upName, "source", source)
 	}
-	log.Println("migrate up complete")
+	slog.Info("migrate up complete")
 }
 
 func down(db *sql.DB, all []migration, source string) {
@@ -196,27 +198,27 @@ func down(db *sql.DB, all []migration, source string) {
 			continue
 		}
 		if m.downSQL == "" {
-			log.Printf("skip %06d: no down file", m.version)
+			slog.Warn("skipping migration: no down file", "version", m.version)
 			continue
 		}
 		tx, err := db.Begin()
 		if err != nil {
-			log.Fatalf("begin tx: %v", err)
+			logx.Fatal("begin tx", "error", err)
 		}
 		if _, err := tx.Exec(m.downSQL); err != nil {
 			_ = tx.Rollback()
-			log.Fatalf("rollback %s: %v", m.downName, err)
+			logx.Fatal("rollback migration", "name", m.downName, "error", err)
 		}
 		if _, err := tx.Exec("DELETE FROM schema_migrations WHERE version = $1", m.version); err != nil {
 			_ = tx.Rollback()
-			log.Fatalf("unrecord %06d: %v", m.version, err)
+			logx.Fatal("unrecord migration", "version", m.version, "error", err)
 		}
 		if err := tx.Commit(); err != nil {
-			log.Fatalf("commit %06d: %v", m.version, err)
+			logx.Fatal("commit migration", "version", m.version, "error", err)
 		}
-		log.Printf("rolled back %06d %s (%s)", m.version, m.downName, source)
+		slog.Info("migration rolled back", "version", m.version, "name", m.downName, "source", source)
 	}
-	log.Println("migrate down complete")
+	slog.Info("migrate down complete")
 }
 
 func status(db *sql.DB, all []migration, source string) {
@@ -229,7 +231,7 @@ func status(db *sql.DB, all []migration, source string) {
 		} else {
 			pending++
 		}
-		log.Printf("%06d %-7s %s", m.version, state, m.upName)
+		slog.Info(fmt.Sprintf("%06d %-7s %s", m.version, state, m.upName))
 	}
-	log.Printf("migrate status: %d applied, %d pending (%s)", len(applied), pending, source)
+	slog.Info(fmt.Sprintf("migrate status: %d applied, %d pending (%s)", len(applied), pending, source))
 }

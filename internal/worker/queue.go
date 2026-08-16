@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -150,7 +150,7 @@ func (q *RedisQueue) Run(ctx context.Context) {
 			if errors.Is(err, redis.Nil) || ctx.Err() != nil {
 				continue
 			}
-			log.Printf("worker: BRPOPLPUSH error: %v", err)
+			slog.Error("worker: BRPOPLPUSH error", "error", err)
 			time.Sleep(time.Second)
 			continue
 		}
@@ -190,7 +190,7 @@ func (q *RedisQueue) process(ctx context.Context, raw string) {
 
 	var job Job
 	if err := json.Unmarshal([]byte(raw), &job); err != nil {
-		log.Printf("worker: malformed job dropped: %v", err)
+		slog.Warn("worker: malformed job dropped", "error", err)
 		telemetry.JobDropped("malformed", backendRedis)
 		q.client.LPush(ctx, keyDead, raw)
 		return
@@ -200,7 +200,7 @@ func (q *RedisQueue) process(ctx context.Context, raw string) {
 	handler, ok := q.handlers[job.Type]
 	q.mu.RUnlock()
 	if !ok {
-		log.Printf("worker: no handler for %s — dead-lettered", job.Type)
+		slog.Warn("worker: no handler for job — dead-lettered", "type", string(job.Type))
 		telemetry.JobDropped(string(job.Type), backendRedis)
 		q.client.LPush(ctx, keyDead, raw)
 		return
@@ -215,7 +215,7 @@ func (q *RedisQueue) process(ctx context.Context, raw string) {
 			job.LastError = err.Error()
 			q.client.LPush(ctx, keyDead, marshalJob(job))
 			telemetry.JobDeadLettered(string(job.Type), backendRedis)
-			log.Printf("worker: job %s (%s) dead after %d attempts: %v", job.ID, job.Type, job.Attempts, err)
+			slog.Error("worker: job dead-lettered", "job_id", job.ID, "type", string(job.Type), "attempts", job.Attempts, "error", err)
 			return
 		}
 		job.LastError = err.Error()
@@ -223,7 +223,7 @@ func (q *RedisQueue) process(ctx context.Context, raw string) {
 		score := float64(time.Now().Add(delay).Unix())
 		q.client.ZAdd(ctx, keyDelayed, redis.Z{Score: score, Member: marshalJob(job)})
 		telemetry.JobRetried(string(job.Type), backendRedis)
-		log.Printf("worker: job %s (%s) attempt %d failed, retry in %s: %v", job.ID, job.Type, job.Attempts, delay, err)
+		slog.Warn("worker: job retry", "job_id", job.ID, "type", string(job.Type), "attempt", job.Attempts, "retry_in", delay.String(), "error", err)
 		return
 	}
 	telemetry.JobCompleted(string(job.Type), backendRedis)

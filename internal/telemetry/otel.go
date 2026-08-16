@@ -7,7 +7,7 @@ package telemetry
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -27,7 +27,7 @@ func InitTracer(ctx context.Context, endpoint string) func() {
 // InitTracerWithService — like InitTracer but with explicit service metadata.
 func InitTracerWithService(ctx context.Context, endpoint, serviceName, version string) func() {
 	if endpoint == "" {
-		log.Println("telemetry: OTel disabled (no OTEL_EXPORTER_OTLP_ENDPOINT)")
+		slog.Info("telemetry: OTel disabled (no OTEL_EXPORTER_OTLP_ENDPOINT)")
 		return func() {}
 	}
 
@@ -35,7 +35,7 @@ func InitTracerWithService(ctx context.Context, endpoint, serviceName, version s
 		otlptracehttp.WithEndpointURL(endpoint),
 	)
 	if err != nil {
-		log.Printf("telemetry: OTLP exporter init failed (%v) — tracing disabled", err)
+		slog.Warn("telemetry: OTLP exporter init failed — tracing disabled", "error", err)
 		return func() {}
 	}
 
@@ -60,12 +60,12 @@ func InitTracerWithService(ctx context.Context, endpoint, serviceName, version s
 		propagation.TraceContext{}, propagation.Baggage{},
 	))
 
-	log.Printf("telemetry: OTel tracing enabled → %s (service=%s)", endpoint, serviceName)
+	slog.Info("telemetry: OTel tracing enabled", "endpoint", endpoint, "service", serviceName)
 	return func() {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := tp.Shutdown(shutdownCtx); err != nil {
-			log.Printf("telemetry: OTel shutdown error: %v", err)
+			slog.Warn("telemetry: OTel shutdown error", "error", err)
 		}
 	}
 }

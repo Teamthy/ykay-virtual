@@ -323,9 +323,9 @@ func (rt *Router) SetRateLimiters(global, auth HTTPRateLimiter) {
 func (rt *Router) Handler() http.Handler {
 	var h http.Handler = rt.mux
 	h = telemetry.DefaultMetrics().Middleware(h)
-	h = middleware.RequestID(h)
 	h = middleware.Logger(h)
 	h = middleware.Recover(h)
+	h = middleware.RequestID(h)
 	h = middleware.CORS(rt.allowedOrigins)(h)
 	h = middleware.SecurityHeaders(rt.blockFrames)(h)
 	if rt.sessionAuth != nil {

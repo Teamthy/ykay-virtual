@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -100,7 +100,7 @@ func (s *DispatchService) HandleSendPush(ctx context.Context, raw json.RawMessag
 	if err := s.push.NotifyUser(ctx, id, j.Title, j.Body, j.Data); err != nil {
 		// Best-effort semantics: no devices / provider outage is logged but
 		// not retried forever (delivery failure ≠ job failure).
-		log.Printf("dispatch: push to %s skipped: %v", j.UserID, err)
+		slog.Warn("dispatch: push skipped", "user_id", j.UserID, "error", err)
 		return nil
 	}
 	return nil

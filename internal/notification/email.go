@@ -3,7 +3,7 @@ package notification
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/smtp"
 	"os"
 	"strings"
@@ -35,9 +35,16 @@ func NewEmailSender() EmailSender {
 type ConsoleEmailSender struct{}
 
 func (ConsoleEmailSender) Send(_ context.Context, to, subject, htmlBody string) error {
+	// Safe logging (A-20/A-21): the console sender runs only when SMTP is not
+	// configured. In production that is a misconfiguration — warn WITHOUT
+	// logging the body (which may contain magic links/codes/PII).
+	if os.Getenv("ENVIRONMENT") == "production" {
+		slog.Warn("email console sender used in production (SMTP not configured) — email NOT sent or logged", "to", to, "subject", subject)
+		return nil
+	}
 	// Dev console: log enough of the body to include codes/links (the branded
 	// shell is long, so 300 would hide them).
-	log.Printf("📧 EMAIL to=%s subject=%q body=%s", to, subject, truncate(htmlBody, 3000))
+	slog.Info("EMAIL (console/dev)", "to", to, "subject", subject, "body_len", len(htmlBody), "body", truncate(htmlBody, 3000))
 	return nil
 }
 

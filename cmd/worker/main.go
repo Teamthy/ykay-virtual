@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,6 +16,7 @@ import (
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/logx"
 	"ykay-virtual/internal/notification"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
@@ -64,6 +65,7 @@ type repos struct {
 func main() {
 	_ = godotenv.Load()
 	cfg := config.Load()
+	logx.Setup(cfg.Environment)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -82,7 +84,7 @@ func main() {
 	// PENDING rather than silently pretending money moved.
 	if cfg.Environment == "production" {
 		paymentSvc.PayoutSvc.SetFailClosed(true)
-		log.Println("worker: tutor payouts DISABLED (production, no certified provider) — payouts will stay PENDING")
+		slog.Warn("worker: tutor payouts DISABLED (production, no certified provider) — payouts will stay PENDING")
 	}
 	vettingSvc := service.NewVettingService(r.uowFactory, storage.NewLocalStorage(), audit, nil, nil)
 
@@ -116,35 +118,35 @@ func main() {
 		queue.Register(worker.JobExpireStaleBookingHolds, func(jctx context.Context, _ worker.Job) error {
 			n, err := paymentSvc.ExpireStaleHolds(jctx, 200)
 			if err == nil && n > 0 {
-				log.Printf("job[expire_stale_booking_holds]: released %d hold(s)", n)
+				slog.Info("job: expire_stale_booking_holds", "released", n)
 			}
 			return err
 		})
 		queue.Register(worker.JobProcessWeeklyPayouts, func(jctx context.Context, _ worker.Job) error {
 			n, err := paymentSvc.PayoutSvc.ProcessPendingPayouts(jctx, 200)
 			if err == nil {
-				log.Printf("job[process_weekly_tutor_payouts]: paid %d payout(s)", n)
+				slog.Info("job: process_weekly_tutor_payouts", "paid", n)
 			}
 			return err
 		})
 		queue.Register(worker.JobComputeTutorRanking, func(jctx context.Context, _ worker.Job) error {
 			n, err := vettingSvc.RecomputeAllRankings(jctx)
 			if err == nil {
-				log.Printf("job[compute_tutor_ranking_score]: updated %d ranking(s)", n)
+				slog.Info("job: compute_tutor_ranking_score", "updated", n)
 			}
 			return err
 		})
 		queue.Register(worker.JobArchiveAuditLogs, func(jctx context.Context, _ worker.Job) error {
 			n, err := r.auditRepo.ArchiveOlderThan(jctx, auditCutoff(), 1000)
 			if err == nil && n > 0 {
-				log.Printf("job[archive_audit_logs]: archived %d row(s)", n)
+				slog.Info("job: archive_audit_logs", "archived", n)
 			}
 			return err
 		})
 		go queue.Run(ctx)
-		log.Println("Worker: durable Redis queue consuming (retry + dead-letter enabled)")
+		slog.Info("worker: durable Redis queue consuming (retry + dead-letter enabled)")
 	} else {
-		log.Println("Worker: Redis unavailable — cron-only mode (no durable queue)")
+		slog.Warn("worker: Redis unavailable — cron-only mode (no durable queue)")
 	}
 
 	// --- Cron scheduler ---
@@ -163,7 +165,7 @@ func main() {
 	go func() {
 		if release, ok := cronLock.TryLock(ctx, "expire_stale_booking_holds", 14*time.Minute); ok {
 			if _, err := paymentSvc.ExpireStaleHolds(ctx, 200); err != nil {
-				log.Printf("cron[expire_stale_booking_holds] boot error: %v", err)
+				slog.Error("cron boot: expire_stale_booking_holds", "error", err)
 				telemetry.CronRun("expire_stale_booking_holds", false)
 			} else {
 				telemetry.CronRun("expire_stale_booking_holds", true)
@@ -172,7 +174,7 @@ func main() {
 		}
 		if release, ok := cronLock.TryLock(ctx, "expire_stale_learning_attempts", 14*time.Minute); ok {
 			if _, err := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); err != nil {
-				log.Printf("cron[expire_stale_learning_attempts] boot error: %v", err)
+				slog.Error("cron boot: expire_stale_learning_attempts", "error", err)
 				telemetry.CronRun("expire_stale_learning_attempts", false)
 			} else {
 				telemetry.CronRun("expire_stale_learning_attempts", true)
@@ -191,24 +193,24 @@ func main() {
 				if release, ok := cronLock.TryLock(ctx, "expire_stale_booking_holds", 14*time.Minute); ok {
 					n, err := paymentSvc.ExpireStaleHolds(ctx, 200)
 					if err != nil {
-						log.Printf("cron[expire_stale_booking_holds] error: %v", err)
+						slog.Error("cron: expire_stale_booking_holds", "error", err)
 						telemetry.CronRun("expire_stale_booking_holds", false)
 					} else {
 						telemetry.CronRun("expire_stale_booking_holds", true)
 						if n > 0 {
-							log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
+							slog.Info("cron: expire_stale_booking_holds", "released", n)
 						}
 					}
 					release()
 				}
 				if release, ok := cronLock.TryLock(ctx, "expire_stale_learning_attempts", 14*time.Minute); ok {
 					if n, aerr := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); aerr != nil {
-						log.Printf("cron[expire_stale_learning_attempts] error: %v", aerr)
+						slog.Error("cron: expire_stale_learning_attempts", "error", aerr)
 						telemetry.CronRun("expire_stale_learning_attempts", false)
 					} else {
 						telemetry.CronRun("expire_stale_learning_attempts", true)
 						if n > 0 {
-							log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
+							slog.Info("cron: expire_stale_learning_attempts", "expired", n)
 						}
 					}
 					release()
@@ -217,11 +219,11 @@ func main() {
 				if release, ok := cronLock.TryLock(ctx, "process_weekly_tutor_payouts", 6*24*time.Hour); ok {
 					n, err := paymentSvc.PayoutSvc.ProcessPendingPayouts(ctx, 200)
 					if err != nil {
-						log.Printf("cron[process_weekly_tutor_payouts] error: %v", err)
+						slog.Error("cron: process_weekly_tutor_payouts", "error", err)
 						telemetry.CronRun("process_weekly_tutor_payouts", false)
 					} else {
 						telemetry.CronRun("process_weekly_tutor_payouts", true)
-						log.Printf("cron[process_weekly_tutor_payouts]: paid %d payout(s)", n)
+						slog.Info("cron: process_weekly_tutor_payouts", "paid", n)
 					}
 					release()
 				}
@@ -229,11 +231,11 @@ func main() {
 				if release, ok := cronLock.TryLock(ctx, "compute_tutor_ranking_score", 20*time.Hour); ok {
 					n, err := vettingSvc.RecomputeAllRankings(ctx)
 					if err != nil {
-						log.Printf("cron[compute_tutor_ranking_score] error: %v", err)
+						slog.Error("cron: compute_tutor_ranking_score", "error", err)
 						telemetry.CronRun("compute_tutor_ranking_score", false)
 					} else {
 						telemetry.CronRun("compute_tutor_ranking_score", true)
-						log.Printf("cron[compute_tutor_ranking_score]: updated %d ranking(s)", n)
+						slog.Info("cron: compute_tutor_ranking_score", "updated", n)
 					}
 					release()
 				}
@@ -241,12 +243,12 @@ func main() {
 				if release, ok := cronLock.TryLock(ctx, "archive_audit_logs", 20*time.Hour); ok {
 					n, err := r.auditRepo.ArchiveOlderThan(ctx, auditCutoff(), 1000)
 					if err != nil {
-						log.Printf("cron[archive_audit_logs] error: %v", err)
+						slog.Error("cron: archive_audit_logs", "error", err)
 						telemetry.CronRun("archive_audit_logs", false)
 					} else {
 						telemetry.CronRun("archive_audit_logs", true)
 						if n > 0 {
-							log.Printf("cron[archive_audit_logs]: archived %d audit row(s)", n)
+							slog.Info("cron: archive_audit_logs", "archived", n)
 						}
 					}
 					release()
@@ -264,12 +266,12 @@ func main() {
 	}
 	metricsSrv := serveMetrics(metricsPort, os.Getenv("METRICS_TOKEN"))
 
-	log.Println("Worker started — crons: expire_stale_booking_holds (15m), process_weekly_tutor_payouts (7d), compute_tutor_ranking_score (24h)")
+	slog.Info("worker started", "crons", "expire_stale_booking_holds (15m), process_weekly_tutor_payouts (7d), compute_tutor_ranking_score (24h)")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Worker shutting down...")
+	slog.Info("worker shutting down")
 	if metricsSrv != nil {
 		shCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
@@ -292,9 +294,9 @@ func serveMetrics(port, token string) *http.Server {
 	})
 	srv := &http.Server{Addr: ":" + port, Handler: mux}
 	go func() {
-		log.Printf("Worker metrics listening on :%s", port)
+		slog.Info("worker metrics listening", "port", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("worker metrics server: %v", err)
+			slog.Error("worker metrics server", "error", err)
 		}
 	}()
 	return srv
@@ -303,7 +305,7 @@ func serveMetrics(port, token string) *http.Server {
 func setupRepos(ctx context.Context, cfg config.Config) *repos {
 	pg, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
-		log.Printf("storage: %v — worker running against in-memory store (dev mode)", err)
+		slog.Warn("postgres unavailable — worker running against in-memory store (dev mode)", "error", err)
 		store := memory.NewMemoryStore()
 		return &repos{
 			uowFactory: memory.NewMemoryUnitOfWorkFactory(store),

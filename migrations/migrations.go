@@ -8,7 +8,7 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
-	"log"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
@@ -130,7 +130,7 @@ func ApplyUp(db *sql.DB) (int, error) {
 		if err := tx.Commit(); err != nil {
 			return n, fmt.Errorf("commit %06d: %w", f.Version, err)
 		}
-		log.Printf("migrate: applied %06d %s", f.Version, f.Name)
+		slog.Info("migrate: applied", "version", f.Version, "name", f.Name)
 		n++
 	}
 	return n, nil

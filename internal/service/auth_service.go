@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -92,7 +92,7 @@ func (s *AuthService) WithQueue(q worker.Queue) *AuthService {
 func (s *AuthService) WithDevLogging(enabled bool) *AuthService {
 	if enabled {
 		s.devLog = func(format string, args ...any) {
-			log.Printf("🔑 "+format, args...)
+			slog.Info(fmt.Sprintf("🔑 "+format, args...))
 		}
 	} else {
 		s.devLog = nil

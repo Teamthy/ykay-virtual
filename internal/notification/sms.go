@@ -14,7 +14,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -40,7 +40,14 @@ func NewSMSSender() SMSSender {
 type ConsoleSMSSender struct{}
 
 func (ConsoleSMSSender) Send(_ context.Context, to, message string) error {
-	log.Printf("📱 SMS to=%s body=%q", to, truncate(message, 300))
+	// Safe logging (A-20/A-21): the console sender runs only when no real SMS
+	// provider is configured. In production that is a misconfiguration — warn
+	// WITHOUT logging the message body (which may contain codes/PII).
+	if os.Getenv("ENVIRONMENT") == "production" {
+		slog.Warn("SMS console sender used in production (provider not configured) — message NOT sent or logged", "to", to)
+		return nil
+	}
+	slog.Info("SMS (console/dev)", "to", to, "body", truncate(message, 300))
 	return nil
 }
 

@@ -3,7 +3,7 @@ package httpapi
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -157,7 +157,7 @@ func WriteAppError(w http.ResponseWriter, err error) {
 	default:
 		// Log the real cause server-side (5xx visibility) without leaking it
 		// to the client.
-		log.Printf("internal error: %v", err)
+		slog.Error("internal error", "error", err)
 		pkg.WriteError(w, http.StatusInternalServerError, string(pkg.CodeInternal), "internal server error", nil)
 	}
 }

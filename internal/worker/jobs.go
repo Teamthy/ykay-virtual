@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"log/slog"
 )
 
 type JobType string
@@ -42,6 +42,6 @@ type Worker struct{}
 func New() *Worker { return &Worker{} }
 
 func (w *Worker) Process(ctx context.Context, job Job) error {
-	log.Printf("processing job %s type %s", job.ID, job.Type)
+	slog.Info("processing job", "job_id", job.ID, "type", string(job.Type))
 	return nil
 }
