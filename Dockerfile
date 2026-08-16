@@ -18,7 +18,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/api ./c
  && CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/worker ./cmd/worker
 
 # ── Stage 2: runtime (scratch, non-root) ───────────────────────────────────
+# SECURITY (A-01): the scratch image has no CA certificates, so every outbound
+# HTTPS call (Paystack, Flutterwave, Whereby, Gemini, SMTP/TLS, S3) would fail
+# TLS verification at runtime while /health still reported 200. Copy the CA
+# bundle from the build stage (golang:alpine ships ca-certificates so `go mod
+# download` can verify module downloads over HTTPS).
 FROM scratch
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /out/api /out/migrate /out/worker /usr/local/bin/
 
 # Non-root user (uid 65532 = nobody in scratch).

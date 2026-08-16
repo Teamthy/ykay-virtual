@@ -97,7 +97,12 @@ func main() {
 
 	// --- Durable job queue (G3.1) ---
 	// Redis-backed with retries + dead-letter; consumers are idempotent.
-	if redisClient := newRedisClient(cfg.RedisURL); redisClient != nil {
+	// The client is hoisted so the cron scheduler can share it for leader
+	// election (A-09).
+	redisClient := newRedisClient(cfg.RedisURL)
+	telemetry.RedisConnected(redisClient != nil)
+	cronLock := worker.NewCronLock(redisClient)
+	if redisClient != nil {
 		queue := worker.NewRedisQueue(redisClient)
 		queue.Register(worker.JobSendEmail, func(jctx context.Context, job worker.Job) error {
 			return dispatchSvc.HandleSendEmail(jctx, job.Payload)
@@ -153,18 +158,26 @@ func main() {
 	defer archiveTicker.Stop()
 
 	// Run once at boot so restarts immediately recover stale holds + attempts.
+	// Leader-election (A-09): a replica booting alongside a live winner skips
+	// its boot recovery rather than double-running.
 	go func() {
-		if _, err := paymentSvc.ExpireStaleHolds(ctx, 200); err != nil {
-			log.Printf("cron[expire_stale_booking_holds] boot error: %v", err)
-			telemetry.CronRun("expire_stale_booking_holds", false)
-		} else {
-			telemetry.CronRun("expire_stale_booking_holds", true)
+		if release, ok := cronLock.TryLock(ctx, "expire_stale_booking_holds", 14*time.Minute); ok {
+			if _, err := paymentSvc.ExpireStaleHolds(ctx, 200); err != nil {
+				log.Printf("cron[expire_stale_booking_holds] boot error: %v", err)
+				telemetry.CronRun("expire_stale_booking_holds", false)
+			} else {
+				telemetry.CronRun("expire_stale_booking_holds", true)
+			}
+			release()
 		}
-		if _, err := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); err != nil {
-			log.Printf("cron[expire_stale_learning_attempts] boot error: %v", err)
-			telemetry.CronRun("expire_stale_learning_attempts", false)
-		} else {
-			telemetry.CronRun("expire_stale_learning_attempts", true)
+		if release, ok := cronLock.TryLock(ctx, "expire_stale_learning_attempts", 14*time.Minute); ok {
+			if _, err := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); err != nil {
+				log.Printf("cron[expire_stale_learning_attempts] boot error: %v", err)
+				telemetry.CronRun("expire_stale_learning_attempts", false)
+			} else {
+				telemetry.CronRun("expire_stale_learning_attempts", true)
+			}
+			release()
 		}
 	}()
 
@@ -174,53 +187,69 @@ func main() {
 			case <-ctx.Done():
 				return
 			case <-expireTicker.C:
-				n, err := paymentSvc.ExpireStaleHolds(ctx, 200)
-				if err != nil {
-					log.Printf("cron[expire_stale_booking_holds] error: %v", err)
-					telemetry.CronRun("expire_stale_booking_holds", false)
-				} else {
-					telemetry.CronRun("expire_stale_booking_holds", true)
-				}
-				if n, aerr := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); aerr != nil {
-					log.Printf("cron[expire_stale_learning_attempts] error: %v", aerr)
-					telemetry.CronRun("expire_stale_learning_attempts", false)
-				} else {
-					telemetry.CronRun("expire_stale_learning_attempts", true)
-					if n > 0 {
-						log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
+				// A-09: leader election — only one replica runs each tick.
+				if release, ok := cronLock.TryLock(ctx, "expire_stale_booking_holds", 14*time.Minute); ok {
+					n, err := paymentSvc.ExpireStaleHolds(ctx, 200)
+					if err != nil {
+						log.Printf("cron[expire_stale_booking_holds] error: %v", err)
+						telemetry.CronRun("expire_stale_booking_holds", false)
+					} else {
+						telemetry.CronRun("expire_stale_booking_holds", true)
+						if n > 0 {
+							log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
+						}
 					}
+					release()
 				}
-				if n > 0 {
-					log.Printf("cron[expire_stale_booking_holds]: auto-released %d stale hold(s)", n)
+				if release, ok := cronLock.TryLock(ctx, "expire_stale_learning_attempts", 14*time.Minute); ok {
+					if n, aerr := r.learning.ExpireStaleAttempts(ctx, time.Now().UTC()); aerr != nil {
+						log.Printf("cron[expire_stale_learning_attempts] error: %v", aerr)
+						telemetry.CronRun("expire_stale_learning_attempts", false)
+					} else {
+						telemetry.CronRun("expire_stale_learning_attempts", true)
+						if n > 0 {
+							log.Printf("cron[expire_stale_learning_attempts]: expired %d attempt(s)", n)
+						}
+					}
+					release()
 				}
 			case <-payoutTicker.C:
-				n, err := paymentSvc.PayoutSvc.ProcessPendingPayouts(ctx, 200)
-				if err != nil {
-					log.Printf("cron[process_weekly_tutor_payouts] error: %v", err)
-					telemetry.CronRun("process_weekly_tutor_payouts", false)
-					continue
+				if release, ok := cronLock.TryLock(ctx, "process_weekly_tutor_payouts", 6*24*time.Hour); ok {
+					n, err := paymentSvc.PayoutSvc.ProcessPendingPayouts(ctx, 200)
+					if err != nil {
+						log.Printf("cron[process_weekly_tutor_payouts] error: %v", err)
+						telemetry.CronRun("process_weekly_tutor_payouts", false)
+					} else {
+						telemetry.CronRun("process_weekly_tutor_payouts", true)
+						log.Printf("cron[process_weekly_tutor_payouts]: paid %d payout(s)", n)
+					}
+					release()
 				}
-				telemetry.CronRun("process_weekly_tutor_payouts", true)
-				log.Printf("cron[process_weekly_tutor_payouts]: paid %d payout(s)", n)
 			case <-rankingTicker.C:
-				n, err := vettingSvc.RecomputeAllRankings(ctx)
-				if err != nil {
-					log.Printf("cron[compute_tutor_ranking_score] error: %v", err)
-					telemetry.CronRun("compute_tutor_ranking_score", false)
-					continue
+				if release, ok := cronLock.TryLock(ctx, "compute_tutor_ranking_score", 20*time.Hour); ok {
+					n, err := vettingSvc.RecomputeAllRankings(ctx)
+					if err != nil {
+						log.Printf("cron[compute_tutor_ranking_score] error: %v", err)
+						telemetry.CronRun("compute_tutor_ranking_score", false)
+					} else {
+						telemetry.CronRun("compute_tutor_ranking_score", true)
+						log.Printf("cron[compute_tutor_ranking_score]: updated %d ranking(s)", n)
+					}
+					release()
 				}
-				telemetry.CronRun("compute_tutor_ranking_score", true)
-				log.Printf("cron[compute_tutor_ranking_score]: updated %d ranking(s)", n)
 			case <-archiveTicker.C:
-				n, err := r.auditRepo.ArchiveOlderThan(ctx, auditCutoff(), 1000)
-				if err != nil {
-					log.Printf("cron[archive_audit_logs] error: %v", err)
-					telemetry.CronRun("archive_audit_logs", false)
-					continue
-				}
-				telemetry.CronRun("archive_audit_logs", true)
-				if n > 0 {
-					log.Printf("cron[archive_audit_logs]: archived %d audit row(s)", n)
+				if release, ok := cronLock.TryLock(ctx, "archive_audit_logs", 20*time.Hour); ok {
+					n, err := r.auditRepo.ArchiveOlderThan(ctx, auditCutoff(), 1000)
+					if err != nil {
+						log.Printf("cron[archive_audit_logs] error: %v", err)
+						telemetry.CronRun("archive_audit_logs", false)
+					} else {
+						telemetry.CronRun("archive_audit_logs", true)
+						if n > 0 {
+							log.Printf("cron[archive_audit_logs]: archived %d audit row(s)", n)
+						}
+					}
+					release()
 				}
 			}
 		}

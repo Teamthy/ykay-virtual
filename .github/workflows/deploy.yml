@@ -1,19 +1,20 @@
 name: Deploy
 
-# Production deploy on push to main (phase 42):
+# Production deploy (phase 42):
 #   - web  → Vercel (needs VERCEL_TOKEN + VERCEL_ORG_ID + VERCEL_PROJECT_ID
 #             secrets; set API_PROXY_TARGET / NEXT_PUBLIC_* in the project)
 #   - api  → Render (needs RENDER_DEPLOY_HOOK secret — a Deploy Hook URL from
-#             the Render dashboard for the api service). Fly.io alternative:
-#             set FLY_API_TOKEN + app name and swap the step.
-# Manual trigger also available: Actions → Deploy → Run workflow.
+#             the Render dashboard for the api service).
+#
+# A-06: deploys are GATED on the CI workflow. This workflow triggers only
+# after a completed CI run on main, and the deploy jobs run only when that CI
+# run succeeded (workflow_dispatch remains a manual escape hatch).
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "*.md"
   workflow_dispatch:
 
 concurrency:
@@ -24,6 +25,7 @@ jobs:
   deploy-web:
     name: Deploy web → Vercel
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,11 +56,18 @@ jobs:
   deploy-api:
     name: Deploy API → Render
     runs-on: ubuntu-latest
-    if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Trigger Render deploy hook
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
+          # A-06: fail loudly when the hook secret is missing instead of
+          # silently skipping the API deploy (previously the job was skipped
+          # by an `if` guard, so a misconfigured repo shipped web-only).
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK secret is not set — the API was NOT deployed."
+            exit 1
+          fi
           curl -fsS -X POST "$RENDER_DEPLOY_HOOK" || { echo "Render hook failed"; exit 1; }
           echo "Render deploy triggered — monitor https://dashboard.render.com"

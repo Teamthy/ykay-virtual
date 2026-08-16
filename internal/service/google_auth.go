@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
 )
@@ -36,35 +37,70 @@ type GoogleOAuthConfig struct {
 	RedirectURL  string
 }
 
-// GoogleAuthService — stateless OAuth helper on AuthService.
+// GoogleAuthService — OAuth helper on AuthService. The state nonce is stored
+// in the shared cache (Redis in production, in-memory in dev) so that:
+//   - state is atomic + single-use (GetDel consumes it exactly once),
+//   - the store is shared across API replicas (state issued on one instance
+//     is valid on the one handling the callback),
+//   - the store is bounded by TTL (no unbounded in-memory map).
+//
+// Without a store the flow fails closed (BuildAuthURL errors).
 type GoogleAuthService struct {
-	cfg       GoogleOAuthConfig
-	auth      *AuthService
-	now       func() time.Time
-	http      *http.Client
-	stateSeed map[string]time.Time // in-memory nonce (single-instance dev)
+	cfg   GoogleOAuthConfig
+	auth  *AuthService
+	http  *http.Client
+	state cache.Cache // shared single-use nonce store (nil → disabled)
 }
 
 func NewGoogleAuthService(cfg GoogleOAuthConfig, auth *AuthService) *GoogleAuthService {
 	return &GoogleAuthService{
-		cfg: cfg, auth: auth, now: time.Now,
-		http:      &http.Client{Timeout: 15 * time.Second},
-		stateSeed: map[string]time.Time{},
+		cfg:  cfg,
+		auth: auth,
+		http: &http.Client{Timeout: 15 * time.Second},
 	}
+}
+
+// WithStateStore wires the shared cache used for OAuth state nonces.
+func (g *GoogleAuthService) WithStateStore(c cache.Cache) *GoogleAuthService {
+	g.state = c
+	return g
 }
 
 func (g *GoogleAuthService) Enabled() bool { return g.cfg.ClientID != "" && g.cfg.ClientSecret != "" }
 
+// stateKey namespaces a single-use OAuth nonce in the shared cache.
+func (g *GoogleAuthService) stateKey(state string) string {
+	return cache.CacheKey("oauth:google:state", state)
+}
+
 // BuildAuthURL returns the consent URL + the state nonce to echo back.
-func (g *GoogleAuthService) BuildAuthURL() (string, string, error) {
+func (g *GoogleAuthService) BuildAuthURL(ctx context.Context) (string, string, error) {
 	if !g.Enabled() {
 		return "", "", fmt.Errorf("%w: google auth is not configured", domain.ErrConflict)
 	}
-	state, err := randomState()
-	if err != nil {
-		return "", "", err
+	if g.state == nil {
+		return "", "", fmt.Errorf("%w: oauth state store is not configured", domain.ErrConflict)
 	}
-	g.stateSeed[state] = g.now().UTC().Add(googleStateTTL)
+	// Random 24-byte nonce; SetNX makes registration single-writer so a
+	// (negligible) collision regenerates instead of overwriting an in-flight
+	// nonce.
+	var state string
+	for attempt := 0; attempt < 5; attempt++ {
+		var err error
+		if state, err = randomState(); err != nil {
+			return "", "", err
+		}
+		ok, err := g.state.SetNX(ctx, g.stateKey(state), "1", googleStateTTL)
+		if err != nil {
+			return "", "", fmt.Errorf("store oauth state: %w", err)
+		}
+		if ok {
+			break
+		}
+	}
+	if state == "" {
+		return "", "", fmt.Errorf("%w: could not allocate oauth state", domain.ErrConflict)
+	}
 	q := url.Values{}
 	q.Set("client_id", g.cfg.ClientID)
 	q.Set("redirect_uri", g.cfg.RedirectURL)
@@ -81,12 +117,19 @@ func (g *GoogleAuthService) ExchangeCode(ctx context.Context, code, state, ip, u
 	if !g.Enabled() {
 		return "", nil, nil, fmt.Errorf("%w: google auth is not configured", domain.ErrConflict)
 	}
-	// Validate state nonce.
-	exp, ok := g.stateSeed[state]
-	if !ok || g.now().UTC().After(exp) {
+	if g.state == nil {
+		return "", nil, nil, fmt.Errorf("%w: oauth state store is not configured", domain.ErrConflict)
+	}
+	// Validate + consume the state nonce atomically (single-use, shared
+	// across replicas, TTL-bounded). An absent/expired/replayed nonce fails
+	// closed with 401.
+	consumed, err := g.state.GetDel(ctx, g.stateKey(state))
+	if err != nil {
+		return "", nil, nil, fmt.Errorf("consume oauth state: %w", err)
+	}
+	if consumed == "" {
 		return "", nil, nil, fmt.Errorf("%w: invalid or expired oauth state", domain.ErrUnauthorized)
 	}
-	delete(g.stateSeed, state)
 
 	// 1) Exchange code → access token.
 	form := url.Values{}

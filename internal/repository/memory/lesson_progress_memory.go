@@ -12,7 +12,7 @@ import (
 
 // LessonProgressMemory — in-memory LessonProgressRepository for tests + dev.
 type LessonProgressMemory struct {
-	mu  sync.RWMutex
+	mu    sync.RWMutex
 	byKey map[string]*booking.LessonProgress
 }
 

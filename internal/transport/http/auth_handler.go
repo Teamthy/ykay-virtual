@@ -165,7 +165,7 @@ func (h *AuthHandler) GoogleAuthURL(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, pkg.Conflict("google auth is not configured"))
 		return
 	}
-	u, state, err := h.google.BuildAuthURL()
+	u, state, err := h.google.BuildAuthURL(r.Context())
 	if err != nil {
 		WriteAppError(w, err)
 		return

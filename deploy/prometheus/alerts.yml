@@ -40,6 +40,26 @@ groups:
           description: "p95 = {{ $value }}s. Check DB slow queries, Redis latency and OTel traces (Tempo) for the slowest routes."
           runbook: "docs/OPS_MONITORING.md#high-latency"
 
+      - alert: NuvoraRedisDown
+        expr: nuvora_redis_connected == 0
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Redis unreachable — API degraded to in-memory fallback"
+          description: "Rate limiting, session caching and the job queue have silently degraded to per-instance/direct behaviour. Restore Redis and verify the queue drained."
+          runbook: "docs/OPS_MONITORING.md#redis-down"
+
+      - alert: NuvoraMeetingProviderStub
+        expr: nuvora_meeting_provider_stub == 1
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "Meeting provider resolved to the dev stub (fake meet.nuvora.local URLs)"
+          description: "Live classroom links are fake. Set MEETING_PROVIDER=whereby and a valid WHEREBY_API_KEY."
+          runbook: "docs/OPS_MONITORING.md#meeting-stub"
+
   - name: nuvora-jobs
     rules:
       - alert: NuvoraQueueBacklog

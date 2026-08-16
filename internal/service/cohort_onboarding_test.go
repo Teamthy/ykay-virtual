@@ -51,25 +51,26 @@ func TestLessonService_AttendanceAndNotes(t *testing.T) {
 		memory.NewResourceMemory(), memory.NewAssignmentMemory())
 	ctx := context.Background()
 	student := uuid.New()
+	admin := uuid.New() // platform admin — bypasses tutor ownership (A-02)
 
-	require.NoError(t, svc.MarkAttendance(ctx, uuid.New(), lesson.ID, student, "PRESENT", strPtr("on time")))
-	list, err := svc.ListLessonAttendance(ctx, lesson.ID)
+	require.NoError(t, svc.MarkAttendance(ctx, admin, true, lesson.ID, student, "PRESENT", strPtr("on time")))
+	list, err := svc.ListLessonAttendance(ctx, admin, true, lesson.ID)
 	require.NoError(t, err)
 	assert.Len(t, list, 1)
 	assert.Equal(t, "PRESENT", list[0].Status)
 
-	err = svc.MarkAttendance(ctx, uuid.New(), lesson.ID, student, "MAYBE", nil)
+	err = svc.MarkAttendance(ctx, admin, true, lesson.ID, student, "MAYBE", nil)
 	assert.ErrorIs(t, err, domain.ErrInvalidInput)
 
-	_, err = svc.AddLessonNote(ctx, uuid.New(), lesson.ID, &student, "  ", nil, true)
+	_, err = svc.AddLessonNote(ctx, admin, true, lesson.ID, &student, "  ", nil, true)
 	assert.ErrorIs(t, err, domain.ErrInvalidInput)
 
 	hw := "Solve exercises 3-7"
-	note, err := svc.AddLessonNote(ctx, uuid.New(), lesson.ID, &student, "Covered quadratic equations", &hw, true)
+	note, err := svc.AddLessonNote(ctx, admin, true, lesson.ID, &student, "Covered quadratic equations", &hw, true)
 	require.NoError(t, err)
 	assert.Equal(t, tutorID, note.TutorProfileID)
 
-	notes, err := svc.ListLessonNotes(ctx, lesson.ID)
+	notes, err := svc.ListLessonNotes(ctx, admin, true, lesson.ID)
 	require.NoError(t, err)
 	assert.Len(t, notes, 1)
 	assert.Equal(t, "Solve exercises 3-7", *notes[0].Homework)
@@ -96,10 +97,10 @@ func TestLessonService_OwnershipEnforced(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	err := svc.MarkAttendance(ctx, uuid.New(), lesson.ID, uuid.New(), "PRESENT", nil)
+	err := svc.MarkAttendance(ctx, uuid.New(), false, lesson.ID, uuid.New(), "PRESENT", nil)
 	assert.ErrorIs(t, err, domain.ErrForbidden)
 
-	require.NoError(t, svc.MarkAttendance(ctx, owner, lesson.ID, uuid.New(), "PRESENT", nil))
+	require.NoError(t, svc.MarkAttendance(ctx, owner, false, lesson.ID, uuid.New(), "PRESENT", nil))
 }
 
 func TestOnboarding_CreateLearner_LinksParent(t *testing.T) {

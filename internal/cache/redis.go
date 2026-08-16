@@ -19,6 +19,13 @@ type Cache interface {
 	DelPrefix(ctx context.Context, prefix string) error
 	Incr(ctx context.Context, key string) (int64, error)
 	Exists(ctx context.Context, key string) (bool, error)
+	// SetNX sets key only when absent and returns whether it won the race —
+	// the distributed-lock / single-use nonce primitive (cron leader election,
+	// OAuth state). ok=false means the key already existed.
+	SetNX(ctx context.Context, key, value string, ttl time.Duration) (bool, error)
+	// GetDel atomically returns the value and deletes the key (single-use
+	// nonce consumption for OAuth state exchange).
+	GetDel(ctx context.Context, key string) (string, error)
 }
 
 type InMemoryCache struct {
@@ -92,4 +99,40 @@ func (c *InMemoryCache) Exists(_ context.Context, key string) (bool, error) {
 	defer c.mu.RUnlock()
 	_, ok := c.store[key]
 	return ok, nil
+}
+
+// SetNX — in-memory single-use nonce / lock (mutex-guarded; single instance).
+func (c *InMemoryCache) SetNX(_ context.Context, key, value string, ttl time.Duration) (bool, error) {
+	exp := time.Time{}
+	if ttl > 0 {
+		exp = time.Now().Add(ttl)
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if v, ok := c.store[key]; ok {
+		if v.exp.IsZero() || time.Now().Before(v.exp) {
+			return false, nil
+		}
+	}
+	c.store[key] = struct {
+		val string
+		exp time.Time
+	}{val: value, exp: exp}
+	return true, nil
+}
+
+// GetDel — atomically consume a single-use nonce (mutex-guarded).
+func (c *InMemoryCache) GetDel(_ context.Context, key string) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	v, ok := c.store[key]
+	if !ok {
+		return "", nil
+	}
+	if !v.exp.IsZero() && time.Now().After(v.exp) {
+		delete(c.store, key)
+		return "", nil
+	}
+	delete(c.store, key)
+	return v.val, nil
 }

@@ -194,6 +194,12 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 	if len(in.Password) < 8 {
 		return nil, fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
 	}
+	// A-18: bcrypt only reads the first 72 bytes and Go's bcrypt rejects
+	// longer passwords with an opaque error that would surface as a 500.
+	// Reject over-long passwords with a friendly message instead.
+	if len(in.Password) > 72 {
+		return nil, fmt.Errorf("%w: password must be at most 72 characters", domain.ErrInvalidInput)
+	}
 	if len(in.Roles) == 0 {
 		return nil, fmt.Errorf("%w: at least one role is required (STUDENT, PARENT, TUTOR)", domain.ErrInvalidInput)
 	}
@@ -297,6 +303,9 @@ func (s *AuthService) SetPrimaryRole(ctx context.Context, userID uuid.UUID, role
 func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newPassword string) (string, error) {
 	if len(newPassword) < 8 {
 		return "", fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
+	}
+	if len(newPassword) > 72 {
+		return "", fmt.Errorf("%w: password must be at most 72 characters", domain.ErrInvalidInput)
 	}
 	user, err := s.users.FindByID(ctx, userID)
 	if err != nil {

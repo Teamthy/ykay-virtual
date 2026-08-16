@@ -100,6 +100,22 @@ jobs:
       - run: npm audit --audit-level=high   # dependency gate (G2)
       - run: npm run build
 
+  mobile:
+    name: Mobile — install + typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npx tsc --noEmit   # A-11: the mobile app now has a CI gate
+
   lighthouse:
     name: Lighthouse CI — Perf/SEO/A11y gate
     runs-on: ubuntu-latest

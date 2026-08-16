@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 
 	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/config"
+	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/admin"
 	"ykay-virtual/internal/domain/booking"
@@ -196,7 +198,7 @@ func main() {
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
 		RedirectURL:  cfg.GoogleRedirectURL,
-	}, authSvc)
+	}, authSvc).WithStateStore(cacheBackend)
 	// G7.1 session cache: 30s resolution cache in front of the DB-backed
 	// resolver (logout invalidates the exact token immediately).
 	sessionCache := middleware.NewCachingSessionResolver(sessionResolverAdapter{svc: authSvc}, cacheBackend)
@@ -231,7 +233,32 @@ func main() {
 	dashboardSvc := service.NewDashboardService(
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
-		repos.Resources, repos.Assignments)
+		repos.Resources, repos.Assignments).
+		// A-02: wire the ownership/authorization lookups so teaching-ops
+		// authorization is enforced (fail-closed). Without these the service
+		// refuses every ownership-checked operation rather than allowing it.
+		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
+			return repos.TutorRepo.GetByID(ctx, id)
+		}).
+		WithCohortReader(repos.CohortRepo.GetByID).
+		WithRoster(repos.Enrollments, func(ctx context.Context, id uuid.UUID) (*identity.StudentProfile, error) {
+			return repos.Students.FindByID(ctx, id)
+		}).
+		WithEnrollmentAccess(
+			func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error) {
+				return repos.Students.FindByUserID(ctx, userID)
+			},
+			func(ctx context.Context, cohortID, studentProfileID uuid.UUID) (bool, error) {
+				_, err := repos.Enrollments.GetByCohortAndStudent(ctx, cohortID, studentProfileID)
+				if err != nil {
+					if errors.Is(err, domain.ErrNotFound) {
+						return false, nil
+					}
+					return false, err
+				}
+				return true, nil
+			},
+		)
 	portalSvc := service.NewPortalService(repos.Availability, repos.Assignments, repos.Submissions,
 		repos.Attendance, repos.Enrollments, repos.Lessons, repos.Orders, repos.Payments)
 	onboardingSvc := service.NewOnboardingService(repos.Students, repos.StudentLinks, audit)
@@ -277,8 +304,17 @@ func main() {
 
 	// --- Meeting links (G4.2): stub in dev, Whereby when configured ---
 	meetingProvider := meeting.Provider(meeting.StubMeetingProvider{})
+	meetingStub := true
 	if strings.EqualFold(cfg.MeetingProvider, "whereby") && cfg.WherebyAPIKey != "" {
 		meetingProvider = meeting.NewWhereby(cfg.WherebyAPIKey)
+		meetingStub = false
+	}
+	// A-10: a stub meeting provider silently emits fake meet.nuvora.local URLs.
+	// Surface it as a metric (alertable) and, in production, a loud log so the
+	// team can't mistake a misconfigured Whereby key for a working classroom.
+	telemetry.MeetingProviderStub(strings.ToLower(cfg.MeetingProvider), meetingStub)
+	if meetingStub && cfg.Environment == "production" {
+		log.Println("WARNING: meeting provider resolved to STUB — live classroom links will be fake meet.nuvora.local URLs. Set MEETING_PROVIDER=whereby and WHEREBY_API_KEY.")
 	}
 	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
 
@@ -361,10 +397,15 @@ func setupCache(ctx context.Context, redisURL string) cache.Cache {
 	if rc, err := cache.NewRedis(redisURL); err == nil {
 		if err := rc.Ping(ctx); err == nil {
 			log.Printf("cache: redis connected %s", redisURL)
+			telemetry.RedisConnected(true)
 			return rc
 		}
 		_ = rc.Close()
 	}
+	// A-13: the in-memory fallback silently degrades rate limiting, session
+	// caching and the job queue to per-instance/direct behaviour — publish a
+	// metric so ops alerting can fire on it.
+	telemetry.RedisConnected(false)
 	log.Println("cache: redis unavailable — falling back to in-memory cache")
 	return cache.NewInMemoryCache()
 }

@@ -68,9 +68,9 @@ func TestAuth_GoogleOAuth_Config(t *testing.T) {
 
 	g2 := NewGoogleAuthService(GoogleOAuthConfig{
 		ClientID: "id-123", ClientSecret: "secret", RedirectURL: "http://localhost:8080/api/v1/auth/google/callback",
-	}, env.svc)
+	}, env.svc).WithStateStore(newMemCache())
 	assert.True(t, g2.Enabled())
-	u, state, err := g2.BuildAuthURL()
+	u, state, err := g2.BuildAuthURL(context.Background())
 	require.NoError(t, err)
 	assert.Contains(t, u, "accounts.google.com/o/oauth2/v2/auth")
 	assert.Contains(t, u, "client_id=id-123")

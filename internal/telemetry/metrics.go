@@ -35,6 +35,13 @@ type Metrics struct {
 	QueueDepth            *prometheus.GaugeVec
 	CronRunsTotal         *prometheus.CounterVec
 	CronLastSuccess       *prometheus.GaugeVec
+	// RedisConnected is 1 when Redis was reachable at boot, 0 otherwise.
+	// Degraded fallbacks (per-instance rate limiting/session cache, direct
+	// dispatch) are silent without this — ops must be paged (A-13).
+	RedisConnected prometheus.Gauge
+	// MeetingProviderStub is 1 when the meeting provider resolved to the dev
+	// stub (fake meet.nuvora.local URLs) instead of a real provider (A-10).
+	MeetingProviderStub *prometheus.GaugeVec
 
 	registry *prometheus.Registry
 }
@@ -88,12 +95,21 @@ func NewMetrics(registry *prometheus.Registry) *Metrics {
 			Name: "nuvora_worker_cron_last_success_timestamp",
 			Help: "Unix timestamp of the last successful run per cron name.",
 		}, []string{"cron"}),
+		RedisConnected: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "nuvora_redis_connected",
+			Help: "1 when Redis was reachable at process boot, 0 otherwise.",
+		}),
+		MeetingProviderStub: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "nuvora_meeting_provider_stub",
+			Help: "1 when the meeting provider resolved to the dev stub (fake URLs).",
+		}, []string{"provider"}),
 	}
 	registry.MustRegister(
 		m.BuildInfo, m.HTTPRequestsTotal, m.HTTPRequestDuration,
 		m.JobsEnqueuedTotal, m.JobsCompletedTotal, m.JobsRetriedTotal,
 		m.JobsDeadLetteredTotal, m.JobsDroppedTotal, m.QueueDepth,
 		m.CronRunsTotal, m.CronLastSuccess,
+		m.RedisConnected, m.MeetingProviderStub,
 	)
 	m.registry = registry
 	return m
@@ -238,4 +254,25 @@ func CronRun(cron string, ok bool) {
 	if ok {
 		DefaultMetrics().CronLastSuccess.WithLabelValues(cron).Set(float64(time.Now().Unix()))
 	}
+}
+
+// --- Infrastructure health -------------------------------------------------
+
+// RedisConnected publishes whether Redis was reachable at boot (A-13).
+func RedisConnected(ok bool) {
+	v := 0.0
+	if ok {
+		v = 1.0
+	}
+	DefaultMetrics().RedisConnected.Set(v)
+}
+
+// MeetingProviderStub publishes whether the meeting provider resolved to the
+// dev stub (A-10). provider is the configured provider name (e.g. "whereby").
+func MeetingProviderStub(provider string, stub bool) {
+	v := 0.0
+	if stub {
+		v = 1.0
+	}
+	DefaultMetrics().MeetingProviderStub.WithLabelValues(provider).Set(v)
 }

@@ -22,7 +22,7 @@ services:
   - type: web
     name: nuvora-api
     runtime: docker
-    repo: https://github.com/YOUR_ORG/ykay-virtual
+    repo: https://github.com/Teamthy/ykay-virtual
     plan: free # or: starter
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health/ready
@@ -75,8 +75,6 @@ services:
         sync: false
       - key: FLUTTERWAVE_SECRET
         sync: false
-      - key: WEBHOOK_SECRET
-        sync: false # HMAC key for payment-webhook signatures
       # ── Email (magic-link codes, verification, receipts) ───────────────
       - key: SMTP_HOST
         sync: false
@@ -120,7 +118,7 @@ services:
   - type: web
     name: nuvora-worker
     runtime: docker
-    repo: https://github.com/YOUR_ORG/ykay-virtual
+    repo: https://github.com/Teamthy/ykay-virtual
     plan: free # or: starter
     dockerfilePath: ./Dockerfile
     # Render supports `dockerCommand` for Docker runtimes. If your account

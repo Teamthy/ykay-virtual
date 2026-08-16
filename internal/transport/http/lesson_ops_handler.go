@@ -13,18 +13,21 @@ import (
 )
 
 // LessonOpsHandler — teaching operations:
-//   - GET  /api/v1/cohorts/{id}/lessons         (public schedule DTO, or full for authenticated)
+//   - GET  /api/v1/cohorts/{id}/lessons         (public schedule DTO, or full for accessible callers)
 //   - POST /api/v1/lessons/{id}/attendance      (tutor, own lesson only)
-//   - GET  /api/v1/lessons/{id}/attendance      (tutor only — learner records)
+//   - GET  /api/v1/lessons/{id}/attendance      (tutor, own lesson only — learner records)
 //   - POST /api/v1/lessons/{id}/notes           (tutor, own lesson only)
-//   - GET  /api/v1/lessons/{id}/notes           (authenticated — homework/notes)
-//   - GET  /api/v1/cohorts/{id}/resources       (authenticated)
-//   - GET  /api/v1/cohorts/{id}/assignments     (authenticated)
+//   - GET  /api/v1/lessons/{id}/notes           (tutor/enrolled learner/admin)
+//   - GET  /api/v1/cohorts/{id}/resources       (tutor/enrolled learner/admin)
+//   - GET  /api/v1/cohorts/{id}/assignments     (tutor/enrolled learner/admin)
 //
-// SECURITY (YK-002): live classroom meeting URLs, paid video URLs, attendance
-// (learner records) and notes/homework must never be reachable by anonymous
-// callers. The public cohort schedule is exposed through a redacted DTO that
-// carries only id/title/times/timezone/status — never meeting_url/video_url.
+// SECURITY (YK-002/A-02): live classroom meeting URLs, paid video URLs,
+// attendance (learner records) and notes/homework must never be reachable by
+// anonymous callers. The public cohort schedule is exposed through a redacted
+// DTO that carries only id/title/times/timezone/status — never
+// meeting_url/video_url. Ownership is enforced in the service layer (A-02):
+// tutors act only on their own lessons/cohorts, and content reads require
+// tutor ownership, platform admin, or enrollment.
 
 // publicLessonView — redacted schedule row safe for unauthenticated output.
 type publicLessonView struct {
@@ -56,15 +59,16 @@ type LessonOpsHandler struct {
 }
 
 // requireTutor — authoring endpoints (assignments, resources, quizzes,
-// roster) are tutor/admin-only.
-func (h *LessonOpsHandler) requireTutor(w http.ResponseWriter, r *http.Request) *uuid.UUID {
+// roster) are tutor/admin-only. Returns the authenticated actor for the
+// service-layer ownership check (A-02).
+func (h *LessonOpsHandler) requireTutor(w http.ResponseWriter, r *http.Request) *middleware.Actor {
 	actor := requireActor(w, r)
 	if actor == nil {
 		return nil
 	}
 	for _, role := range actor.Roles {
 		if role == "TUTOR" || role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" || role == "INSTITUTION_ADMIN" {
-			return &actor.UserID
+			return actor
 		}
 	}
 	WriteAppError(w, pkg.Forbidden("tutor access required"))
@@ -88,7 +92,12 @@ func (h *LessonOpsHandler) ListCohortLessons(w http.ResponseWriter, r *http.Requ
 	}
 	// YK-002: unauthenticated callers get the redacted schedule DTO only.
 	// meeting_url / video_url are private (live classrooms + paid videos).
+	// A-02: authenticated callers also get the redacted view unless they can
+	// access the cohort (admin, the cohort's tutor, or an enrolled learner).
 	if actor, ok := middleware.ActorFromContext(r.Context()); !ok || actor.UserID == uuid.Nil {
+		pkg.WriteSuccess(w, http.StatusOK, toPublicLessonView(lessons), nil)
+		return
+	} else if !h.svc.CanAccessCohort(r.Context(), actor.UserID, actor.IsAdmin, cohortID) {
 		pkg.WriteSuccess(w, http.StatusOK, toPublicLessonView(lessons), nil)
 		return
 	}
@@ -96,7 +105,7 @@ func (h *LessonOpsHandler) ListCohortLessons(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *LessonOpsHandler) MarkAttendance(w http.ResponseWriter, r *http.Request) {
-	actor := requireActor(w, r)
+	actor := h.requireTutor(w, r)
 	if actor == nil {
 		return
 	}
@@ -119,7 +128,7 @@ func (h *LessonOpsHandler) MarkAttendance(w http.ResponseWriter, r *http.Request
 		WriteAppError(w, pkg.BadRequest("student_profile_id must be a valid UUID", nil))
 		return
 	}
-	if err := h.svc.MarkAttendance(r.Context(), actor.UserID, lessonID, studentID, req.Status, req.Note); err != nil {
+	if err := h.svc.MarkAttendance(r.Context(), actor.UserID, actor.IsAdmin, lessonID, studentID, req.Status, req.Note); err != nil {
 		WriteAppError(w, err)
 		return
 	}
@@ -127,9 +136,10 @@ func (h *LessonOpsHandler) MarkAttendance(w http.ResponseWriter, r *http.Request
 }
 
 // ListAttendance — GET /lessons/{lessonId}/attendance (tutor roster).
-// Learner attendance/IDs are sensitive; tutor-only (YK-002).
+// Learner attendance/IDs are sensitive; tutor-owner/admin only (YK-002/A-02).
 func (h *LessonOpsHandler) ListAttendance(w http.ResponseWriter, r *http.Request) {
-	if h.requireTutor(w, r) == nil {
+	actor := h.requireTutor(w, r)
+	if actor == nil {
 		return
 	}
 	lessonID, err := ParseUUID(r, "lessonId")
@@ -137,7 +147,7 @@ func (h *LessonOpsHandler) ListAttendance(w http.ResponseWriter, r *http.Request
 		WriteAppError(w, err)
 		return
 	}
-	list, err := h.svc.ListLessonAttendance(r.Context(), lessonID)
+	list, err := h.svc.ListLessonAttendance(r.Context(), actor.UserID, actor.IsAdmin, lessonID)
 	if err != nil {
 		WriteAppError(w, err)
 		return
@@ -146,7 +156,7 @@ func (h *LessonOpsHandler) ListAttendance(w http.ResponseWriter, r *http.Request
 }
 
 func (h *LessonOpsHandler) AddNote(w http.ResponseWriter, r *http.Request) {
-	actor := requireActor(w, r)
+	actor := h.requireTutor(w, r)
 	if actor == nil {
 		return
 	}
@@ -174,7 +184,7 @@ func (h *LessonOpsHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 		}
 		studentID = &id
 	}
-	note, err := h.svc.AddLessonNote(r.Context(), actor.UserID, lessonID, studentID,
+	note, err := h.svc.AddLessonNote(r.Context(), actor.UserID, actor.IsAdmin, lessonID, studentID,
 		req.Content, req.Homework, req.IsVisibleToParent)
 	if err != nil {
 		WriteAppError(w, err)
@@ -184,9 +194,10 @@ func (h *LessonOpsHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListNotes — GET /lessons/{lessonId}/notes. Notes/homework are sensitive;
-// require an authenticated actor (YK-002).
+// the service enforces tutor-owner/admin/enrolled-learner access (A-02).
 func (h *LessonOpsHandler) ListNotes(w http.ResponseWriter, r *http.Request) {
-	if requireActor(w, r) == nil {
+	actor := requireActor(w, r)
+	if actor == nil {
 		return
 	}
 	lessonID, err := ParseUUID(r, "lessonId")
@@ -194,7 +205,7 @@ func (h *LessonOpsHandler) ListNotes(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	notes, err := h.svc.ListLessonNotes(r.Context(), lessonID)
+	notes, err := h.svc.ListLessonNotes(r.Context(), actor.UserID, actor.IsAdmin, lessonID)
 	if err != nil {
 		WriteAppError(w, err)
 		return
@@ -203,9 +214,10 @@ func (h *LessonOpsHandler) ListNotes(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListResources — GET /cohorts/{id}/resources. Cohort content (may be paid /
-// tutor-authored); require an authenticated actor (YK-002).
+// tutor-authored); the service enforces access (A-02).
 func (h *LessonOpsHandler) ListResources(w http.ResponseWriter, r *http.Request) {
-	if requireActor(w, r) == nil {
+	actor := requireActor(w, r)
+	if actor == nil {
 		return
 	}
 	cohortID, err := ParseUUID(r, "id")
@@ -213,7 +225,7 @@ func (h *LessonOpsHandler) ListResources(w http.ResponseWriter, r *http.Request)
 		WriteAppError(w, err)
 		return
 	}
-	res, err := h.svc.ListCohortResources(r.Context(), cohortID)
+	res, err := h.svc.ListCohortResources(r.Context(), actor.UserID, actor.IsAdmin, cohortID)
 	if err != nil {
 		WriteAppError(w, err)
 		return
@@ -222,9 +234,10 @@ func (h *LessonOpsHandler) ListResources(w http.ResponseWriter, r *http.Request)
 }
 
 // ListAssignments — GET /cohorts/{id}/assignments. Require an authenticated
-// actor (YK-002).
+// actor; the service enforces access (A-02).
 func (h *LessonOpsHandler) ListAssignments(w http.ResponseWriter, r *http.Request) {
-	if requireActor(w, r) == nil {
+	actor := requireActor(w, r)
+	if actor == nil {
 		return
 	}
 	cohortID, err := ParseUUID(r, "id")
@@ -232,7 +245,7 @@ func (h *LessonOpsHandler) ListAssignments(w http.ResponseWriter, r *http.Reques
 		WriteAppError(w, err)
 		return
 	}
-	assignments, err := h.svc.ListCohortAssignments(r.Context(), cohortID)
+	assignments, err := h.svc.ListCohortAssignments(r.Context(), actor.UserID, actor.IsAdmin, cohortID)
 	if err != nil {
 		WriteAppError(w, err)
 		return
@@ -242,7 +255,8 @@ func (h *LessonOpsHandler) ListAssignments(w http.ResponseWriter, r *http.Reques
 
 // CreateAssignment — POST /cohorts/{id}/assignments (tutor console).
 func (h *LessonOpsHandler) CreateAssignment(w http.ResponseWriter, r *http.Request) {
-	if h.requireTutor(w, r) == nil {
+	actor := h.requireTutor(w, r)
+	if actor == nil {
 		return
 	}
 	cohortID, err := ParseUUID(r, "id")
@@ -269,7 +283,7 @@ func (h *LessonOpsHandler) CreateAssignment(w http.ResponseWriter, r *http.Reque
 		}
 		dueAt = &t
 	}
-	a, err := h.svc.CreateAssignment(r.Context(), cohortID, req.Title, req.Instructions, dueAt, req.MaxScore)
+	a, err := h.svc.CreateAssignment(r.Context(), actor.UserID, actor.IsAdmin, cohortID, req.Title, req.Instructions, dueAt, req.MaxScore)
 	if err != nil {
 		WriteAppError(w, err)
 		return
@@ -279,7 +293,8 @@ func (h *LessonOpsHandler) CreateAssignment(w http.ResponseWriter, r *http.Reque
 
 // CreateResource — POST /cohorts/{id}/resources (tutor console).
 func (h *LessonOpsHandler) CreateResource(w http.ResponseWriter, r *http.Request) {
-	if h.requireTutor(w, r) == nil {
+	actor := h.requireTutor(w, r)
+	if actor == nil {
 		return
 	}
 	cohortID, err := ParseUUID(r, "id")
@@ -296,7 +311,7 @@ func (h *LessonOpsHandler) CreateResource(w http.ResponseWriter, r *http.Request
 		WriteAppError(w, err)
 		return
 	}
-	res, err := h.svc.CreateResource(r.Context(), cohortID, req.Title, req.Description, req.FileURL)
+	res, err := h.svc.CreateResource(r.Context(), actor.UserID, actor.IsAdmin, cohortID, req.Title, req.Description, req.FileURL)
 	if err != nil {
 		WriteAppError(w, err)
 		return
@@ -306,7 +321,8 @@ func (h *LessonOpsHandler) CreateResource(w http.ResponseWriter, r *http.Request
 
 // ListCohortEnrollments — GET /cohorts/{id}/enrollments (tutor roster).
 func (h *LessonOpsHandler) ListCohortEnrollments(w http.ResponseWriter, r *http.Request) {
-	if h.requireTutor(w, r) == nil {
+	actor := h.requireTutor(w, r)
+	if actor == nil {
 		return
 	}
 	cohortID, err := ParseUUID(r, "id")
@@ -314,7 +330,7 @@ func (h *LessonOpsHandler) ListCohortEnrollments(w http.ResponseWriter, r *http.
 		WriteAppError(w, err)
 		return
 	}
-	list, err := h.svc.ListCohortEnrollments(r.Context(), cohortID)
+	list, err := h.svc.ListCohortEnrollments(r.Context(), actor.UserID, actor.IsAdmin, cohortID)
 	if err != nil {
 		WriteAppError(w, err)
 		return

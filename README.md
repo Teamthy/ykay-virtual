@@ -11,7 +11,7 @@ growth channel).
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 14 App Router · React · TypeScript · TanStack Query / Form / Table · Tailwind + shadcn-style UI |
+| Frontend | Next.js 15 App Router · React 18 · TypeScript · TanStack Query / Form · Tailwind + shadcn-style UI |
 | Backend | Go 1.22 modular monolith · REST API under `/api/v1` · PostgreSQL · Redis |
 | Infra | Docker Compose (Postgres 16 + Redis 7) · S3-compatible object storage · OpenTelemetry · Prometheus/Grafana |
 | Testing | Go table-driven tests · Vitest/RTL · Playwright E2E · k6 load |
@@ -46,7 +46,7 @@ growth channel).
 │   ├── telemetry/            # OpenTelemetry
 │   └── worker/               # job enums (AGENTS.md job list)
 ├── pkg/                      # shared helpers (pagination, envelope, apierror, validator)
-├── migrations/               # numbered SQL migrations (000001 … 000011)
+├── migrations/               # numbered SQL migrations (000001 … 000038)
 ├── api/openapi.yaml          # contract-first spec — update on every endpoint change
 ├── client/                   # Next.js frontend (module @ykay/web)
 │   ├── app/                  #   route groups: (marketing), (auth), (student), (tutor), (admin) …
@@ -65,7 +65,7 @@ growth channel).
 # 1. Infra
 docker compose up -d postgres redis
 
-# 2. Migrations (applies migrations/000001-000011 in order, transactional)
+# 2. Migrations (applies migrations/000001-000038 in order, transactional)
 go run ./cmd/migrate --cmd=up
 
 # 3. API (port 8080) — falls back to in-memory storage when Postgres is down
@@ -89,8 +89,10 @@ Public catalogue endpoints are Redis-cached (60-300s TTL, invalidated on write).
 
 ## Environment
 
-Copy `.env.example` → `.env`. Key vars: `DATABASE_URL`, `REDIS_URL`, `PAYSTACK_SECRET`,
-`FLUTTERWAVE_SECRET`, `SITE_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`.
+Copy `.env.production.example` → `.env.production` (gitignored) for a production
+deployment; for local dev the API boots with zero config. Key vars:
+`DATABASE_URL`, `REDIS_URL`, `PAYSTACK_SECRET`, `FLUTTERWAVE_SECRET`, `SITE_URL`,
+`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SITE_URL`.
 Leave `PAYSTACK_SECRET` empty for dev mock payment links.
 
 ## Docs

@@ -91,7 +91,8 @@ Key wiring facts (why the config below is shaped this way):
 | Google OAuth | console.cloud.google.com → OAuth client | Optional. Redirect URL: `https://<web origin>/auth/google/callback`. |
 | Gemini API key | aistudio.google.com | Optional (chat assistant). |
 | EXPO_ACCESS_TOKEN | expo.dev → Access tokens | Optional (push notifications). |
-| METRICS_TOKEN / WEBHOOK_SECRET | generate: `openssl rand -hex 32` | Webhook secret must match what you give Paystack later. |
+| METRICS_TOKEN | generate: `openssl rand -hex 32` | Bearer token required to scrape `/metrics`. |
+| PAYSTACK_SECRET / FLUTTERWAVE_SECRET | your gateway secret keys | Double as the webhook HMAC secret — must match the live/test key on the gateway. |
 
 ---
 
@@ -101,8 +102,8 @@ Key wiring facts (why the config below is shaped this way):
    checklist gates).
 2. Render → **New → Blueprint** → select the repo → it reads `render.yaml`
    and creates: `nuvora-db`, `nuvora-redis`, `nuvora-api`, `nuvora-worker`.
-   - Edit the `repo:` lines in `render.yaml` to your GitHub path if you
-     haven't already (`YOUR_ORG`).
+   - If you forked the repo, edit the `repo:` lines in `render.yaml` to your
+     GitHub path.
 3. Open `nuvora-api` → **Environment** and fill every `sync:false` value:
    - `SITE_URL` = `https://nuvora.vercel.app` (use the *actual* Vercel URL
      from step 2 — you can update it after the first deploy)

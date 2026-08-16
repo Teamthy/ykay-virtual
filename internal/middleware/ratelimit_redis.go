@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"net"
 	"net/http"
 	"time"
 
@@ -32,10 +31,11 @@ func (rl *RedisRateLimiter) key(ip string) string { return rl.prefix + ":" + ip 
 
 func (rl *RedisRateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip := r.RemoteAddr
-		if host, _, err := net.SplitHostPort(ip); err == nil {
-			ip = host
-		}
+		// YK-020/A-04: reuse clientIP() so a trusted reverse proxy
+		// (TRUST_PROXY=true — Render/Vercel) stamps the real client IP from
+		// X-Forwarded-For. Using r.RemoteAddr here collapsed every user
+		// behind the proxy into a single rate-limit bucket (mass 429s).
+		ip := clientIP(r)
 		key := rl.key(ip)
 		n, err := rl.client.Incr(r.Context(), key).Result()
 		if err != nil {

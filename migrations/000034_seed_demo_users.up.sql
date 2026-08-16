@@ -1,15 +1,16 @@
--- 000034 — Seed login-able demo users for every role (Postgres mode).
+-- 000034 — Seed login-able demo users for LOCAL DEV/STAGING convenience.
 --
--- The earlier fixtures (000019) were retired by 000027 (security hardening:
--- no default credentials in production). For LOCAL DEV/STAGING convenience this
--- forward-only migration re-adds fresh demo identities that are ACTIVE,
--- email-verified AND onboarding-complete, so a developer can log in and land
--- straight on the right dashboard instead of the email-verification or wizard
--- screens. This is DEV/STAGING ONLY — never run against production (mirrors
--- the SEED_DEMO_DATA=true in-memory seed).
+-- SECURITY (A-08): this migration must NEVER create a platform administrator.
+-- The original version seeded admin@nuvora.com as a SUPER_ADMIN with a
+-- password documented in the repository — a full platform takeover vector on
+-- any database where this chain is applied. That admin seed has been REMOVED;
+-- only non-privileged demo identities (PARENT / TUTOR / STUDENT) remain, and
+-- they exist purely so a developer can log in and land on the right dashboard
+-- without the email-verification or wizard screens. 000037 additionally
+-- neutralizes the original admin identity for databases that already applied
+-- the old version of this migration.
 --
--- Credentials for all four: password123
---   admin@nuvora.com  → SUPER_ADMIN   (lands on /admin)
+-- Credentials (DEV/STAGING ONLY — never production): password123
 --   parent@nuvora.com → PARENT        (lands on /dashboard)
 --   tutor@nuvora.com  → TUTOR         (lands on /tutor-dashboard)
 --   student@nuvora.com→ STUDENT       (lands on /student-dashboard)
@@ -23,12 +24,6 @@ DECLARE
   uid  UUID;
 BEGIN
   -- Insert each demo user if the email isn't already taken.
-  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@nuvora.com' AND deleted_at IS NULL) THEN
-    INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
-    VALUES ('00000000-0000-0000-0000-0000000000b1', 'admin@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
-    RETURNING id INTO uid;
-    INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'SUPER_ADMIN';
-  END IF;
 
   IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'parent@nuvora.com' AND deleted_at IS NULL) THEN
     INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)

@@ -38,8 +38,10 @@ func SessionAuth(resolver SessionResolver, cookieName string) func(http.Handler)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			raw := ""
+			cookieDomain := ""
 			if cookie, err := r.Cookie(cookieName); err == nil {
 				raw = cookie.Value
+				cookieDomain = cookie.Domain
 			}
 			if raw == "" {
 				raw = BearerToken(r)
@@ -54,11 +56,16 @@ func SessionAuth(resolver SessionResolver, cookieName string) func(http.Handler)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
-				// Invalid/expired/revoked session → clear the cookie.
+				// Invalid/expired/revoked session → clear the cookie. Preserve the
+				// incoming cookie's Domain so a domain-scoped cookie (e.g.
+				// ".vercel.app" when COOKIE_DOMAIN is set) is actually cleared on
+				// the client; a host-only clear would leave the stale cookie
+				// behind (A-17).
 				http.SetCookie(w, &http.Cookie{
 					Name:     cookieName,
 					Value:    "",
 					Path:     "/",
+					Domain:   cookieDomain,
 					MaxAge:   -1,
 					HttpOnly: true,
 					SameSite: http.SameSiteLaxMode,

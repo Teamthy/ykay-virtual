@@ -54,4 +54,12 @@ func (p *PrefixCache) Exists(ctx context.Context, key string) (bool, error) {
 	return p.inner.Exists(ctx, p.key(key))
 }
 
+func (p *PrefixCache) SetNX(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
+	return p.inner.SetNX(ctx, p.key(key), value, ttl)
+}
+
+func (p *PrefixCache) GetDel(ctx context.Context, key string) (string, error) {
+	return p.inner.GetDel(ctx, p.key(key))
+}
+
 var _ Cache = (*PrefixCache)(nil)

@@ -75,6 +75,20 @@ func (c *RedisCache) Exists(ctx context.Context, key string) (bool, error) {
 	return n > 0, err
 }
 
+// SetNX — SET NX EX (atomic single-use nonce / distributed lock primitive).
+func (c *RedisCache) SetNX(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
+	return c.client.SetNX(ctx, key, value, ttl).Result()
+}
+
+// GetDel — GETDEL (atomic get-and-delete) for single-use nonce consumption.
+func (c *RedisCache) GetDel(ctx context.Context, key string) (string, error) {
+	v, err := c.client.GetDel(ctx, key).Result()
+	if err == redis.Nil {
+		return "", nil
+	}
+	return v, err
+}
+
 // Key helpers — stable namespaced cache keys.
 func CacheKey(parts ...string) string { return strings.Join(parts, ":") }
 

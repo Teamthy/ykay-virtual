@@ -35,7 +35,7 @@ type LearningHandler struct {
 }
 
 type bookingAttendanceLister interface {
-	ListLessonAttendance(ctx context.Context, lessonID uuid.UUID) ([]booking.Attendance, error)
+	ListLessonAttendance(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, lessonID uuid.UUID) ([]booking.Attendance, error)
 }
 
 // lessonProgressService is the slice of LessonService used for on-demand video
@@ -392,7 +392,7 @@ func (h *LearningHandler) AttendanceCSV(w http.ResponseWriter, r *http.Request) 
 		pkg.WriteError(w, http.StatusNotFound, string(pkg.CodeNotFound), "attendance store unavailable", nil)
 		return
 	}
-	rows, err := h.attendance.ListLessonAttendance(r.Context(), lessonID)
+	rows, err := h.attendance.ListLessonAttendance(r.Context(), actor.UserID, actor.IsAdmin, lessonID)
 	if err != nil {
 		WriteAppError(w, err)
 		return
