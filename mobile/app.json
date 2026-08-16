@@ -27,15 +27,22 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A1F44"
       },
-      "permissions": ["INTERNET", "CAMERA", "READ_MEDIA_IMAGES"]
+      "permissions": [
+        "INTERNET",
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
     },
     "web": {
       "bundler": "metro",
       "name": "NUVORA"
     },
     "extra": {
-      "apiUrl": "http://localhost:8080/api/v1",
-      "projectId": "nuvora-0000"
+      "apiUrl": "https://ykay-virtual.onrender.com/api/v1",
+      "projectId": "nuvora-0000",
+      "eas": {
+        "projectId": "9b9f036a-4492-4726-a6af-389b5e2d8d6b"
+      }
     }
   }
 }
