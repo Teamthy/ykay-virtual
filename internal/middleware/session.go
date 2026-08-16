@@ -49,11 +49,7 @@ func SessionAuth(resolver SessionResolver, cookieName string) func(http.Handler)
 				userID, roles, err := resolver.Me(r.Context(), hash)
 				if err == nil {
 					actor := Actor{UserID: userID, Roles: roles}
-					for _, role := range roles {
-						if role == "ACADEMIC_ADMIN" || role == "SUPER_ADMIN" || role == "INSTITUTION_ADMIN" {
-							actor.IsAdmin = true
-						}
-					}
+					actor.IsAdmin = isPlatformAdmin(roles)
 					ctx := context.WithValue(r.Context(), ActorKey, actor)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
@@ -71,6 +67,20 @@ func SessionAuth(resolver SessionResolver, cookieName string) func(http.Handler)
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// isPlatformAdmin — YK-008: only SUPER_ADMIN and ACADEMIC_ADMIN are platform
+// admins. INSTITUTION_ADMIN is scoped to its own institution and must NEVER be
+// granted platform-wide IsAdmin (which gates all admin/refund/payment/global-
+// data routes). Institution-scoped access should be enforced by an explicit
+// institution_scope check, not the IsAdmin boolean.
+func isPlatformAdmin(roles []string) bool {
+	for _, role := range roles {
+		if role == "ACADEMIC_ADMIN" || role == "SUPER_ADMIN" {
+			return true
+		}
+	}
+	return false
 }
 
 func hashToken(raw string) string {

@@ -4,7 +4,11 @@
 // and the post-login flow resolve the session user's home from here, so a
 // student can never land on the parent dashboard (and vice versa).
 
-export const ADMIN_ROLES = ["SUPER_ADMIN", "ACADEMIC_ADMIN", "INSTITUTION_ADMIN"];
+// YK-008: INSTITUTION_ADMIN is scoped to its own institution and must NOT be
+// treated as a platform admin (which would route it to the global /admin
+// console and grant platform-wide UI). Only SUPER_ADMIN and ACADEMIC_ADMIN are
+// platform admins.
+export const ADMIN_ROLES = ["SUPER_ADMIN", "ACADEMIC_ADMIN"];
 
 export function isAdmin(roles: string[]): boolean {
   return roles.some((r) => ADMIN_ROLES.includes(r));
