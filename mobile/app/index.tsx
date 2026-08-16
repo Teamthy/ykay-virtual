@@ -1,11 +1,16 @@
-import { Link, router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors, radius } from "@/src/lib/theme";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
+import { Screen } from "@/src/components/ui/Screen";
+import { Button } from "@/src/components/ui/Button";
+import { AppText } from "@/src/components/ui/AppText";
+import { colors } from "@/src/lib/theme";
 import { apiFetch, getToken } from "@/src/lib/api";
 
-// Welcome screen — session-aware: signed-in users route straight to their
-// dashboard (or the first-time wizard); guests see the brand landing.
+// Premium welcome — animated entrance, gradient brand, session-aware routing.
+
 type Me = { id: string; email: string; roles: string[]; onboarded: boolean };
 
 export default function Welcome() {
@@ -27,7 +32,7 @@ export default function Welcome() {
           }
           router.replace(u.roles.includes("STUDENT") ? "/lms" : "/home");
         } catch {
-          // no valid session — stay on the welcome screen
+          // no valid session
         } finally {
           if (!cancelled) setChecking(false);
         }
@@ -39,7 +44,6 @@ export default function Welcome() {
   );
 
   useEffect(() => {
-    // If there is no token at all, stop the spinner immediately.
     void getToken().then((t) => {
       if (!t) setChecking(false);
     });
@@ -54,59 +58,71 @@ export default function Welcome() {
   }
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <View style={styles.brandRow}>
-        <Text style={styles.logo}>NUVORA</Text>
-        <Text style={styles.tagline}>LEARNING BEYOND BOUNDARIES</Text>
-      </View>
+    <LinearGradient
+      colors={["#0A1F44", "#12305F", "#0A1F44"]}
+      style={styles.gradient}
+    >
+      <Screen scroll gradient={["#0A1F44", "#12305F"]} padded>
+        <View style={styles.top}>
+          <AppText variant="h2" style={{ color: colors.gold, letterSpacing: 4, fontWeight: "900" }}>
+            NUVORA
+          </AppText>
+          <AppText variant="caption" style={{ color: colors.white, opacity: 0.6, letterSpacing: 2 }}>
+            LEARNING BEYOND BOUNDARIES
+          </AppText>
+        </View>
 
-      <Text style={styles.headline}>Tutors, programmes{'\n'}and live cohorts{'\n'}in your pocket.</Text>
-      <Text style={styles.sub}>
-        British &amp; Nigerian curricula · Exam prep (UTME, IGCSE, SAT, GMAT) · Private tuition.
-      </Text>
+        <View style={styles.hero}>
+          <Animated.View entering={FadeInUp.delay(100).springify().damping(16)}>
+            <AppText
+              variant="display"
+              style={{ color: colors.white, lineHeight: 44 }}
+            >
+              Tutors, programmes{"\n"}and live cohorts{"\n"}
+              <AppText variant="display" style={{ color: colors.gold }}>
+                in your pocket.
+              </AppText>
+            </AppText>
+          </Animated.View>
 
-      <View style={styles.pills}>
-        {["👩‍🏫 1,200+ tutors", "🎓 40+ programmes", "💬 AI support 24/7"].map((p) => (
-          <View key={p} style={styles.pill}>
-            <Text style={styles.pillText}>{p}</Text>
-          </View>
-        ))}
-      </View>
+          <Animated.View entering={FadeInUp.delay(220).springify().damping(16)}>
+            <AppText variant="body" style={{ color: colors.white, opacity: 0.75, marginTop: 14, lineHeight: 22 }}>
+              British &amp; Nigerian curricula · Exam prep (UTME, IGCSE, SAT, GMAT) · Private tuition.
+            </AppText>
+          </Animated.View>
 
-      <Link href="/onboarding" asChild>
-        <Pressable style={styles.primaryBtn}>
-          <Text style={styles.primaryText}>Create an account</Text>
-        </Pressable>
-      </Link>
-      <Link href="/login" asChild>
-        <Pressable style={styles.secondaryBtn}>
-          <Text style={styles.secondaryText}>I already have an account</Text>
-        </Pressable>
-      </Link>
-    </ScrollView>
+          <Animated.View entering={FadeInUp.delay(340).springify().damping(16)} style={styles.pills}>
+            {["1,200+ tutors", "40+ programmes", "AI support 24/7"].map((p) => (
+              <View key={p} style={styles.pill}>
+                <AppText variant="label" style={{ color: colors.navy }}>
+                  {p}
+                </AppText>
+              </View>
+            ))}
+          </Animated.View>
+        </View>
+
+        <Animated.View entering={FadeInDown.delay(460).springify().damping(16)} style={styles.actions}>
+          <Button label="Create an account" onPress={() => router.push("/onboarding")} full />
+          <Button
+            label="I already have an account"
+            variant="ghost"
+            onPress={() => router.push("/login")}
+            full
+            style={{ marginTop: 12 }}
+          />
+        </Animated.View>
+      </Screen>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.cream },
-  root: { flex: 1, backgroundColor: colors.cream },
-  content: { padding: 24, paddingTop: 64, flexGrow: 1 },
-  brandRow: { alignItems: "center", gap: 4 },
-  logo: { fontSize: 28, fontWeight: "900", letterSpacing: 4, color: colors.navy },
-  tagline: { fontSize: 10, letterSpacing: 3, color: colors.ink[500] },
-  headline: { fontSize: 30, fontWeight: "800", color: colors.navy, lineHeight: 38, marginTop: 40 },
-  sub: { fontSize: 14, color: colors.ink[600], lineHeight: 21, marginTop: 12 },
+  gradient: { flex: 1 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.navy },
+  top: { alignItems: "center", gap: 4, marginTop: 12 },
+  hero: { flex: 1, justifyContent: "center", marginTop: 40 },
   pills: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 20 },
-  pill: { backgroundColor: colors.goldLight, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
-  pillText: { fontSize: 12, fontWeight: "700", color: colors.navy },
-  primaryBtn: {
-    marginTop: 40, backgroundColor: colors.gold, borderRadius: radius.md,
-    paddingVertical: 16, alignItems: "center",
-  },
-  primaryText: { color: colors.ink[900], fontWeight: "800", fontSize: 15 },
-  secondaryBtn: {
-    marginTop: 12, borderWidth: 1, borderColor: colors.ink[400], borderRadius: radius.md,
-    paddingVertical: 16, alignItems: "center",
-  },
-  secondaryText: { color: colors.ink[700], fontWeight: "600", fontSize: 15 },
+  pill: { backgroundColor: colors.gold, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7 },
+  actions: { marginTop: 20 },
 });

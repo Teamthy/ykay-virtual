@@ -39,6 +39,11 @@ services:
       # CORS allowlist: the web origin (+ the API's own host). Comma-separated.
       - key: ALLOWED_ORIGINS
         sync: false
+      # Session-cookie domain: shared parent domain so the cookie reaches the
+      # web origin through the proxy (e.g. ".vercel.app" or "nuvora.com").
+      # Empty = host-only cookie. Required for Vercel(frontend)+Render(API).
+      - key: COOKIE_DOMAIN
+        sync: false
       # ── Data ───────────────────────────────────────────────────────────
       - key: DATABASE_URL
         fromDatabase:

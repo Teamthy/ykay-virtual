@@ -298,7 +298,7 @@ func main() {
 		Recommendations: httpapi.NewRecommendationHandler(
 			service.NewRecommendationService(repos.Cohorts, repos.ProgrammeRepo, repos.TutorRepo, repos.Students)),
 		Content:        httpapi.NewContentHandler(contentSvc),
-		Auth:           httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL, googleAuth),
+		Auth:           httpapi.NewAuthHandlerWithCookieDomain(authSvc, cfg.Environment == "production", cfg.SiteURL, cfg.CookieDomain, googleAuth),
 		SessionContext: httpapi.NewSessionContextHandler(repos.Students, repos.Vetting),
 		Admin:          adminHandler,
 		Support:        httpapi.NewSupportHandler(supportSvc),

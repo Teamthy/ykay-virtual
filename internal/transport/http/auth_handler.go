@@ -27,10 +27,24 @@ type AuthHandler struct {
 }
 
 func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string, google *service.GoogleAuthService) *AuthHandler {
+	return newAuthHandlerWithCookieDomain(svc, secureCookies, siteURL, "", google)
+}
+
+// NewAuthHandlerWithCookieDomain — like NewAuthHandler but also sets the
+// session cookie's Domain. Pass the shared parent domain (e.g. ".vercel.app"
+// or "nuvora.com") when the web app and API are on different hosts, so the
+// browser sends nuvora_session to the web origin through the proxy.
+func NewAuthHandlerWithCookieDomain(svc *service.AuthService, secureCookies bool, siteURL, cookieDomain string, google *service.GoogleAuthService) *AuthHandler {
+	return newAuthHandlerWithCookieDomain(svc, secureCookies, siteURL, cookieDomain, google)
+}
+
+func newAuthHandlerWithCookieDomain(svc *service.AuthService, secureCookies bool, siteURL, cookieDomain string, google *service.GoogleAuthService) *AuthHandler {
 	if siteURL == "" {
 		siteURL = "http://localhost:3000"
 	}
-	return &AuthHandler{svc: svc, cfg: middleware.DefaultCookieConfig(secureCookies), siteURL: siteURL}
+	cfg := middleware.DefaultCookieConfig(secureCookies)
+	cfg.Domain = cookieDomain
+	return &AuthHandler{svc: svc, cfg: cfg, siteURL: siteURL}
 }
 
 type userResponse struct {

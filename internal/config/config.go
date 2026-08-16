@@ -33,6 +33,12 @@ type Config struct {
 	OtelEndpoint       string
 	SiteURL            string
 	AllowedOrigins     string
+	// CookieDomain — the session-cookie domain, if any. When the web app and
+	// API live on different hosts (e.g. Vercel frontend + Render API), set this
+	// to the shared parent domain (".vercel.app" or a custom domain like
+	// "nuvora.com") so the browser sends the nuvora_session cookie to the web
+	// origin through the proxy. Empty = host-only cookie (default).
+	CookieDomain string
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
@@ -76,6 +82,7 @@ func Load() Config {
 		// are emitted (the web app talks to the API same-origin through the
 		// Next.js rewrite). Production must set explicit origins.
 		AllowedOrigins:     getEnv("ALLOWED_ORIGINS", ""),
+		CookieDomain:       getEnv("COOKIE_DOMAIN", ""),
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:3100/auth/google/callback"),

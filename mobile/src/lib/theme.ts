@@ -1,26 +1,112 @@
-// NUVORA mobile theme — mirrors the web brand tokens (gold/cream/navy).
-export const colors = {
+// NUVORA Mobile — premium design system tokens.
+// A single source of truth for colour, typography, spacing, radius, shadows,
+// and elevation so every screen feels intentional and consistent (not "AI-ish").
+
+export const palette = {
   gold: "#F4B400",
-  goldHover: "#DFA300",
-  goldDark: "#8A6000",
+  goldHover: "#E0A500",
+  goldDark: "#9A6B00",
   goldLight: "#FFF3C4",
+  navy: "#0A1F44",
+  navyDark: "#071633",
   cream: "#FFFCF5",
   creamAlt: "#FFF8E8",
   surface: "#F7F5EF",
-  navy: "#0A1F44",
-  ink: {
-    900: "#111111",
-    800: "#222222",
-    700: "#333333",
-    600: "#555555",
-    500: "#666666",
-    400: "#888888",
-  },
   white: "#FFFFFF",
   danger: "#DC2626",
   success: "#16A34A",
+  warning: "#F59E0B",
+} as const;
+
+export const ink = {
+  900: "#111111",
+  800: "#1C1C1C",
+  700: "#333333",
+  600: "#4B4B4B",
+  500: "#6B6B6B",
+  400: "#8E8E8E",
+  300: "#B8B8B8",
+  200: "#E4E2DA",
+  100: "#EFEDE6",
+  50: "#F7F6F2",
+} as const;
+
+export const colors = {
+  ...palette,
+  ink,
 };
 
-export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
+// Typography — a clear display/body hierarchy.
+export const type = {
+  display: {
+    "3xl": 34,
+    "2xl": 30,
+    xl: 26,
+    lg: 22,
+    md: 18,
+  },
+  title: 20,
+  body: 15,
+  bodySm: 13,
+  label: 12,
+  caption: 11,
+} as const;
 
-export const radius = { sm: 8, md: 12, lg: 16, pill: 999 };
+export const spacing = {
+  xxs: 4,
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 20,
+  xl: 24,
+  xxl: 32,
+  huge: 48,
+} as const;
+
+export const radius = {
+  sm: 10,
+  md: 14,
+  lg: 20,
+  xl: 28,
+  pill: 999,
+} as const;
+
+// Shadows — subtle, premium depth for iOS (shadow*) and Android (elevation).
+export const shadow = {
+  none: {
+    shadowColor: "transparent",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  sm: {
+    shadowColor: "#0A1F44",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: "#0A1F44",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 5,
+  },
+  lg: {
+    shadowColor: "#0A1F44",
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.16,
+    shadowRadius: 28,
+    elevation: 9,
+  },
+} as const;
+
+export type ShadowKey = keyof typeof shadow;
+
+// Shared screen padding (with safe-area handled at the screen level).
+export const layout = {
+  pagePadding: 20,
+  contentMaxWidth: 560,
+} as const;

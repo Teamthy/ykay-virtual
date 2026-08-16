@@ -1,0 +1,157 @@
+diff --git a/.env.production.example b/.env.production.example
+index 00854db..dce8995 100644
+--- a/.env.production.example
++++ b/.env.production.example
+@@ -8,6 +8,10 @@ ENVIRONMENT=production
+ PORT=8080
+ SITE_URL=https://nuvora.com
+ ALLOWED_ORIGINS=https://nuvora.com
++# COOKIE_DOMAIN — shared parent domain for the session cookie so it reaches the
++# web origin through the proxy when the frontend and API are on different hosts
++# (Vercel + Render). Example: ".vercel.app" or "nuvora.com". Empty = host-only.
++COOKIE_DOMAIN=
+ 
+ # ── Data ───────────────────────────────────────────────────────────────────
+ DATABASE_URL=postgres://nuvora:CHANGE_ME@postgres:5432/nuvora?sslmode=disable
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index e89873c..0c0b198 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -91,6 +91,7 @@ type Repositories struct {
+ 	LessonNotes        booking.LessonNoteRepository
+ 	Resources          booking.ResourceRepository
+ 	Assignments        booking.AssignmentRepository
++	LessonProgress     booking.LessonProgressRepository
+ 	Students           identity.StudentProfileRepository
+ 	StudentLinks       identity.ParentStudentLinkRepository
+ 	Vetting            vetting.VettingRepository
+@@ -225,7 +226,8 @@ func main() {
+ 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
+ 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
+ 		repos.Resources, repos.Assignments)
+-	lessonSvc.WithRoster(repos.Enrollments, repos.Students.FindByID).
++	lessonSvc.WithProgress(repos.LessonProgress).
++		WithRoster(repos.Enrollments, repos.Students.FindByID).
+ 		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
+ 			return repos.Vetting.GetProfileByID(ctx, id)
+ 		})
+@@ -296,7 +298,7 @@ func main() {
+ 		Recommendations: httpapi.NewRecommendationHandler(
+ 			service.NewRecommendationService(repos.Cohorts, repos.ProgrammeRepo, repos.TutorRepo, repos.Students)),
+ 		Content:        httpapi.NewContentHandler(contentSvc),
+-		Auth:           httpapi.NewAuthHandler(authSvc, cfg.Environment == "production", cfg.SiteURL, googleAuth),
++		Auth:           httpapi.NewAuthHandlerWithCookieDomain(authSvc, cfg.Environment == "production", cfg.SiteURL, cfg.CookieDomain, googleAuth),
+ 		SessionContext: httpapi.NewSessionContextHandler(repos.Students, repos.Vetting),
+ 		Admin:          adminHandler,
+ 		Support:        httpapi.NewSupportHandler(supportSvc),
+@@ -308,7 +310,7 @@ func main() {
+ 		Account:        accountHandler,
+ 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
+ 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
+-		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
++		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz).WithLessonProgress(lessonSvc),
+ 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
+ 		// facility. In production, objects are served by S3/MinIO directly, so
+ 		// the route must NOT be mounted (a nil handler leaves it unregistered in
+@@ -453,6 +455,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
+ 			LessonNotes:        memory.NewLessonNoteMemory(),
+ 			Resources:          memory.NewResourceMemory(),
+ 			Assignments:        store.Assignments,
++			LessonProgress:     memory.NewLessonProgressMemory(),
+ 			Students:           store.Students,
+ 			StudentLinks:       store.StudentLinks,
+ 			StudentLink:        store.StudentLinks,
+@@ -513,6 +516,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
+ 		LessonNotes:        postgres.NewLessonNoteRepo(pg.DB()),
+ 		Resources:          postgres.NewResourceRepo(pg.DB()),
+ 		Assignments:        postgres.NewAssignmentRepo(pg.DB()),
++		LessonProgress:     postgres.NewLessonProgressRepo(pg.DB()),
+ 		Students:           postgres.NewStudentProfileRepo(pg.DB()),
+ 		StudentLinks:       postgres.NewParentStudentLinkRepo(pg.DB()),
+ 		Vetting:            postgres.NewVettingRepo(pg.DB()),
+diff --git a/internal/config/config.go b/internal/config/config.go
+index 8202a29..6c3dcd7 100644
+--- a/internal/config/config.go
++++ b/internal/config/config.go
+@@ -33,6 +33,12 @@ type Config struct {
+ 	OtelEndpoint       string
+ 	SiteURL            string
+ 	AllowedOrigins     string
++	// CookieDomain — the session-cookie domain, if any. When the web app and
++	// API live on different hosts (e.g. Vercel frontend + Render API), set this
++	// to the shared parent domain (".vercel.app" or a custom domain like
++	// "nuvora.com") so the browser sends the nuvora_session cookie to the web
++	// origin through the proxy. Empty = host-only cookie (default).
++	CookieDomain string
+ 	GoogleClientID     string
+ 	GoogleClientSecret string
+ 	GoogleRedirectURL  string
+@@ -76,6 +82,7 @@ func Load() Config {
+ 		// are emitted (the web app talks to the API same-origin through the
+ 		// Next.js rewrite). Production must set explicit origins.
+ 		AllowedOrigins:     getEnv("ALLOWED_ORIGINS", ""),
++		CookieDomain:       getEnv("COOKIE_DOMAIN", ""),
+ 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+ 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+ 		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", "http://localhost:3100/auth/google/callback"),
+diff --git a/internal/transport/http/auth_handler.go b/internal/transport/http/auth_handler.go
+index c542118..acd2cb4 100644
+--- a/internal/transport/http/auth_handler.go
++++ b/internal/transport/http/auth_handler.go
+@@ -27,10 +27,24 @@ type AuthHandler struct {
+ }
+ 
+ func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string, google *service.GoogleAuthService) *AuthHandler {
++	return newAuthHandlerWithCookieDomain(svc, secureCookies, siteURL, "", google)
++}
++
++// NewAuthHandlerWithCookieDomain — like NewAuthHandler but also sets the
++// session cookie's Domain. Pass the shared parent domain (e.g. ".vercel.app"
++// or "nuvora.com") when the web app and API are on different hosts, so the
++// browser sends nuvora_session to the web origin through the proxy.
++func NewAuthHandlerWithCookieDomain(svc *service.AuthService, secureCookies bool, siteURL, cookieDomain string, google *service.GoogleAuthService) *AuthHandler {
++	return newAuthHandlerWithCookieDomain(svc, secureCookies, siteURL, cookieDomain, google)
++}
++
++func newAuthHandlerWithCookieDomain(svc *service.AuthService, secureCookies bool, siteURL, cookieDomain string, google *service.GoogleAuthService) *AuthHandler {
+ 	if siteURL == "" {
+ 		siteURL = "http://localhost:3000"
+ 	}
+-	return &AuthHandler{svc: svc, cfg: middleware.DefaultCookieConfig(secureCookies), siteURL: siteURL}
++	cfg := middleware.DefaultCookieConfig(secureCookies)
++	cfg.Domain = cookieDomain
++	return &AuthHandler{svc: svc, cfg: cfg, siteURL: siteURL}
+ }
+ 
+ type userResponse struct {
+diff --git a/render.yaml b/render.yaml
+index c9d3f0f..72d001f 100644
+--- a/render.yaml
++++ b/render.yaml
+@@ -39,6 +39,11 @@ services:
+       # CORS allowlist: the web origin (+ the API's own host). Comma-separated.
+       - key: ALLOWED_ORIGINS
+         sync: false
++      # Session-cookie domain: shared parent domain so the cookie reaches the
++      # web origin through the proxy (e.g. ".vercel.app" or "nuvora.com").
++      # Empty = host-only cookie. Required for Vercel(frontend)+Render(API).
++      - key: COOKIE_DOMAIN
++        sync: false
+       # ── Data ───────────────────────────────────────────────────────────
+       - key: DATABASE_URL
+         fromDatabase:
+@@ -49,6 +54,14 @@ services:
+           name: nuvora-redis
+           type: redis
+           property: connectionString
++      # ── Rate limiting ──────────────────────────────────────────────────
++      # Global per-IP window raised for production (default now 1200/min).
++      # Explicit here so a deployed instance never silently falls back to the
++      # old 300/min default under legitimate concurrent bursts.
++      - key: RATE_LIMIT_PER_MINUTE
++        value: "1200"
++      - key: AUTH_RATE_LIMIT_PER_MINUTE
++        value: "120"
+       # ── Migrations ─────────────────────────────────────────────────────
+       # "true" on the FIRST deploy applies the embedded migration chain at
+       # boot (fresh database). Set to "false" afterwards — concurrent boots
