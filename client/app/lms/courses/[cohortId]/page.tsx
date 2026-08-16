@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "@/hooks/useSession";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -47,7 +47,11 @@ export default function LmsCoursePage() {
   const [noteText, setNoteText] = useState("");
   const [submitText, setSubmitText] = useState<Record<string, string>>({});
   const [attendanceFilter, setAttendanceFilter] = useState<string>("all");
+<<<<<<< ours
   const [watchLesson, setWatchLesson] = useState<CohortLesson | null>(null);
+=======
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+>>>>>>> theirs
 
   const cohort = useQuery({ queryKey: ["lms", "cohort", cohortId], queryFn: () => getCohort(cohortId) });
   const lessons = useQuery({ queryKey: ["lms", "lessons", cohortId], queryFn: () => getCohortLessons(cohortId) });
@@ -80,6 +84,13 @@ export default function LmsCoursePage() {
 
   const quizzesPassed = (quizzes.data ?? []).filter((q) => q.status === "PASSED" || q.status === "GRADED").length;
   const quizzesTotal = (quizzes.data ?? []).length;
+
+  // Auto-select the first lesson once lessons load (course-taking default).
+  useEffect(() => {
+    if (!activeLessonId && (lessons.data?.length ?? 0) > 0) {
+      setActiveLessonId(lessons.data![0].id);
+    }
+  }, [lessons.data, activeLessonId]);
 
   const startQuiz = useMutation({
     mutationFn: (id: string) => startAssessment(id, studentId),
@@ -241,6 +252,7 @@ export default function LmsCoursePage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
           {/* Left column */}
           <div className="space-y-6">
+<<<<<<< ours
             {/* Lessons — in-app lesson player */}
             <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
               <h2 className="font-display text-lg font-bold text-brand-navy">Live lessons</h2>
@@ -307,11 +319,120 @@ export default function LmsCoursePage() {
                         </a>
                       )}
                     </div>
+=======
+            {/* Course player — curriculum sidebar + persistent player */}
+            <section className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
+              <div className="grid lg:grid-cols-[300px_1fr]">
+                {/* Curriculum sidebar */}
+                <div className="border-b border-ink-100 bg-[#0B1220] p-4 text-white lg:border-b-0 lg:border-r">
+                  <h2 className="px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+                    Course content
+                  </h2>
+                  <div className="mt-3 space-y-1">
+                    {(lessons.data ?? []).map((l, i) => {
+                      const active = activeLessonId === l.id;
+                      return (
+                        <button
+                          key={l.id}
+                          onClick={() => setActiveLessonId(l.id)}
+                          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
+                            active ? "bg-brand-gold font-semibold text-ink-900" : "text-white/80 hover:bg-white/10"
+                          }`}
+                        >
+                          <span
+                            className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${
+                              active ? "bg-ink-900 text-white" : "bg-white/15 text-white"
+                            }`}
+                          >
+                            {i + 1}
+                          </span>
+                          <span className="min-w-0 truncate">{l.title}</span>
+                        </button>
+                      );
+                    })}
+                    {(lessons.data ?? []).length === 0 && (
+                      <p className="px-1 py-6 text-center text-sm text-white/50">No lessons yet</p>
+                    )}
+>>>>>>> theirs
                   </div>
-                ))}
-                {(lessons.data ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-ink-400">Lesson schedule will appear here.</p>
-                )}
+
+                  {resources.data && (resources.data.length > 0) && (
+                    <>
+                      <h2 className="mt-6 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+                        Resources
+                      </h2>
+                      <div className="mt-3 space-y-1">
+                        {resources.data.map((r) => (
+                          <a
+                            key={r.id}
+                            href={r.file_url ?? "#"}
+                            target={r.file_url ? "_blank" : undefined}
+                            rel="noreferrer"
+                            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/80 hover:bg-white/10"
+                          >
+                            <span>📄</span>
+                            <span className="min-w-0 truncate">{r.title}</span>
+                          </a>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Player */}
+                <div className="p-5">
+                  {(() => {
+                    const active = (lessons.data ?? []).find((l) => l.id === activeLessonId) ?? (lessons.data ?? [])[0];
+                    if (!active) return <p className="py-16 text-center text-sm text-ink-400">Select a lesson to begin.</p>;
+                    return (
+                      <>
+                        <div className="overflow-hidden rounded-xl border border-ink-200 bg-black">
+                          <div className="flex aspect-video w-full items-center justify-center bg-[#0B1220]">
+                            {active.meeting_url ? (
+                              <iframe
+                                src={active.meeting_url}
+                                title={active.title}
+                                className="h-full w-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <div className="px-6 py-10 text-center text-white/70">
+                                <p className="text-lg font-bold text-white">{active.title}</p>
+                                <p className="mt-1 text-sm">
+                                  Live session · {new Date(active.start_at).toLocaleString()} · {active.timezone}
+                                </p>
+                                <p className="mt-3 text-xs text-white/50">The meeting link will unlock when the session goes live.</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3 className="font-display text-lg font-bold text-brand-navy">{active.title}</h3>
+                            <p className="mt-0.5 text-xs text-ink-400">
+                              {new Date(active.start_at).toLocaleString()} · {active.timezone}
+                              {active.meeting_provider ? ` · ${active.meeting_provider}` : ""}
+                            </p>
+                            {active.description && (
+                              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600">{active.description}</p>
+                            )}
+                          </div>
+                          {active.meeting_url && (
+                            <a
+                              href={active.meeting_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+                            >
+                              Join live ↗
+                            </a>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             </section>
 
