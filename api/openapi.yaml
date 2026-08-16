@@ -2210,6 +2210,62 @@ paths:
                   data:
                     type: array
                     items: { $ref: '#/components/schemas/ProgressReport' }
+  /learning/lessons/{lessonId}/progress:
+    post:
+      tags: [learning]
+      summary: Record a student's on-demand video watch progress for a lesson (000035)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                watched: { type: boolean }
+                position_seconds: { type: integer }
+      responses:
+        '200':
+          description: Saved progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/LessonProgress' }
+    get:
+      tags: [learning]
+      summary: Get a student's watch progress for a lesson
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Progress (or default unwatched)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/LessonProgress' }
+  /me/learning/progress:
+    get:
+      tags: [learning]
+      summary: List the student's lesson progress across their courses (LMS summary)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Lesson progress list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/LessonProgress' }
   /admin/analytics:
     get:
       tags: [analytics]
@@ -2639,6 +2695,17 @@ components:
         recommendations: { type: string }
         overall_rating: { type: integer }
         created_at: { type: string, format: date-time }
+
+    LessonProgress:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        lesson_id: { type: string, format: uuid }
+        student_profile_id: { type: string, format: uuid }
+        watched: { type: boolean }
+        position_seconds: { type: integer }
+        watched_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
 
     Analytics:
       type: object

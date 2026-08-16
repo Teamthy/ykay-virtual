@@ -71,7 +71,7 @@ func (r *LessonRepo) ListByCohort(ctx context.Context, cohortID uuid.UUID, limit
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
-			l.status, l.created_by, l.created_at, l.updated_at
+			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
 		FROM lessons l
 		WHERE l.cohort_id = $1 ORDER BY l.start_at ASC LIMIT $2`, cohortID, limit)
 	if err != nil {
@@ -93,7 +93,7 @@ func (r *LessonRepo) GetByID(ctx context.Context, id uuid.UUID) (*booking.Lesson
 	row := r.db.QueryRowContext(ctx, `
 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
-			l.status, l.created_by, l.created_at, l.updated_at
+			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
 		FROM lessons l WHERE l.id = $1`, id)
 	l, err := scanLessonRow(row)
 	if err != nil {

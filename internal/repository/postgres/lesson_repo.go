@@ -36,10 +36,10 @@ func NewLessonRepo(db TxQuerier) *LessonRepo { return &LessonRepo{db: db} }
 func scanLessonRow(row interface{ Scan(...any) error }) (*booking.Lesson, error) {
 	var l booking.Lesson
 	var cohortID, pkgID, locID, createdBy uuidNull
-	var desc, meetingURL sql.NullString
+	var desc, meetingURL, videoURL sql.NullString
 	if err := row.Scan(&l.ID, &cohortID, &pkgID, &l.TutorProfileID, &l.Title, &desc,
 		&l.StartAt, &l.EndAt, &l.Timezone, &meetingURL, &l.MeetingProvider, &locID,
-		&l.Status, &createdBy, &l.CreatedAt, &l.UpdatedAt); err != nil {
+		&l.Status, &createdBy, &l.CreatedAt, &l.UpdatedAt, &videoURL); err != nil {
 		return nil, err
 	}
 	if cohortID.Valid {
@@ -60,6 +60,9 @@ func scanLessonRow(row interface{ Scan(...any) error }) (*booking.Lesson, error)
 	if meetingURL.Valid {
 		l.MeetingURL = &meetingURL.String
 	}
+	if videoURL.Valid {
+		l.VideoURL = &videoURL.String
+	}
 	return &l, nil
 }
 
@@ -70,7 +73,7 @@ func (r *LessonRepo) ListByStudent(ctx context.Context, studentProfileID uuid.UU
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT DISTINCT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
-			l.status, l.created_by, l.created_at, l.updated_at
+			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
 		FROM lessons l
 		JOIN lesson_participants lp ON lp.lesson_id = l.id
 		WHERE lp.student_profile_id = $1
@@ -97,7 +100,7 @@ func (r *LessonRepo) ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, 
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
-			l.status, l.created_by, l.created_at, l.updated_at
+			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
 		FROM lessons l
 		WHERE l.tutor_profile_id = $1 ORDER BY l.start_at DESC LIMIT $2`, tutorProfileID, limit)
 	if err != nil {

@@ -63,6 +63,31 @@ type LessonRepository interface {
 	ListByCohort(ctx context.Context, cohortID uuid.UUID, limit int) ([]Lesson, error)
 }
 
+// LessonProgress — per-student watch state for a lesson (000035).
+type LessonProgress struct {
+	ID               uuid.UUID  `json:"id"`
+	LessonID         uuid.UUID  `json:"lesson_id"`
+	StudentProfileID uuid.UUID  `json:"student_profile_id"`
+	Watched          bool       `json:"watched"`
+	PositionSeconds  int        `json:"position_seconds"`
+	WatchedAt        *time.Time `json:"watched_at,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+}
+
+// LessonProgressRepository — upsert + read watch progress (000035).
+type LessonProgressRepository interface {
+	// Upsert records (or updates) a student's progress for a lesson. Idempotent
+	// on (lesson_id, student_profile_id).
+	Upsert(ctx context.Context, p *LessonProgress) error
+	// GetByLessonAndStudent returns progress for one lesson+student, or nil when
+	// none exists yet.
+	GetByLessonAndStudent(ctx context.Context, lessonID, studentProfileID uuid.UUID) (*LessonProgress, error)
+	// ListByStudent returns the student's progress across lessons (for the LMS
+	// completion summary).
+	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]LessonProgress, error)
+}
+
 // CohortListParams — public cohort catalogue filters.
 type CohortListParams struct {
 	ProgrammeID *uuid.UUID

@@ -46,6 +46,41 @@ export type LessonNote = {
   created_at: string;
 };
 
+// --- On-demand video lesson progress (000035) ---
+
+export type LessonProgress = {
+  id?: string;
+  lesson_id: string;
+  student_profile_id?: string;
+  watched: boolean;
+  position_seconds: number;
+  watched_at?: string | null;
+  updated_at?: string;
+};
+
+export async function recordLessonProgress(
+  lessonId: string,
+  input: { watched: boolean; position_seconds: number }
+): Promise<LessonProgress> {
+  const res = await apiFetch<LessonProgress>(`/learning/lessons/${lessonId}/progress`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
+export async function getLessonProgress(lessonId: string): Promise<LessonProgress | null> {
+  const res = await apiFetch<LessonProgress | { watched: boolean; position_seconds: number }>(
+    `/learning/lessons/${lessonId}/progress`
+  );
+  return res.data as LessonProgress;
+}
+
+export async function getMyLessonProgress(): Promise<LessonProgress[]> {
+  const res = await apiFetch<LessonProgress[]>("/me/learning/progress");
+  return res.data ?? [];
+}
+
 export type AttendanceRow = {
   id?: string;
   lesson_id?: string;

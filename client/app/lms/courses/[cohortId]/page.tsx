@@ -19,6 +19,7 @@ import {
   listAssessments,
   startAssessment,
   submitAssessment,
+  recordLessonProgress,
   type AssessmentStart,
   type AssessmentResult,
   type CohortLesson,
@@ -48,7 +49,11 @@ export default function LmsCoursePage() {
   const [submitText, setSubmitText] = useState<Record<string, string>>({});
   const [attendanceFilter, setAttendanceFilter] = useState<string>("all");
 <<<<<<< ours
+<<<<<<< ours
   const [watchLesson, setWatchLesson] = useState<CohortLesson | null>(null);
+=======
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+>>>>>>> theirs
 =======
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 >>>>>>> theirs
@@ -253,6 +258,7 @@ export default function LmsCoursePage() {
           {/* Left column */}
           <div className="space-y-6">
 <<<<<<< ours
+<<<<<<< ours
             {/* Lessons — in-app lesson player */}
             <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
               <h2 className="font-display text-lg font-bold text-brand-navy">Live lessons</h2>
@@ -320,6 +326,8 @@ export default function LmsCoursePage() {
                       )}
                     </div>
 =======
+=======
+>>>>>>> theirs
             {/* Course player — curriculum sidebar + persistent player */}
             <section className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
               <div className="grid lg:grid-cols-[300px_1fr]">
@@ -388,7 +396,21 @@ export default function LmsCoursePage() {
                       <>
                         <div className="overflow-hidden rounded-xl border border-ink-200 bg-black">
                           <div className="flex aspect-video w-full items-center justify-center bg-[#0B1220]">
+<<<<<<< ours
                             {active.meeting_url ? (
+=======
+                            {active.video_url ? (
+                              <video
+                                key={active.id}
+                                src={active.video_url}
+                                controls
+                                playsInline
+                                className="h-full w-full object-contain"
+                                onPlay={() => void recordLessonProgress(active.id, { watched: true, position_seconds: 0 })}
+                                onPause={(e) => void recordLessonProgress(active.id, { watched: true, position_seconds: Math.floor(e.currentTarget.currentTime) })}
+                              />
+                            ) : active.meeting_url ? (
+>>>>>>> theirs
                               <iframe
                                 src={active.meeting_url}
                                 title={active.title}

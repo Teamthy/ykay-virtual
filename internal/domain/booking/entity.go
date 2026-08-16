@@ -141,6 +141,9 @@ type Lesson struct {
 	Timezone         string     `json:"timezone"`
 	MeetingURL       *string    `json:"meeting_url,omitempty"`
 	MeetingProvider  string     `json:"meeting_provider"`
+	// On-demand video lesson (000035): a pre-recorded lesson students watch
+	// in-app, in addition to any live meeting link.
+	VideoURL *string `json:"video_url,omitempty"`
 	// Meeting-link lifecycle (000028): provider reference for idempotent
 	// refresh, link expiry and the participant join window. Internal state —
 	// never serialized into lesson API payloads (MeetingService exposes

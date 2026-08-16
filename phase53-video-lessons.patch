@@ -1,0 +1,910 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index d7a40eb..0e55913 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -2210,6 +2210,62 @@ paths:
+                   data:
+                     type: array
+                     items: { $ref: '#/components/schemas/ProgressReport' }
++  /learning/lessons/{lessonId}/progress:
++    post:
++      tags: [learning]
++      summary: Record a student's on-demand video watch progress for a lesson (000035)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              properties:
++                watched: { type: boolean }
++                position_seconds: { type: integer }
++      responses:
++        '200':
++          description: Saved progress
++          content:
++            application/json:
++              schema:
++                type: object
++                properties:
++                  data: { $ref: '#/components/schemas/LessonProgress' }
++    get:
++      tags: [learning]
++      summary: Get a student's watch progress for a lesson
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
++      responses:
++        '200':
++          description: Progress (or default unwatched)
++          content:
++            application/json:
++              schema:
++                type: object
++                properties:
++                  data: { $ref: '#/components/schemas/LessonProgress' }
++  /me/learning/progress:
++    get:
++      tags: [learning]
++      summary: List the student's lesson progress across their courses (LMS summary)
++      security: [{ sessionCookie: [] }]
++      responses:
++        '200':
++          description: Lesson progress list
++          content:
++            application/json:
++              schema:
++                type: object
++                properties:
++                  data:
++                    type: array
++                    items: { $ref: '#/components/schemas/LessonProgress' }
+   /admin/analytics:
+     get:
+       tags: [analytics]
+@@ -2640,6 +2696,17 @@ components:
+         overall_rating: { type: integer }
+         created_at: { type: string, format: date-time }
+ 
++    LessonProgress:
++      type: object
++      properties:
++        id: { type: string, format: uuid }
++        lesson_id: { type: string, format: uuid }
++        student_profile_id: { type: string, format: uuid }
++        watched: { type: boolean }
++        position_seconds: { type: integer }
++        watched_at: { type: string, format: date-time }
++        updated_at: { type: string, format: date-time }
++
+     Analytics:
+       type: object
+       properties:
+diff --git a/client/app/lms/courses/[cohortId]/page.tsx b/client/app/lms/courses/[cohortId]/page.tsx
+index 2164ca1..4835dea 100644
+--- a/client/app/lms/courses/[cohortId]/page.tsx
++++ b/client/app/lms/courses/[cohortId]/page.tsx
+@@ -4,7 +4,7 @@ import Link from "next/link";
+ import { useParams } from "next/navigation";
+ import { useSession } from "@/hooks/useSession";
+ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+-import { useState } from "react";
++import { useEffect, useState } from "react";
+ import { toast } from "sonner";
+ import { cn } from "@/lib/utils";
+ import {
+@@ -19,8 +19,10 @@ import {
+   listAssessments,
+   startAssessment,
+   submitAssessment,
++  recordLessonProgress,
+   type AssessmentStart,
+   type AssessmentResult,
++  type CohortLesson,
+ } from "@/features/lms/api";
+ import { listProgressReports } from "@/features/learning/api";
+ 
+@@ -46,6 +48,7 @@ export default function LmsCoursePage() {
+   const [noteText, setNoteText] = useState("");
+   const [submitText, setSubmitText] = useState<Record<string, string>>({});
+   const [attendanceFilter, setAttendanceFilter] = useState<string>("all");
++  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+ 
+   const cohort = useQuery({ queryKey: ["lms", "cohort", cohortId], queryFn: () => getCohort(cohortId) });
+   const lessons = useQuery({ queryKey: ["lms", "lessons", cohortId], queryFn: () => getCohortLessons(cohortId) });
+@@ -79,6 +82,13 @@ export default function LmsCoursePage() {
+   const quizzesPassed = (quizzes.data ?? []).filter((q) => q.status === "PASSED" || q.status === "GRADED").length;
+   const quizzesTotal = (quizzes.data ?? []).length;
+ 
++  // Auto-select the first lesson once lessons load (course-taking default).
++  useEffect(() => {
++    if (!activeLessonId && (lessons.data?.length ?? 0) > 0) {
++      setActiveLessonId(lessons.data![0].id);
++    }
++  }, [lessons.data, activeLessonId]);
++
+   const startQuiz = useMutation({
+     mutationFn: (id: string) => startAssessment(id, studentId),
+     onSuccess: (data) => setQuiz({ phase: "taking", data, answers: {} }),
+@@ -239,34 +249,128 @@ export default function LmsCoursePage() {
+         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+           {/* Left column */}
+           <div className="space-y-6">
+-            {/* Lessons */}
+-            <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+-              <h2 className="font-display text-lg font-bold text-brand-navy">Live lessons</h2>
+-              <div className="mt-3 space-y-2">
+-                {(lessons.data ?? []).map((l, i) => (
+-                  <div key={l.id} className="flex items-center gap-3 rounded-xl border border-ink-100 bg-[#FFFCF5] px-4 py-3">
+-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-navy text-xs font-bold text-white">
+-                      {i + 1}
+-                    </span>
+-                    <div className="min-w-0 flex-1">
+-                      <p className="truncate text-sm font-semibold text-ink-800">{l.title}</p>
+-                      <p className="text-xs text-ink-400">
+-                        {new Date(l.start_at).toLocaleString()} · {l.timezone}
+-                        {l.meeting_provider ? ` · ${l.meeting_provider}` : ""}
+-                      </p>
+-                    </div>
+-                    {l.meeting_url ? (
+-                      <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover">
+-                        Join
+-                      </a>
+-                    ) : (
+-                      <span className="rounded-lg bg-ink-100 px-3 py-1.5 text-xs font-semibold text-ink-500">Scheduled</span>
++            {/* Course player — curriculum sidebar + persistent player */}
++            <section className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
++              <div className="grid lg:grid-cols-[300px_1fr]">
++                {/* Curriculum sidebar */}
++                <div className="border-b border-ink-100 bg-[#0B1220] p-4 text-white lg:border-b-0 lg:border-r">
++                  <h2 className="px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
++                    Course content
++                  </h2>
++                  <div className="mt-3 space-y-1">
++                    {(lessons.data ?? []).map((l, i) => {
++                      const active = activeLessonId === l.id;
++                      return (
++                        <button
++                          key={l.id}
++                          onClick={() => setActiveLessonId(l.id)}
++                          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
++                            active ? "bg-brand-gold font-semibold text-ink-900" : "text-white/80 hover:bg-white/10"
++                          }`}
++                        >
++                          <span
++                            className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${
++                              active ? "bg-ink-900 text-white" : "bg-white/15 text-white"
++                            }`}
++                          >
++                            {i + 1}
++                          </span>
++                          <span className="min-w-0 truncate">{l.title}</span>
++                        </button>
++                      );
++                    })}
++                    {(lessons.data ?? []).length === 0 && (
++                      <p className="px-1 py-6 text-center text-sm text-white/50">No lessons yet</p>
+                     )}
+                   </div>
+-                ))}
+-                {(lessons.data ?? []).length === 0 && (
+-                  <p className="py-6 text-center text-sm text-ink-400">Lesson schedule will appear here.</p>
+-                )}
++
++                  {resources.data && (resources.data.length > 0) && (
++                    <>
++                      <h2 className="mt-6 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
++                        Resources
++                      </h2>
++                      <div className="mt-3 space-y-1">
++                        {resources.data.map((r) => (
++                          <a
++                            key={r.id}
++                            href={r.file_url ?? "#"}
++                            target={r.file_url ? "_blank" : undefined}
++                            rel="noreferrer"
++                            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/80 hover:bg-white/10"
++                          >
++                            <span>📄</span>
++                            <span className="min-w-0 truncate">{r.title}</span>
++                          </a>
++                        ))}
++                      </div>
++                    </>
++                  )}
++                </div>
++
++                {/* Player */}
++                <div className="p-5">
++                  {(() => {
++                    const active = (lessons.data ?? []).find((l) => l.id === activeLessonId) ?? (lessons.data ?? [])[0];
++                    if (!active) return <p className="py-16 text-center text-sm text-ink-400">Select a lesson to begin.</p>;
++                    return (
++                      <>
++                        <div className="overflow-hidden rounded-xl border border-ink-200 bg-black">
++                          <div className="flex aspect-video w-full items-center justify-center bg-[#0B1220]">
++                            {active.video_url ? (
++                              <video
++                                key={active.id}
++                                src={active.video_url}
++                                controls
++                                playsInline
++                                className="h-full w-full object-contain"
++                                onPlay={() => void recordLessonProgress(active.id, { watched: true, position_seconds: 0 })}
++                                onPause={(e) => void recordLessonProgress(active.id, { watched: true, position_seconds: Math.floor(e.currentTarget.currentTime) })}
++                              />
++                            ) : active.meeting_url ? (
++                              <iframe
++                                src={active.meeting_url}
++                                title={active.title}
++                                className="h-full w-full"
++                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
++                                allowFullScreen
++                              />
++                            ) : (
++                              <div className="px-6 py-10 text-center text-white/70">
++                                <p className="text-lg font-bold text-white">{active.title}</p>
++                                <p className="mt-1 text-sm">
++                                  Live session · {new Date(active.start_at).toLocaleString()} · {active.timezone}
++                                </p>
++                                <p className="mt-3 text-xs text-white/50">The meeting link will unlock when the session goes live.</p>
++                              </div>
++                            )}
++                          </div>
++                        </div>
++                        <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
++                          <div className="min-w-0">
++                            <h3 className="font-display text-lg font-bold text-brand-navy">{active.title}</h3>
++                            <p className="mt-0.5 text-xs text-ink-400">
++                              {new Date(active.start_at).toLocaleString()} · {active.timezone}
++                              {active.meeting_provider ? ` · ${active.meeting_provider}` : ""}
++                            </p>
++                            {active.description && (
++                              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600">{active.description}</p>
++                            )}
++                          </div>
++                          {active.meeting_url && (
++                            <a
++                              href={active.meeting_url}
++                              target="_blank"
++                              rel="noreferrer"
++                              className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
++                            >
++                              Join live ↗
++                            </a>
++                          )}
++                        </div>
++                      </>
++                    );
++                  })()}
++                </div>
+               </div>
+             </section>
+ 
+diff --git a/client/features/cohorts/api/lessons.ts b/client/features/cohorts/api/lessons.ts
+index 0183348..7ff8abf 100644
+--- a/client/features/cohorts/api/lessons.ts
++++ b/client/features/cohorts/api/lessons.ts
+@@ -14,6 +14,7 @@ export type CohortLesson = {
+   meeting_url?: string;
+   meeting_provider: string;
+   status: string;
++  video_url?: string;
+ };
+ 
+ export type CohortResource = {
+diff --git a/client/features/lms/api.ts b/client/features/lms/api.ts
+index 533d86f..919aa11 100644
+--- a/client/features/lms/api.ts
++++ b/client/features/lms/api.ts
+@@ -46,6 +46,41 @@ export type LessonNote = {
+   created_at: string;
+ };
+ 
++// --- On-demand video lesson progress (000035) ---
++
++export type LessonProgress = {
++  id?: string;
++  lesson_id: string;
++  student_profile_id?: string;
++  watched: boolean;
++  position_seconds: number;
++  watched_at?: string | null;
++  updated_at?: string;
++};
++
++export async function recordLessonProgress(
++  lessonId: string,
++  input: { watched: boolean; position_seconds: number }
++): Promise<LessonProgress> {
++  const res = await apiFetch<LessonProgress>(`/learning/lessons/${lessonId}/progress`, {
++    method: "POST",
++    body: JSON.stringify(input),
++  });
++  return res.data;
++}
++
++export async function getLessonProgress(lessonId: string): Promise<LessonProgress | null> {
++  const res = await apiFetch<LessonProgress | { watched: boolean; position_seconds: number }>(
++    `/learning/lessons/${lessonId}/progress`
++  );
++  return res.data as LessonProgress;
++}
++
++export async function getMyLessonProgress(): Promise<LessonProgress[]> {
++  const res = await apiFetch<LessonProgress[]>("/me/learning/progress");
++  return res.data ?? [];
++}
++
+ export type AttendanceRow = {
+   id?: string;
+   lesson_id?: string;
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index e89873c..055d587 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -91,6 +91,7 @@ type Repositories struct {
+ 	LessonNotes        booking.LessonNoteRepository
+ 	Resources          booking.ResourceRepository
+ 	Assignments        booking.AssignmentRepository
++	LessonProgress     booking.LessonProgressRepository
+ 	Students           identity.StudentProfileRepository
+ 	StudentLinks       identity.ParentStudentLinkRepository
+ 	Vetting            vetting.VettingRepository
+@@ -225,7 +226,8 @@ func main() {
+ 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
+ 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
+ 		repos.Resources, repos.Assignments)
+-	lessonSvc.WithRoster(repos.Enrollments, repos.Students.FindByID).
++	lessonSvc.WithProgress(repos.LessonProgress).
++		WithRoster(repos.Enrollments, repos.Students.FindByID).
+ 		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
+ 			return repos.Vetting.GetProfileByID(ctx, id)
+ 		})
+@@ -308,7 +310,7 @@ func main() {
+ 		Account:        accountHandler,
+ 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
+ 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
+-		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
++		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz).WithLessonProgress(lessonSvc),
+ 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
+ 		// facility. In production, objects are served by S3/MinIO directly, so
+ 		// the route must NOT be mounted (a nil handler leaves it unregistered in
+@@ -453,6 +455,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
+ 			LessonNotes:        memory.NewLessonNoteMemory(),
+ 			Resources:          memory.NewResourceMemory(),
+ 			Assignments:        store.Assignments,
++			LessonProgress:     memory.NewLessonProgressMemory(),
+ 			Students:           store.Students,
+ 			StudentLinks:       store.StudentLinks,
+ 			StudentLink:        store.StudentLinks,
+@@ -513,6 +516,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
+ 		LessonNotes:        postgres.NewLessonNoteRepo(pg.DB()),
+ 		Resources:          postgres.NewResourceRepo(pg.DB()),
+ 		Assignments:        postgres.NewAssignmentRepo(pg.DB()),
++		LessonProgress:     postgres.NewLessonProgressRepo(pg.DB()),
+ 		Students:           postgres.NewStudentProfileRepo(pg.DB()),
+ 		StudentLinks:       postgres.NewParentStudentLinkRepo(pg.DB()),
+ 		Vetting:            postgres.NewVettingRepo(pg.DB()),
+diff --git a/internal/domain/booking/entity.go b/internal/domain/booking/entity.go
+index a5668a8..e72f2bb 100644
+--- a/internal/domain/booking/entity.go
++++ b/internal/domain/booking/entity.go
+@@ -141,6 +141,9 @@ type Lesson struct {
+ 	Timezone         string     `json:"timezone"`
+ 	MeetingURL       *string    `json:"meeting_url,omitempty"`
+ 	MeetingProvider  string     `json:"meeting_provider"`
++	// On-demand video lesson (000035): a pre-recorded lesson students watch
++	// in-app, in addition to any live meeting link.
++	VideoURL *string `json:"video_url,omitempty"`
+ 	// Meeting-link lifecycle (000028): provider reference for idempotent
+ 	// refresh, link expiry and the participant join window. Internal state —
+ 	// never serialized into lesson API payloads (MeetingService exposes
+diff --git a/internal/domain/booking/repository.go b/internal/domain/booking/repository.go
+index efb5034..80eb3a8 100644
+--- a/internal/domain/booking/repository.go
++++ b/internal/domain/booking/repository.go
+@@ -63,6 +63,31 @@ type LessonRepository interface {
+ 	ListByCohort(ctx context.Context, cohortID uuid.UUID, limit int) ([]Lesson, error)
+ }
+ 
++// LessonProgress — per-student watch state for a lesson (000035).
++type LessonProgress struct {
++	ID               uuid.UUID  `json:"id"`
++	LessonID         uuid.UUID  `json:"lesson_id"`
++	StudentProfileID uuid.UUID  `json:"student_profile_id"`
++	Watched          bool       `json:"watched"`
++	PositionSeconds  int        `json:"position_seconds"`
++	WatchedAt        *time.Time `json:"watched_at,omitempty"`
++	CreatedAt        time.Time  `json:"created_at"`
++	UpdatedAt        time.Time  `json:"updated_at"`
++}
++
++// LessonProgressRepository — upsert + read watch progress (000035).
++type LessonProgressRepository interface {
++	// Upsert records (or updates) a student's progress for a lesson. Idempotent
++	// on (lesson_id, student_profile_id).
++	Upsert(ctx context.Context, p *LessonProgress) error
++	// GetByLessonAndStudent returns progress for one lesson+student, or nil when
++	// none exists yet.
++	GetByLessonAndStudent(ctx context.Context, lessonID, studentProfileID uuid.UUID) (*LessonProgress, error)
++	// ListByStudent returns the student's progress across lessons (for the LMS
++	// completion summary).
++	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]LessonProgress, error)
++}
++
+ // CohortListParams — public cohort catalogue filters.
+ type CohortListParams struct {
+ 	ProgrammeID *uuid.UUID
+diff --git a/internal/repository/memory/lesson_progress_memory.go b/internal/repository/memory/lesson_progress_memory.go
+new file mode 100644
+index 0000000..5fc9d38
+--- /dev/null
++++ b/internal/repository/memory/lesson_progress_memory.go
+@@ -0,0 +1,70 @@
++package memory
++
++import (
++	"context"
++	"sync"
++	"time"
++
++	"github.com/google/uuid"
++
++	"ykay-virtual/internal/domain/booking"
++)
++
++// LessonProgressMemory — in-memory LessonProgressRepository for tests + dev.
++type LessonProgressMemory struct {
++	mu  sync.RWMutex
++	byKey map[string]*booking.LessonProgress
++}
++
++func NewLessonProgressMemory() *LessonProgressMemory {
++	return &LessonProgressMemory{byKey: map[string]*booking.LessonProgress{}}
++}
++
++func (m *LessonProgressMemory) key(lessonID, studentID uuid.UUID) string {
++	return lessonID.String() + "|" + studentID.String()
++}
++
++func (m *LessonProgressMemory) Upsert(_ context.Context, p *booking.LessonProgress) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	k := m.key(p.LessonID, p.StudentProfileID)
++	now := time.Now().UTC()
++	if existing, ok := m.byKey[k]; ok {
++		existing.Watched = p.Watched
++		existing.PositionSeconds = p.PositionSeconds
++		if p.WatchedAt != nil {
++			existing.WatchedAt = p.WatchedAt
++		}
++		existing.UpdatedAt = now
++		return nil
++	}
++	copy := *p
++	copy.ID = uuid.New()
++	copy.CreatedAt = now
++	copy.UpdatedAt = now
++	m.byKey[k] = &copy
++	return nil
++}
++
++func (m *LessonProgressMemory) GetByLessonAndStudent(_ context.Context, lessonID, studentProfileID uuid.UUID) (*booking.LessonProgress, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	if p, ok := m.byKey[m.key(lessonID, studentProfileID)]; ok {
++		return p, nil
++	}
++	return nil, nil
++}
++
++func (m *LessonProgressMemory) ListByStudent(_ context.Context, studentProfileID uuid.UUID, _ int) ([]booking.LessonProgress, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	out := []booking.LessonProgress{}
++	for _, p := range m.byKey {
++		if p.StudentProfileID == studentProfileID {
++			out = append(out, *p)
++		}
++	}
++	return out, nil
++}
++
++var _ booking.LessonProgressRepository = (*LessonProgressMemory)(nil)
+diff --git a/internal/repository/postgres/lesson_ops_repo.go b/internal/repository/postgres/lesson_ops_repo.go
+index 7c51ef4..f86359b 100644
+--- a/internal/repository/postgres/lesson_ops_repo.go
++++ b/internal/repository/postgres/lesson_ops_repo.go
+@@ -71,7 +71,7 @@ func (r *LessonRepo) ListByCohort(ctx context.Context, cohortID uuid.UUID, limit
+ 	rows, err := r.db.QueryContext(ctx, `
+ 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
+ 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
+-			l.status, l.created_by, l.created_at, l.updated_at
++			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+ 		FROM lessons l
+ 		WHERE l.cohort_id = $1 ORDER BY l.start_at ASC LIMIT $2`, cohortID, limit)
+ 	if err != nil {
+@@ -93,7 +93,7 @@ func (r *LessonRepo) GetByID(ctx context.Context, id uuid.UUID) (*booking.Lesson
+ 	row := r.db.QueryRowContext(ctx, `
+ 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
+ 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
+-			l.status, l.created_by, l.created_at, l.updated_at
++			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+ 		FROM lessons l WHERE l.id = $1`, id)
+ 	l, err := scanLessonRow(row)
+ 	if err != nil {
+diff --git a/internal/repository/postgres/lesson_progress_repo.go b/internal/repository/postgres/lesson_progress_repo.go
+new file mode 100644
+index 0000000..e3d3abd
+--- /dev/null
++++ b/internal/repository/postgres/lesson_progress_repo.go
+@@ -0,0 +1,97 @@
++package postgres
++
++import (
++	"context"
++	"database/sql"
++	"errors"
++	"fmt"
++
++	"github.com/google/uuid"
++
++	"ykay-virtual/internal/domain/booking"
++)
++
++// LessonProgressRepo — postgres implementation of LessonProgressRepository
++// (on-demand video lesson watch state, migration 000035).
++type LessonProgressRepo struct{ db TxQuerier }
++
++func NewLessonProgressRepo(db TxQuerier) *LessonProgressRepo { return &LessonProgressRepo{db: db} }
++
++func (r *LessonProgressRepo) Upsert(ctx context.Context, p *booking.LessonProgress) error {
++	if p.WatchedAt == nil {
++		_, err := r.db.ExecContext(ctx, `
++			INSERT INTO lesson_progress (lesson_id, student_profile_id, watched, position_seconds, updated_at)
++			VALUES ($1, $2, $3, $4, NOW())
++			ON CONFLICT (lesson_id, student_profile_id)
++			DO UPDATE SET watched = $3, position_seconds = $4, updated_at = NOW()`,
++			p.LessonID, p.StudentProfileID, p.Watched, p.PositionSeconds)
++		if err != nil {
++			return fmt.Errorf("upsert lesson progress: %w", err)
++		}
++		return nil
++	}
++	_, err := r.db.ExecContext(ctx, `
++		INSERT INTO lesson_progress (lesson_id, student_profile_id, watched, position_seconds, watched_at, updated_at)
++		VALUES ($1, $2, $3, $4, $5, NOW())
++		ON CONFLICT (lesson_id, student_profile_id)
++		DO UPDATE SET watched = $3, position_seconds = $4, watched_at = $5, updated_at = NOW()`,
++		p.LessonID, p.StudentProfileID, p.Watched, p.PositionSeconds, *p.WatchedAt)
++	if err != nil {
++		return fmt.Errorf("upsert lesson progress: %w", err)
++	}
++	return nil
++}
++
++func (r *LessonProgressRepo) GetByLessonAndStudent(ctx context.Context, lessonID, studentProfileID uuid.UUID) (*booking.LessonProgress, error) {
++	row := r.db.QueryRowContext(ctx, `
++		SELECT id, lesson_id, student_profile_id, watched, position_seconds, watched_at, created_at, updated_at
++		FROM lesson_progress WHERE lesson_id = $1 AND student_profile_id = $2`,
++		lessonID, studentProfileID)
++	p, err := scanLessonProgressRow(row)
++	if err != nil {
++		if errors.Is(err, sql.ErrNoRows) {
++			return nil, nil
++		}
++		return nil, err
++	}
++	return p, nil
++}
++
++func (r *LessonProgressRepo) ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]booking.LessonProgress, error) {
++	if limit < 1 || limit > 200 {
++		limit = 100
++	}
++	rows, err := r.db.QueryContext(ctx, `
++		SELECT id, lesson_id, student_profile_id, watched, position_seconds, watched_at, created_at, updated_at
++		FROM lesson_progress WHERE student_profile_id = $1 ORDER BY updated_at DESC LIMIT $2`,
++		studentProfileID, limit)
++	if err != nil {
++		return nil, fmt.Errorf("list lesson progress: %w", err)
++	}
++	defer rows.Close()
++	out := []booking.LessonProgress{}
++	for rows.Next() {
++		p, err := scanLessonProgressRow(rows)
++		if err != nil {
++			return nil, err
++		}
++		out = append(out, *p)
++	}
++	return out, rows.Err()
++}
++
++func scanLessonProgressRow(row interface{ Scan(...any) error }) (*booking.LessonProgress, error) {
++	var p booking.LessonProgress
++	var watchedAt sql.NullTime
++	if err := row.Scan(&p.ID, &p.LessonID, &p.StudentProfileID, &p.Watched, &p.PositionSeconds,
++		&watchedAt, &p.CreatedAt, &p.UpdatedAt); err != nil {
++		return nil, err
++	}
++	if watchedAt.Valid {
++		t := watchedAt.Time
++		p.WatchedAt = &t
++	}
++	return &p, nil
++}
++
++var _ booking.LessonProgressRepository = (*LessonProgressRepo)(nil)
+diff --git a/internal/repository/postgres/lesson_repo.go b/internal/repository/postgres/lesson_repo.go
+index 53fb3da..8448d74 100644
+--- a/internal/repository/postgres/lesson_repo.go
++++ b/internal/repository/postgres/lesson_repo.go
+@@ -36,10 +36,10 @@ func NewLessonRepo(db TxQuerier) *LessonRepo { return &LessonRepo{db: db} }
+ func scanLessonRow(row interface{ Scan(...any) error }) (*booking.Lesson, error) {
+ 	var l booking.Lesson
+ 	var cohortID, pkgID, locID, createdBy uuidNull
+-	var desc, meetingURL sql.NullString
++	var desc, meetingURL, videoURL sql.NullString
+ 	if err := row.Scan(&l.ID, &cohortID, &pkgID, &l.TutorProfileID, &l.Title, &desc,
+ 		&l.StartAt, &l.EndAt, &l.Timezone, &meetingURL, &l.MeetingProvider, &locID,
+-		&l.Status, &createdBy, &l.CreatedAt, &l.UpdatedAt); err != nil {
++		&l.Status, &createdBy, &l.CreatedAt, &l.UpdatedAt, &videoURL); err != nil {
+ 		return nil, err
+ 	}
+ 	if cohortID.Valid {
+@@ -60,6 +60,9 @@ func scanLessonRow(row interface{ Scan(...any) error }) (*booking.Lesson, error)
+ 	if meetingURL.Valid {
+ 		l.MeetingURL = &meetingURL.String
+ 	}
++	if videoURL.Valid {
++		l.VideoURL = &videoURL.String
++	}
+ 	return &l, nil
+ }
+ 
+@@ -70,7 +73,7 @@ func (r *LessonRepo) ListByStudent(ctx context.Context, studentProfileID uuid.UU
+ 	rows, err := r.db.QueryContext(ctx, `
+ 		SELECT DISTINCT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
+ 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
+-			l.status, l.created_by, l.created_at, l.updated_at
++			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+ 		FROM lessons l
+ 		JOIN lesson_participants lp ON lp.lesson_id = l.id
+ 		WHERE lp.student_profile_id = $1
+@@ -97,7 +100,7 @@ func (r *LessonRepo) ListByTutor(ctx context.Context, tutorProfileID uuid.UUID,
+ 	rows, err := r.db.QueryContext(ctx, `
+ 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
+ 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
+-			l.status, l.created_by, l.created_at, l.updated_at
++			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+ 		FROM lessons l
+ 		WHERE l.tutor_profile_id = $1 ORDER BY l.start_at DESC LIMIT $2`, tutorProfileID, limit)
+ 	if err != nil {
+diff --git a/internal/repository/postgres/portal_repos.go b/internal/repository/postgres/portal_repos.go
+index 66fb839..8d3177b 100644
+--- a/internal/repository/postgres/portal_repos.go
++++ b/internal/repository/postgres/portal_repos.go
+@@ -298,7 +298,7 @@ func (r *LessonRepo) ListByDate(ctx context.Context, date time.Time) ([]booking.
+ 	rows, err := r.db.QueryContext(ctx, `
+ 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
+ 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
+-			l.status, l.created_by, l.created_at, l.updated_at
++			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+ 		FROM lessons l
+ 		WHERE l.start_at >= $1 AND l.start_at < $2 ORDER BY l.start_at ASC`, start, end)
+ 	if err != nil {
+diff --git a/internal/transport/http/learning_handler.go b/internal/transport/http/learning_handler.go
+index 704256d..9e6c7ef 100644
+--- a/internal/transport/http/learning_handler.go
++++ b/internal/transport/http/learning_handler.go
+@@ -27,20 +27,35 @@ import (
+ //   - GET  /admin/reports/revenue.csv                (admin export)
+ 
+ type LearningHandler struct {
+-	svc        *service.LearningService
+-	an         *service.AnalyticsService
+-	attendance bookingAttendanceLister
+-	authz      *ProfileAuthorizer
++	svc            *service.LearningService
++	an             *service.AnalyticsService
++	attendance     bookingAttendanceLister
++	lessonProgress lessonProgressService
++	authz          *ProfileAuthorizer
+ }
+ 
+ type bookingAttendanceLister interface {
+ 	ListLessonAttendance(ctx context.Context, lessonID uuid.UUID) ([]booking.Attendance, error)
+ }
+ 
++// lessonProgressService is the slice of LessonService used for on-demand video
++// watch-state tracking (000035).
++type lessonProgressService interface {
++	RecordLessonProgress(ctx context.Context, lessonID, studentProfileID uuid.UUID, watched bool, positionSeconds int) (*booking.LessonProgress, error)
++	GetLessonProgress(ctx context.Context, lessonID, studentProfileID uuid.UUID) (*booking.LessonProgress, error)
++	MyLessonProgress(ctx context.Context, studentProfileID uuid.UUID) ([]booking.LessonProgress, error)
++}
++
+ func NewLearningHandler(svc *service.LearningService, an *service.AnalyticsService, attendance bookingAttendanceLister, authz *ProfileAuthorizer) *LearningHandler {
+ 	return &LearningHandler{svc: svc, an: an, attendance: attendance, authz: authz}
+ }
+ 
++// WithLessonProgress wires the on-demand video watch-state service (000035).
++func (h *LearningHandler) WithLessonProgress(lp lessonProgressService) *LearningHandler {
++	h.lessonProgress = lp
++	return h
++}
++
+ // --- Assessments ---
+ 
+ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Request) {
+@@ -411,3 +426,97 @@ func (h *LearningHandler) RevenueCSV(w http.ResponseWriter, r *http.Request) {
+ 		_, _ = fmt.Fprintf(w, "%s,%s,%.2f,%d\n", rw.ProgrammeID, rw.ProgrammeTitle, rw.Revenue, rw.Orders)
+ 	}
+ }
++
++// --- On-demand video lesson progress (000035) ---
++
++// RecordLessonProgress — POST /learning/lessons/{lessonId}/progress
++// {watched, position_seconds}. Resolves the student from the session.
++func (h *LearningHandler) RecordLessonProgress(w http.ResponseWriter, r *http.Request) {
++	if h.lessonProgress == nil {
++		WriteAppError(w, pkg.NotFound("lesson progress is not configured"))
++		return
++	}
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	lessonID, err := ParseUUID(r, "lessonId")
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	studentID, err := h.authz.ResolveStudent(r.Context(), actor, "")
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	var req struct {
++		Watched         bool `json:"watched"`
++		PositionSeconds int  `json:"position_seconds"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	p, err := h.lessonProgress.RecordLessonProgress(r.Context(), lessonID, studentID, req.Watched, req.PositionSeconds)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, p, nil)
++}
++
++// GetLessonProgress — GET /learning/lessons/{lessonId}/progress
++func (h *LearningHandler) GetLessonProgress(w http.ResponseWriter, r *http.Request) {
++	if h.lessonProgress == nil {
++		WriteAppError(w, pkg.NotFound("lesson progress is not configured"))
++		return
++	}
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	lessonID, err := ParseUUID(r, "lessonId")
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	studentID, err := h.authz.ResolveStudent(r.Context(), actor, "")
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	p, err := h.lessonProgress.GetLessonProgress(r.Context(), lessonID, studentID)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	if p == nil {
++		pkg.WriteSuccess(w, http.StatusOK, map[string]any{"watched": false, "position_seconds": 0}, nil)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, p, nil)
++}
++
++// MyLessonProgress — GET /me/learning/progress  (LMS completion summary)
++func (h *LearningHandler) MyLessonProgress(w http.ResponseWriter, r *http.Request) {
++	if h.lessonProgress == nil {
++		pkg.WriteSuccess(w, http.StatusOK, []any{}, nil)
++		return
++	}
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	studentID, err := h.authz.ResolveStudent(r.Context(), actor, r.URL.Query().Get("student_profile_id"))
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	list, err := h.lessonProgress.MyLessonProgress(r.Context(), studentID)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, list, nil)
++}
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index bf5f62b..664e648 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -228,6 +228,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	mux.HandleFunc("POST "+v1+"/learning/submissions/{submissionId}/grade", handlers.Learning.GradeSubmission)
+ 	mux.HandleFunc("POST "+v1+"/learning/progress-reports", handlers.Learning.CreateProgressReport)
+ 	mux.HandleFunc("GET "+v1+"/learning/progress-reports", handlers.Learning.ListProgressReports)
++
++	// On-demand video lesson progress (000035)
++	mux.HandleFunc("POST "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.RecordLessonProgress)
++	mux.HandleFunc("GET "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.GetLessonProgress)
++	mux.HandleFunc("GET "+v1+"/me/learning/progress", handlers.Learning.MyLessonProgress)
+ 	mux.HandleFunc("GET "+v1+"/admin/analytics", handlers.Learning.Analytics)
+ 	mux.HandleFunc("GET "+v1+"/admin/reports/attendance.csv", handlers.Learning.AttendanceCSV)
+ 	mux.HandleFunc("GET "+v1+"/admin/reports/revenue.csv", handlers.Learning.RevenueCSV)
+@@ -361,8 +366,12 @@ type Handlers struct {
+ }
+ 
+ // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
++// Default raised from 300 to 1200/min per IP to comfortably absorb legitimate
++// concurrent bursts (e.g. a shared proxy/NAT concentrating many users behind
++// one IP) while still protecting against abuse. Override per environment via
++// RATE_LIMIT_PER_MINUTE.
+ func RateLimitPerMinute() int {
+-	return envInt("RATE_LIMIT_PER_MINUTE", 300)
++	return envInt("RATE_LIMIT_PER_MINUTE", 1200)
+ }
+ 
+ // AuthRateLimitPerMinute — per-IP rate limit for authentication endpoints
+diff --git a/migrations/000035_video_lessons.down.sql b/migrations/000035_video_lessons.down.sql
+new file mode 100644
+index 0000000..43ade5e
+--- /dev/null
++++ b/migrations/000035_video_lessons.down.sql
+@@ -0,0 +1,2 @@
++DROP TABLE IF EXISTS lesson_progress;
++ALTER TABLE lessons DROP COLUMN IF EXISTS video_url;
+diff --git a/migrations/000035_video_lessons.up.sql b/migrations/000035_video_lessons.up.sql
+new file mode 100644
+index 0000000..d801143
+--- /dev/null
++++ b/migrations/000035_video_lessons.up.sql
+@@ -0,0 +1,24 @@
++-- 000035 — on-demand video lessons + per-student lesson progress.
++--
++-- Adds a `video_url` to lessons so a cohort can carry a pre-recorded lesson
++-- (MP4 / hosted video link) that students watch in-app, in addition to live
++-- meeting links. A `lesson_progress` table tracks each student's watch state
++-- (watched + last position) so the LMS can show completion and resume.
++
++ALTER TABLE lessons
++    ADD COLUMN IF NOT EXISTS video_url TEXT;
++
++-- Per-student lesson progress.
++CREATE TABLE IF NOT EXISTS lesson_progress (
++    id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
++    lesson_id         UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
++    student_profile_id UUID NOT NULL REFERENCES student_profiles(id) ON DELETE CASCADE,
++    watched           BOOLEAN NOT NULL DEFAULT FALSE,
++    position_seconds  INT NOT NULL DEFAULT 0,
++    watched_at        TIMESTAMPTZ,
++    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
++    updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
++    UNIQUE (lesson_id, student_profile_id)
++);
++
++CREATE INDEX IF NOT EXISTS idx_lesson_progress_student ON lesson_progress (student_profile_id, watched);

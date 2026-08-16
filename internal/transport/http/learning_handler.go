@@ -27,18 +27,33 @@ import (
 //   - GET  /admin/reports/revenue.csv                (admin export)
 
 type LearningHandler struct {
-	svc        *service.LearningService
-	an         *service.AnalyticsService
-	attendance bookingAttendanceLister
-	authz      *ProfileAuthorizer
+	svc            *service.LearningService
+	an             *service.AnalyticsService
+	attendance     bookingAttendanceLister
+	lessonProgress lessonProgressService
+	authz          *ProfileAuthorizer
 }
 
 type bookingAttendanceLister interface {
 	ListLessonAttendance(ctx context.Context, lessonID uuid.UUID) ([]booking.Attendance, error)
 }
 
+// lessonProgressService is the slice of LessonService used for on-demand video
+// watch-state tracking (000035).
+type lessonProgressService interface {
+	RecordLessonProgress(ctx context.Context, lessonID, studentProfileID uuid.UUID, watched bool, positionSeconds int) (*booking.LessonProgress, error)
+	GetLessonProgress(ctx context.Context, lessonID, studentProfileID uuid.UUID) (*booking.LessonProgress, error)
+	MyLessonProgress(ctx context.Context, studentProfileID uuid.UUID) ([]booking.LessonProgress, error)
+}
+
 func NewLearningHandler(svc *service.LearningService, an *service.AnalyticsService, attendance bookingAttendanceLister, authz *ProfileAuthorizer) *LearningHandler {
 	return &LearningHandler{svc: svc, an: an, attendance: attendance, authz: authz}
+}
+
+// WithLessonProgress wires the on-demand video watch-state service (000035).
+func (h *LearningHandler) WithLessonProgress(lp lessonProgressService) *LearningHandler {
+	h.lessonProgress = lp
+	return h
 }
 
 // --- Assessments ---
@@ -410,4 +425,98 @@ func (h *LearningHandler) RevenueCSV(w http.ResponseWriter, r *http.Request) {
 	for _, rw := range rows {
 		_, _ = fmt.Fprintf(w, "%s,%s,%.2f,%d\n", rw.ProgrammeID, rw.ProgrammeTitle, rw.Revenue, rw.Orders)
 	}
+}
+
+// --- On-demand video lesson progress (000035) ---
+
+// RecordLessonProgress — POST /learning/lessons/{lessonId}/progress
+// {watched, position_seconds}. Resolves the student from the session.
+func (h *LearningHandler) RecordLessonProgress(w http.ResponseWriter, r *http.Request) {
+	if h.lessonProgress == nil {
+		WriteAppError(w, pkg.NotFound("lesson progress is not configured"))
+		return
+	}
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	lessonID, err := ParseUUID(r, "lessonId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	studentID, err := h.authz.ResolveStudent(r.Context(), actor, "")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Watched         bool `json:"watched"`
+		PositionSeconds int  `json:"position_seconds"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	p, err := h.lessonProgress.RecordLessonProgress(r.Context(), lessonID, studentID, req.Watched, req.PositionSeconds)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, p, nil)
+}
+
+// GetLessonProgress — GET /learning/lessons/{lessonId}/progress
+func (h *LearningHandler) GetLessonProgress(w http.ResponseWriter, r *http.Request) {
+	if h.lessonProgress == nil {
+		WriteAppError(w, pkg.NotFound("lesson progress is not configured"))
+		return
+	}
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	lessonID, err := ParseUUID(r, "lessonId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	studentID, err := h.authz.ResolveStudent(r.Context(), actor, "")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	p, err := h.lessonProgress.GetLessonProgress(r.Context(), lessonID, studentID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if p == nil {
+		pkg.WriteSuccess(w, http.StatusOK, map[string]any{"watched": false, "position_seconds": 0}, nil)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, p, nil)
+}
+
+// MyLessonProgress — GET /me/learning/progress  (LMS completion summary)
+func (h *LearningHandler) MyLessonProgress(w http.ResponseWriter, r *http.Request) {
+	if h.lessonProgress == nil {
+		pkg.WriteSuccess(w, http.StatusOK, []any{}, nil)
+		return
+	}
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	studentID, err := h.authz.ResolveStudent(r.Context(), actor, r.URL.Query().Get("student_profile_id"))
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	list, err := h.lessonProgress.MyLessonProgress(r.Context(), studentID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
 }

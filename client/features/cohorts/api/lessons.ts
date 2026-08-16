@@ -14,6 +14,7 @@ export type CohortLesson = {
   meeting_url?: string;
   meeting_provider: string;
   status: string;
+  video_url?: string;
 };
 
 export type CohortResource = {

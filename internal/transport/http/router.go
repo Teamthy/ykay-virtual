@@ -228,6 +228,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/learning/submissions/{submissionId}/grade", handlers.Learning.GradeSubmission)
 	mux.HandleFunc("POST "+v1+"/learning/progress-reports", handlers.Learning.CreateProgressReport)
 	mux.HandleFunc("GET "+v1+"/learning/progress-reports", handlers.Learning.ListProgressReports)
+
+	// On-demand video lesson progress (000035)
+	mux.HandleFunc("POST "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.RecordLessonProgress)
+	mux.HandleFunc("GET "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.GetLessonProgress)
+	mux.HandleFunc("GET "+v1+"/me/learning/progress", handlers.Learning.MyLessonProgress)
 	mux.HandleFunc("GET "+v1+"/admin/analytics", handlers.Learning.Analytics)
 	mux.HandleFunc("GET "+v1+"/admin/reports/attendance.csv", handlers.Learning.AttendanceCSV)
 	mux.HandleFunc("GET "+v1+"/admin/reports/revenue.csv", handlers.Learning.RevenueCSV)

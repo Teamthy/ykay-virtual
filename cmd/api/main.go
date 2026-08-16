@@ -91,6 +91,7 @@ type Repositories struct {
 	LessonNotes        booking.LessonNoteRepository
 	Resources          booking.ResourceRepository
 	Assignments        booking.AssignmentRepository
+	LessonProgress     booking.LessonProgressRepository
 	Students           identity.StudentProfileRepository
 	StudentLinks       identity.ParentStudentLinkRepository
 	Vetting            vetting.VettingRepository
@@ -225,7 +226,8 @@ func main() {
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
 		repos.Resources, repos.Assignments)
-	lessonSvc.WithRoster(repos.Enrollments, repos.Students.FindByID).
+	lessonSvc.WithProgress(repos.LessonProgress).
+		WithRoster(repos.Enrollments, repos.Students.FindByID).
 		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
 			return repos.Vetting.GetProfileByID(ctx, id)
 		})
@@ -308,7 +310,7 @@ func main() {
 		Account:        accountHandler,
 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
-		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
+		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz).WithLessonProgress(lessonSvc),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
@@ -453,6 +455,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			LessonNotes:        memory.NewLessonNoteMemory(),
 			Resources:          memory.NewResourceMemory(),
 			Assignments:        store.Assignments,
+			LessonProgress:     memory.NewLessonProgressMemory(),
 			Students:           store.Students,
 			StudentLinks:       store.StudentLinks,
 			StudentLink:        store.StudentLinks,
@@ -513,6 +516,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		LessonNotes:        postgres.NewLessonNoteRepo(pg.DB()),
 		Resources:          postgres.NewResourceRepo(pg.DB()),
 		Assignments:        postgres.NewAssignmentRepo(pg.DB()),
+		LessonProgress:     postgres.NewLessonProgressRepo(pg.DB()),
 		Students:           postgres.NewStudentProfileRepo(pg.DB()),
 		StudentLinks:       postgres.NewParentStudentLinkRepo(pg.DB()),
 		Vetting:            postgres.NewVettingRepo(pg.DB()),
