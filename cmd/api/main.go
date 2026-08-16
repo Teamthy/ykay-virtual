@@ -213,6 +213,12 @@ func main() {
 		payment.ProviderFlutterwave: payment_provider.NewFlutterwave(cfg.FlutterwaveSecret),
 	}
 	paymentSvc := service.NewPaymentService(repos.UoWFactory, providers, audit, repos.EscrowRead)
+	// YK-006 fail-closed: until a real, certified gateway refund flow exists,
+	// production must refuse refunds rather than silently credit the wallet and
+	// mark orders REFUNDED without refunding the gateway.
+	if cfg.Environment == "production" {
+		paymentSvc.SetRefundsEnabled(false)
+	}
 
 	subjectSvc := service.NewSubjectService(repos.SubjectRepo, cacheBackend)
 	programmeSvc := service.NewProgrammeService(repos.ProgrammeRepo, cacheBackend)

@@ -36,19 +36,29 @@ type PaymentService struct {
 	Clock      func() time.Time
 	PayoutSvc  *PayoutService
 	referrals  ReferralQualifier
+	// refundsEnabled — YK-006 fail-closed. When false (production until a real
+	// gateway refund capability is wired), refund requests are rejected instead
+	// of silently crediting the internal wallet and marking the order REFUNDED
+	// without actually refunding the gateway. Prevents fake refunds.
+	refundsEnabled bool
 }
+
+// SetRefundsEnabled controls whether refunds are allowed. Production must keep
+// this OFF until a certified gateway refund flow exists (YK-006).
+func (s *PaymentService) SetRefundsEnabled(v bool) { s.refundsEnabled = v }
 
 func NewPaymentService(uows repository.UnitOfWorkFactory,
 	providers map[payment.PaymentProvider]payment_provider.Provider,
 	audit identity.AuditService, escrowRead payment.EscrowHoldRepository) *PaymentService {
 
 	ps := &PaymentService{
-		uows:       uows,
-		providers:  providers,
-		audit:      audit,
-		escrowRead: escrowRead,
-		HoldPeriod: 72 * time.Hour,
-		Clock:      time.Now,
+		uows:           uows,
+		providers:      providers,
+		audit:          audit,
+		escrowRead:     escrowRead,
+		HoldPeriod:     72 * time.Hour,
+		Clock:          time.Now,
+		refundsEnabled: true, // default ON for dev/tests; production disables it (YK-006)
 	}
 	ps.PayoutSvc = NewPayoutService(uows, audit, ps.Clock)
 	return ps
@@ -524,6 +534,12 @@ func (s *PaymentService) ReleaseEscrow(ctx context.Context, escrowHoldID uuid.UU
 // RefundOrder — admin refund of an entire order: refunds every escrow hold
 // attached to the order and marks the order REFUNDED.
 func (s *PaymentService) RefundOrder(ctx context.Context, orderID uuid.UUID, actorID *uuid.UUID, reason string) error {
+	// YK-006 fail-closed: without a real gateway refund capability in
+	// production, refuse to mark an order REFUNDED (which would otherwise
+	// silently credit the wallet while the gateway keeps the funds).
+	if !s.refundsEnabled {
+		return fmt.Errorf("%w: refunds disabled in this environment (no certified gateway refund flow)", domain.ErrForbidden)
+	}
 	uow, err := s.uows.Begin(ctx)
 	if err != nil {
 		return err
@@ -564,6 +580,10 @@ func (s *PaymentService) RefundOrder(ctx context.Context, orderID uuid.UUID, act
 func (s *PaymentService) RefundEscrow(ctx context.Context, escrowHoldID uuid.UUID,
 	actorID *uuid.UUID, reason string, reqID, traceID *string) error {
 
+	// YK-006 fail-closed (same guard as RefundOrder).
+	if !s.refundsEnabled {
+		return fmt.Errorf("%w: refunds disabled in this environment (no certified gateway refund flow)", domain.ErrForbidden)
+	}
 	uow, err := s.uows.Begin(ctx)
 	if err != nil {
 		return err

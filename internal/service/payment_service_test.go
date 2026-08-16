@@ -474,3 +474,52 @@ func TestReleaseEscrow_ConcurrentNoDoubleSettlement(t *testing.T) {
 	}
 	assert.Equal(t, 1, related, "exactly one payout per escrow hold")
 }
+
+// TestPayouts_FailClosedInProduction — YK-005: with fail-closed enabled, the
+// mock provider must NOT mark payouts PAID; they stay PENDING.
+func TestPayouts_FailClosedInProduction(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+
+	// Seed two PENDING payouts.
+	p1 := &payment.Payout{TutorProfileID: env.tutor, EscrowHoldID: uuid.New(), Amount: 7000, Currency: "NGN", Status: payment.PayoutPending}
+	p2 := &payment.Payout{TutorProfileID: env.tutor, EscrowHoldID: uuid.New(), Amount: 5000, Currency: "NGN", Status: payment.PayoutPending}
+	require.NoError(t, env.store.Payouts.Create(ctx, p1))
+	require.NoError(t, env.store.Payouts.Create(ctx, p2))
+
+	// Fail-closed: no payouts may be marked PAID.
+	env.pay.PayoutSvc.SetFailClosed(true)
+	n, err := env.pay.PayoutSvc.ProcessPendingPayouts(ctx, 100)
+	require.Error(t, err, "must refuse to run payouts when fail-closed")
+	assert.Equal(t, 0, n)
+
+	// Both payouts remain PENDING (no fake success).
+	remaining, _ := env.store.Payouts.ListByStatus(ctx, payment.PayoutPending, 100)
+	assert.Len(t, remaining, 2)
+	paid, _ := env.store.Payouts.ListByStatus(ctx, payment.PayoutPaid, 100)
+	assert.Len(t, paid, 0, "no payout may be marked PAID when fail-closed")
+}
+
+// TestRefund_FailClosedInProduction — YK-006: with refunds disabled, refund
+// requests are rejected and no wallet credit / REFUNDED status is produced.
+func TestRefund_FailClosedInProduction(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+	ref := "YKAY-20260816-REFCLOSE1"
+	orderID, _ := seedOrderAndPayment(t, env, ref)
+	payload := paystackWebhook(ref, 7_500_000)
+	_, err := env.pay.ProcessWebhook(ctx, payment.ProviderPaystack, payload,
+		signPaystack(payload, paystackSecret), paystackSecret)
+	require.NoError(t, err)
+	holds, _ := env.store.Escrow.GetByOrderID(ctx, orderID)
+	require.Len(t, holds, 1)
+
+	env.pay.SetRefundsEnabled(false)
+	err = env.pay.RefundEscrow(ctx, holds[0].ID, &env.parent, "test", nil, nil)
+	require.Error(t, err, "refund must be rejected when disabled")
+
+	h, _ := env.store.Escrow.GetByID(ctx, holds[0].ID)
+	assert.Equal(t, payment.EscrowHeld, h.Status, "hold must remain HELD when refund disabled")
+	o, _ := env.store.Orders.GetByID(ctx, orderID)
+	assert.Equal(t, payment.OrderPaid, o.Status, "order must remain PAID (not REFUNDED) when refund is disabled")
+}

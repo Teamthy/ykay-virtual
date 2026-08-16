@@ -76,6 +76,14 @@ func main() {
 		payment.ProviderFlutterwave: payment_provider.NewFlutterwave(cfg.FlutterwaveSecret),
 	}
 	paymentSvc := service.NewPaymentService(r.uowFactory, providers, audit, r.escrowRead)
+
+	// YK-005 fail-closed: in production, never record MOCK payouts as PAID.
+	// Until a real, certified payout provider is configured, tutor payouts stay
+	// PENDING rather than silently pretending money moved.
+	if cfg.Environment == "production" {
+		paymentSvc.PayoutSvc.SetFailClosed(true)
+		log.Println("worker: tutor payouts DISABLED (production, no certified provider) — payouts will stay PENDING")
+	}
 	vettingSvc := service.NewVettingService(r.uowFactory, storage.NewLocalStorage(), audit, nil, nil)
 
 	// --- Notification dispatch (G4): email/SMS/push adapters ---

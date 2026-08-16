@@ -28,20 +28,40 @@ func (m MockPayoutProvider) Transfer(amount float64, currency, recipientRef stri
 // PayoutService — process_weekly_tutor_payouts cron: PENDING → PROCESSING →
 // PAID. Idempotent: only PENDING payouts are picked up, and UpdateStatus
 // guards transitions (no double payouts).
+//
+// SECURITY (YK-005): in production the mock provider MUST NOT record fake
+// PAID payouts. ProcessPendingPayouts is fail-closed when failClosed is set —
+// it refuses to mark anything PAID (leaving payouts PENDING for a real
+// provider) rather than silently pretending money moved.
 type PayoutService struct {
-	uows     repository.UnitOfWorkFactory
-	audit    identity.AuditService
-	provider PayoutProvider
-	clock    func() time.Time
+	uows       repository.UnitOfWorkFactory
+	audit      identity.AuditService
+	provider   PayoutProvider
+	clock      func() time.Time
+	failClosed bool
 }
 
 func NewPayoutService(uows repository.UnitOfWorkFactory, audit identity.AuditService, clock func() time.Time) *PayoutService {
 	return &PayoutService{uows: uows, audit: audit, provider: MockPayoutProvider{}, clock: clock}
 }
 
+// SetFailClosed — when true, the service refuses to mark payouts PAID. Use it
+// in production until a real payout provider is configured and certified
+// (YK-005). Env-tunable at the worker wiring level.
+func (s *PayoutService) SetFailClosed(v bool) { s.failClosed = v }
+
+// WithProvider overrides the payout provider (tests / real provider wiring).
+func (s *PayoutService) WithProvider(p PayoutProvider) *PayoutService { s.provider = p; return s }
+
 // ProcessPendingPayouts — runs the weekly payout batch. Returns the number of
 // payouts successfully paid out.
 func (s *PayoutService) ProcessPendingPayouts(ctx context.Context, limit int) (int, error) {
+	// YK-005 fail-closed: do not mark anything PAID when the payout path is
+	// disabled (production without a certified real provider). Leave payouts
+	// PENDING so a later real provider can settle them; never fake success.
+	if s.failClosed {
+		return 0, fmt.Errorf("%w: payouts disabled in this environment (no certified provider) — refusing to mark fake PAYOUT as PAID", domain.ErrForbidden)
+	}
 	if limit < 1 {
 		limit = 200
 	}
