@@ -27,13 +27,25 @@ export function AuthNav() {
     );
   }
 
+  // Role-aware primary dashboard link (a STUDENT must never see "Parent
+  // dashboard"; each role gets its own personalized destination).
+  const primaryDashboard = isAdmin(user)
+    ? { href: "/admin", label: "Admin console" }
+    : user.roles.includes("TUTOR")
+      ? { href: "/tutor-dashboard", label: "Tutor dashboard" }
+      : user.roles.includes("STUDENT")
+        ? { href: "/student-dashboard", label: "My dashboard" }
+        : { href: "/dashboard", label: "Parent dashboard" };
+
   const links = [
-    { href: "/dashboard", label: "Parent dashboard" },
+    primaryDashboard,
+    { href: "/account", label: "Account" },
     { href: "/messages", label: "Messages" },
     { href: "/notifications", label: "Notifications" },
-    ...(user.roles.includes("TUTOR") ? [{ href: "/tutor-dashboard", label: "Tutor dashboard" }] : []),
-    ...(isAdmin(user) ? [{ href: "/admin/vetting", label: "Admin console" }] : []),
   ];
+
+  // Avatar: use the profile image when present, otherwise a letter tile.
+  const initials = (user.first_name?.[0] ?? user.email[0] ?? "?").toUpperCase();
 
   return (
     <div className="relative">
@@ -41,10 +53,15 @@ export function AuthNav() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 rounded-full border border-ink-200 py-1.5 pl-1.5 pr-4 text-sm font-semibold hover:border-brand-blue transition-colors"
       >
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-blue text-xs font-bold text-white">
-          {user.email.slice(0, 1).toUpperCase()}
+        <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-brand-blue text-xs font-bold text-white">
+          {user.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
+          ) : (
+            initials
+          )}
         </span>
-        {user.email.split("@")[0].slice(0, 12)}
+        {user.first_name?.slice(0, 14) ?? user.email.split("@")[0].slice(0, 12)}
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-ink-100 bg-white p-2 shadow-lift z-50">

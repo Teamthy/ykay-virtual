@@ -27,6 +27,57 @@ export function ChatWidget() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
+  // Moveable launcher: the user can drag the chat bubble to any corner/spot
+  // (industry-standard widget behaviour). null = default bottom-right.
+  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const drag = useRef<{
+    active: boolean;
+    offX: number;
+    offY: number;
+    moved: boolean;
+    startX: number;
+    startY: number;
+  } | null>(null);
+
+  useEffect(() => {
+    // Only initialise client-side; anchor at the default bottom-right position.
+    if (anchor === null && typeof window !== "undefined") {
+      setAnchor({ x: window.innerWidth - 32 - 56, y: window.innerHeight - 32 - 56 });
+    }
+  }, [anchor]);
+
+  const launcherDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    const t = e.currentTarget.getBoundingClientRect();
+    drag.current = {
+      active: true,
+      offX: e.clientX - t.left,
+      offY: e.clientY - t.top,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+    };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const launcherMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const d = drag.current;
+    if (!d || !d.active || typeof window === "undefined") return;
+    if (Math.abs(e.clientX - d.startX) > 4 || Math.abs(e.clientY - d.startY) > 4) d.moved = true;
+    if (!d.moved) return;
+    const size = 56;
+    const x = Math.min(Math.max(0, e.clientX - d.offX), window.innerWidth - size);
+    const y = Math.min(Math.max(0, e.clientY - d.offY), window.innerHeight - size);
+    setAnchor({ x, y });
+  };
+
+  const launcherUp = () => {
+    const wasMoved = drag.current?.moved ?? false;
+    drag.current = null;
+    // Toggle the panel only on a click (not after a drag).
+    if (!wasMoved) setOpen((v) => !v);
+  };
+
   const threads = useQuery({
     queryKey: ["chat", "widget-threads"],
     queryFn: listChatThreads,
@@ -84,10 +135,14 @@ export function ChatWidget() {
     }
   };
 
+  const launcherStyle: React.CSSProperties = anchor
+    ? { position: "fixed", left: anchor.x, top: anchor.y, zIndex: 50 }
+    : { position: "fixed", right: 32, bottom: 32, zIndex: 50 };
+
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
+    <>
       {open && (
-        <div className="flex h-[480px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xl animate-slide-up">
+        <div className="fixed bottom-24 right-8 z-50 flex h-[480px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-2xl animate-slide-up">
           {/* Header */}
           <div className="flex items-center justify-between bg-brand-navy px-4 py-3 text-white">
             <div className="flex items-center gap-2">
@@ -186,15 +241,19 @@ export function ChatWidget() {
         </div>
       )}
 
-      {/* Launcher */}
+      {/* Moveable launcher */}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        style={launcherStyle}
+        onPointerDown={launcherDown}
+        onPointerMove={launcherMove}
+        onPointerUp={launcherUp}
+        onPointerCancel={launcherUp}
         aria-label={open ? "Close chat" : "Open chat"}
-        className="grid size-14 place-items-center rounded-full bg-brand-gold text-ink-900 shadow-[0_8px_24px_rgba(244,180,0,0.45)] transition-transform hover:scale-105"
+        className="grid size-14 touch-none select-none place-items-center rounded-full bg-brand-gold text-ink-900 shadow-[0_8px_24px_rgba(244,180,0,0.45)] transition-transform hover:scale-105 active:cursor-grabbing"
       >
         {open ? <X size={26} /> : <MessageCircle size={26} />}
       </button>
-    </div>
+    </>
   );
 }

@@ -1,14 +1,25 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
+import { Screen } from "@/src/components/ui/Screen";
+import { Card } from "@/src/components/ui/Card";
+import { Button } from "@/src/components/ui/Button";
+import { AppText } from "@/src/components/ui/AppText";
+import { TabBar } from "@/src/components/TabBar";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch, setToken } from "@/src/lib/api";
 
-// Account — standard-LMS account screen (M4): session profile, linked
-// learners, logout (clears the SecureStore token).
+// Account — premium profile + linked learners + logout.
 
-type Me = { id: string; email: string; roles: string[]; first_name?: string };
+type Me = { id: string; email: string; roles: string[]; first_name?: string; last_name?: string };
 type Learner = { id: string; first_name: string; last_name?: string; current_level?: string };
+
+const MENU = [
+  { href: "/notifications", label: "Notifications", icon: "🔔", desc: "Reminders and updates" },
+] as const;
 
 export default function Account() {
   const [me, setMe] = useState<Me | null>(null);
@@ -33,6 +44,7 @@ export default function Account() {
   useFocusEffect(useCallback(() => void load(), [load]));
 
   const logout = async () => {
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
     try {
       await apiFetch("/auth/logout", { method: "POST" }).catch(() => undefined);
     } finally {
@@ -41,59 +53,144 @@ export default function Account() {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.gold} size="large" />
-      </View>
-    );
-  }
+  const initial = me?.first_name?.[0] ?? me?.email?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <View style={styles.root}>
-      <View style={styles.profileCard}>
-        <Text style={styles.avatar}>{me?.first_name?.[0] ?? me?.email?.[0]?.toUpperCase() ?? "?"}</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.name}>{me?.first_name ?? me?.email ?? "Signed in"}</Text>
-          <Text style={styles.email}>{me?.email}</Text>
-          <Text style={styles.roles}>{(me?.roles ?? []).join(" · ")}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>My learners</Text>
-      {learners.length === 0 ? (
-        <Text style={styles.empty}>No learners linked yet — add one in onboarding on the web app.</Text>
-      ) : (
-        learners.map((l) => (
-          <View key={l.id} style={styles.learnerCard}>
-            <Text style={styles.learnerName}>
-              {l.first_name} {l.last_name ?? ""}
-            </Text>
-            {l.current_level ? <Text style={styles.learnerLevel}>{l.current_level}</Text> : null}
+    <Screen scroll>
+      {/* Profile hero */}
+      <Animated.View entering={FadeInUp.delay(60).springify().damping(16)}>
+        <LinearGradient
+          colors={[colors.navy, "#12305F"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <View style={styles.avatar}>
+            <AppText style={styles.avatarText}>{initial}</AppText>
           </View>
+          <View style={{ flex: 1, marginLeft: 16 }}>
+            <AppText variant="h2" style={{ color: colors.white }}>
+              {me?.first_name?.trim() ? `${me.first_name}${me.last_name ? ` ${me.last_name}` : ""}` : me?.email ?? "Signed in"}
+            </AppText>
+            {me?.email ? (
+              <AppText variant="bodySm" style={{ color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
+                {me.email}
+              </AppText>
+            ) : null}
+            <View style={styles.roleRow}>
+              {(me?.roles ?? []).map((r) => (
+                <View key={r} style={styles.rolePill}>
+                  <AppText variant="caption" style={styles.roleText}>
+                    {r}
+                  </AppText>
+                </View>
+              ))}
+            </View>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+
+      {/* Learners */}
+      <AppText variant="label" style={styles.sectionTitle}>
+        MY LEARNERS
+      </AppText>
+      {learners.length === 0 ? (
+        <View style={styles.stateCard}>
+          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", lineHeight: 19 }}>
+            No learners linked yet — add one in onboarding on the web app.
+          </AppText>
+        </View>
+      ) : (
+        learners.map((l, i) => (
+          <Animated.View key={l.id} entering={FadeInUp.delay(120 + i * 60).springify().damping(18)}>
+            <Card style={styles.learnerCard}>
+              <View style={styles.learnerIcon}>
+                <AppText style={{ fontSize: 16 }}>🎓</AppText>
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <AppText variant="h3">
+                  {l.first_name} {l.last_name ?? ""}
+                </AppText>
+                {l.current_level ? (
+                  <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
+                    {l.current_level}
+                  </AppText>
+                ) : null}
+              </View>
+            </Card>
+          </Animated.View>
         ))
       )}
 
-      <Pressable style={styles.logoutBtn} onPress={() => void logout()}>
-        <Text style={styles.logoutText}>Log out</Text>
-      </Pressable>
-    </View>
+      {/* Menu */}
+      <AppText variant="label" style={styles.sectionTitle}>
+        MORE
+      </AppText>
+      {MENU.map((item) => (
+        <Card key={item.href} onPress={() => router.push(item.href as never)} style={styles.menuCard}>
+          <AppText style={{ fontSize: 18 }}>{item.icon}</AppText>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <AppText variant="h3">{item.label}</AppText>
+            <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
+              {item.desc}
+            </AppText>
+          </View>
+          <AppText style={{ fontSize: 18, color: colors.goldDark }}>›</AppText>
+        </Card>
+      ))}
+
+      <View style={styles.logout}>
+        <Button label="Log out" variant="secondary" full onPress={() => void logout()} />
+      </View>
+
+      <View style={styles.tab}>
+        <TabBar />
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream, padding: 24 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.cream },
-  profileCard: { flexDirection: "row", gap: 14, alignItems: "center", backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: "#E8E4DA", padding: 18 },
-  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.navy, color: colors.white, textAlign: "center", lineHeight: 52, fontSize: 22, fontWeight: "800" },
-  name: { fontSize: 17, fontWeight: "800", color: colors.ink[900] },
-  email: { fontSize: 13, color: colors.ink[500], marginTop: 2 },
-  roles: { fontSize: 11, color: colors.goldDark, fontWeight: "700", marginTop: 6 },
-  sectionTitle: { fontSize: 17, fontWeight: "800", color: colors.navy, marginTop: 28, marginBottom: 12 },
-  empty: { color: colors.ink[500], lineHeight: 20 },
-  learnerCard: { backgroundColor: colors.white, borderRadius: radius.md, borderWidth: 1, borderColor: "#E8E4DA", padding: 14, marginBottom: 8, flexDirection: "row", justifyContent: "space-between" },
-  learnerName: { fontSize: 15, fontWeight: "700", color: colors.ink[900] },
-  learnerLevel: { fontSize: 13, color: colors.ink[500] },
-  logoutBtn: { marginTop: 32, borderWidth: 1, borderColor: colors.danger, borderRadius: radius.md, padding: 14, alignItems: "center" },
-  logoutText: { color: colors.danger, fontWeight: "700", fontSize: 15 },
+  hero: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: radius.lg,
+    padding: 22,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.gold,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: { fontSize: 26, fontWeight: "800", color: colors.navy },
+  roleRow: { flexDirection: "row", gap: 6, marginTop: 8, flexWrap: "wrap" },
+  rolePill: { backgroundColor: "rgba(244,180,0,0.18)", borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
+  roleText: { color: colors.gold, fontWeight: "800" },
+  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
+  stateCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: colors.navy,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  learnerCard: { padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  learnerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.goldLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuCard: { padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  logout: { marginTop: 8 },
+  tab: { marginTop: 24 },
 });

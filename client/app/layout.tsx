@@ -9,6 +9,7 @@ import { CookieConsent } from "@/components/layout/CookieConsent";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { ShellVisibility } from "@/components/layout/ShellVisibility";
+import { HomeOnly } from "@/components/layout/HomeOnly";
 import { Providers } from "@/components/providers";
 import { RegisterSW } from "@/components/register-sw";
 import { Toaster } from "@/components/toaster";
@@ -84,9 +85,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <MobileNav />
           </ShellVisibility>
           <main id="main-content" tabIndex={-1} className="pb-16 outline-none lg:pb-0">{children}</main>
-          <ShellVisibility>
+          {/* Footer appears ONLY on the marketing home page; the floating
+              AI assistant (moveable launcher) is available on EVERY page. */}
+          <HomeOnly>
             <Footer />
-            <ChatWidget />
+          </HomeOnly>
+          <ChatWidget />
+          <ShellVisibility>
             {/* Consent + install banners are public-route chrome; on
                 dashboards they overlay form buttons (wizard "Finish"). */}
             <InstallPrompt />

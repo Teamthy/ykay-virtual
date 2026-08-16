@@ -1,11 +1,23 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+import { Screen } from "@/src/components/ui/Screen";
+import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
+import { Card } from "@/src/components/ui/Card";
+import { Button } from "@/src/components/ui/Button";
+import { AppText } from "@/src/components/ui/AppText";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 
-// Progress — standard-LMS progress view (M4): attendance summary + the
-// learner's progress reports, all session-resolved (G1.2).
+// Progress — premium attendance gauge + tutor progress reports, all
+// session-resolved.
 
 type AttendanceSummary = {
   total_lessons: number;
@@ -13,7 +25,6 @@ type AttendanceSummary = {
   attendance_rate: number;
   upcoming_lessons: number;
 };
-
 type Report = {
   id: string;
   period_start: string;
@@ -23,6 +34,20 @@ type Report = {
   recommendations?: string;
   overall_rating: number;
 };
+
+function Gauge({ rate }: { rate: number }) {
+  const pct = Math.min(100, Math.round(rate * 100));
+  const w = useSharedValue(0);
+  useEffect(() => {
+    w.value = withSpring(pct, { damping: 20, stiffness: 90 });
+  }, [pct, w]);
+  const anim = useAnimatedStyle(() => ({ width: `${w.value}%` }));
+  return (
+    <View style={styles.gaugeTrack}>
+      <Animated.View style={[styles.gaugeFill, anim]} />
+    </View>
+  );
+}
 
 export default function Progress() {
   const [summary, setSummary] = useState<AttendanceSummary | null>(null);
@@ -52,73 +77,124 @@ export default function Progress() {
   const rate = summary?.attendance_rate ?? 0;
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Progress</Text>
-      <Text style={styles.sub}>Attendance and tutor reports.</Text>
+    <Screen scroll>
+      <ScreenHeader
+        eyebrow="GROWTH"
+        title="Progress"
+        subtitle="Attendance and tutor reports, all in one view."
+      />
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 40 }} color={colors.gold} size="large" />
+        <Animated.View entering={FadeInUp.delay(80)}>
+          <View style={styles.skeletonCard} />
+          <View style={styles.skeletonCard} />
+        </Animated.View>
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <Animated.View entering={FadeInUp.delay(80)} style={styles.stateCard}>
+          <AppText style={{ fontSize: 30 }}>⚠️</AppText>
+          <AppText variant="h3" style={{ marginTop: 8 }}>
+            Couldn't load progress
+          </AppText>
+          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 4 }}>
+            {error}
+          </AppText>
+          <Button label="Try again" variant="dark" style={{ marginTop: 16, alignSelf: "center" }} onPress={() => void load()} />
+        </Animated.View>
       ) : (
         <>
           {summary && (
-            <View style={styles.gaugeCard}>
-              <Text style={styles.gaugeValue}>{Math.round(rate * 100)}%</Text>
-              <Text style={styles.gaugeLabel}>attendance</Text>
-              <View style={styles.gaugeTrack}>
-                <View style={[styles.gaugeFill, { width: `${Math.min(100, Math.round(rate * 100))}%` }]} />
+            <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+              <View style={styles.gaugeCard}>
+                <AppText style={styles.gaugeValue}>{Math.round(rate * 100)}%</AppText>
+                <AppText variant="label" style={{ color: colors.ink[500] }}>
+                  ATTENDANCE
+                </AppText>
+                <Gauge rate={rate} />
+                <AppText variant="caption" style={{ color: colors.ink[500], marginTop: 10 }}>
+                  {summary.attended}/{summary.total_lessons} lessons attended · {summary.upcoming_lessons} upcoming
+                </AppText>
               </View>
-              <Text style={styles.gaugeDetail}>
-                {summary.attended}/{summary.total_lessons} lessons attended · {summary.upcoming_lessons} upcoming
-              </Text>
-            </View>
+            </Animated.View>
           )}
 
-          <Text style={styles.sectionTitle}>Tutor reports</Text>
+          <AppText variant="label" style={styles.sectionTitle}>
+            TUTOR REPORTS
+          </AppText>
           {reports.length === 0 ? (
-            <Text style={styles.empty}>No progress reports yet — your tutor writes them after lessons.</Text>
+            <View style={styles.stateCard}>
+              <AppText style={{ fontSize: 32 }}>📊</AppText>
+              <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 8, lineHeight: 19 }}>
+                No progress reports yet — your tutor writes them after lessons.
+              </AppText>
+            </View>
           ) : (
-            reports.map((r) => (
-              <View key={r.id} style={styles.reportCard}>
-                <View style={styles.reportHeader}>
-                  <Text style={styles.reportTitle}>
-                    {r.period_start.slice(0, 10)} → {r.period_end.slice(0, 10)}
-                  </Text>
-                  <View style={styles.ratingBadge}>
-                    <Text style={styles.ratingText}>{"★".repeat(Math.max(1, Math.min(5, r.overall_rating)))}</Text>
-                  </View>
-                </View>
-                {r.strengths ? <Text style={styles.reportLine}>💪 {r.strengths}</Text> : null}
-                {r.weaknesses ? <Text style={styles.reportLine}>🎯 {r.weaknesses}</Text> : null}
-                {r.recommendations ? <Text style={styles.reportLine}>📌 {r.recommendations}</Text> : null}
-              </View>
-            ))
+            <View style={styles.list}>
+              {reports.map((r, i) => (
+                <Animated.View key={r.id} entering={FadeInUp.delay(100 + i * 60).springify().damping(18)}>
+                  <Card style={styles.reportCard}>
+                    <View style={styles.reportHeader}>
+                      <AppText variant="h3" style={{ flex: 1 }}>
+                        {r.period_start.slice(0, 10)} → {r.period_end.slice(0, 10)}
+                      </AppText>
+                      <View style={styles.ratingBadge}>
+                        <AppText variant="caption" style={styles.ratingText}>
+                          {"★".repeat(Math.max(1, Math.min(5, r.overall_rating)))}
+                        </AppText>
+                      </View>
+                    </View>
+                    {r.strengths ? (
+                      <AppText variant="bodySm" style={styles.reportLine}>
+                        💪 {r.strengths}
+                      </AppText>
+                    ) : null}
+                    {r.weaknesses ? (
+                      <AppText variant="bodySm" style={styles.reportLine}>
+                        🎯 {r.weaknesses}
+                      </AppText>
+                    ) : null}
+                    {r.recommendations ? (
+                      <AppText variant="bodySm" style={styles.reportLine}>
+                        📌 {r.recommendations}
+                      </AppText>
+                    ) : null}
+                  </Card>
+                </Animated.View>
+              ))}
+            </View>
           )}
         </>
       )}
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
-  content: { padding: 24, paddingBottom: 48 },
-  title: { fontSize: 24, fontWeight: "800", color: colors.navy },
-  sub: { fontSize: 14, color: colors.ink[500], marginTop: 4, marginBottom: 20 },
-  error: { color: colors.danger, marginTop: 24 },
-  empty: { color: colors.ink[500], marginTop: 8, lineHeight: 20 },
-  sectionTitle: { fontSize: 17, fontWeight: "800", color: colors.navy, marginTop: 24, marginBottom: 12 },
-  gaugeCard: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: "#E8E4DA", padding: 20, alignItems: "center" },
-  gaugeValue: { fontSize: 40, fontWeight: "800", color: colors.navy },
-  gaugeLabel: { fontSize: 13, color: colors.ink[500], marginTop: 2 },
-  gaugeTrack: { alignSelf: "stretch", height: 10, backgroundColor: colors.surface, borderRadius: radius.pill, marginTop: 12, overflow: "hidden" },
+  skeletonCard: { height: 120, borderRadius: radius.lg, backgroundColor: colors.ink[100], marginBottom: 14 },
+  stateCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: colors.navy,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  gaugeCard: {
+    backgroundColor: colors.navy,
+    borderRadius: radius.lg,
+    padding: 24,
+    alignItems: "center",
+  },
+  gaugeValue: { fontSize: 46, fontWeight: "800", color: colors.white },
+  gaugeTrack: { alignSelf: "stretch", height: 10, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: radius.pill, marginTop: 14, overflow: "hidden" },
   gaugeFill: { height: "100%", backgroundColor: colors.gold, borderRadius: radius.pill },
-  gaugeDetail: { fontSize: 12, color: colors.ink[500], marginTop: 10 },
-  reportCard: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: "#E8E4DA", padding: 16, marginBottom: 12 },
+  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
+  list: { gap: 12 },
+  reportCard: { padding: 18 },
   reportHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-  reportTitle: { fontSize: 14, fontWeight: "700", color: colors.ink[900] },
   ratingBadge: { backgroundColor: colors.goldLight, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
-  ratingText: { color: colors.goldDark, fontSize: 12, fontWeight: "800" },
-  reportLine: { fontSize: 13, color: colors.ink[600], marginTop: 6, lineHeight: 18 },
+  ratingText: { color: colors.goldDark, fontWeight: "800" },
+  reportLine: { color: colors.ink[600], marginTop: 6, lineHeight: 18 },
 });

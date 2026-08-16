@@ -1,12 +1,19 @@
-import { Link, useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
+import { Screen } from "@/src/components/ui/Screen";
+import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
+import { Card } from "@/src/components/ui/Card";
+import { Button } from "@/src/components/ui/Button";
+import { AppText } from "@/src/components/ui/AppText";
+import { TabBar } from "@/src/components/TabBar";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 
-// Quizzes — standard-LMS quiz list (M4): assessments published for the
-// learner's courses. Attempts run through the /learning contract; the
-// learner profile resolves from the bearer session (G1.2).
+// Quizzes — premium assessment list for the learner's courses. Attempts run
+// through the /learning contract; the learner profile resolves from the
+// bearer session.
 
 type Quiz = {
   id: string;
@@ -16,8 +23,9 @@ type Quiz = {
   pass_threshold: number;
   status: string;
 };
-
 type Lesson = { id: string; cohort_id?: string; title: string; start_at: string };
+
+const QUIZ_ICONS = ["📝", "🧠", "✍️", "🔢", "🔬", "🌍"];
 
 export default function Quizzes() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -28,8 +36,6 @@ export default function Quizzes() {
     setLoading(true);
     setError(null);
     try {
-      // Assessments are cohort-scoped: resolve the learner's cohorts from
-      // the session-resolved lesson list, then merge quizzes across them.
       const lessons = await apiFetch<Lesson[]>("/me/lessons");
       const cohortIds = [...new Set((lessons.data ?? []).map((l) => l.cohort_id).filter(Boolean))] as string[];
       const results = await Promise.all(
@@ -40,7 +46,6 @@ export default function Quizzes() {
         )
       );
       const merged = results.flat().filter((q) => q.status === "PUBLISHED" || q.status === "CLOSED");
-      // De-dupe by id (an assessment may appear under one cohort only, but be safe).
       const seen = new Set<string>();
       setQuizzes(merged.filter((q) => (seen.has(q.id) ? false : (seen.add(q.id), true))));
     } catch (e) {
@@ -53,54 +58,111 @@ export default function Quizzes() {
   useFocusEffect(useCallback(() => void load(), [load]));
 
   return (
-    <View style={styles.root}>
-      <Text style={styles.title}>Quizzes</Text>
-      <Text style={styles.sub}>Auto-graded assessments from your courses.</Text>
+    <Screen scroll>
+      <ScreenHeader
+        eyebrow="ASSESSMENTS"
+        title="Quizzes"
+        subtitle="Auto-graded assessments that reinforce each course."
+      />
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 48 }} color={colors.gold} size="large" />
+        <Animated.View entering={FadeInUp.delay(80)}>
+          {[0, 1, 2].map((i) => (
+            <View key={i} style={[styles.skeleton, { opacity: 1 - i * 0.25 }]} />
+          ))}
+        </Animated.View>
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <Animated.View entering={FadeInUp.delay(80)} style={styles.stateCard}>
+          <AppText style={{ fontSize: 30 }}>⚠️</AppText>
+          <AppText variant="h3" style={{ marginTop: 8 }}>
+            Couldn't load quizzes
+          </AppText>
+          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 4 }}>
+            {error}
+          </AppText>
+          <Button label="Try again" variant="dark" style={{ marginTop: 16, alignSelf: "center" }} onPress={() => void load()} />
+        </Animated.View>
       ) : quizzes.length === 0 ? (
-        <Text style={styles.empty}>No quizzes yet — your tutor publishes them with each course.</Text>
+        <Animated.View entering={FadeInUp.delay(80).springify().damping(16)} style={styles.stateCard}>
+          <AppText style={{ fontSize: 34 }}>📭</AppText>
+          <AppText variant="h3" style={{ textAlign: "center", marginTop: 10 }}>
+            No quizzes yet
+          </AppText>
+          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 6, lineHeight: 19 }}>
+            Your tutor publishes quizzes with each course — check back soon.
+          </AppText>
+        </Animated.View>
       ) : (
-        <FlatList
-          data={quizzes}
-          keyExtractor={(q) => q.id}
-          contentContainerStyle={{ gap: 12, paddingBottom: 24 }}
-          renderItem={({ item }) => (
-            <Link href={{ pathname: "/quizzes/[assessmentId]", params: { assessmentId: item.id } }} asChild>
-              <Pressable style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>{item.title}</Text>
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>
-                      {item.status === "CLOSED" ? "closed" : `pass ≥ ${item.pass_threshold}%`}
-                    </Text>
+        <View style={styles.list}>
+          {quizzes.map((q, i) => (
+            <Animated.View key={q.id} entering={FadeInUp.delay(100 + i * 60).springify().damping(16)}>
+              <Card
+                onPress={() =>
+                  router.push({ pathname: "/quizzes/[assessmentId]", params: { assessmentId: q.id } })
+                }
+                style={styles.card}
+              >
+                <View style={styles.cardTop}>
+                  <View style={styles.iconTile}>
+                    <AppText style={{ fontSize: 22 }}>{QUIZ_ICONS[i % QUIZ_ICONS.length]}</AppText>
                   </View>
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <AppText variant="h3">{q.title}</AppText>
+                    <View style={styles.badgeRow}>
+                      <View style={[styles.badge, q.status === "CLOSED" && styles.badgeClosed]}>
+                        <AppText variant="caption" style={styles.badgeText}>
+                          {q.status === "CLOSED" ? "CLOSED" : `PASS ≥ ${q.pass_threshold}%`}
+                        </AppText>
+                      </View>
+                    </View>
+                  </View>
+                  <AppText style={{ fontSize: 18, color: colors.goldDark }}>›</AppText>
                 </View>
-                {item.instructions ? <Text style={styles.cardDesc}>{item.instructions}</Text> : null}
-                <Text style={styles.cta}>{item.status === "CLOSED" ? "Review quiz →" : "Start quiz →"}</Text>
-              </Pressable>
-            </Link>
-          )}
-        />
+                {q.instructions ? (
+                  <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 10 }}>
+                    {q.instructions}
+                  </AppText>
+                ) : null}
+              </Card>
+            </Animated.View>
+          ))}
+        </View>
       )}
-    </View>
+
+      <View style={styles.tab}>
+        <TabBar />
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream, padding: 24 },
-  title: { fontSize: 24, fontWeight: "800", color: colors.navy },
-  sub: { fontSize: 14, color: colors.ink[500], marginTop: 4, marginBottom: 20 },
-  error: { color: colors.danger, marginTop: 24 },
-  empty: { color: colors.ink[500], marginTop: 24, lineHeight: 20 },
-  card: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: "#E8E4DA", padding: 18 },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 8 },
-  cardTitle: { fontSize: 16, fontWeight: "700", color: colors.ink[900], flex: 1 },
-  badge: { backgroundColor: colors.goldLight, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  badgeText: { fontSize: 12, fontWeight: "700", color: colors.goldDark },
-  cardDesc: { fontSize: 13, color: colors.ink[500], marginTop: 8, lineHeight: 18 },
-  cta: { marginTop: 12, fontSize: 13, fontWeight: "700", color: colors.navy },
+  skeleton: { height: 88, borderRadius: radius.lg, backgroundColor: colors.ink[100], marginBottom: 12 },
+  stateCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: colors.navy,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  list: { gap: 12 },
+  card: { padding: 18 },
+  cardTop: { flexDirection: "row", alignItems: "center" },
+  iconTile: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: colors.goldLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeRow: { flexDirection: "row", marginTop: 4 },
+  badge: { backgroundColor: colors.gold, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2, alignSelf: "flex-start" },
+  badgeClosed: { backgroundColor: colors.ink[200] },
+  badgeText: { color: colors.ink[900], fontWeight: "800" },
+  tab: { marginTop: 24 },
 });

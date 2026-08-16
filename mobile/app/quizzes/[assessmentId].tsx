@@ -1,12 +1,17 @@
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors, radius } from "@/src/lib/theme";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { Screen } from "@/src/components/ui/Screen";
+import { Button } from "@/src/components/ui/Button";
+import { AppText } from "@/src/components/ui/AppText";
+import { colors, radius, shadow } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 
-// Quiz player — standard-LMS attempt flow (M4):
-// start → single-attempt question set → auto-grade on submit → result.
-// The learner profile resolves from the bearer session (G1.2).
+// Quiz player — premium attempt flow: start → single-attempt questions →
+// auto-grade on submit → result. The learner profile resolves from the bearer
+// session.
 
 type Question = { id: string; question: string; options: string[] };
 type Start = { title: string; attempt: { id: string }; questions: Question[]; pass_threshold: number };
@@ -39,8 +44,8 @@ export default function QuizPlayer() {
 
   const submit = async () => {
     if (phase.kind !== "ready") return;
-    const unanswered = phase.start.questions.filter((q) => answers[q.id] === undefined).length;
     setPhase({ kind: "submitting" });
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     try {
       const res = await apiFetch<Result>(`/learning/assessments/${assessmentId}/submit`, {
         method: "POST",
@@ -48,51 +53,69 @@ export default function QuizPlayer() {
           answers: Object.entries(answers).map(([question_id, chosen_index]) => ({ question_id, chosen_index })),
         }),
       });
+      void Haptics.notificationAsync(
+        res.data.passed ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning
+      ).catch(() => {});
       setPhase({ kind: "done", result: res.data, title: phase.start.title });
     } catch (e) {
       setPhase({ kind: "error", message: e instanceof Error ? e.message : "Could not submit the quiz" });
     }
-    void unanswered;
   };
 
   if (phase.kind === "loading" || phase.kind === "submitting") {
     return (
-      <View style={styles.center}>
+      <Screen scroll={false} style={styles.center}>
         <ActivityIndicator color={colors.gold} size="large" />
-        <Text style={styles.centerText}>{phase.kind === "submitting" ? "Grading your answers…" : "Preparing your quiz…"}</Text>
-      </View>
+        <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 14 }}>
+          {phase.kind === "submitting" ? "Grading your answers…" : "Preparing your quiz…"}
+        </AppText>
+      </Screen>
     );
   }
 
   if (phase.kind === "error") {
     return (
-      <View style={styles.center}>
-        <Text style={styles.error}>{phase.message}</Text>
-        <Pressable style={styles.primaryBtn} onPress={() => void start()}>
-          <Text style={styles.primaryBtnText}>Try again</Text>
-        </Pressable>
-      </View>
+      <Screen scroll={false} style={styles.center}>
+        <AppText style={{ fontSize: 34 }}>😕</AppText>
+        <AppText variant="h3" style={{ textAlign: "center", marginTop: 8 }}>
+          Couldn't start the quiz
+        </AppText>
+        <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 4 }}>
+          {phase.message}
+        </AppText>
+        <Button label="Try again" variant="dark" style={{ marginTop: 18 }} onPress={() => void start()} />
+      </Screen>
     );
   }
 
   if (phase.kind === "done") {
     const { result, title } = phase;
     return (
-      <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{title}</Text>
-        <View style={[styles.resultCard, result.passed ? styles.resultPass : styles.resultFail]}>
-          <Text style={styles.resultScore}>
-            {result.score}/{result.max_score}
-          </Text>
-          <Text style={styles.resultLabel}>{result.passed ? "Passed 🎉" : "Not passed — review and retry with your tutor"}</Text>
-          <Text style={styles.resultDetail}>
-            {result.correct} of {result.total} correct
-          </Text>
+      <Screen scroll>
+        <View style={styles.centerTop}>
+          <AppText variant="caption" style={{ color: colors.goldDark, letterSpacing: 1.2 }}>
+            RESULT
+          </AppText>
+          <AppText variant="h2" style={{ marginTop: 4, textAlign: "center" }}>
+            {title}
+          </AppText>
         </View>
-        <Pressable style={styles.primaryBtn} onPress={() => void start()}>
-          <Text style={styles.primaryBtnText}>Retake quiz</Text>
-        </Pressable>
-      </ScrollView>
+        <Animated.View entering={FadeInUp.springify().damping(16)}>
+          <View style={[styles.resultCard, result.passed ? styles.pass : styles.fail]}>
+            <AppText style={styles.resultScore}>
+              {result.score}
+              <AppText style={{ fontSize: 18, color: "rgba(255,255,255,0.7)" }}> / {result.max_score}</AppText>
+            </AppText>
+            <AppText style={styles.resultLabel}>{result.passed ? "Passed — great work 🎉" : "Not passed yet"}</AppText>
+            <AppText style={styles.resultDetail}>
+              {result.correct} of {result.total} correct
+            </AppText>
+          </View>
+        </Animated.View>
+        <View style={styles.resultActions}>
+          <Button label="Retake quiz" onPress={() => void start()} full />
+        </View>
+      </Screen>
     );
   }
 
@@ -100,68 +123,71 @@ export default function QuizPlayer() {
   const answered = s.questions.filter((q) => answers[q.id] !== undefined).length;
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{s.title}</Text>
-      <Text style={styles.sub}>
+    <Screen scroll>
+      <View style={styles.progressBar}>
+        <View style={[styles.progressFill, { width: `${(answered / Math.max(s.questions.length, 1)) * 100}%` }]} />
+      </View>
+      <AppText variant="caption" style={{ color: colors.ink[500], marginTop: 8, textAlign: "center" }}>
         {answered}/{s.questions.length} answered · pass ≥ {s.pass_threshold}%
-      </Text>
+      </AppText>
 
       {s.questions.map((q, qi) => (
-        <View key={q.id} style={styles.questionCard}>
-          <Text style={styles.question}>
-            {qi + 1}. {q.question}
-          </Text>
-          {q.options.map((opt, oi) => {
-            const selected = answers[q.id] === oi;
-            return (
-              <Pressable
-                key={oi}
-                style={[styles.option, selected && styles.optionSelected]}
-                onPress={() => setAnswers((a) => ({ ...a, [q.id]: oi }))}
-              >
-                <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
-                  {String.fromCharCode(65 + oi)}. {opt}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <Animated.View key={q.id} entering={FadeInUp.delay(qi * 40).springify().damping(18)}>
+          <View style={styles.questionCard}>
+            <AppText variant="h3">
+              <AppText style={{ color: colors.goldDark }}>{qi + 1}.</AppText> {q.question}
+            </AppText>
+            <View style={styles.options}>
+              {q.options.map((opt, oi) => {
+                const selected = answers[q.id] === oi;
+                return (
+                  <Button
+                    key={oi}
+                    label={`${String.fromCharCode(65 + oi)}. ${opt}`}
+                    variant={selected ? "primary" : "secondary"}
+                    full
+                    style={{ marginBottom: 8 }}
+                    onPress={() => {
+                      void Haptics.selectionAsync().catch(() => {});
+                      setAnswers((a) => ({ ...a, [q.id]: oi }));
+                    }}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        </Animated.View>
       ))}
 
-      <Pressable
-        style={[styles.primaryBtn, answered < s.questions.length && styles.primaryBtnDisabled]}
-        onPress={() => void submit()}
-        disabled={answered < s.questions.length}
-      >
-        <Text style={styles.primaryBtnText}>
-          {answered < s.questions.length ? `Answer all questions (${answered}/${s.questions.length})` : "Submit quiz"}
-        </Text>
-      </Pressable>
-    </ScrollView>
+      <View style={{ marginTop: 8 }}>
+        <Button label={`Submit (${answered}/${s.questions.length})`} full disabled={answered < s.questions.length} onPress={() => void submit()} />
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
-  content: { padding: 24, paddingBottom: 48 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: colors.cream },
-  centerText: { marginTop: 12, color: colors.ink[500] },
-  title: { fontSize: 22, fontWeight: "800", color: colors.navy },
-  sub: { fontSize: 13, color: colors.ink[500], marginTop: 6, marginBottom: 20 },
-  questionCard: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: "#E8E4DA", padding: 16, marginBottom: 16 },
-  question: { fontSize: 15, fontWeight: "700", color: colors.ink[900], marginBottom: 12, lineHeight: 21 },
-  option: { borderWidth: 1, borderColor: "#B8B2A6", borderRadius: radius.md, padding: 12, marginBottom: 8 },
-  optionSelected: { borderColor: colors.gold, backgroundColor: colors.goldLight },
-  optionText: { fontSize: 14, color: colors.ink[700] },
-  optionTextSelected: { fontWeight: "700", color: colors.ink[900] },
-  error: { color: colors.danger, textAlign: "center", marginBottom: 16 },
-  primaryBtn: { backgroundColor: colors.gold, borderRadius: radius.md, padding: 16, alignItems: "center", marginTop: 8 },
-  primaryBtnDisabled: { opacity: 0.5 },
-  primaryBtnText: { color: colors.ink[900], fontWeight: "800", fontSize: 15 },
-  resultCard: { borderRadius: radius.lg, padding: 24, alignItems: "center", marginBottom: 20 },
-  resultPass: { backgroundColor: "#E8F7EE" },
-  resultFail: { backgroundColor: "#FDECEC" },
-  resultScore: { fontSize: 44, fontWeight: "800", color: colors.navy },
-  resultLabel: { fontSize: 16, fontWeight: "700", marginTop: 6, color: colors.ink[800] },
-  resultDetail: { fontSize: 13, color: colors.ink[500], marginTop: 6 },
+  center: { alignItems: "center", justifyContent: "center" },
+  centerTop: { alignItems: "center", marginBottom: 20 },
+  progressBar: { height: 6, borderRadius: 3, backgroundColor: colors.ink[100], overflow: "hidden" },
+  progressFill: { height: 6, backgroundColor: colors.gold, borderRadius: 3 },
+  questionCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    padding: 18,
+    marginTop: 18,
+    ...shadow.md,
+  },
+  options: { marginTop: 14 },
+  resultCard: {
+    borderRadius: radius.lg,
+    padding: 28,
+    alignItems: "center",
+  },
+  pass: { backgroundColor: colors.navy },
+  fail: { backgroundColor: "#5B3A0E" },
+  resultScore: { fontSize: 46, fontWeight: "800", color: colors.white },
+  resultLabel: { color: colors.gold, fontWeight: "700", fontSize: 16, marginTop: 8, textAlign: "center" },
+  resultDetail: { color: "rgba(255,255,255,0.75)", fontSize: 13, marginTop: 4 },
+  resultActions: { marginTop: 24 },
 });

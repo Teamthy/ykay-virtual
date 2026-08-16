@@ -8,7 +8,6 @@ import { AppText } from "@/src/components/ui/AppText";
 import { TabBar } from "@/src/components/TabBar";
 import { colors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
-import { TabBar } from "@/src/components/TabBar";
 
 type Me = { id: string; email: string; roles: string[]; first_name?: string };
 type Unread = { unread: number };
@@ -90,13 +89,7 @@ export default function Home() {
       <View style={styles.tab}>
         <TabBar />
       </View>
-<<<<<<< ours
-
-      <TabBar />
-    </ScrollView>
-=======
     </Screen>
->>>>>>> theirs
   );
 }
 

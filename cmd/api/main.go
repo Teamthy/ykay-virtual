@@ -226,11 +226,6 @@ func main() {
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
 		repos.Resources, repos.Assignments)
-	lessonSvc.WithProgress(repos.LessonProgress).
-		WithRoster(repos.Enrollments, repos.Students.FindByID).
-		WithTutorReader(func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
-			return repos.Vetting.GetProfileByID(ctx, id)
-		})
 	portalSvc := service.NewPortalService(repos.Availability, repos.Assignments, repos.Submissions,
 		repos.Attendance, repos.Enrollments, repos.Lessons, repos.Orders, repos.Payments)
 	onboardingSvc := service.NewOnboardingService(repos.Students, repos.StudentLinks, audit)
@@ -310,7 +305,7 @@ func main() {
 		Account:        accountHandler,
 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
-		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz).WithLessonProgress(lessonSvc),
+		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
