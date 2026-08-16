@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser, getSessionContext, logout, type CurrentUser } from "@/features/auth/api";
+import { clearOnboardingDraft } from "@/lib/onboarding";
 
 // Session hook — resolves the httpOnly-cookie session via /auth/me.
 // Used by the header nav and any authenticated surface.
@@ -31,6 +32,9 @@ export function useSession() {
 export function useLogout() {
   const qc = useQueryClient();
   return async () => {
+    // A-27: clear the in-progress onboarding draft so the next user on this
+    // browser starts signup fresh (never inherits the previous user's state).
+    clearOnboardingDraft();
     await logout();
     await qc.invalidateQueries({ queryKey: ["session"] });
     await qc.clear();

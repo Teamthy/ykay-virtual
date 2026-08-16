@@ -8,6 +8,8 @@ import { useSession } from "@/hooks/useSession";
 import { unreadCount } from "@/features/messaging/api";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
 import { cn } from "@/lib/utils";
+import { clearOnboardingDraft } from "@/lib/onboarding";
+import { logout as apiLogout } from "@/features/auth/api";
 
 // DashboardShell — the personalized app chrome for every authenticated
 // surface. NO marketing nav: a compact brand, the session user's first
@@ -50,7 +52,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const greeting = user?.first_name?.trim() || user?.email?.split("@")[0] || "there";
 
   const logout = () => {
-    // Same revocation for web cookie AND mobile bearer — one session row.
+    // A-27: revoke the session server-side (fire-and-forget — the same
+    // revocation as the header logout), clear the onboarding draft so the
+    // next user starts fresh, then drop the cookie and reload.
+    void apiLogout().catch(() => {});
+    clearOnboardingDraft();
     document.cookie = "nuvora_session=; Max-Age=0; path=/";
     window.location.href = "/";
   };

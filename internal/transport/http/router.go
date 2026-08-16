@@ -374,11 +374,15 @@ func RateLimitPerMinute() int {
 	return envInt("RATE_LIMIT_PER_MINUTE", 1200)
 }
 
-// AuthRateLimitPerMinute — per-IP rate limit for authentication endpoints
-// (default 40/min, SEC-005). Env-tunable via AUTH_RATE_LIMIT_PER_MINUTE so
-// browser E2E can raise the window for its auth-heavy journey tests.
+// AuthRateLimitPerMinute — per-IP rate limit for authentication endpoints.
+// Default 120/min: enough headroom for several users signing in from one
+// shared IP (households, school labs, offices behind NAT — a core NUVORA
+// market) while still throttling credential stuffing (~2 auth attempts/sec).
+// The key is per-CLIENT-IP via TRUST_PROXY (clientIP); without TRUST_PROXY
+// every user behind the proxy shares one bucket and the limit collapses
+// platform-wide. Env-tunable via AUTH_RATE_LIMIT_PER_MINUTE.
 func AuthRateLimitPerMinute() int {
-	return envInt("AUTH_RATE_LIMIT_PER_MINUTE", 40)
+	return envInt("AUTH_RATE_LIMIT_PER_MINUTE", 120)
 }
 
 // envInt reads a positive integer env var, falling back to def on empty/parse

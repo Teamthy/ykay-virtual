@@ -12,6 +12,7 @@ import { GoogleButton } from "@/components/ui/google-button";
 import { useSession } from "@/hooks/useSession";
 import { useQueryClient } from "@tanstack/react-query";
 import { safeNextPath } from "@/lib/safe-next";
+import { clearOnboardingDraft, ONBOARDING_STORAGE_KEY } from "@/lib/onboarding";
 import {
   register,
   requestLoginCode,
@@ -36,7 +37,6 @@ import {
 // lost focus → "one character at a time" typing.
 
 const STEPS = ["Account", "Verify", "Role", "Path", "Profile", "About", "Done"];
-const STORAGE_KEY = "nuvora-onboarding";
 
 type ObState = {
   name: string;
@@ -723,7 +723,7 @@ function OnboardingInner() {
   const [state, setState] = useState<ObState>(() => {
     if (typeof window === "undefined") return { name: "", email: "", verified: false };
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const raw = window.localStorage.getItem(ONBOARDING_STORAGE_KEY);
       if (raw) return JSON.parse(raw) as ObState;
     } catch {
       /* corrupted state → start over */
@@ -748,12 +748,24 @@ function OnboardingInner() {
     setState((prev) => {
       const next = { ...prev, ...patch };
       try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        window.localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(next));
       } catch {
         /* storage full/blocked — flow continues in memory */
       }
       return next;
     });
+  };
+
+  // Session isolation (A-27): discard a draft that belongs to a different
+  // account so the next person on this browser starts from step 1 clean.
+  const resetDraft = () => {
+    verifiedRef.current = false;
+    setState({ name: "", email: "", verified: false });
+    setRole(null);
+    setCode("");
+    setCodeSent(false);
+    setError(null);
+    clearOnboardingDraft();
   };
 
   // Carry a ?next= deep-link target through the whole signup journey.
@@ -918,13 +930,36 @@ function OnboardingInner() {
   // have an account (their email was verified earlier) — route them to login
   // so they can sign back in and continue, instead of trapping them on a
   // dead-end "Hold on — sign in first" screen.
+  // A-27: a draft is stale when (a) a DIFFERENT account is signed in than the
+  // one the draft belongs to, or (b) the draft was verified by a previous
+  // session that is now gone (logged out). Both must start over from step 1 —
+  // they must never bounce a brand-new visitor to /login, and never show the
+  // previous user's data.
+  const staleDraft =
+    !sessionLoading &&
+    !verifiedRef.current &&
+    ((user != null && state.userId != null && state.userId !== user.id) ||
+      (user == null && state.userId != null && state.verified));
+
+  useEffect(() => {
+    if (staleDraft) resetDraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staleDraft]);
+
+  // Session-lost recovery for steps ≥ 3 (session is created in step 2).
+  // If a user reaches a signed-in-only step without a session, they already
+  // have an account (their email was verified earlier) — route them to login
+  // so they can sign back in and continue, instead of trapping them on a
+  // dead-end "Hold on — sign in first" screen. A stale draft is exempt: it is
+  // reset to step 1 above instead of bouncing.
   useEffect(() => {
     if (sessionLoading || step < 3 || step > 6) return;
     if (user || verifiedRef.current) return;
+    if (staleDraft) return;
     router.replace("/login");
-  }, [sessionLoading, user, step, router]);
+  }, [sessionLoading, user, step, staleDraft, router]);
 
-  if (!sessionLoading && !user && !verifiedRef.current && step >= 3 && step <= 6) {
+  if (staleDraft || (!sessionLoading && !user && !verifiedRef.current && step >= 3 && step <= 6)) {
     return <Loading />;
   }
 
@@ -999,11 +1034,7 @@ function OnboardingInner() {
             } catch {
               /* never trap the user on the finish line */
             }
-            try {
-              window.localStorage.removeItem(STORAGE_KEY);
-            } catch {
-              /* ignore */
-            }
+            clearOnboardingDraft();
             router.push(safeNextPath(state.next) ?? dashboardFor(state.role));
           }}
         />

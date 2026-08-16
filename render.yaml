@@ -55,13 +55,23 @@ services:
           type: redis
           property: connectionString
       # ── Rate limiting ──────────────────────────────────────────────────
+      # TRUST_PROXY: Render sits in front of the API. Without this, every
+      # request's RemoteAddr is Render's proxy IP, so ALL users share one
+      # rate-limit bucket and shared-IP logins (households/schools/NAT) get
+      # mass 429s. With it, the limiter reads X-Forwarded-For for the real
+      # client IP (see internal/middleware clientIP).
+      - key: TRUST_PROXY
+        value: "true"
       # Global per-IP window raised for production (default now 1200/min).
       # Explicit here so a deployed instance never silently falls back to the
       # old 300/min default under legitimate concurrent bursts.
       - key: RATE_LIMIT_PER_MINUTE
         value: "1200"
+      # Auth endpoints: 240/min per CLIENT IP. Several users behind one shared
+      # IP (a school lab, an office) can sign in together without tripping the
+      # limiter, while still throttling credential stuffing.
       - key: AUTH_RATE_LIMIT_PER_MINUTE
-        value: "120"
+        value: "240"
       # ── Migrations ─────────────────────────────────────────────────────
       # "true" on the FIRST deploy applies the embedded migration chain at
       # boot (fresh database). Set to "false" afterwards — concurrent boots

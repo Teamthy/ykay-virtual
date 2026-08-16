@@ -11,6 +11,7 @@ import { apiFetch } from "@/lib/api";
 import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
 import { useSession } from "@/hooks/useSession";
 import { changePassword, logout } from "@/features/auth/api";
+import { clearOnboardingDraft } from "@/lib/onboarding";
 import {
   listDevices,
   removeDevice,
@@ -125,6 +126,7 @@ export default function AccountPage() {
     mutationFn: () => apiFetch<{ deleted: boolean }>("/auth/me/delete", { method: "POST" }),
     onSuccess: async () => {
       await logout();
+      clearOnboardingDraft();
       toast.success("Your account has been deleted");
       qc.clear();
       router.replace("/");
