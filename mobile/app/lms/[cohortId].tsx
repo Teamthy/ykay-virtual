@@ -1,12 +1,12 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 
 // M3 — course detail: lessons, resources, assignments (submit), attendance.
 
-type Lesson = { id: string; title: string; start_at: string; timezone: string; meeting_url?: string; status: string };
+type Lesson = { id: string; title: string; start_at: string; timezone: string; meeting_url?: string; video_url?: string; status: string };
 type Resource = { id: string; title: string; description?: string; file_url?: string };
 type Assignment = { id: string; title: string; instructions?: string; due_at?: string; max_score?: number };
 type AttendanceRow = { student_profile_id: string; status: string };
@@ -82,7 +82,35 @@ export default function CourseDetail() {
         {lessons.map((l, i) => (
           <View key={l.id} style={styles.row}>
             <Text style={styles.rowTitle}>{i + 1}. {l.title}</Text>
-            <Text style={styles.rowMeta}>{new Date(l.start_at).toLocaleString()} · {l.timezone}</Text>
+            <Text style={styles.rowMeta}>
+              {new Date(l.start_at).toLocaleString()} · {l.timezone}
+              {l.video_url ? " · 🎬 on-demand video" : l.meeting_url ? " · live class" : ""}
+            </Text>
+            {l.video_url ? (
+              <Pressable
+                style={[styles.btn, { marginTop: 8, alignSelf: "flex-start", paddingVertical: 8 }]}
+                onPress={() => {
+                  // Record watch progress on open; the backend tracks completion.
+                  void apiFetch(`/learning/lessons/${l.id}/progress`, {
+                    method: "POST",
+                    body: JSON.stringify({ watched: true, position_seconds: 0 }),
+                  });
+                  // Open the video in the system browser (mobile plays it natively).
+                  void Linking.openURL(l.video_url as string);
+                }}
+              >
+                <Text style={styles.btnText}>▶ Watch video</Text>
+              </Pressable>
+            ) : l.meeting_url ? (
+              <Pressable
+                style={[styles.btn, { marginTop: 8, alignSelf: "flex-start", paddingVertical: 8 }]}
+                onPress={() => {
+                  void Linking.openURL(l.meeting_url as string);
+                }}
+              >
+                <Text style={styles.btnText}>Join live</Text>
+              </Pressable>
+            ) : null}
           </View>
         ))}
         {lessons.length === 0 && <Text style={styles.muted}>No lessons scheduled yet.</Text>}

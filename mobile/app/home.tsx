@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
+import { TabBar } from "@/src/components/TabBar";
 
 // Home — standard-LMS hub: session greeting, unread badge, and quick
 // access to every learner surface (courses, quizzes, progress, messages,
@@ -71,6 +72,8 @@ export default function Home() {
           <Text style={styles.cardDesc}>UTME, IGCSE, WAEC & more</Text>
         </Pressable>
       </View>
+
+      <TabBar />
     </ScrollView>
   );
 }

@@ -1,0 +1,225 @@
+diff --git a/mobile/README.md b/mobile/README.md
+index 5e0b284..a210f5e 100644
+--- a/mobile/README.md
++++ b/mobile/README.md
+@@ -26,8 +26,9 @@ Point the app at your API via `app.json` → `extra.apiUrl`
+ | **Course** | `app/lms/[cohortId].tsx` | **M3**: lessons, resources, assignments (submit), attendance |
+ 
+ Shared bits: `src/lib/api.ts` (envelope fetch + SecureStore bearer token +
+-`registerDevice()` via expo-notifications), `src/lib/theme.ts`
+-(gold/cream/navy tokens mirroring the web).
++`registerDevice()` via expo-notifications, plus on-demand video lesson-progress
++helpers), `src/lib/theme.ts` (gold/cream/navy tokens mirroring the web),
++`src/components/TabBar.tsx` (reusable bottom tab bar on Home/Learning).
+ 
+ ## Roadmap
+ 
+diff --git a/mobile/app/home.tsx b/mobile/app/home.tsx
+index 16047d8..166b53e 100644
+--- a/mobile/app/home.tsx
++++ b/mobile/app/home.tsx
+@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
+ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+ import { colors, radius } from "@/src/lib/theme";
+ import { apiFetch } from "@/src/lib/api";
++import { TabBar } from "@/src/components/TabBar";
+ 
+ // Home — standard-LMS hub: session greeting, unread badge, and quick
+ // access to every learner surface (courses, quizzes, progress, messages,
+@@ -71,6 +72,8 @@ export default function Home() {
+           <Text style={styles.cardDesc}>UTME, IGCSE, WAEC & more</Text>
+         </Pressable>
+       </View>
++
++      <TabBar />
+     </ScrollView>
+   );
+ }
+diff --git a/mobile/app/lms.tsx b/mobile/app/lms.tsx
+index 92ff11a..6738104 100644
+--- a/mobile/app/lms.tsx
++++ b/mobile/app/lms.tsx
+@@ -3,6 +3,7 @@ import { Link, router, useFocusEffect } from "expo-router";
+ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+ import { colors, radius } from "@/src/lib/theme";
+ import { apiFetch } from "@/src/lib/api";
++import { TabBar } from "@/src/components/TabBar";
+ 
+ // M3 — student LMS: my courses (cohorts) with lesson counts + next lesson.
+ 
+@@ -75,6 +76,8 @@ export default function Lms() {
+       <Pressable style={styles.back} onPress={() => router.back()}>
+         <Text style={styles.backText}>← Back</Text>
+       </Pressable>
++
++      <TabBar />
+     </View>
+   );
+ }
+diff --git a/mobile/app/lms/[cohortId].tsx b/mobile/app/lms/[cohortId].tsx
+index b6ad619..974670c 100644
+--- a/mobile/app/lms/[cohortId].tsx
++++ b/mobile/app/lms/[cohortId].tsx
+@@ -1,12 +1,12 @@
+ import { useLocalSearchParams } from "expo-router";
+ import React, { useCallback, useEffect, useState } from "react";
+-import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
++import { ActivityIndicator, FlatList, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+ import { colors, radius } from "@/src/lib/theme";
+ import { apiFetch } from "@/src/lib/api";
+ 
+ // M3 — course detail: lessons, resources, assignments (submit), attendance.
+ 
+-type Lesson = { id: string; title: string; start_at: string; timezone: string; meeting_url?: string; status: string };
++type Lesson = { id: string; title: string; start_at: string; timezone: string; meeting_url?: string; video_url?: string; status: string };
+ type Resource = { id: string; title: string; description?: string; file_url?: string };
+ type Assignment = { id: string; title: string; instructions?: string; due_at?: string; max_score?: number };
+ type AttendanceRow = { student_profile_id: string; status: string };
+@@ -82,7 +82,35 @@ export default function CourseDetail() {
+         {lessons.map((l, i) => (
+           <View key={l.id} style={styles.row}>
+             <Text style={styles.rowTitle}>{i + 1}. {l.title}</Text>
+-            <Text style={styles.rowMeta}>{new Date(l.start_at).toLocaleString()} · {l.timezone}</Text>
++            <Text style={styles.rowMeta}>
++              {new Date(l.start_at).toLocaleString()} · {l.timezone}
++              {l.video_url ? " · 🎬 on-demand video" : l.meeting_url ? " · live class" : ""}
++            </Text>
++            {l.video_url ? (
++              <Pressable
++                style={[styles.btn, { marginTop: 8, alignSelf: "flex-start", paddingVertical: 8 }]}
++                onPress={() => {
++                  // Record watch progress on open; the backend tracks completion.
++                  void apiFetch(`/learning/lessons/${l.id}/progress`, {
++                    method: "POST",
++                    body: JSON.stringify({ watched: true, position_seconds: 0 }),
++                  });
++                  // Open the video in the system browser (mobile plays it natively).
++                  void Linking.openURL(l.video_url as string);
++                }}
++              >
++                <Text style={styles.btnText}>▶ Watch video</Text>
++              </Pressable>
++            ) : l.meeting_url ? (
++              <Pressable
++                style={[styles.btn, { marginTop: 8, alignSelf: "flex-start", paddingVertical: 8 }]}
++                onPress={() => {
++                  void Linking.openURL(l.meeting_url as string);
++                }}
++              >
++                <Text style={styles.btnText}>Join live</Text>
++              </Pressable>
++            ) : null}
+           </View>
+         ))}
+         {lessons.length === 0 && <Text style={styles.muted}>No lessons scheduled yet.</Text>}
+diff --git a/mobile/src/components/TabBar.tsx b/mobile/src/components/TabBar.tsx
+new file mode 100644
+index 0000000..99cf7b8
+--- /dev/null
++++ b/mobile/src/components/TabBar.tsx
+@@ -0,0 +1,58 @@
++import { router, usePathname } from "expo-router";
++import { Pressable, StyleSheet, Text, View } from "react-native";
++import { colors } from "@/src/lib/theme";
++
++// Reusable bottom tab bar for the authenticated app. Uses expo-router's
++// `router.push` so it works with the existing Stack navigation (no risky
++// file-restructure into a (tabs) group). Highlight the current tab.
++
++const TABS = [
++  { key: "home", href: "/home", label: "Home", icon: "🏠" },
++  { key: "lms", href: "/lms", label: "Learning", icon: "📚" },
++  { key: "quizzes", href: "/quizzes", label: "Quizzes", icon: "📝" },
++  { key: "account", href: "/account", label: "Account", icon: "👤" },
++] as const;
++
++export function TabBar() {
++  const pathname = usePathname();
++
++  return (
++    <View style={styles.bar}>
++      {TABS.map((t) => {
++        const active = pathname === t.href || pathname.startsWith(t.href + "/");
++        return (
++          <Pressable
++            key={t.key}
++            style={styles.tab}
++            onPress={() => router.push(t.href as never)}
++          >
++            <Text style={styles.icon}>{t.icon}</Text>
++            <Text style={[styles.label, active && styles.labelActive]}>{t.label}</Text>
++            {active && <View style={styles.dot} />}
++          </Pressable>
++        );
++      })}
++    </View>
++  );
++}
++
++const styles = StyleSheet.create({
++  bar: {
++    flexDirection: "row",
++    backgroundColor: colors.navy,
++    paddingVertical: 8,
++    paddingHorizontal: 12,
++    paddingBottom: 16,
++    borderTopWidth: 1,
++    borderTopColor: "rgba(255,255,255,0.1)",
++  },
++  tab: {
++    flex: 1,
++    alignItems: "center",
++    gap: 2,
++  },
++  icon: { fontSize: 18 },
++  label: { fontSize: 11, fontWeight: "700", color: "rgba(255,255,255,0.65)" },
++  labelActive: { color: colors.gold },
++  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.gold, marginTop: 2 },
++});
+diff --git a/mobile/src/lib/api.ts b/mobile/src/lib/api.ts
+index 1dcae78..2cbffb3 100644
+--- a/mobile/src/lib/api.ts
++++ b/mobile/src/lib/api.ts
+@@ -65,3 +65,42 @@ export async function apiFetch<T>(
+   }
+   return (await res.json()) as Envelope<T>;
+ }
++
++// --- On-demand video lesson progress (backend 000035) ---------------------
++// A lesson can carry a pre-recorded `video_url`; the app records watch state
++// via these endpoints so the web LMS and reports see the same progress.
++
++export type LessonProgress = {
++  id?: string;
++  lesson_id: string;
++  student_profile_id?: string;
++  watched: boolean;
++  position_seconds: number;
++  watched_at?: string | null;
++  updated_at?: string;
++};
++
++export async function recordLessonProgress(
++  lessonId: string,
++  input: { watched: boolean; position_seconds: number }
++): Promise<LessonProgress> {
++  const res = await apiFetch<LessonProgress>(`/learning/lessons/${lessonId}/progress`, {
++    method: "POST",
++    body: JSON.stringify(input),
++  });
++  return res.data;
++}
++
++export async function getLessonProgress(
++  lessonId: string
++): Promise<LessonProgress | null> {
++  const res = await apiFetch<LessonProgress | { watched: boolean; position_seconds: number }>(
++    `/learning/lessons/${lessonId}/progress`
++  );
++  return res.data as LessonProgress;
++}
++
++export async function getMyLessonProgress(): Promise<LessonProgress[]> {
++  const res = await apiFetch<LessonProgress[]>("/me/learning/progress");
++  return res.data ?? [];
++}

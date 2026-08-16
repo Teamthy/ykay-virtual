@@ -26,8 +26,9 @@ Point the app at your API via `app.json` → `extra.apiUrl`
 | **Course** | `app/lms/[cohortId].tsx` | **M3**: lessons, resources, assignments (submit), attendance |
 
 Shared bits: `src/lib/api.ts` (envelope fetch + SecureStore bearer token +
-`registerDevice()` via expo-notifications), `src/lib/theme.ts`
-(gold/cream/navy tokens mirroring the web).
+`registerDevice()` via expo-notifications, plus on-demand video lesson-progress
+helpers), `src/lib/theme.ts` (gold/cream/navy tokens mirroring the web),
+`src/components/TabBar.tsx` (reusable bottom tab bar on Home/Learning).
 
 ## Roadmap
 

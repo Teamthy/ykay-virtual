@@ -3,6 +3,7 @@ import { Link, router, useFocusEffect } from "expo-router";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
+import { TabBar } from "@/src/components/TabBar";
 
 // M3 — student LMS: my courses (cohorts) with lesson counts + next lesson.
 
@@ -75,6 +76,8 @@ export default function Lms() {
       <Pressable style={styles.back} onPress={() => router.back()}>
         <Text style={styles.backText}>← Back</Text>
       </Pressable>
+
+      <TabBar />
     </View>
   );
 }
