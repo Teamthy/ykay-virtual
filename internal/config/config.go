@@ -17,28 +17,28 @@ const (
 )
 
 type Config struct {
-	Port               string
-	DatabaseURL        string
-	RedisURL           string
-	S3Endpoint         string
-	S3PublicBucket     string
-	S3PrivateBucket    string
-	S3Region           string
-	S3AccessKey        string
-	S3SecretKey        string
-	PaymentProvider    string
-	PaystackSecret     string
-	FlutterwaveSecret  string
-	Environment        string
-	OtelEndpoint       string
-	SiteURL            string
-	AllowedOrigins     string
+	Port              string
+	DatabaseURL       string
+	RedisURL          string
+	S3Endpoint        string
+	S3PublicBucket    string
+	S3PrivateBucket   string
+	S3Region          string
+	S3AccessKey       string
+	S3SecretKey       string
+	PaymentProvider   string
+	PaystackSecret    string
+	FlutterwaveSecret string
+	Environment       string
+	OtelEndpoint      string
+	SiteURL           string
+	AllowedOrigins    string
 	// CookieDomain — the session-cookie domain, if any. When the web app and
 	// API live on different hosts (e.g. Vercel frontend + Render API), set this
 	// to the shared parent domain (".vercel.app" or a custom domain like
 	// "nuvora.com") so the browser sends the nuvora_session cookie to the web
 	// origin through the proxy. Empty = host-only cookie (default).
-	CookieDomain string
+	CookieDomain       string
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
@@ -126,14 +126,35 @@ func (c Config) Validate() error {
 	if strings.Contains(c.AllowedOrigins, "*") {
 		return fmt.Errorf("production: ALLOWED_ORIGINS must not contain wildcards (got %q)", c.AllowedOrigins)
 	}
-	if c.DatabaseURL == DevDatabaseURL {
+	// Presence checks (YK-003): require the env var to be EXPLICITLY set,
+	// rather than comparing the value against a dev default — otherwise a
+	// legitimate production value that equals the default (e.g. PORT=8080)
+	// is wrongly rejected.
+	if _, ok := os.LookupEnv("PORT"); !ok {
+		return errors.New("production: PORT must be explicitly configured")
+	}
+	if _, ok := os.LookupEnv("DATABASE_URL"); !ok {
 		return errors.New("production: DATABASE_URL must be explicitly configured")
 	}
-	if c.SiteURL == DevSiteURL {
+	if _, ok := os.LookupEnv("SITE_URL"); !ok {
 		return errors.New("production: SITE_URL must be explicitly configured")
 	}
-	if c.Port == DevPort {
-		return errors.New("production: PORT must be explicitly configured")
+	// Fail-closed on payment secrets (YK-009): an enabled provider must have a
+	// strong, non-empty webhook secret in production, else HMAC verification
+	// is forgeable and payment init silently falls back to mock behaviour.
+	if c.PaymentProvider != "" && c.PaymentProvider != "none" {
+		if c.PaymentProvider == "PAYSTACK" {
+			sec, ok := os.LookupEnv("PAYSTACK_SECRET")
+			if !ok || strings.TrimSpace(sec) == "" {
+				return errors.New("production: PAYSTACK_SECRET must be set when PAYMENT_PROVIDER=PAYSTACK (empty secret makes webhook HMAC forgeable)")
+			}
+		}
+		if c.PaymentProvider == "FLUTTERWAVE" {
+			sec, ok := os.LookupEnv("FLUTTERWAVE_SECRET")
+			if !ok || strings.TrimSpace(sec) == "" {
+				return errors.New("production: FLUTTERWAVE_SECRET must be set when PAYMENT_PROVIDER=FLUTTERWAVE (empty secret makes webhook HMAC forgeable)")
+			}
+		}
 	}
 	// Google OAuth is OPTIONAL: the login buttons degrade gracefully when
 	// creds are absent, so missing creds must not block a production deploy.

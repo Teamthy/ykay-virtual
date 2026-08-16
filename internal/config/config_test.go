@@ -35,6 +35,8 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 		"ALLOWED_ORIGINS":      "https://app.nuvora.com",
 		"GOOGLE_CLIENT_ID":     "id",
 		"GOOGLE_CLIENT_SECRET": "secret",
+		"PAYMENT_PROVIDER":     "PAYSTACK",
+		"PAYSTACK_SECRET":      "sk_test_abc123",
 	}
 
 	t.Run("valid production config passes", func(t *testing.T) {
@@ -69,24 +71,66 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 	})
 
 	t.Run("empty origins rejected in production", func(t *testing.T) {
-		cfg := prodOK
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			cfg[k] = v
+		}
 		cfg["ALLOWED_ORIGINS"] = ""
 		set(cfg)
 		assert.Error(t, Load().Validate())
 	})
 
-	t.Run("default database url rejected in production", func(t *testing.T) {
-		cfg := prodOK
-		cfg["DATABASE_URL"] = DevDatabaseURL
+	t.Run("missing database url rejected in production", func(t *testing.T) {
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			if k != "DATABASE_URL" {
+				cfg[k] = v
+			}
+		}
 		set(cfg)
 		assert.Error(t, Load().Validate())
 	})
 
-	t.Run("default site url rejected in production", func(t *testing.T) {
-		cfg := prodOK
-		cfg["SITE_URL"] = DevSiteURL
+	t.Run("missing site url rejected in production", func(t *testing.T) {
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			if k != "SITE_URL" {
+				cfg[k] = v
+			}
+		}
 		set(cfg)
 		assert.Error(t, Load().Validate())
+	})
+
+	t.Run("empty payment secret rejected in production (YK-009)", func(t *testing.T) {
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			cfg[k] = v
+		}
+		cfg["PAYSTACK_SECRET"] = ""
+		set(cfg)
+		assert.Error(t, Load().Validate())
+	})
+
+	t.Run("payment secret optional when provider none (YK-009)", func(t *testing.T) {
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			cfg[k] = v
+		}
+		cfg["PAYMENT_PROVIDER"] = "none"
+		cfg["PAYSTACK_SECRET"] = ""
+		set(cfg)
+		require.NoError(t, Load().Validate())
+	})
+
+	t.Run("PORT may equal dev default when explicitly set (YK-003)", func(t *testing.T) {
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			cfg[k] = v
+		}
+		cfg["PORT"] = DevPort
+		set(cfg)
+		require.NoError(t, Load().Validate())
 	})
 
 	t.Run("development defaults pass (dev is unconstrained)", func(t *testing.T) {
