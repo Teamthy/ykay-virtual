@@ -3,6 +3,8 @@ package middleware
 import (
 	"net"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -34,14 +36,35 @@ func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 	}
 }
 
+// clientIP resolves the real client IP for per-IP limiting. Behind a trusted
+// reverse proxy (TRUST_PROXY=true, e.g. Render/Vercel) the proxy stamps the
+// original client address in X-Forwarded-For — its leftmost entry is the
+// client. Without this, every request behind the proxy shares the proxy's
+// RemoteAddr, collapsing all users into one rate-limit bucket (the "many users
+// on the same IP" problem). In direct/dev mode X-Forwarded-For is ignored so a
+// caller cannot forge a fresh bucket.
+func clientIP(r *http.Request) string {
+	ip := r.RemoteAddr
+	if host, _, err := net.SplitHostPort(ip); err == nil {
+		ip = host
+	}
+	if os.Getenv("TRUST_PROXY") == "true" {
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			// XFF may be a comma-separated chain: client, proxy1, proxy2.
+			first, _, _ := strings.Cut(xff, ",")
+			if first = strings.TrimSpace(first); first != "" {
+				return first
+			}
+		}
+	}
+	return ip
+}
+
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Key on the bare IP (not ip:port) so keep-alive/new connections from
 		// the same client cannot bypass the window.
-		ip := r.RemoteAddr
-		if host, _, err := net.SplitHostPort(ip); err == nil {
-			ip = host
-		}
+		ip := clientIP(r)
 		rl.mu.Lock()
 		now := time.Now()
 		cutoff := now.Add(-rl.window)

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/middleware"
 	"ykay-virtual/internal/service"
 	"ykay-virtual/pkg"
 
@@ -12,13 +13,43 @@ import (
 )
 
 // LessonOpsHandler — teaching operations:
-//   - GET  /api/v1/cohorts/{id}/lessons         (public session schedule)
+//   - GET  /api/v1/cohorts/{id}/lessons         (public schedule DTO, or full for authenticated)
 //   - POST /api/v1/lessons/{id}/attendance      (tutor, own lesson only)
-//   - GET  /api/v1/lessons/{id}/attendance
+//   - GET  /api/v1/lessons/{id}/attendance      (tutor only — learner records)
 //   - POST /api/v1/lessons/{id}/notes           (tutor, own lesson only)
-//   - GET  /api/v1/lessons/{id}/notes
-//   - GET  /api/v1/cohorts/{id}/resources
-//   - GET  /api/v1/cohorts/{id}/assignments
+//   - GET  /api/v1/lessons/{id}/notes           (authenticated — homework/notes)
+//   - GET  /api/v1/cohorts/{id}/resources       (authenticated)
+//   - GET  /api/v1/cohorts/{id}/assignments     (authenticated)
+//
+// SECURITY (YK-002): live classroom meeting URLs, paid video URLs, attendance
+// (learner records) and notes/homework must never be reachable by anonymous
+// callers. The public cohort schedule is exposed through a redacted DTO that
+// carries only id/title/times/timezone/status — never meeting_url/video_url.
+
+// publicLessonView — redacted schedule row safe for unauthenticated output.
+type publicLessonView struct {
+	ID       uuid.UUID `json:"id"`
+	Title    string    `json:"title"`
+	StartAt  time.Time `json:"start_at"`
+	EndAt    time.Time `json:"end_at"`
+	Timezone string    `json:"timezone"`
+	Status   string    `json:"status"`
+}
+
+func toPublicLessonView(ls []booking.Lesson) []publicLessonView {
+	out := make([]publicLessonView, 0, len(ls))
+	for _, l := range ls {
+		out = append(out, publicLessonView{
+			ID:       l.ID,
+			Title:    l.Title,
+			StartAt:  l.StartAt,
+			EndAt:    l.EndAt,
+			Timezone: l.Timezone,
+			Status:   string(l.Status),
+		})
+	}
+	return out
+}
 
 type LessonOpsHandler struct {
 	svc *service.LessonService
@@ -55,6 +86,12 @@ func (h *LessonOpsHandler) ListCohortLessons(w http.ResponseWriter, r *http.Requ
 		WriteAppError(w, err)
 		return
 	}
+	// YK-002: unauthenticated callers get the redacted schedule DTO only.
+	// meeting_url / video_url are private (live classrooms + paid videos).
+	if actor, ok := middleware.ActorFromContext(r.Context()); !ok || actor.UserID == uuid.Nil {
+		pkg.WriteSuccess(w, http.StatusOK, toPublicLessonView(lessons), nil)
+		return
+	}
 	pkg.WriteSuccess(w, http.StatusOK, lessons, nil)
 }
 
@@ -89,7 +126,12 @@ func (h *LessonOpsHandler) MarkAttendance(w http.ResponseWriter, r *http.Request
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"marked": true, "status": req.Status}, nil)
 }
 
+// ListAttendance — GET /lessons/{lessonId}/attendance (tutor roster).
+// Learner attendance/IDs are sensitive; tutor-only (YK-002).
 func (h *LessonOpsHandler) ListAttendance(w http.ResponseWriter, r *http.Request) {
+	if h.requireTutor(w, r) == nil {
+		return
+	}
 	lessonID, err := ParseUUID(r, "lessonId")
 	if err != nil {
 		WriteAppError(w, err)
@@ -141,7 +183,12 @@ func (h *LessonOpsHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusCreated, note, nil)
 }
 
+// ListNotes — GET /lessons/{lessonId}/notes. Notes/homework are sensitive;
+// require an authenticated actor (YK-002).
 func (h *LessonOpsHandler) ListNotes(w http.ResponseWriter, r *http.Request) {
+	if requireActor(w, r) == nil {
+		return
+	}
 	lessonID, err := ParseUUID(r, "lessonId")
 	if err != nil {
 		WriteAppError(w, err)
@@ -155,7 +202,12 @@ func (h *LessonOpsHandler) ListNotes(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, notes, nil)
 }
 
+// ListResources — GET /cohorts/{id}/resources. Cohort content (may be paid /
+// tutor-authored); require an authenticated actor (YK-002).
 func (h *LessonOpsHandler) ListResources(w http.ResponseWriter, r *http.Request) {
+	if requireActor(w, r) == nil {
+		return
+	}
 	cohortID, err := ParseUUID(r, "id")
 	if err != nil {
 		WriteAppError(w, err)
@@ -169,7 +221,12 @@ func (h *LessonOpsHandler) ListResources(w http.ResponseWriter, r *http.Request)
 	pkg.WriteSuccess(w, http.StatusOK, res, nil)
 }
 
+// ListAssignments — GET /cohorts/{id}/assignments. Require an authenticated
+// actor (YK-002).
 func (h *LessonOpsHandler) ListAssignments(w http.ResponseWriter, r *http.Request) {
+	if requireActor(w, r) == nil {
+		return
+	}
 	cohortID, err := ParseUUID(r, "id")
 	if err != nil {
 		WriteAppError(w, err)

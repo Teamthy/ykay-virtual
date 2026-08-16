@@ -28,6 +28,13 @@ func ActorFromContext(ctx context.Context) (Actor, bool) {
 	return a, ok
 }
 
+// WithActor returns a context carrying an authenticated actor. Intended for
+// tests and middleware that resolve a session into an actor before invoking a
+// handler. The actor is read back with ActorFromContext.
+func WithActor(ctx context.Context, a Actor) context.Context {
+	return context.WithValue(ctx, ActorKey, a)
+}
+
 // RequireActor — helper for handlers that need an authenticated actor.
 // Returns 401 when no valid session is present.
 func RequireActor(w http.ResponseWriter, r *http.Request) (Actor, bool) {
