@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
+import { VideoPlayer } from "@/src/components/VideoPlayer";
 
 // M3 — course detail: lessons, resources, assignments (submit), attendance.
 
@@ -22,6 +23,7 @@ export default function CourseDetail() {
   const [loading, setLoading] = useState(true);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [playing, setPlaying] = useState<Lesson | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,6 +80,16 @@ export default function CourseDetail() {
         Attendance: {mine.length > 0 ? `${present}/${mine.length} present` : "not tracked yet"}
       </Text>
 
+      {playing?.video_url && (
+        <View style={{ marginBottom: 16 }}>
+          <Text style={styles.rowTitle}>{playing.title}</Text>
+          <VideoPlayer lessonId={playing.id} videoUrl={playing.video_url} style={{ marginTop: 8 }} />
+          <Pressable style={[styles.btn, { marginTop: 8, alignSelf: "flex-start", paddingVertical: 8 }]} onPress={() => setPlaying(null)}>
+            <Text style={styles.btnText}>Close player</Text>
+          </Pressable>
+        </View>
+      )}
+
       <Section title={`Lessons (${lessons.length})`}>
         {lessons.map((l, i) => (
           <View key={l.id} style={styles.row}>
@@ -89,6 +101,7 @@ export default function CourseDetail() {
             {l.video_url ? (
               <Pressable
                 style={[styles.btn, { marginTop: 8, alignSelf: "flex-start", paddingVertical: 8 }]}
+<<<<<<< ours
                 onPress={() => {
                   // Record watch progress on open; the backend tracks completion.
                   void apiFetch(`/learning/lessons/${l.id}/progress`, {
@@ -100,6 +113,11 @@ export default function CourseDetail() {
                 }}
               >
                 <Text style={styles.btnText}>▶ Watch video</Text>
+=======
+                onPress={() => setPlaying(l)}
+              >
+                <Text style={styles.btnText}>{playing?.id === l.id ? "▶ Playing…" : "▶ Watch in app"}</Text>
+>>>>>>> theirs
               </Pressable>
             ) : l.meeting_url ? (
               <Pressable

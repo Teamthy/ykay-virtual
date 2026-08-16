@@ -39,7 +39,7 @@ export default function Quizzes() {
             .catch(() => [])
         )
       );
-      const merged = results.flat().filter((q) => q.status === "PUBLISHED");
+      const merged = results.flat().filter((q) => q.status === "PUBLISHED" || q.status === "CLOSED");
       // De-dupe by id (an assessment may appear under one cohort only, but be safe).
       const seen = new Set<string>();
       setQuizzes(merged.filter((q) => (seen.has(q.id) ? false : (seen.add(q.id), true))));
@@ -74,11 +74,13 @@ export default function Quizzes() {
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardTitle}>{item.title}</Text>
                   <View style={styles.badge}>
-                    <Text style={styles.badgeText}>pass ≥ {item.pass_threshold}%</Text>
+                    <Text style={styles.badgeText}>
+                      {item.status === "CLOSED" ? "closed" : `pass ≥ ${item.pass_threshold}%`}
+                    </Text>
                   </View>
                 </View>
                 {item.instructions ? <Text style={styles.cardDesc}>{item.instructions}</Text> : null}
-                <Text style={styles.cta}>Start quiz →</Text>
+                <Text style={styles.cta}>{item.status === "CLOSED" ? "Review quiz →" : "Start quiz →"}</Text>
               </Pressable>
             </Link>
           )}
