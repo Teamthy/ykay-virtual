@@ -281,6 +281,23 @@ func (r *PrivatePackageRepo) GetByID(ctx context.Context, id uuid.UUID) (*bookin
 	return &p, nil
 }
 
+// UpdateStatus — transition a package to a new status (YK-004: activate only
+// after settlement). Idempotent on the resulting status.
+func (r *PrivatePackageRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
+	res, err := r.db.ExecContext(ctx, `UPDATE private_packages SET status = $2, updated_at = NOW() WHERE id = $1`, id, status)
+	if err != nil {
+		return fmt.Errorf("update private package status: %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("rows affected: %w", err)
+	}
+	if n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
 var _ booking.CohortRepository = (*CohortRepo)(nil)
 var _ booking.CohortEnrollmentRepository = (*CohortEnrollmentRepo)(nil)
 var _ booking.PrivateTuitionRequestRepository = (*PrivateTuitionRequestRepo)(nil)

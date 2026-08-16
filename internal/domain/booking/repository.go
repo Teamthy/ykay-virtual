@@ -43,6 +43,9 @@ type PrivateTuitionRequestRepository interface {
 type PrivatePackageRepository interface {
 	Create(ctx context.Context, p *PrivatePackage) error
 	GetByID(ctx context.Context, id uuid.UUID) (*PrivatePackage, error)
+	// UpdateStatus — idempotent status transition (used to activate a package
+	// only after its order is settled; YK-004).
+	UpdateStatus(ctx context.Context, id uuid.UUID, status string) error
 }
 
 // StudentProfileReader lets the booking service verify the parent→student

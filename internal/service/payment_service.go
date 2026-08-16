@@ -283,6 +283,11 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 	if err := s.confirmEnrollment(ctx, uow, order.ID, now); err != nil {
 		return nil, err
 	}
+	// YK-004: a private-tuition package becomes ACTIVE only now, in the same
+	// transaction that records the payment as successful — never before.
+	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
+		return nil, err
+	}
 
 	// Escrow hold: money is captured but not yet released to the tutor.
 	hold, err := s.createEscrowHold(ctx, uow, order, paymentRow, now)
@@ -344,6 +349,36 @@ func (s *PaymentService) confirmEnrollment(ctx context.Context, uow repository.U
 			return err
 		}
 		return nil
+	}
+	return nil
+}
+
+// activatePrivatePackages — flips every PRIVATE_PACKAGE order item to ACTIVE
+// (YK-004). Called only inside the settlement transaction after the order is
+// marked paid, so a package can never be active before payment succeeds.
+// Idempotent: already-ACTIVE packages are left as-is.
+func (s *PaymentService) activatePrivatePackages(ctx context.Context, uow repository.UnitOfWork, orderID uuid.UUID) error {
+	items, err := uow.Orders().ListItems(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	for _, it := range items {
+		if it.ItemType != "PRIVATE_PACKAGE" {
+			continue
+		}
+		pkg, err := uow.PrivatePackages().GetByID(ctx, it.ReferenceID)
+		if err != nil {
+			if errors.Is(err, domain.ErrNotFound) {
+				continue
+			}
+			return err
+		}
+		if pkg.Status == booking.PrivatePackageActive {
+			continue
+		}
+		if err := uow.PrivatePackages().UpdateStatus(ctx, pkg.ID, booking.PrivatePackageActive); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -663,6 +698,10 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 		}
 	}
 	if err := s.confirmEnrollment(ctx, uow, order.ID, now); err != nil {
+		return nil, err
+	}
+	// YK-004: activate private packages in the same transaction as settlement.
+	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
 		return nil, err
 	}
 	if _, err := s.createEscrowHold(ctx, uow, order, p, now); err != nil {

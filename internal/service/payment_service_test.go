@@ -379,3 +379,43 @@ func TestProcessPendingPayouts_PaysPending(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 0, n2)
 }
+
+// TestPrivatePackage_ActivatesOnlyAfterPayment — YK-004 regression:
+// a private-tuition package must start PENDING_PAYMENT (not ACTIVE) and only
+// become ACTIVE once its order is settled via webhook.
+func TestPrivatePackage_ActivatesOnlyAfterPayment(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+
+	// 1) Create the private booking: package should be PENDING_PAYMENT.
+	res, err := env.booking.CreatePrivateBooking(ctx, CreatePrivateBookingInput{
+		ParentUserID: env.parent, StudentID: env.student,
+		TutorProfileID: env.tutor, SubjectID: env.subject,
+		TotalSessions: 10, SessionDuration: 60, PricePerSession: 8000, Currency: "NGN",
+	})
+	require.NoError(t, err)
+	require.NotNil(t, res.PackageID)
+	pkg, err := env.store.PrivatePkgs.GetByID(ctx, *res.PackageID)
+	require.NoError(t, err)
+	assert.Equal(t, booking.PrivatePackagePendingPayment, pkg.Status, "package must not be active before payment")
+
+	// 2) Seed a pending payment for the returned order and settle via webhook.
+	ref := "YKAY-PRIVATE-ACTIVATE-001"
+	p := &payment.Payment{
+		OrderID: res.Order.ID, Provider: payment.ProviderPaystack,
+		ProviderReference: &ref, Amount: res.Order.TotalAmount, Currency: res.Order.Currency,
+		Status: payment.PaymentPending,
+	}
+	require.NoError(t, env.store.Payments.Create(ctx, p))
+
+	payload := paystackWebhook(ref, int(res.Order.TotalAmount*100)) // NGN in kobo
+	wres, err := env.pay.ProcessWebhook(ctx, payment.ProviderPaystack, payload,
+		signPaystack(payload, paystackSecret), paystackSecret)
+	require.NoError(t, err)
+	require.True(t, wres.Processed)
+
+	// 3) After settlement the package must be ACTIVE.
+	after, err := env.store.PrivatePkgs.GetByID(ctx, *res.PackageID)
+	require.NoError(t, err)
+	assert.Equal(t, booking.PrivatePackageActive, after.Status, "package activates only on payment")
+}

@@ -244,7 +244,9 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
 		PricePerSession:     in.PricePerSession,
 		TotalPrice:          in.PricePerSession * float64(in.TotalSessions),
 		Currency:            strings.ToUpper(in.Currency),
-		Status:              "ACTIVE",
+		// YK-004: the package must NOT be active before payment. It starts
+		// PENDING_PAYMENT and is activated only when the order is settled.
+		Status: booking.PrivatePackagePendingPayment,
 	}
 	if err := uow.PrivatePackages().Create(ctx, pkg); err != nil {
 		return nil, err

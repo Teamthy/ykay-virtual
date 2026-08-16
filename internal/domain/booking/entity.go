@@ -38,6 +38,15 @@ const (
 	PrivateCancelled  PrivateRequestStatus = "CANCELLED"
 )
 
+// PrivatePackageStatus — lifecycle of a private-tuition package (YK-004).
+// A package MUST start PENDING_PAYMENT and only become ACTIVE after the order
+// is settled, so a client can never get an active package before paying.
+const (
+	PrivatePackagePendingPayment = "PENDING_PAYMENT"
+	PrivatePackageActive         = "ACTIVE"
+	PrivatePackageCancelled      = "CANCELLED"
+)
+
 type LessonStatus string
 
 const (

@@ -82,6 +82,18 @@ func (m *PrivatePackageMemory) GetByID(_ context.Context, id uuid.UUID) (*bookin
 	return nil, domain.ErrNotFound
 }
 
+func (m *PrivatePackageMemory) UpdateStatus(_ context.Context, id uuid.UUID, status string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	p, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	p.Status = status
+	p.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
 var _ booking.PrivatePackageRepository = (*PrivatePackageMemory)(nil)
 
 // --- Audit logs ---

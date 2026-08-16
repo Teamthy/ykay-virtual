@@ -215,7 +215,8 @@ func TestCreatePrivateBooking_Success(t *testing.T) {
 	pkg, err := env.store.PrivatePkgs.GetByID(ctx, *res.PackageID)
 	require.NoError(t, err)
 	assert.Equal(t, 10, pkg.TotalSessions)
-	assert.Equal(t, "ACTIVE", pkg.Status)
+	// YK-004: a package must start PENDING_PAYMENT, NOT active, before payment.
+	assert.Equal(t, booking.PrivatePackagePendingPayment, pkg.Status)
 	assert.Equal(t, 10, pkg.RemainingSessions())
 
 	req, err := env.store.PrivateReqs.GetByID(ctx, pkg.RequestID)
