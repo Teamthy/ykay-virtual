@@ -232,7 +232,7 @@ func TestInitiatePayment_CreatesPendingPaymentAndLink(t *testing.T) {
 
 	res, err := env.pay.InitiatePayment(ctx, InitiatePaymentInput{
 		OrderID: order.ID, Provider: payment.ProviderPaystack,
-		PayerEmail: "parent@example.com",
+		PayerEmail: "parent@example.com", ActorUserID: env.parent,
 	})
 	require.NoError(t, err)
 	assert.NotEmpty(t, res.PaymentLink)
@@ -256,7 +256,7 @@ func TestInitiatePayment_RejectsPaidOrder(t *testing.T) {
 	require.NoError(t, env.store.Orders.Create(ctx, order))
 
 	_, err := env.pay.InitiatePayment(ctx, InitiatePaymentInput{
-		OrderID: order.ID, Provider: payment.ProviderPaystack, PayerEmail: "a@b.com",
+		OrderID: order.ID, Provider: payment.ProviderPaystack, PayerEmail: "a@b.com", ActorUserID: env.parent,
 	})
 	assert.ErrorIs(t, err, domain.ErrConflict)
 }
@@ -522,4 +522,42 @@ func TestRefund_FailClosedInProduction(t *testing.T) {
 	assert.Equal(t, payment.EscrowHeld, h.Status, "hold must remain HELD when refund disabled")
 	o, _ := env.store.Orders.GetByID(ctx, orderID)
 	assert.Equal(t, payment.OrderPaid, o.Status, "order must remain PAID (not REFUNDED) when refund is disabled")
+}
+
+// TestInitiatePayment_RejectsOtherUsersOrder — YK-010 IDOR regression: an
+// authenticated user must not initiate payment on another user's order.
+func TestInitiatePayment_RejectsOtherUsersOrder(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+	// Order owned by env.parent.
+	order := &payment.Order{
+		ParentUserID: env.parent, StudentID: &env.student,
+		Status: payment.OrderPending, Subtotal: 50000, TotalAmount: 50000, Currency: "NGN",
+	}
+	require.NoError(t, env.store.Orders.Create(ctx, order))
+
+	// Another (attacker) user tries to initiate on parent's order.
+	other := uuid.New()
+	_, err := env.pay.InitiatePayment(ctx, InitiatePaymentInput{
+		OrderID: order.ID, Provider: payment.ProviderPaystack,
+		PayerEmail: "attacker@example.com", ActorUserID: other,
+	})
+	require.ErrorIs(t, err, domain.ErrForbidden, "must reject initiation on another user's order")
+}
+
+// TestInitiatePayment_RequiresActor — YK-010: unauthenticated initiation
+// (empty ActorUserID) is rejected.
+func TestInitiatePayment_RequiresActor(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+	order := &payment.Order{
+		ParentUserID: env.parent, StudentID: &env.student,
+		Status: payment.OrderPending, Subtotal: 50000, TotalAmount: 50000, Currency: "NGN",
+	}
+	require.NoError(t, env.store.Orders.Create(ctx, order))
+
+	_, err := env.pay.InitiatePayment(ctx, InitiatePaymentInput{
+		OrderID: order.ID, Provider: payment.ProviderPaystack, PayerEmail: "a@b.com",
+	})
+	require.ErrorIs(t, err, domain.ErrUnauthorized, "must require an authenticated actor")
 }

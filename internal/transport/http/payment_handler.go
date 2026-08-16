@@ -44,6 +44,12 @@ type initiatePaymentResponse struct {
 }
 
 func (h *PaymentHandler) Initiate(w http.ResponseWriter, r *http.Request) {
+	// YK-010: require an authenticated actor (payment initiation is an
+	// account-scoped operation; never anonymous).
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
 	var req initiatePaymentRequest
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -63,12 +69,21 @@ func (h *PaymentHandler) Initiate(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, pkg.BadRequest("a valid email is required", nil))
 		return
 	}
+	// YK-010: callback_url must be empty or a same-origin relative path —
+	// never an arbitrary absolute URL (open-redirect / payment-confusion).
+	if cb := strings.TrimSpace(req.CallbackURL); cb != "" {
+		if strings.Contains(cb, "://") || !strings.HasPrefix(cb, "/") || strings.HasPrefix(cb, "//") {
+			WriteAppError(w, pkg.BadRequest("callback_url must be a relative path", nil))
+			return
+		}
+	}
 	reqID := requestIDString(r)
 	res, err := h.svc.InitiatePayment(r.Context(), service.InitiatePaymentInput{
 		OrderID:     orderID,
 		Provider:    provider,
 		PayerEmail:  req.Email,
 		CallbackURL: req.CallbackURL,
+		ActorUserID: actor.UserID,
 		RequestID:   &reqID,
 		TraceID:     &reqID,
 	})

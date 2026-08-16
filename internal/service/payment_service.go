@@ -77,6 +77,9 @@ type InitiatePaymentInput struct {
 	Provider    payment.PaymentProvider
 	PayerEmail  string
 	CallbackURL string
+	// ActorUserID — the authenticated user initiating payment. YK-010: payment
+	// must only be initiated by the order's owner; an empty value is rejected.
+	ActorUserID uuid.UUID
 	RequestID   *string
 	TraceID     *string
 }
@@ -100,6 +103,14 @@ func (s *PaymentService) InitiatePayment(ctx context.Context, in InitiatePayment
 	order, err := uow.Orders().GetByID(ctx, in.OrderID)
 	if err != nil {
 		return nil, err
+	}
+	// YK-010: IDOR — the order must belong to the authenticated actor. Reject
+	// unauthenticated initiation and cross-user order access.
+	if in.ActorUserID == uuid.Nil {
+		return nil, fmt.Errorf("%w: authentication required to initiate payment", domain.ErrUnauthorized)
+	}
+	if order.ParentUserID != in.ActorUserID {
+		return nil, fmt.Errorf("%w: cannot initiate payment for another user's order", domain.ErrForbidden)
 	}
 	if order.Status != payment.OrderPending {
 		return nil, fmt.Errorf("%w: order %s is %s (not PENDING)", domain.ErrConflict, order.OrderNumber, order.Status)
