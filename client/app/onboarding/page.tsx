@@ -869,7 +869,16 @@ function OnboardingInner() {
       toast.success("Role saved");
       go(4);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save your role");
+      const msg = err instanceof Error ? err.message : "Could not save your role";
+      // A-28: if the session is missing/expired (401) the role can't be saved
+      // and retrying forever just shows a raw "not authenticated". Send the
+      // user back to login once instead of trapping them.
+      if (/authentication required|not authenticated|unauthorized/i.test(msg)) {
+        toast.error("Your session expired — please log in again.");
+        router.replace("/login");
+        return;
+      }
+      setError(msg);
     } finally {
       setSubmitting(false);
     }

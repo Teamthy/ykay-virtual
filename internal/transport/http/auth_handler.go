@@ -117,7 +117,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	middleware.SetSessionCookie(w, h.cfg, token)
+	middleware.SetSessionCookie(w, r, h.cfg, token)
 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
 }
 
@@ -156,7 +156,7 @@ func (h *AuthHandler) ConfirmLoginCode(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	middleware.SetSessionCookie(w, h.cfg, token)
+	middleware.SetSessionCookie(w, r, h.cfg, token)
 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
 }
 
@@ -190,7 +190,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	middleware.SetSessionCookie(w, h.cfg, token)
+	middleware.SetSessionCookie(w, r, h.cfg, token)
 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
 }
 
@@ -203,7 +203,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		_ = h.svc.Logout(r.Context(), hashToken(raw))
 		middleware.InvalidateRawToken(raw)
 	}
-	middleware.ClearSessionCookie(w, h.cfg)
+	middleware.ClearSessionCookie(w, r, h.cfg)
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"logged_out": true}, nil)
 }
 
@@ -302,7 +302,7 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		middleware.InvalidateRawToken(cookie.Value)
 	}
 	if newToken != "" {
-		middleware.SetSessionCookie(w, h.cfg, newToken)
+		middleware.SetSessionCookie(w, r, h.cfg, newToken)
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"changed": true}, nil)
 }

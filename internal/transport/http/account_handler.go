@@ -80,6 +80,6 @@ func (h *AccountHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	middleware.ClearSessionCookie(w, middleware.DefaultCookieConfig(false))
+	middleware.ClearSessionCookie(w, r, middleware.DefaultCookieConfig(false))
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"deleted": true}, nil)
 }

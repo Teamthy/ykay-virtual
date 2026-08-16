@@ -109,27 +109,47 @@ func DefaultCookieConfig(secure bool) CookieConfig {
 	return CookieConfig{Name: "nuvora_session", Secure: secure, MaxAge: int((30 * 24 * time.Hour).Seconds()), Path: "/"}
 }
 
-func SetSessionCookie(w http.ResponseWriter, cfg CookieConfig, token string) {
+// requestIsHTTPS reports whether THIS request arrived over HTTPS, either
+// because TLS terminated at the server or because a trusted proxy stamped
+// X-Forwarded-Proto: https (Render/Vercel/nginx do). This is what decides the
+// cookie's Secure flag — NOT the environment alone.
+func requestIsHTTPS(r *http.Request) bool {
+	if r.TLS != nil {
+		return true
+	}
+	return strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
+}
+
+// SetSessionCookie writes the session cookie. The Secure flag is only applied
+// when cfg.Secure AND this request actually arrived over HTTPS. Setting
+// Secure unconditionally in production broke local / plain-HTTP setups: a
+// browser on http://… silently refuses to STORE a Secure cookie, so the
+// session never stuck and every authenticated call (POST /auth/me/role,
+// /auth/me, …) returned 401 "authentication required" even though login
+// succeeded (A-28).
+func SetSessionCookie(w http.ResponseWriter, r *http.Request, cfg CookieConfig, token string) {
+	secure := cfg.Secure && requestIsHTTPS(r)
 	http.SetCookie(w, &http.Cookie{
 		Name:     cfg.Name,
 		Value:    token,
 		Path:     cfg.Path,
 		MaxAge:   cfg.MaxAge,
 		HttpOnly: true,
-		Secure:   cfg.Secure,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 		Domain:   strings.TrimPrefix(cfg.Domain, "https://"),
 	})
 }
 
-func ClearSessionCookie(w http.ResponseWriter, cfg CookieConfig) {
+func ClearSessionCookie(w http.ResponseWriter, r *http.Request, cfg CookieConfig) {
+	secure := cfg.Secure && requestIsHTTPS(r)
 	http.SetCookie(w, &http.Cookie{
 		Name:     cfg.Name,
 		Value:    "",
 		Path:     cfg.Path,
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   cfg.Secure,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	})
 }
