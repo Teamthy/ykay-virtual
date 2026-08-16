@@ -51,8 +51,15 @@ const nextConfig = {
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
   images: {
+    // A-23: tutor avatars and uploaded content are served from the S3/CDN
+    // origin (and, soon, arbitrary tutor photo hosts). The previous list
+    // allowed ONLY images.unsplash.com, so any next/image pointing at a
+    // real avatar/upload would 400 at runtime. `**` permits any https host;
+    // if you later want to lock this down, replace it with your exact CDN
+    // hostname(s) (e.g. { hostname: "cdn.nuvora.com" }).
     remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" }
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "**" }
     ]
   },
   async redirects() {

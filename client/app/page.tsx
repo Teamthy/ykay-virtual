@@ -6,20 +6,23 @@ import { ApproachSection } from "@/components/home/ApproachSection";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
-import { TestimonialsSection } from "@/features/content/components/TestimonialsSection";
 import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
 import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 import { TravelAndCareBands } from "@/components/home/TravelAndCareBands";
-import { AnnouncementVideo } from "@/components/home/AnnouncementVideo";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
-import { HowItWorksVideo } from "@/components/home/HowItWorksVideo";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 
-// NUVORA home — Tuteria v2 structure: hero → popular services → stats →
-// programmes/cohorts → how it works → "right way" partner → results (3x) →
-// 5-step approach → testimonials → exam prep → FAQ → guarantee → tutor CTA.
+// NUVORA home — one deliberate narrative, no filler:
+// hero → services → social proof → catalogue → how it works → approach →
+// testimonials → exam prep → results → travel/care → FAQ → guarantee →
+// app download → tutor CTA.
+//
+// Removed (duplicate/placeholder): HowItWorksVideo + AnnouncementVideo
+// (both linked to a YouTube *search-results* placeholder URL) and
+// TestimonialsSection (duplicate of the carousel — both hit the same
+// consent-gated /content/testimonials endpoint).
 
 export default function HomePage() {
   return (
@@ -30,11 +33,8 @@ export default function HomePage() {
       <PopularProgrammes />
       <UpcomingCohorts />
       <HowItWorksStrip />
-      <HowItWorksVideo />
       <ApproachSection />
       <TestimonialSlider />
-      <AnnouncementVideo />
-      <TestimonialsSection />
       <ExamPrepGrid />
       <SuccessRateBand />
       <TravelAndCareBands />

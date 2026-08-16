@@ -13,17 +13,6 @@ export const navServices = {
   "Digital Academy": ["Computer Science", "Python", "Artificial Intelligence", "Cybersecurity", "Microsoft Office"],
 };
 
-export const categoryPills = [
-  { emoji: "🏠", label: "Home Tutoring", href: "/programmes/home-tutoring" },
-  { emoji: "🎓", label: "IGCSE", href: "/programmes/igcse" },
-  { emoji: "📝", label: "WAEC/NECO", href: "/programmes/waec" },
-  { emoji: "📊", label: "JAMB Prep", href: "/programmes/jamb" },
-  { emoji: "🇬🇧", label: "A Level", href: "/programmes/a-level" },
-  { emoji: "✈️", label: "Study Abroad", href: "/programmes/study-abroad" },
-  { emoji: "⭐", label: "NUVORA Plus", href: "/programmes/plus" },
-  { emoji: "💻", label: "Digital Skills", href: "/programmes/digital" },
-];
-
 export const heroSlides = [
   {
     tag: "Trusted by 9000+ Parents",

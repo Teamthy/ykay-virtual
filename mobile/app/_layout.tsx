@@ -19,6 +19,10 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ title: "Log in" }} />
         <Stack.Screen name="onboarding" options={{ title: "Get started", headerBackVisible: false }} />
         <Stack.Screen name="home" options={{ title: "NUVORA", headerBackVisible: false }} />
+        {/* A-24: register the LMS screens so they get proper titles instead of
+            the raw route name ("lms/[cohortId]") in the native header. */}
+        <Stack.Screen name="lms" options={{ title: "My Learning" }} />
+        <Stack.Screen name="lms/[cohortId]" options={{ title: "Course" }} />
         <Stack.Screen name="chat" options={{ title: "Chat with Nuvora" }} />
         <Stack.Screen name="quizzes" options={{ title: "Quizzes" }} />
         <Stack.Screen name="quizzes/[assessmentId]" options={{ title: "Quiz" }} />

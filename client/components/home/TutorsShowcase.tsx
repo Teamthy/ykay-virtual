@@ -13,7 +13,9 @@ const TUTORS = [
     rating: "4.87",
     reviews: "28 reviews",
     img: "/tutors/chinasa.jpg",
-    href: "/tutors/chinasa",
+    // A-22: no hardcoded profile slugs — production tutor slugs are
+    // generated (demo-tutor-N); link to the live directory instead.
+    href: "/tutors",
   },
   {
     name: "Oluwatobi",
@@ -21,7 +23,7 @@ const TUTORS = [
     rating: "4.6",
     reviews: "20 reviews",
     img: "/tutors/oluwatobi.jpg",
-    href: "/tutors/oluwatobi",
+    href: "/tutors",
   },
   {
     name: "Olanike",
