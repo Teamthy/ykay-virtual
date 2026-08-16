@@ -48,15 +48,7 @@ export default function LmsCoursePage() {
   const [noteText, setNoteText] = useState("");
   const [submitText, setSubmitText] = useState<Record<string, string>>({});
   const [attendanceFilter, setAttendanceFilter] = useState<string>("all");
-<<<<<<< ours
-<<<<<<< ours
-  const [watchLesson, setWatchLesson] = useState<CohortLesson | null>(null);
-=======
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
->>>>>>> theirs
-=======
-  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
->>>>>>> theirs
 
   const cohort = useQuery({ queryKey: ["lms", "cohort", cohortId], queryFn: () => getCohort(cohortId) });
   const lessons = useQuery({ queryKey: ["lms", "lessons", cohortId], queryFn: () => getCohortLessons(cohortId) });
@@ -257,77 +249,6 @@ export default function LmsCoursePage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
           {/* Left column */}
           <div className="space-y-6">
-<<<<<<< ours
-<<<<<<< ours
-            {/* Lessons — in-app lesson player */}
-            <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-brand-navy">Live lessons</h2>
-
-              {watchLesson && (
-                <div className="mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-black">
-                  <div className="flex aspect-video w-full items-center justify-center bg-[#0B1220]">
-                    {watchLesson.meeting_url ? (
-                      <iframe
-                        src={watchLesson.meeting_url}
-                        title={watchLesson.title}
-                        className="h-full w-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <div className="px-6 py-10 text-center text-white/70">
-                        <p className="text-lg font-bold text-white">{watchLesson.title}</p>
-                        <p className="mt-1 text-sm">
-                          Live session · {new Date(watchLesson.start_at).toLocaleString()} · {watchLesson.timezone}
-                        </p>
-                        <p className="mt-3 text-xs text-white/50">The meeting link will unlock when the session goes live.</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between gap-3 bg-[#131314] px-4 py-3 text-white">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{watchLesson.title}</p>
-                      <p className="text-xs text-white/60">{watchLesson.meeting_provider ?? "Live class"}</p>
-                    </div>
-                    <button
-                      onClick={() => setWatchLesson(null)}
-                      className="shrink-0 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/20"
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-3 space-y-2">
-                {(lessons.data ?? []).map((l, i) => (
-                  <div key={l.id} className="flex items-center gap-3 rounded-xl border border-ink-100 bg-[#FFFCF5] px-4 py-3">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-navy text-xs font-bold text-white">
-                      {i + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-ink-800">{l.title}</p>
-                      <p className="text-xs text-ink-400">
-                        {new Date(l.start_at).toLocaleString()} · {l.timezone}
-                        {l.meeting_provider ? ` · ${l.meeting_provider}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <button
-                        onClick={() => setWatchLesson(l)}
-                        className="rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-bold text-white hover:bg-black"
-                      >
-                        ▶ Watch
-                      </button>
-                      {l.meeting_url && (
-                        <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover">
-                          Join
-                        </a>
-                      )}
-                    </div>
-=======
-=======
->>>>>>> theirs
             {/* Course player — curriculum sidebar + persistent player */}
             <section className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
               <div className="grid lg:grid-cols-[300px_1fr]">
@@ -361,7 +282,6 @@ export default function LmsCoursePage() {
                     {(lessons.data ?? []).length === 0 && (
                       <p className="px-1 py-6 text-center text-sm text-white/50">No lessons yet</p>
                     )}
->>>>>>> theirs
                   </div>
 
                   {resources.data && (resources.data.length > 0) && (
@@ -396,9 +316,6 @@ export default function LmsCoursePage() {
                       <>
                         <div className="overflow-hidden rounded-xl border border-ink-200 bg-black">
                           <div className="flex aspect-video w-full items-center justify-center bg-[#0B1220]">
-<<<<<<< ours
-                            {active.meeting_url ? (
-=======
                             {active.video_url ? (
                               <video
                                 key={active.id}
@@ -410,7 +327,6 @@ export default function LmsCoursePage() {
                                 onPause={(e) => void recordLessonProgress(active.id, { watched: true, position_seconds: Math.floor(e.currentTarget.currentTime) })}
                               />
                             ) : active.meeting_url ? (
->>>>>>> theirs
                               <iframe
                                 src={active.meeting_url}
                                 title={active.title}
