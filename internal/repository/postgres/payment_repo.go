@@ -245,6 +245,24 @@ func (r *EscrowHoldRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status 
 	return nil
 }
 
+// ReleaseIfHeld — atomic compare-and-set (YK-007). Only a hold still in HELD
+// state is transitioned; a concurrent release/refund that already moved it
+// leaves it untouched and returns false, so no duplicate payout/credit can be
+// created.
+func (r *EscrowHoldRepo) ReleaseIfHeld(ctx context.Context, id uuid.UUID, status payment.EscrowStatus, releasedAt *time.Time, disputeReason *string) (bool, error) {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE escrow_holds SET status = $1, released_at = $2, dispute_reason = $3, updated_at = NOW()
+		WHERE id = $4 AND status = 'HELD'`, status, releasedAt, disputeReason, id)
+	if err != nil {
+		return false, fmt.Errorf("release escrow (CAS): %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("release escrow rows: %w", err)
+	}
+	return n > 0, nil
+}
+
 func (r *EscrowHoldRepo) ListStaleHeld(ctx context.Context, now time.Time, limit int) ([]payment.EscrowHold, error) {
 	if limit < 1 {
 		limit = 100

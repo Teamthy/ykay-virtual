@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -418,4 +420,57 @@ func TestPrivatePackage_ActivatesOnlyAfterPayment(t *testing.T) {
 	after, err := env.store.PrivatePkgs.GetByID(ctx, *res.PackageID)
 	require.NoError(t, err)
 	assert.Equal(t, booking.PrivatePackageActive, after.Status, "package activates only on payment")
+}
+
+// TestReleaseEscrow_ConcurrentNoDoubleSettlement — YK-007 regression: many
+// concurrent release attempts on the same hold must yield exactly one payout,
+// not one per attempt. The atomic compare-and-set (ReleaseIfHeld) guards it.
+func TestReleaseEscrow_ConcurrentNoDoubleSettlement(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+	ref := "YKAY-20260811-RACE1"
+	orderID, _ := seedOrderAndPayment(t, env, ref)
+	payload := paystackWebhook(ref, 7_500_000)
+	_, err := env.pay.ProcessWebhook(ctx, payment.ProviderPaystack, payload,
+		signPaystack(payload, paystackSecret), paystackSecret)
+	require.NoError(t, err)
+	holds, _ := env.store.Escrow.GetByOrderID(ctx, orderID)
+	require.Len(t, holds, 1)
+	holdID := holds[0].ID
+
+	const attempts = 8
+	var wg sync.WaitGroup
+	errs := make([]error, attempts)
+	for i := 0; i < attempts; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			_, errs[i] = env.pay.ReleaseEscrow(ctx, holdID, ReleaseClientConfirm, &env.parent, nil, nil)
+		}(i)
+	}
+	wg.Wait()
+
+	// Exactly one release succeeded; the rest were conflict/no-op.
+	ok := 0
+	for _, e := range errs {
+		if e == nil {
+			ok++
+		} else if !errors.Is(e, domain.ErrConflict) {
+			t.Fatalf("unexpected error: %v", e)
+		}
+	}
+	assert.Equal(t, 1, ok, "exactly one concurrent release should succeed")
+
+	// Exactly one payout row exists for the hold.
+	payments, _ := env.store.Payouts.GetByEscrowHoldID(ctx, holdID)
+	_ = payments
+	payouts, err := env.store.Payouts.ListByStatus(ctx, payment.PayoutPending, 100)
+	require.NoError(t, err)
+	related := 0
+	for _, p := range payouts {
+		if p.EscrowHoldID == holdID {
+			related++
+		}
+	}
+	assert.Equal(t, 1, related, "exactly one payout per escrow hold")
 }

@@ -48,6 +48,12 @@ type EscrowHoldRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*EscrowHold, error)
 	GetByOrderID(ctx context.Context, orderID uuid.UUID) ([]EscrowHold, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status EscrowStatus, releasedAt *time.Time, disputeReason *string) error
+	// ReleaseIfHeld — atomic compare-and-set: transitions an escrow hold from
+	// HELD to the target status ONLY if it is still HELD. Returns true when it
+	// performed the transition, false when the hold was already in another
+	// state (concurrent release/refund won the race). This is the guarded
+	// transition that prevents double settlement (YK-007).
+	ReleaseIfHeld(ctx context.Context, id uuid.UUID, status EscrowStatus, releasedAt *time.Time, disputeReason *string) (bool, error)
 	// ListStaleHeld lists HELD holds whose release_at has passed — used by the
 	// expire_stale_booking_holds cron (Tuteria parity: 3-day auto release).
 	ListStaleHeld(ctx context.Context, now time.Time, limit int) ([]EscrowHold, error)

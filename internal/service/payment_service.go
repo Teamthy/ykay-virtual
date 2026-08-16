@@ -490,8 +490,14 @@ func (s *PaymentService) ReleaseEscrow(ctx context.Context, escrowHoldID uuid.UU
 	}
 
 	now := s.Clock().UTC()
-	if err := uow.Escrow().UpdateStatus(ctx, hold.ID, payment.EscrowReleased, &now, nil); err != nil {
+	// YK-007: atomic compare-and-set — only a still-HELD hold transitions, so
+	// a concurrent release/refund cannot double-settle the same hold.
+	released, err := uow.Escrow().ReleaseIfHeld(ctx, hold.ID, payment.EscrowReleased, &now, nil)
+	if err != nil {
 		return nil, err
+	}
+	if !released {
+		return nil, fmt.Errorf("%w: escrow hold %s was concurrently released/refunded", domain.ErrConflict, hold.ID)
 	}
 	payout := &payment.Payout{
 		TutorProfileID: hold.TutorProfileID,
@@ -590,8 +596,14 @@ func (s *PaymentService) refundEscrowInUOW(ctx context.Context, uow repository.U
 	}
 
 	now := s.Clock().UTC()
-	if err := uow.Escrow().UpdateStatus(ctx, hold.ID, payment.EscrowRefunded, &now, &reason); err != nil {
+	// YK-007: atomic compare-and-set — a concurrent release/refund of the same
+	// hold must not both credit the wallet / mark refunded.
+	refunded, err := uow.Escrow().ReleaseIfHeld(ctx, hold.ID, payment.EscrowRefunded, &now, &reason)
+	if err != nil {
 		return err
+	}
+	if !refunded {
+		return fmt.Errorf("%w: escrow hold %s was concurrently released/refunded", domain.ErrConflict, hold.ID)
 	}
 	if err := uow.Wallets().Credit(ctx, order.ParentUserID, hold.Amount); err != nil {
 		return err

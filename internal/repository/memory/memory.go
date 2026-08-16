@@ -728,6 +728,24 @@ func (m *EscrowMemory) UpdateStatus(_ context.Context, id uuid.UUID, status paym
 	return nil
 }
 
+// ReleaseIfHeld — atomic compare-and-set (YK-007), mirroring the Postgres
+// semantics: only a HELD hold is transitioned; otherwise returns false.
+func (m *EscrowMemory) ReleaseIfHeld(_ context.Context, id uuid.UUID, status payment.EscrowStatus, releasedAt *time.Time, disputeReason *string) (bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	h, ok := m.rows[id]
+	if !ok {
+		return false, domain.ErrNotFound
+	}
+	if h.Status != payment.EscrowHeld {
+		return false, nil
+	}
+	h.Status = status
+	h.ReleasedAt = releasedAt
+	h.DisputeReason = disputeReason
+	return true, nil
+}
+
 func (m *EscrowMemory) ListStaleHeld(_ context.Context, now time.Time, limit int) ([]payment.EscrowHold, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
