@@ -232,3 +232,41 @@ func TestSetPrimaryRole_RejectsPrivilegedRole(t *testing.T) {
 		assert.NotEqual(t, "SUPER_ADMIN", r.Name)
 	}
 }
+
+// TestChangePassword_RotatesAllSessions — YK-017 regression: after a password
+// change every previously-issued session is revoked (stolen sessions can no
+// longer authenticate), and a single fresh token is issued for the current
+// client.
+func TestChangePassword_RotatesAllSessions(t *testing.T) {
+	env := newAuthEnv(t)
+	ctx := context.Background()
+	_, err := env.svc.Register(ctx, RegisterInput{Email: "rot@example.com", Password: "password123", Roles: []string{"STUDENT"}})
+	require.NoError(t, err)
+
+	// Two existing sessions (e.g. two devices).
+	tokA, _, _, err := env.svc.Login(ctx, "rot@example.com", "password123", "1.1.1.1", "devA")
+	require.NoError(t, err)
+	tokB, _, _, err := env.svc.Login(ctx, "rot@example.com", "password123", "2.2.2.2", "devB")
+	require.NoError(t, err)
+
+	// Change the password → all old sessions revoked, one fresh token issued.
+	u, err := env.store.Users.FindByEmail(ctx, "rot@example.com")
+	require.NoError(t, err)
+	newTok, err := env.svc.ChangePassword(ctx, u.ID, "brand-new-pass-1")
+	require.NoError(t, err)
+	require.NotEmpty(t, newTok)
+
+	// Old tokens can no longer authenticate (revoked by the password change).
+	_, _, err = env.svc.Me(ctx, HashToken(tokA))
+	require.ErrorIs(t, err, domain.ErrUnauthorized, "old session A must be rejected")
+	_, _, err = env.svc.Me(ctx, HashToken(tokB))
+	require.ErrorIs(t, err, domain.ErrUnauthorized, "old session B must be rejected")
+
+	// The fresh token authenticates.
+	_, _, err = env.svc.Me(ctx, HashToken(newTok))
+	require.NoError(t, err)
+
+	// Old password no longer authenticates; new password does.
+	_, _, _, err = env.svc.Login(ctx, "rot@example.com", "password123", "3.3.3.3", "devC")
+	require.ErrorIs(t, err, domain.ErrUnauthorized)
+}

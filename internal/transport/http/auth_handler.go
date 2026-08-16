@@ -287,17 +287,22 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	if err := h.svc.ChangePassword(r.Context(), actor.UserID, req.NewPassword); err != nil {
+	// YK-017: ChangePassword rotates all sessions and returns a fresh token
+	// for the current client, so every other/stolen session is revoked while
+	// this client stays signed in.
+	newToken, err := h.svc.ChangePassword(r.Context(), actor.UserID, req.NewPassword)
+	if err != nil {
 		WriteAppError(w, err)
 		return
 	}
-	// G7.1: drop the cached session for the presented token so the change
-	// takes effect immediately for this client (other sessions expire
-	// within the 30s cache TTL after their rows are revoked).
+	// Drop the old session from the cache; adopt the new one for this client.
 	if raw := middleware.BearerToken(r); raw != "" {
 		middleware.InvalidateRawToken(raw)
 	} else if cookie, cerr := r.Cookie(h.cfg.Name); cerr == nil {
 		middleware.InvalidateRawToken(cookie.Value)
+	}
+	if newToken != "" {
+		middleware.SetSessionCookie(w, h.cfg, newToken)
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"changed": true}, nil)
 }

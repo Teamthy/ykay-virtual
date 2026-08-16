@@ -287,26 +287,50 @@ func (s *AuthService) SetPrimaryRole(ctx context.Context, userID uuid.UUID, role
 
 // ChangePassword — sets a new password for the authenticated user (used by the
 // onboarding "complete your profile" step, where accounts are first created
-// with a generated password).
-func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newPassword string) error {
+// with a generated password, and by account settings).
+//
+// SECURITY (YK-017): after changing the password we rotate ALL of the user's
+// sessions and issue a single fresh one. Previously-issued sessions (e.g. on a
+// stolen/other device) are revoked immediately, so an attacker holding an old
+// session token can no longer act as the user. The returned raw token is the
+// replacement session the current client should adopt.
+func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newPassword string) (string, error) {
 	if len(newPassword) < 8 {
-		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
+		return "", fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
 	}
 	user, err := s.users.FindByID(ctx, userID)
 	if err != nil {
-		return err
+		return "", err
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcryptCost)
 	if err != nil {
-		return fmt.Errorf("hash password: %w", err)
+		return "", fmt.Errorf("hash password: %w", err)
 	}
 	user.PasswordHash = string(hash)
 	if err := s.users.Update(ctx, user); err != nil {
-		return err
+		return "", err
+	}
+	// Rotate every existing session so no stale/stolen session survives.
+	if err := s.sessions.RevokeAllForUser(ctx, userID); err != nil {
+		return "", fmt.Errorf("revoke sessions: %w", err)
+	}
+	// Issue a fresh session for the current client so it stays signed in.
+	raw, sessionHash, err := newSessionToken()
+	if err != nil {
+		return "", err
+	}
+	now := s.now().UTC()
+	sess := &identity.Session{
+		UserID:    userID,
+		TokenHash: sessionHash,
+		ExpiresAt: now.Add(SessionTTL),
+	}
+	if err := s.sessions.Create(ctx, sess); err != nil {
+		return "", fmt.Errorf("create session: %w", err)
 	}
 	_ = s.audit.LogStateChange(ctx, &userID, identity.AuditUpdate, "user",
-		nil, nil, map[string]any{"event": "password_changed"}, nil, nil)
-	return nil
+		nil, nil, map[string]any{"event": "password_changed", "sessions_rotated": true}, nil, nil)
+	return raw, nil
 }
 
 // Login — verifies credentials, creates a session, returns the raw token
