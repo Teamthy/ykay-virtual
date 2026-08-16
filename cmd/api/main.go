@@ -185,7 +185,7 @@ func main() {
 	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit).
 		WithAuthTokens(repos.AuthTokens).
 		WithStudentProfiles(repos.Students).
-		WithDevLogging(cfg.Environment != "production") // plain-text codes/links in dev
+		WithDevLogging(authDevLogging(cfg.Environment)) // codes/links only outside prod, or explicit AUTH_LOG_CODES=true
 
 	// --- Durable dispatch queue (G4.1): in PRODUCTION, Redis-up routes
 	// outbound email through the worker queue (sync fallback when Redis is
@@ -433,6 +433,20 @@ func setupJobQueue(redisURL string) worker.Queue {
 
 // getEnvDefault — env value or fallback (demo credentials are overridable;
 // hardcoded secrets are removed from source per hardening SEC-003).
+// authDevLogging — controls plain-text login codes / verification and
+// password-reset links in the logs. They are printed OUTSIDE production
+// (so local dev + a staging service can be tested without SMTP), and are
+// SUPPRESSED in production. AUTH_LOG_CODES=true opts back IN on a
+// production service — a documented test aid for smoke-testing the email
+// flows without a mail provider. Codes in logs are readable by anyone with
+// log access, so NEVER leave this on once real users exist.
+func authDevLogging(env string) bool {
+	if strings.EqualFold(os.Getenv("AUTH_LOG_CODES"), "true") {
+		return true
+	}
+	return env != "production"
+}
+
 func getEnvDefault(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
