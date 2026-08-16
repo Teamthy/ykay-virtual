@@ -30,13 +30,10 @@ build: ## Production builds (Go + Next.js)
 typecheck: ## TypeScript typecheck
 	cd client && npx tsc --noEmit
 
-test: test-api test-legacy test-web ## Full test suite
+test: test-api test-web ## Full test suite
 
 test-api: ## Go tests (root module)
 	$(GO) test ./...
-
-test-legacy: ## Go tests (legacy module)
-	cd legacy/server && $(GO) test ./...
 
 test-web: ## Frontend tests (Vitest)
 	cd client && $(NPM) test

@@ -54,7 +54,6 @@ growth channel).
 │   ├── components/           #   ui (shadcn-style) + layout
 │   ├── lib/                  #   api client (X-Trace-ID), queryClient factory, SEO/JSON-LD
 │   └── hooks/ tests/         #   hooks + Vitest/MSW
-├── legacy/server/            # OLD flat server (module ykay-legacy) — deprecated, kept for reference
 ├── docs/                     # prd, architecture, sprint-0, build plan, parity audit, phase deliveries
 └── docker-compose.yml        # postgres:16 + redis:7
 ```

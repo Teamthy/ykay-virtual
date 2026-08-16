@@ -32,9 +32,6 @@ jobs:
         env:
           REDIS_URL: redis://localhost:6379/0
         run: go test ./...
-      - name: Test (legacy module)
-        working-directory: legacy/server
-        run: go test ./...
 
   prompt-evals:
     name: Prompt evals (chat rubric)
