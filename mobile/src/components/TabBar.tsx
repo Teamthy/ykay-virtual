@@ -3,17 +3,20 @@ import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, type } from "@/src/lib/theme";
 
 // Premium bottom tab bar — active pill indicator, spring scale + haptic on
 // press, safe-area aware. Tabs route within the authenticated Stack.
 
 const TABS = [
-  { key: "home", href: "/home", label: "Home", icon: "🏠" },
-  { key: "lms", href: "/lms", label: "Learning", icon: "📚" },
-  { key: "quizzes", href: "/quizzes", label: "Quizzes", icon: "📝" },
-  { key: "account", href: "/account", label: "Account", icon: "👤" },
+  { key: "home", href: "/home", label: "Home", icon: "home", iconOutline: "home-outline" },
+  { key: "lms", href: "/lms", label: "Learning", icon: "book", iconOutline: "book-outline" },
+  { key: "quizzes", href: "/quizzes", label: "Quizzes", icon: "create", iconOutline: "create-outline" },
+  { key: "account", href: "/account", label: "Account", icon: "person", iconOutline: "person-outline" },
 ] as const;
+
+type IconName = keyof typeof Ionicons.glyphMap;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -39,7 +42,7 @@ export function TabBar() {
             onPressOut={() => (scale.value = withSpring(1, { damping: 16, stiffness: 320 }))}
           >
             <View style={[styles.iconWrap, active && styles.iconWrapActive]}>
-              <Text style={styles.icon}>{t.icon}</Text>
+              <Ionicons name={(active ? t.icon : t.iconOutline) as IconName} size={19} color={active ? colors.navy : colors.ink[400]} />
             </View>
             <Text style={[styles.label, active && styles.labelActive]}>{t.label}</Text>
           </AnimatedPressable>

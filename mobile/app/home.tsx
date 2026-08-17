@@ -14,12 +14,16 @@ type Me = { id: string; email: string; roles: string[]; first_name?: string };
 type Unread = { unread: number };
 
 const internal = [
-  { href: "/lms", title: "My Learning", desc: "Lessons, resources, assignments", icon: "📚" },
-  { href: "/quizzes", title: "Quizzes", desc: "Auto-graded assessments", icon: "📝" },
-  { href: "/progress", title: "Progress", desc: "Attendance + tutor reports", icon: "📈" },
-  { href: "/chat", title: "Chat with Nuvora", desc: "AI assistant + human handoff", icon: "💬" },
-  { href: "/notifications", title: "Notifications", desc: "Reminders and updates", icon: "🔔", badge: true },
-  { href: "/account", title: "Account", desc: "Profile, learners, logout", icon: "👤" },
+  { href: "/lms", title: "My Learning", desc: "Lessons, resources, assignments", icon: "book-outline" },
+  { href: "/quizzes", title: "Quizzes", desc: "Auto-graded assessments", icon: "create-outline" },
+  { href: "/progress", title: "Progress", desc: "Attendance + tutor reports", icon: "stats-chart-outline" },
+  { href: "/subjects", title: "Subjects", desc: "Browse the full catalogue", icon: "library-outline" },
+  { href: "/exam-prep", title: "Exam prep", desc: "WAEC, NECO, JAMB, IGCSE", icon: "school-outline" },
+  { href: "/search", title: "Find a tutor", desc: "Search vetted tutors", icon: "search-outline" },
+  { href: "/saved", title: "Saved tutors", desc: "Your wishlist", icon: "heart-outline" },
+  { href: "/chat", title: "Chat with Nuvora", desc: "AI assistant + human handoff", icon: "chatbubbles-outline" },
+  { href: "/notifications", title: "Notifications", desc: "Reminders and updates", icon: "notifications-outline", badge: true },
+  { href: "/account", title: "Account", desc: "Profile, learners, logout", icon: "person-outline" },
 ] as const;
 
 export default function Home() {
@@ -68,7 +72,7 @@ export default function Home() {
           <Animated.View key={s.href} entering={FadeInUp.delay(120 + i * 60).springify().damping(16)}>
             <Card onPress={() => router.push(s.href as never)} style={styles.card}>
               <View style={styles.cardTop}>
-                <AppText style={{ fontSize: 26 }}>{s.icon}</AppText>
+                <Ionicons name={s.icon} size={26} color={colors.navy} />
                 {"badge" in s && s.badge && unread > 0 && (
                   <View style={styles.badge}>
                     <AppText variant="caption" style={{ color: colors.ink[900], fontWeight: "800" }}>
@@ -89,7 +93,7 @@ export default function Home() {
 
         <Animated.View entering={FadeInUp.delay(120 + internal.length * 60).springify().damping(16)}>
           <Card onPress={() => void Linking.openURL("https://app.nuvora.com/cohorts")} style={styles.card}>
-            <AppText style={{ fontSize: 26 }}>🎓</AppText>
+            <Ionicons name="people-outline" size={26} color={colors.navy} />
             <AppText variant="h3" style={{ marginTop: 8 }}>
               Browse cohorts
             </AppText>

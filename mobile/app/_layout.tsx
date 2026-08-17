@@ -31,6 +31,12 @@ export default function RootLayout() {
         <Stack.Screen name="account" options={{ title: "Account" }} />
         <Stack.Screen name="wizard" options={{ title: "Welcome", headerBackVisible: false }} />
         <Stack.Screen name="recommendations" options={{ title: "For you" }} />
+        <Stack.Screen name="subjects" options={{ title: "Subjects" }} />
+        <Stack.Screen name="subjects/[slug]" options={{ title: "Subject" }} />
+        <Stack.Screen name="exam-prep" options={{ title: "Exam preparation" }} />
+        <Stack.Screen name="search" options={{ title: "Find a tutor" }} />
+        <Stack.Screen name="saved" options={{ title: "Saved tutors" }} />
+        <Stack.Screen name="tutors/[slug]" options={{ title: "Tutor" }} />
         <Stack.Screen name="tutor/index" options={{ title: "Tutor hub" }} />
         <Stack.Screen name="tutor/earnings" options={{ title: "Earnings" }} />
         <Stack.Screen name="tutor/lessons" options={{ title: "My lessons" }} />
