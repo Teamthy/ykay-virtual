@@ -24,11 +24,15 @@ export function buildMetadata({ title, description, path, image, noIndex, canoni
     alternates: {
       canonical: canonicalUrl,
     },
+    category: "education",
+    creator: "NUVORA",
+    publisher: "NUVORA",
     openGraph: {
       title,
       description,
       url,
       siteName: "NUVORA",
+      locale: "en_NG",
       images: image ? [{ url: image }] : [{ url: absoluteUrl("/og.png") }],
       type: "website",
     },
@@ -37,6 +41,16 @@ export function buildMetadata({ title, description, path, image, noIndex, canoni
       title,
       description,
       images: image ? [image] : [absoluteUrl("/og.png")],
+    },
+    // Geo-targeting: NUVORA is based in Lagos, Nigeria. These tags help local
+    // (Nigerian/African) search relevance while the English pages stay usable
+    // for international audiences.
+    other: {
+      "geo.region": "NG-LA",
+      "geo.placename": "Lagos",
+      "geo.position": "6.5244;3.3792",
+      ICBM: "6.5244, 3.3792",
+      "og:locale": "en_NG",
     },
     robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
   };

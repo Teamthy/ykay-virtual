@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Suspense, useEffect, useState } from "react";
+import { Heart, Loader2, SlidersHorizontal } from "lucide-react";
 import { INPUT_CLS } from "@/components/ui/password-input";
 import { searchTutors, type Tutor } from "@/features/tutors/api/search";
 import { listProgrammes, type Programme } from "@/features/programmes/api/list";
-import { listSubjects } from "@/features/subjects/api/list";
+import { listSubjects, type Subject } from "@/features/subjects/api/list";
 import { useWishlist } from "@/features/wishlist/hook";
 
-// /search — site-wide search (P0): tutors (free-text), programmes and
-// subjects in one place. Header search navigates here.
+// /search — site-wide search (P0): tutors (free-text + subject + online
+// filter), programmes and subjects in one place. Debounced as-you-type,
+// URL-synced, with loading states and empty states.
 
 type ResultGroup = "tutors" | "programmes" | "subjects";
 
@@ -20,25 +22,48 @@ function SearchInner() {
   const sp = useSearchParams();
   const q = sp.get("q") ?? "";
   const [input, setInput] = useState(q);
+  const [debounced, setDebounced] = useState(q);
   const [activeGroup, setActiveGroup] = useState<ResultGroup>("tutors");
+  const [subject, setSubject] = useState("");
+  const [onlineOnly, setOnlineOnly] = useState(false);
   const { isSaved, toggle } = useWishlist();
 
+  // Sync from URL (back/forward, header search).
   useEffect(() => setInput(q), [q]);
 
+  // Debounce typing → debounced query.
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(input.trim()), 300);
+    return () => clearTimeout(t);
+  }, [input]);
+
+  const activeQ = debounced.length > 1 ? debounced : "";
+
   const tutors = useQuery({
-    queryKey: ["search", "tutors", q],
-    queryFn: () => searchTutors({ q, page_size: 8 }),
-    enabled: q.length > 1,
+    queryKey: ["search", "tutors", activeQ, subject, onlineOnly],
+    queryFn: () =>
+      searchTutors({
+        q: activeQ || undefined,
+        subject: subject || undefined,
+        online: onlineOnly || undefined,
+        page_size: 8,
+      }),
+    enabled: activeQ.length > 0,
   });
   const programmes = useQuery({
-    queryKey: ["search", "programmes", q],
-    queryFn: () => listProgrammes({ search: q, page_size: 8 }),
-    enabled: q.length > 1,
+    queryKey: ["search", "programmes", activeQ],
+    queryFn: () => listProgrammes({ search: activeQ, page_size: 8 }),
+    enabled: activeQ.length > 0,
   });
   const subjects = useQuery({
-    queryKey: ["search", "subjects", q],
-    queryFn: () => listSubjects({ search: q }),
-    enabled: q.length > 1,
+    queryKey: ["search", "subjects", activeQ],
+    queryFn: () => listSubjects({ search: activeQ }),
+    enabled: activeQ.length > 0,
+  });
+  // All subjects, once, for the tutor filter dropdown.
+  const allSubjects = useQuery({
+    queryKey: ["subjects", "all"],
+    queryFn: () => listSubjects({ page_size: 100 }),
   });
 
   const submit = (e: React.FormEvent) => {
@@ -50,6 +75,7 @@ function SearchInner() {
   const tutorCount = tutors.data?.data?.length ?? 0;
   const programmeCount = programmes.data?.data?.length ?? 0;
   const subjectCount = subjects.data?.data?.length ?? 0;
+  const anyLoading = tutors.isFetching || programmes.isFetching || subjects.isFetching;
 
   const groups: { key: ResultGroup; label: string; count: number }[] = [
     { key: "tutors", label: "Tutors", count: tutorCount },
@@ -87,14 +113,16 @@ function SearchInner() {
       </header>
 
       <div className="mx-auto max-w-5xl px-6">
-        {!q ? (
-          <p className="py-16 text-center text-ink-400">Type above to search tutors, programmes and subjects.</p>
-        ) : q.length <= 1 ? (
-          <p className="py-16 text-center text-ink-400">Keep typing — search needs at least 2 characters.</p>
+        {!activeQ ? (
+          <p className="py-16 text-center text-ink-400">
+            {debounced.length === 1
+              ? "Keep typing — search needs at least 2 characters."
+              : "Type above to search tutors, programmes and subjects."}
+          </p>
         ) : (
           <>
             {/* Group tabs */}
-            <div className="mt-6 flex gap-2">
+            <div className="mt-6 flex flex-wrap items-center gap-2">
               {groups.map((g) => (
                 <button
                   key={g.key}
@@ -107,7 +135,37 @@ function SearchInner() {
                   {g.label} ({g.count})
                 </button>
               ))}
+              {anyLoading && <Loader2 size={15} className="animate-spin text-ink-400" />}
             </div>
+
+            {/* Tutor filters */}
+            {activeGroup === "tutors" && (
+              <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white p-3">
+                <SlidersHorizontal size={15} className="text-ink-400" />
+                <label className="flex items-center gap-2 text-sm">
+                  <span className="text-ink-500">Subject</span>
+                  <select
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-sm text-ink-700 focus:border-brand-gold focus:outline-none"
+                  >
+                    <option value="">All subjects</option>
+                    {(allSubjects.data?.data ?? []).map((s: Subject) => (
+                      <option key={s.id} value={s.slug}>{s.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
+                  <input
+                    type="checkbox"
+                    checked={onlineOnly}
+                    onChange={(e) => setOnlineOnly(e.target.checked)}
+                    className="size-4 accent-[#013920]"
+                  />
+                  Online only
+                </label>
+              </div>
+            )}
 
             <div className="mt-4">
               {activeGroup === "tutors" && (
@@ -115,13 +173,13 @@ function SearchInner() {
                   {(tutors.data?.data ?? []).map((t: Tutor) => {
                     const saved = isSaved(t.slug);
                     return (
-                      <div key={t.id} className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-ink-700 dark:bg-[#141C2E]">
+                      <div key={t.id} className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                         <Link href={`/tutors/${t.slug}`} className="flex min-w-0 flex-1 items-center gap-4">
                           <span className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-gold-light font-bold text-brand-navy">
                             {t.display_name.slice(0, 1)}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block font-bold text-brand-navy dark:text-white">{t.display_name}</span>
+                            <span className="block font-bold text-brand-navy">{t.display_name}</span>
                             <span className="block truncate text-sm text-ink-500">
                               {(t.subjects ?? []).map((s) => s.name).join(" · ") || "Tutor"}
                               {t.rating_avg > 0 ? ` · ★ ${t.rating_avg.toFixed(1)}` : ""}
@@ -140,14 +198,19 @@ function SearchInner() {
                           }
                           aria-label={saved ? `Remove ${t.display_name} from saved` : `Save ${t.display_name}`}
                           aria-pressed={saved}
-                          className={`grid size-9 shrink-0 place-items-center rounded-full text-lg transition-transform hover:scale-110 ${saved ? "bg-red-50" : "bg-ink-50"}`}
+                          className={`grid size-9 shrink-0 place-items-center rounded-full transition-transform hover:scale-110 ${saved ? "bg-red-50" : "bg-ink-50"}`}
                         >
-                          {saved ? "❤️" : "🤍"}
+                          <Heart size={17} className={saved ? "fill-red-500 text-red-500" : "text-ink-400"} />
                         </button>
                       </div>
                     );
                   })}
-                  {tutorCount === 0 && <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">No tutors match “{q}”.</p>}
+                  {tutorCount === 0 && !anyLoading && (
+                    <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
+                      No tutors match “{activeQ}”
+                      {subject || onlineOnly ? " with those filters" : ""}. Try a broader term.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -166,7 +229,11 @@ function SearchInner() {
                       <span className="text-xs font-bold text-brand-gold-dark">View →</span>
                     </Link>
                   ))}
-                  {programmeCount === 0 && <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">No programmes match “{q}”.</p>}
+                  {programmeCount === 0 && !anyLoading && (
+                    <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
+                      No programmes match “{activeQ}”.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -181,7 +248,11 @@ function SearchInner() {
                       {s.name}
                     </Link>
                   ))}
-                  {subjectCount === 0 && <p className="w-full rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">No subjects match “{q}”.</p>}
+                  {subjectCount === 0 && !anyLoading && (
+                    <p className="w-full rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
+                      No subjects match “{activeQ}”.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

@@ -1,3 +1,4 @@
+import { Reveal } from "@/components/ui/reveal";
 import { HeroSplit } from "@/components/home/HeroSplit";
 import { ServicesShowcase } from "@/components/home/ServicesShowcase";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
@@ -27,17 +28,21 @@ export default function HomePage() {
   return (
     <>
       <HeroSplit />
-      <ServicesShowcase />
-      <PopularProgrammes />
-      <UpcomingCohorts />
-      <HowItWorksStrip />
-      <TestimonialSlider />
-      <ExamPrepGrid />
-      <GuaranteeBand />
-      <TravelAndCareBands />
-      <HomeFAQ />
-      <DownloadAppCTA />
-      <BecomeTutorCTA />
+      {/* Retention/marketing order: trust band right after the hook, then
+          what we offer → how it works → concrete offers → social proof →
+          objection handling → conversion CTAs. Each section scroll-reveals
+          (respects prefers-reduced-motion). */}
+      <Reveal><GuaranteeBand /></Reveal>
+      <Reveal delay={50}><ServicesShowcase /></Reveal>
+      <Reveal delay={50}><PopularProgrammes /></Reveal>
+      <Reveal delay={50}><HowItWorksStrip /></Reveal>
+      <Reveal delay={50}><UpcomingCohorts /></Reveal>
+      <Reveal delay={50}><ExamPrepGrid /></Reveal>
+      <Reveal delay={50}><TestimonialSlider /></Reveal>
+      <Reveal delay={50}><TravelAndCareBands /></Reveal>
+      <Reveal delay={50}><HomeFAQ /></Reveal>
+      <Reveal delay={50}><DownloadAppCTA /></Reveal>
+      <Reveal delay={50}><BecomeTutorCTA /></Reveal>
     </>
   );
 }
