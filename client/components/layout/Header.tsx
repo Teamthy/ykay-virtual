@@ -83,7 +83,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-ink-200 bg-white">
+    <header className="sticky top-0 z-50 isolate w-full border-b border-ink-200 bg-white/95 shadow-sm backdrop-blur-md">
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-6 py-3 md:px-10">
         {/* Brand */}
         <Link href="/" onClick={closeAll} className="flex-none" aria-label="NUVORA home">

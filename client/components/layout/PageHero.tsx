@@ -120,7 +120,7 @@ export function PageHero({
       style={{ backgroundImage: GRID_BG }}
     >
       {split ? (
-        <div className="mx-auto grid max-w-[1200px] items-center gap-10 px-6 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="mx-auto grid max-w-[1200px] items-center gap-10 px-6 pb-20 pt-16 md:pb-28 md:pt-24 lg:grid-cols-[1.05fr_0.95fr]">
           <div>{text}</div>
           <div className="relative">
             <div className="overflow-hidden rounded-3xl shadow-card ring-1 ring-ink-100">

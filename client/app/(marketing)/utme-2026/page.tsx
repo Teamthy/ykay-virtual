@@ -159,6 +159,30 @@ export default function Utme2026Page() {
         </div>
       </section>
 
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-gold-dark">On nuvora.com — including your phone</p>
+          <h2 className="mt-2 font-display text-3xl text-brand-navy">What this prep includes</h2>
+          <p className="mt-2 max-w-2xl text-ink-600">
+            One login. Open this site on mobile for live class, recordings and reports — not a separate prep domain.
+          </p>
+          <ul className="mt-8 grid gap-4 md:grid-cols-2">
+            {[
+              "Past-question patterns used to plan the syllabus (we do not claim a secret 15-year AI score)",
+              "Live lessons plus recordings you can rewatch on your phone",
+              "Weekly timed CBT-style mocks",
+              "Remedial office hours and a moderated peer space (not a WhatsApp dump)",
+              "Weekly progress notes to parents",
+            ].map((f) => (
+              <li key={f} className="flex gap-3 rounded-2xl border border-ink-100 bg-surface-muted p-5 text-sm text-ink-700">
+                <Check size={16} className="mt-0.5 shrink-0 text-brand-green" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       <SuccessChampions />
 
       {/* ── AI-powered prep ── */}

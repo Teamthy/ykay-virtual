@@ -61,7 +61,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
   return (
     <div className="grid lg:grid-cols-[280px_1fr] gap-8 items-start">
       {/* Filters */}
-      <aside className="z-10 space-y-5 rounded-2xl border bg-white p-5 lg:sticky lg:top-32">
+      <aside className="space-y-5 rounded-2xl border bg-white p-5">
         <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Filters</h2>
         <label className="block text-sm">
           <span className="font-medium">Subject</span>

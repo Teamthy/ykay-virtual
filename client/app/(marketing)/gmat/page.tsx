@@ -162,27 +162,39 @@ export default function GmatPage() {
                 Study-abroad prep →
               </Link>
             </div>
-            <div className="rounded-2xl border border-ink-100 bg-white p-7">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-blue-light text-brand-blue">
+            <div
+              className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white"
+              style={{
+                backgroundImage:
+                  "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/international.jpg)",
+              }}
+            >
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
                 <Briefcase size={20} />
               </div>
-              <h3 className="mt-4 font-bold text-ink-800">Get your dream job</h3>
-              <p className="mt-2 text-sm text-ink-500 leading-relaxed">
-                Work with an expert to ensure you pass the test and get the job.
+              <h3 className="mt-4 font-bold text-white">Career applications</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/80">
+                Use GMAT prep as part of a job or MBA application — we do not promise a specific employer.
               </p>
-              <Link href="/gmat" className="mt-4 inline-block text-sm font-bold text-brand-blue hover:text-brand-navy">
+              <Link href="/gmat" className="mt-4 inline-block text-sm font-bold text-brand-gold">
                 Get a tutor →
               </Link>
             </div>
-            <div className="rounded-2xl border border-ink-100 bg-white p-7">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-blue-light text-brand-blue">
+            <div
+              className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white"
+              style={{
+                backgroundImage:
+                  "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/test-prep.jpg)",
+              }}
+            >
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
                 <MonitorPlay size={20} />
               </div>
-              <h3 className="mt-4 font-bold text-ink-800">Prefer to study online?</h3>
-              <p className="mt-2 text-sm text-ink-500 leading-relaxed">
-                Book online lessons and study via Zoom or Google Meets from the comfort of your home.
+              <h3 className="mt-4 font-bold text-white">Study on your phone</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/80">
+                Same NUVORA login on mobile — live lessons and recordings in the browser. No second site.
               </p>
-              <Link href="/online-classes" className="mt-4 inline-block text-sm font-bold text-brand-blue hover:text-brand-navy">
+              <Link href="/online-classes" className="mt-4 inline-block text-sm font-bold text-brand-gold">
                 Book online lessons →
               </Link>
             </div>

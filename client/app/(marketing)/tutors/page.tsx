@@ -46,7 +46,7 @@ export default async function TutorsPage(props: Props) {
         align="left"
         image={{ src: "/hero/home-tutoring.jpg", alt: "Tutor working with a student at home" }}
       />
-      <div className="container-x pt-12 pb-16">
+      <div className="container-x pb-20 pt-16 md:pt-20">
         {!marketplaceEnabled && (
           <div className="mb-8 rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-5 text-sm text-ink-700">
             <strong>Managed matching mode:</strong> tell us what your learner needs and our

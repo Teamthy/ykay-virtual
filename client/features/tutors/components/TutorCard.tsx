@@ -22,7 +22,7 @@ export function TutorCard({ tutor }: { tutor: Tutor }) {
   const photo = portraitSrc(tutor);
 
   return (
-    <div className="relative isolate overflow-hidden rounded-2xl border border-ink-100 bg-white pb-4 transition duration-300 hover:-translate-y-1 hover:shadow-card">
+    <div className="relative z-0 overflow-hidden rounded-2xl border border-ink-100 bg-white pb-4 shadow-soft">
       <div className="relative h-52 w-full overflow-hidden bg-brand-navy">
         {photo ? (
           <Image

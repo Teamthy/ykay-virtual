@@ -31,7 +31,7 @@ export function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-lg rounded-2xl border border-ink-100 bg-white p-4 shadow-2xl dark:border-ink-700 dark:bg-ink-800">
+    <div className="fixed inset-x-4 bottom-16 z-30 mx-auto max-w-lg rounded-2xl border border-ink-100 bg-white p-4 shadow-2xl lg:bottom-4 dark:border-ink-700 dark:bg-ink-800">
       <p className="text-sm leading-6 text-ink-700 dark:text-ink-200">
         🍪 We use a session cookie to keep you signed in and a few preferences
         (theme, language).{" "}

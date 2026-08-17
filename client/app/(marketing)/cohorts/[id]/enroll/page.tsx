@@ -35,7 +35,7 @@ export default async function CohortEnrollPage(props: Props) {
         image={{ src: "/hero/utme.jpg", alt: "Students in a live NUVORA cohort class" }}
       />
 
-      <div className="container-x mx-auto max-w-2xl space-y-8 pt-14 pb-16">
+      <div className="container-x mx-auto max-w-2xl space-y-8 pb-20 pt-16 md:pt-20">
         <CheckoutClient cohort={cohort} />
         <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
           <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">What you get</h2>

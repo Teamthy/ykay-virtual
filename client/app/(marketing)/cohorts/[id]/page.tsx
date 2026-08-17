@@ -65,7 +65,7 @@ export default async function CohortDetailPage(props: Props) {
         image={{ src: "/hero/utme.jpg", alt: "Small-group live class with a NUVORA tutor" }}
       />
 
-      <div className="container-x grid items-start gap-10 pt-14 pb-16 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="container-x grid items-start gap-10 pb-20 pt-16 md:pt-20 lg:grid-cols-[1.1fr_0.9fr]">
         {/* Left: info + sessions */}
         <div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -112,7 +112,7 @@ export default async function CohortDetailPage(props: Props) {
         </div>
 
         {/* Right: enrol card */}
-        <div className="z-10 lg:sticky lg:top-32">
+        <div>
           <div className="card space-y-4 p-6">
             <div className="flex items-baseline justify-between gap-3">
               <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Enrol in this cohort</h2>
