@@ -10,6 +10,7 @@ import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 // Notifications — premium notification centre: list, unread indicator,
 // mark read / read-all.
@@ -24,11 +25,11 @@ type Notif = {
 };
 
 const TYPE_ICONS: Record<string, string> = {
-  LESSON_REMINDER: "⏰",
-  MESSAGE: "💬",
-  ASSIGNMENT: "📝",
-  PAYMENT: "💳",
-  SYSTEM: "🔔",
+  LESSON_REMINDER: "alarm-outline",
+  MESSAGE: "chatbubble-outline",
+  ASSIGNMENT: "create-outline",
+  PAYMENT: "card-outline",
+  SYSTEM: "notifications-outline",
 };
 
 export default function Notifications() {
@@ -123,7 +124,7 @@ export default function Notifications() {
               >
                 <View style={styles.cardTop}>
                   <View style={[styles.iconTile, !n.is_read && styles.iconTileUnread]}>
-                    <AppText style={{ fontSize: 18 }}>{TYPE_ICONS[n.type] ?? "🔔"}</AppText>
+                    <Ionicons name={(TYPE_ICONS[n.type] ?? "notifications-outline") as keyof typeof Ionicons.glyphMap} size={18} color={colors.navy} />
                   </View>
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <AppText variant="h3">{n.title}</AppText>
