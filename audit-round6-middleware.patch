@@ -1,0 +1,26 @@
+diff --git a/client/middleware.ts b/client/middleware.ts
+index 5495313..7888584 100644
+--- a/client/middleware.ts
++++ b/client/middleware.ts
+@@ -17,6 +17,13 @@ const PROTECTED_PREFIXES = [
+   "/onboarding",
+   "/admin",
+   "/checkout",
++  // A-25: saved (wishlist) and chat are authenticated surfaces. They were
++  // previously only guarded by a client-side redirect AFTER hydration, so an
++  // unauthenticated visitor got a 200 + page flash before being bounced to
++  // /login. Guarding at the middleware makes the redirect instant and keeps
++  // SSR from rendering an empty authenticated shell.
++  "/saved",
++  "/chat",
+ ];
+ 
+ export function middleware(req: NextRequest) {
+@@ -53,5 +60,7 @@ export const config = {
+     "/onboarding/:path*",
+     "/admin/:path*",
+     "/checkout/:path*",
++    "/saved/:path*",
++    "/chat/:path*",
+   ],
+ };

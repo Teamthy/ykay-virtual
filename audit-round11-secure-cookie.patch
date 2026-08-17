@@ -1,0 +1,178 @@
+diff --git a/client/app/onboarding/page.tsx b/client/app/onboarding/page.tsx
+index 7cb8ff8..9f904ac 100644
+--- a/client/app/onboarding/page.tsx
++++ b/client/app/onboarding/page.tsx
+@@ -869,7 +869,16 @@ function OnboardingInner() {
+       toast.success("Role saved");
+       go(4);
+     } catch (err) {
+-      setError(err instanceof Error ? err.message : "Could not save your role");
++      const msg = err instanceof Error ? err.message : "Could not save your role";
++      // A-28: if the session is missing/expired (401) the role can't be saved
++      // and retrying forever just shows a raw "not authenticated". Send the
++      // user back to login once instead of trapping them.
++      if (/authentication required|not authenticated|unauthorized/i.test(msg)) {
++        toast.error("Your session expired — please log in again.");
++        router.replace("/login");
++        return;
++      }
++      setError(msg);
+     } finally {
+       setSubmitting(false);
+     }
+diff --git a/internal/middleware/session.go b/internal/middleware/session.go
+index 1fed072..1a66216 100644
+--- a/internal/middleware/session.go
++++ b/internal/middleware/session.go
+@@ -109,27 +109,47 @@ func DefaultCookieConfig(secure bool) CookieConfig {
+ 	return CookieConfig{Name: "nuvora_session", Secure: secure, MaxAge: int((30 * 24 * time.Hour).Seconds()), Path: "/"}
+ }
+ 
+-func SetSessionCookie(w http.ResponseWriter, cfg CookieConfig, token string) {
++// requestIsHTTPS reports whether THIS request arrived over HTTPS, either
++// because TLS terminated at the server or because a trusted proxy stamped
++// X-Forwarded-Proto: https (Render/Vercel/nginx do). This is what decides the
++// cookie's Secure flag — NOT the environment alone.
++func requestIsHTTPS(r *http.Request) bool {
++	if r.TLS != nil {
++		return true
++	}
++	return strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
++}
++
++// SetSessionCookie writes the session cookie. The Secure flag is only applied
++// when cfg.Secure AND this request actually arrived over HTTPS. Setting
++// Secure unconditionally in production broke local / plain-HTTP setups: a
++// browser on http://… silently refuses to STORE a Secure cookie, so the
++// session never stuck and every authenticated call (POST /auth/me/role,
++// /auth/me, …) returned 401 "authentication required" even though login
++// succeeded (A-28).
++func SetSessionCookie(w http.ResponseWriter, r *http.Request, cfg CookieConfig, token string) {
++	secure := cfg.Secure && requestIsHTTPS(r)
+ 	http.SetCookie(w, &http.Cookie{
+ 		Name:     cfg.Name,
+ 		Value:    token,
+ 		Path:     cfg.Path,
+ 		MaxAge:   cfg.MaxAge,
+ 		HttpOnly: true,
+-		Secure:   cfg.Secure,
++		Secure:   secure,
+ 		SameSite: http.SameSiteLaxMode,
+ 		Domain:   strings.TrimPrefix(cfg.Domain, "https://"),
+ 	})
+ }
+ 
+-func ClearSessionCookie(w http.ResponseWriter, cfg CookieConfig) {
++func ClearSessionCookie(w http.ResponseWriter, r *http.Request, cfg CookieConfig) {
++	secure := cfg.Secure && requestIsHTTPS(r)
+ 	http.SetCookie(w, &http.Cookie{
+ 		Name:     cfg.Name,
+ 		Value:    "",
+ 		Path:     cfg.Path,
+ 		MaxAge:   -1,
+ 		HttpOnly: true,
+-		Secure:   cfg.Secure,
++		Secure:   secure,
+ 		SameSite: http.SameSiteLaxMode,
+ 	})
+ }
+diff --git a/internal/middleware/session_cookie_test.go b/internal/middleware/session_cookie_test.go
+new file mode 100644
+index 0000000..c4dea48
+--- /dev/null
++++ b/internal/middleware/session_cookie_test.go
+@@ -0,0 +1,33 @@
++package middleware
++
++import (
++	"crypto/tls"
++	"net/http"
++	"net/http/httptest"
++	"testing"
++
++	"github.com/stretchr/testify/assert"
++)
++
++func TestRequestIsHTTPS(t *testing.T) {
++	assert.True(t, requestIsHTTPS(&http.Request{TLS: &tls.ConnectionState{}}), "TLS => https")
++	assert.True(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"https"}}}))
++	assert.True(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"HTTPS"}}}))
++	assert.False(t, requestIsHTTPS(&http.Request{}), "no TLS, no XFP => http")
++	assert.False(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"http"}}}))
++	assert.False(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{""}}}))
++}
++
++// A-28: in production over plain HTTP (e.g. a locally-run API behind
++// http://localhost), the session cookie MUST NOT carry the Secure flag, or the
++// browser drops it and every authenticated call 401s.
++func TestSetSessionCookie_SecureFollowsRequest(t *testing.T) {
++	cfg := CookieConfig{Name: "nuvora_session", Secure: true, MaxAge: 60, Path: "/"}
++	rr := httptest.NewRecorder()
++	SetSessionCookie(rr, &http.Request{}, cfg, "tok")
++	assert.False(t, rr.Result().Cookies()[0].Secure, "plain-HTTP request must NOT set Secure")
++
++	rr2 := httptest.NewRecorder()
++	SetSessionCookie(rr2, &http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"https"}}}, cfg, "tok")
++	assert.True(t, rr2.Result().Cookies()[0].Secure, "https request MUST set Secure")
++}
+diff --git a/internal/transport/http/account_handler.go b/internal/transport/http/account_handler.go
+index 4aa4e7d..7cf9cf6 100644
+--- a/internal/transport/http/account_handler.go
++++ b/internal/transport/http/account_handler.go
+@@ -80,6 +80,6 @@ func (h *AccountHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+ 		WriteAppError(w, err)
+ 		return
+ 	}
+-	middleware.ClearSessionCookie(w, middleware.DefaultCookieConfig(false))
++	middleware.ClearSessionCookie(w, r, middleware.DefaultCookieConfig(false))
+ 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"deleted": true}, nil)
+ }
+diff --git a/internal/transport/http/auth_handler.go b/internal/transport/http/auth_handler.go
+index 691f1a5..2e0ec9a 100644
+--- a/internal/transport/http/auth_handler.go
++++ b/internal/transport/http/auth_handler.go
+@@ -117,7 +117,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+ 		WriteAppError(w, err)
+ 		return
+ 	}
+-	middleware.SetSessionCookie(w, h.cfg, token)
++	middleware.SetSessionCookie(w, r, h.cfg, token)
+ 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
+ }
+ 
+@@ -156,7 +156,7 @@ func (h *AuthHandler) ConfirmLoginCode(w http.ResponseWriter, r *http.Request) {
+ 		WriteAppError(w, err)
+ 		return
+ 	}
+-	middleware.SetSessionCookie(w, h.cfg, token)
++	middleware.SetSessionCookie(w, r, h.cfg, token)
+ 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
+ }
+ 
+@@ -190,7 +190,7 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
+ 		WriteAppError(w, err)
+ 		return
+ 	}
+-	middleware.SetSessionCookie(w, h.cfg, token)
++	middleware.SetSessionCookie(w, r, h.cfg, token)
+ 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
+ }
+ 
+@@ -203,7 +203,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+ 		_ = h.svc.Logout(r.Context(), hashToken(raw))
+ 		middleware.InvalidateRawToken(raw)
+ 	}
+-	middleware.ClearSessionCookie(w, h.cfg)
++	middleware.ClearSessionCookie(w, r, h.cfg)
+ 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"logged_out": true}, nil)
+ }
+ 
+@@ -302,7 +302,7 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+ 		middleware.InvalidateRawToken(cookie.Value)
+ 	}
+ 	if newToken != "" {
+-		middleware.SetSessionCookie(w, h.cfg, newToken)
++		middleware.SetSessionCookie(w, r, h.cfg, newToken)
+ 	}
+ 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"changed": true}, nil)
+ }

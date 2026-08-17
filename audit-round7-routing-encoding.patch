@@ -1,0 +1,132 @@
+diff --git a/client/middleware.ts b/client/middleware.ts
+index 5495313..d502f23 100644
+--- a/client/middleware.ts
++++ b/client/middleware.ts
+@@ -6,6 +6,15 @@ import { NextRequest, NextResponse } from "next/server";
+ 
+ // Authenticated surfaces. Any page here requires a session; unauthenticated
+ // visitors are sent to /login with a `next` return target.
++//
++// NOTE: /onboarding (the exact path) is the PUBLIC create-account entry — its
++// step 1 registers the account, so it must be reachable WITHOUT a session.
++// Previously "/onboarding" was in this list, which made the flow
++// /register → /onboarding → (no session) → /login: clicking "Create an
++// account" bounced straight back to the login page, users could never create
++// an account, and — because no account could ever be onboarded — login kept
++// sending every user to the wizard instead of their dashboard. The post-login
++// steps (/onboarding/wizard and /onboarding/learner) stay protected.
+ const PROTECTED_PREFIXES = [
+   "/dashboard",
+   "/student-dashboard",
+@@ -14,9 +23,17 @@ const PROTECTED_PREFIXES = [
+   "/account",
+   "/messages",
+   "/notifications",
+-  "/onboarding",
++  "/onboarding/wizard",
++  "/onboarding/learner",
+   "/admin",
+   "/checkout",
++  // A-25: saved (wishlist) and chat are authenticated surfaces. They were
++  // previously only guarded by a client-side redirect AFTER hydration, so an
++  // unauthenticated visitor got a 200 + page flash before being bounced to
++  // /login. Guarding at the middleware makes the redirect instant and keeps
++  // SSR from rendering an empty authenticated shell.
++  "/saved",
++  "/chat",
+ ];
+ 
+ export function middleware(req: NextRequest) {
+@@ -50,8 +67,11 @@ export const config = {
+     "/account/:path*",
+     "/messages/:path*",
+     "/notifications/:path*",
+-    "/onboarding/:path*",
++    "/onboarding/wizard/:path*",
++    "/onboarding/learner/:path*",
+     "/admin/:path*",
+     "/checkout/:path*",
++    "/saved/:path*",
++    "/chat/:path*",
+   ],
+ };
+diff --git a/scripts/fix-mojibake.sql b/scripts/fix-mojibake.sql
+new file mode 100644
+index 0000000..c9b019b
+--- /dev/null
++++ b/scripts/fix-mojibake.sql
+@@ -0,0 +1,40 @@
++-- =============================================================================
++-- NUVORA — one-time data repair: un-corrupt mojibake'd em dashes (2026-08-16)
++--
++-- WHAT HAPPENED
++--   scripts/seed-prod-demo.sql contains proper UTF-8 em dashes ("—") in four
++--   columns (programmes.title, cohorts.title, lessons.title, blog_posts.title).
++--   It was applied with `psql -f` on Windows, whose default client encoding is
++--   WIN1252, so the UTF-8 bytes of "—" (E2 80 94) were mis-decoded and stored
++--   as "â€”" (â = U+00E2, € = U+20AC, ” = U+201D). Every page rendering those
++--   titles shows "â€”" instead of "—".
++--
++-- WHAT THIS DOES
++--   Replaces the corrupted 3-character sequence with the real em dash, using
++--   chr() so this file is pure ASCII and can NEVER itself be corrupted by a
++--   wrong client encoding. Idempotent: re-running it does nothing once the
++--   corrupted rows are fixed.
++--
++-- RUN (from the repo root, or anywhere you can reach the Render DB):
++--   psql "$DATABASE_URL" -f scripts/fix-mojibake.sql
++-- (Set PGCLIENTENCODING=UTF8 if you're on Windows — though this file is
++--  ASCII-only, so it's safe either way.)
++
++SET client_encoding = 'UTF8';
++
++-- 'â€”'  = chr(226) || chr(8364) || chr(8221)   (â  €  ”)
++-- '—'    = chr(8212)
++BEGIN;
++
++UPDATE programmes  SET title = replace(title, chr(226)||chr(8364)||chr(8221), chr(8212)) WHERE title LIKE '%'||chr(226)||'%';
++UPDATE cohorts     SET title = replace(title, chr(226)||chr(8364)||chr(8221), chr(8212)) WHERE title LIKE '%'||chr(226)||'%';
++UPDATE lessons     SET title = replace(title, chr(226)||chr(8364)||chr(8221), chr(8212)) WHERE title LIKE '%'||chr(226)||'%';
++UPDATE blog_posts  SET title = replace(title, chr(226)||chr(8364)||chr(8221), chr(8212)) WHERE title LIKE '%'||chr(226)||'%';
++
++COMMIT;
++
++-- Verification: should return 0 rows.
++SELECT 'programmes' AS tbl, count(*) AS still_corrupted FROM programmes WHERE title LIKE '%'||chr(226)||'%'
++UNION ALL SELECT 'cohorts', count(*) FROM cohorts WHERE title LIKE '%'||chr(226)||'%'
++UNION ALL SELECT 'lessons', count(*) FROM lessons WHERE title LIKE '%'||chr(226)||'%'
++UNION ALL SELECT 'blog_posts', count(*) FROM blog_posts WHERE title LIKE '%'||chr(226)||'%';
+diff --git a/scripts/seed-prod-demo.sql b/scripts/seed-prod-demo.sql
+index 994164e..73f3464 100644
+--- a/scripts/seed-prod-demo.sql
++++ b/scripts/seed-prod-demo.sql
+@@ -14,6 +14,13 @@
+ -- Safe to re-run.
+ -- =============================================================================
+ 
++-- Windows encoding guard: psql on Windows defaults its client encoding to the
++-- console code page (WIN1252). Applying this UTF-8 file under WIN1252 corrupts
++-- every non-ASCII character (the em dash "—" becomes "â€" + '"' in the DB and
++-- renders as mojibake across the whole site). This forces UTF-8 decoding for
++-- the rest of the file. (Alternative: run with PGCLIENTENCODING=UTF8.)
++SET client_encoding = 'UTF8';
++
+ BEGIN;
+ 
+ -- ── 1. Demo users (safe: randomized passwords, no default creds) ────────────
+diff --git a/scripts/seed-refs.sql b/scripts/seed-refs.sql
+index c51a55d..ae4d6ef 100644
+--- a/scripts/seed-refs.sql
++++ b/scripts/seed-refs.sql
+@@ -4,6 +4,11 @@
+ -- Run after `make migrate` on a fresh database, before scripts/e2e.sh.
+ -- Dev/demo data only — never run against production.
+ 
++-- Windows encoding guard: forces UTF-8 decoding (psql on Windows defaults to
++-- WIN1252, which corrupts non-ASCII characters in this file). Keep this as
++-- the first statement. (Alternative: run with PGCLIENTENCODING=UTF8.)
++SET client_encoding = 'UTF8';
++
+ -- Subjects: migrations pre-seed them (random UUIDs); the e2e suite resolves
+ -- the Mathematics subject id dynamically, so nothing to do here.
+ 

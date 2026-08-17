@@ -2,298 +2,1184 @@
 @tailwind components;
 @tailwind utilities;
 
+/* stylelint-disable-next-line at-rule-no-unknown */
+@layer base, components, utilities;
+
 /* ============================================================
-   NUVORA DESIGN SYSTEM — green / deep-green / black / peach
+   NUVORA DESIGN SYSTEM
+   Green / Deep Green / Black / Peach
+   Typography: Anton + DM Sans
    ============================================================ */
+
+
+/* ============================================================
+   1. DESIGN TOKENS
+   ============================================================ */
+
 :root {
+  /* ----------------------------------------------------------
+     Typography
+     ---------------------------------------------------------- */
+
   --font-display: "Anton", system-ui, sans-serif;
   --font-body: "DM Sans", system-ui, sans-serif;
+
+
+  /* ----------------------------------------------------------
+     Brand Colors
+     ---------------------------------------------------------- */
 
   --color-primary: #70F250;
   --color-primary-hover: #5FE63F;
   --color-primary-dark: #4CCB31;
   --color-primary-light: #DFFFF2;
 
-  --color-background: #FFF7E4;
-  --color-background-soft: #FFF7E4;
-  --color-background-muted: #F8EBCF;
+  --color-deep-green: #013920;
+  --color-deep-green-light: #0A4D32;
+  --color-deep-green-dark: #002A18;
+
+  --color-black: #000000;
   --color-white: #FFFFFF;
+
+  --color-peach: #FFF7E4;
+  --color-peach-dark: #F8EBCF;
+
+
+  /* ----------------------------------------------------------
+     Backgrounds
+     ---------------------------------------------------------- */
+
+  --color-background: #FFF7E4;
+  --color-background-soft: #FFFFFF;
+  --color-background-muted: #F8EBCF;
+
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F8EBCF;
+  --color-surface-dark: #013920;
+
+
+  /* ----------------------------------------------------------
+     Text
+     ---------------------------------------------------------- */
 
   --color-text: #000000;
   --color-text-primary: #000000;
   --color-text-secondary: #013920;
   --color-text-muted: #52645B;
+
   --color-text-on-primary: #000000;
+  --color-text-on-dark: #FFFFFF;
+
+
+  /* ----------------------------------------------------------
+     Borders
+     ---------------------------------------------------------- */
 
   --color-border: #DCE5DE;
   --color-border-light: #EDE8DC;
+  --color-border-dark: #285442;
+
+
+  /* ----------------------------------------------------------
+     Semantic Colors
+     ---------------------------------------------------------- */
 
   --color-success: #4CCB31;
   --color-success-light: #E6FFDE;
+
   --color-error: #D83A3A;
   --color-error-light: #FDECEC;
+
   --color-warning: #F4B400;
   --color-warning-light: #FFF3C4;
+
   --color-info: #013920;
   --color-info-light: #DFFFF2;
 
-  --text-primary: #000000;
-  --text-secondary: #013920;
-  --text-muted: #52645B;
-  --text-link: #013920;
-  --text-link-hover: #4CCB31;
 
-  --shadow-sm: 0 2px 8px rgba(1, 57, 32, 0.06);
-  --shadow-md: 0 8px 24px rgba(1, 57, 32, 0.10);
-  --shadow-lg: 0 16px 40px rgba(1, 57, 32, 0.14);
+  /* ----------------------------------------------------------
+     Legacy aliases
+     ----------------------------------------------------------
+     These allow older components to continue working while
+     gradually migrating to the Nuvora naming convention.
+     ---------------------------------------------------------- */
+
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --text-link: var(--color-deep-green);
+  --text-link-hover: var(--color-primary-dark);
+
+
+  /* ----------------------------------------------------------
+     Shadows
+     ---------------------------------------------------------- */
+
+  --shadow-sm:
+    0 2px 8px rgba(1, 57, 32, 0.06);
+
+  --shadow-md:
+    0 8px 24px rgba(1, 57, 32, 0.10);
+
+  --shadow-lg:
+    0 16px 40px rgba(1, 57, 32, 0.14);
+
+  --shadow-xl:
+    0 24px 60px rgba(1, 57, 32, 0.18);
+
+
+  /* ----------------------------------------------------------
+     Border Radius
+     ---------------------------------------------------------- */
 
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-xl: 28px;
   --radius-full: 9999px;
+
+
+  /* ----------------------------------------------------------
+     Layout
+     ---------------------------------------------------------- */
+
+  --container-width: 1400px;
+  --container-padding: 24px;
 }
 
 
+/* ============================================================
+   2. BASE RESET
+   ============================================================ */
+
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-  body {
-    @apply font-sans text-ink-900 bg-surface antialiased;
-    background: var(--color-background);
-    color: var(--color-text);
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
-  /* Typography defaults (Tuteria brand) */
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+
+    background-color: var(--color-background);
+    color: var(--color-text);
+
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+
+  /* ----------------------------------------------------------
+     Typography
+     ---------------------------------------------------------- */
+
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: var(--font-display), system-ui, sans-serif;
-    color: var(--text-primary, #001028);
-    line-height: 1.1;
-    letter-spacing: 0.02em;
+    margin: 0;
+
+    font-family: var(--font-display);
+
+    color: var(--color-text-primary);
+
     font-weight: 400;
-    font-synthesis: none; /* Anton is a single-weight face — no fake bold */
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+
+    font-synthesis: none;
+    text-wrap: balance;
   }
 
+
+  h1 {
+    font-size: clamp(3rem, 7vw, 7rem);
+  }
+
+
+  h2 {
+    font-size: clamp(2.5rem, 5vw, 5rem);
+  }
+
+
+  h3 {
+    font-size: clamp(2rem, 3.5vw, 3.5rem);
+  }
+
+
+  h4 {
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  }
+
+
+  h5 {
+    font-size: 1.5rem;
+  }
+
+
+  h6 {
+    font-size: 1.25rem;
+  }
+
+
   p {
-    color: var(--text-secondary, #4A5568);
+    margin: 0;
+
+    color: var(--color-text-secondary);
+
+    font-family: var(--font-body);
     line-height: 1.7;
   }
 
-  a {
-    color: var(--text-link, #056FD2);
-    text-decoration: none;
-    transition: color 0.2s ease;
+
+  strong,
+  b {
+    font-weight: 700;
   }
+
+
+  a {
+    color: var(--color-deep-green);
+    text-decoration: none;
+
+    transition:
+      color 0.2s ease,
+      opacity 0.2s ease;
+  }
+
 
   a:hover {
-    color: var(--text-link-hover, #194F82);
+    color: var(--color-primary-dark);
   }
 
+
+  /* ----------------------------------------------------------
+     Forms
+     ---------------------------------------------------------- */
+
+  button,
+  input,
+  textarea,
+  select {
+    margin: 0;
+
+    font: inherit;
+  }
+
+
   button {
-    font-family: var(--font-body), system-ui, sans-serif;
     cursor: pointer;
   }
+
 
   button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }
 
+
+  input,
+  textarea,
+  select {
+    color: var(--color-text);
+  }
+
+
+  textarea {
+    resize: vertical;
+  }
+
+
+  /* ----------------------------------------------------------
+     Media
+     ---------------------------------------------------------- */
+
   img,
+  picture,
   video,
+  canvas,
   svg {
-    max-width: 100%;
-    height: auto;
     display: block;
+    max-width: 100%;
+  }
+
+
+  img,
+  video {
+    height: auto;
+  }
+
+
+  /* ----------------------------------------------------------
+     Lists
+     ---------------------------------------------------------- */
+
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+
+  /* ----------------------------------------------------------
+     Selection
+     ---------------------------------------------------------- */
+
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-black);
+  }
+
+
+  /* ----------------------------------------------------------
+     Scrollbar
+     ---------------------------------------------------------- */
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-peach);
+  }
+
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-deep-green);
+    border-radius: var(--radius-full);
+  }
+
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-dark);
   }
 }
 
-@layer components {
-  .container-x {
-    @apply max-w-[1400px] mx-auto px-6 md:px-10;
+
+/* ============================================================
+   3. TYPOGRAPHY UTILITIES
+   ============================================================ */
+
+@layer utilities {
+
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-synthesis: none;
   }
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold transition-all;
-    background: var(--color-primary);
-    color: var(--color-text-on-primary);
+
+
+  .font-body {
+    font-family: var(--font-body);
   }
-  .btn-primary:hover {
-    background: var(--color-primary-hover);
-    transform: translateY(-1px);
+
+
+  .text-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.025em;
   }
-  .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold transition-all;
-    background: var(--color-primary);
-    color: var(--color-text-on-primary);
+
+
+  .text-balance {
+    text-wrap: balance;
   }
-  .btn-gold:hover {
-    background: var(--color-primary-hover);
-    transform: translateY(-1px);
-  }
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold transition-all;
-    background: transparent;
-    color: var(--color-text);
-    border: 1.5px solid var(--color-text);
-  }
-  .btn-white {
-    @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-white text-ink-800 font-bold text-sm transition-all hover:-translate-y-0.5 hover:shadow-lift;
-  }
-  .btn-outline-white {
-    @apply inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white text-brand-blue font-bold text-sm transition-all hover:-translate-y-0.5 hover:shadow-lift;
-  }
-  .tag-handwritten {
-    @apply font-bold text-brand-gold-dark;
-    font-size: 26px;
-  }
-  .grid-dots {
-    background-image: radial-gradient(circle at 15% 25%, rgba(255,255,255,0.06) 2px, transparent 2px),
-                      radial-gradient(circle at 85% 75%, rgba(255,255,255,0.04) 3px, transparent 3px);
-    background-size: 80px 80px, 100px 100px;
+
+
+  .text-pretty {
+    text-wrap: pretty;
   }
 }
-/* --- Motion system (phase 18): scroll reveals + micro-entrances --- */
+
+
+/* ============================================================
+   4. LAYOUT COMPONENTS
+   ============================================================ */
+
+@layer components {
+
+  .container-x {
+    width: 100%;
+    max-width: var(--container-width);
+
+    margin-left: auto;
+    margin-right: auto;
+
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+  }
+
+
+  /* ----------------------------------------------------------
+     Section containers
+     ---------------------------------------------------------- */
+
+  .section {
+    width: 100%;
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+
+
+  .section-sm {
+    width: 100%;
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+
+
+  .section-lg {
+    width: 100%;
+    padding-top: 128px;
+    padding-bottom: 128px;
+  }
+
+
+  /* ----------------------------------------------------------
+     Page backgrounds
+     ---------------------------------------------------------- */
+
+  .section-peach {
+    background: var(--color-peach);
+    color: var(--color-black);
+  }
+
+
+  .section-green {
+    background: var(--color-primary);
+    color: var(--color-black);
+  }
+
+
+  .section-dark-green {
+    background: var(--color-deep-green);
+    color: var(--color-white);
+  }
+
+
+  .section-black {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+
+  .section-white {
+    background: var(--color-white);
+    color: var(--color-black);
+  }
+}
+
+
+/* ============================================================
+   5. BUTTON SYSTEM
+   ============================================================ */
+
+@layer components {
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 14px 24px;
+
+    background: var(--color-primary);
+    color: var(--color-black);
+
+    border: 1.5px solid var(--color-primary);
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+
+  .btn-primary:hover {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+  }
+
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+
+  /* ----------------------------------------------------------
+     Deep Green
+     ---------------------------------------------------------- */
+
+  .btn-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 14px 24px;
+
+    background: var(--color-deep-green);
+    color: var(--color-white);
+
+    border: 1.5px solid var(--color-deep-green);
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+
+  .btn-dark:hover {
+    background: var(--color-deep-green-light);
+    border-color: var(--color-deep-green-light);
+
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+  }
+
+
+  /* ----------------------------------------------------------
+     Black
+     ---------------------------------------------------------- */
+
+  .btn-black {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 14px 24px;
+
+    background: var(--color-black);
+    color: var(--color-white);
+
+    border: 1.5px solid var(--color-black);
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+
+  .btn-black:hover {
+    background: #171717;
+
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+  }
+
+
+  /* ----------------------------------------------------------
+     Outline
+     ---------------------------------------------------------- */
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 13px 23px;
+
+    background: transparent;
+    color: var(--color-black);
+
+    border: 1.5px solid var(--color-black);
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+
+  .btn-outline:hover {
+    background: var(--color-black);
+    color: var(--color-white);
+
+    transform: translateY(-1px);
+  }
+
+
+  /* ----------------------------------------------------------
+     White
+     ---------------------------------------------------------- */
+
+  .btn-white {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 14px 24px;
+
+    background: var(--color-white);
+    color: var(--color-black);
+
+    border: 1.5px solid var(--color-white);
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+
+  .btn-white:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+
+  /* ----------------------------------------------------------
+     White outline
+     ---------------------------------------------------------- */
+
+  .btn-outline-white {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 13px 23px;
+
+    background: transparent;
+    color: var(--color-white);
+
+    border: 1.5px solid var(--color-white);
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+
+  .btn-outline-white:hover {
+    background: var(--color-white);
+    color: var(--color-black);
+
+    transform: translateY(-1px);
+  }
+
+
+  /* ----------------------------------------------------------
+     Legacy alias
+     ----------------------------------------------------------
+     Keep .btn-gold temporarily so existing components do not
+     break. It now uses Nuvora green.
+     ---------------------------------------------------------- */
+
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    padding: 14px 24px;
+
+    background: var(--color-primary);
+    color: var(--color-black);
+
+    border: 1.5px solid var(--color-primary);
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+
+    transition: all 0.2s ease;
+  }
+
+
+  .btn-gold:hover {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+
+    transform: translateY(-2px);
+  }
+}
+
+
+/* ============================================================
+   6. CARD SYSTEM
+   ============================================================ */
+
+@layer components {
+
+  .card {
+    background: var(--color-white);
+    color: var(--color-black);
+
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+
+    box-shadow: var(--shadow-sm);
+  }
+
+
+  .card-green {
+    background: var(--color-primary);
+    color: var(--color-black);
+
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+  }
+
+
+  .card-dark-green {
+    background: var(--color-deep-green);
+    color: var(--color-white);
+
+    border: 1px solid var(--color-deep-green);
+    border-radius: var(--radius-lg);
+  }
+
+
+  .card-black {
+    background: var(--color-black);
+    color: var(--color-white);
+
+    border: 1px solid var(--color-black);
+    border-radius: var(--radius-lg);
+  }
+
+
+  .card-peach {
+    background: var(--color-peach);
+    color: var(--color-deep-green);
+
+    border: 1px solid var(--color-peach-dark);
+    border-radius: var(--radius-lg);
+  }
+
+
+  .card-hover {
+    transition:
+      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.3s ease;
+  }
+
+
+  .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+
+/* ============================================================
+   7. FORM SYSTEM
+   ============================================================ */
+
+@layer components {
+
+  .input {
+    width: 100%;
+
+    padding: 14px 16px;
+
+    background: var(--color-white);
+    color: var(--color-black);
+
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+
+    outline: none;
+
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+
+  .input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+
+  .input:hover {
+    border-color: var(--color-border-dark);
+  }
+
+
+  .input:focus {
+    border-color: var(--color-primary-dark);
+
+    box-shadow:
+      0 0 0 3px rgba(112, 242, 80, 0.25);
+  }
+
+
+  .input-error {
+    border-color: var(--color-error);
+  }
+
+
+  .input-error:focus {
+    border-color: var(--color-error);
+
+    box-shadow:
+      0 0 0 3px rgba(216, 58, 58, 0.15);
+  }
+}
+
+
+/* ============================================================
+   8. BADGES / LABELS
+   ============================================================ */
+
+@layer components {
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px 12px;
+
+    border-radius: var(--radius-full);
+
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+
+  .badge-green {
+    background: var(--color-primary);
+    color: var(--color-black);
+  }
+
+
+  .badge-dark {
+    background: var(--color-deep-green);
+    color: var(--color-white);
+  }
+
+
+  .badge-black {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+
+  .badge-peach {
+    background: var(--color-peach-dark);
+    color: var(--color-deep-green);
+  }
+
+
+  .tag-handwritten {
+    font-family: var(--font-body);
+    color: var(--color-deep-green);
+
+    font-size: 26px;
+    font-weight: 700;
+  }
+}
+
+
+/* ============================================================
+   9. DECORATIVE UTILITIES
+   ============================================================ */
+
+@layer components {
+
+  .grid-dots {
+    background-image:
+      radial-gradient(circle at 15% 25%,
+        rgba(255, 255, 255, 0.08) 2px,
+        transparent 2px),
+      radial-gradient(circle at 85% 75%,
+        rgba(255, 255, 255, 0.05) 3px,
+        transparent 3px);
+
+    background-size:
+      80px 80px,
+      100px 100px;
+  }
+
+
+  .grid-dots-dark {
+    background-image:
+      radial-gradient(circle at 15% 25%,
+        rgba(1, 57, 32, 0.08) 2px,
+        transparent 2px),
+      radial-gradient(circle at 85% 75%,
+        rgba(1, 57, 32, 0.05) 3px,
+        transparent 3px);
+
+    background-size:
+      80px 80px,
+      100px 100px;
+  }
+}
+
+
+/* ============================================================
+   10. MOTION SYSTEM
+   ============================================================ */
+
 @layer utilities {
+
   .reveal {
     opacity: 0;
+
     transform: translateY(18px);
+
     transition:
       opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
       transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
     will-change: opacity, transform;
   }
+
+
   .reveal-visible {
     opacity: 1;
     transform: translateY(0);
   }
+
+
   .animate-hero-in {
-    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation:
+      heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
+
+
   .animate-hero-in-late {
-    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+    animation:
+      heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
   }
+
+
   .animate-float {
     animation: floatY 5s ease-in-out infinite;
   }
+
+
   .hover-lift {
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s ease;
   }
+
+
   .hover-lift:hover {
     transform: translateY(-4px);
   }
 }
 
+
+/* ============================================================
+   11. KEYFRAMES
+   ============================================================ */
+
 @keyframes heroIn {
+
   from {
     opacity: 0;
     transform: translateY(22px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
+
 }
 
+
 @keyframes floatY {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-9px);
   }
+
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .animate-hero-in,
-  .animate-hero-in-late,
-  .animate-float {
-    animation: none !important;
-    transition: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-  html {
-    scroll-behavior: auto;
-  }
+
+/* ============================================================
+   12. ACCESSIBILITY
+   ============================================================ */
+
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
 }
 
-@layer components {
-  .card {
-    background: var(--color-white);
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-  }
-  .section-accent {
-    background: var(--color-primary);
-    color: var(--color-text);
-  }
-  .section-dark {
-    background: var(--color-text);
-    color: var(--color-white);
-  }
-  .input {
-    width: 100%;
-    background: var(--color-white);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 14px 16px;
-    font-family: var(--font-body);
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  .input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-light);
-  }
-}
 
-/* ── Dark mode (P2) ────────────────────────────────────────────────────────
-   The app's utility classes use fixed hex tokens (bg-[#FFFCF5], bg-white,
-   text-ink-*…). A full token migration is a follow-up; these targeted
-   overrides cover every page's chrome (backgrounds, cards, text, borders)
-   so dark mode works platform-wide today. */
+/* ============================================================
+   13. DARK MODE
+   ============================================================
+   
+   Dark mode stays within the Nuvora brand system.
+   No blue/slate palette.
+   ============================================================ */
 
 html.dark {
   color-scheme: dark;
 }
 
+
 html.dark body {
-  background-color: #0B1220;
-  color: #E5E7EB;
+  background: var(--color-black);
+  color: var(--color-white);
 }
 
-html.dark .bg-\[\#FFFCF5\],
-html.dark .bg-\[\#FFF8E8\],
-html.dark .bg-\[\#F7F5EF\] {
-  background-color: #0B1220;
-}
+
+/* Backgrounds */
 
 html.dark .bg-white {
-  background-color: #141C2E;
+  background-color: #111111;
 }
 
-html.dark .bg-surface-muted {
-  background-color: #1A2337;
+
+html.dark .bg-\[\#FFF7E4\] {
+  background-color: #0A2116;
 }
 
-html.dark .text-ink-900 { color: #F3F4F6; }
-html.dark .text-ink-800 { color: #E5E7EB; }
-html.dark .text-ink-700 { color: #D1D5DB; }
-html.dark .text-ink-600 { color: #9CA3AF; }
-html.dark .text-ink-500 { color: #9CA3AF; }
-html.dark .text-ink-400 { color: #6B7280; }
 
-html.dark .border-ink-100 { border-color: #243049; }
-html.dark .border-ink-200 { border-color: #2E3B57; }
-html.dark .border-ink-300 { border-color: #3B4A6B; }
+/* Surfaces */
+
+html.dark .card {
+  background: #111111;
+  border-color: #1F4A36;
+}
+
+
+html.dark .card-peach {
+  background: #10281C;
+  border-color: #1F4A36;
+}
+
+
+/* Text */
+
+html.dark .text-ink-900 {
+  color: #FFFFFF;
+}
+
+
+html.dark .text-ink-800 {
+  color: #F3F5F4;
+}
+
+
+html.dark .text-ink-700 {
+  color: #D7E0DB;
+}
+
+
+html.dark .text-ink-600 {
+  color: #B1C0B8;
+}
+
+
+html.dark .text-ink-500 {
+  color: #91A49A;
+}
+
+
+html.dark .text-ink-400 {
+  color: #71857A;
+}
+
+
+/* Borders */
+
+html.dark .border-ink-100 {
+  border-color: #173B2A;
+}
+
+
+html.dark .border-ink-200 {
+  border-color: #214C37;
+}
+
+
+html.dark .border-ink-300 {
+  border-color: #2D6148;
+}
+
+
+/* Shadows */
 
 html.dark .shadow-sm,
 html.dark .shadow-md,
@@ -301,25 +1187,106 @@ html.dark .shadow-lg,
 html.dark .shadow-soft,
 html.dark .shadow-card,
 html.dark .shadow-lift {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
-html.dark .bg-ink-50 { background-color: #1A2337; }
-html.dark .bg-ink-100 { background-color: #243049; }
-html.dark .bg-ink-200 { background-color: #2E3B57; }
 
-/* Focus visibility (a11y) — visible everywhere, not just keyboard-tabbed */
-:focus-visible {
-  outline: 3px solid rgba(244, 180, 0, 0.7);
-  outline-offset: 2px;
+/* Legacy utility backgrounds */
+
+html.dark .bg-ink-50 {
+  background-color: #10281C;
 }
 
-/* Reduced motion (a11y) */
+
+html.dark .bg-ink-100 {
+  background-color: #173B2A;
+}
+
+
+html.dark .bg-ink-200 {
+  background-color: #214C37;
+}
+
+
+/* ============================================================
+   14. REDUCED MOTION
+   ============================================================ */
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+
+  .reveal,
+  .animate-hero-in,
+  .animate-hero-in-late,
+  .animate-float {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* ============================================================
+   15. RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+
+@media (min-width: 768px) {
+
+  :root {
+    --container-padding: 40px;
+  }
+
+}
+
+
+@media (min-width: 1280px) {
+
+  :root {
+    --container-padding: 48px;
+  }
+
+}
+
+
+@media (max-width: 767px) {
+
+  .section {
+    padding-top: 72px;
+    padding-bottom: 72px;
+  }
+
+
+  .section-sm {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+
+  .section-lg {
+    padding-top: 88px;
+    padding-bottom: 88px;
+  }
+
+
+  .container-x {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
 }
