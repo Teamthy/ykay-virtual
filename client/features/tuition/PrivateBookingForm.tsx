@@ -79,7 +79,6 @@ export function PrivateBookingForm({
     try {
       const idem = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `pk-${Date.now()}`;
       const booking = await createPrivateBooking({
-        parent_user_id: user.id,
         student_id: studentId,
         tutor_profile_id: tutorProfileId,
         subject_id: subjectId,

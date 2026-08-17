@@ -82,6 +82,22 @@ describe("session-resolved portal API (G1)", () => {
     expect(body.parent_user_id).toBeUndefined();
     expect(body.student_id).toBe("0f9cd9a2-92be-4e6c-8e5c-0a5c2ce4a111");
   });
+
+  it("private booking body carries no parent_user_id or price (session + rate card)", async () => {
+    const { createPrivateBooking } = await import("@/features/bookings/api/create");
+    await createPrivateBooking({
+      student_id: "0f9cd9a2-92be-4e6c-8e5c-0a5c2ce4a111",
+      tutor_profile_id: "t-1",
+      subject_id: "s-1",
+      total_sessions: 4,
+      session_duration_minutes: 60,
+      idempotency_key: "k-2",
+    });
+    const body = JSON.parse(String(calls[0].init?.body));
+    expect(body.parent_user_id).toBeUndefined();
+    expect(body.price_per_session).toBeUndefined();
+    expect(body.type).toBe("PRIVATE");
+  });
 });
 
 describe("no fixture UUIDs remain in client source", () => {

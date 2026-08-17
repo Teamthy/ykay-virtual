@@ -26,7 +26,6 @@ export async function createCohortBooking(params: CreateCohortBookingParams): Pr
 }
 
 export type CreatePrivateBookingParams = {
-  parent_user_id: string;
   student_id: string;
   tutor_profile_id: string;
   subject_id: string;
@@ -37,7 +36,7 @@ export type CreatePrivateBookingParams = {
   idempotency_key: string;
 };
 
-/** Creates a private tuition package + order (transactional). */
+/** Creates a private tuition package + order. Payer is the session user. */
 export async function createPrivateBooking(params: CreatePrivateBookingParams): Promise<BookingResponse> {
   const res = await apiFetch<BookingResponse>("/bookings", {
     method: "POST",
