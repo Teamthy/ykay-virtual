@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 
 // Contact / support — creates a real support ticket (POST /support/tickets)
@@ -62,8 +61,6 @@ export default function ContactPage() {
 
   return (
     <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Contact / Support" }]} />
-
       <PageHero
         eyebrow="We&apos;re here to help"
         title="Contact & Support"

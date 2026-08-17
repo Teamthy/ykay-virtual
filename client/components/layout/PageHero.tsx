@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// PageHero — the PrebuiltUI hero template, applied to EVERY non-home page
-// (the HOMEPAGE keeps its own image slider). Matches the reference template
-// exactly: grid background, Poppins type, optional announcement pill, oversized
-// headline, subtitle and a CTA row. The app's global Header/MobileNav render
-// separately (the template's own nav is NOT duplicated here).
+// PageHero — the UNIFORM hero for every non-home page. Self-contained: the
+// background is an inline SVG grid (no remote asset), the palette is the
+// NUVORA brand (Anton display, deep green, primary green, peach), and the
+// rhythm (eyebrow → title → subtitle → CTAs) is identical across pages.
 
 const GRID_BG =
-  "url('https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/gridBackground.png')";
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M40 0H0v40' fill='none' stroke='%2370F250' stroke-opacity='0.10' stroke-width='1'/%3E%3C/svg%3E\")";
 
 export type Crumb = { name: string; href?: string };
 export type HeroCTA = { label: string; href: string; primary?: boolean };
@@ -16,9 +15,7 @@ export type HeroCTA = { label: string; href: string; primary?: boolean };
 export type PageHeroProps = {
   title: string;
   subtitle?: string;
-  /** Small pill shown above the headline ("New announcement…"). */
   announcement?: string;
-  /** Eyebrow pill (kept for existing callers that pass `eyebrow`). */
   eyebrow?: string;
   crumbs?: Crumb[];
   ctas?: HeroCTA[];
@@ -42,26 +39,23 @@ export function PageHero({
   const centered = align === "center";
   return (
     <section
-      className={cn(
-        "w-full bg-no-repeat bg-cover bg-center font-poppins text-sm",
-        className
-      )}
+      className={cn("w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center", className)}
       style={{ backgroundImage: GRID_BG }}
     >
       <div
         className={cn(
-          "mx-auto max-w-[1100px] px-6 pb-28 pt-16 md:pb-40 md:pt-24",
+          "mx-auto max-w-[1100px] px-6 pb-16 pt-14 md:pb-24 md:pt-20",
           centered && "flex flex-col items-center text-center"
         )}
       >
         {crumbs && crumbs.length > 0 && (
           <nav aria-label="Breadcrumb" className="mb-6 text-xs text-ink-500">
-            <ol className="flex flex-wrap items-center gap-1.5">
+            <ol className="flex flex-wrap items-center justify-center gap-1.5">
               {crumbs.map((c, i) => (
                 <li key={c.name} className="flex items-center gap-1.5">
                   {i > 0 && <span aria-hidden="true" className="text-ink-300">/</span>}
                   {c.href ? (
-                    <Link href={c.href} className="hover:text-ink-700 hover:underline underline-offset-2">
+                    <Link href={c.href} className="hover:text-brand-navy hover:underline underline-offset-2">
                       {c.name}
                     </Link>
                   ) : (
@@ -74,22 +68,15 @@ export function PageHero({
         )}
 
         {pill && (
-          <div
-            className={cn(
-              "flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-ink-700 hover:border-slate-400/70",
-              centered ? "mx-auto" : ""
-            )}
-          >
-            <span>{pill}</span>
-            <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-              <path d="M3.959 9.5h11.083m0 0L9.501 3.958M15.042 9.5l-5.541 5.54" stroke="#050040" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-navy">
+            <span className="size-1.5 rounded-full bg-brand-gold" />
+            {pill}
+          </span>
         )}
 
         <h1
           className={cn(
-            "mt-8 text-4xl font-medium tracking-tight text-slate-900 md:text-7xl",
+            "mt-6 font-display text-4xl leading-[1.08] tracking-[0.01em] text-brand-navy md:text-6xl",
             centered && "mx-auto max-w-[850px]"
           )}
         >
@@ -97,19 +84,19 @@ export function PageHero({
         </h1>
 
         {subtitle && (
-          <p className={cn("mt-6 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base", centered && "mx-auto")}>
+          <p className={cn("mt-5 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg", centered && "mx-auto")}>
             {subtitle}
           </p>
         )}
 
-        {(ctas && ctas.length > 0) && (
-          <div className={cn("mt-7 flex flex-wrap items-center gap-3", centered && "justify-center")}>
+        {ctas && ctas.length > 0 && (
+          <div className={cn("mt-8 flex flex-wrap items-center gap-3", centered && "justify-center")}>
             {ctas.map((cta) =>
               cta.primary ? (
                 <Link
                   key={cta.label}
                   href={cta.href}
-                  className="rounded-full bg-slate-800 px-6 py-3 font-medium text-white transition hover:bg-black"
+                  className="rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
                 >
                   {cta.label}
                 </Link>
@@ -117,7 +104,7 @@ export function PageHero({
                 <Link
                   key={cta.label}
                   href={cta.href}
-                  className="flex items-center gap-2 rounded-full border border-slate-300 px-6 py-3 font-medium transition hover:bg-slate-200/30"
+                  className="rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
                 >
                   {cta.label}
                 </Link>

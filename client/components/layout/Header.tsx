@@ -143,27 +143,26 @@ export function Header() {
                     ))}
                   </div>
 
-                  {/* Promo column */}
+                  {/* Promo column — customer stories (no fabricated quotes) */}
                   <div className="flex flex-col bg-ink-50 p-4 sm:col-span-1">
                     <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
-                      Customer stories
+                      Parent stories
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=300&q=80"
-                      alt="Student with a NUVORA tutor"
+                      src="/hero/home-tutoring.jpg"
+                      alt="Student learning with a NUVORA tutor"
                       className="h-24 w-full rounded-lg object-cover"
                       loading="lazy"
                     />
                     <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                      &ldquo;The transformation in my son&apos;s performance has been remarkable. From struggling
-                      with basic maths to leading his class.&rdquo;
+                      Real families, real results — read parent stories published with explicit consent.
                     </p>
                     <a
                       href="/success-stories"
                       onClick={closeAll}
-                      className="mt-3 inline-flex items-center gap-x-1 text-sm font-medium text-brand-gold-dark decoration-2 hover:underline"
+                      className="mt-3 inline-flex items-center gap-x-1 text-sm font-bold text-brand-green decoration-2 hover:underline"
                     >
-                      Learn more
+                      Read parent stories
                       <ArrowRight size={14} />
                     </a>
                   </div>

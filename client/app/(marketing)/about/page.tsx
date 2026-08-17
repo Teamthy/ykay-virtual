@@ -26,8 +26,6 @@ const FOUNDER = {
     "Prepared learners for British curriculum examinations including IGCSE Computer Science, with students achieving exceptional national outcomes.",
     "Led students in international technology competitions, including the 2026 International Coding Olympiad in Rome, Italy — his delegation won medals and a Nigerian student achieved a world Top-3 result in the Codementum category.",
   ],
-  vision:
-    "Yinka's vision for NUVORA is to combine excellent teachers, strong academic systems and technology to give learners access to structured, high-quality education wherever they are.",
 };
 
 const PILLARS = [
@@ -193,9 +191,6 @@ export default function AboutPage() {
             ))}
           </ul>
 
-          <p className="mt-8 rounded-2xl border border-ink-100 bg-surface-muted p-5 text-sm leading-relaxed text-ink-700">
-            {FOUNDER.vision}
-          </p>
         </div>
       </section>
 

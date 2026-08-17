@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
@@ -42,8 +41,6 @@ export default function NigerianCurriculumPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "Nigerian Curriculum" }]} />
-
       <PageHero
         eyebrow="Nigerian pathway"
         title="Nigerian Curriculum Online"

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";
 
@@ -34,8 +33,6 @@ export default function HowItWorksPage() {
   return (
     <main className="container-x py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "How It Works" }]} />
-
       <PageHero
         eyebrow="Simple by design"
         title="How NUVORA works"

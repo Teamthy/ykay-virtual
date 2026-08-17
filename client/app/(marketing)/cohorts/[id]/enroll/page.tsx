@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { buildMetadata } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import { getCohortSSR } from "@/features/cohorts/api/get";
 import { CheckoutClient } from "@/features/bookings/components/CheckoutClient";
@@ -29,15 +28,10 @@ export default async function CohortEnrollPage(props: Props) {
 
   return (
     <main className="container-x py-12">
-      <Breadcrumbs items={[
-        { name: "Home", href: "/" },
-        { name: "Cohorts", href: "/cohorts" },
-        { name: cohort.title, href: `/cohorts/${cohort.id}` },
-        { name: "Enrol" },
-      ]} />
       <PageHero
         title={`Enrol in ${cohort.title}`}
         subtitle={`Your enrolment is confirmed instantly after payment. Lessons follow the published cohort schedule in ${cohort.timezone}. Your payment is protected by our escrow guarantee.`}
+        crumbs={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title, href: `/cohorts/${cohort.id}` }, { name: "Enrol" }]}
       />
 
       <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-start">

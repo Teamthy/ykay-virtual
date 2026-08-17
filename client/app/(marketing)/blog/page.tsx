@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";
 
@@ -66,7 +65,6 @@ export default async function BlogPage() {
 
   return (
     <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Blog" }]} />
       <PageHero
         eyebrow="From the academic team"
         title="Resources & Blog"

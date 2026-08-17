@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import Link from "next/link";
+import { UserRound, BookOpen, ShieldCheck, ClipboardCheck, LineChart } from "lucide-react";
 import { TutorCommunityStats } from "@/components/home/TutorCommunityStats";
 import { TutorBenefits } from "@/components/home/TutorBenefits";
 import { PageHero } from "@/components/layout/PageHero";
@@ -13,11 +14,11 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const STEPS = [
-  { n: "1", title: "Create your profile", href: "/become-tutor/apply", desc: "Tell us about yourself, your experience and your rate." },
-  { n: "2", title: "Choose your subjects", href: "/become-tutor/subjects", desc: "Pick from our curriculum-governed catalogue." },
-  { n: "3", title: "Verify your identity", href: "/become-tutor/documents", desc: "Upload a government-issued ID (private bucket, signed URLs)." },
-  { n: "4", title: "Pass the competency quiz", href: "/become-tutor/assessment", desc: "5 questions per subject, 70% to pass, valid 12 months." },
-  { n: "5", title: "Track your application", href: "/become-tutor/status", desc: "Live status: review, interview, verification, approval." },
+  { icon: UserRound, title: "Create your profile", href: "/become-tutor/apply", desc: "Tell us about yourself, your experience and your rate." },
+  { icon: BookOpen, title: "Choose your subjects", href: "/become-tutor/subjects", desc: "Pick from our curriculum-governed catalogue." },
+  { icon: ShieldCheck, title: "Verify your identity", href: "/become-tutor/documents", desc: "Upload a government-issued ID (private bucket, signed URLs)." },
+  { icon: ClipboardCheck, title: "Pass the competency quiz", href: "/become-tutor/assessment", desc: "5 questions per subject, 70% to pass, valid 12 months." },
+  { icon: LineChart, title: "Track your application", href: "/become-tutor/status", desc: "Live status: review, interview, verification, approval." },
 ];
 
 const FAQS = [
@@ -48,13 +49,18 @@ export default function BecomeTutorPage() {
       <TutorCommunityStats />
       <TutorBenefits />
 
-      <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
-        {STEPS.map((s) => (
-          <div key={s.n} className="border rounded-2xl p-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-blue text-white font-extrabold text-sm">{s.n}</div>
-            <h2 className="font-bold mt-3 text-sm">{s.title}</h2>
-            <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">{s.desc}</p>
-            <Link href={s.href} className="mt-3 inline-block text-xs font-semibold text-brand-blue hover:underline">
+      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        {STEPS.map((s, i) => (
+          <div key={s.title} className="flex flex-col rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+            <div className="flex items-center justify-between">
+              <span className="grid size-10 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
+                <s.icon size={18} />
+              </span>
+              <span className="text-xs font-bold text-ink-300">0{i + 1}</span>
+            </div>
+            <h2 className="mt-4 font-display text-base tracking-[0.02em] text-brand-navy">{s.title}</h2>
+            <p className="mt-2 flex-1 text-xs leading-relaxed text-ink-600">{s.desc}</p>
+            <Link href={s.href} className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-green hover:underline">
               Go to step →
             </Link>
           </div>

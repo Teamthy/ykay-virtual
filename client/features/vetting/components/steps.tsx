@@ -4,7 +4,7 @@ import { useForm } from "@tanstack/react-form";
 import { Stepper } from "@/components/ui/stepper";
 import { FileUploader, type UploadedFile } from "@/components/ui/file-uploader";
 import { Modal } from "@/components/ui/modal";
-import { FileText } from "lucide-react";
+import { CheckCircle2, Clock, Search, FileText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
@@ -401,7 +401,7 @@ export function SubmittedState({ profile }: { profile: TutorProfile }) {
     UNDER_REVIEW: { label: "Under review", hint: "We are checking your credentials and documents." },
     INTERVIEW: { label: "Interview scheduled", hint: "Our team will reach out to schedule your interview." },
     VERIFICATION: { label: "Verification", hint: "Final identity checks in progress." },
-    APPROVED: { label: "Approved 🎉", hint: "You are live on the marketplace. Bookings can come in now." },
+    APPROVED: { label: "Approved", hint: "You are live on the marketplace. Bookings can come in now." },
     REJECTED: { label: "Not approved", hint: "Our team will contact you with next steps." },
     HOLD: { label: "On hold", hint: "Your application is paused — we will be in touch." },
     SUSPENDED: { label: "Suspended", hint: "Contact support for details." },
@@ -410,8 +410,10 @@ export function SubmittedState({ profile }: { profile: TutorProfile }) {
 
   return (
     <div className="border rounded-2xl p-8 text-center space-y-3">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-blue/10 text-2xl">
-        {profile.status === "APPROVED" ? "✅" : "🕓"}
+      <div className="mx-auto grid size-14 place-items-center rounded-full bg-brand-gold-light">
+        {profile.status === "APPROVED"
+          ? <CheckCircle2 size={26} className="text-brand-green" />
+          : <Clock size={26} className="text-brand-navy" />}
       </div>
       <h2 className="text-xl font-bold">Application {st.label}</h2>
       <p className="text-sm text-ink-600">{st.hint}</p>
@@ -419,7 +421,7 @@ export function SubmittedState({ profile }: { profile: TutorProfile }) {
         Profile: {profile.display_name} · {profile.slug} · ranking {profile.ranking_score.toFixed(1)}
       </p>
       {profile.status === "APPROVED" && (
-        <a href={`/tutors/${profile.slug}`} className="inline-block btn-gold">View your public profile</a>
+        <a href={`/tutors/${profile.slug}`} className="inline-block rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover">View your public profile</a>
       )}
     </div>
   );

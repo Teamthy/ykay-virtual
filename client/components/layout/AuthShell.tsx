@@ -18,8 +18,7 @@ export type AuthShellProps = {
   skip?: { href: string; label?: string };
 };
 
-const IMG =
-  "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&q=80";
+const IMG = "/hero/home-tutoring.jpg";
 
 export function AuthShell({
   title,

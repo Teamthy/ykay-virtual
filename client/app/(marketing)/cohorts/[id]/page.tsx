@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { buildMetadata, courseJsonLd } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { getCohortSSR } from "@/features/cohorts/api/get";
 import { getCohortLessonsSSR } from "@/features/cohorts/api/lessons";
 import Link from "next/link";
@@ -57,12 +56,11 @@ export default async function CohortDetailPage(props: Props) {
   return (
     <main className="container-x py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title }]} />
-
       <PageHero
         announcement={`${cohort.location_mode.replace(/_/g, " ").toLowerCase()} · ${cohort.timezone}`}
         title={cohort.title}
         subtitle={cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
+        crumbs={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title }]}
         ctas={[{ label: "Enrol in this cohort", href: `/cohorts/${cohort.id}/enroll`, primary: true }]}
       />
 
