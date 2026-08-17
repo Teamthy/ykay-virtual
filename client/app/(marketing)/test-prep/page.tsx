@@ -43,6 +43,7 @@ export default function TestPrepPage() {
           { label: "Get Started", href: "#tests", primary: true },
           { label: "GMAT Prep", href: "/gmat" },
         ]}
+        image={{ src: "/hero/test-prep.jpg", alt: "Student taking notes while preparing for tests" }}
       />
 
       {/* Tests grid */}

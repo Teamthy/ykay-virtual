@@ -48,6 +48,7 @@ export default function NuvoraPlusPage() {
         subtitle="Give your child the ultimate learning advantage with NUVORA Plus — our premium tutoring service designed for families who want the best."
         crumbs={[{ name: "Home", href: "/" }, { name: "NUVORA Plus" }]}
         align="center"
+        image={{ src: "/hero/nuvora-plus.jpg", alt: "Tutor guiding a young learner one-on-one" }}
       >
         <a href="/contact" className="btn-gold">Unlock Premium Tutoring</a>
       </PageHero>

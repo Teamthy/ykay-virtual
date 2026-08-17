@@ -36,6 +36,7 @@ export default function HomeTutorsPage() {
           { label: "Get Started", href: "/tutors", primary: true },
           { label: "Learn how it works", href: "#how" },
         ]}
+        image={{ src: "/hero/home-tutoring.jpg", alt: "Tutor helping a young student at home" }}
       />
 
       <StatsBand />

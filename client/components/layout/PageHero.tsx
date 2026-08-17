@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 // PageHero — the UNIFORM hero for every non-home page. Self-contained: the
@@ -20,6 +21,8 @@ export type PageHeroProps = {
   crumbs?: Crumb[];
   ctas?: HeroCTA[];
   align?: "left" | "center";
+  /** Optional split-hero image (bundled, local) — rendered right of the text. */
+  image?: { src: string; alt: string };
   children?: React.ReactNode;
   className?: string;
 };
@@ -32,89 +35,117 @@ export function PageHero({
   crumbs,
   ctas,
   align = "center",
+  image,
   children,
   className,
 }: PageHeroProps) {
   const pill = announcement ?? eyebrow;
   const centered = align === "center";
+  const split = Boolean(image);
+
+  const text = (
+    <>
+      {crumbs && crumbs.length > 0 && (
+        <nav aria-label="Breadcrumb" className="mb-6 text-xs text-ink-500">
+          <ol className={cn("flex flex-wrap items-center gap-1.5", centered && !split && "justify-center")}>
+            {crumbs.map((c, i) => (
+              <li key={c.name} className="flex items-center gap-1.5">
+                {i > 0 && <span aria-hidden="true" className="text-ink-300">/</span>}
+                {c.href ? (
+                  <Link href={c.href} className="hover:text-brand-navy hover:underline underline-offset-2">
+                    {c.name}
+                  </Link>
+                ) : (
+                  <span className="font-medium text-ink-700">{c.name}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+
+      {pill && (
+        <span className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-navy">
+          <span className="size-1.5 rounded-full bg-brand-gold" />
+          {pill}
+        </span>
+      )}
+
+      <h1
+        className={cn(
+          "mt-6 font-display text-4xl leading-[1.08] tracking-[0.01em] text-brand-navy md:text-6xl",
+          centered && !split && "mx-auto max-w-[850px]"
+        )}
+      >
+        {title}
+      </h1>
+
+      {subtitle && (
+        <p className={cn("mt-5 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg", centered && !split && "mx-auto")}>
+          {subtitle}
+        </p>
+      )}
+
+      {ctas && ctas.length > 0 && (
+        <div className={cn("mt-8 flex flex-wrap items-center gap-3", centered && !split && "justify-center")}>
+          {ctas.map((cta) =>
+            cta.primary ? (
+              <Link
+                key={cta.label}
+                href={cta.href}
+                className="rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
+              >
+                {cta.label}
+              </Link>
+            ) : (
+              <Link
+                key={cta.label}
+                href={cta.href}
+                className="rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+              >
+                {cta.label}
+              </Link>
+            )
+          )}
+        </div>
+      )}
+
+      {children && <div className={cn("mt-7 flex flex-wrap gap-3", centered && !split && "justify-center")}>{children}</div>}
+    </>
+  );
+
   return (
     <section
       className={cn("w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center", className)}
       style={{ backgroundImage: GRID_BG }}
     >
-      <div
-        className={cn(
-          "mx-auto max-w-[1100px] px-6 pb-16 pt-14 md:pb-24 md:pt-20",
-          centered && "flex flex-col items-center text-center"
-        )}
-      >
-        {crumbs && crumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" className="mb-6 text-xs text-ink-500">
-            <ol className="flex flex-wrap items-center justify-center gap-1.5">
-              {crumbs.map((c, i) => (
-                <li key={c.name} className="flex items-center gap-1.5">
-                  {i > 0 && <span aria-hidden="true" className="text-ink-300">/</span>}
-                  {c.href ? (
-                    <Link href={c.href} className="hover:text-brand-navy hover:underline underline-offset-2">
-                      {c.name}
-                    </Link>
-                  ) : (
-                    <span className="font-medium text-ink-700">{c.name}</span>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </nav>
-        )}
-
-        {pill && (
-          <span className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-navy">
-            <span className="size-1.5 rounded-full bg-brand-gold" />
-            {pill}
-          </span>
-        )}
-
-        <h1
+      {split ? (
+        <div className="mx-auto grid max-w-[1200px] items-center gap-10 px-6 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>{text}</div>
+          <div className="relative">
+            <div className="overflow-hidden rounded-3xl shadow-card ring-1 ring-ink-100">
+              <Image
+                src={image!.src}
+                alt={image!.alt}
+                width={960}
+                height={720}
+                priority
+                className="h-auto w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 48vw"
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
           className={cn(
-            "mt-6 font-display text-4xl leading-[1.08] tracking-[0.01em] text-brand-navy md:text-6xl",
-            centered && "mx-auto max-w-[850px]"
+            "mx-auto max-w-[1100px] px-6 pb-16 pt-14 md:pb-24 md:pt-20",
+            centered && "flex flex-col items-center text-center"
           )}
         >
-          {title}
-        </h1>
-
-        {subtitle && (
-          <p className={cn("mt-5 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg", centered && "mx-auto")}>
-            {subtitle}
-          </p>
-        )}
-
-        {ctas && ctas.length > 0 && (
-          <div className={cn("mt-8 flex flex-wrap items-center gap-3", centered && "justify-center")}>
-            {ctas.map((cta) =>
-              cta.primary ? (
-                <Link
-                  key={cta.label}
-                  href={cta.href}
-                  className="rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
-                >
-                  {cta.label}
-                </Link>
-              ) : (
-                <Link
-                  key={cta.label}
-                  href={cta.href}
-                  className="rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
-                >
-                  {cta.label}
-                </Link>
-              )
-            )}
-          </div>
-        )}
-
-        {children && <div className={cn("mt-7 flex flex-wrap gap-3", centered && "justify-center")}>{children}</div>}
-      </div>
+          {text}
+        </div>
+      )}
     </section>
   );
 }

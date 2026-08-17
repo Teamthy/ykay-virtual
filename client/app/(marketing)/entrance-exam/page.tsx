@@ -48,6 +48,7 @@ export default function EntranceExamPage() {
         subtitle="Expert prep for WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance, and SAT to guarantee your child's high performance."
         crumbs={[{ name: "Home", href: "/" }, { name: "Entrance Exams" }]}
         align="center"
+        image={{ src: "/hero/entrance-exam.jpg", alt: "Young student preparing for entrance exams" }}
       >
         <a href="#rates" className="btn-gold">Book a Slot</a>
       </PageHero>

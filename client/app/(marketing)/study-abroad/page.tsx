@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
@@ -105,6 +106,17 @@ export default function StudyAbroadPage() {
               <span className="text-sm text-ink-600">Exam success rate:</span>
               <span className="text-sm font-bold text-ink-900">95%</span>
             </div>
+          </div>
+
+          <div className="mx-auto mt-10 max-w-5xl overflow-hidden rounded-3xl shadow-card ring-1 ring-ink-100">
+            <Image
+              src="/hero/international.jpg"
+              alt="Graduates celebrating international success"
+              width={1200}
+              height={630}
+              priority
+              className="h-auto w-full object-cover"
+            />
           </div>
         </div>
       </section>
