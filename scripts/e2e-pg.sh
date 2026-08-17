@@ -30,6 +30,8 @@ echo "== 2/3 Migrations + reference seeds =="
 psql "$DBURL" -f scripts/seed-refs.sql
 # 000042 disables admin@nuvora.com. Seed a disposable admin on this throwaway DB.
 psql "$DBURL" -f scripts/seed-e2e-admin.sql
+n=$(psql "$DBURL" -tAc "SELECT COUNT(*) FROM cohorts WHERE id = '00000000-0000-0000-0000-00000000c010'")
+[ "$n" = "1" ] || { echo "seed-refs did not insert cohort c010 (count=$n)"; exit 1; }
 
 echo "== 3/3 Booting API on :$PORT (postgres mode) =="
 rm -f .e2e-api && "$GO" build -o .e2e-api ./cmd/api
@@ -47,4 +49,4 @@ echo "== 4/4 E2E against postgres =="
 E2E_KEEP_SERVER=1 \
 E2E_ADMIN_EMAIL=e2e-admin@test.invalid \
 E2E_ADMIN_PASSWORD=password123 \
-bash scripts/e2e.sh "$PORT"
+bash scripts/e2e.sh "$PORT" || { echo "---- /tmp/e2e-api.log (tail) ----"; tail -80 /tmp/e2e-api.log; exit 1; }

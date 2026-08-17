@@ -38,7 +38,9 @@ json() { python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
 
 # ---------------------------------------------------------------- boot API ---
 BIN="${ROOT}/.e2e-api"
-(cd "$ROOT" && rm -f "$BIN" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
+if [ "${E2E_KEEP_SERVER:-}" != "1" ]; then
+  (cd "$ROOT" && rm -f "$BIN" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
+fi
 
 E2E_ADMIN_EMAIL="${E2E_ADMIN_EMAIL:-admin@nuvora.com}"
 E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-password123}"
@@ -157,7 +159,7 @@ assert_code "me after logout → 401" 401 "$c"
 c=$(req "$J_LOGOUT" POST /auth/login-code/request '{"email":"e2e-parent@test.com"}')
 assert_code "login-code request" 200 "$c"
 sleep 1
-CODE=$(grep -oP 'font-family:monospace;">\K[0-9]{6}' /tmp/e2e-api.log | tail -1)
+CODE=$(grep -oE "login code for [^:]+: [0-9]{6}" /tmp/e2e-api.log | grep -oE "[0-9]{6}$" | tail -1)
 if [ -n "$CODE" ]; then ok "code captured from email log"; else fail "login code not found in email log"; fi
 c=$(req "$J_LOGOUT" POST /auth/login-code/confirm "{\"email\":\"e2e-parent@test.com\",\"code\":\"000000\"}")
 assert_code "wrong code → 401" 401 "$c"

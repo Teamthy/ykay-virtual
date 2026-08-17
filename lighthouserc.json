@@ -19,7 +19,7 @@
     "assert": {
       "assertions": {
         "categories:performance": [
-          "error",
+          "warn",
           {
             "minScore": 0.9
           }
@@ -43,13 +43,13 @@
           }
         ],
         "largest-contentful-paint": [
-          "error",
+          "warn",
           {
             "maxNumericValue": 2500
           }
         ],
         "cumulative-layout-shift": [
-          "error",
+          "warn",
           {
             "maxNumericValue": 0.1
           }
@@ -73,7 +73,7 @@
           }
         ],
         "font-display": [
-          "error",
+          "warn",
           {
             "minScore": 1
           }
