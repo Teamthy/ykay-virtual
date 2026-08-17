@@ -61,6 +61,13 @@ export default function RootLayout() {
         <Stack.Screen name="careers" options={{ title: "Careers" }} />
         <Stack.Screen name="contact" options={{ title: "Contact & Support" }} />
         <Stack.Screen name="offline" options={{ title: "Offline" }} />
+        <Stack.Screen name="messages" options={{ title: "Messages" }} />
+        <Stack.Screen name="messages/[conversationId]" options={{ title: "Conversation" }} />
+        <Stack.Screen name="my-lessons" options={{ title: "My lessons" }} />
+        <Stack.Screen name="lesson-notes/[lessonId]" options={{ title: "Lesson notes" }} />
+        <Stack.Screen name="orders/[orderId]" options={{ title: "Receipt" }} />
+        <Stack.Screen name="devices" options={{ title: "Devices" }} />
+        <Stack.Screen name="learning-progress" options={{ title: "Lesson progress" }} />
       </Stack>
     </SafeAreaProvider>
   );

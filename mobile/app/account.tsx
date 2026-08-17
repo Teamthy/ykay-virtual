@@ -23,6 +23,7 @@ const MENU = [
   { href: "/learners", label: "Learners", icon: "people-outline", desc: "Children linked to your account" },
   { href: "/referrals", label: "Referrals", icon: "gift-outline", desc: "Invite & earn" },
   { href: "/payments", label: "Payments", icon: "card-outline", desc: "Orders & escrow history" },
+  { href: "/devices", label: "Devices", icon: "phone-portrait-outline", desc: "Notification devices" },
   { href: "/become-tutor", label: "Become a tutor", icon: "school-outline", desc: "Teach on NUVORA" },
   { href: "/pricing", label: "Pricing", icon: "pricetag-outline", desc: "Plans & protection" },
   { href: "/careers", label: "Careers", icon: "briefcase-outline", desc: "Join the team" },

@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -49,7 +49,7 @@ export default function PaymentsScreen() {
         </Card>
       ) : (
         orders.map((o) => (
-          <Card key={o.id} padded style={styles.row}>
+          <Card key={o.id} onPress={() => router.push(`/orders/${o.id}` as never)} padded style={styles.row}>
             <View style={{ flex: 1 }}>
               <AppText variant="h3">{o.order_number}</AppText>
               <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>

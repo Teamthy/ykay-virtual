@@ -15,15 +15,20 @@ import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 // Progress — premium attendance gauge + tutor progress reports, all
-// session-resolved.
+// session-resolved. The attendance shape matches the backend
+// /me/attendance-summary payload (total/present/absent/late/excused/rate).
 
 type AttendanceSummary = {
-  total_lessons: number;
-  attended: number;
-  attendance_rate: number;
-  upcoming_lessons: number;
+  total: number;
+  present: number;
+  absent: number;
+  late: number;
+  excused: number;
+  untracked: number;
+  rate: number;
 };
 type Report = {
   id: string;
@@ -32,7 +37,7 @@ type Report = {
   strengths?: string;
   weaknesses?: string;
   recommendations?: string;
-  overall_rating: number;
+  overall_rating?: number | null;
 };
 
 function Gauge({ rate }: { rate: number }) {
@@ -74,7 +79,7 @@ export default function Progress() {
 
   useFocusEffect(useCallback(() => void load(), [load]));
 
-  const rate = summary?.attendance_rate ?? 0;
+  const rate = summary?.rate ?? 0;
 
   return (
     <Screen scroll>
@@ -91,7 +96,7 @@ export default function Progress() {
         </Animated.View>
       ) : error ? (
         <Animated.View entering={FadeInUp.delay(80)} style={styles.stateCard}>
-          <AppText style={{ fontSize: 30 }}>⚠️</AppText>
+          <Ionicons name="alert-circle-outline" size={30} color={colors.danger} />
           <AppText variant="h3" style={{ marginTop: 8 }}>
             Couldn't load progress
           </AppText>
@@ -111,7 +116,7 @@ export default function Progress() {
                 </AppText>
                 <Gauge rate={rate} />
                 <AppText variant="caption" style={{ color: colors.ink[500], marginTop: 10 }}>
-                  {summary.attended}/{summary.total_lessons} lessons attended · {summary.upcoming_lessons} upcoming
+                  {summary.present}/{summary.total} present · {summary.late} late · {summary.absent} absent
                 </AppText>
               </View>
             </Animated.View>
@@ -122,7 +127,7 @@ export default function Progress() {
           </AppText>
           {reports.length === 0 ? (
             <View style={styles.stateCard}>
-              <AppText style={{ fontSize: 32 }}>📊</AppText>
+              <Ionicons name="document-text-outline" size={32} color={colors.ink[300]} />
               <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 8, lineHeight: 19 }}>
                 No progress reports yet — your tutor writes them after lessons.
               </AppText>
@@ -138,23 +143,23 @@ export default function Progress() {
                       </AppText>
                       <View style={styles.ratingBadge}>
                         <AppText variant="caption" style={styles.ratingText}>
-                          {"★".repeat(Math.max(1, Math.min(5, r.overall_rating)))}
+                          {r.overall_rating != null ? "★".repeat(Math.max(1, Math.min(5, r.overall_rating))) : "—"}
                         </AppText>
                       </View>
                     </View>
                     {r.strengths ? (
                       <AppText variant="bodySm" style={styles.reportLine}>
-                        💪 {r.strengths}
+                        <Ionicons name="fitness-outline" size={13} color={colors.success} /> {r.strengths}
                       </AppText>
                     ) : null}
                     {r.weaknesses ? (
                       <AppText variant="bodySm" style={styles.reportLine}>
-                        🎯 {r.weaknesses}
+                        <Ionicons name="flag-outline" size={13} color={colors.warning} /> {r.weaknesses}
                       </AppText>
                     ) : null}
                     {r.recommendations ? (
                       <AppText variant="bodySm" style={styles.reportLine}>
-                        📌 {r.recommendations}
+                        <Ionicons name="compass-outline" size={13} color={colors.navy} /> {r.recommendations}
                       </AppText>
                     ) : null}
                   </Card>

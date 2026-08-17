@@ -22,6 +22,8 @@ const internal = [
   { href: "/search", title: "Find a tutor", desc: "Search vetted tutors", icon: "search-outline" },
   { href: "/saved", title: "Saved tutors", desc: "Your wishlist", icon: "heart-outline" },
   { href: "/chat", title: "Chat with Nuvora", desc: "AI assistant + human handoff", icon: "chatbubbles-outline" },
+  { href: "/messages", title: "Messages", desc: "Tutors, parents & learners", icon: "mail-outline" },
+  { href: "/my-lessons", title: "My lessons", desc: "Upcoming & past sessions", icon: "calendar-outline" },
   { href: "/notifications", title: "Notifications", desc: "Reminders and updates", icon: "notifications-outline", badge: true },
   { href: "/account", title: "Account", desc: "Profile, learners, logout", icon: "person-outline" },
 ] as const;
