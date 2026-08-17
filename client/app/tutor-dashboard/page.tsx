@@ -11,6 +11,8 @@ import { RecommendationsForYou } from "@/components/dashboard/RecommendationsFor
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/vetting/api";
+import { getTutorEarnings } from "@/features/lms/api";
+import { BookOpen, MessageSquare, Bell, LifeBuoy, Settings, Wallet } from "lucide-react";
 import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
 import { DashboardShell } from "@/components/layout/DashboardShell";
@@ -80,6 +82,13 @@ export default function TutorDashboardPage() {
   const availability = useQuery({
     queryKey: ["tutor", "availability"],
     queryFn: () => listAvailability(),
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+
+  const earnings = useQuery({
+    queryKey: ["tutor", "earnings"],
+    queryFn: () => getTutorEarnings(),
     enabled: !!user,
     staleTime: 30_000,
   });
@@ -260,16 +269,49 @@ export default function TutorDashboardPage() {
             )}
           </section>
 
-          {/* Earnings */}
-          <section className="rounded-2xl border p-6">
-            <h2 className="font-bold">Earnings (escrow)</h2>
-            <p className="text-xs text-ink-500 mt-1">Payments held until lessons are confirmed, then paid weekly.</p>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-xl bg-ink-50 p-3"><div className="text-lg font-extrabold">₦0</div><div className="text-[10px] text-ink-500">Held</div></div>
-              <div className="rounded-xl bg-ink-50 p-3"><div className="text-lg font-extrabold">₦0</div><div className="text-[10px] text-ink-500">Released</div></div>
-              <div className="rounded-xl bg-green-50 p-3"><div className="text-lg font-extrabold text-green-700">₦0</div><div className="text-[10px] text-ink-500">Paid out</div></div>
+          {/* Earnings — live from /me/earnings (escrow ledger) */}
+          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-bold text-brand-navy">
+                <Wallet size={16} className="text-brand-green" /> Earnings
+              </h2>
+              <span className="rounded-full bg-brand-gold-light px-3 py-1 text-xs font-bold text-brand-navy">Escrow-protected</span>
             </div>
-            <p className="text-[10px] text-ink-400 mt-2">Live figures appear once bookings are paid.</p>
+            <p className="mt-1 text-xs text-ink-500">Held until lessons are confirmed, then paid out on the weekly schedule.</p>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl bg-surface-muted p-3">
+                <div className="text-lg font-extrabold text-brand-navy">₦{(earnings.data?.held_total ?? 0).toLocaleString()}</div>
+                <div className="text-[10px] font-semibold text-ink-500">Held</div>
+              </div>
+              <div className="rounded-xl bg-surface-muted p-3">
+                <div className="text-lg font-extrabold text-brand-navy">₦{(earnings.data?.released_total ?? 0).toLocaleString()}</div>
+                <div className="text-[10px] font-semibold text-ink-500">Released</div>
+              </div>
+              <div className="rounded-xl bg-brand-gold-light p-3">
+                <div className="text-lg font-extrabold text-brand-green">₦{(earnings.data?.paid_total ?? 0).toLocaleString()}</div>
+                <div className="text-[10px] font-semibold text-ink-600">Paid out</div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-bold text-ink-700">Recent payouts</p>
+              {(earnings.data?.payouts ?? []).length === 0 ? (
+                <p className="mt-2 rounded-xl border border-dashed border-ink-200 p-4 text-center text-xs text-ink-400">
+                  No payouts yet — released earnings are paid out on the weekly schedule.
+                </p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  {(earnings.data?.payouts ?? []).slice(0, 5).map((p) => (
+                    <div key={p.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-2.5 text-sm">
+                      <span className="font-semibold text-ink-700">₦{p.amount.toLocaleString()}</span>
+                      <span className="text-xs text-ink-400">
+                        {new Date(p.created_at).toLocaleDateString()} ·{" "}
+                        <span className={p.status === "PAID" ? "font-bold text-green-600" : "font-semibold text-ink-500"}>{p.status}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Gradebook (phase 11c) */}
@@ -284,11 +326,11 @@ export default function TutorDashboardPage() {
 
           {/* Quick links */}
           <div className="flex flex-col gap-3">
-            <Link href="/lms/tutor" className="rounded-xl bg-brand-gold py-3 text-center text-sm font-bold text-ink-900 hover:bg-brand-gold-hover">🏫 Teaching console (LMS)</Link>
-            <Link href="/messages" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Messages</Link>
-            <Link href="/notifications" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Notifications</Link>
-            <Link href="/contact" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">Support</Link>
-            <Link href="/account" className="border rounded-xl py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue">⚙️ Account settings</Link>
+            <Link href="/lms/tutor" className="flex items-center justify-center gap-2 rounded-xl bg-brand-gold py-3 text-center text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"><BookOpen size={15} /> Teaching console</Link>
+            <Link href="/messages" className="flex items-center justify-center gap-2 rounded-xl border py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue"><MessageSquare size={15} /> Messages</Link>
+            <Link href="/notifications" className="flex items-center justify-center gap-2 rounded-xl border py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue"><Bell size={15} /> Notifications</Link>
+            <Link href="/contact" className="flex items-center justify-center gap-2 rounded-xl border py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue"><LifeBuoy size={15} /> Support</Link>
+            <Link href="/account" className="flex items-center justify-center gap-2 rounded-xl border py-3 text-center text-sm font-bold text-ink-700 hover:border-brand-blue"><Settings size={15} /> Account settings</Link>
           </div>
         </aside>
       </div>
