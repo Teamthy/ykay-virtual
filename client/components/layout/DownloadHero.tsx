@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { Play, Apple, WifiOff, Bell, FileCheck2 } from "lucide-react";
+import { WifiOff, Bell, FileCheck2 } from "lucide-react";
+import { GooglePlayBadge } from "@/components/ui/StoreBadges";
 
 // DownloadHero — on-brand download hero. Self-contained (no remote store
-// buttons, no remote gradient, no invented social proof).
-
-const APK_URL = "/nuvora-app.apk";
+// buttons, no invented social proof). Android uses the official Google Play
+// badge (APK download today); iOS shows the official App Store badge disabled
+// until the listing exists.
 
 const PERKS = [
   { icon: WifiOff, text: "Learn offline" },
@@ -25,25 +25,9 @@ export function DownloadHero() {
             Learn anywhere — tutors, live cohorts, quizzes, progress reports and the AI assistant in one app.
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href={APK_URL}
-              download
-              aria-label="Download the Android APK"
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-navy px-5 py-3 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
-            >
-              <Play size={16} fill="currentColor" />
-              Get it on Google Play
-            </Link>
-            <button
-              type="button"
-              aria-label="Apple App Store (coming soon)"
-              title="App Store listing coming soon — use the Android APK for now."
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-ink-300 px-5 py-3 text-sm font-bold text-ink-500"
-            >
-              <Apple size={16} />
-              App Store — soon
-            </button>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <GooglePlayBadge href="/nuvora-app.apk" />
+            <GooglePlayBadge disabled />
           </div>
 
           <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-6">
