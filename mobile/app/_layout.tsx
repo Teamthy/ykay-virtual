@@ -31,6 +31,14 @@ export default function RootLayout() {
         <Stack.Screen name="account" options={{ title: "Account" }} />
         <Stack.Screen name="wizard" options={{ title: "Welcome", headerBackVisible: false }} />
         <Stack.Screen name="recommendations" options={{ title: "For you" }} />
+        <Stack.Screen name="tutor/index" options={{ title: "Tutor hub" }} />
+        <Stack.Screen name="tutor/earnings" options={{ title: "Earnings" }} />
+        <Stack.Screen name="tutor/lessons" options={{ title: "My lessons" }} />
+        <Stack.Screen name="tutor/schedule" options={{ title: "Schedule" }} />
+        <Stack.Screen name="tutor/messages" options={{ title: "Messages" }} />
+        <Stack.Screen name="tutor/messages/[conversationId]" options={{ title: "Conversation" }} />
+        <Stack.Screen name="tutor/profile" options={{ title: "Tutor profile" }} />
+        <Stack.Screen name="tutor/availability" options={{ title: "Availability" }} />
       </Stack>
     </SafeAreaProvider>
   );

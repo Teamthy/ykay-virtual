@@ -60,7 +60,7 @@ export default function Account() {
       {/* Profile hero */}
       <Animated.View entering={FadeInUp.delay(60).springify().damping(16)}>
         <LinearGradient
-          colors={[colors.navy, "#12305F"]}
+          colors={[colors.navy, colors.navyDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   avatarText: { fontSize: 26, fontWeight: "800", color: colors.navy },
   roleRow: { flexDirection: "row", gap: 6, marginTop: 8, flexWrap: "wrap" },
-  rolePill: { backgroundColor: "rgba(244,180,0,0.18)", borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
+  rolePill: { backgroundColor: "rgba(112,242,80,0.18)", borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
   roleText: { color: colors.gold, fontWeight: "800" },
   sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
   stateCard: {

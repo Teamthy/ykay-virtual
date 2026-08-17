@@ -1,17 +1,19 @@
 // NUVORA Mobile — premium design system tokens.
 // A single source of truth for colour, typography, spacing, radius, shadows,
 // and elevation so every screen feels intentional and consistent (not "AI-ish").
+// Brand: primary green #70F250, deep green #013920, black, peach #FFF7E4,
+// white — matching the web tokens (brand-gold / brand-navy / surface).
 
 export const palette = {
-  gold: "#F4B400",
-  goldHover: "#E0A500",
-  goldDark: "#9A6B00",
-  goldLight: "#FFF3C4",
-  navy: "#0A1F44",
-  navyDark: "#071633",
-  cream: "#FFFCF5",
-  creamAlt: "#FFF8E8",
-  surface: "#F7F5EF",
+  gold: "#70F250",
+  goldHover: "#5FE63F",
+  goldDark: "#4CCB31",
+  goldLight: "#DFFFF2",
+  navy: "#013920",
+  navyDark: "#002A18",
+  cream: "#FFF7E4",
+  creamAlt: "#F8EBCF",
+  surface: "#FFF7E4",
   white: "#FFFFFF",
   danger: "#DC2626",
   success: "#16A34A",
@@ -81,21 +83,21 @@ export const shadow = {
     elevation: 0,
   },
   sm: {
-    shadowColor: "#0A1F44",
+    shadowColor: "#013920",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 2,
   },
   md: {
-    shadowColor: "#0A1F44",
+    shadowColor: "#013920",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
     elevation: 5,
   },
   lg: {
-    shadowColor: "#0A1F44",
+    shadowColor: "#013920",
     shadowOffset: { width: 0, height: 14 },
     shadowOpacity: 0.16,
     shadowRadius: 28,

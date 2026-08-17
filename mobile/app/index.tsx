@@ -59,10 +59,10 @@ export default function Welcome() {
 
   return (
     <LinearGradient
-      colors={["#0A1F44", "#12305F", "#0A1F44"]}
+      colors={["#013920", "#002A18", "#013920"]}
       style={styles.gradient}
     >
-      <Screen scroll gradient={["#0A1F44", "#12305F"]} padded>
+      <Screen scroll gradient={["#013920", "#002A18"]} padded>
         <View style={styles.top}>
           <AppText variant="h2" style={{ color: colors.gold, letterSpacing: 4, fontWeight: "900" }}>
             NUVORA

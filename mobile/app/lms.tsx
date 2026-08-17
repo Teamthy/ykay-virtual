@@ -106,7 +106,7 @@ export default function Lms() {
       {/* Summary hero */}
       <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
         <LinearGradient
-          colors={[colors.navy, "#12305F"]}
+          colors={[colors.navy, colors.navyDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}

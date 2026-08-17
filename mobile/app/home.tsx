@@ -8,6 +8,7 @@ import { AppText } from "@/src/components/ui/AppText";
 import { TabBar } from "@/src/components/TabBar";
 import { colors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
+import { Ionicons } from "@expo/vector-icons";
 
 type Me = { id: string; email: string; roles: string[]; first_name?: string };
 type Unread = { unread: number };
@@ -48,6 +49,19 @@ export default function Home() {
           What would you like to do today?
         </AppText>
       </Animated.View>
+
+      {me?.roles?.includes("TUTOR") && (
+        <Card onPress={() => router.push("/tutor" as never)} style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+          <Ionicons name="school-outline" size={22} color={colors.navy} />
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <AppText variant="h3">Tutor workspace</AppText>
+            <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
+              Earnings, schedule, lessons and messages
+            </AppText>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.goldDark} />
+        </Card>
+      )}
 
       <View style={styles.grid}>
         {internal.map((s, i) => (
