@@ -7,7 +7,8 @@
 // fetch a join link between (start - join_window) and (end + grace).
 //
 // Providers:
-//   - StubMeetingProvider — dev/fixtures (deterministic URLs, no network)
+//   - StubMeetingProvider — dev/fixtures (fake meet.nuvora.local — never prod)
+//   - JitsiProvider       — public meet.jit.si rooms, no API key (free)
 //   - WherebyProvider     — https://api.whereby.dev/v1/meetings (real REST)
 package meeting
 
@@ -19,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -113,6 +115,36 @@ func (w *WherebyProvider) Create(ctx context.Context, lessonID, title string, st
 		JoinURL:     out.RoomURL,
 		RoomURL:     out.RoomURL,
 		ExpiresAt:   expires,
+	}, nil
+}
+
+// ---------------------------------------------------------------- Jitsi ----
+
+// JitsiProvider — 8x8's public Jitsi Meet (https://meet.jit.si).
+// No account or API key. Each lesson gets a unique public room URL.
+// Anyone with the link can join (same as sharing a Meet link). Swap to
+// Whereby when you have a key for locked rooms + host controls.
+type JitsiProvider struct {
+	BaseURL string // default https://meet.jit.si
+}
+
+func NewJitsi() *JitsiProvider {
+	return &JitsiProvider{BaseURL: "https://meet.jit.si"}
+}
+
+func (j *JitsiProvider) Create(_ context.Context, lessonID, title string, _, endAt time.Time) (MeetingLink, error) {
+	base := j.BaseURL
+	if base == "" {
+		base = "https://meet.jit.si"
+	}
+	room := "nuvora-" + lessonID
+	url := strings.TrimRight(base, "/") + "/" + room
+	_ = title
+	return MeetingLink{
+		ProviderRef: room,
+		JoinURL:     url,
+		RoomURL:     url,
+		ExpiresAt:   endAt.Add(1 * time.Hour),
 	}, nil
 }
 

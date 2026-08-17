@@ -307,16 +307,21 @@ func main() {
 	// --- Meeting links (G4.2): stub in dev, Whereby when configured ---
 	meetingProvider := meeting.Provider(meeting.StubMeetingProvider{})
 	meetingStub := true
-	if strings.EqualFold(cfg.MeetingProvider, "whereby") && cfg.WherebyAPIKey != "" {
-		meetingProvider = meeting.NewWhereby(cfg.WherebyAPIKey)
+	switch strings.ToLower(strings.TrimSpace(cfg.MeetingProvider)) {
+	case "whereby":
+		if cfg.WherebyAPIKey != "" {
+			meetingProvider = meeting.NewWhereby(cfg.WherebyAPIKey)
+			meetingStub = false
+		}
+	case "jitsi":
+		meetingProvider = meeting.NewJitsi()
 		meetingStub = false
 	}
-	// A-10: a stub meeting provider silently emits fake meet.nuvora.local URLs.
-	// Surface it as a metric (alertable) and, in production, a loud log so the
-	// team can't mistake a misconfigured Whereby key for a working classroom.
+	// A-10: stub emits fake meet.nuvora.local URLs. Forbidden in production.
+	// Free path: MEETING_PROVIDER=jitsi (public meet.jit.si rooms).
 	telemetry.MeetingProviderStub(strings.ToLower(cfg.MeetingProvider), meetingStub)
 	if meetingStub && cfg.IsProduction() {
-		logx.Fatal("meeting provider resolved to STUB in production — set MEETING_PROVIDER=whereby and WHEREBY_API_KEY")
+		logx.Fatal("meeting provider resolved to STUB in production — set MEETING_PROVIDER=jitsi (free) or whereby + WHEREBY_API_KEY")
 	}
 	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
 

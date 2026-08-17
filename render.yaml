@@ -103,7 +103,7 @@ services:
         value: Nuvora
       # ── Meetings (Whereby) ─────────────────────────────────────────────
       - key: MEETING_PROVIDER
-        value: whereby # "stub" works without credentials
+        value: jitsi # free meet.jit.si; switch to whereby when you have a key
       - key: WHEREBY_API_KEY
         sync: false
       # ── OAuth (optional — Google sign-in) ──────────────────────────────
