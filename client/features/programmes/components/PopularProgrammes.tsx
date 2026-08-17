@@ -14,31 +14,7 @@ export async function PopularProgrammes() {
     programmes = [];
   }
 
-  // Dummy showcase when the API has no rows yet (dev/preview): real links.
-  const dummy: ProgrammeCardData[] = [
-    {
-      id: "dummy-1", slug: "utme-2026", href: "/utme-2026", title: "UTME 2026 Prep — Score 300+",
-      format: "COHORT", curriculum_name: "Nigerian Curriculum", level_name: "SSS2–SSS3",
-      subjects: ["Maths", "English", "Physics"], price_min: 35000, currency: "NGN",
-      is_featured: true, next_start: "2026-09-07T09:00:00Z",
-      summary: "Weekly mock CBT, 200+ practice tests and a ₦20M scholarship pool.",
-    },
-    {
-      id: "dummy-2", slug: "igcse", href: "/online-classes", title: "IGCSE Computer Science",
-      format: "ONLINE_CLASS", curriculum_name: "British Curriculum", level_name: "Year 10–11",
-      subjects: ["Computer Science"], price_min: 35000, currency: "NGN",
-      is_featured: false, next_start: "2026-09-14T09:00:00Z",
-      summary: "Structured IGCSE preparation with a certified Computing specialist.",
-    },
-    {
-      id: "dummy-3", slug: "entrance", href: "/entrance-exam", title: "Common Entrance Masterclass",
-      format: "BOOTCAMP", curriculum_name: "British & Nigerian", exam_name: "Common Entrance",
-      subjects: ["Maths", "English"], price_min: 45000, currency: "NGN",
-      is_featured: false, next_start: "2026-10-05T09:00:00Z",
-      summary: "Past-paper practice and mock exams for top schools in Nigeria & the UK.",
-    },
-  ];
-  const cards = programmes.length > 0 ? programmes : dummy;
+  const cards = programmes;
 
   if (cards.length === 0) {
     return (
