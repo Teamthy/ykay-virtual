@@ -89,7 +89,7 @@ test("home page: batch-2 sections present, healthcare gone, exam cards link", as
 
   // Download-on-the-go section.
   await expect(page.getByText("Your classroom, in your pocket.")).toBeVisible();
-  await expect(page.getByRole("link", { name: /Download for Android/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Get it on Google Play/ })).toBeVisible();
 
   // Exam prep cards link to their fully built pages (blue hover + CTA).
   const satCard = page.getByRole("link", { name: /SATs Prep/ });

@@ -12,12 +12,36 @@ SET client_encoding = 'UTF8';
 -- Subjects: migrations pre-seed them (random UUIDs); the e2e suite resolves
 -- the Mathematics subject id dynamically, so nothing to do here.
 
--- Tutor profile 0102 linked to the demo tutor user (a3), APPROVED + public.
+-- Fixture tutor 0102. 000041 already inserts slug `oluwatobi` with a random
+-- UUID; 000042 disables demo user a3. Re-key to the e2e fixture id + an
+-- ACTIVE throwaway user so hardcoded COHORT/tutor IDs resolve.
+INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
+VALUES (
+  '00000000-0000-0000-0000-00000000e2e2',
+  'e2e-tutor@test.invalid',
+  '$2a$10$L1nxlPVZP1enrb3DrCulHuXRCscyduEgYWl9oPII4o3BJ9i9aCT2y',
+  'ACTIVE', 'Africa/Lagos', NOW(), NOW(), NOW(), NOW()
+)
+ON CONFLICT (id) DO UPDATE
+SET deleted_at = NULL, status = 'ACTIVE', password_hash = EXCLUDED.password_hash;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u JOIN roles r ON r.name = 'TUTOR'
+WHERE u.email = 'e2e-tutor@test.invalid'
+ON CONFLICT DO NOTHING;
+
+DELETE FROM tutor_subjects
+WHERE tutor_profile_id IN (
+  SELECT id FROM tutor_profiles
+  WHERE slug = 'oluwatobi' OR id = '00000000-0000-0000-0000-000000000102'
+);
+DELETE FROM tutor_profiles
+WHERE slug = 'oluwatobi' OR id = '00000000-0000-0000-0000-000000000102';
+
 INSERT INTO tutor_profiles (id, user_id, slug, display_name, bio, status, is_public, rating_avg, rating_count)
-VALUES ('00000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-0000000000a3',
+VALUES ('00000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-00000000e2e2',
         'oluwatobi', 'Oluwatobi', 'Mathematics and Sciences tutor.',
-        'APPROVED', TRUE, 4.6, 20)
-ON CONFLICT (id) DO NOTHING;
+        'APPROVED', TRUE, 4.6, 20);
 
 -- Tutor subjects (Batch 3): the marketplace tutor teaches Mathematics +
 -- Physics so search cards render "Teaches Mathematics · Physics".
