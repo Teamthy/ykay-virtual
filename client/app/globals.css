@@ -3,43 +3,49 @@
 @tailwind utilities;
 
 /* ============================================================
-   TUTERIA-INSPIRED DESIGN SYSTEM (phase 23 spec)
+   NUVORA DESIGN SYSTEM — green / deep-green / black / peach
    ============================================================ */
 :root {
   --font-display: "Anton", system-ui, sans-serif;
   --font-body: "DM Sans", system-ui, sans-serif;
 
-  --color-primary: #F4B400;
-  --color-primary-hover: #DFA300;
-  --color-primary-dark: #B98200;
-  --color-primary-light: #FFF3C4;
+  --color-primary: #70F250;
+  --color-primary-hover: #5FE63F;
+  --color-primary-dark: #4CCB31;
+  --color-primary-light: #DFFFF2;
 
-  --color-background: #FFFCF5;
-  --color-background-soft: #FFF8E8;
-  --color-background-muted: #F7F5EF;
+  --color-background: #FFF7E4;
+  --color-background-soft: #FFF7E4;
+  --color-background-muted: #F8EBCF;
   --color-white: #FFFFFF;
 
-  --color-text: #111111;
-  --color-text-primary: #181818;
-  --color-text-secondary: #555555;
-  --color-text-muted: #777777;
-  --color-text-on-primary: #111111;
+  --color-text: #000000;
+  --color-text-primary: #000000;
+  --color-text-secondary: #013920;
+  --color-text-muted: #52645B;
+  --color-text-on-primary: #000000;
 
-  --color-border: #E8E3D8;
-  --color-border-light: #F0ECE3;
+  --color-border: #DCE5DE;
+  --color-border-light: #EDE8DC;
 
-  --color-success: #198754;
-  --color-success-light: #E8F7EF;
-  --color-error: #D64545;
+  --color-success: #4CCB31;
+  --color-success-light: #E6FFDE;
+  --color-error: #D83A3A;
   --color-error-light: #FDECEC;
   --color-warning: #F4B400;
-  --color-warning-light: #FFF4CC;
-  --color-info: #2563EB;
-  --color-info-light: #EAF1FF;
+  --color-warning-light: #FFF3C4;
+  --color-info: #013920;
+  --color-info-light: #DFFFF2;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.10);
+  --text-primary: #000000;
+  --text-secondary: #013920;
+  --text-muted: #52645B;
+  --text-link: #013920;
+  --text-link-hover: #4CCB31;
+
+  --shadow-sm: 0 2px 8px rgba(1, 57, 32, 0.06);
+  --shadow-md: 0 8px 24px rgba(1, 57, 32, 0.10);
+  --shadow-lg: 0 16px 40px rgba(1, 57, 32, 0.14);
 
   --radius-sm: 8px;
   --radius-md: 12px;

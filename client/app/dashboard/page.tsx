@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 import { apiFetch } from "@/lib/api";
@@ -9,11 +9,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
-import { CalendarDays, ReceiptText, MessageSquareText, Wallet, LineChart, CreditCard } from "lucide-react";
+import { CalendarDays, ReceiptText, MessageSquareText, Wallet, LineChart, CreditCard, UserPlus } from "lucide-react";
 import { unreadCount } from "@/features/messaging/api";
-import { ReferralCard } from "@/features/referrals/ReferralCard";
 import { listProgressReports } from "@/features/learning/api";
-import { listLearners, type Learner } from "@/features/onboarding/api";
+import { createLearner, listLearners, type Learner } from "@/features/onboarding/api";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
@@ -52,7 +51,12 @@ const BOOKING_TABS = ["All", "Upcoming", "Completed", "Cancelled"] as const;
 
 export default function ParentDashboardPage() {
   const { user } = useSession();
+  const qc = useQueryClient();
   const [selectedLearner, setSelectedLearner] = useState<string>("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSubmitting, setAddSubmitting] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addForm, setAddForm] = useState({ first_name: "", last_name: "", current_level: "", school_name: "" });
   const [section, setSection] = useState<(typeof NAV)[number]["key"]>("bookings");
   const [tab, setTab] = useState<(typeof BOOKING_TABS)[number]>("All");
   const [receipt, setReceipt] = useState<OrderReceipt | null>(null);
@@ -208,7 +212,9 @@ export default function ParentDashboardPage() {
             <div className="rounded-2xl border border-brand-blue/20 bg-brand-blue-light/60 p-6 text-sm">
               <strong className="text-brand-navy">No learner linked yet.</strong>{" "}
               <span className="text-ink-600">Add your first learner to see schedules, attendance and progress.</span>{" "}
-              <Link href="/onboarding/learner" className="font-semibold text-brand-blue hover:underline">Add a learner →</Link>
+              <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-brand-blue hover:underline">
+                <UserPlus size={15} /> Add a learner →
+              </button>
             </div>
           )}
 
@@ -378,7 +384,6 @@ export default function ParentDashboardPage() {
             </div>
           )}
 
-          <ReferralCard userId={user?.id ?? ""} />
           <Link
             href="/account"
             className="mt-4 block rounded-2xl border border-ink-100 bg-white p-5 shadow-soft text-center text-sm font-bold text-brand-navy hover:border-brand-gold"
@@ -387,6 +392,60 @@ export default function ParentDashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Add-learner modal (A-29: inline create — the old /onboarding/learner
+          route redirected straight back to the dashboard for onboarded
+          parents, so adding a learner silently did nothing). */}
+      <Modal open={addOpen} onClose={() => { setAddOpen(false); setAddError(null); }} title="Add a learner">
+        <form
+          className="space-y-4"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setAddSubmitting(true);
+            setAddError(null);
+            try {
+              await createLearner({
+                first_name: addForm.first_name.trim(),
+                last_name: addForm.last_name.trim(),
+                current_level: addForm.current_level.trim() || undefined,
+                school_name: addForm.school_name.trim() || undefined,
+                relationship: "PARENT",
+              });
+              await qc.invalidateQueries({ queryKey: ["onboarding", "learners"] });
+              await qc.invalidateQueries({ queryKey: ["session", "context"] });
+              setAddForm({ first_name: "", last_name: "", current_level: "", school_name: "" });
+              setAddOpen(false);
+            } catch (err) {
+              setAddError(err instanceof Error ? err.message : "Could not add learner");
+            } finally {
+              setAddSubmitting(false);
+            }
+          }}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">First name *</span>
+              <input required value={addForm.first_name} onChange={(e) => setAddForm({ ...addForm, first_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Last name *</span>
+              <input required value={addForm.last_name} onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Current level</span>
+              <input placeholder="e.g. Year 7, JSS2, SSS3" value={addForm.current_level} onChange={(e) => setAddForm({ ...addForm, current_level: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">School (optional)</span>
+              <input value={addForm.school_name} onChange={(e) => setAddForm({ ...addForm, school_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+            </label>
+          </div>
+          {addError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{addError}</p>}
+          <button type="submit" disabled={addSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-gold text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:opacity-50">
+            {addSubmitting ? "Adding…" : "Add learner"}
+          </button>
+        </form>
+      </Modal>
 
       {/* Receipt modal */}
       <Modal

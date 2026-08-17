@@ -5,6 +5,7 @@ import { CategoryRail } from "@/components/layout/CategoryRail";
 import { StepsToTutor } from "@/components/home/StepsToTutor";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PrivateTuitionWizard } from "@/features/tuition/PrivateTuitionWizard";
+import { Check, PhoneCall } from "lucide-react";
 
 export const metadata: Metadata = buildMetadata({
   title: "Private Tuition — One-to-One Learning with Vetted Tutors | NUVORA",
@@ -63,26 +64,31 @@ export default function PrivateTuitionPage() {
       <section className="grid lg:grid-cols-[1fr_0.9fr] gap-10 items-start">
         <PrivateTuitionWizard />
         <aside className="space-y-5 lg:sticky lg:top-28">
-          <div className="border rounded-2xl p-6">
-            <h2 className="font-bold">Why private tuition at NUVORA</h2>
-            <ul className="mt-3 space-y-2.5 text-sm text-ink-700">
+          <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-soft">
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Why private tuition at NUVORA</h2>
+            <ul className="mt-5 space-y-4">
               {[
                 "Tutors are identity-verified, background-checked and competency-assessed",
                 "Lesson notes, homework and progress reports after every session",
                 "Payments held in escrow — released only after delivery",
                 "Reschedule-friendly within your package window",
               ].map((t) => (
-                <li key={t} className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>{t}</li>
+                <li key={t} className="flex items-start gap-3">
+                  <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-gold-light text-brand-green">
+                    <Check size={14} strokeWidth={3} />
+                  </span>
+                  <span className="text-sm leading-relaxed text-ink-700">{t}</span>
+                </li>
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl bg-brand-blue text-white p-6">
-            <h2 className="font-bold">Prefer to talk?</h2>
-            <p className="mt-2 text-sm text-white/80">
+          <div className="rounded-2xl bg-brand-navy p-6 text-white shadow-card">
+            <h2 className="font-display text-xl tracking-[0.02em]">Prefer to talk?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-white/80">
               Our advisors can guide you through options and pricing on a call.
             </p>
-            <a href="/contact" className="mt-4 inline-block rounded-xl bg-white text-brand-blue font-bold text-sm px-5 py-3">
-              Contact an advisor
+            <a href="/contact" className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-3 text-sm font-bold text-ink-900 transition-transform hover:-translate-y-0.5">
+              <PhoneCall size={15} /> Contact an advisor
             </a>
           </div>
         </aside>

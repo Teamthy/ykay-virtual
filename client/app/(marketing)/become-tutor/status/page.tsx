@@ -51,6 +51,20 @@ export default function BecomeTutorStatusPage() {
         <p className="mt-6 text-center text-xs text-ink-400">
           Application id: {state.profileId ? state.profileId.slice(0, 8) : "—"} · saved locally so you can return anytime
         </p>
+        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
+          >
+            Go to my dashboard
+          </Link>
+          <Link
+            href="/become-tutor/apply"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-300 px-6 py-3 text-sm font-bold text-ink-800 transition-all hover:border-brand-gold"
+          >
+            Continue application
+          </Link>
+        </div>
       </div>
     </main>
   );

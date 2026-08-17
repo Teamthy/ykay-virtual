@@ -10,24 +10,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Tuteria-inspired brand system (gold/cream design spec)
+        // NUVORA brand system — green / deep-green / black / peach
         brand: {
-          navy: "#0A1F44",       // Dark sections / deep navy
-          "navy-dark": "#111111",
-          blue: "#2563EB",       // Info blue
-          "blue-dark": "#1D4ED8",
-          "blue-light": "#EAF1FF",
-          gold: "#F4B400",       // PRIMARY — Tuteria gold
-          "gold-hover": "#DFA300",
-          "gold-dark": "#8A6000",
-          "gold-light": "#FFF3C4",
+          navy: "#013920",       // deep green (dark sections, headings)
+          "navy-dark": "#002A18",
+          blue: "#013920",       // links / accents → deep green
+          "blue-dark": "#0A4D32",
+          "blue-light": "#DFFFF2",
+          gold: "#70F250",       // PRIMARY — brand green
+          "gold-hover": "#5FE63F",
+          "gold-dark": "#4CCB31",
+          "gold-light": "#DFFFF2",
           orange: "#ED6D20",
           "orange-light": "#FDF0E8",
-          green: "#198754",      // Success
-          "green-dark": "#146c43",
-          "green-light": "#E8F7EF",
-          purple: "#0A033C",     // Prep deep purple (tuteriaprep)
-          "prep-orange": "#FF6636",
+          green: "#4CCB31",      // Success
+          "green-dark": "#2F9E26",
+          "green-light": "#E6FFDE",
+          purple: "#013920",
+          "prep-orange": "#70F250",
         },
         ink: {
           900: "#111111",
@@ -42,9 +42,9 @@ const config: Config = {
           50: "#F7F5EF",        // muted
         },
         surface: {
-          DEFAULT: "#FFFCF5",   // cream background
-          muted: "#F7F5EF",
-          subtle: "#FFF8E8",
+          DEFAULT: "#FFF7E4",   // peach background
+          muted: "#F8EBCF",
+          subtle: "#FFF7E4",
         },
       },
       fontFamily: {
@@ -67,7 +67,7 @@ const config: Config = {
         "card": "0 8px 24px rgba(0,0,0,0.08)",
         "lift": "0 16px 40px rgba(0,0,0,0.10)",
         "hero": "0 30px 80px rgba(0,0,0,0.15)",
-        "brand": "0 10px 30px rgba(244,180,0,0.25)",
+        "brand": "0 10px 30px rgba(112,242,80,0.28)",
       },
       animation: {
         "slide-down": "slideDown 0.25s ease-out",

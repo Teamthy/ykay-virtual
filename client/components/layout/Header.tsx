@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search, ChevronDown, Menu, X, GraduationCap, BookOpen, MonitorPlay, Star, ArrowRight } from "lucide-react";
 import { AuthNav } from "@/components/layout/AuthNav";
+import { useSession } from "@/hooks/useSession";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
@@ -63,6 +64,7 @@ const NAV_LINKS = [
 ];
 
 export function Header() {
+  const { user, isLoading } = useSession();
   const router = useRouter();
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -176,12 +178,14 @@ export function Header() {
           <ThemeToggle />
           <LanguageSwitcher />
           <AuthNav />
-          <Link
-            href="/onboarding"
-            className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:bg-brand-gold-hover"
-          >
-            Get started
-          </Link>
+          {!isLoading && !user && (
+            <Link
+              href="/onboarding"
+              className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:bg-brand-gold-hover"
+            >
+              Get started
+            </Link>
+          )}
         </div>
 
         <ThemeToggle className="lg:hidden" />
@@ -231,15 +235,17 @@ export function Header() {
               </div>
             ))}
           </div>
-          <div className="mt-3 border-t border-ink-100 pt-3">
-            <Link
-              href="/onboarding"
-              onClick={closeAll}
-              className="block rounded-lg bg-brand-gold px-4 py-2.5 text-center text-sm font-medium text-ink-900"
-            >
-              Get started
-            </Link>
-          </div>
+          {!isLoading && !user && (
+            <div className="mt-3 border-t border-ink-100 pt-3">
+              <Link
+                href="/onboarding"
+                onClick={closeAll}
+                className="block rounded-lg bg-brand-gold px-4 py-2.5 text-center text-sm font-medium text-ink-900"
+              >
+                Get started
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </header>
