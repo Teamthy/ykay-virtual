@@ -1,80 +1,124 @@
 import type { Metadata } from "next";
 import { buildMetadata, courseJsonLd, faqJsonLd } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { InnerHero } from "@/components/layout/InnerHero";
 import { RelatedContent } from "@/components/RelatedContent";
+import { apiFetchSSR } from "@/lib/server-api";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Users, BookOpen, FileText } from "lucide-react";
 
 type Props = { params: Promise<{ slug: string }> };
 
-const subjects: Record<string, any> = {
-  mathematics: { name: "Mathematics", category: "Academic", desc: "From Basic to A-Level, WAEC/NECO/JAMB focused.", exams: ["WAEC", "IGCSE", "JAMB"] },
-  "computer-science": { name: "Computer Science", category: "Digital", desc: "IGCSE CS with Computing leader, Python, AI, Cybersecurity.", exams: ["IGCSE", "A-Level"] },
-  "ielts-prep": { name: "IELTS Preparation", category: "Professional", desc: "8.0+ average band, 95% success, 750+ students — Tuteria parity + structured mocks.", exams: ["IELTS"] },
+// Subject detail — fetched from the API like programmes/tutors, so every
+// catalogue subject has a real page (the old version was a hardcoded
+// 3-subject stub that 404'd the other ~57 subjects).
+type SubjectDTO = {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  description?: string | null;
+  is_active: boolean;
 };
+
+async function fetchSubject(slug: string): Promise<SubjectDTO | null> {
+  try {
+    const res = await apiFetchSSR<SubjectDTO>(`/subjects/${slug}`);
+    return res.data ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const s = subjects[params.slug];
-  if (!s) return buildMetadata({ title: "Subject Not Found", description: "Not found", path: `/subjects/${params.slug}`, noIndex: true });
+  const s = await fetchSubject(params.slug);
+  if (!s) {
+    return buildMetadata({ title: "Subject Not Found", description: "Subject not found", path: `/subjects/${params.slug}`, noIndex: true });
+  }
   return buildMetadata({
     title: `${s.name} Tutoring — ${s.category} | NUVORA`,
-    description: s.desc,
+    description:
+      s.description ??
+      `${s.name} tutoring with vetted NUVORA tutors — private tuition, small-group cohorts and exam preparation (${s.category}).`,
     path: `/subjects/${params.slug}`,
   });
 }
 
 export default async function SubjectPage(props: Props) {
   const params = await props.params;
-  const subject = subjects[params.slug];
+  const subject = await fetchSubject(params.slug);
   if (!subject) return notFound();
 
+  const desc =
+    subject.description ??
+    `${subject.name} tutoring with vetted NUVORA tutors — one-to-one private tuition and small-group cohorts, with progress reports for parents and escrow-protected payments.`;
+
   const course = courseJsonLd({
-    name: subject.name,
-    description: subject.desc,
+    name: `${subject.name} Tutoring`,
+    description: desc,
     provider: "NUVORA",
-    url: `https://nuvora.com/subjects/${params.slug}`,
+    url: `https://nuvora.com/subjects/${subject.slug}`,
   });
   const faqs = faqJsonLd([
-    { question: `Where will ${subject.name} lessons hold?`, answer: "In your home, online via Google Meet/Zoom, or hybrid — you choose location_mode ONLINE/IN_PERSON/HYBRID." },
-    { question: "How do you verify tutors?", answer: "Govt ID + social + guarantor + competency test + lengthy interview + background check + two-way reviews. Docs in PRIVATE bucket with signed URLs." },
+    { question: `How do I start ${subject.name} lessons?`, answer: "Browse tutors for this subject, request private tuition, or join a small-group cohort — your payment stays in escrow until lessons are delivered." },
+    { question: "How are NUVORA tutors verified?", answer: "Every tutor passes identity and document verification, a competency assessment in their subject, an interview and background checks before they can teach." },
   ]);
 
   return (
     <main className="container-x py-12">
-      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Subjects", href: "/subjects" }, { name: subject.name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqs) }} />
 
       <InnerHero>
-        <div className="text-xs uppercase font-bold tracking-wide text-brand-blue">{subject.category}</div>
-        <h1 className="mt-2 text-4xl font-extrabold">{subject.name} — Expert Tutors</h1>
-        <p className="mt-4 text-ink-600 max-w-3xl">{subject.desc}</p>
-        <div className="mt-4 flex gap-2">
-          {subject.exams.map((e: string) => (
-            <span key={e} className="text-xs bg-ink-100 px-3 py-1 rounded-full">{e}</span>
-          ))}
+        <span className="inline-flex rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-brand-green">
+          {subject.category}
+        </span>
+        <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">{subject.name}</h1>
+        <p className="mt-4 max-w-3xl leading-relaxed text-ink-600">{desc}</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href={`/tutors?subject=${subject.slug}`}
+            className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover hover:-translate-y-0.5"
+          >
+            <Users size={15} /> Find a tutor
+          </Link>
+          <Link
+            href={`/cohorts`}
+            className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-6 py-3 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+          >
+            <BookOpen size={15} /> Browse cohorts
+          </Link>
         </div>
       </InnerHero>
 
-      <div className="mt-10 grid md:grid-cols-3 gap-6">
-        <div className="border rounded-2xl p-6">
-          <h3 className="font-bold">Private Tuition</h3>
-          <p className="mt-2 text-sm text-ink-600">1:1 physical or online, adaptive plan, escrow.</p>
-          <Link href={`/programmes?subject=${params.slug}`} className="mt-4 inline-block text-sm font-semibold text-brand-blue">Find Tutor →</Link>
+      <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <Users size={20} className="text-brand-green" />
+          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-brand-navy">Private tuition</h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-600">1-to-1 online or in person, adaptive learning plan, escrow-protected payment.</p>
+          <Link href={`/private-tuition?subject=${subject.slug}`} className="mt-4 inline-block text-sm font-bold text-brand-green hover:underline">
+            Book tuition →
+          </Link>
         </div>
-        <div className="border rounded-2xl p-6">
-          <h3 className="font-bold">Cohort</h3>
-          <p className="mt-2 text-sm text-ink-600">Small-group live classes, weekly reports.</p>
-          <Link href={`/online-classes?subject=${params.slug}`} className="mt-4 inline-block text-sm font-semibold text-brand-blue">Join Cohort →</Link>
+        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <BookOpen size={20} className="text-brand-green" />
+          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-brand-navy">Small-group cohorts</h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-600">Live classes with a vetted tutor, recordings and weekly progress reports.</p>
+          <Link href={`/cohorts`} className="mt-4 inline-block text-sm font-bold text-brand-green hover:underline">
+            View cohorts →
+          </Link>
         </div>
-        <div className="border rounded-2xl p-6">
-          <h3 className="font-bold">Related Blog</h3>
-          <p className="mt-2 text-sm text-ink-600">Subject-tagged articles for SEO growth loop.</p>
-          <Link href={`/blog?subject=${params.slug}`} className="mt-4 inline-block text-sm font-semibold text-brand-blue">Read Guides →</Link>
+        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <FileText size={20} className="text-brand-green" />
+          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-brand-navy">Guides &amp; resources</h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-600">Exam strategy, study guides and subject advice from our tutors.</p>
+          <Link href={`/blog`} className="mt-4 inline-block text-sm font-bold text-brand-green hover:underline">
+            Read guides →
+          </Link>
         </div>
       </div>
+
       <RelatedContent subjectSlug={subject.slug} />
     </main>
   );

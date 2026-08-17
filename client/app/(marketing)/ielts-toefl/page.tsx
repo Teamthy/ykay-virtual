@@ -23,19 +23,19 @@ const INCLUDES = [
 ];
 
 const FAQS = [
-  { question: "How long does SAT prep take?", answer: "Most students prepare 6–12 weeks with 2–3 sessions per week, depending on their current band and target." },
-  { question: "Is the digital SAT covered?", answer: "Yes — we cover both IELTS Academic/General and TOEFL iBT, including the new 2023+ TOEFL format." },
+  { question: "How long does IELTS/TOEFL prep take?", answer: "Most students prepare 6–12 weeks with 2–3 sessions per week, depending on their current band and target score." },
+  { question: "Do you cover both IELTS and TOEFL?", answer: "Yes — we cover IELTS Academic and General Training as well as TOEFL iBT, including the current TOEFL format." },
   { question: "Can we start before booking a full package?", answer: "Yes, request a free placement test with a tutor and decide after." },
 ];
 
-export default function SatPage() {
+export default function IeltsToeflPage() {
   return (
     <main>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd({
           name: "NUVORA IELTS & TOEFL Preparation",
-          description: "Digital SAT prep with vetted tutors — diagnostics, section drills and full practice tests.",
+          description: "IELTS and TOEFL iBT preparation with vetted tutors — speaking drills, writing correction and full mock tests.",
           provider: "NUVORA",
           url: "https://nuvora.com/ielts-toefl",
         })) }}

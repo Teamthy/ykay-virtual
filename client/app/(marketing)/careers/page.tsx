@@ -5,7 +5,7 @@ import { buildMetadata } from "@/lib/seo";
 export function generateMetadata(): Metadata {
   return buildMetadata({
     title: "Careers — Join NUVORA",
-    description: "Build the platform that beats Tuteria at SEO and trust. Engineering, academic operations, tutor success.",
+    description: "Join the team building Africa's trusted tutoring platform — engineering, academic operations and tutor success.",
     path: "/careers",
   });
 }

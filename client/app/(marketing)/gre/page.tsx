@@ -23,19 +23,19 @@ const INCLUDES = [
 ];
 
 const FAQS = [
-  { question: "How long does SAT prep take?", answer: "Most students prepare 10–14 weeks with 2–3 sessions per week, depending on their diagnostic and target." },
-  { question: "Is the digital SAT covered?", answer: "Yes — we train on the current computer-adaptive GRE format with official-style practice tests." },
+  { question: "How long does GRE prep take?", answer: "Most students prepare 10–14 weeks with 2–3 sessions per week, depending on their diagnostic score and target." },
+  { question: "Is the computer-adaptive GRE covered?", answer: "Yes — we train on the current GRE General Test format with official-style practice tests." },
   { question: "Can we start before booking a full package?", answer: "Yes, request a free diagnostic session with a tutor and decide after." },
 ];
 
-export default function SatPage() {
+export default function GrePage() {
   return (
     <main>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd({
           name: "NUVORA GRE Preparation",
-          description: "Digital SAT prep with vetted tutors — diagnostics, section drills and full practice tests.",
+          description: "GRE preparation with vetted tutors — quant and verbal drills, analytical writing feedback and full practice tests.",
           provider: "NUVORA",
           url: "https://nuvora.com/gre",
         })) }}
