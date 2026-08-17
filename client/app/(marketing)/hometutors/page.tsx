@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
-import { StatsBand } from "@/components/home/StatsBand";
 import { LearningNeeds } from "@/components/home/LearningNeeds";
-import { ApproachSection } from "@/components/home/ApproachSection";
 import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { TutorsShowcase } from "@/components/home/TutorsShowcase";
@@ -29,7 +27,7 @@ export default function HomeTutorsPage() {
 
       {/* Hero — PrebuiltUI template */}
       <PageHero
-        announcement="Home tutoring done right · Top 1% of vetted tutors"
+        announcement="Home tutoring · Vetted tutors"
         title="Better, Brighter Future For Your Kids."
         subtitle="Get personalized home tutoring that is designed to guide your children toward exam success, boost their confidence, and get better school grades."
         ctas={[
