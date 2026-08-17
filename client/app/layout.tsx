@@ -76,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <Providers>
           {/* Marketing chrome renders ONLY on public routes; dashboards use
               their own personalized DashboardShell (Batch 1). */}

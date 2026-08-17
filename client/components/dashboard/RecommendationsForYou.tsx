@@ -74,7 +74,8 @@ export function RecommendationsForYou() {
     );
   }
   const data = recs.data;
-  if (!data || (data.cohorts.length === 0 && data.programmes.length === 0 && data.tutors.length === 0)) {
+  if (!data || !data.cohorts || !data.programmes || !data.tutors ||
+    (data.cohorts.length === 0 && data.programmes.length === 0 && data.tutors.length === 0)) {
     return null; // no personalisation available — dashboards render without it
   }
 
