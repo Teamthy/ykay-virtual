@@ -40,7 +40,7 @@ const SERVICES = [
   {
     icon: <Star size={20} />,
     label: "NUVORA Plus",
-    desc: "Top 5% of tutors nationwide",
+    desc: "Priority matching with vetted specialist tutors",
     href: "/pricing",
     bg: "#DFFFF2",
     color: "#4CCB31",

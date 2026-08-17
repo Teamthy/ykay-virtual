@@ -141,7 +141,7 @@ test("parent pilot journey: register → learner → booking → webhook → LMS
   await completeVerification(request, email);
   await uiLogin(page, email);
   await page.goto("/dashboard");
-  await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Family dashboard/ })).toBeVisible();
   // Suggestions engine renders the "For you" shelf on the dashboard.
   await expect(page.getByRole("heading", { name: "For you" })).toBeVisible();
 
@@ -223,7 +223,7 @@ test("first-time wizard: 3 steps then the role dashboard", async ({ page, reques
   // in flight — click without waiting for navigation, then assert the URL.
   await page.getByRole("button", { name: /Finish/ }).click({ noWaitAfter: true });
   await expect(page).toHaveURL(/dashboard/, { timeout: 20_000 });
-  await expect(page.getByRole("heading", { name: "Bookings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Family dashboard/ })).toBeVisible();
 });
 
 test("become-a-tutor: marketing page + apply step creates the vetting profile", async ({ page, request }) => {

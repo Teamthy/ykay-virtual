@@ -6,7 +6,7 @@ import { Zap, TrendingUp, CalendarClock, LifeBuoy } from "lucide-react";
 const BENEFITS = [
   {
     icon: <Zap size={20} />,
-    title: "Get access to a constant stream of students",
+    title: "Teach on a schedule that fits you",
     desc: "Decide when and how many hours you want to teach, and fit lessons to your schedule. Teach students around your area or online.",
   },
   {

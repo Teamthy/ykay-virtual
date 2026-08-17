@@ -32,8 +32,8 @@ const PLANS = [
     name: "NUVORA Plus",
     price: "₦52,500",
     per: "per month",
-    desc: "Premium top-5% tutoring with a mentor",
-    features: ["Top 5% of tutors nationwide", "Dedicated learning mentor", "Priority scheduling", "Weekly premium reports"],
+    desc: "Premium tutoring with a dedicated mentor",
+    features: ["Priority matching with vetted specialists", "Dedicated learning mentor", "Priority scheduling", "Weekly premium reports"],
     popular: false,
   },
   {

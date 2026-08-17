@@ -49,9 +49,9 @@ const PLANS = [
     priceMonthly: "₦52,500",
     per: "per month",
     perMonthly: "/mo",
-    desc: "Premium top-5% tutoring with a mentor",
+    desc: "Premium tutoring with a dedicated mentor",
     features: [
-      "Top 5% of tutors nationwide",
+      "Priority matching with vetted specialists",
       "Dedicated learning mentor",
       "Priority scheduling",
       "Weekly premium reports",

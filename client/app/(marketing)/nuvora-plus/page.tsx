@@ -10,15 +10,15 @@ export const revalidate = 600;
 export const metadata: Metadata = buildMetadata({
   title: "NUVORA Plus — Premium Tutoring for International Learners | NUVORA",
   description:
-    "Upgrade your child's learning with NUVORA Plus — the top 5% of tutors nationwide, foreign-standard tutoring without the foreign price tag.",
+    "Upgrade your child's learning with NUVORA Plus — priority matching with vetted specialist tutors and a dedicated advisor.",
   path: "/nuvora-plus",
 });
 
 const FEATURES = [
   {
     icon: <Crown size={20} />,
-    title: "Top 5% of Tutors Nationwide",
-    desc: "Hand-picked, elite tutors with proven track records of outstanding results.",
+    title: "Vetted specialist tutors",
+    desc: "Tutors who have passed identity checks, interview and a subject competency assessment.",
   },
   {
     icon: <UserCheck size={20} />,
@@ -43,7 +43,7 @@ export default function NuvoraPlusPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
       <PageHero
-        eyebrow="Top 5% of Tutors Nationwide"
+        eyebrow="NUVORA Plus"
         title="Upgrade Your Child's Learning with NUVORA Plus"
         subtitle="Give your child the ultimate learning advantage with NUVORA Plus — our premium tutoring service designed for families who want the best."
         crumbs={[{ name: "Home", href: "/" }, { name: "NUVORA Plus" }]}
@@ -59,19 +59,18 @@ export default function NuvoraPlusPage() {
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-brand-blue-light px-4 py-1.5 text-xs font-bold text-brand-navy">
               <Star size={13} className="text-brand-gold" fill="currentColor" />
-              Trusted by Families Across 4 Continents
+              Premium matching and reporting
             </p>
             <h2 className="mt-5 font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
               Foreign-Standard Tutoring without the Foreign Price Tag
             </h2>
             <p className="mt-4 text-ink-600 leading-relaxed">
               Give your child the quality of education families abroad pay thousands for —
-              delivered by top Nigerian tutors at up to 70% less than the cost of typical
-              international tutoring.
+              delivered by vetted Nigerian tutors on British and Nigerian curricula.
             </p>
             <ul className="mt-6 space-y-3">
               {[
-                "Elite, hand-selected tutors from the top 5%",
+                "Priority matching with vetted specialist tutors",
                 "Personalised premium learning plans",
                 "Priority scheduling and flexible rescheduling",
                 "Weekly premium progress reports",
@@ -114,8 +113,8 @@ export default function NuvoraPlusPage() {
               </div>
             ))}
             <div className="rounded-2xl border-2 border-brand-gold bg-brand-gold-light p-6 text-center">
-              <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">Up to 70% less</p>
-              <p className="mt-1 text-sm text-ink-600">than typical international tutoring costs</p>
+              <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">Local pricing</p>
+              <p className="mt-1 text-sm text-ink-600">Nigerian tutors — no invented discount percentage</p>
             </div>
           </div>
         </div>
@@ -130,7 +129,7 @@ export default function NuvoraPlusPage() {
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {[
               { n: "1", t: "Book a discovery call", d: "Tell us your child's goals, level and schedule — we'll design a premium plan." },
-              { n: "2", t: "Meet your elite tutor", d: "We hand-pick a top-5% tutor matched to your child's learning style." },
+              { n: "2", t: "Meet your tutor", d: "We match a vetted specialist to your child's goals and schedule." },
               { n: "3", t: "Track premium progress", d: "Weekly premium reports, live classes and priority support throughout." },
             ].map((s) => (
               <div key={s.n} className="rounded-2xl border border-ink-100 bg-white p-7 text-center shadow-soft">
