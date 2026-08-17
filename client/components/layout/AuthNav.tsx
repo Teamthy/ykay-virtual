@@ -85,7 +85,9 @@ export function AuthNav() {
               </Link>
             ))}
             <button
-              onClick={() => void logout()}
+              onClick={() => {
+                if (window.confirm("Log out of NUVORA?")) void logout();
+              }}
               className="block w-full text-left rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50"
             >
               Log out

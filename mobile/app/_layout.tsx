@@ -30,6 +30,8 @@ export default function RootLayout() {
         <Stack.Screen name="notifications" options={{ title: "Notifications" }} />
         <Stack.Screen name="account" options={{ title: "Account" }} />
         <Stack.Screen name="wizard" options={{ title: "Welcome", headerBackVisible: false }} />
+        <Stack.Screen name="wizard/profile" options={{ title: "Profile", headerBackVisible: false }} />
+        <Stack.Screen name="wizard/goals" options={{ title: "Goals", headerBackVisible: false }} />
         <Stack.Screen name="recommendations" options={{ title: "For you" }} />
         <Stack.Screen name="subjects" options={{ title: "Subjects" }} />
         <Stack.Screen name="subjects/[slug]" options={{ title: "Subject" }} />

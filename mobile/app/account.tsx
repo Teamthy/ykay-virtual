@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -61,12 +61,21 @@ export default function Account() {
 
   const logout = async () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-    try {
-      await apiFetch("/auth/logout", { method: "POST" }).catch(() => undefined);
-    } finally {
-      await setToken(null);
-      router.replace("/login");
-    }
+    Alert.alert("Log out?", "You'll need to log in again to access your account.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Log out",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await apiFetch("/auth/logout", { method: "POST" }).catch(() => undefined);
+          } finally {
+            await setToken(null);
+            router.replace("/login");
+          }
+        },
+      },
+    ]);
   };
 
   const initial = me?.first_name?.[0] ?? me?.email?.[0]?.toUpperCase() ?? "?";

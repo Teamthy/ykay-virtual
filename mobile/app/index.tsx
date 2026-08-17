@@ -64,7 +64,10 @@ export default function Welcome() {
     >
       <Screen scroll gradient={["#013920", "#002A18"]} padded>
         <View style={styles.top}>
-          <AppText variant="h2" style={{ color: colors.gold, letterSpacing: 4, fontWeight: "900" }}>
+          <View style={styles.monogram}>
+            <AppText style={{ color: colors.ink[900], fontWeight: "900", fontSize: 26 }}>N</AppText>
+          </View>
+          <AppText variant="h2" style={{ color: colors.gold, letterSpacing: 4, fontWeight: "900", marginTop: 14 }}>
             NUVORA
           </AppText>
           <AppText variant="caption" style={{ color: colors.white, opacity: 0.6, letterSpacing: 2 }}>
@@ -92,7 +95,7 @@ export default function Welcome() {
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(340).springify().damping(16)} style={styles.pills}>
-            {["1,200+ tutors", "40+ programmes", "AI support 24/7"].map((p) => (
+            {["Vetted tutors", "Live cohorts", "Exam prep"].map((p) => (
               <View key={p} style={styles.pill}>
                 <AppText variant="label" style={{ color: colors.navy }}>
                   {p}
@@ -121,6 +124,14 @@ const styles = StyleSheet.create({
   gradient: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.navy },
   top: { alignItems: "center", gap: 4, marginTop: 12 },
+  monogram: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.gold,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   hero: { flex: 1, justifyContent: "center", marginTop: 40 },
   pills: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 20 },
   pill: { backgroundColor: colors.gold, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7 },

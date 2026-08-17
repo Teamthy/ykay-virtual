@@ -55,6 +55,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     // A-27: revoke the session server-side (fire-and-forget — the same
     // revocation as the header logout), clear the onboarding draft so the
     // next user starts fresh, then drop the cookie and reload.
+    // Round 37: confirm before logging out (accidental taps happen).
+    if (!window.confirm("Log out of NUVORA?")) return;
     void apiLogout().catch(() => {});
     clearOnboardingDraft();
     document.cookie = "nuvora_session=; Max-Age=0; path=/";
