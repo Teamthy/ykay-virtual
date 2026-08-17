@@ -319,8 +319,3 @@ function LinkToTutors() {
     </a>
   );
 }
-underline">
-      Browse tutors on the marketplace →
-    </a>
-  );
-}
