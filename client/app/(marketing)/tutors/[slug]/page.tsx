@@ -131,7 +131,7 @@ export default async function TutorPage(props: Props) {
               <PrivateBookingForm
                 tutorProfileId={tutor.id}
                 subjects={subjectNames}
-                defaultRate={tutor.hourly_rate_min ?? 5000}
+                defaultRate={tutor.hourly_rate_min ?? 0}
               />
             </div>
           </section>
