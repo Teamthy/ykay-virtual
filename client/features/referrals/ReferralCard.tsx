@@ -51,7 +51,7 @@ export function ReferralCard({ userId }: { userId: string }) {
   });
 
   const copy = async () => {
-    const link = `${window.location.origin}/register?ref=${info.data?.code ?? ""}`;
+    const link = `${window.location.origin}/r/${info.data?.code ?? ""}`;
     try {
       await navigator.clipboard.writeText(link);
       toast.success("Referral link copied!", { description: "Share it with friends and family." });

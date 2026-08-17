@@ -141,7 +141,51 @@ type ReferralService struct {
 	referrals referral.ReferralRepository
 	wallets   payment.WalletRepository
 	audit     identity.AuditService
+	users     identity.UserRepository
 	now       func() time.Time
+}
+
+// WithUsers wires the user repository used to resolve a referrer's first
+// name for the public invite-landing lookup.
+func (s *ReferralService) WithUsers(u identity.UserRepository) *ReferralService {
+	s.users = u
+	return s
+}
+
+// ReferralLookup — minimal public info about a referral code (for the
+// /r/{code} landing page). Deliberately minimal: never the user id/email.
+type ReferralLookup struct {
+	Valid        bool    `json:"valid"`
+	ReferrerName string  `json:"referrer_name,omitempty"`
+	Reward       float64 `json:"reward"`
+	Currency     string  `json:"currency"`
+}
+
+// LookupCode resolves a code for a public invite landing page. It never
+// errors for unknown codes (valid=false instead) so the page can render an
+// "invalid invite" state rather than a 404.
+func (s *ReferralService) LookupCode(ctx context.Context, code string) (ReferralLookup, error) {
+	out := ReferralLookup{Valid: false, Reward: ReferralRewardAmount, Currency: "NGN"}
+	if s.referrals == nil {
+		return out, nil
+	}
+	rc, err := s.referrals.GetCode(ctx, strings.TrimSpace(strings.ToUpper(code)))
+	if err != nil || !rc.IsActive {
+		return out, nil
+	}
+	out.Valid = true
+	if s.users != nil {
+		if u, err := s.users.FindByID(ctx, rc.UserID); err == nil {
+			name := strings.TrimSpace(u.FirstName)
+			if name == "" {
+				if at := strings.IndexByte(u.Email, '@'); at > 0 {
+					name = u.Email[:at]
+				}
+			}
+			out.ReferrerName = name
+		}
+	}
+	return out, nil
 }
 
 func NewReferralService(refs referral.ReferralRepository, wallets payment.WalletRepository,

@@ -260,6 +260,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/tutors/{slug}/reviews", handlers.Growth.ListTutorReviews)
 	mux.HandleFunc("GET "+v1+"/me/referral-code", handlers.Growth.GetMyCode)
 	mux.HandleFunc("POST "+v1+"/referrals/apply", handlers.Growth.ApplyReferral)
+	mux.HandleFunc("GET "+v1+"/referrals/{code}", handlers.Growth.LookupCode)
 	mux.HandleFunc("GET "+v1+"/me/referrals", handlers.Growth.ListMyReferrals)
 	mux.HandleFunc("POST "+v1+"/institutions", handlers.Growth.CreateInstitution)
 

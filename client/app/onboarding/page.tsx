@@ -52,6 +52,7 @@ type ObState = {
   bio?: string;
   language?: string;
   next?: string;
+  ref?: string;
 };
 
 const ROLES = [
@@ -775,6 +776,14 @@ function OnboardingInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sp]);
 
+  // Carry a ?ref= referral code (from /r/{code}) into the register call so the
+  // referrer is credited when the account is created.
+  useEffect(() => {
+    const ref = sp.get("ref");
+    if (ref && !state.ref) save({ ref: ref.trim().toUpperCase() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sp]);
+
   // Finished accounts never see the signup steps again — straight through.
   // Reads state.next (persisted) because the step URLs drop the ?next= param.
   useEffect(() => {
@@ -900,6 +909,7 @@ function OnboardingInner() {
         email: state.email.trim(),
         password: randomPassword(),
         roles: ["PARENT"],
+        referral_code: state.ref,
       });
       save({ userId: created.id, verified: false });
       go(2);

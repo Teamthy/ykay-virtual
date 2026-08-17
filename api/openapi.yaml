@@ -1972,6 +1972,17 @@ paths:
                   currency: { type: string }
                   share_link: { type: string }
 
+  /referrals/{code}:
+    get:
+      summary: "Public referral-code lookup for the invite landing page (valid + referrer first name)"
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: "Lookup result (valid may be false)" }
+
   /referrals/apply:
     post:
       tags: [referrals]

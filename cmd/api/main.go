@@ -280,7 +280,7 @@ func main() {
 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)
 	supportSvc := service.NewSupportService(repos.SupportTickets)
 	reviewSvc := service.NewReviewService(repos.Reviews, repos.TutorRepo, audit)
-	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit)
+	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit).WithUsers(repos.Users)
 	institutionSvc := service.NewInstitutionService(repos.Institutions, audit)
 	paymentSvc.WithReferrals(referralSvc)
 	authSvc.WithReferrals(referralSvc)

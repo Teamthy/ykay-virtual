@@ -37,6 +37,16 @@ func NewGrowthHandler(reviews *service.ReviewService, referrals *service.Referra
 	return &GrowthHandler{reviews: reviews, referrals: referrals, institutions: institutions, tutors: tutors}
 }
 
+// LookupCode — GET /referrals/{code} (public invite landing page lookup).
+func (h *GrowthHandler) LookupCode(w http.ResponseWriter, r *http.Request) {
+	lookup, err := h.referrals.LookupCode(r.Context(), r.PathValue("code"))
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, lookup, nil)
+}
+
 // --- Reviews ---
 
 func (h *GrowthHandler) CreateReview(w http.ResponseWriter, r *http.Request) {

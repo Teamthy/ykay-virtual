@@ -83,7 +83,7 @@ type TutorDTO struct {
 	// VerifiedAt is the vetting-verification timestamp; nil = not yet verified.
 	// The detail page uses this to show an honest "ID Verified" badge instead
 	// of a hardcoded one (Phase 6).
-	VerifiedAt       *time.Time        `json:"verified_at,omitempty"`
+	VerifiedAt *time.Time `json:"verified_at,omitempty"`
 }
 
 func toTutorDTO(res tutor.TutorSearchResult) TutorDTO {
