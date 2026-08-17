@@ -39,42 +39,33 @@ const INCLUDED = [
 ];
 
 const PRIZES = [
-  { n: "1", text: "₦2,000,000 + Laptop to the top UTME scorer" },
-  { n: "2", text: "₦1,000,000 + Laptop to the 2nd highest scorer" },
-  { n: "3", text: "₦500,000 + Laptop to the 3rd highest scorer" },
-  { n: "4-10", text: "Laptops to the 4th to 10th highest scorers" },
-  { n: "★", text: "Weekly Prizes for top performing students" },
+  { n: "1", text: "Prize places are listed only when a round is funded" },
+  { n: "★", text: "Weekly recognition for effort — not a published cash pool" },
 ];
 
 const PACKAGES = [
   {
-    name: "UTME Mastery Plan",
-    old: "₦50,000",
+    name: "UTME Mastery",
     price: "₦35,000",
-    tag: "30% discount ends soon",
+    tag: "Indicative · confirm before pay",
     featured: false,
     features: [
-      "4 months of Intensive Live Classes from January to April",
-      "Installment Payment available",
-      "All Classes Recorded, Re-watch Anytime",
-      "200+ Rigorous Topic-Based Practice Exams",
-      "10+ Full-length Simulated CBT Mock Exams",
-      "First-Class Teachers & UTME Experts",
-      "Weekly Report on Student Performance",
+      "Live classes + recordings you can rewatch on your phone",
+      "Topic drills from past-paper patterns",
+      "Weekly timed CBT-style mocks",
+      "Weekly report for parents",
     ],
   },
   {
-    name: "UTME Plus Plan",
-    old: "₦75,000",
+    name: "UTME Plus",
     price: "₦52,500",
-    tag: "30% discount ends soon",
+    tag: "Indicative · confirm before pay",
     featured: true,
     features: [
-      "Everything in Mastery, plus:",
-      "Remedial classes for those who need extra help",
-      "Small-group attention with dedicated mentor",
-      "Priority scholarship eligibility",
-      "Parent progress dashboard access",
+      "Everything in Mastery",
+      "Remedial office hours",
+      "Smaller group + named mentor",
+      "Priority advisor replies",
     ],
   },
 ];
@@ -282,9 +273,8 @@ export default function Utme2026Page() {
                 <h3 className="font-display text-2xl tracking-[0.02em] text-[#013920]">{p.name}</h3>
                 <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#4CCB31]">{p.tag}</p>
                 <div className="mt-4 flex items-baseline gap-3">
-                  <span className="text-sm text-ink-400 line-through">{p.old}</span>
                   <span className="font-display text-4xl tracking-[0.02em] text-[#013920]">{p.price}</span>
-                  <span className="text-sm font-semibold text-ink-500">/student</span>
+                  <span className="text-sm font-semibold text-ink-500">indicative</span>
                 </div>
                 <p className="mt-1 text-xs text-ink-500">Comprehensive online UTME Prep for exam success</p>
                 <ul className="mt-6 space-y-2.5">

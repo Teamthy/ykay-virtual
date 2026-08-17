@@ -84,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
             <MobileNav />
           </ShellVisibility>
-          <main id="main-content" tabIndex={-1} className="pb-16 outline-none lg:pb-0">{children}</main>
+          <div id="main-content" tabIndex={-1} className="pb-16 outline-none lg:pb-0">{children}</div>
           {/* Footer appears ONLY on the marketing home page; the floating
               AI assistant (moveable launcher) is available on EVERY page. */}
           <HomeOnly>
