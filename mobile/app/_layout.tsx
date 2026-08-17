@@ -40,6 +40,9 @@ export default function RootLayout() {
         <Stack.Screen name="search" options={{ title: "Find a tutor" }} />
         <Stack.Screen name="saved" options={{ title: "Saved tutors" }} />
         <Stack.Screen name="tutors/[slug]" options={{ title: "Tutor" }} />
+        <Stack.Screen name="tutor-reviews/[slug]" options={{ title: "Reviews" }} />
+        <Stack.Screen name="programmes/[slug]" options={{ title: "Programme" }} />
+        <Stack.Screen name="cohorts/[id]" options={{ title: "Cohort" }} />
         <Stack.Screen name="tutor/index" options={{ title: "Tutor hub" }} />
         <Stack.Screen name="tutor/earnings" options={{ title: "Earnings" }} />
         <Stack.Screen name="tutor/lessons" options={{ title: "My lessons" }} />

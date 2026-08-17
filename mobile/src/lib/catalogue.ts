@@ -80,3 +80,71 @@ export function formatRating(avg: number, count: number): string {
   if (count === 0) return "No reviews yet";
   return `${avg.toFixed(1)}★ · ${count} review${count === 1 ? "" : "s"}`;
 }
+
+export type TutorReview = {
+  id: string;
+  reviewer_user_id: string;
+  tutor_profile_id: string;
+  rating: number;
+  title?: string | null;
+  comment?: string | null;
+  status: string;
+  is_public: boolean;
+  consent_given: boolean;
+  created_at: string;
+};
+
+export type ProgrammeDetail = {
+  id: string;
+  title: string;
+  slug: string;
+  summary?: string | null;
+  description?: string | null;
+  format: string;
+  status: string;
+  price_min?: number | null;
+  price_max?: number | null;
+  currency: string;
+  is_featured: boolean;
+  curriculum_name?: string | null;
+  level_name?: string | null;
+  exam_name?: string | null;
+  next_start?: string | null;
+  subjects: string[];
+  subject_slugs: string[];
+};
+
+export type CohortDetail = {
+  id: string;
+  programme_id: string;
+  title: string;
+  slug: string;
+  tutor_profile_id?: string | null;
+  capacity: number;
+  enrolled_count: number;
+  start_date: string;
+  end_date: string;
+  schedule_description?: string | null;
+  timezone: string;
+  location_mode: string;
+  fee: number;
+  currency: string;
+  status: string;
+  published_at?: string | null;
+};
+
+export function getTutorReviews(slug: string): Promise<TutorReview[]> {
+  return apiFetch<TutorReview[]>(`/tutors/${slug}/reviews`).then((r) => r.data ?? []);
+}
+
+export function getProgramme(slug: string): Promise<ProgrammeDetail | null> {
+  return apiFetch<ProgrammeDetail>(`/programmes/${slug}`)
+    .then((r) => r.data)
+    .catch(() => null);
+}
+
+export function getCohort(id: string): Promise<CohortDetail | null> {
+  return apiFetch<CohortDetail>(`/cohorts/${id}`)
+    .then((r) => r.data)
+    .catch(() => null);
+}
