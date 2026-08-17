@@ -27,28 +27,25 @@ export default async function CohortEnrollPage(props: Props) {
   if (!cohort || cohort.status !== "PUBLISHED") notFound();
 
   return (
-    <main className="container-x py-12">
+    <main>
       <PageHero
         title={`Enrol in ${cohort.title}`}
-        subtitle={`Your enrolment is confirmed instantly after payment. Lessons follow the published cohort schedule in ${cohort.timezone}. Your payment is protected by our escrow guarantee.`}
+        subtitle={`Your enrolment is confirmed after payment. Lessons follow the published schedule in ${cohort.timezone}. Payment is held in escrow until lessons are delivered.`}
         crumbs={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title, href: `/cohorts/${cohort.id}` }, { name: "Enrol" }]}
+        image={{ src: "/hero/utme.jpg", alt: "Students in a live NUVORA cohort class" }}
       />
 
-      <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-start">
-        <div>
-          <section className="mt-0 rounded-2xl border p-6">
-            <h2 className="font-bold">What you get</h2>
-            <ul className="mt-3 space-y-2 text-sm text-ink-600 list-disc pl-5">
-              <li>Live lessons with an approved, vetted tutor</li>
-              <li>Recordings, resources and homework after every lesson</li>
-              <li>Weekly progress reports for parents</li>
-              <li>Money-back guarantee while your payment is in escrow</li>
-            </ul>
-          </section>
-        </div>
-        <div className="lg:sticky lg:top-28">
-          <CheckoutClient cohort={cohort} />
-        </div>
+      <div className="container-x mx-auto max-w-2xl space-y-8 pt-14 pb-16">
+        <CheckoutClient cohort={cohort} />
+        <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">What you get</h2>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-ink-600">
+            <li>Live lessons with an approved, vetted tutor</li>
+            <li>Recordings, resources and homework after every lesson</li>
+            <li>Weekly progress reports for parents</li>
+            <li>Unused escrow balances are refundable per policy</li>
+          </ul>
+        </section>
       </div>
     </main>
   );

@@ -124,12 +124,19 @@ export default function StudyAbroadPage() {
         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
           <div className="grid gap-6 md:grid-cols-3">
             {SERVICES.map((s) => (
-              <div key={s.title} className="rounded-2xl border border-ink-100 bg-surface-muted p-7">
-                <div className="grid h-12 w-12 place-items-center rounded-xl bg-white text-brand-blue shadow-soft">
+              <div
+                key={s.title}
+                className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white shadow-card"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.65)), url(/hero/international.jpg)",
+                }}
+              >
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/15 text-white">
                   {s.icon}
                 </div>
-                <h2 className="mt-4 font-bold text-ink-800">{s.title}</h2>
-                <p className="mt-2 text-sm text-ink-500 leading-relaxed">{s.desc}</p>
+                <h2 className="mt-4 font-bold">{s.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-white/80">{s.desc}</p>
               </div>
             ))}
           </div>

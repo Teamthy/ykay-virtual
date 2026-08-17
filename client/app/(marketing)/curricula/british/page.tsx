@@ -55,7 +55,14 @@ export default function BritishCurriculumPage() {
 
       <section className="mt-14 grid md:grid-cols-3 gap-5">
         {STAGES.map((s) => (
-          <div key={s.title} className="border rounded-2xl p-6 hover:shadow-lift transition-shadow">
+          <div
+            key={s.title}
+            className="overflow-hidden rounded-2xl border border-ink-100 bg-cover bg-center p-6 text-white shadow-card"
+            style={{
+              backgroundImage:
+                "linear-gradient(160deg, rgba(6,15,38,0.88), rgba(1,57,32,0.72)), url(/hero/home-tutoring.jpg)",
+            }}
+          >
             <h2 className="text-xl font-extrabold">{s.title}</h2>
             <p className="mt-2 text-sm text-ink-600">{s.desc}</p>
             <div className="mt-4 flex flex-wrap gap-1.5">

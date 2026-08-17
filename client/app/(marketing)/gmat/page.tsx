@@ -51,9 +51,9 @@ export default function GmatPage() {
               href="#lead"
               className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
             >
-              GMAT season is here — 95% success rate
+              GMAT prep with a vetted tutor
               <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
-                Score 720+
+                Diagnostic first
               </span>
             </a>
           </div>
@@ -93,19 +93,7 @@ export default function GmatPage() {
           </div>
 
           {/* Meta row */}
-          <div className="mt-6 flex flex-col items-center justify-center gap-1.5 sm:flex-row sm:gap-3">
-            <div className="flex flex-wrap gap-1 sm:gap-3">
-              <span className="text-sm text-ink-600">Average score:</span>
-              <span className="text-sm font-bold text-ink-900">720</span>
-            </div>
-            <svg className="hidden size-5 text-ink-300 sm:block" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round" />
-            </svg>
-            <div className="flex flex-wrap gap-1 sm:gap-3">
-              <span className="text-sm text-ink-600">GMAT students coached:</span>
-              <span className="text-sm font-bold text-ink-900">350+</span>
-            </div>
-          </div>
+          <p className="mt-6 text-center text-sm text-ink-500">Quant, Verbal, IR and AWA — plan from your diagnostic, not a published average.</p>
         </div>
       </section>
 
@@ -113,14 +101,14 @@ export default function GmatPage() {
       <section id="stats" className="scroll-mt-24 bg-white py-16">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-[1fr_1fr] gap-12 items-center">
           <div>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-4">
               {[
-                { v: "720", l: "Average score" },
-                { v: "95%", l: "Success rate" },
-                { v: "350+", l: "GMAT students" },
+                { v: "Plan", l: "From your diagnostic" },
+                { v: "Mocks", l: "Timed and marked" },
+                { v: "Reports", l: "Weekly notes" },
               ].map((s) => (
-                <div key={s.l} className="text-center rounded-2xl border border-ink-100 bg-surface-muted p-6">
-                  <p className="font-display text-4xl tracking-[0.02em] text-brand-navy">{s.v}</p>
+                <div key={s.l} className="rounded-2xl border border-ink-100 bg-surface-muted p-5 text-center">
+                  <p className="font-display text-2xl text-brand-navy">{s.v}</p>
                   <p className="mt-2 text-xs font-semibold text-ink-500">{s.l}</p>
                 </div>
               ))}
@@ -156,17 +144,22 @@ export default function GmatPage() {
           </h2>
           <p className="mt-2 text-ink-600">No matter your reason for taking GMAT, we&apos;ll help you reach your goal.</p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl border border-ink-100 bg-white p-7">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-blue-light text-brand-blue">
+            <div
+              className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white"
+              style={{
+                backgroundImage:
+                  "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/international.jpg)",
+              }}
+            >
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
                 <Globe2 size={20} />
               </div>
-              <h3 className="mt-4 font-bold text-ink-800">Study Abroad</h3>
-              <p className="mt-2 text-sm text-ink-500 leading-relaxed">
-                Don&apos;t leave anything to chance as you prepare for graduate schools like INSEAD, LBS,
-                Kellogg&apos;s, Harvard and Cambridge.
+              <h3 className="mt-4 font-bold text-white">Study abroad</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/80">
+                Prep for graduate applications — we do not promise a specific school or score.
               </p>
-              <Link href="/study-abroad" className="mt-4 inline-block text-sm font-bold text-brand-blue hover:text-brand-navy">
-                Get a tutor →
+              <Link href="/study-abroad" className="mt-4 inline-block text-sm font-bold text-brand-gold">
+                Study-abroad prep →
               </Link>
             </div>
             <div className="rounded-2xl border border-ink-100 bg-white p-7">

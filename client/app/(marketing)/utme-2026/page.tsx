@@ -11,7 +11,7 @@ export const revalidate = 600;
 export const metadata: Metadata = buildMetadata({
   title: "JAMB 2026 Success — UTME Prep That Guarantees 320+ | NUVORA",
   description:
-    "Nigeria's most advanced UTME prep: AI-analyzed curriculum from 20,000+ past questions, 200+ practice exams, weekly mock CBT, ₦20M scholarship pool. Join 10,000+ students.",
+    "Nigeria's most advanced UTME prep: AI-analyzed curriculum from 20,000+ past questions, 200+ practice exams, weekly mock CBT, ₦20M scholarship pool. Join this year's cohort.",
   path: "/utme-2026",
 });
 
@@ -24,7 +24,7 @@ const INCLUDED = [
   {
     icon: <FileCheck2 size={20} />,
     title: "Practice Exams & AI Drills",
-    desc: "Master every topic with over 200 topic-based practice exams that puts you ahead of 95% of UTME candidates.",
+    desc: "Master every topic with over 200 topic-based practice exams that builds exam stamina.",
   },
   {
     icon: <BrainCircuit size={20} />,
@@ -112,7 +112,7 @@ export default function Utme2026Page() {
                 </h1>
                 <p className="text-lg text-ink-700">
                   Get Into Your Dream School with Nigeria&apos;s Most Advanced UTME Prep that{" "}
-                  <span className="font-bold text-[#4CCB31]">Guarantees 320+ Score</span>.
+                  <span className="font-bold text-[#4CCB31]">helps you sit the exam prepared</span>.
                 </p>
               </div>
 
@@ -146,7 +146,7 @@ export default function Utme2026Page() {
 
           {/* Clients strip */}
           <div className="mt-10 flex flex-wrap items-center gap-x-1.5 py-3 text-sm text-[#013920] after:flex-1 after:border-t after:border-ink-200 after:ms-6 md:mt-14">
-            <span className="font-semibold">Join 10,000+ students</span>
+            <span className="font-semibold">Join this year's cohort</span>
             preparing for JAMB 2026
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2 sm:gap-x-10">
@@ -170,7 +170,7 @@ export default function Utme2026Page() {
             </h2>
             <p className="mt-4 leading-relaxed text-white/80">
               We&apos;ve cracked the UTME code. Our AI has analyzed over{" "}
-              <b className="text-[#4CCB31]">20,000 JAMB questions</b> from the past 15 years to
+              <b className="text-[#4CCB31]">past JAMB questions</b> from the past 15 years to
               create a laser-focused curriculum that predicts the most likely exam topics.
             </p>
             <p className="mt-3 leading-relaxed text-white/80">
@@ -209,7 +209,7 @@ export default function Utme2026Page() {
               <Trophy size={13} /> Scholarship pool
             </div>
             <h2 className="mt-4 font-display text-3xl tracking-[0.02em] text-[#013920] md:text-4xl">
-              Win ₦20 million in scholarships!
+              Prizes for top performers (when a prize round is funded)
             </h2>
             <p className="mt-3 text-ink-600">
               Every student in the programme competes for scholarships and weekly prizes.

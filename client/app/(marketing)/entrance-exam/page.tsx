@@ -3,7 +3,6 @@ import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
-import { Progress } from "@/components/ui/progress";
 import { Check } from "lucide-react";
 
 export const revalidate = 600;
@@ -15,10 +14,10 @@ export const metadata: Metadata = buildMetadata({
   path: "/entrance-exam",
 });
 
-const RATES = [
-  { subject: "Math", pct: 98 },
-  { subject: "English", pct: 89 },
-  { subject: "Science", pct: 92 },
+const TRACKS = [
+  { subject: "Mathematics", note: "Algebra, number, past papers" },
+  { subject: "English", note: "Comprehension, writing, oral" },
+  { subject: "Sciences", note: "Physics, chemistry, biology" },
 ];
 
 const EXAMS = [
@@ -43,9 +42,9 @@ export default function EntranceExamPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
       <PageHero
-        eyebrow="95% Success Rate"
-        title="Prepare for Entrance Exams into Top Schools in Nigeria & Abroad"
-        subtitle="Expert prep for WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance, and SAT to guarantee your child's high performance."
+        eyebrow="Entrance & board exams"
+        title="Prepare for entrance exams in Nigeria and the UK"
+        subtitle="WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT — past papers, mocks and weekly reports. We do not publish unverified success rates."
         crumbs={[{ name: "Home", href: "/" }, { name: "Entrance Exams" }]}
         align="center"
         image={{ src: "/hero/entrance-exam.jpg", alt: "Young student preparing for entrance exams" }}

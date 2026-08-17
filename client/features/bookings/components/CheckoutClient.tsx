@@ -102,7 +102,10 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           email: value.email,
         });
         setStep({ name: "link", booking, payment });
-        toast.success("Order created — complete payment to secure your seat");
+        toast.success("Order created — opening the payment page");
+        if (payment.payment_link) {
+          window.location.assign(payment.payment_link);
+        }
       } catch (err) {
         setStep({
           name: "error",

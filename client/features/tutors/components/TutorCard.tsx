@@ -7,17 +7,27 @@ import { Tutor } from "../api/search";
 // centered name, SUBJECT TEACHING instead of contact details, a vetted
 // badge, and a message CTA. No email/phone is ever shown on cards.
 
+const PORTRAITS = ["chinasa", "olanike", "oluwatobi", "adewale", "judith", "demilola"] as const;
+
+function portraitSrc(tutor: Tutor): string {
+  if (tutor.avatar_url) return tutor.avatar_url;
+  if ((PORTRAITS as readonly string[]).includes(tutor.slug)) return `/tutors/${tutor.slug}.jpg`;
+  let h = 0;
+  for (let i = 0; i < tutor.slug.length; i++) h = (h + tutor.slug.charCodeAt(i)) % PORTRAITS.length;
+  return `/tutors/${PORTRAITS[h]}.jpg`;
+}
+
 export function TutorCard({ tutor }: { tutor: Tutor }) {
   const subjectLine = (tutor.subjects ?? []).slice(0, 2).map((s) => s.name).join(" · ");
+  const photo = portraitSrc(tutor);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white pb-4 transition duration-300 hover:-translate-y-1 hover:shadow-card">
-      {/* Photo (or branded initial tile) */}
+    <div className="relative isolate overflow-hidden rounded-2xl border border-ink-100 bg-white pb-4 transition duration-300 hover:-translate-y-1 hover:shadow-card">
       <div className="relative h-52 w-full overflow-hidden bg-brand-navy">
-        {tutor.avatar_url ? (
+        {photo ? (
           <Image
-            src={tutor.avatar_url}
-            alt={`${tutor.display_name} — NUVORA vetted tutor`}
+            src={photo}
+            alt={`${tutor.display_name} — NUVORA tutor`}
             width={400}
             height={208}
             className="h-52 w-full object-cover object-top"

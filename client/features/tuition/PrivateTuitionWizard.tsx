@@ -241,17 +241,16 @@ export function PrivateTuitionWizard() {
           <div className="space-y-4">
             <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Where should we reach you?</h2>
             {!user && (
-              <label className="block text-sm">
-                <span className="font-medium">Email</span>
+              <label className="block text-sm font-medium text-ink-800">
+                Email
                 <input
                   type="email"
                   id="wiz-email"
-                  className={FLOAT_INPUT}
+                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm placeholder:text-ink-400 focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
                   placeholder="parent@example.com"
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                 />
-                <label htmlFor="wiz-email" className={FLOAT_LABEL}>Email</label>
               </label>
             )}
             {user && <p className="text-sm text-ink-500">We&apos;ll use your account email: <strong>{user.email}</strong></p>}
@@ -316,6 +315,11 @@ function LinkToTutors() {
   if (!user) return null;
   return (
     <a href="/tutors" className="text-sm text-brand-blue font-semibold hover:underline">
+      Browse tutors on the marketplace →
+    </a>
+  );
+}
+underline">
       Browse tutors on the marketplace →
     </a>
   );

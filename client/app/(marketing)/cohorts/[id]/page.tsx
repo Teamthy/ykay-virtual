@@ -54,7 +54,7 @@ export default async function CohortDetailPage(props: Props) {
   });
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <PageHero
         announcement={`${cohort.location_mode.replace(/_/g, " ").toLowerCase()} · ${cohort.timezone}`}
@@ -62,12 +62,13 @@ export default async function CohortDetailPage(props: Props) {
         subtitle={cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
         crumbs={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title }]}
         ctas={[{ label: "Enrol in this cohort", href: `/cohorts/${cohort.id}/enroll`, primary: true }]}
+        image={{ src: "/hero/utme.jpg", alt: "Small-group live class with a NUVORA tutor" }}
       />
 
-      <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-start">
+      <div className="container-x grid items-start gap-10 pt-14 pb-16 lg:grid-cols-[1.1fr_0.9fr]">
         {/* Left: info + sessions */}
         <div>
-          <div className="mt-6 grid sm:grid-cols-3 gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             {[
               { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Starts", value: new Date(cohort.start_date).toLocaleDateString() },
               { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Ends", value: new Date(cohort.end_date).toLocaleDateString() },
@@ -111,7 +112,7 @@ export default async function CohortDetailPage(props: Props) {
         </div>
 
         {/* Right: enrol card */}
-        <div className="lg:sticky lg:top-28">
+        <div className="z-10 lg:sticky lg:top-32">
           <div className="card space-y-4 p-6">
             <div className="flex items-baseline justify-between gap-3">
               <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Enrol in this cohort</h2>

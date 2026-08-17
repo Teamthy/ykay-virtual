@@ -8,7 +8,7 @@ export const revalidate = 3600;
 export function generateMetadata(): Metadata {
   return buildMetadata({
     title: "Corporate Training — NUVORA | Workforce Upskilling & Digital Academy",
-    description: "Corporate upskilling: Python, AI, Cybersecurity, Microsoft Office, ICAN, IELTS for staff. What Tuteria corporate could be — structured, audited, with progress reports.",
+    description: "Corporate upskilling: Python, AI, Cybersecurity, Microsoft Office, IELTS for staff. What Tuteria corporate could be — structured, audited, with progress reports.",
     path: "/corporate-training",
   });
 }

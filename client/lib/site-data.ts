@@ -59,7 +59,6 @@ export const accordionItems = [
 export const examCards = [
   { title: "IELTS Prep", href: "/ielts-toefl" },
   { title: "GMAT Classes", href: "/gmat" },
-  { title: "ICAN Prep", href: "/test-prep" },
   { title: "GRE Classes", href: "/gre" },
   { title: "SATs Prep", href: "/sat" },
   { title: "TOEFL Prep", href: "/ielts-toefl" },

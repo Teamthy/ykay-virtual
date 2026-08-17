@@ -38,22 +38,22 @@ export default async function TutorsPage(props: Props) {
   const marketplaceEnabled = process.env.NEXT_PUBLIC_MARKETPLACE_ENABLED !== "false";
 
   return (
-    <main className="container-x py-10">
+    <main>
       <PageHero
         title="Find your perfect tutor"
         subtitle="Every tutor on NUVORA is identity-verified, background-checked and assessed for subject competency. Payments are held in escrow until your lessons are delivered."
         crumbs={[{ name: "Home", href: "/" }, { name: "Tutors" }]}
         align="left"
+        image={{ src: "/hero/home-tutoring.jpg", alt: "Tutor working with a student at home" }}
       />
-
-      {!marketplaceEnabled && (
-        <div className="mt-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 p-5 text-sm text-ink-700">
-          <strong>Managed matching mode:</strong> instead of browsing, tell us what your learner needs and our
-          advisors will match a vetted tutor —{" "}
-          <a href="/private-tuition" className="text-brand-blue font-semibold hover:underline">request a tutor</a>.
-        </div>
-      )}
-      <div className="mt-10">
+      <div className="container-x pt-12 pb-16">
+        {!marketplaceEnabled && (
+          <div className="mb-8 rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-5 text-sm text-ink-700">
+            <strong>Managed matching mode:</strong> tell us what your learner needs and our
+            advisors will match a vetted tutor —{" "}
+            <a href="/private-tuition" className="font-semibold text-brand-blue hover:underline">request a tutor</a>.
+          </div>
+        )}
         <Suspense>
           <TutorsSearchClient initialSubject={subject} />
         </Suspense>

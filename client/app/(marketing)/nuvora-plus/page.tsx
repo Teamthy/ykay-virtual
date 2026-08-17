@@ -44,8 +44,8 @@ export default function NuvoraPlusPage() {
 
       <PageHero
         eyebrow="NUVORA Plus"
-        title="Upgrade Your Child's Learning with NUVORA Plus"
-        subtitle="Give your child the ultimate learning advantage with NUVORA Plus — our premium tutoring service designed for families who want the best."
+        title="NUVORA Plus — advisor-led matching"
+        subtitle="Priority matching with a vetted specialist, a named advisor, and weekly reports. Premium packaging — not invented rankings."
         crumbs={[{ name: "Home", href: "/" }, { name: "NUVORA Plus" }]}
         align="center"
         image={{ src: "/hero/nuvora-plus.jpg", alt: "Tutor guiding a young learner one-on-one" }}

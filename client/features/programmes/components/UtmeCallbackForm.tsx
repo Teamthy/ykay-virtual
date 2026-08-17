@@ -4,23 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-// UTME 2026 hero form — Preline-style card: floating labels, terms
-// checkbox, green CTA. Creates a real support ticket.
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-
-const INPUT_CLS =
-  "peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 " +
-  "placeholder:text-transparent focus:border-[#4CCB31] focus:ring-[#4CCB31] disabled:opacity-50 " +
-  "focus:pt-6 focus:pb-2 not-placeholder-shown:pt-6 not-placeholder-shown:pb-2 autofill:pt-6 autofill:pb-2 " +
-  "focus:outline-none transition-colors";
-
-const LABEL_CLS =
-  "absolute top-0 inset-x-0 p-3 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 " +
-  "border border-transparent origin-top-left text-ink-800 " +
-  "peer-focus:scale-90 peer-focus:translate-x-0.5 peer-focus:-translate-y-1.5 peer-focus:text-ink-500 " +
-  "peer-not-placeholder-shown:scale-90 peer-not-placeholder-shown:translate-x-0.5 " +
-  "peer-not-placeholder-shown:-translate-y-1.5 peer-not-placeholder-shown:text-ink-500";
+const FIELD =
+  "mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-[#4CCB31] focus:outline-none focus:ring-2 focus:ring-[#4CCB31]/30";
 
 export function UtmeCallbackForm() {
   const [form, setForm] = useState({ name: "", phone: "", level: "SSS3" });
@@ -51,13 +37,13 @@ export function UtmeCallbackForm() {
         body: JSON.stringify({
           email: "utme-2026@callback.nuvora",
           subject: `UTME 2026 enrolment — ${form.name.trim()} (${form.level})`,
-          message: `UTME lead: ${form.name.trim()} · ${form.phone.trim()} · ${form.level}. We'll text on SMS and WhatsApp to confirm.`,
+          message: `UTME lead: ${form.name.trim()} · ${form.phone.trim()} · ${form.level}.`,
         }),
       });
       setDone(true);
-      toast.success("Request received — we'll text to confirm your number");
+      toast.success("Request received — we will text to confirm");
     } catch {
-      setError("Could not submit — please call +234 706 372 6773");
+      setError("Could not submit — please use the contact page");
     } finally {
       setBusy(false);
     }
@@ -68,9 +54,9 @@ export function UtmeCallbackForm() {
       <div className="rounded-2xl bg-white p-7 text-center shadow-lg">
         <h3 className="text-xl font-bold text-[#013920]">Request received</h3>
         <p className="mt-2 text-sm text-ink-600">
-          We&apos;ll text <b>{form.phone}</b> on SMS and WhatsApp to confirm your number.
+          We will text <b>{form.phone}</b> to confirm.
         </p>
-        <button onClick={() => setDone(false)} className="mt-4 text-sm font-semibold text-[#4CCB31] hover:underline">
+        <button type="button" onClick={() => setDone(false)} className="mt-4 text-sm font-semibold text-[#4CCB31] hover:underline">
           Submit another request
         </button>
       </div>
@@ -83,101 +69,70 @@ export function UtmeCallbackForm() {
         e.preventDefault();
         void submit();
       }}
-      className="rounded-2xl bg-white p-4 shadow-lg sm:p-7"
+      className="rounded-2xl bg-white p-6 shadow-lg sm:p-7"
     >
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-[#013920]">Start Your JAMB Prep</h3>
-        <p className="mt-2 text-sm text-ink-600">
-          We&apos;ll text on SMS and WhatsApp to confirm your number.
-        </p>
+        <h3 className="text-2xl font-bold text-[#013920]">Start UTME prep</h3>
+        <p className="mt-2 text-sm text-ink-600">We will text on SMS or WhatsApp to confirm your number.</p>
       </div>
 
-      <div className="mt-5">
-        {/* Floating inputs */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <div className="relative">
-              <input
-                type="text"
-                id="utme-name"
-                className={INPUT_CLS}
-                placeholder=" "
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-              <label htmlFor="utme-name" className={LABEL_CLS}>Parent name</label>
-            </div>
-          </div>
-          <div>
-            <div className="relative">
-              <select
-                id="utme-level"
-                className="peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 focus:border-[#4CCB31] focus:ring-[#4CCB31] focus:outline-none"
-                value={form.level}
-                onChange={(e) => setForm({ ...form, level: e.target.value })}
-              >
-                <option>SSS3</option>
-                <option>SSS2</option>
-                <option>SSS1</option>
-                <option>Other</option>
-              </select>
-              <label htmlFor="utme-level" className="absolute top-0 inset-x-0 p-3 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 border border-transparent origin-top-left text-ink-800 peer-focus:scale-90 peer-focus:translate-x-0.5 peer-focus:-translate-y-1.5 peer-focus:text-ink-500 peer-not-placeholder-shown:scale-90 peer-not-placeholder-shown:translate-x-0.5 peer-not-placeholder-shown:-translate-y-1.5 peer-not-placeholder-shown:text-ink-500">
-                Current level
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative mt-4 col-span-full">
-          <div className="relative">
-            <input
-              type="tel"
-              id="utme-phone"
-              className={INPUT_CLS}
-              placeholder=" "
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            />
-            <label htmlFor="utme-phone" className={LABEL_CLS}>Phone number</label>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 flex items-center">
-        <div className="flex">
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <label className="block text-sm font-medium text-ink-800">
+          Parent / guardian name
           <input
-            id="utme-terms"
-            type="checkbox"
-            checked={accepted}
-            onChange={(e) => setAccepted(e.target.checked)}
-            className="size-4 shrink-0 rounded-sm border border-ink-300 text-[#4CCB31] focus:ring-0 checked:bg-[#4CCB31] checked:border-[#4CCB31]"
+            type="text"
+            className={FIELD}
+            placeholder="e.g. Mrs Bello"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
-        </div>
-        <div className="ms-3">
-          <label htmlFor="utme-terms" className="text-sm text-ink-800">
-            I accept the{" "}
-            <Link href="/terms" className="font-medium text-[#4CCB31] hover:underline">
-              Terms and Conditions
-            </Link>
-          </label>
-        </div>
+        </label>
+        <label className="block text-sm font-medium text-ink-800">
+          Current level
+          <select className={FIELD} value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })}>
+            <option>SSS3</option>
+            <option>SSS2</option>
+            <option>SSS1</option>
+            <option>Other</option>
+          </select>
+        </label>
       </div>
+
+      <label className="mt-4 block text-sm font-medium text-ink-800">
+        Phone number
+        <input
+          type="tel"
+          className={FIELD}
+          placeholder="+234 800 000 0000"
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+        />
+      </label>
+
+      <label className="mt-5 flex items-start gap-3 text-sm text-ink-800">
+        <input
+          type="checkbox"
+          checked={accepted}
+          onChange={(e) => setAccepted(e.target.checked)}
+          className="mt-1 size-4 rounded border-ink-300 text-[#4CCB31]"
+        />
+        <span>
+          I accept the{" "}
+          <Link href="/terms" className="font-medium text-[#4CCB31] hover:underline">
+            Terms
+          </Link>
+        </span>
+      </label>
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-      <div className="mt-5">
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-lg bg-[#4CCB31] py-3 px-4 text-sm font-medium text-white transition-colors hover:bg-[#5FE63F] disabled:opacity-50"
-        >
-          {busy ? "Submitting…" : "Get started"}
-        </button>
-      </div>
-
-      <p className="mt-4 text-center text-xs text-ink-400">
-        Free diagnostic test — we call within 24 hours
-      </p>
+      <button
+        type="submit"
+        disabled={busy}
+        className="mt-5 w-full rounded-lg bg-[#4CCB31] py-3 text-sm font-bold text-white hover:bg-[#5FE63F] disabled:opacity-50"
+      >
+        {busy ? "Submitting…" : "Get started"}
+      </button>
     </form>
   );
 }
