@@ -933,8 +933,6 @@ func (m *StudentLinkMemory) StudentExistsForParent(_ context.Context, studentID,
 	return m.links[studentID.String()+"|"+parentUserID.String()], nil
 }
 
-var _ booking.StudentProfileReader = (*StudentLinkMemory)(nil)
-
 type TutorSubjectMemory struct {
 	canTeach map[string]bool
 }

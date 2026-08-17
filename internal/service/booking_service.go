@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
@@ -30,6 +31,50 @@ type BookingService struct {
 func NewBookingService(uows repository.UnitOfWorkFactory, students booking.StudentProfileReader,
 	tutorSubject booking.TutorProfileReader, audit identity.AuditService) *BookingService {
 	return &BookingService{uows: uows, students: students, tutorSubject: tutorSubject, audit: audit}
+}
+
+// authorizeEnrollment — the shared object-level authorization + minor gating
+// for cohort and private bookings (Phase 3):
+//   - a PARENT may book for a linked learner (guardian involved);
+//   - a STUDENT may book for THEMSELVES (self-enrollment), unless the learner
+//     is a minor (<17) with no linked parent/guardian — minors must have
+//     parental involvement before enrolling or paying.
+//
+// A nil reader preserves the legacy dev-mode behaviour (allow).
+func (s *BookingService) authorizeEnrollment(ctx context.Context, studentID, actorUserID uuid.UUID) error {
+	if s.students == nil {
+		return nil
+	}
+	acc, err := s.students.StudentBookingAccess(ctx, studentID, actorUserID)
+	if err != nil {
+		return err
+	}
+	switch {
+	case acc.ParentLinked:
+		return nil
+	case acc.SelfOwned && !isMinorAt(acc.DateOfBirth, time.Now()):
+		return nil // adult self-enrollment
+	case acc.SelfOwned && acc.HasLinkedParent:
+		return nil // minor with a linked guardian
+	case acc.SelfOwned:
+		return fmt.Errorf("%w: learner is under 17 and needs a linked parent or guardian to enrol", domain.ErrForbidden)
+	default:
+		return domain.ErrForbidden
+	}
+}
+
+// isMinorAt reports whether a known date of birth makes the learner under 17.
+// A missing date of birth is treated as not-a-minor (adult self-service);
+// parents enrolling a child through the linked-parent path are never blocked.
+func isMinorAt(dob *time.Time, now time.Time) bool {
+	if dob == nil {
+		return false
+	}
+	age := now.Year() - dob.Year()
+	if now.YearDay() < dob.YearDay() {
+		age--
+	}
+	return age < 17
 }
 
 type CreateCohortBookingInput struct {
@@ -78,15 +123,8 @@ func (s *BookingService) CreateCohortBooking(ctx context.Context, in CreateCohor
 		}
 	}
 
-	// Object-level authorization: parent → linked student only (AGENTS.md).
-	if s.students != nil {
-		ok, err := s.students.StudentExistsForParent(ctx, in.StudentID, in.ParentUserID)
-		if err != nil {
-			return nil, err
-		}
-		if !ok {
-			return nil, domain.ErrForbidden
-		}
+	if err := s.authorizeEnrollment(ctx, in.StudentID, in.ParentUserID); err != nil {
+		return nil, err
 	}
 
 	uow, err := s.uows.Begin(ctx)
@@ -195,14 +233,8 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
 		}
 	}
 
-	if s.students != nil {
-		ok, err := s.students.StudentExistsForParent(ctx, in.StudentID, in.ParentUserID)
-		if err != nil {
-			return nil, err
-		}
-		if !ok {
-			return nil, domain.ErrForbidden
-		}
+	if err := s.authorizeEnrollment(ctx, in.StudentID, in.ParentUserID); err != nil {
+		return nil, err
 	}
 	if s.tutorSubject != nil {
 		ok, err := s.tutorSubject.TutorCanTeach(ctx, in.TutorProfileID, in.SubjectID)

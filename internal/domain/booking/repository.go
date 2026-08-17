@@ -52,6 +52,22 @@ type PrivatePackageRepository interface {
 // link (object-level authorization enforced in the service layer, never UI).
 type StudentProfileReader interface {
 	StudentExistsForParent(ctx context.Context, studentID, parentUserID uuid.UUID) (bool, error)
+	// StudentBookingAccess resolves the full booking-access picture for one
+	// student profile relative to the actor. Used for self-enrollment and
+	// minor (<17) gating (Phase 3). When the profile does not exist, it
+	// returns the zero value (no error) so the caller can reject cleanly.
+	StudentBookingAccess(ctx context.Context, studentID, actorUserID uuid.UUID) (StudentBookingAccess, error)
+}
+
+// StudentBookingAccess — raw facts the booking service combines into its
+// authorization + minor-gating decision. Age is computed in the service from
+// DateOfBirth (keeps business rules out of the repositories).
+type StudentBookingAccess struct {
+	ParentLinked    bool       // a parent_student_links row connects actor → student
+	SelfOwned       bool       // student_profiles.user_id == actorUserID (the learner is the actor)
+	DateOfBirth     *time.Time // may be nil (unknown age)
+	GuardianConsent bool       // student_profiles.guardian_consent
+	HasLinkedParent bool       // ANY parent_student_links row exists for the student
 }
 
 type TutorProfileReader interface {

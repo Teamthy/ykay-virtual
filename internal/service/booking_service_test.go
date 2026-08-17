@@ -8,6 +8,7 @@ import (
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/repository/memory"
@@ -40,12 +41,17 @@ func newTestEnv(t *testing.T) *testEnv {
 	tutorID := uuid.New()
 	subjectID := uuid.New()
 
-	links := map[string]bool{student.String() + "|" + parent.String(): true}
 	canTeach := map[string]bool{tutorID.String() + "|" + subjectID.String(): true}
+
+	// Link student → parent through the store's own link memory (the same
+	// reader the production wiring uses).
+	require.NoError(t, store.StudentLinks.Create(context.Background(), &identity.ParentStudentLink{
+		ParentUserID: parent, StudentProfileID: student, Relationship: "PARENT", IsPrimary: true,
+	}))
 
 	bookingSvc := NewBookingService(
 		memory.NewMemoryUnitOfWorkFactory(store),
-		memory.NewStudentLinkMemory(links),
+		store.StudentLinks,
 		memory.NewTutorSubjectMemory(canTeach),
 		audit,
 	)

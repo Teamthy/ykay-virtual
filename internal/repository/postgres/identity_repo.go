@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 
 	"github.com/google/uuid"
@@ -144,9 +145,33 @@ func (r *StudentLinkRepo) StudentExistsForParent(ctx context.Context, studentID,
 	return true, nil
 }
 
-var _ interface {
-	StudentExistsForParent(ctx context.Context, studentID, parentUserID uuid.UUID) (bool, error)
-} = (*StudentLinkRepo)(nil)
+// StudentBookingAccess — one round trip that resolves self-ownership, minor
+// facts and guardian links for a student profile relative to the actor
+// (Phase 3 self-enrollment + <17 gating).
+func (r *StudentLinkRepo) StudentBookingAccess(ctx context.Context, studentID, actorUserID uuid.UUID) (booking.StudentBookingAccess, error) {
+	var acc booking.StudentBookingAccess
+	var userID *uuid.UUID
+	var dob *time.Time
+	var consent bool
+	err := r.db.QueryRowContext(ctx, `
+		SELECT sp.user_id, sp.date_of_birth, sp.guardian_consent,
+		       EXISTS(SELECT 1 FROM parent_student_links l WHERE l.student_profile_id = sp.id AND l.parent_user_id = $2),
+		       EXISTS(SELECT 1 FROM parent_student_links l WHERE l.student_profile_id = sp.id)
+		FROM student_profiles sp WHERE sp.id = $1`, studentID, actorUserID).
+		Scan(&userID, &dob, &consent, &acc.ParentLinked, &acc.HasLinkedParent)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return acc, nil // unknown profile → no access
+		}
+		return acc, fmt.Errorf("student booking access: %w", err)
+	}
+	acc.SelfOwned = userID != nil && *userID == actorUserID
+	acc.DateOfBirth = dob
+	acc.GuardianConsent = consent
+	return acc, nil
+}
+
+var _ booking.StudentProfileReader = (*StudentLinkRepo)(nil)
 
 type TutorSubjectCheckRepo struct{ db TxQuerier }
 

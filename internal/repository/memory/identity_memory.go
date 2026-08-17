@@ -2,10 +2,12 @@ package memory
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
 	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 
 	"github.com/google/uuid"
@@ -344,6 +346,30 @@ func NewParentStudentLinkMemory(students *StudentProfileMemory) *ParentStudentLi
 // but backed by the same store the onboarding flow writes to).
 func (m *ParentStudentLinkMemory) StudentExistsForParent(ctx context.Context, studentID, parentUserID uuid.UUID) (bool, error) {
 	return m.Exists(ctx, parentUserID, studentID)
+}
+
+// StudentBookingAccess — self-ownership + minor facts + guardian links
+// (Phase 3). Mirrors the Postgres implementation against the memory store.
+func (m *ParentStudentLinkMemory) StudentBookingAccess(ctx context.Context, studentID, actorUserID uuid.UUID) (booking.StudentBookingAccess, error) {
+	parentLinked, _ := m.Exists(ctx, actorUserID, studentID)
+	acc := booking.StudentBookingAccess{ParentLinked: parentLinked}
+	if m.students != nil {
+		if p, err := m.students.FindByID(ctx, studentID); err == nil && p != nil {
+			acc.SelfOwned = p.UserID != nil && *p.UserID == actorUserID
+			acc.DateOfBirth = p.DateOfBirth
+			acc.GuardianConsent = p.GuardianConsent
+		}
+	}
+	m.mu.RLock()
+	for k := range m.links {
+		// key format: parentUserID|studentProfileID
+		if strings.HasSuffix(k, "|"+studentID.String()) {
+			acc.HasLinkedParent = true
+			break
+		}
+	}
+	m.mu.RUnlock()
+	return acc, nil
 }
 
 func (m *ParentStudentLinkMemory) Create(_ context.Context, l *identity.ParentStudentLink) error {
