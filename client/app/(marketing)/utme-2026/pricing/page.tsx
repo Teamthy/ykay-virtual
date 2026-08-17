@@ -59,21 +59,21 @@ export default function UtmePricingPage() {
   ]);
 
   return (
-    <main className="bg-[#FFF8F2] min-h-screen">
+    <main className="bg-[#FFF7E4] min-h-screen">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
       {/* Header */}
       <header className="border-b border-ink-100 bg-white">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6">
           <nav className="flex items-center justify-between gap-4">
-            <Link href="/utme-2026" className="font-display text-xl tracking-[0.02em] text-[#0A033C]">
-              NUVORA <span className="text-[#FF6636]">Prep</span>
+            <Link href="/utme-2026" className="font-display text-xl tracking-[0.02em] text-[#013920]">
+              NUVORA <span className="text-[#4CCB31]">Prep</span>
             </Link>
             <div className="flex items-center gap-5 text-sm font-bold">
-              <Link href="/utme-2026" className="text-ink-600 hover:text-[#0A033C]">Overview</Link>
-              <Link href="/utme-2026/pricing" className="text-[#FF6636]">Pricing</Link>
-              <Link href="/utme-2026/faq" className="text-ink-600 hover:text-[#0A033C]">FAQ</Link>
-              <Link href="/utme-2026" className="rounded-xl bg-[#0A033C] px-5 py-2.5 text-white hover:bg-[#1c1155] transition-colors">
+              <Link href="/utme-2026" className="text-ink-600 hover:text-[#013920]">Overview</Link>
+              <Link href="/utme-2026/pricing" className="text-[#4CCB31]">Pricing</Link>
+              <Link href="/utme-2026/faq" className="text-ink-600 hover:text-[#013920]">FAQ</Link>
+              <Link href="/utme-2026" className="rounded-xl bg-[#013920] px-5 py-2.5 text-white hover:bg-[#0A4D32] transition-colors">
                 Get Started
               </Link>
             </div>
@@ -84,10 +84,10 @@ export default function UtmePricingPage() {
       <section className="py-16">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="inline-flex items-center gap-2 rounded-full bg-[#FF6636] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-white">
+            <p className="inline-flex items-center gap-2 rounded-full bg-[#4CCB31] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-white">
               Choose your package
             </p>
-            <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-[#0A033C] md:text-5xl">
+            <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-[#013920] md:text-5xl">
               UTME 2026 Prep Pricing
             </h1>
             <p className="mt-3 text-ink-600">
@@ -101,20 +101,20 @@ export default function UtmePricingPage() {
                 key={p.name}
                 className={
                   p.featured
-                    ? "relative rounded-3xl border-2 border-[#FF6636] bg-white p-8 shadow-card"
+                    ? "relative rounded-3xl border-2 border-[#4CCB31] bg-white p-8 shadow-card"
                     : "relative rounded-3xl border border-ink-100 bg-white p-8 shadow-soft"
                 }
               >
                 {p.featured && (
-                  <span className="absolute -top-3 right-6 rounded-full bg-[#FF6636] px-4 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+                  <span className="absolute -top-3 right-6 rounded-full bg-[#4CCB31] px-4 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
                     Most popular
                   </span>
                 )}
-                <h2 className="font-display text-2xl tracking-[0.02em] text-[#0A033C]">{p.name}</h2>
-                <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#FF6636]">{p.tag}</p>
+                <h2 className="font-display text-2xl tracking-[0.02em] text-[#013920]">{p.name}</h2>
+                <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#4CCB31]">{p.tag}</p>
                 <div className="mt-4 flex items-baseline gap-3">
                   <span className="text-sm text-ink-400 line-through">{p.old}</span>
-                  <span className="font-display text-4xl tracking-[0.02em] text-[#0A033C]">{p.price}</span>
+                  <span className="font-display text-4xl tracking-[0.02em] text-[#013920]">{p.price}</span>
                   <span className="text-sm font-semibold text-ink-500">/student</span>
                 </div>
                 <p className="mt-1 text-xs text-ink-500">Comprehensive online UTME Prep for exam success</p>
@@ -129,8 +129,8 @@ export default function UtmePricingPage() {
                   href="/utme-2026#callback"
                   className={
                     p.featured
-                      ? "mt-8 block rounded-xl bg-[#FF6636] px-8 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-[#FF7A4D]"
-                      : "mt-8 block rounded-xl bg-[#0A033C] px-8 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-[#1c1155]"
+                      ? "mt-8 block rounded-xl bg-[#4CCB31] px-8 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-[#5FE63F]"
+                      : "mt-8 block rounded-xl bg-[#013920] px-8 py-4 text-center text-sm font-bold text-white transition-colors hover:bg-[#0A4D32]"
                   }
                 >
                   Get Started

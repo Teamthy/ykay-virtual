@@ -64,7 +64,7 @@ export default function UtmeFaqPage() {
   const faq = faqJsonLd(FAQS);
 
   return (
-    <main className="bg-[#FFF8F2] min-h-screen">
+    <main className="bg-[#FFF7E4] min-h-screen">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
 
@@ -72,14 +72,14 @@ export default function UtmeFaqPage() {
       <header className="border-b border-ink-100 bg-white">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6">
           <nav className="flex items-center justify-between gap-4">
-            <Link href="/utme-2026" className="font-display text-xl tracking-[0.02em] text-[#0A033C]">
-              NUVORA <span className="text-[#FF6636]">Prep</span>
+            <Link href="/utme-2026" className="font-display text-xl tracking-[0.02em] text-[#013920]">
+              NUVORA <span className="text-[#4CCB31]">Prep</span>
             </Link>
             <div className="flex items-center gap-5 text-sm font-bold">
-              <Link href="/utme-2026" className="text-ink-600 hover:text-[#0A033C]">Overview</Link>
-              <Link href="/utme-2026/pricing" className="text-ink-600 hover:text-[#0A033C]">Pricing</Link>
-              <Link href="/utme-2026/faq" className="text-[#FF6636]">FAQ</Link>
-              <Link href="/utme-2026" className="rounded-xl bg-[#0A033C] px-5 py-2.5 text-white hover:bg-[#1c1155] transition-colors">
+              <Link href="/utme-2026" className="text-ink-600 hover:text-[#013920]">Overview</Link>
+              <Link href="/utme-2026/pricing" className="text-ink-600 hover:text-[#013920]">Pricing</Link>
+              <Link href="/utme-2026/faq" className="text-[#4CCB31]">FAQ</Link>
+              <Link href="/utme-2026" className="rounded-xl bg-[#013920] px-5 py-2.5 text-white hover:bg-[#0A4D32] transition-colors">
                 Get Started
               </Link>
             </div>
@@ -90,10 +90,10 @@ export default function UtmeFaqPage() {
       <section className="py-16">
         <div className="max-w-[860px] mx-auto px-6 md:px-10">
           <div className="text-center">
-            <p className="inline-flex items-center gap-2 rounded-full bg-[#FF6636] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-white">
+            <p className="inline-flex items-center gap-2 rounded-full bg-[#4CCB31] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-white">
               Read our FAQs
             </p>
-            <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-[#0A033C] md:text-5xl">
+            <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-[#013920] md:text-5xl">
               UTME 2026 — Frequently Asked Questions
             </h1>
           </div>
@@ -109,11 +109,11 @@ export default function UtmeFaqPage() {
             ))}
           </div>
 
-          <div className="mt-10 rounded-2xl bg-[#0A033C] p-8 text-center text-white">
+          <div className="mt-10 rounded-2xl bg-[#013920] p-8 text-center text-white">
             <p className="font-display text-2xl tracking-[0.02em]">Still have questions?</p>
             <p className="mt-2 text-white/70">Chat with our advisors — we answer within one business day.</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <Link href="/utme-2026#callback" className="rounded-xl bg-[#FF6636] px-7 py-3.5 text-sm font-bold text-white hover:bg-[#FF7A4D] transition-colors">
+              <Link href="/utme-2026#callback" className="rounded-xl bg-[#4CCB31] px-7 py-3.5 text-sm font-bold text-white hover:bg-[#5FE63F] transition-colors">
                 Get a callback
               </Link>
               <Link href="/contact" className="rounded-xl border border-white/30 px-7 py-3.5 text-sm font-bold text-white hover:bg-white/10 transition-colors">

@@ -95,7 +95,7 @@ export function GmatLeadForm() {
               type="text"
               id="gmat-first-name"
               className={INPUT_CLS}
-              placeholder="John"
+              placeholder=" "
               value={form.first_name}
               onChange={(e) => setForm({ ...form, first_name: e.target.value })}
             />

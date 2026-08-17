@@ -361,16 +361,16 @@ export default function LmsTutorCohortPage() {
             <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
               <p className="text-sm font-bold text-ink-700">New quiz</p>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" placeholder="Quiz title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
-                <input type="number" placeholder="Pass %" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.pass_threshold} onChange={(e) => setQuizDraft((d) => ({ ...d, pass_threshold: e.target.value }))} />
+                <input type="text" aria-label="Quiz title" placeholder="Quiz title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" aria-label="Pass percentage" placeholder="Pass %" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.pass_threshold} onChange={(e) => setQuizDraft((d) => ({ ...d, pass_threshold: e.target.value }))} />
               </div>
               <div className="space-y-3">
                 {quizDraft.questions.map((q, qi) => (
                   <div key={qi} className="rounded-lg border border-ink-100 p-3">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-ink-400">Q{qi + 1}</span>
-                      <input type="text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
+                      <input type="text" aria-label="Question text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
                       <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: d.questions.filter((_, i) => i !== qi) }))} className="text-xs font-bold text-red-500">✕</button>
                     </div>
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
@@ -397,9 +397,9 @@ export default function LmsTutorCohortPage() {
             <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
               <p className="text-sm font-bold text-ink-700">New assignment</p>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.title} onChange={(e) => setAssignmentDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.instructions} onChange={(e) => setAssignmentDraft((d) => ({ ...d, instructions: e.target.value }))} />
-                <input type="number" placeholder="Max score" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.max_score} onChange={(e) => setAssignmentDraft((d) => ({ ...d, max_score: e.target.value }))} />
+                <input type="text" aria-label="Assignment title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.title} onChange={(e) => setAssignmentDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.instructions} onChange={(e) => setAssignmentDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" aria-label="Max score" placeholder="Max score" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.max_score} onChange={(e) => setAssignmentDraft((d) => ({ ...d, max_score: e.target.value }))} />
               </div>
               <button type="button" disabled={createAssignment.isPending || !assignmentDraft.title.trim()} onClick={() => createAssignment.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
                 {createAssignment.isPending ? "Publishing…" : "Publish assignment"}
@@ -411,9 +411,9 @@ export default function LmsTutorCohortPage() {
             <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
               <p className="text-sm font-bold text-ink-700">New resource</p>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
-                <input type="url" placeholder="File / link URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
+                <input type="text" aria-label="Resource title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Resource description" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
+                <input type="url" aria-label="File or link URL" placeholder="File / link URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
               </div>
               <button type="button" disabled={createResource.isPending || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
                 {createResource.isPending ? "Adding…" : "Add resource"}
