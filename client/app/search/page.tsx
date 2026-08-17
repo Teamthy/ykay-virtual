@@ -58,7 +58,7 @@ function SearchInner() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#FFFCF5] pb-16">
+    <main className="min-h-screen bg-[#FFF7E4] pb-16">
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">

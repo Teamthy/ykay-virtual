@@ -133,7 +133,7 @@ export default function ChatPage() {
   const escalated = activeThread?.status === "ESCALATED";
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col bg-[#FFFCF5] px-4 py-6 lg:px-6">
+    <main className="mx-auto flex min-h-screen max-w-6xl flex-col bg-[#FFF7E4] px-4 py-6 lg:px-6">
       <header className="flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
@@ -213,7 +213,7 @@ export default function ChatPage() {
                           ? "rounded-br-md bg-brand-navy text-white"
                           : m.role === "agent"
                           ? "rounded-bl-md border-2 border-brand-gold bg-white text-ink-800"
-                          : "rounded-bl-md border border-ink-100 bg-[#FFF8E8] text-ink-800"
+                          : "rounded-bl-md border border-ink-100 bg-[#F8EBCF] text-ink-800"
                       )}
                     >
                       {m.content}
@@ -222,7 +222,7 @@ export default function ChatPage() {
                 ))}
                 {sending && (
                   <div className="flex justify-start">
-                    <div className="rounded-2xl rounded-bl-md border border-ink-100 bg-[#FFF8E8] px-4 py-3 text-sm text-ink-400">
+                    <div className="rounded-2xl rounded-bl-md border border-ink-100 bg-[#F8EBCF] px-4 py-3 text-sm text-ink-400">
                       <span className="inline-flex gap-1">
                         <span className="size-1.5 animate-bounce rounded-full bg-ink-400" />
                         <span className="size-1.5 animate-bounce rounded-full bg-ink-400 [animation-delay:120ms]" />

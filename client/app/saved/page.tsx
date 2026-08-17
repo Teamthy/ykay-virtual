@@ -19,7 +19,7 @@ export default function SavedPage() {
   }, [isLoading, user, router]);
 
   return (
-    <main className="min-h-screen bg-[#FFFCF5] pb-16 dark:bg-[#0B1220]">
+    <main className="min-h-screen bg-[#FFF7E4] pb-16 dark:bg-[#0B1220]">
       <header className="border-b border-ink-100 bg-white dark:border-ink-700 dark:bg-[#141C2E]">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">

@@ -12,7 +12,7 @@ export function BecomeTutorCTA() {
   return (
     <section
       className="w-full bg-no-repeat bg-cover bg-center pb-20 pt-24 md:pb-28 md:pt-32"
-      style={{ backgroundImage: GRID_BG, backgroundColor: "#FFFCF5" }}
+      style={{ backgroundImage: GRID_BG, backgroundColor: "#FFF7E4" }}
     >
       <div className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 text-center">
         {/* Announcement pill */}

@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: "NUVORA",
   },
   other: {
-    "theme-color": "#0A1F44",
+    "theme-color": "#013920",
     "mobile-web-app-capable": "yes",
   },
 };

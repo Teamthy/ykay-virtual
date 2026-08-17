@@ -10,8 +10,8 @@ const SERVICES = [
     label: "Home Tutoring",
     desc: "One-on-one lessons in the comfort of your home",
     href: "/hometutors",
-    bg: "#E6F0FA",
-    color: "#194F82",
+    bg: "#DFFFF2",
+    color: "#013920",
   },
   {
     icon: <Globe2 size={20} />,
@@ -42,8 +42,8 @@ const SERVICES = [
     label: "NUVORA Plus",
     desc: "Top 5% of tutors nationwide",
     href: "/pricing",
-    bg: "#E6F0FA",
-    color: "#056FD2",
+    bg: "#DFFFF2",
+    color: "#4CCB31",
   },
   {
     icon: <FileCheck size={20} />,

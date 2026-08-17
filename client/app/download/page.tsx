@@ -17,7 +17,7 @@ const APK_URL = "/nuvora-app.apk";
 
 export default function DownloadPage() {
   return (
-    <main className="relative min-h-screen bg-[#FFFCF5] pb-16 dark:bg-[#0B1220]">
+    <main className="relative min-h-screen bg-[#FFF7E4] pb-16 dark:bg-[#0B1220]">
       <DownloadHero />
 
       <div className="mx-auto max-w-3xl px-6 py-10">

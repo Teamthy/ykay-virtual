@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
-import { CalendarDays, ReceiptText, MessageSquareText, Wallet, LineChart, CreditCard, UserPlus } from "lucide-react";
+import { CalendarDays, ReceiptText, MessageSquareText, Wallet, LineChart, CreditCard, UserPlus, Settings } from "lucide-react";
 import { unreadCount } from "@/features/messaging/api";
 import { listProgressReports } from "@/features/learning/api";
 import { createLearner, listLearners, type Learner } from "@/features/onboarding/api";
@@ -388,7 +388,7 @@ export default function ParentDashboardPage() {
             href="/account"
             className="mt-4 block rounded-2xl border border-ink-100 bg-white p-5 shadow-soft text-center text-sm font-bold text-brand-navy hover:border-brand-gold"
           >
-            ⚙️ Account settings
+            <span className="inline-flex items-center gap-2"><Settings size={16} /> Account settings</span>
           </Link>
         </div>
       </div>

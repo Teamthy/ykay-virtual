@@ -175,7 +175,7 @@ export default function LmsTutorCohortPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#FFFCF5] pb-16">
+    <main className="min-h-screen bg-[#FFF7E4] pb-16">
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
@@ -276,7 +276,7 @@ export default function LmsTutorCohortPage() {
                       <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-xs font-bold text-ink-500">Pending</span>
                     )}
                   </div>
-                  {s.content && <p className="mt-2 rounded-lg bg-[#FFFCF5] p-3 text-sm text-ink-600">{s.content}</p>}
+                  {s.content && <p className="mt-2 rounded-lg bg-[#FFF7E4] p-3 text-sm text-ink-600">{s.content}</p>}
                   {s.feedback && <p className="mt-1 text-xs text-ink-400">Feedback: {s.feedback}</p>}
                   <div className="mt-3 flex gap-2">
                     <input

@@ -195,7 +195,7 @@ export function ChatWidget() {
                       "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
                       m.role === "user"
                         ? "rounded-br-md bg-brand-navy text-white"
-                        : "rounded-bl-md bg-[#FFF8E8] text-ink-800"
+                        : "rounded-bl-md bg-[#F8EBCF] text-ink-800"
                     )}
                   >
                     {m.content}
@@ -205,7 +205,7 @@ export function ChatWidget() {
             )}
             {sending && (
               <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md bg-[#FFF8E8] px-3.5 py-2.5 text-xs text-ink-400">
+                <div className="rounded-2xl rounded-bl-md bg-[#F8EBCF] px-3.5 py-2.5 text-xs text-ink-400">
                   <span className="inline-flex gap-1">
                     <span className="size-1.5 animate-bounce rounded-full bg-ink-400" />
                     <span className="size-1.5 animate-bounce rounded-full bg-ink-400 [animation-delay:120ms]" />

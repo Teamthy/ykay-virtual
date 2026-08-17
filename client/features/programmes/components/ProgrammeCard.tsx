@@ -20,18 +20,18 @@ export type ProgrammeCardData = {
 };
 
 const FORMAT_META: Record<string, { label: string; bg: string; color: string }> = {
-  COHORT: { label: "Cohort", bg: "#E6F0FA", color: "#194F82" },
+  COHORT: { label: "Cohort", bg: "#DFFFF2", color: "#013920" },
   PRIVATE: { label: "Private Tuition", bg: "#FDF0E8", color: "#ED6D20" },
   BOOTCAMP: { label: "Bootcamp", bg: "#F2F9EE", color: "#009A49" },
   HOLIDAY: { label: "Holiday Programme", bg: "#FFF8E6", color: "#C9A227" },
-  ONLINE_CLASS: { label: "Online Class", bg: "#E6F0FA", color: "#056FD2" },
+  ONLINE_CLASS: { label: "Online Class", bg: "#DFFFF2", color: "#4CCB31" },
   HYBRID: { label: "Hybrid", bg: "#F2F9EE", color: "#009A49" },
 };
 
 // Programme card — v2.tuteria.com treatment: tinted format banner, display
 // title, curriculum/level line, subject pills, next-start + price footer.
 export function ProgrammeCard({ p }: { p: ProgrammeCardData }) {
-  const fmt = FORMAT_META[p.format] ?? { label: p.format.replace(/_/g, " ").toLowerCase(), bg: "#E6F0FA", color: "#194F82" };
+  const fmt = FORMAT_META[p.format] ?? { label: p.format.replace(/_/g, " ").toLowerCase(), bg: "#DFFFF2", color: "#013920" };
   const nextStart = p.next_start ? new Date(p.next_start).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : null;
 
   return (

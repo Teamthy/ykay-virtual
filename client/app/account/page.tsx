@@ -176,7 +176,7 @@ export default function AccountPage() {
   if (isLoading || !user) return <p className="py-24 text-center text-ink-400">Loading…</p>;
 
   return (
-    <main className="min-h-screen bg-[#FFFCF5] pb-16">
+    <main className="min-h-screen bg-[#FFF7E4] pb-16">
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
@@ -371,7 +371,7 @@ export default function AccountPage() {
                       type="checkbox"
                       checked={prefs[key] ?? true}
                       onChange={() => togglePref(key)}
-                      className="size-4 accent-[#F4B400]"
+                      className="size-4 accent-[#70F250]"
                     />
                   </label>
                 ))}

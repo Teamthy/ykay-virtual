@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { LogOut } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { unreadCount } from "@/features/messaging/api";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
@@ -90,9 +90,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <Link
               href="/notifications"
-              className="relative rounded-lg border border-ink-200 px-3 py-2 text-sm font-semibold text-ink-600 hover:bg-ink-50"
+              className="relative rounded-lg border border-ink-200 p-2.5 text-ink-600 hover:bg-ink-50"
+              aria-label="Notifications"
             >
-              🔔
+              <Bell size={16} />
               {unreadN > 0 && (
                 <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-gold px-1 text-[10px] font-bold text-ink-900">
                   {unreadN}

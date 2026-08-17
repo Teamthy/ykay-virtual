@@ -81,7 +81,7 @@ export default function AdminChatPage() {
   ];
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl bg-[#FFFCF5] px-4 py-6 lg:px-6">
+    <main className="mx-auto min-h-screen max-w-6xl bg-[#FFF7E4] px-4 py-6 lg:px-6">
       <header>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
           <Link href="/admin" className="hover:text-brand-gold-dark">Admin</Link> / Chat inbox
@@ -207,7 +207,7 @@ export default function AdminChatPage() {
                           ? "rounded-br-md bg-brand-navy text-white"
                           : m.role === "agent"
                           ? "rounded-bl-md border-2 border-brand-gold bg-white text-ink-800"
-                          : "rounded-bl-md bg-[#FFF8E8] text-ink-800"
+                          : "rounded-bl-md bg-[#F8EBCF] text-ink-800"
                       )}
                     >
                       {m.content}

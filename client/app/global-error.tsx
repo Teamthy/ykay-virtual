@@ -21,12 +21,12 @@ export default function GlobalError({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#FFFCF5",
+            background: "#FFF7E4",
             padding: 24,
           }}
         >
           <div style={{ maxWidth: 480, textAlign: "center" }}>
-            <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: 4, color: "#0A1F44" }}>
+            <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: 4, color: "#013920" }}>
               NUVORA
             </div>
             <h1 style={{ fontSize: 22, color: "#111111", marginTop: 24 }}>
@@ -40,7 +40,7 @@ export default function GlobalError({
               <button
                 onClick={() => window.location.reload()}
                 style={{
-                  background: "#F4B400",
+                  background: "#70F250",
                   border: "none",
                   borderRadius: 12,
                   padding: "12px 24px",

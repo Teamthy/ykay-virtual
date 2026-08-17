@@ -17,6 +17,7 @@ import { listAssessments, listProgressReports } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { GraduationCap } from "lucide-react";
 
 // Student LMS hub — my courses, attendance, assignments, quizzes, reports.
 
@@ -88,7 +89,7 @@ export default function LmsHomePage() {
 
   return (
     <DashboardShell>
-    <main className="min-h-screen bg-[#FFFCF5] pb-16">
+    <main className="min-h-screen bg-[#FFF7E4] pb-16">
       {/* Header */}
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
@@ -130,7 +131,7 @@ export default function LmsHomePage() {
             <p className="py-8 text-center text-sm text-ink-400">Loading your courses…</p>
           ) : courses.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
-              <p className="text-2xl">🎓</p>
+              <GraduationCap size={28} className="text-brand-navy" />
               <p className="mt-2 font-semibold text-ink-700">You're not enrolled in any course yet.</p>
               <p className="mt-1 text-sm text-ink-500">Explore programmes and join a cohort to get started.</p>
               <Link href="/programmes" className="mt-4 inline-flex rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover">
@@ -180,7 +181,7 @@ export default function LmsHomePage() {
                 return (
                   <div
                     key={a.id}
-                    className="flex w-full items-center justify-between gap-4 border-b border-ink-100 px-5 py-4 text-left last:border-0 hover:bg-[#FFF8E8]"
+                    className="flex w-full items-center justify-between gap-4 border-b border-ink-100 px-5 py-4 text-left last:border-0 hover:bg-[#F8EBCF]"
                   >
                     <div>
                       <p className="font-semibold text-ink-800">{a.title}</p>

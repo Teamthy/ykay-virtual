@@ -62,7 +62,7 @@ export default function AdminPaymentsPage() {
   const total = orders.data?.total ?? 0;
 
   return (
-    <main className="min-h-screen bg-[#FFFCF5] pb-16">
+    <main className="min-h-screen bg-[#FFF7E4] pb-16">
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
@@ -99,7 +99,7 @@ export default function AdminPaymentsPage() {
                 </thead>
                 <tbody>
                   {(orders.data?.orders ?? []).map((o) => (
-                    <tr key={o.id} className="border-b border-ink-50 last:border-0 hover:bg-[#FFFCF5]">
+                    <tr key={o.id} className="border-b border-ink-50 last:border-0 hover:bg-[#FFF7E4]">
                       <td className="px-5 py-3">
                         <p className="font-semibold text-ink-800">{o.order_number}</p>
                         <p className="text-xs text-ink-400">{o.id.slice(0, 8)}…</p>

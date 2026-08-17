@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BookOpen, PartyPopper } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useSession } from "@/hooks/useSession";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -136,7 +137,7 @@ export default function LmsCoursePage() {
   const total = attendance.data?.length ?? 0;
 
   return (
-    <main className="min-h-screen bg-[#FFFCF5] pb-16">
+    <main className="min-h-screen bg-[#FFF7E4] pb-16">
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
@@ -488,7 +489,7 @@ export default function LmsCoursePage() {
               <h2 className="font-display text-lg font-bold text-brand-navy">Lesson notes</h2>
               <div className="mt-3 space-y-2">
                 {(notes.data ?? []).map((n) => (
-                  <div key={n.id} className="rounded-xl bg-[#FFF8E8] px-4 py-3 text-sm">
+                  <div key={n.id} className="rounded-xl bg-[#F8EBCF] px-4 py-3 text-sm">
                     <p className="text-ink-700">{n.content}</p>
                     {n.homework && <p className="mt-1 text-xs font-semibold text-brand-gold-dark">Homework: {n.homework}</p>}
                     <p className="mt-1 text-[11px] text-ink-400">{new Date(n.created_at).toLocaleDateString()}</p>
@@ -603,7 +604,7 @@ export default function LmsCoursePage() {
       {quiz.phase === "done" && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
-            <p className="text-5xl">{quiz.result.passed ? "🎉" : "📚"}</p>
+            <div className="grid size-16 place-items-center rounded-2xl bg-brand-gold-light text-brand-green">{quiz.result.passed ? <PartyPopper size={32} /> : <BookOpen size={32} />}</div>
             <h3 className="mt-3 font-display text-xl font-bold text-brand-navy">
               {quiz.result.passed ? "Quiz passed!" : "Keep practicing"}
             </h3>
