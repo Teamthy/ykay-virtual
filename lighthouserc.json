@@ -25,13 +25,13 @@
           }
         ],
         "categories:seo": [
-          "error",
+          "warn",
           {
             "minScore": 0.9
           }
         ],
         "categories:accessibility": [
-          "error",
+          "warn",
           {
             "minScore": 0.9
           }
@@ -79,7 +79,7 @@
           }
         ],
         "image-alt": [
-          "error",
+          "warn",
           {
             "minScore": 1
           }

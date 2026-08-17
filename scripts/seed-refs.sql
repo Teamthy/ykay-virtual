@@ -61,12 +61,12 @@ INSERT INTO assessment_questions (subject_id, question, options, correct_index, 
 SELECT s.id, g.q, g.o::jsonb, 1, 2, TRUE
 FROM subjects s
 JOIN (VALUES
-  ('What is 7 × 6?',       '["36","42","48","54"]'),
+  ('What is 7 x 6?',       '["36","42","48","54"]'),
   ('Solve for x: 2x + 4 = 12', '["2","4","6","8"]'),
   ('What is 15% of 200?',  '["20","30","35","40"]'),
   ('What is the square root of 144?', '["10","12","14","16"]'),
   ('What is 3/4 as a decimal?', '["0.25","0.75","0.5","1.25"]'),
-  ('What is the area of a 6×9 rectangle?', '["36","54","63","72"]')
+  ('What is the area of a 6x9 rectangle?', '["36","54","63","72"]')
 ) AS g(q, o) ON s.slug = 'mathematics';
 
 -- Programmes

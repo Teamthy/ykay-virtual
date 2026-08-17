@@ -14,6 +14,7 @@ PORT="${1:-8099}"
 GO="${GO:-go}"
 
 : "${DATABASE_URL:?set DATABASE_URL (postgres://user:pass@host:5432/db)}"
+export PGCLIENTENCODING=UTF8
 
 echo "== 1/3 Resetting database =="
 DBURL="$DATABASE_URL"
