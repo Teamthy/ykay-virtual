@@ -10,14 +10,19 @@ To opt in locally, set both `ENVIRONMENT=development` and
 through `DEMO_PASSWORD`. Production validation rejects `SEED_DEMO_DATA=true`;
 production must use an empty, real PostgreSQL database with real identities.
 
-## Accounts (all verified working)
+## Accounts (in-memory only, when `SEED_DEMO_DATA=true`)
+
+Migrations `000019` / `000034` used to insert these rows into Postgres.
+`000042` **disables them** (soft-delete, unusable password). They are **not**
+valid on a migrated database or in production. Use them only in the
+in-memory store after explicitly setting `SEED_DEMO_DATA=true`.
 
 | Role    | Email              | Password     | Dashboard                          | User ID (suffix) |
 |---------|--------------------|--------------|------------------------------------|------------------|
-| Admin   | `admin@nuvora.com` | `password123` | `/admin` (analytics, vetting queue)| `…00a1` |
-| Parent  | `parent@nuvora.com`| `password123` | `/dashboard`                       | `…00a2` |
-| Tutor   | `tutor@nuvora.com` | `password123` | `/tutor-dashboard`, `/lms/tutor`   | `…00a3` |
-| Student | `student@nuvora.com`| `password123` | `/student-dashboard`, `/lms`       | `…00a4` |
+| Admin   | `admin@nuvora.com` | `DEMO_PASSWORD` | `/admin` | `…00a1` |
+| Parent  | `parent@nuvora.com`| `DEMO_PASSWORD` | `/dashboard` | `…00a2` |
+| Tutor   | `tutor@nuvora.com` | `DEMO_PASSWORD` | `/tutor-dashboard` | `…00a3` |
+| Student | `student@nuvora.com`| `DEMO_PASSWORD` | `/student-dashboard` | `…00a4` |
 
 > Note: sign-in by **6-digit email code** (`/login-code`) also works for any
 > registered email — codes appear in the API log (`/tmp/api32.log` in this

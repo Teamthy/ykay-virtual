@@ -34,10 +34,10 @@ make web          # or: cd client && npm install && npm run dev
 make migrate      # or: go run ./cmd/migrate --cmd=up
 ```
 
-**Zero-config mode:** `go run ./cmd/api` alone boots with an in-memory
-store + `SEED_DEMO_DATA=true` demo fixtures (tutor `tutor@nuvora.com`,
-parent `parent@nuvora.com`, student `student@nuvora.com`,
-admin `admin@nuvora.com`, password `password123`) — no Docker needed.
+**Zero-config mode:** `go run ./cmd/api` alone uses an in-memory store.
+Demo logins (`admin@nuvora.com` / …) are **off unless** you set
+`SEED_DEMO_DATA=true` (and `DEMO_PASSWORD`). Postgres after `000042` does
+**not** contain those accounts. Do not use them on Render.
 
 ## 3. Useful targets
 

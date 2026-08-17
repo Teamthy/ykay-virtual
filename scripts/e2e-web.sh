@@ -97,10 +97,10 @@ if [ -n "${DATABASE_URL:-}" ] && psql "$DATABASE_URL" -c "SELECT 1" >/dev/null 2
     PAYSTACK_BASE_URL="http://localhost:$GW_PORT" FLUTTERWAVE_BASE_URL="http://localhost:$GW_PORT"
     AUTH_RATE_LIMIT_PER_MINUTE=100000 RATE_LIMIT_PER_MINUTE=100000
     DATABASE_URL="$DATABASE_URL")
-  psql "$DATABASE_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" >/dev/null
+  psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" >/dev/null
   "${GO:-go}" run ./cmd/migrate --cmd=up
-  psql "$DATABASE_URL" -f scripts/seed-refs.sql
-  psql "$DATABASE_URL" -f scripts/seed-e2e-admin.sql
+  psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f scripts/seed-refs.sql
+  psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f scripts/seed-e2e-admin.sql
   echo "e2e-web: API in PostgreSQL mode"
 else
   echo "e2e-web: API in memory demo mode"

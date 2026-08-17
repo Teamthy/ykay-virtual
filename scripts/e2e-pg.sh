@@ -27,10 +27,11 @@ fi
 
 echo "== 2/3 Migrations + reference seeds =="
 "$GO" run ./cmd/migrate --cmd=up
-psql "$DBURL" -f scripts/seed-refs.sql
-# 000042 disables admin@nuvora.com. Seed a disposable admin on this throwaway DB.
-psql "$DBURL" -f scripts/seed-e2e-admin.sql
-n=$(psql "$DBURL" -tAc "SELECT COUNT(*) FROM cohorts WHERE id = '00000000-0000-0000-0000-00000000c010'")
+# ON_ERROR_STOP: default psql keeps going after a failed statement, so c010
+# can be missing while the script still exits 0.
+psql -v ON_ERROR_STOP=1 "$DBURL" -f scripts/seed-refs.sql
+psql -v ON_ERROR_STOP=1 "$DBURL" -f scripts/seed-e2e-admin.sql
+n=$(psql -v ON_ERROR_STOP=1 "$DBURL" -tAc "SELECT COUNT(*) FROM cohorts WHERE id = '00000000-0000-0000-0000-00000000c010'")
 [ "$n" = "1" ] || { echo "seed-refs did not insert cohort c010 (count=$n)"; exit 1; }
 
 echo "== 3/3 Booting API on :$PORT (postgres mode) =="
