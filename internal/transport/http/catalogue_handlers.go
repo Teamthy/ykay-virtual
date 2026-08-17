@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/tutor"
@@ -79,6 +80,10 @@ type TutorDTO struct {
 	YearsExperience  int               `json:"years_experience"`
 	TotalHoursTaught int               `json:"total_hours_taught"`
 	TotalStudents    int               `json:"total_students"`
+	// VerifiedAt is the vetting-verification timestamp; nil = not yet verified.
+	// The detail page uses this to show an honest "ID Verified" badge instead
+	// of a hardcoded one (Phase 6).
+	VerifiedAt       *time.Time        `json:"verified_at,omitempty"`
 }
 
 func toTutorDTO(res tutor.TutorSearchResult) TutorDTO {
@@ -101,6 +106,7 @@ func toTutorDTO(res tutor.TutorSearchResult) TutorDTO {
 		YearsExperience:  res.Profile.YearsExperience,
 		TotalHoursTaught: res.Profile.TotalHoursTaught,
 		TotalStudents:    res.Profile.TotalStudents,
+		VerifiedAt:       res.Profile.VerifiedAt,
 	}
 }
 

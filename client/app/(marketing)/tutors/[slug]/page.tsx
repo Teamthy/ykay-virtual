@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { InnerHero } from "@/components/layout/InnerHero";
 import { RelatedContent } from "@/components/RelatedContent";
 import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
 import { PrivateBookingForm } from "@/features/tuition/PrivateBookingForm";
 import { apiFetchSSR } from "@/lib/server-api";
+import { BadgeCheck, Star, MapPin, Clock, Users, GraduationCap } from "lucide-react";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -24,10 +24,11 @@ type TutorDTO = {
   rating_avg: number;
   rating_count: number;
   location?: string;
-  subjects?: string[];
+  subjects?: { name: string; slug: string }[];
   years_experience?: number;
   total_hours_taught?: number;
   total_students?: number;
+  verified_at?: string;
 };
 
 async function fetchTutor(slug: string): Promise<TutorDTO | null> {
@@ -43,7 +44,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const t = await fetchTutor(params.slug);
   if (!t) return buildMetadata({ title: "Tutor Not Found", description: "Tutor not found", path: `/tutors/${params.slug}`, noIndex: true });
-  const subjectNames = t.subjects ?? [];
+  const subjectNames = (t.subjects ?? []).map((s) => s.name);
   return buildMetadata({
     title: `${t.display_name}${subjectNames.length ? ` — ${subjectNames.join(", ")} Tutor` : ""} | NUVORA`,
     description: (t.bio ?? t.headline ?? `${t.display_name} teaches on NUVORA.`).slice(0, 155),
@@ -51,12 +52,23 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   });
 }
 
+function fmtRate(t: TutorDTO): string {
+  const min = t.hourly_rate_min;
+  const max = t.hourly_rate_max;
+  const cur = t.currency || "NGN";
+  if (min == null && max == null) return "Rate on request";
+  if (max && min && max !== min) return `${cur} ${min.toLocaleString()}–${max.toLocaleString()}/hr`;
+  const r = min ?? max;
+  return `${cur} ${r!.toLocaleString()}/hr`;
+}
+
 export default async function TutorPage(props: Props) {
   const params = await props.params;
   const tutor = await fetchTutor(params.slug);
   if (!tutor) return notFound();
 
-  const subjectNames = tutor.subjects ?? [];
+  const subjectNames = (tutor.subjects ?? []).map((s) => s.name);
+  const verified = !!tutor.verified_at;
 
   const person = personJsonLd({
     name: tutor.display_name,
@@ -68,52 +80,108 @@ export default async function TutorPage(props: Props) {
   });
 
   return (
-    <main className="container-x py-12">
+    <main className="container-x py-10">
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Tutors", href: "/tutors" }, { name: tutor.display_name }]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
 
-      <InnerHero>
-      <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10">
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_340px]">
+        {/* ── Left: identity + booking ── */}
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide bg-green-50 text-green-700 px-3 py-1 rounded-full">✓ ID Verified • Background Checked</div>
-          <h1 className="mt-4 text-4xl font-extrabold">{tutor.display_name}</h1>
-          {tutor.headline && <p className="mt-1 text-lg text-ink-700">{tutor.headline}</p>}
-          {tutor.bio && <p className="mt-2 text-ink-600">{tutor.bio}</p>}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {tutor.rating_count > 0 && (
-              <>
-                <span className="font-bold">{tutor.rating_avg.toFixed(2)}</span>
-                <span className="text-ink-500">({tutor.rating_count} reviews)</span>
-              </>
+          <div className="flex flex-wrap items-center gap-3">
+            {verified ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold-light px-3 py-1 text-xs font-bold text-brand-green">
+                <BadgeCheck size={14} /> ID Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1 text-xs font-bold text-ink-600">
+                NUVORA tutor
+              </span>
             )}
-            {tutor.location && <span className="ml-4 text-sm">📍 {tutor.location}</span>}
-            {subjectNames.length > 0 && <span className="ml-2 text-sm">Subjects: {subjectNames.join(", ")}</span>}
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-500">
+              <Star size={14} fill="currentColor" className="text-brand-gold" strokeWidth={0} />
+              {tutor.rating_count > 0 ? `${tutor.rating_avg.toFixed(1)} (${tutor.rating_count} reviews)` : "New tutor"}
+            </span>
           </div>
 
-          <section className="mt-8 border rounded-2xl p-6">
-            <h3 className="font-bold">Child-Centered Teaching Approach</h3>
-            <p className="mt-2 text-sm text-ink-600">Adaptive learning plans, child-centered delivery and periodic evaluation — plus NUVORA progress reports with strengths, weaknesses and recommendations, all audited.</p>
+          <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">{tutor.display_name}</h1>
+          {tutor.headline && <p className="mt-2 text-lg font-medium text-ink-800">{tutor.headline}</p>}
+          {tutor.bio && <p className="mt-3 max-w-2xl leading-relaxed text-ink-600">{tutor.bio}</p>}
+
+          {subjectNames.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {subjectNames.map((name) => (
+                <span key={name} className="rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-semibold text-ink-700">
+                  {name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <section className="mt-8 rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Child-centred teaching approach</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+              Adaptive learning plans, child-centred delivery and periodic evaluation — plus NUVORA progress reports
+              with strengths, weaknesses and recommendations, all audited.
+            </p>
           </section>
 
-          <div className="mt-10">
-            <PrivateBookingForm
-              tutorProfileId={tutor.id}
-              subjects={subjectNames}
-              defaultRate={tutor.hourly_rate_min ?? 5000}
-            />
-          </div>
+          <section id="book" className="mt-8">
+            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Request private tuition</h2>
+            <div className="mt-4">
+              <PrivateBookingForm
+                tutorProfileId={tutor.id}
+                subjects={subjectNames}
+                defaultRate={tutor.hourly_rate_min ?? 5000}
+              />
+            </div>
+          </section>
 
           <ReviewsSection tutorSlug={params.slug} tutorId={tutor.id} />
         </div>
 
-        <div className="border rounded-2xl p-6 h-fit lg:sticky lg:top-28">
-          <h3 className="font-bold">Book this tutor</h3>
-          <p className="mt-2 text-sm text-ink-600">Escrow protected — you pay to wallet, tutor paid after confirmation or 3-day auto-release. No off-platform payment.</p>
-          <a href={`/private-tuition?tutor=${params.slug}`} className="mt-5 btn-gold w-full inline-flex items-center justify-center">Request Tuition</a>
-          <div className="mt-4 text-xs text-ink-500">Good Fit Guarantee: first hour protected.</div>
-        </div>
+        {/* ── Right: at-a-glance (sticky) ── */}
+        <aside className="space-y-4 lg:sticky lg:top-28">
+          <div className="rounded-2xl bg-brand-navy p-6 text-white shadow-card">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Rate</p>
+            <p className="mt-1 font-display text-3xl tracking-[0.02em]">{fmtRate(tutor)}</p>
+            <a
+              href="#book"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-brand-gold px-5 py-3 text-sm font-bold text-ink-900 transition-transform hover:-translate-y-0.5"
+            >
+              Request tuition
+            </a>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-ink-100 bg-white p-4">
+              <GraduationCap size={18} className="text-brand-navy" />
+              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.years_experience ?? "—"} yrs</p>
+              <p className="text-xs text-ink-500">Experience</p>
+            </div>
+            <div className="rounded-2xl border border-ink-100 bg-white p-4">
+              <Users size={18} className="text-brand-navy" />
+              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.total_students ?? "—"}</p>
+              <p className="text-xs text-ink-500">Students</p>
+            </div>
+            <div className="rounded-2xl border border-ink-100 bg-white p-4">
+              <Clock size={18} className="text-brand-navy" />
+              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.total_hours_taught ?? "—"}</p>
+              <p className="text-xs text-ink-500">Hours taught</p>
+            </div>
+            <div className="rounded-2xl border border-ink-100 bg-white p-4">
+              <MapPin size={18} className="text-brand-navy" />
+              <p className="mt-2 truncate text-lg font-bold text-ink-900">{tutor.location ?? "Online"}</p>
+              <p className="text-xs text-ink-500">Location</p>
+            </div>
+          </div>
+
+          <p className="rounded-2xl border border-brand-gold/30 bg-brand-gold-light/40 p-4 text-xs leading-relaxed text-ink-700">
+            Escrow protected — you pay into the NUVORA wallet; the tutor is paid after confirmation or a 3-day
+            auto-release. No off-platform payment.
+          </p>
+        </aside>
       </div>
-      </InnerHero>
+
       <RelatedContent subjectSlug={(subjectNames[0] ?? "mathematics").toLowerCase().replace(/\s+/g, "-")} />
     </main>
   );
