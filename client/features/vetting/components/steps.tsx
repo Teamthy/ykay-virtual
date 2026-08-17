@@ -147,10 +147,13 @@ export function SubjectsStep({ profileId, onNext }: { profileId: string; onNext:
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [q, setQ] = useState("");
   const subjects = useQuery({
     queryKey: ["subjects", "all"],
     queryFn: async () => {
-      const res = await listSubjects({ page: 1 });
+      // page_size=100: the picker must show the FULL catalogue (default page
+      // size is 20, which silently hid subjects beyond the first 20).
+      const res = await listSubjects({ page: 1, page_size: 100 });
       return res.data;
     },
     staleTime: 5 * 60_000,
@@ -185,8 +188,15 @@ export function SubjectsStep({ profileId, onNext }: { profileId: string; onNext:
     <div className="border rounded-2xl p-6 space-y-4">
       <h2 className="text-xl font-bold">What can you teach?</h2>
       <p className="text-sm text-ink-600">Choose at least one subject — you can add more later.</p>
+      <input
+        type="text"
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search subjects…"
+        className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+      />
       <div className="grid sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
-        {(subjects.data ?? []).map((s: Subject) => (
+        {(subjects.data ?? []).filter((s: Subject) => !q.trim() || s.name.toLowerCase().includes(q.trim().toLowerCase())).map((s: Subject) => (
           <button key={s.id} type="button" onClick={() => toggle(s.id)}
             className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
               selected.has(s.id) ? "border-brand-blue bg-brand-blue/5 text-brand-blue font-semibold" : "border-ink-200 hover:border-ink-400"
