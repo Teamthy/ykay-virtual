@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Search, LifeBuoy, ArrowRight, ChevronDown } from "lucide-react";
-import { HELP_CATEGORIES } from "@/lib/help-data";
+import { HELP_CATEGORIES, slugify } from "@/lib/help-data";
 import { PageHero } from "@/components/layout/PageHero";
 
 // Help Center — searchable, categorised FAQ hub (single source of truth is
@@ -65,10 +65,21 @@ export default function HelpPage() {
               </div>
             )}
             {results.map((r) => (
-              <details key={r.faq.q} className="rounded-2xl border border-ink-100 bg-white p-5">
-                <summary className="cursor-pointer font-semibold text-brand-navy">{r.faq.q}</summary>
-                <p className="mt-3 text-sm leading-relaxed text-ink-600">{r.faq.a}</p>
-              </details>
+              <div key={r.faq.q} className="rounded-2xl border border-ink-100 bg-white p-5">
+                <Link
+                  href={`/help/${slugify(r.faq.q)}`}
+                  className="font-semibold text-brand-navy transition-colors hover:text-brand-blue"
+                >
+                  {r.faq.q}
+                </Link>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">{r.faq.a}</p>
+                <Link
+                  href={`/help/${slugify(r.faq.q)}`}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-blue hover:underline"
+                >
+                  Read article <ArrowRight size={14} />
+                </Link>
+              </div>
             ))}
           </div>
         </section>
@@ -94,6 +105,12 @@ export default function HelpPage() {
                       <ChevronDown size={15} className={`shrink-0 text-ink-400 transition-transform ${open === f.q ? "rotate-180" : ""}`} />
                     </summary>
                     <p className="mt-2 text-sm leading-relaxed text-ink-600">{f.a}</p>
+                    <Link
+                      href={`/help/${slugify(f.q)}`}
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-blue hover:underline"
+                    >
+                      Read article <ArrowRight size={12} />
+                    </Link>
                   </details>
                 ))}
               </div>

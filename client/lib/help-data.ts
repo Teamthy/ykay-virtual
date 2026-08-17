@@ -62,3 +62,29 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     ],
   },
 ];
+
+/** URL-safe slug from a question title (stable, deterministic). */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export type HelpArticle = HelpFaq & { slug: string; category: HelpCategory };
+
+/** Flattened list of every FAQ with its slug and parent category. */
+export function getHelpArticles(): HelpArticle[] {
+  const articles: HelpArticle[] = [];
+  for (const category of HELP_CATEGORIES) {
+    for (const faq of category.faqs) {
+      articles.push({ ...faq, slug: slugify(faq.q), category });
+    }
+  }
+  return articles;
+}
+
+/** Look up one article by slug (undefined when unknown). */
+export function getHelpArticle(slug: string): HelpArticle | undefined {
+  return getHelpArticles().find((a) => a.slug === slug);
+}

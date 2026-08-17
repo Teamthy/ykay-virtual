@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
+import { getHelpArticles } from "@/lib/help-data";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
 const now = new Date();
@@ -45,6 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const slug of subjects) entries.push({ url: `${SITE}/subjects/${slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.7 });
   for (const slug of programmes) entries.push({ url: `${SITE}/programmes/${slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.8 });
   for (const slug of posts) entries.push({ url: `${SITE}/blog/${slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.6 });
+  for (const article of getHelpArticles()) entries.push({ url: `${SITE}/help/${article.slug}`, lastModified: now, changeFrequency: "monthly", priority: 0.5 });
 
   return entries;
 }
