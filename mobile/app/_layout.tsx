@@ -34,6 +34,7 @@ export default function RootLayout() {
         <Stack.Screen name="subjects" options={{ title: "Subjects" }} />
         <Stack.Screen name="subjects/[slug]" options={{ title: "Subject" }} />
         <Stack.Screen name="exam-prep" options={{ title: "Exam preparation" }} />
+        <Stack.Screen name="exam-prep/[exam]/[subject]" options={{ title: "Exam subject" }} />
         <Stack.Screen name="search" options={{ title: "Find a tutor" }} />
         <Stack.Screen name="saved" options={{ title: "Saved tutors" }} />
         <Stack.Screen name="tutors/[slug]" options={{ title: "Tutor" }} />
