@@ -305,6 +305,9 @@ func serveMetrics(port, token string) *http.Server {
 func setupRepos(ctx context.Context, cfg config.Config) *repos {
 	pg, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
+		if cfg.IsProduction() {
+			logx.Fatal("worker: postgres unavailable in production", "error", err)
+		}
 		slog.Warn("postgres unavailable — worker running against in-memory store (dev mode)", "error", err)
 		store := memory.NewMemoryStore()
 		return &repos{
