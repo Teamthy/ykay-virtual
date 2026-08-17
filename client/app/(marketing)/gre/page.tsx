@@ -7,7 +7,7 @@ import { Check, ArrowRight } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "GRE Prep — Target 320+ | NUVORA",
+  title: "GRE Prep — Quant, verbal and writing | NUVORA",
   description:
     "GRE preparation with vetted tutors: quant drills, verbal strategies, analytical writing feedback and full practice tests.",
   path: "/gre",
@@ -46,8 +46,8 @@ export default function GrePage() {
       />
       <PageHero
         eyebrow="Exam preparation"
-        title="GRE Prep — Target 320+"
-        subtitle="Achieve your target GRE score for graduate school: verbal, quant and analytical writing with a vetted tutor."
+        title="GRE prep from your diagnostic"
+        subtitle="Verbal, quant and analytical writing with a vetted tutor. We do not advertise a 320+ guarantee."
       />
       <section className="mx-auto max-w-5xl px-6 py-14">
         <div className="grid gap-8 md:grid-cols-2">

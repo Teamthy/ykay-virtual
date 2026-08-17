@@ -9,9 +9,9 @@ import { Check, BrainCircuit, FileCheck2, CalendarCheck2, LifeBuoy, Trophy } fro
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "JAMB 2026 Success — UTME Prep That Guarantees 320+ | NUVORA",
+  title: "UTME 2026 prep — live class, mocks, reports | NUVORA",
   description:
-    "Nigeria's most advanced UTME prep: AI-analyzed curriculum from 20,000+ past questions, 200+ practice exams, weekly mock CBT, ₦20M scholarship pool. Join this year's cohort.",
+    "JAMB/UTME prep on nuvora.com: live lessons, recordings, timed mocks and parent notes. Same login on mobile. No 320+ guarantee.",
   path: "/utme-2026",
 });
 
@@ -87,7 +87,7 @@ export default function Utme2026Page() {
   const course = courseJsonLd({
     name: "NUVORA JAMB 2026 Preparation Programme",
     description:
-      "Nigeria's most advanced UTME prep that guarantees a 320+ score — AI curriculum, 200+ practice exams, weekly mocks, ₦20M scholarships.",
+      "UTME prep on nuvora.com: live lessons, recordings, timed mocks and parent notes. No score guarantee.",
     provider: "NUVORA",
     url: "https://nuvora.com/utme-2026",
   });
@@ -133,7 +133,7 @@ export default function Utme2026Page() {
                   </div>
                   <div>
                     <div className="font-semibold text-[#013920]">Omoloja Olumuyiwa Eghosa</div>
-                    <div className="text-xs text-ink-500">UTME Score: 341/400 · 2025 Cohort</div>
+                    <div className="text-xs text-ink-500">Parent note — attributed story, not a published average</div>
                   </div>
                 </footer>
               </blockquote>
@@ -193,13 +193,12 @@ export default function Utme2026Page() {
               Ace your UTME with our AI-powered exam prep
             </h2>
             <p className="mt-4 leading-relaxed text-white/80">
-              We&apos;ve cracked the UTME code. Our AI has analyzed over{" "}
-              <b className="text-[#4CCB31]">past JAMB questions</b> from the past 15 years to
-              create a laser-focused curriculum that predicts the most likely exam topics.
+              Tutors plan from{" "}
+              <b className="text-[#4CCB31]">past-paper patterns</b> — we do not claim a secret
+              15-year AI score or a predicted paper.
             </p>
             <p className="mt-3 leading-relaxed text-white/80">
-              Combined with expert tutors and proven teaching methods, we give you the unfair
-              advantage you need to score 280+ and get into your dream university.
+              Live class, recordings and timed mocks. We do not guarantee 280+ or a university offer.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               {["Mathematics", "Physics", "Use of English", "Biology", "Chemistry"].map((s) => (

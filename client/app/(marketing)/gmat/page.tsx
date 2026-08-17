@@ -10,9 +10,9 @@ import { Globe2, Briefcase, MonitorPlay, Check, ArrowRight } from "lucide-react"
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "GMAT Prep — Pass Your GMAT in One Sitting | NUVORA",
+  title: "GMAT Prep — Diagnostic, drills and mocks | NUVORA",
   description:
-    "Achieve your target GMAT score for MBA or job tests with help from a top-rated GMAT tutor. Average score 720, 95% success rate, 350+ students coached.",
+    "GMAT prep with a vetted tutor: diagnostic, section drills, timed mocks and weekly notes. We do not publish an average score or pass rate.",
   path: "/gmat",
 });
 
@@ -23,7 +23,7 @@ export default function GmatPage() {
   ]);
   const course = courseJsonLd({
     name: "NUVORA GMAT Preparation",
-    description: "GMAT prep with top-rated tutors — diagnostic, structured study plan, mock tests and section drills.",
+    description: "GMAT prep with vetted tutors — diagnostic, structured study plan, mock tests and section drills.",
     provider: "NUVORA",
     url: "https://nuvora.com/gmat",
   });
@@ -61,17 +61,17 @@ export default function GmatPage() {
           {/* Title */}
           <div className="mx-auto mt-6 max-w-2xl text-center">
             <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
-              Pass your GMAT exam{" "}
+              Prepare for GMAT{" "}
               <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
-                in one sitting
+                from your diagnostic
               </span>
             </h1>
           </div>
 
           <div className="mx-auto mt-5 max-w-3xl text-center">
             <p className="text-lg text-ink-600">
-              Achieve your target score for MBA or job tests with help from a top-rated GMAT tutor.
-              Give us your details and we will bring success to you!
+              Work a plan from your diagnostic — Quant, Verbal, IR and AWA. We do not promise a
+              sitting, school or score.
             </p>
           </div>
 
@@ -88,7 +88,7 @@ export default function GmatPage() {
               href="#stats"
               className="inline-flex items-center gap-x-2 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
             >
-              See our results
+              How prep works
             </a>
           </div>
 

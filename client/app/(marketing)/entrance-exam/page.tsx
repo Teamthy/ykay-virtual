@@ -10,7 +10,7 @@ export const revalidate = 600;
 export const metadata: Metadata = buildMetadata({
   title: "Entrance Exams — Prepare for Top Schools in Nigeria & Abroad | NUVORA",
   description:
-    "Expert prep for WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT to guarantee your child's high performance — 95% success rate.",
+    "Prep for WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT — past papers, mocks and weekly reports. We do not publish unverified success rates.",
   path: "/entrance-exam",
 });
 
