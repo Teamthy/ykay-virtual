@@ -18,6 +18,9 @@ import { StudentQuizzes } from "@/features/learning/StudentQuizzes";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { PageHeader } from "@/components/dashboard/PageHeader";
+import { StatCard } from "@/components/ui/stat-card";
+import { LineChart, FileText, CheckCircle2, BookOpen, MessageSquare, Settings, Bell, LifeBuoy } from "lucide-react";
 
 // Student portal (working-doc §9): side nav, Today panel, progress,
 // assignments with submission, resources, announcements, support.
@@ -40,7 +43,7 @@ type Cohort = {
   status: string;
 };
 
-const SECTIONS = ["Dashboard", "My Classes", "Calendar", "Resources", "Assignments", "Quizzes", "Progress"] as const;
+const SECTIONS = ["Overview", "My Classes", "Calendar", "Assignments", "Quizzes", "Progress"] as const;
 type Section = (typeof SECTIONS)[number];
 
 export default function StudentDashboardPage() {
@@ -48,7 +51,7 @@ export default function StudentDashboardPage() {
   const qc = useQueryClient();
   // G1: the learner profile resolves from the session server-side.
   const { user } = useSession();
-  const [section, setSection] = useState<Section>("Dashboard");
+  const [section, setSection] = useState<Section>("Overview");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
   const lessons = useQuery({
@@ -111,20 +114,20 @@ export default function StudentDashboardPage() {
         </button>
       ))}
       <div className="border-t border-ink-100 mt-2 pt-2 space-y-1">
-        <button onClick={() => router.push("/lms")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          🎓 My Learning (LMS)
+        <button onClick={() => router.push("/lms")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
+          <BookOpen size={15} /> My Learning (LMS)
         </button>
-        <button onClick={() => router.push("/messages")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          💬 Messages
+        <button onClick={() => router.push("/messages")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
+          <MessageSquare size={15} /> Messages
         </button>
-        <button onClick={() => router.push("/account")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          ⚙️ Account settings
+        <button onClick={() => router.push("/account")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
+          <Settings size={15} /> Account settings
         </button>
-        <button onClick={() => router.push("/notifications")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          🔔 Notifications
+        <button onClick={() => router.push("/notifications")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
+          <Bell size={15} /> Notifications
         </button>
-        <button onClick={() => router.push("/contact")} className="block w-full text-left rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          🎧 Support
+        <button onClick={() => router.push("/contact")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
+          <LifeBuoy size={15} /> Support
         </button>
       </div>
     </aside>
@@ -135,23 +138,31 @@ export default function StudentDashboardPage() {
     <main className="container-x py-10">
       <RoleGate page="/student-dashboard" />
       <RecommendationsForYou />
-      <h1 className="text-3xl font-extrabold">Student dashboard</h1>
-      <p className="text-ink-500 text-sm mt-1">
-        {user ? `Signed in as ${user.email}` : "Your classes, resources and progress."}
-      </p>
+      <PageHeader
+        eyebrow="Student portal"
+        title="Student dashboard"
+        subline="Your classes, assignments and progress — in one place."
+      />
 
       <div className="mt-8 grid lg:grid-cols-[240px_1fr] gap-8 items-start">
         {nav}
         <div>
-          {section === "Dashboard" && (
+          {section === "Overview" && (
             <div className="space-y-6">
+              {/* KPI snapshot */}
+              <div className="grid gap-4 sm:grid-cols-3">
+                <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
+                <StatCard label="Assignments" value={`${submittedIds.size}/${assignments.data?.length ?? 0}`} hint="submitted" icon={<FileText size={18} />} />
+                <StatCard label="Lessons completed" value={past.length} hint="all time" icon={<CheckCircle2 size={18} />} />
+              </div>
+
               {/* Today */}
               <section className="rounded-2xl bg-brand-blue text-white p-6">
                 <h2 className="font-bold">Today&apos;s lessons</h2>
                 {lessons.isLoading ? (
                   <Skeleton className="h-12 w-full mt-3 bg-white/20" />
                 ) : upcoming.length === 0 ? (
-                  <p className="mt-3 text-sm text-white/80">No lessons scheduled for today. 📚</p>
+                  <p className="mt-3 text-sm text-white/80">No lessons scheduled for today.</p>
                 ) : (
                   <ul className="mt-4 space-y-3">
                     {upcoming.slice(0, 4).map((l) => (
@@ -175,26 +186,8 @@ export default function StudentDashboardPage() {
                 )}
               </section>
 
-              {/* Progress snapshot */}
-              <section className="border rounded-2xl p-6">
-                <h2 className="font-bold">Progress</h2>
-                <div className="mt-4 grid sm:grid-cols-3 gap-4">
-                  {[
-                    { label: "Attendance", value: attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–", note: `${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0} lessons` },
-                    { label: "Assignments", value: `${submittedIds.size}/${assignments.data?.length ?? 0}`, note: "submitted" },
-                    { label: "Lessons completed", value: String(past.length), note: "all time" },
-                  ].map((p) => (
-                    <div key={p.label} className="rounded-xl bg-ink-50 p-4 text-center">
-                      <div className="text-2xl font-extrabold text-brand-blue">{p.value}</div>
-                      <div className="text-xs text-ink-600 mt-0.5">{p.label}</div>
-                      <div className="text-[10px] text-ink-400 mt-0.5">{p.note}</div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
               {/* Recent tutor feedback / notes */}
-              <section className="border rounded-2xl p-6">
+              <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
                 <h2 className="font-bold">Recent lessons & feedback</h2>
                 {past.length === 0 ? (
                   <p className="mt-3 text-sm text-ink-500">No completed lessons yet.</p>
@@ -272,17 +265,6 @@ export default function StudentDashboardPage() {
                   ))}
                 </div>
               )}
-            </section>
-          )}
-
-          {section === "Resources" && (
-            <section className="border rounded-2xl p-6">
-              <h2 className="font-bold text-lg">Resources</h2>
-              <p className="text-xs text-ink-500 mt-1">Study materials attached to your cohorts and lessons.</p>
-              <div className="mt-4 rounded-xl bg-ink-50 border border-dashed border-ink-200 p-8 text-center text-sm text-ink-500">
-                Resources appear here once your cohorts publish materials.{" "}
-                <a href="/resources" className="text-brand-blue font-semibold hover:underline">Browse the free study guides →</a>
-              </div>
             </section>
           )}
 

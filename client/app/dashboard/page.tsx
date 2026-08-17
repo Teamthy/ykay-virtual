@@ -9,7 +9,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
-import { CalendarDays, ReceiptText, MessageSquareText, Wallet, LineChart, CreditCard, UserPlus, Settings } from "lucide-react";
+import { StatCard } from "@/components/ui/stat-card";
+import {
+  CalendarDays,
+  ReceiptText,
+  MessageSquareText,
+  Wallet,
+  LineChart,
+  CreditCard,
+  UserPlus,
+  Settings,
+  TrendingUp,
+  AlertTriangle,
+  Compass,
+  LayoutDashboard,
+  Users,
+} from "lucide-react";
 import { unreadCount } from "@/features/messaging/api";
 import { listProgressReports } from "@/features/learning/api";
 import { createLearner, listLearners, type Learner } from "@/features/onboarding/api";
@@ -17,9 +32,12 @@ import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 
-// Parent portal — Tuteria bookings-style (tuteria.com/users/bookings):
-// sidebar nav + status-filtered booking cards + payments with receipts.
+// Parent portal — bookings-style family dashboard. Sidebar nav + sections:
+// Overview (KPIs + next lesson) · Bookings (status-filtered lessons) ·
+// Payments (orders + receipts) · Progress (attendance + reports) ·
+// Learners (management).
 
 type Order = {
   id: string;
@@ -42,9 +60,11 @@ type Lesson = {
 };
 
 const NAV = [
+  { key: "overview", label: "Overview", icon: <LayoutDashboard size={16} /> },
   { key: "bookings", label: "Bookings", icon: <CalendarDays size={16} /> },
   { key: "payments", label: "Payments", icon: <Wallet size={16} /> },
   { key: "progress", label: "Progress", icon: <LineChart size={16} /> },
+  { key: "learners", label: "Learners", icon: <Users size={16} /> },
 ] as const;
 
 const BOOKING_TABS = ["All", "Upcoming", "Completed", "Cancelled"] as const;
@@ -57,7 +77,7 @@ export default function ParentDashboardPage() {
   const [addSubmitting, setAddSubmitting] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [addForm, setAddForm] = useState({ first_name: "", last_name: "", current_level: "", school_name: "" });
-  const [section, setSection] = useState<(typeof NAV)[number]["key"]>("bookings");
+  const [section, setSection] = useState<(typeof NAV)[number]["key"]>("overview");
   const [tab, setTab] = useState<(typeof BOOKING_TABS)[number]>("All");
   const [receipt, setReceipt] = useState<OrderReceipt | null>(null);
   const [receiptLoading, setReceiptLoading] = useState(false);
@@ -130,6 +150,10 @@ export default function ParentDashboardPage() {
     return true;
   });
 
+  const upcoming = all
+    .filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING")
+    .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+  const nextLesson = upcoming[0];
   const nextPayment = (orders.data ?? []).find((o) => o.status === "PENDING");
   const paidCount = (orders.data ?? []).filter((o) => o.status === "PAID").length;
 
@@ -157,6 +181,11 @@ export default function ParentDashboardPage() {
                     {n.key === "payments" && paidCount > 0 && (
                       <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${section === n.key ? "bg-black/10" : "bg-brand-gold-light text-brand-gold-dark"}`}>
                         {paidCount}
+                      </span>
+                    )}
+                    {n.key === "learners" && (
+                      <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${section === n.key ? "bg-black/10" : "bg-brand-gold-light text-brand-gold-dark"}`}>
+                        {(learners.data ?? []).length}
                       </span>
                     )}
                   </button>
@@ -187,26 +216,26 @@ export default function ParentDashboardPage() {
           <RoleGate page="/dashboard" />
           <RecommendationsForYou />
 
-          {/* Header row */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="font-display text-3xl tracking-[0.02em] text-brand-navy">Bookings</h1>
-              <p className="mt-1 text-sm text-ink-500">Lessons, payments and progress for your family.</p>
-            </div>
-            <label className="flex items-center gap-2 text-sm">
-              <span className="font-bold uppercase tracking-wide text-[10px] text-ink-400">SELECT LEARNER</span>
-              <select
-                value={selectedLearner || activeLearner?.id || ""}
-                onChange={(e) => setSelectedLearner(e.target.value)}
-                className="rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-              >
-                {(learners.data ?? []).map((l) => (
-                  <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
-                ))}
-                {(learners.data ?? []).length === 0 && <option value="">Add a learner…</option>}
-              </select>
-            </label>
-          </div>
+          <PageHeader
+            eyebrow="Parent portal"
+            title="Family dashboard"
+            subline="Lessons, payments and progress for your family — in one place."
+            actions={
+              <label className="flex items-center gap-2 text-sm">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-white/60">Learner</span>
+                <select
+                  value={selectedLearner || activeLearner?.id || ""}
+                  onChange={(e) => setSelectedLearner(e.target.value)}
+                  className="rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-brand-gold/40 [&>option]:text-ink-900"
+                >
+                  {(learners.data ?? []).map((l) => (
+                    <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
+                  ))}
+                  {(learners.data ?? []).length === 0 && <option value="">Add a learner…</option>}
+                </select>
+              </label>
+            }
+          />
 
           {!learnerId && (
             <div className="rounded-2xl border border-brand-blue/20 bg-brand-blue-light/60 p-6 text-sm">
@@ -232,6 +261,58 @@ export default function ParentDashboardPage() {
               <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-brand-gold px-6 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
                 Complete payment
               </a>
+            </div>
+          )}
+
+          {/* Section: Overview */}
+          {section === "overview" && (
+            <div className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard label="Upcoming lessons" value={upcoming.length} hint="scheduled or ongoing" icon={<CalendarDays size={18} />} />
+                <StatCard label="Learners" value={(learners.data ?? []).length} hint="linked to your account" icon={<Users size={18} />} />
+                <StatCard label="Paid orders" value={paidCount} hint="completed payments" icon={<Wallet size={18} />} />
+                <StatCard
+                  label="Attendance"
+                  value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"}
+                  hint={attendance.data ? `${attendance.data.present} present of ${attendance.data.total}` : "link a learner"}
+                  icon={<LineChart size={18} />}
+                />
+              </div>
+
+              {nextLesson ? (
+                <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-blue-light text-brand-blue">
+                        <CalendarDays size={20} />
+                      </span>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Next lesson</p>
+                        <p className="font-bold text-ink-800">{nextLesson.title}</p>
+                        <p className="text-xs text-ink-500">
+                          {new Date(nextLesson.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {nextLesson.timezone}
+                        </p>
+                      </div>
+                    </div>
+                    {nextLesson.meeting_url && (
+                      <a href={nextLesson.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-blue-dark transition-colors">
+                        Join class
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <EmptyState
+                  icon={<CalendarDays size={20} />}
+                  title="No upcoming lessons"
+                  description="When lessons are booked they appear here with time and join links."
+                  action={
+                    <Link href="/private-tuition" className="rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover">
+                      Book tuition
+                    </Link>
+                  }
+                />
+              )}
             </div>
           )}
 
@@ -373,14 +454,63 @@ export default function ParentDashboardPage() {
                             ★ {r.overall_rating}/5
                           </span>
                         </div>
-                        {r.strengths && <p className="mt-2 text-sm text-ink-600">💪 {r.strengths}</p>}
-                        {r.weaknesses && <p className="mt-1 text-sm text-ink-600">⚠️ {r.weaknesses}</p>}
-                        {r.recommendations && <p className="mt-1 text-sm text-ink-700">🎯 {r.recommendations}</p>}
+                        {r.strengths && <p className="mt-2 flex items-start gap-2 text-sm text-ink-600"><TrendingUp size={15} className="mt-0.5 shrink-0 text-brand-green" /> {r.strengths}</p>}
+                        {r.weaknesses && <p className="mt-1 flex items-start gap-2 text-sm text-ink-600"><AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-600" /> {r.weaknesses}</p>}
+                        {r.recommendations && <p className="mt-1 flex items-start gap-2 text-sm text-ink-700"><Compass size={15} className="mt-0.5 shrink-0 text-brand-blue" /> {r.recommendations}</p>}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Section: Learners */}
+          {section === "learners" && (
+            <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-bold text-ink-800">Learners</h2>
+                <button
+                  onClick={() => setAddOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover"
+                >
+                  <UserPlus size={15} /> Add a learner
+                </button>
+              </div>
+              {learners.isLoading ? (
+                <Skeleton className="mt-4 h-20 w-full" />
+              ) : (learners.data ?? []).length === 0 ? (
+                <EmptyState
+                  icon={<Users size={20} />}
+                  title="No learners yet"
+                  description="Add your first child to see their schedule, attendance and progress."
+                />
+              ) : (
+                <ul className="mt-4 divide-y divide-ink-100">
+                  {(learners.data ?? []).map((l) => (
+                    <li key={l.id} className="flex items-center justify-between gap-3 py-3">
+                      <div className="flex items-center gap-3">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-gold-light font-bold text-brand-navy">
+                          {l.first_name?.[0]?.toUpperCase() ?? "?"}
+                        </span>
+                        <div>
+                          <p className="font-bold text-ink-800">{l.first_name} {l.last_name ?? ""}</p>
+                          <p className="text-xs text-ink-500">
+                            {l.current_level ?? "Level not set"}
+                            {l.school_name ? ` · ${l.school_name}` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { setSelectedLearner(l.id); setSection("bookings"); }}
+                        className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light transition-colors"
+                      >
+                        View bookings
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
 
@@ -393,9 +523,7 @@ export default function ParentDashboardPage() {
         </div>
       </div>
 
-      {/* Add-learner modal (A-29: inline create — the old /onboarding/learner
-          route redirected straight back to the dashboard for onboarded
-          parents, so adding a learner silently did nothing). */}
+      {/* Add-learner modal */}
       <Modal open={addOpen} onClose={() => { setAddOpen(false); setAddError(null); }} title="Add a learner">
         <form
           className="space-y-4"
