@@ -133,10 +133,17 @@ func (h *BookingHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}, nil)
 
 	case "PRIVATE":
-		if req.TotalSessions == nil || req.SessionDuration == nil || req.PricePerSession == nil {
-			WriteAppError(w, pkg.BadRequest("total_sessions, session_duration_minutes and price_per_session are required", nil))
+		if req.TotalSessions == nil || req.SessionDuration == nil {
+			WriteAppError(w, pkg.BadRequest("total_sessions and session_duration_minutes are required", nil))
 			return
 		}
+		// YK-042: never take price from the client. Zero here; service loads
+		// the published tutor session rate.
+		var clientPrice float64
+		if req.PricePerSession != nil {
+			clientPrice = *req.PricePerSession // discarded in service
+		}
+		_ = clientPrice
 		tutorID, err := uuid.Parse(req.TutorProfileID)
 		if err != nil {
 			WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
@@ -154,7 +161,7 @@ func (h *BookingHandler) Create(w http.ResponseWriter, r *http.Request) {
 			SubjectID:       subjectID,
 			TotalSessions:   *req.TotalSessions,
 			SessionDuration: *req.SessionDuration,
-			PricePerSession: *req.PricePerSession,
+			PricePerSession: 0,
 			Currency:        req.Currency,
 			Goals:           req.Goals,
 			PreferredDays:   req.PreferredDays,

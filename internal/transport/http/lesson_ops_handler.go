@@ -67,7 +67,7 @@ func (h *LessonOpsHandler) requireTutor(w http.ResponseWriter, r *http.Request) 
 		return nil
 	}
 	for _, role := range actor.Roles {
-		if role == "TUTOR" || role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" || role == "INSTITUTION_ADMIN" {
+		if role == "TUTOR" || role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" {
 			return actor
 		}
 	}

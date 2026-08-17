@@ -69,8 +69,9 @@ type paystackInitResponse struct {
 
 func (p *PaystackProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {
 	if p.Secret == "" {
-		// Dev mode: no secret configured — return a mock link so local
-		// development can exercise the full checkout flow.
+		if strings.EqualFold(os.Getenv("ENVIRONMENT"), "production") || strings.EqualFold(os.Getenv("ENVIRONMENT"), "prod") {
+			return "", fmt.Errorf("paystack secret is not configured")
+		}
 		return fmt.Sprintf("https://paystack.com/pay/%s", reference), nil
 	}
 	body, _ := json.Marshal(map[string]any{
@@ -138,6 +139,9 @@ func (p *FlutterwaveProvider) VerifyWebhookSignature(payload []byte, signature s
 
 func (p *FlutterwaveProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {
 	if p.Secret == "" {
+		if strings.EqualFold(os.Getenv("ENVIRONMENT"), "production") || strings.EqualFold(os.Getenv("ENVIRONMENT"), "prod") {
+			return "", fmt.Errorf("flutterwave secret is not configured")
+		}
 		return fmt.Sprintf("https://checkout.flutterwave.com/pay/%s", reference), nil
 	}
 	body, _ := json.Marshal(map[string]any{

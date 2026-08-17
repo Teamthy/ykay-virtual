@@ -3,6 +3,7 @@ package worker
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 )
 
@@ -42,6 +43,9 @@ type Worker struct{}
 func New() *Worker { return &Worker{} }
 
 func (w *Worker) Process(ctx context.Context, job Job) error {
+	_ = ctx
 	slog.Info("processing job", "job_id", job.ID, "type", string(job.Type))
-	return nil
+	// Fail-closed: the durable queue must Register typed handlers. A generic
+	// Process that always succeeds would ACK jobs without doing work.
+	return fmt.Errorf("unregistered job type %s — register a handler on RedisQueue", job.Type)
 }

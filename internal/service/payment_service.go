@@ -116,6 +116,24 @@ func (s *PaymentService) InitiatePayment(ctx context.Context, in InitiatePayment
 		return nil, fmt.Errorf("%w: order %s is %s (not PENDING)", domain.ErrConflict, order.OrderNumber, order.Status)
 	}
 
+	// Reuse an existing PENDING payment for this order+provider (idempotent initiate).
+	if existing, err := uow.Payments().GetByOrderID(ctx, in.OrderID); err == nil {
+		for i := range existing {
+			p := existing[i]
+			if p.Status == payment.PaymentPending && p.Provider == in.Provider && p.ProviderReference != nil {
+				link, lerr := provider.CreatePaymentLink(order.TotalAmount, order.Currency, *p.ProviderReference, in.PayerEmail)
+				if lerr != nil {
+					return nil, fmt.Errorf("create payment link: %w", lerr)
+				}
+				if err := uow.Commit(ctx); err != nil {
+					return nil, err
+				}
+				cp := p
+				return &InitiationResult{Payment: &cp, PaymentLink: link}, nil
+			}
+		}
+	}
+
 	reference := strings.ToUpper(fmt.Sprintf("%s-%s", order.OrderNumber, uuid.NewString()[:8]))
 	metadata := map[string]any{
 		"order_number": order.OrderNumber,
@@ -458,7 +476,7 @@ func (s *PaymentService) createEscrowHold(ctx context.Context, uow repository.Un
 // checkAmount — normalized amount reconciliation (paystack amount is in kobo).
 func (s *PaymentService) checkAmount(provider payment.PaymentProvider, received, expected float64) error {
 	if received <= 0 {
-		return nil // amount absent — skip reconciliation
+		return fmt.Errorf("%w: webhook amount missing or non-positive", domain.ErrInvalidInput)
 	}
 	normalized := received
 	if provider == payment.ProviderPaystack {

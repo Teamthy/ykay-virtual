@@ -201,6 +201,22 @@ func TestProcessWebhook_NonSuccessEvent_Ignored(t *testing.T) {
 	assert.Equal(t, payment.PaymentPending, p.Status, "failed event must not mark payment success")
 }
 
+func TestProcessWebhook_MissingAmount_Rejected(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+	ref := "YKAY-20260817-NOAMT"
+	seedOrderAndPayment(t, env, ref)
+	body, _ := json.Marshal(map[string]any{
+		"event": "charge.success",
+		"data":  map[string]any{"reference": ref, "status": "success"},
+	})
+	_, err := env.pay.ProcessWebhook(ctx, payment.ProviderPaystack, body,
+		signPaystack(body, paystackSecret), paystackSecret)
+	assert.ErrorIs(t, err, domain.ErrInvalidInput)
+	p, _ := env.store.Payments.GetByProviderReference(ctx, payment.ProviderPaystack, ref)
+	assert.Equal(t, payment.PaymentPending, p.Status)
+}
+
 func TestProcessWebhook_AmountMismatch_Rejected(t *testing.T) {
 	env := newTestEnv(t)
 	ctx := context.Background()

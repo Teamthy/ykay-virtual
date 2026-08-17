@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"ykay-virtual/internal/domain/identity"
@@ -233,8 +234,12 @@ func hashToken(raw string) string {
 }
 
 func clientIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		return strings.TrimSpace(strings.Split(xff, ",")[0])
+	// Only honour X-Forwarded-For when the edge is trusted (same contract as
+	// the rate limiter). Otherwise a client can spoof IP on audit/login logs.
+	if os.Getenv("TRUST_PROXY") == "true" {
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			return strings.TrimSpace(strings.Split(xff, ",")[0])
+		}
 	}
 	host := r.RemoteAddr
 	if h, _, err := net.SplitHostPort(host); err == nil {

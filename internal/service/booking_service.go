@@ -93,6 +93,7 @@ type CreatePrivateBookingInput struct {
 	SubjectID       uuid.UUID
 	TotalSessions   int
 	SessionDuration int // minutes
+	// PricePerSession is IGNORED. The published tutor rate is used (YK-042).
 	PricePerSession float64
 	Currency        string
 	IdempotencyKey  string
@@ -216,11 +217,22 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
 	if in.TotalSessions < 1 {
 		return nil, fmt.Errorf("%w: total_sessions must be >= 1", domain.ErrInvalidInput)
 	}
-	if in.PricePerSession <= 0 {
-		return nil, fmt.Errorf("%w: price_per_session must be > 0", domain.ErrInvalidInput)
-	}
 	if in.SessionDuration < 15 {
 		return nil, fmt.Errorf("%w: session_duration_minutes must be >= 15", domain.ErrInvalidInput)
+	}
+	if s.tutorSubject == nil {
+		return nil, fmt.Errorf("%w: tutor rate card is not configured", domain.ErrInvalidInput)
+	}
+	publishedRate, publishedCurrency, err := s.tutorSubject.SessionRate(ctx, in.TutorProfileID)
+	if err != nil {
+		return nil, err
+	}
+	if publishedRate <= 0 {
+		return nil, fmt.Errorf("%w: tutor has no published session rate", domain.ErrInvalidInput)
+	}
+	in.PricePerSession = publishedRate
+	if publishedCurrency != "" {
+		in.Currency = publishedCurrency
 	}
 	if in.Currency == "" {
 		in.Currency = "NGN"

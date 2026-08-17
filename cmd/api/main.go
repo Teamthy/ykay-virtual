@@ -185,13 +185,13 @@ func main() {
 	authSvc := service.NewAuthService(repos.Users, repos.Sessions, repos.Roles, audit).
 		WithAuthTokens(repos.AuthTokens).
 		WithStudentProfiles(repos.Students).
-		WithDevLogging(authDevLogging(cfg.Environment)) // codes/links only outside prod, or explicit AUTH_LOG_CODES=true
+		WithDevLogging(authDevLogging(cfg)) // never in production, even if AUTH_LOG_CODES=true
 
 	// --- Durable dispatch queue (G4.1): in PRODUCTION, Redis-up routes
 	// outbound email through the worker queue (sync fallback when Redis is
 	// down). Dev/staging keep synchronous delivery so console-sent codes
 	// and links stay visible without a running worker. ---
-	if cfg.Environment == "production" {
+	if cfg.IsProduction() {
 		if jobQueue := setupJobQueue(cfg.RedisURL); jobQueue != nil {
 			authSvc.WithQueue(jobQueue)
 		}
@@ -220,7 +220,7 @@ func main() {
 	// YK-006 fail-closed: until a real, certified gateway refund flow exists,
 	// production must refuse refunds rather than silently credit the wallet and
 	// mark orders REFUNDED without refunding the gateway.
-	if cfg.Environment == "production" {
+	if cfg.IsProduction() {
 		paymentSvc.SetRefundsEnabled(false)
 	}
 
@@ -315,8 +315,8 @@ func main() {
 	// Surface it as a metric (alertable) and, in production, a loud log so the
 	// team can't mistake a misconfigured Whereby key for a working classroom.
 	telemetry.MeetingProviderStub(strings.ToLower(cfg.MeetingProvider), meetingStub)
-	if meetingStub && cfg.Environment == "production" {
-		slog.Warn("meeting provider resolved to STUB — live classroom links will be fake meet.nuvora.local URLs", "fix", "set MEETING_PROVIDER=whereby and WHEREBY_API_KEY")
+	if meetingStub && cfg.IsProduction() {
+		logx.Fatal("meeting provider resolved to STUB in production — set MEETING_PROVIDER=whereby and WHEREBY_API_KEY")
 	}
 	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
 
@@ -355,16 +355,16 @@ func main() {
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
 		// the router). Mounting it in production exposed an unauthenticated file
 		// read vector.
-		Objects: httpapi.NewObjectHandlerForEnvironment(localStore, cfg.Environment),
+		Objects: httpapi.NewObjectHandlerForEnvironment(localStore, map[bool]string{true: "production", false: cfg.Environment}[cfg.IsProduction()]),
 	}
-	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth, readyCheck, cfg.Environment == "production")
+	router := httpapi.NewRouterWithOrigins(Version, handlers, cfg.AllowedOrigins, sessionAuth, readyCheck, cfg.IsProduction())
 
 	// G7.2 distributed rate limiting: Redis-backed counters shared across
 	// API instances; the in-memory limiters remain when Redis is absent.
 	if rc, ok := rawCache.(*cache.RedisCache); ok {
 		router.SetRateLimiters(
 			middleware.NewRedisRateLimiter(rc.Raw(), httpapi.RateLimitPerMinute(), time.Minute, "rl:global"),
-			middleware.NewRedisRateLimiter(rc.Raw(), 40, time.Minute, "rl:auth"),
+			middleware.NewRedisRateLimiter(rc.Raw(), httpapi.AuthRateLimitPerMinute(), time.Minute, "rl:auth"),
 		)
 		slog.Info("ratelimit: Redis-backed limiters active (distributed)")
 	} else {
@@ -440,11 +440,11 @@ func setupJobQueue(redisURL string) worker.Queue {
 // production service — a documented test aid for smoke-testing the email
 // flows without a mail provider. Codes in logs are readable by anyone with
 // log access, so NEVER leave this on once real users exist.
-func authDevLogging(env string) bool {
-	if strings.EqualFold(os.Getenv("AUTH_LOG_CODES"), "true") {
-		return true
+func authDevLogging(cfg config.Config) bool {
+	if cfg.IsProduction() {
+		return false
 	}
-	return env != "production"
+	return strings.EqualFold(os.Getenv("AUTH_LOG_CODES"), "true") || !cfg.IsProduction()
 }
 
 func getEnvDefault(key, fallback string) string {
@@ -457,7 +457,7 @@ func getEnvDefault(key, fallback string) string {
 func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, func() error) {
 	pg, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
-		if cfg.Environment == "production" {
+		if cfg.IsProduction() {
 			// Never silently fall back to in-memory in production: a failed
 			// database means the service must not serve stale/empty data.
 			logx.Fatal("storage init failed", "error", err)

@@ -82,7 +82,7 @@ func main() {
 	// YK-005 fail-closed: in production, never record MOCK payouts as PAID.
 	// Until a real, certified payout provider is configured, tutor payouts stay
 	// PENDING rather than silently pretending money moved.
-	if cfg.Environment == "production" {
+	if cfg.IsProduction() {
 		paymentSvc.PayoutSvc.SetFailClosed(true)
 		slog.Warn("worker: tutor payouts DISABLED (production, no certified provider) — payouts will stay PENDING")
 	}

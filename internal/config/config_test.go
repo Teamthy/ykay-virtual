@@ -37,6 +37,7 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 		"GOOGLE_CLIENT_SECRET": "secret",
 		"PAYMENT_PROVIDER":     "PAYSTACK",
 		"PAYSTACK_SECRET":      "sk_test_abc123",
+		"METRICS_TOKEN":        "ci-metrics-token",
 	}
 
 	t.Run("valid production config passes", func(t *testing.T) {
@@ -136,6 +137,17 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 	t.Run("development defaults pass (dev is unconstrained)", func(t *testing.T) {
 		os.Clearenv()
 		require.NoError(t, Load().Validate())
+	})
+
+	t.Run("prod alias is treated as production", func(t *testing.T) {
+		cfg := map[string]string{}
+		for k, v := range prodOK {
+			cfg[k] = v
+		}
+		cfg["ENVIRONMENT"] = "prod"
+		delete(cfg, "METRICS_TOKEN")
+		set(cfg)
+		assert.Error(t, Load().Validate(), "prod must require METRICS_TOKEN")
 	})
 }
 

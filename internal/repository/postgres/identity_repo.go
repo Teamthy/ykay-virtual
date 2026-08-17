@@ -196,6 +196,28 @@ func (r *TutorSubjectCheckRepo) TutorCanTeach(ctx context.Context, tutorProfileI
 	return true, nil
 }
 
+func (r *TutorSubjectCheckRepo) SessionRate(ctx context.Context, tutorProfileID uuid.UUID) (float64, string, error) {
+	var rate sql.NullFloat64
+	var currency sql.NullString
+	err := r.db.QueryRowContext(ctx, `
+		SELECT hourly_rate_min, currency FROM tutor_profiles WHERE id = $1`, tutorProfileID).
+		Scan(&rate, &currency)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, "", fmt.Errorf("%w: tutor profile not found", domain.ErrNotFound)
+		}
+		return 0, "", fmt.Errorf("tutor session rate: %w", err)
+	}
+	if !rate.Valid || rate.Float64 <= 0 {
+		return 0, "", fmt.Errorf("%w: tutor has no published session rate", domain.ErrInvalidInput)
+	}
+	cur := "NGN"
+	if currency.Valid && currency.String != "" {
+		cur = currency.String
+	}
+	return rate.Float64, cur, nil
+}
+
 // Domain error mapping helpers used by postgres repos.
 func mapNotFound(err error, msg string) error {
 	if errors.Is(err, sql.ErrNoRows) {

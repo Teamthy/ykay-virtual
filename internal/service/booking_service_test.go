@@ -252,7 +252,19 @@ func TestCreatePrivateBooking_Validation(t *testing.T) {
 	bad = base
 	bad.PricePerSession = 0
 	_, err = env.booking.CreatePrivateBooking(ctx, bad)
-	assert.ErrorIs(t, err, domain.ErrInvalidInput)
+	require.NoError(t, err, "client price is ignored; published tutor rate is used")
+}
+
+func TestCreatePrivateBooking_IgnoresClientPrice(t *testing.T) {
+	env := newTestEnv(t)
+	ctx := context.Background()
+	res, err := env.booking.CreatePrivateBooking(ctx, CreatePrivateBookingInput{
+		ParentUserID: env.parent, StudentID: env.student,
+		TutorProfileID: env.tutor, SubjectID: env.subject,
+		TotalSessions: 10, SessionDuration: 60, PricePerSession: 1, Currency: "NGN",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, 80000.0, res.Order.TotalAmount, "must use published 8000/session, not client 1")
 }
 
 func TestCreatePrivateBooking_ForbiddenWhenTutorCannotTeach(t *testing.T) {

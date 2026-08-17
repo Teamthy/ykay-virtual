@@ -48,8 +48,10 @@ const nextConfig = {
   // duplicate type-check pass. CI's frontend job runs `npx tsc --noEmit`
   // BEFORE the build as the authoritative gate, so the in-build duplicate
   // check and lint pass are skipped here deliberately.
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+  // Vercel production builds type-check. Constrained CI/sandbox hosts skip
+  // the in-build pass because CI already ran `tsc --noEmit`.
+  typescript: { ignoreBuildErrors: !isVercel },
+  eslint: { ignoreDuringBuilds: !isVercel },
   images: {
     // A-23: tutor avatars and uploaded content are served from the S3/CDN
     // origin (and, soon, arbitrary tutor photo hosts). The previous list

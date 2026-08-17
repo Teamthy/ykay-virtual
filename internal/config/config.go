@@ -61,6 +61,17 @@ type Config struct {
 	SeedDemoData bool
 }
 
+// IsProduction reports whether this process must use production fail-closed
+// guards. Accepts production / prod / PRODUCTION (case-insensitive).
+func (c Config) IsProduction() bool {
+	switch strings.ToLower(strings.TrimSpace(c.Environment)) {
+	case "production", "prod":
+		return true
+	default:
+		return false
+	}
+}
+
 func Load() Config {
 	cfg := Config{
 		Port:              getEnv("PORT", DevPort),
@@ -114,7 +125,7 @@ func Load() Config {
 // config is intentionally unconstrained; production refuses known-insecure
 // or unset-critical values (hardening audit: SEC-002/SEC-004).
 func (c Config) Validate() error {
-	if c.Environment != "production" {
+	if !c.IsProduction() {
 		return nil
 	}
 	if c.SeedDemoData {
@@ -155,6 +166,16 @@ func (c Config) Validate() error {
 				return errors.New("production: FLUTTERWAVE_SECRET must be set when PAYMENT_PROVIDER=FLUTTERWAVE (empty secret makes webhook HMAC forgeable)")
 			}
 		}
+	}
+	if _, ok := os.LookupEnv("METRICS_TOKEN"); !ok || strings.TrimSpace(os.Getenv("METRICS_TOKEN")) == "" {
+		return errors.New("production: METRICS_TOKEN must be set (open /metrics is forbidden)")
+	}
+	dbURL := c.DatabaseURL
+	if strings.Contains(dbURL, "sslmode=disable") &&
+		!strings.Contains(dbURL, "localhost") &&
+		!strings.Contains(dbURL, "127.0.0.1") &&
+		!strings.Contains(dbURL, "@postgres:") {
+		return errors.New("production: DATABASE_URL must not use sslmode=disable against a remote host")
 	}
 	// Google OAuth is OPTIONAL: the login buttons degrade gracefully when
 	// creds are absent, so missing creds must not block a production deploy.

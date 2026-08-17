@@ -72,6 +72,9 @@ type StudentBookingAccess struct {
 
 type TutorProfileReader interface {
 	TutorCanTeach(ctx context.Context, tutorProfileID uuid.UUID, subjectID uuid.UUID) (bool, error)
+	// SessionRate is the published per-session price. Callers MUST use this
+	// server-side rate — never a client-supplied price (YK-042).
+	SessionRate(ctx context.Context, tutorProfileID uuid.UUID) (amount float64, currency string, err error)
 }
 
 // LessonRepository — read side for lessons (dashboards, scheduling).

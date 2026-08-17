@@ -935,14 +935,22 @@ func (m *StudentLinkMemory) StudentExistsForParent(_ context.Context, studentID,
 
 type TutorSubjectMemory struct {
 	canTeach map[string]bool
+	rate     float64
 }
 
 func NewTutorSubjectMemory(canTeach map[string]bool) *TutorSubjectMemory {
-	return &TutorSubjectMemory{canTeach: canTeach}
+	return &TutorSubjectMemory{canTeach: canTeach, rate: 8000}
 }
 
 func (m *TutorSubjectMemory) TutorCanTeach(_ context.Context, tutorProfileID, subjectID uuid.UUID) (bool, error) {
 	return m.canTeach[tutorProfileID.String()+"|"+subjectID.String()], nil
+}
+
+func (m *TutorSubjectMemory) SessionRate(_ context.Context, _ uuid.UUID) (float64, string, error) {
+	if m.rate <= 0 {
+		return 0, "", fmt.Errorf("%w: tutor has no published session rate", domain.ErrInvalidInput)
+	}
+	return m.rate, "NGN", nil
 }
 
 var _ booking.TutorProfileReader = (*TutorSubjectMemory)(nil)
