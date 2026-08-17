@@ -13,6 +13,7 @@ const PRODUCTS = [
 ];
 
 const RESOURCES = [
+  { href: "/help", label: "Help Center" },
   { href: "/resources", label: "Study Guides" },
   { href: "/blog", label: "Blog" },
   { href: "/test-prep", label: "Test Prep" },

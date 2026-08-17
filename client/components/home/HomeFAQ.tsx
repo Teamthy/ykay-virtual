@@ -28,8 +28,12 @@ export function HomeFAQ() {
         </div>
         <p className="mt-6 text-center text-sm">
           More questions?{" "}
-          <Link href="/contact" className="text-brand-blue font-semibold hover:underline">
-            Contact our team
+          <Link href="/help" className="text-brand-green font-semibold hover:underline">
+            Visit the Help Center
+          </Link>
+          {" "}or{" "}
+          <Link href="/contact" className="text-brand-green font-semibold hover:underline">
+            contact our team
           </Link>
         </p>
       </div>
