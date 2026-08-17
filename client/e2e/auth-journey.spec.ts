@@ -133,7 +133,17 @@ test("signup: full 7-step onboarding with the emailed code, back to ?next=", asy
   await expect(page).toHaveURL(/\/account/, { timeout: 20_000 });
 
   // A brand-new session must go straight to the dashboard — never the wizard.
-  const ctx2 = await browser.newContext();
+  const ctx2 = await browser.newContext({
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: new URL(process.env.WEB_BASE_URL || "http://localhost:3000").origin,
+          localStorage: [{ name: "nuvora-cookie-consent", value: "e2e" }],
+        },
+      ],
+    },
+  });
   const page2 = await ctx2.newPage();
   await page2.goto("/login");
   await uiLogin(page2, email);

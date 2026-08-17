@@ -212,16 +212,25 @@ jobs:
         run: go test ./internal/telemetry/ ./internal/worker/
       - name: Validate Prometheus config + alert rules (promtool)
         run: |
-          # Mount at /etc/prometheus: prometheus.yml references its rules at
-          # /etc/prometheus/alerts.yml (the path the compose service uses).
-          # Use the explicit /bin/promtool path: the prom/prometheus image
-          # ENTRYPOINT is /bin/prometheus, so passing `promtool` as a bare
-          # argument is consumed as a prometheus subcommand and fails with
-          # "unexpected promtool". /bin/promtool is a separate binary.
-          docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" prom/prometheus:v2.53.0 \
-            /bin/promtool check config /etc/prometheus/prometheus.yml
-          docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" prom/prometheus:v2.53.0 \
-            /bin/promtool check rules /etc/prometheus/alerts.yml
+          # Prefer a static promtool binary so CI does not fail on docker
+          # pull rate limits. Fall back to the prometheus image.
+          set -e
+          PROM_VER=2.53.0
+          if curl -fsSL -o /tmp/prometheus.tar.gz \
+            "https://github.com/prometheus/prometheus/releases/download/v${PROM_VER}/prometheus-${PROM_VER}.linux-amd64.tar.gz"; then
+            tar -xzf /tmp/prometheus.tar.gz -C /tmp
+            PROMTOOL="/tmp/prometheus-${PROM_VER}.linux-amd64/promtool"
+            $PROMTOOL check rules deploy/prometheus/alerts.yml
+            tmp=$(mktemp -d)
+            sed 's|/etc/prometheus/alerts.yml|alerts.yml|' deploy/prometheus/prometheus.yml > "$tmp/prometheus.yml"
+            cp deploy/prometheus/alerts.yml "$tmp/alerts.yml"
+            (cd "$tmp" && $PROMTOOL check config prometheus.yml)
+          else
+            docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" "prom/prometheus:v${PROM_VER}" \
+              /bin/promtool check config /etc/prometheus/prometheus.yml
+            docker run --rm -v "$PWD/deploy/prometheus:/etc/prometheus:ro" "prom/prometheus:v${PROM_VER}" \
+              /bin/promtool check rules /etc/prometheus/alerts.yml
+          fi
       - name: Validate Grafana dashboard JSON
         run: python3 -m json.tool deploy/grafana/dashboards/nuvora-api.json > /dev/null
       - name: Validate production compose stack

@@ -40,6 +40,19 @@ json() { python3 -c "import json,sys; d=json.load(sys.stdin); print($1)"; }
 BIN="${ROOT}/.e2e-api"
 (cd "$ROOT" && rm -f "$BIN" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
 
+E2E_ADMIN_EMAIL="${E2E_ADMIN_EMAIL:-admin@nuvora.com}"
+E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-password123}"
+
+# E2E_KEEP_SERVER=1: scripts/e2e-pg.sh already booted a Postgres-backed API.
+# Do not kill it and replace with the in-memory demo store.
+if [ "${E2E_KEEP_SERVER:-}" = "1" ]; then
+  if ! curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
+    echo "E2E_KEEP_SERVER=1 but nothing is healthy on :${PORT}"; exit 1
+  fi
+  echo "Using existing API on :${PORT} (postgres / keep-server)"
+  API_PID=""
+else
+
 # Always boot a FRESH API for deterministic runs — a stale instance would
 # carry state from previous runs (409s, cached sessions) and poison results.
 if curl -sf -m 2 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
@@ -71,6 +84,8 @@ done
 if ! curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1; then
   echo "API failed to start"; tail -5 /tmp/e2e-api.log; exit 1
 fi
+
+fi # E2E_KEEP_SERVER
 
 J_PARENT=/tmp/e2e-parent.jar
 J_TUTOR=/tmp/e2e-tutor.jar
@@ -114,8 +129,8 @@ assert_code "login tutor" 200 "$c"
 # Admin flows authenticate as the SEEDED demo admin (e2e.sh boots in-memory
 # SEED_DEMO_DATA=true mode, which creates admin@nuvora.com / password123 as
 # SUPER_ADMIN). Self-registering an admin is deliberately impossible.
-c=$(req "$J_ADMIN" POST /auth/login '{"email":"admin@nuvora.com","password":"password123"}')
-assert_code "login admin (seeded demo)" 200 "$c"
+c=$(req "$J_ADMIN" POST /auth/login "{\"email\":\"${E2E_ADMIN_EMAIL}\",\"password\":\"${E2E_ADMIN_PASSWORD}\"}")
+assert_code "login admin (${E2E_ADMIN_EMAIL})" 200 "$c"
 
 c=$(req /dev/null POST /auth/login '{"email":"e2e-parent@test.com","password":"wrong-pass"}')
 assert_code "wrong password → 401" 401 "$c"

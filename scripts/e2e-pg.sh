@@ -28,6 +28,8 @@ fi
 echo "== 2/3 Migrations + reference seeds =="
 "$GO" run ./cmd/migrate --cmd=up
 psql "$DBURL" -f scripts/seed-refs.sql
+# 000042 disables admin@nuvora.com. Seed a disposable admin on this throwaway DB.
+psql "$DBURL" -f scripts/seed-e2e-admin.sql
 
 echo "== 3/3 Booting API on :$PORT (postgres mode) =="
 rm -f .e2e-api && "$GO" build -o .e2e-api ./cmd/api
@@ -41,4 +43,8 @@ done
 curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null || { echo "API failed to start"; tail -5 /tmp/e2e-api.log; exit 1; }
 
 echo "== 4/4 E2E against postgres =="
+# Do not let e2e.sh kill this process and fall back to memory + demo admin.
+E2E_KEEP_SERVER=1 \
+E2E_ADMIN_EMAIL=e2e-admin@test.invalid \
+E2E_ADMIN_PASSWORD=password123 \
 bash scripts/e2e.sh "$PORT"

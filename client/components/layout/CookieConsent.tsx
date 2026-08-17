@@ -43,6 +43,7 @@ export function CookieConsent() {
         <button
           type="button"
           onClick={accept}
+          data-testid="cookie-accept"
           className="flex-1 rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
         >
           Accept
