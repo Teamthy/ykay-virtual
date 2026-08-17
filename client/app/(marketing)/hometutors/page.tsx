@@ -11,7 +11,7 @@ export const revalidate = 600;
 export const metadata: Metadata = buildMetadata({
   title: "Home Tutoring — One-on-One Lessons with Vetted Tutors | NUVORA",
   description:
-    "Get personalized home tutoring designed to guide your children toward exam success, boost their confidence, and get better school grades — with the top 1% of vetted tutors.",
+    "Personalized home tutoring with vetted tutors — exam prep, confidence, and better school grades.",
   path: "/hometutors",
 });
 
