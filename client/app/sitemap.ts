@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getExamPrepPages } from "@/lib/exam-prep-data";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import { getHelpArticles } from "@/lib/help-data";
 
@@ -25,6 +26,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/ielts-toefl`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE}/gre`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
   ];
+
+  for (const page of getExamPrepPages()) entries.push({ url: `${SITE}/exam-prep/${page.exam}/${page.subject}`, lastModified: now, changeFrequency: "monthly", priority: 0.6 });
 
   const fetchType = async (path: string, key: string): Promise<string[]> => {
     try {

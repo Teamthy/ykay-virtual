@@ -6,6 +6,7 @@ import { StepsToTutor } from "@/components/home/StepsToTutor";
 import { SuccessChampions } from "@/components/home/SuccessChampions";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
+import { EXAM_MATRIX } from "@/lib/exam-prep-data";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
@@ -96,6 +97,33 @@ export default function ExamPrepPage() {
           ))}
         </div>
       </section>
+
+      <section className="mt-14">
+        <h2 className="text-2xl font-extrabold mb-2">Browse by exam &amp; subject</h2>
+        <p className="text-sm text-ink-600 mb-6">Pick your exam, then a subject, to see the paper structure and what the subject covers.</p>
+        <div className="space-y-6">
+          {EXAM_MATRIX.map((exam) => (
+            <div key={exam.slug} className="border rounded-2xl p-6">
+              <div className="flex items-baseline gap-3">
+                <span className="text-lg font-extrabold text-brand-blue">{exam.code}</span>
+                <span className="text-sm text-ink-500">{exam.name}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {exam.subjects.map((s) => (
+                  <Link
+                    key={s.slug}
+                    href={`/exam-prep/${exam.slug}/${s.slug}`}
+                    className="rounded-full border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-700 transition-colors hover:border-brand-gold hover:text-brand-blue"
+                  >
+                    {s.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
           <CohortStrip />
         </div>
       </div>
