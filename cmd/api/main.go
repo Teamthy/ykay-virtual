@@ -433,18 +433,17 @@ func setupJobQueue(redisURL string) worker.Queue {
 
 // getEnvDefault — env value or fallback (demo credentials are overridable;
 // hardcoded secrets are removed from source per hardening SEC-003).
-// authDevLogging — controls plain-text login codes / verification and
-// password-reset links in the logs. They are printed OUTSIDE production
-// (so local dev + a staging service can be tested without SMTP), and are
-// SUPPRESSED in production. AUTH_LOG_CODES=true opts back IN on a
-// production service — a documented test aid for smoke-testing the email
-// flows without a mail provider. Codes in logs are readable by anyone with
-// log access, so NEVER leave this on once real users exist.
+// authDevLogging — prints plain-text login codes / reset links to logs.
+// Always false in production (AUTH_LOG_CODES cannot override). Outside
+// production, codes are logged unless AUTH_LOG_CODES is explicitly false.
 func authDevLogging(cfg config.Config) bool {
 	if cfg.IsProduction() {
 		return false
 	}
-	return strings.EqualFold(os.Getenv("AUTH_LOG_CODES"), "true") || !cfg.IsProduction()
+	if strings.EqualFold(os.Getenv("AUTH_LOG_CODES"), "false") {
+		return false
+	}
+	return true
 }
 
 func getEnvDefault(key, fallback string) string {

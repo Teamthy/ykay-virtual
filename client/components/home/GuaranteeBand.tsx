@@ -1,7 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 
-// "100% Satisfaction Guaranteed — we've got you covered" (references 003209 +
-// 003831): commitment band with escrow promise.
+// Escrow commitment — no invented “100% satisfaction” legal guarantee.
 
 export function GuaranteeBand() {
   return (
@@ -12,12 +11,12 @@ export function GuaranteeBand() {
             <ShieldCheck size={26} className="text-brand-gold" />
           </div>
           <h2 className="mt-5 text-3xl font-extrabold tracking-tight md:text-4xl">
-            100% Satisfaction Guaranteed
+            Fees sit in escrow until lessons are delivered
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-ink-800/80 leading-relaxed">
-            We&apos;ve got you covered. We are committed to your success and always do our best to
-            ensure you achieve your goals — your tuition fees sit in escrow until lessons are
-            delivered, and if you&apos;re not happy, we&apos;ll work to make it right.
+            Tuition is held until the lesson happens. If something goes wrong, we
+            work with you and the tutor to put it right — we do not advertise a
+            blanket satisfaction statistic.
           </p>
         </div>
       </div>
