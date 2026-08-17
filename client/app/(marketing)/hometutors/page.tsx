@@ -37,10 +37,8 @@ export default function HomeTutorsPage() {
         image={{ src: "/hero/home-tutoring.jpg", alt: "Tutor helping a young student at home" }}
       />
 
-      <StatsBand />
       <LearningNeeds />
       <TutorsShowcase />
-      <ApproachSection />
       <TestimonialSlider />
       <GuaranteeBand />
     </main>
