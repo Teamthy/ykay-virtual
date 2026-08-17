@@ -32,7 +32,6 @@ export type CreatePrivateBookingParams = {
   subject_id: string;
   total_sessions: number;
   session_duration_minutes: number;
-  price_per_session: number;
   currency?: string;
   goals?: string;
   idempotency_key: string;

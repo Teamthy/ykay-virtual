@@ -131,6 +131,14 @@ func (p *FlutterwaveProvider) Name() string { return "FLUTTERWAVE" }
 // Flutterwave signs webhooks with HMAC-SHA256 of the raw body (hex) using the
 // "FLWSECK-" prefixed secret.
 func (p *FlutterwaveProvider) VerifyWebhookSignature(payload []byte, signature string, secret string) bool {
+	if secret == "" || signature == "" {
+		return false
+	}
+	// Dashboard "verif-hash" is the secret compared directly (vendor default).
+	if hmac.Equal([]byte(signature), []byte(secret)) {
+		return true
+	}
+	// Some integrations HMAC-SHA256 the body with the secret.
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write(payload)
 	expected := hex.EncodeToString(mac.Sum(nil))

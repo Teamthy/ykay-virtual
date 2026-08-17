@@ -42,7 +42,7 @@ export function PrivateBookingForm({
   const [studentId, setStudentId] = useState("");
   const [sessions, setSessions] = useState(10);
   const [duration, setDuration] = useState(60);
-  const [price, setPrice] = useState(defaultRate);
+  const publishedRate = defaultRate > 0 ? defaultRate : 0;
   const [goals, setGoals] = useState("");
   const [busy, setBusy] = useState(false);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
@@ -67,8 +67,12 @@ export function PrivateBookingForm({
     const subjectId = (catalogue.data?.data ?? []).find(
       (s) => s.name.toLowerCase() === subject.toLowerCase() || s.slug === subject.toLowerCase()
     )?.id;
-    if (!subject || !subjectId || !studentId || sessions < 1 || price <= 0) {
-      toast.error("Complete all fields — subject, learner, sessions and price.");
+    if (!subject || !subjectId || !studentId || sessions < 1) {
+      toast.error("Complete all fields — subject, learner and sessions.");
+      return;
+    }
+    if (publishedRate <= 0) {
+      toast.error("This tutor has no published session rate yet.");
       return;
     }
     setBusy(true);
@@ -81,7 +85,6 @@ export function PrivateBookingForm({
         subject_id: subjectId,
         total_sessions: sessions,
         session_duration_minutes: duration,
-        price_per_session: price,
         currency: "NGN",
         goals: goals || undefined,
         idempotency_key: idem,
@@ -175,7 +178,9 @@ export function PrivateBookingForm({
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-ink-800">Price per session (₦)</label>
-            <input type="number" min={1000} className={INPUT_CLS} value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+            <p className="rounded-lg border border-ink-100 bg-surface-muted px-3 py-2.5 text-sm font-semibold text-ink-800">
+              {publishedRate > 0 ? `₦${publishedRate.toLocaleString()} (tutor’s published rate)` : "Not published"}
+            </p>
           </div>
         </div>
         <div>
@@ -191,16 +196,16 @@ export function PrivateBookingForm({
           />
         </div>
         <div className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink-600">
-          Total: <span className="font-extrabold text-brand-navy">₦{(sessions * price).toLocaleString()}</span> for {sessions}{" "}
-          {duration}-minute sessions
+          Estimated total: <span className="font-extrabold text-brand-navy">₦{(sessions * publishedRate).toLocaleString()}</span> for {sessions}{" "}
+          {duration}-minute sessions. Final amount is set by the server.
         </div>
         <button
           type="button"
-          disabled={busy}
+          disabled={busy || publishedRate <= 0}
           onClick={() => void submit()}
           className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-50"
         >
-          {busy ? "Creating order…" : `Book ${sessions} sessions · ₦${(sessions * price).toLocaleString()}`}
+          {busy ? "Creating order…" : `Book ${sessions} sessions · ₦${(sessions * publishedRate).toLocaleString()}`}
         </button>
       </div>
     </div>
