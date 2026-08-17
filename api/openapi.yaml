@@ -299,6 +299,29 @@ paths:
       responses:
         '200': { description: OK }
 
+  /me/avatar:
+    post:
+      summary: "Upload a profile photo (raw image body; Content-Type: image/jpeg|png|webp)"
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          image/jpeg: { schema: { type: string, format: binary } }
+          image/png: { schema: { type: string, format: binary } }
+          image/webp: { schema: { type: string, format: binary } }
+      responses:
+        '200':
+          description: Uploaded; returns the public avatar_url
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      avatar_url: { type: string }
+
   /auth/me/role:
     post:
       tags: []

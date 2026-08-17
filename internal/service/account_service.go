@@ -45,10 +45,11 @@ func NewAccountService(
 
 // UpdateProfileInput — editable profile fields.
 type UpdateProfileInput struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Phone     string `json:"phone"`
-	Timezone  string `json:"timezone"`
+	FirstName string  `json:"first_name"`
+	LastName  string  `json:"last_name"`
+	Phone     string  `json:"phone"`
+	Timezone  string  `json:"timezone"`
+	AvatarURL *string `json:"avatar_url,omitempty"`
 }
 
 // UpdateProfile — validates + persists the editable profile.
@@ -66,6 +67,18 @@ func (s *AccountService) UpdateProfile(ctx context.Context, userID uuid.UUID, in
 		user.Phone = &phone
 	} else if in.Phone == "" {
 		user.Phone = nil // explicitly cleared
+	}
+	// avatar_url must be empty or a safe https:// URL (it is rendered in an
+	// <img src>; rejecting other schemes blocks javascript:/data: XSS).
+	if in.AvatarURL != nil {
+		av := strings.TrimSpace(*in.AvatarURL)
+		if av == "" {
+			user.AvatarURL = nil
+		} else if !strings.HasPrefix(av, "https://") {
+			return nil, fmt.Errorf("%w: avatar_url must be an https URL", domain.ErrInvalidInput)
+		} else {
+			user.AvatarURL = &av
+		}
 	}
 	if err := s.users.Update(ctx, user); err != nil {
 		return nil, err

@@ -297,7 +297,7 @@ func main() {
 	chatHandler := httpapi.NewChatHandler(chatSvc)
 	accountSvc := service.NewAccountService(repos.Users, repos.Roles, repos.Sessions,
 		repos.Devices, repos.Students, repos.StudentLinks, repos.Chat, audit)
-	accountHandler := httpapi.NewAccountHandler(accountSvc)
+	accountHandler := httpapi.NewAccountHandler(accountSvc).WithStorage(store)
 	deviceHandler := httpapi.NewDeviceHandler(pushSvc)
 
 	// --- Transport ---

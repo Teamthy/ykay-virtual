@@ -23,6 +23,7 @@ type User struct {
 	FirstName       string     `json:"first_name,omitempty"`
 	LastName        string     `json:"last_name,omitempty"`
 	Phone           *string    `json:"phone,omitempty"`
+	AvatarURL       *string    `json:"avatar_url,omitempty"` // profile photo (public object URL)
 	PasswordHash    string     `json:"-"`
 	Status          UserStatus `json:"status"`
 	Timezone        string     `json:"timezone"`

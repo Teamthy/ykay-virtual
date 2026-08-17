@@ -17,6 +17,9 @@ import {
   removeDevice,
   type Device,
 } from "@/features/account/api";
+import { ReferralCard } from "@/features/referrals/ReferralCard";
+import { listLearners, type Learner } from "@/features/onboarding/api";
+import { Camera, UserPlus } from "lucide-react";
 
 // /account — settings hub (P0): profile, security, devices, preferences,
 // data export + deletion.
@@ -31,7 +34,7 @@ type Profile = {
   status: string;
 };
 
-const TABS = ["Profile", "Security", "Devices", "Preferences", "Data"] as const;
+const TABS = ["Profile", "Learners", "Referrals", "Security", "Devices", "Preferences", "Data"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AccountPage() {
@@ -45,6 +48,31 @@ export default function AccountPage() {
   }, [isLoading, user, router]);
 
   const devices = useQuery({ queryKey: ["account", "devices"], queryFn: listDevices });
+  const learners = useQuery({ queryKey: ["onboarding", "learners"], queryFn: listLearners, enabled: !!user, staleTime: 30_000 });
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const uploadAvatar = async (file: File) => {
+    setUploadingAvatar(true);
+    try {
+      const res = await fetch("/api/v1/me/avatar", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error?.message || "Avatar upload failed");
+      }
+      const data = await res.json();
+      qc.setQueryData(["session"], (old2: unknown) => ({ ...(old2 as object), avatar_url: data.data?.avatar_url }));
+      toast.success("Profile photo updated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Avatar upload failed");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   // Profile form
   const [firstName, setFirstName] = useState("");
@@ -184,7 +212,37 @@ export default function AccountPage() {
           {tab === "Profile" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-brand-navy">Profile</h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="mt-4 flex items-center gap-4">
+                <div className="relative">
+                  {user.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={user.avatar_url} alt="Your profile" className="size-20 rounded-full object-cover ring-2 ring-brand-gold" />
+                  ) : (
+                    <div className="grid size-20 place-items-center rounded-full bg-brand-navy text-2xl font-bold text-white">
+                      {(user.first_name?.[0] ?? user.email[0] ?? "?").toUpperCase()}
+                    </div>
+                  )}
+                  <label className="absolute -bottom-1 -right-1 grid size-8 cursor-pointer place-items-center rounded-full bg-brand-gold text-ink-900 shadow-md transition-transform hover:scale-105" title="Upload photo">
+                    <Camera size={15} />
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={uploadingAvatar}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) void uploadAvatar(f);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
+                <div className="text-sm text-ink-500">
+                  <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploading…" : "Profile photo"}</p>
+                  <p>JPEG, PNG or WebP · up to 10 MB</p>
+                </div>
+              </div>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="ac-first" className="mb-1.5 block text-sm font-medium text-ink-800">First name</label>
                   <input id="ac-first" type="text" autoComplete="given-name" className={INPUT_CLS} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
@@ -215,6 +273,35 @@ export default function AccountPage() {
                 {saveProfile.isPending ? "Saving…" : "Save changes"}
               </button>
             </section>
+          )}
+
+          {tab === "Learners" && (
+            <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-brand-navy">Learners</h2>
+              <p className="mt-1 text-sm text-ink-500">Learners linked to your account (you book for them).</p>
+              <ul className="mt-4 space-y-2">
+                {(learners.data ?? []).map((l: Learner) => (
+                  <li key={l.id} className="flex items-center justify-between rounded-xl border border-ink-100 bg-surface-muted px-4 py-3">
+                    <div>
+                      <p className="font-semibold text-ink-800">{l.first_name} {l.last_name}</p>
+                      <p className="text-xs text-ink-500">{l.current_level || "Level not set"}{l.school_name ? ` · ${l.school_name}` : ""}</p>
+                    </div>
+                  </li>
+                ))}
+                {(learners.data ?? []).length === 0 && (
+                  <li className="rounded-xl border border-dashed border-ink-200 px-4 py-6 text-center text-sm text-ink-500">
+                    No learners yet — add one to book tuition.
+                  </li>
+                )}
+              </ul>
+              <Link href="/dashboard" className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-brand-gold">
+                <UserPlus size={15} /> Add a learner
+              </Link>
+            </section>
+          )}
+
+          {tab === "Referrals" && (
+            <ReferralCard userId={user.id} />
           )}
 
           {tab === "Security" && (

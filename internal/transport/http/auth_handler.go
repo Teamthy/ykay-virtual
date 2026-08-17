@@ -53,6 +53,7 @@ type userResponse struct {
 	FirstName string   `json:"first_name,omitempty"`
 	LastName  string   `json:"last_name,omitempty"`
 	Phone     *string  `json:"phone,omitempty"`
+	AvatarURL *string  `json:"avatar_url,omitempty"`
 	Onboarded bool     `json:"onboarded"`
 	Status    string   `json:"status"`
 	Timezone  string   `json:"timezone"`
@@ -63,7 +64,7 @@ type userResponse struct {
 func toUserResponse(u *identity.User, roles []string) userResponse {
 	return userResponse{
 		ID: u.ID.String(), Email: u.Email,
-		FirstName: u.FirstName, LastName: u.LastName, Phone: u.Phone,
+		FirstName: u.FirstName, LastName: u.LastName, Phone: u.Phone, AvatarURL: u.AvatarURL,
 		Status: string(u.Status), Timezone: u.Timezone, Roles: roles,
 		CreatedAt: u.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		Onboarded: u.OnboardedAt != nil,
