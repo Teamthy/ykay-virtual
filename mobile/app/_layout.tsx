@@ -45,6 +45,17 @@ export default function RootLayout() {
         <Stack.Screen name="tutor/messages/[conversationId]" options={{ title: "Conversation" }} />
         <Stack.Screen name="tutor/profile" options={{ title: "Tutor profile" }} />
         <Stack.Screen name="tutor/availability" options={{ title: "Availability" }} />
+        <Stack.Screen name="forgot-password" options={{ title: "Forgot password" }} />
+        <Stack.Screen name="reset-password" options={{ title: "Reset password" }} />
+        <Stack.Screen name="verify-email" options={{ title: "Verify email" }} />
+        <Stack.Screen name="edit-profile" options={{ title: "Edit profile" }} />
+        <Stack.Screen name="learners" options={{ title: "Learners" }} />
+        <Stack.Screen name="referrals" options={{ title: "Referrals" }} />
+        <Stack.Screen name="payments" options={{ title: "Payments" }} />
+        <Stack.Screen name="about" options={{ title: "About NUVORA" }} />
+        <Stack.Screen name="help" options={{ title: "Help" }} />
+        <Stack.Screen name="privacy" options={{ title: "Privacy" }} />
+        <Stack.Screen name="terms" options={{ title: "Terms" }} />
       </Stack>
     </SafeAreaProvider>
   );

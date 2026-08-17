@@ -9,17 +9,28 @@ import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { TabBar } from "@/src/components/TabBar";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch, setToken } from "@/src/lib/api";
 
-// Account — premium profile + linked learners + logout.
+// Account — premium profile + linked learners + settings + logout.
 
 type Me = { id: string; email: string; roles: string[]; first_name?: string; last_name?: string };
 type Learner = { id: string; first_name: string; last_name?: string; current_level?: string };
 
 const MENU = [
-  { href: "/notifications", label: "Notifications", icon: "🔔", desc: "Reminders and updates" },
+  { href: "/edit-profile", label: "Edit profile", icon: "person-outline", desc: "Name, phone, timezone" },
+  { href: "/learners", label: "Learners", icon: "people-outline", desc: "Children linked to your account" },
+  { href: "/referrals", label: "Referrals", icon: "gift-outline", desc: "Invite & earn" },
+  { href: "/payments", label: "Payments", icon: "card-outline", desc: "Orders & escrow history" },
+  { href: "/notifications", label: "Notifications", icon: "notifications-outline", desc: "Reminders and updates" },
+  { href: "/help", label: "Help", icon: "help-circle-outline", desc: "FAQs & support" },
+  { href: "/about", label: "About NUVORA", icon: "information-circle-outline", desc: "Who we are" },
+  { href: "/privacy", label: "Privacy", icon: "lock-closed-outline", desc: "How we handle your data" },
+  { href: "/terms", label: "Terms", icon: "document-text-outline", desc: "Terms of service" },
 ] as const;
+
+type IconName = keyof typeof Ionicons.glyphMap;
 
 export default function Account() {
   const [me, setMe] = useState<Me | null>(null);
@@ -105,7 +116,7 @@ export default function Account() {
           <Animated.View key={l.id} entering={FadeInUp.delay(120 + i * 60).springify().damping(18)}>
             <Card style={styles.learnerCard}>
               <View style={styles.learnerIcon}>
-                <AppText style={{ fontSize: 16 }}>🎓</AppText>
+                <Ionicons name="school-outline" size={16} color={colors.navy} />
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <AppText variant="h3">
@@ -128,14 +139,14 @@ export default function Account() {
       </AppText>
       {MENU.map((item) => (
         <Card key={item.href} onPress={() => router.push(item.href as never)} style={styles.menuCard}>
-          <AppText style={{ fontSize: 18 }}>{item.icon}</AppText>
+          <Ionicons name={item.icon as IconName} size={20} color={colors.navy} />
           <View style={{ flex: 1, marginLeft: 12 }}>
             <AppText variant="h3">{item.label}</AppText>
             <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
               {item.desc}
             </AppText>
           </View>
-          <AppText style={{ fontSize: 18, color: colors.goldDark }}>›</AppText>
+          <Ionicons name="chevron-forward" size={16} color={colors.goldDark} />
         </Card>
       ))}
 

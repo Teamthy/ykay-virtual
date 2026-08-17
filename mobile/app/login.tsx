@@ -74,6 +74,16 @@ export default function Login() {
         <Animated.View entering={FadeInDown.delay(240).springify().damping(16)} style={{ marginTop: 8 }}>
           <Button label={busy ? "Logging in…" : "Log in"} onPress={() => void submit()} loading={busy} full />
         </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(300).springify().damping(16)} style={{ marginTop: 16, alignItems: "center" }}>
+          <AppText
+            variant="bodySm"
+            style={{ color: colors.navy, fontWeight: "700" }}
+            onPress={() => router.push("/forgot-password" as never)}
+          >
+            Forgot password?
+          </AppText>
+        </Animated.View>
       </View>
     </Screen>
   );
