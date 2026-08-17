@@ -23,8 +23,14 @@ async function fetchStories(): Promise<Testimonial[]> {
   }
 }
 
+function isSeedQuote(t: Testimonial): boolean {
+  if (/^Parent\s+\d+$/i.test(t.author_name.trim())) return true;
+  if (t.body.includes("My daughter improved from average to top of her class")) return true;
+  return false;
+}
+
 export async function SuccessChampions() {
-  const stories = await fetchStories();
+  const stories = (await fetchStories()).filter((t) => !isSeedQuote(t));
 
   if (stories.length === 0) {
     return null; // no consented stories yet — don't invent any

@@ -154,19 +154,8 @@ SELECT
 FROM generate_series(1,10) g
 ON CONFLICT (slug) DO NOTHING;
 
--- ── 6. Testimonials (consent-gated, public) ──────────────────────────────────
--- Idempotent: only insert if the consent-gated public set is empty.
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM testimonials WHERE is_public = TRUE AND consent_given = TRUE) THEN
-    INSERT INTO testimonials (author_name,author_location,author_role,body,rating,is_featured,consent_given,is_public,consent_source,consent_date,created_at)
-    SELECT
-      'Parent '||g, 'Lagos, Nigeria', 'Parent',
-      'My daughter improved from average to top of her class with her NUVORA tutor. Highly recommend.',
-      5, (g%3=0), TRUE, TRUE, 'seed-form-v1', NOW(), NOW()
-    FROM generate_series(1,12) g;
-  END IF;
-END $$;
+-- ── 6. Testimonials — do not invent public quotes ────────────────────────────
+-- Consented stories are added by an admin after a real parent signs off.
 
 COMMIT;
 
