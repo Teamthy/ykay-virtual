@@ -41,16 +41,15 @@ export function HeroSplit() {
     <section className="py-10 md:py-14">
       {/* ── Top: brand story (static) ── */}
       <div className="container-x text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-navy">
-          <span className="size-1.5 rounded-full bg-brand-gold" />
-          British &amp; Nigerian curricula · Vetted tutors
-        </span>
-
-        <h1 className="mx-auto mt-5 max-w-4xl font-display text-4xl leading-[1.05] tracking-[0.01em] text-brand-navy md:text-5xl lg:text-6xl">
+        <h1 className="mx-auto max-w-4xl font-display text-4xl leading-[1.05] tracking-[0.01em] text-brand-navy md:text-5xl lg:text-6xl">
           Better, brighter futures for your kids.
         </h1>
 
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg">
+        <p className="mx-auto mt-4 text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
+          British &amp; Nigerian curricula · Vetted tutors
+        </p>
+
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg">
           Personalised tutoring that guides your child toward exam success, better grades and
           real confidence — from identity-verified, background-checked tutors.
         </p>

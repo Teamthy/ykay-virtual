@@ -61,6 +61,7 @@ const NAV_LINKS = [
   { label: "Cohorts", href: "/cohorts" },
   { label: "Tutors", href: "/tutors" },
   { label: "How it works", href: "/how-it-works" },
+  { label: "About", href: "/about" },
 ];
 
 export function Header() {
