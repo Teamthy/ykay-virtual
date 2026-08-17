@@ -77,13 +77,13 @@ export default function EntranceExamPage() {
               ))}
             </ul>
           </div>
-          <div className="space-y-6 rounded-3xl border border-ink-100 bg-surface-muted p-8">
-            {RATES.map((r) => (
-              <Progress key={r.subject} label={`${r.subject} success rate`} value={r.pct} />
+          <div className="grid gap-4 sm:grid-cols-3">
+            {TRACKS.map((r) => (
+              <div key={r.subject} className="rounded-2xl border border-ink-100 bg-surface-muted p-6">
+                <p className="font-display text-xl text-brand-navy">{r.subject}</p>
+                <p className="mt-2 text-sm text-ink-500">{r.note}</p>
+              </div>
             ))}
-            <p className="pt-2 text-xs text-ink-400">
-              Success rate across our 2025–26 exam cohorts (WAEC, NECO, Common Entrance, SAT).
-            </p>
           </div>
         </div>
       </section>
