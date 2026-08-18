@@ -19,7 +19,7 @@ export function homeForRoles(roles: string[]): string {
   if (roles.includes("TUTOR")) return "/tutor-dashboard";
   if (roles.includes("STUDENT")) return "/student-dashboard";
   if (roles.includes("PARENT")) return "/dashboard";
-  return "/dashboard"; // safest fallback; the page will 401 if unauthenticated
+  return "/dashboard";
 }
 
 export function onboardingPath(roles: string[]): string {

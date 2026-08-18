@@ -5,6 +5,7 @@
 // Idempotent: completing it POSTs /auth/me/onboarded; returning users
 // with the flag set are redirected straight through.
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -108,7 +109,10 @@ function WizardInner() {
               You&apos;re signed in as a <strong>{roleLabel}</strong>. In two quick steps we&apos;ll
               personalise your dashboard, recommendations and notifications.
             </p>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+              <Link href="/onboarding?step=3" className="text-sm font-semibold text-brand-navy hover:underline">
+                Choose a different role
+              </Link>
               <Button onClick={() => setStep(1)}>Continue</Button>
             </div>
           </section>

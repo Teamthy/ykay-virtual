@@ -11,6 +11,8 @@ import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
 import { GoogleButton } from "@/components/ui/google-button";
 import { useSession } from "@/hooks/useSession";
 import { useQueryClient } from "@tanstack/react-query";
+import { homeForRoles } from "@/hooks/useDashboardRoute";
+import { createLearner } from "@/features/onboarding/api";
 import { safeNextPath } from "@/lib/safe-next";
 import { clearOnboardingDraft, ONBOARDING_STORAGE_KEY } from "@/lib/onboarding";
 import {
@@ -73,14 +75,7 @@ const STEP_META: Record<number, { title: string; subtitle: string }> = {
 };
 
 function dashboardFor(role?: string) {
-  switch (role) {
-    case "TUTOR":
-      return "/tutor-dashboard";
-    case "STUDENT":
-      return "/student-dashboard";
-    default:
-      return "/dashboard";
-  }
+  return homeForRoles(role ? [role] : []);
 }
 
 function randomPassword(len = 24) {
@@ -788,7 +783,7 @@ function OnboardingInner() {
   // Reads state.next (persisted) because the step URLs drop the ?next= param.
   useEffect(() => {
     if (!sessionLoading && user?.onboarded) {
-      router.replace(safeNextPath(state.next) ?? dashboardFor(user.roles[0]));
+      router.replace(safeNextPath(state.next) ?? homeForRoles(user.roles));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionLoading, user, router, state.next]);
@@ -873,7 +868,8 @@ function OnboardingInner() {
     setSubmitting(true);
     setError(null);
     try {
-      await setPrimaryRole(r);
+      const apiRole = r === "INSTITUTION" ? "PARENT" : r;
+      await setPrimaryRole(apiRole);
       save({ role: r as ObState["role"] });
       toast.success("Role saved");
       go(4);
@@ -1048,13 +1044,27 @@ function OnboardingInner() {
             // Complete the first-time flow server-side so the next login
             // goes straight to the dashboard (never the wizard again).
             try {
+              const child = state.parent?.childName?.trim();
+              if ((state.role === "PARENT" || state.role === "INSTITUTION") && child) {
+                const parts = child.split(/\s+/);
+                await createLearner({
+                  first_name: parts[0] ?? child,
+                  last_name: parts.slice(1).join(" ") || "",
+                  current_level: state.parent?.childLevel,
+                  relationship: "PARENT",
+                }).catch(() => undefined);
+              }
               await markOnboarded();
               void qc.invalidateQueries({ queryKey: ["session"] });
             } catch {
               /* never trap the user on the finish line */
             }
             clearOnboardingDraft();
-            router.push(safeNextPath(state.next) ?? dashboardFor(state.role));
+            const dest =
+              state.role === "TUTOR"
+                ? "/become-tutor/apply"
+                : safeNextPath(state.next) ?? dashboardFor(state.role === "INSTITUTION" ? "PARENT" : state.role);
+            router.push(dest);
           }}
         />
       )}

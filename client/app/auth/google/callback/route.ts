@@ -44,7 +44,7 @@ export async function GET(request: Request) {
       return fail("Google sign-in returned no session token");
     }
 
-    const dest = user?.onboarded ? "/dashboard" : "/onboarding/wizard";
+    const dest = user?.onboarded ? "/dashboard" : "/onboarding?step=3";
     const response = NextResponse.redirect(new URL(dest, url.origin));
     response.cookies.set("nuvora_session", token, {
       httpOnly: true,

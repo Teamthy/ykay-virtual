@@ -13,7 +13,11 @@ export function RoleGate({ page }: { page: keyof typeof DASHBOARD_ROLES }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoading || !user) return;
+    if (isLoading) return;
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
     const allowed = DASHBOARD_ROLES[page] ?? [];
     if (isAdmin(user.roles)) {
       if (page !== "/admin") router.replace("/admin");
