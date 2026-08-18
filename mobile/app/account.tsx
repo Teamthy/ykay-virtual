@@ -1,42 +1,62 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
-import Animated, { FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "@/src/components/ui/Screen";
 import { TabLayout } from "@/src/components/TabLayout";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { TabBar } from "@/src/components/TabBar";
+import { EmptyState } from "@/src/components/ui/EmptyState";
+import { Skeleton } from "@/src/components/ui/Skeleton";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radius } from "@/src/lib/theme";
+import { colors, radius, spacing } from "@/src/lib/theme";
 import { apiFetch, setToken } from "@/src/lib/api";
 
-// Account — premium profile + linked learners + settings + logout.
+// Profile — grouped settings (per the mobile UI spec):
+//   profile header → account → learning → notifications & privacy → support
+// Related settings are grouped into sections, not an endless flat list.
 
 type Me = { id: string; email: string; roles: string[]; first_name?: string; last_name?: string };
 type Learner = { id: string; first_name: string; last_name?: string; current_level?: string };
 
-const MENU = [
-  { href: "/edit-profile", label: "Edit profile", icon: "person-outline", desc: "Name, phone, timezone" },
-  { href: "/learners", label: "Learners", icon: "people-outline", desc: "Children linked to your account" },
-  { href: "/referrals", label: "Referrals", icon: "gift-outline", desc: "Invite & earn" },
-  { href: "/payments", label: "Payments", icon: "card-outline", desc: "Orders & escrow history" },
-  { href: "/devices", label: "Devices", icon: "phone-portrait-outline", desc: "Notification devices" },
-  { href: "/become-tutor", label: "Become a tutor", icon: "school-outline", desc: "Teach on NUVORA" },
-  { href: "/pricing", label: "Pricing", icon: "pricetag-outline", desc: "Plans & protection" },
-  { href: "/careers", label: "Careers", icon: "briefcase-outline", desc: "Join the team" },
-  { href: "/contact", label: "Contact support", icon: "chatbox-ellipses-outline", desc: "Create a support ticket" },
-  { href: "/notifications", label: "Notifications", icon: "notifications-outline", desc: "Reminders and updates" },
-  { href: "/help", label: "Help", icon: "help-circle-outline", desc: "FAQs & support" },
-  { href: "/about", label: "About NUVORA", icon: "information-circle-outline", desc: "Who we are" },
-  { href: "/privacy", label: "Privacy", icon: "lock-closed-outline", desc: "How we handle your data" },
-  { href: "/terms", label: "Terms", icon: "document-text-outline", desc: "Terms of service" },
-] as const;
-
 type IconName = keyof typeof Ionicons.glyphMap;
+
+type MenuItem = { href: string; label: string; icon: IconName; desc: string };
+
+// Grouped menu (replaces the flat 14-item list).
+const GROUPS: { title: string; items: MenuItem[] }[] = [
+  {
+    title: "Account",
+    items: [
+      { href: "/edit-profile", label: "Edit profile", icon: "person-outline", desc: "Name, phone, timezone" },
+      { href: "/learners", label: "Learners", icon: "people-outline", desc: "Children linked to your account" },
+    ],
+  },
+  {
+    title: "Learning",
+    items: [
+      { href: "/my-lessons", label: "My lessons", icon: "calendar-outline", desc: "Upcoming & past sessions" },
+      { href: "/referrals", label: "Referrals", icon: "gift-outline", desc: "Invite & earn" },
+      { href: "/payments", label: "Payments", icon: "card-outline", desc: "Orders & escrow history" },
+    ],
+  },
+  {
+    title: "Notifications & privacy",
+    items: [
+      { href: "/notifications", label: "Notifications", icon: "notifications-outline", desc: "Reminders and updates" },
+      { href: "/devices", label: "Devices", icon: "phone-portrait-outline", desc: "Notification devices" },
+      { href: "/privacy", label: "Privacy", icon: "lock-closed-outline", desc: "How we handle your data" },
+    ],
+  },
+  {
+    title: "Support",
+    items: [
+      { href: "/contact", label: "Contact support", icon: "chatbox-ellipses-outline", desc: "Create a support ticket" },
+      { href: "/help", label: "Help & FAQs", icon: "help-circle-outline", desc: "Answers & guides" },
+    ],
+  },
+];
 
 export default function Account() {
   const [me, setMe] = useState<Me | null>(null);
@@ -81,60 +101,68 @@ export default function Account() {
 
   const initial = me?.first_name?.[0] ?? me?.email?.[0]?.toUpperCase() ?? "?";
 
+  if (loading) {
+    return (
+      <TabLayout>
+        <Screen scroll>
+          <Skeleton width="100%" height={120} radius={radius.lg} />
+          <Skeleton height={20} style={{ marginTop: spacing.xl }} />
+          <Skeleton height={16} style={{ marginTop: spacing.md }} />
+          <Skeleton height={16} style={{ marginTop: spacing.sm }} />
+          <Skeleton height={16} style={{ marginTop: spacing.sm }} />
+        </Screen>
+      </TabLayout>
+    );
+  }
+
   return (
     <TabLayout>
-    <Screen scroll>
-      {/* Profile hero */}
-      <Animated.View entering={FadeInUp.delay(60).springify().damping(16)}>
-        <LinearGradient
-          colors={[colors.navy, colors.navyDark]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.hero}
-        >
+      <Screen scroll>
+        {/* Profile header — light surface, not a gradient */}
+        <View style={styles.header}>
           <View style={styles.avatar}>
             <AppText style={styles.avatarText}>{initial}</AppText>
           </View>
-          <View style={{ flex: 1, marginLeft: 16 }}>
-            <AppText variant="h2" style={{ color: colors.white }}>
-              {me?.first_name?.trim() ? `${me.first_name}${me.last_name ? ` ${me.last_name}` : ""}` : me?.email ?? "Signed in"}
+          <View style={{ flex: 1, marginLeft: spacing.md }}>
+            <AppText variant="h2">
+              {me?.first_name?.trim() ? `${me.first_name}${me.last_name ? ` ${me.last_name}` : ""}` : "Signed in"}
             </AppText>
             {me?.email ? (
-              <AppText variant="bodySm" style={{ color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
+              <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
                 {me.email}
               </AppText>
             ) : null}
-            <View style={styles.roleRow}>
-              {(me?.roles ?? []).map((r) => (
-                <View key={r} style={styles.rolePill}>
-                  <AppText variant="caption" style={styles.roleText}>
-                    {r}
-                  </AppText>
-                </View>
-              ))}
-            </View>
+            {(me?.roles ?? []).length > 0 && (
+              <View style={styles.roleRow}>
+                {(me?.roles ?? []).map((r) => (
+                  <View key={r} style={styles.rolePill}>
+                    <AppText variant="caption" style={styles.roleText}>
+                      {r}
+                    </AppText>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
-        </LinearGradient>
-      </Animated.View>
-
-      {/* Learners */}
-      <AppText variant="label" style={styles.sectionTitle}>
-        MY LEARNERS
-      </AppText>
-      {learners.length === 0 ? (
-        <View style={styles.stateCard}>
-          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", lineHeight: 19 }}>
-            No learners linked yet — add one in onboarding on the web app.
-          </AppText>
         </View>
-      ) : (
-        learners.map((l, i) => (
-          <Animated.View key={l.id} entering={FadeInUp.delay(120 + i * 60).springify().damping(18)}>
-            <Card style={styles.learnerCard}>
+
+        {/* Learners */}
+        <AppText variant="label" style={styles.sectionTitle}>
+          MY LEARNERS
+        </AppText>
+        {learners.length === 0 ? (
+          <EmptyState
+            icon="school-outline"
+            title="No learners yet"
+            description="Learners you link will appear here so you can track their lessons, attendance and progress."
+          />
+        ) : (
+          learners.map((l) => (
+            <Card key={l.id} style={styles.learnerCard}>
               <View style={styles.learnerIcon}>
                 <Ionicons name="school-outline" size={16} color={colors.navy} />
               </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
+              <View style={{ flex: 1, marginLeft: spacing.sm }}>
                 <AppText variant="h3">
                   {l.first_name} {l.last_name ?? ""}
                 </AppText>
@@ -145,80 +173,91 @@ export default function Account() {
                 ) : null}
               </View>
             </Card>
-          </Animated.View>
-        ))
-      )}
+          ))
+        )}
 
-      {/* Menu */}
-      <AppText variant="label" style={styles.sectionTitle}>
-        MORE
-      </AppText>
-      {MENU.map((item) => (
-        <Card key={item.href} onPress={() => router.push(item.href as never)} style={styles.menuCard}>
-          <Ionicons name={item.icon as IconName} size={20} color={colors.navy} />
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <AppText variant="h3">{item.label}</AppText>
-            <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
-              {item.desc}
+        {/* Grouped settings */}
+        {GROUPS.map((group) => (
+          <View key={group.title}>
+            <AppText variant="label" style={styles.sectionTitle}>
+              {group.title.toUpperCase()}
             </AppText>
+            <Card style={styles.groupCard}>
+              {group.items.map((item, i) => (
+                <View key={item.href}>
+                  <View
+                    style={styles.menuRow}
+                    accessibilityRole="button"
+                    onTouchEnd={() => router.push(item.href as never)}
+                  >
+                    <View style={styles.menuIcon}>
+                      <Ionicons name={item.icon} size={18} color={colors.green} />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                      <AppText variant="heading">{item.label}</AppText>
+                      <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
+                        {item.desc}
+                      </AppText>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={colors.ink[300]} />
+                  </View>
+                  {i < group.items.length - 1 && <View style={styles.divider} />}
+                </View>
+              ))}
+            </Card>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={colors.goldDark} />
-        </Card>
-      ))}
+        ))}
 
-      <View style={styles.logout}>
-        <Button label="Log out" variant="secondary" full onPress={() => void logout()} />
-      </View>
-
-      <View style={styles.tab}>
-        <TabBar />
-      </View>
-    </Screen>
+        <View style={styles.logout}>
+          <Button label="Log out" variant="secondary" full onPress={() => void logout()} />
+        </View>
+      </Screen>
     </TabLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  hero: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    padding: 22,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   avatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.gold,
+    backgroundColor: colors.green,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { fontSize: 26, fontWeight: "800", color: colors.navy },
-  roleRow: { flexDirection: "row", gap: 6, marginTop: 8, flexWrap: "wrap" },
-  rolePill: { backgroundColor: "rgba(112,242,80,0.18)", borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 2 },
-  roleText: { color: colors.gold, fontWeight: "800" },
-  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
-  stateCard: {
-    backgroundColor: colors.white,
-    borderRadius: radius.lg,
-    padding: 20,
-    alignItems: "center",
-    shadowColor: colors.navy,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  learnerCard: { padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  avatarText: { fontSize: 26, fontWeight: "800", color: colors.white },
+  roleRow: { flexDirection: "row", gap: 6, marginTop: spacing.xs, flexWrap: "wrap" },
+  rolePill: { backgroundColor: colors.greenLight, borderRadius: radius.pill, paddingHorizontal: spacing.xs, paddingVertical: 2 },
+  roleText: { color: colors.greenDark, fontWeight: "700" },
+  sectionTitle: { color: colors.ink[500], letterSpacing: 1.1, fontSize: 12, marginTop: spacing.xl, marginBottom: spacing.sm },
+  learnerCard: { padding: spacing.md, flexDirection: "row", alignItems: "center", marginBottom: spacing.sm },
   learnerIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.goldLight,
+    backgroundColor: colors.greenLight,
     alignItems: "center",
     justifyContent: "center",
   },
-  menuCard: { padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  logout: { marginTop: 8 },
-  tab: { marginTop: 24 },
+  groupCard: { paddingHorizontal: spacing.md, marginBottom: spacing.xs },
+  menuRow: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.md, minHeight: 56 },
+  menuIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    backgroundColor: colors.greenLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  divider: { height: 1, backgroundColor: colors.border, marginLeft: 36 + spacing.sm },
+  logout: { marginTop: spacing.lg, marginBottom: spacing.xxl },
 });

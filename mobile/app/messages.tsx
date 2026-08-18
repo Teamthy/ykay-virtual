@@ -6,6 +6,7 @@ import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
+import { EmptyState } from "@/src/components/ui/EmptyState";
 import { colors } from "@/src/lib/theme";
 import { getConversations, type ConversationItem } from "@/src/lib/messaging";
 import { usePolling } from "@/src/lib/realtime";
@@ -39,11 +40,11 @@ export default function MessagesScreen() {
       />
 
       {conversations.length === 0 ? (
-        <Card padded>
-          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center" }}>
-            No conversations yet. A thread opens when a lesson or cohort connects you with someone.
-          </AppText>
-        </Card>
+        <EmptyState
+          icon="chatbubble-ellipses-outline"
+          title="No conversations yet"
+          description="A thread opens when a lesson or cohort connects you with a tutor, parent or learner."
+        />
       ) : (
         conversations.map((c) => (
           <Card key={c.id} onPress={() => router.push(`/messages/${c.id}` as never)} padded style={styles.row}>
