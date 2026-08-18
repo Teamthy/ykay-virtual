@@ -17,11 +17,11 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const EXAMS = [
-  { code: "IGCSE", name: "Cambridge & Pearson IGCSE", desc: "Year 10–11 revision cohorts with past-paper practice and mocks.", href: "/programmes" },
-  { code: "WAEC", name: "West African Examinations Council", desc: "Core and elective subjects, aligned lesson plans and practice.", href: "/programmes" },
-  { code: "NECO", name: "National Examinations Council", desc: "Shared-syllabus preparation alongside WAEC where applicable.", href: "/programmes" },
-  { code: "JAMB", name: "UTME / Post-UTME", desc: "Topic-focused revision, question analysis and CBT mock tests.", href: "/programmes" },
-  { code: "A-Level", name: "Advanced Level", desc: "Subject-specialist tuition for university-bound learners.", href: "/programmes" },
+  { code: "IGCSE", name: "Cambridge & Pearson IGCSE", desc: "Year 10–11 revision cohorts with past-paper practice and mocks.", href: "/curricula/british", photo: "/hero/british.jpg" },
+  { code: "WAEC", name: "West African Examinations Council", desc: "Core and elective subjects, aligned lesson plans and practice.", href: "/curricula/nigerian", photo: "/hero/nigerian.jpg" },
+  { code: "NECO", name: "National Examinations Council", desc: "Shared-syllabus preparation alongside WAEC where applicable.", href: "/curricula/nigerian", photo: "/hero/exam-prep.jpg" },
+  { code: "JAMB", name: "UTME / Post-UTME", desc: "Topic-focused revision, question analysis and CBT mock tests.", href: "/utme-2026", photo: "/hero/utme.jpg" },
+  { code: "A-Level", name: "Advanced Level", desc: "Subject-specialist tuition for university-bound learners.", href: "/curricula/british", photo: "/hero/programmes.jpg" },
 ];
 
 const METHOD = [
@@ -46,6 +46,7 @@ export default function ExamPrepPage() {
   return (
     <main className="container-x py-10">
       <PageHero
+        cover="/hero/exam-prep.jpg"
         eyebrow="Exam season, handled"
         title="Examination Preparation"
         subtitle="Revision cohorts, past-paper practice and mock examinations — built for WAEC, NECO, JAMB, IGCSE and A-Level candidates."
@@ -63,16 +64,21 @@ export default function ExamPrepPage() {
         <div>
       <section className="mt-2 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {EXAMS.map((e) => (
-          <div key={e.code} className="border rounded-2xl p-6 hover:shadow-lift transition-shadow">
-            <div className="text-3xl font-extrabold text-brand-blue">{e.code}</div>
-            <h2 className="font-bold mt-2">{e.name}</h2>
-            <p className="mt-2 text-sm text-ink-600">{e.desc}</p>
-            <Link href={e.href} className="mt-4 inline-block text-sm font-semibold text-brand-blue hover:underline">
-              Explore →
-            </Link>
-          </div>
+          <Link
+            key={e.code}
+            href={e.href}
+            className="flex min-h-[240px] flex-col justify-end overflow-hidden rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+            style={{
+              backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.25), rgba(6,15,38,0.88)), url(${e.photo})`,
+            }}
+          >
+            <div className="font-display text-3xl tracking-[0.02em]">{e.code}</div>
+            <h2 className="mt-1 font-bold">{e.name}</h2>
+            <p className="mt-2 text-sm text-white/80">{e.desc}</p>
+            <span className="mt-4 text-sm font-semibold text-brand-gold">Explore →</span>
+          </Link>
         ))}
-        <div className="rounded-2xl bg-brand-blue text-white p-6 flex flex-col justify-between">
+        <div className="flex min-h-[240px] flex-col justify-between rounded-2xl bg-cover bg-center p-6 text-white" style={{ backgroundImage: "linear-gradient(165deg, rgba(1,57,32,0.88), rgba(6,15,38,0.75)), url(/hero/checkout.jpg)" }}>
           <div>
             <h2 className="font-bold text-lg">Not sure where to start?</h2>
             <p className="mt-2 text-sm text-white/80">

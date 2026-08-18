@@ -57,6 +57,7 @@ export default async function CohortDetailPage(props: Props) {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <PageHero
+        cover="/hero/cohorts.jpg"
         announcement={`${cohort.location_mode.replace(/_/g, " ").toLowerCase()} · ${cohort.timezone}`}
         title={cohort.title}
         subtitle={cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}

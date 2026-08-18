@@ -57,7 +57,21 @@ export function ProgrammesHub() {
     staleTime: 120_000,
   });
 
-  const programmes = hideDemo((query.data?.pages.flatMap((p) => p.data) ?? []) as ProgrammeCardData[]);
+  const SAMPLE: ProgrammeCardData[] = [
+    { id: "s1", title: "IGCSE Mathematics", slug: "igcse-maths", href: "/curricula/british", summary: "Year 10–11 past papers and mocks.", format: "COHORT", curriculum_name: "British", exam_name: "IGCSE", currency: "NGN", is_featured: true, price_min: 35000 },
+    { id: "s2", title: "IGCSE Physics", slug: "igcse-physics", href: "/curricula/british", summary: "Theory, practicals and paper technique.", format: "COHORT", curriculum_name: "British", exam_name: "IGCSE", currency: "NGN", is_featured: false, price_min: 35000 },
+    { id: "s3", title: "A-Level Mathematics", slug: "alevel-maths", href: "/curricula/british", summary: "Pure, stats and mechanics tracks.", format: "PRIVATE", curriculum_name: "British", exam_name: "A-Level", currency: "NGN", is_featured: false },
+    { id: "s4", title: "WAEC English Language", slug: "waec-english", href: "/exam-prep", summary: "Comprehension, essay and oral prep.", format: "COHORT", curriculum_name: "Nigerian", exam_name: "WAEC", currency: "NGN", is_featured: false, price_min: 18000 },
+    { id: "s5", title: "WAEC Mathematics", slug: "waec-maths", href: "/exam-prep", summary: "SSS3 intensive with weekly mocks.", format: "COHORT", curriculum_name: "Nigerian", exam_name: "WAEC", currency: "NGN", is_featured: true, price_min: 18000 },
+    { id: "s6", title: "UTME 2026 Mastery", slug: "utme-2026", href: "/utme-2026", summary: "Live class, recordings and CBT-style mocks.", format: "ONLINE_CLASS", curriculum_name: "Nigerian", exam_name: "JAMB", currency: "NGN", is_featured: true, price_min: 35000 },
+    { id: "s7", title: "JSS Core Sciences", slug: "jss-sciences", href: "/curricula/nigerian", summary: "Basic science foundations for JSS1–3.", format: "COHORT", curriculum_name: "Nigerian", level_name: "JSS", currency: "NGN", is_featured: false },
+    { id: "s8", title: "Python Programming", slug: "python", href: "/digital-skills", summary: "First programs to small projects.", format: "BOOTCAMP", currency: "NGN", is_featured: false, price_min: 25000 },
+    { id: "s9", title: "IELTS Academic", slug: "ielts", href: "/study-abroad", summary: "Speaking, writing, listening, reading.", format: "PRIVATE", currency: "NGN", is_featured: false },
+    { id: "s10", title: "GMAT Diagnostic Track", slug: "gmat", href: "/gmat", summary: "Plan from a diagnostic — no score promise.", format: "PRIVATE", currency: "NGN", is_featured: false },
+  ];
+
+  const live = hideDemo((query.data?.pages.flatMap((p) => p.data) ?? []) as ProgrammeCardData[]);
+  const programmes = live.length > 0 ? live : SAMPLE;
 
   const filterChip = (label: string, value: string, current: string, onChange: (v: string) => void, param: string) => (
     <button
@@ -134,7 +148,11 @@ export function ProgrammesHub() {
           </div>
         ) : (
           <>
-            <p className="text-sm text-ink-500 mb-4">{query.data?.pages[0]?.meta?.total_items ?? programmes.length} programme(s)</p>
+            <p className="text-sm text-ink-500 mb-4">
+              {live.length > 0
+                ? `${query.data?.pages[0]?.meta?.total_items ?? programmes.length} programme(s)`
+                : "Sample tracks — enrol from a live cohort when one is published."}
+            </p>
             <div className="grid sm:grid-cols-2 gap-4">
               {programmes.map((p) => <ProgrammeCard key={p.id} p={p} />)}
             </div>

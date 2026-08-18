@@ -34,6 +34,7 @@ export default function HowItWorksPage() {
     <main className="container-x py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <PageHero
+        cover="/hero/how-it-works.jpg"
         eyebrow="Simple by design"
         title="How NUVORA works"
         subtitle="Four steps for families, four steps for tutors — with escrow protection and full visibility at every stage."

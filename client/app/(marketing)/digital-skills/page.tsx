@@ -12,12 +12,12 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const TRACKS = [
-  { title: "Computer Science", desc: "IGCSE/SSS Computer Science with programming and theory.", href: "/programmes" },
-  { title: "ICT & Digital Literacy", desc: "Practical computing for school and the workplace.", href: "/programmes" },
-  { title: "Python Programming", desc: "From first programs to real projects.", href: "/programmes" },
-  { title: "Artificial Intelligence", desc: "Concepts, tools and responsible AI use for students.", href: "/programmes" },
-  { title: "Cybersecurity", desc: "Safe online habits and security fundamentals.", href: "/programmes" },
-  { title: "Microsoft Office", desc: "Word, Excel, PowerPoint and certification prep.", href: "/programmes" },
+  { title: "Computer Science", desc: "IGCSE/SSS Computer Science with programming and theory.", href: "/programmes", photo: "/hero/digital.jpg" },
+  { title: "ICT & Digital Literacy", desc: "Practical computing for school and the workplace.", href: "/programmes", photo: "/hero/subjects.jpg" },
+  { title: "Python Programming", desc: "From first programs to real projects.", href: "/programmes", photo: "/hero/test-prep.jpg" },
+  { title: "Artificial Intelligence", desc: "Concepts, tools and responsible AI use for students.", href: "/programmes", photo: "/hero/programmes.jpg" },
+  { title: "Cybersecurity", desc: "Safe online habits and security fundamentals.", href: "/programmes", photo: "/hero/how-it-works.jpg" },
+  { title: "Microsoft Office", desc: "Word, Excel, PowerPoint and certification prep.", href: "/programmes", photo: "/hero/checkout.jpg" },
 ];
 
 export default function DigitalSkillsPage() {
@@ -37,6 +37,7 @@ export default function DigitalSkillsPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <PageHero
+        cover="/hero/digital.jpg"
         eyebrow="The digital academy"
         title="Computing & Digital Skills"
         subtitle="Computer Science, programming, AI and digital safety — taught as structured cohorts or one-to-one."

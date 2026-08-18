@@ -1,6 +1,6 @@
 import { apiFetch, Envelope } from "@/lib/api";
 
-export type Subject = { id: string; name: string; slug: string; category: string; description?: string };
+export type Subject = { id: string; name: string; slug: string; category: string; description?: string; photo?: string };
 
 export async function listSubjects(params?: { search?: string; category?: string; page?: number; page_size?: number }) {
   const qs = new URLSearchParams();

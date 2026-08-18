@@ -18,18 +18,21 @@ export const metadata: Metadata = buildMetadata({
 const SERVICES = [
   {
     icon: <FileCheck2 size={20} />,
-    title: "Perfect Test Scores",
-    desc: "IELTS, GRE, GMAT, TOEFL, PTE and SAT prep with structured strategies and vetted tutors.",
+    title: "Test prep",
+    desc: "IELTS, GRE, GMAT, TOEFL, PTE and SAT prep with structured strategies and vetted tutors. We do not promise a score.",
+    photo: "/hero/test-prep.jpg",
   },
   {
     icon: <GraduationCap size={20} />,
     title: "University Admissions",
     desc: "University shortlisting and application coaching for the US, UK, Canada and Australia.",
+    photo: "/hero/british.jpg",
   },
   {
     icon: <Plane size={20} />,
     title: "Relocation & Visa Support",
-    desc: "Guidance through applications, visas and travel so you can live, work and thrive abroad.",
+    desc: "Guidance through applications, visas and travel. We are not an immigration law firm.",
+    photo: "/hero/about.jpg",
   },
 ];
 
@@ -44,16 +47,19 @@ export default function StudyAbroadPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
       {/* Preline hero: announcement + gradient title + buttons */}
-      <section className="relative overflow-hidden bg-white">
-        <div
-          className="pointer-events-none absolute inset-0 before:absolute before:inset-x-0 before:top-0 before:h-full before:bg-[radial-gradient(ellipse_at_top,rgba(244,180,0,0.10),transparent_55%)]"
-          aria-hidden="true"
-        />
+      <section
+        className="relative overflow-hidden bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "linear-gradient(160deg, rgba(6,15,38,0.82), rgba(1,57,32,0.62)), url(/hero/international.jpg)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true" />
         <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:px-10 md:pt-20">
           <div className="flex justify-center">
             <a
               href="#services"
-              className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
+              className="inline-flex items-center gap-x-2 rounded-full border border-white/30 bg-white/10 p-1 ps-3 text-sm text-white shadow-sm transition hover:border-brand-gold"
             >
               Admissions &amp; Travels
               <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
@@ -63,7 +69,7 @@ export default function StudyAbroadPage() {
           </div>
 
           <div className="mx-auto mt-6 max-w-2xl text-center">
-            <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
+            <h1 className="font-display text-4xl tracking-[0.02em] text-white md:text-5xl lg:text-6xl">
               Live, work and{" "}
               <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
                 study abroad
@@ -72,7 +78,7 @@ export default function StudyAbroadPage() {
           </div>
 
           <div className="mx-auto mt-5 max-w-3xl text-center">
-            <p className="text-lg text-ink-600">
+            <p className="text-lg text-white/85">
               Get help with course selection, test scores and applications for study in the US, UK, Canada and Australia.
             </p>
           </div>
@@ -128,8 +134,7 @@ export default function StudyAbroadPage() {
                 key={s.title}
                 className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white shadow-card"
                 style={{
-                  backgroundImage:
-                    "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.65)), url(/hero/international.jpg)",
+                  backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.86), rgba(1,57,32,0.58)), url(${s.photo})`,
                 }}
               >
                 <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/15 text-white">

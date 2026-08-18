@@ -9,6 +9,32 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const CATEGORIES = ["All", "Academic", "Digital", "Languages", "Nigerian Languages", "Music", "Exam Preparation"];
 
+const FALLBACK_SUBJECTS = [
+  { id: "1", slug: "mathematics", name: "Mathematics", category: "Academic", description: "Core maths across British and Nigerian pathways." },
+  { id: "2", slug: "english", name: "English Language", category: "Academic", description: "Comprehension, writing and oral." },
+  { id: "3", slug: "physics", name: "Physics", category: "Academic", description: "Mechanics, waves, electricity." },
+  { id: "4", slug: "chemistry", name: "Chemistry", category: "Academic", description: "Organic, inorganic and practicals." },
+  { id: "5", slug: "biology", name: "Biology", category: "Academic", description: "Life sciences for SSS and IGCSE." },
+  { id: "6", slug: "further-maths", name: "Further Mathematics", category: "Academic", description: "For A-Level and strong SSS candidates." },
+  { id: "7", slug: "economics", name: "Economics", category: "Academic", description: "Micro, macro and exam technique." },
+  { id: "8", slug: "accounting", name: "Accounting", category: "Academic", description: "Bookkeeping and financial statements." },
+  { id: "9", slug: "computer-science", name: "Computer Science", category: "Digital", description: "Theory and programming for IGCSE/SSS." },
+  { id: "10", slug: "/digital-skills", name: "Python Programming", category: "Digital", description: "First programs to small projects." },
+  { id: "11", slug: "/digital-skills", name: "ICT & Digital Literacy", category: "Digital", description: "Practical computing for school and work." },
+  { id: "12", slug: "/digital-skills", name: "Cybersecurity", category: "Digital", description: "Safe online habits and fundamentals." },
+  { id: "13", slug: "french", name: "French", category: "Languages", description: "Beginner to exam oral practice." },
+  { id: "14", slug: "yoruba", name: "Yoruba", category: "Nigerian Languages", description: "Language and literature support." },
+  { id: "15", slug: "igbo", name: "Igbo", category: "Nigerian Languages", description: "Language and literature support." },
+  { id: "16", slug: "hausa", name: "Hausa", category: "Nigerian Languages", description: "Language and literature support." },
+  { id: "17", slug: "music", name: "Music", category: "Music", description: "Theory and practical coaching." },
+  { id: "18", slug: "/exam-prep", name: "WAEC / NECO prep", category: "Exam Preparation", description: "Past papers and mocks." },
+  { id: "19", slug: "/utme-2026", name: "UTME / JAMB", category: "Exam Preparation", description: "Topic drills and CBT-style mocks." },
+  { id: "20", slug: "/gmat", name: "GMAT / GRE", category: "Exam Preparation", description: "Diagnostic-led graduate test prep." },
+].map((s, i) => ({
+  ...s,
+  photo: ["/hero/subjects.jpg", "/hero/exam-prep.jpg", "/hero/british.jpg", "/hero/nigerian.jpg", "/hero/digital.jpg"][i % 5],
+}));
+
 export function SubjectsClient() {
   const router = useRouter();
   const sp = useSearchParams();
@@ -74,19 +100,28 @@ export function SubjectsClient() {
         </div>
       ) : subjects.isError ? (
         <div className="border rounded-2xl p-10 text-center text-red-600">Could not load subjects.</div>
-      ) : (subjects.data?.data ?? []).length === 0 ? (
-        <div className="border rounded-2xl p-10 text-center text-ink-500">No subjects match your search.</div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(subjects.data?.data ?? []).map((s) => (
+          {(
+            (subjects.data?.data ?? []).length > 0
+              ? subjects.data!.data
+              : FALLBACK_SUBJECTS.filter((s) => {
+                  if (category !== "All" && s.category !== category) return false;
+                  if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
+                  return true;
+                })
+          ).map((s) => (
             <Link
               key={s.id}
-              href={`/subjects/${s.slug}`}
-              className="border rounded-2xl p-5 hover:border-brand-blue hover:shadow-lift transition-all"
+              href={s.slug.startsWith("/") ? s.slug : `/subjects/${s.slug}`}
+              className="overflow-hidden rounded-2xl border border-ink-100 bg-cover bg-center p-5 text-white shadow-soft"
+              style={{
+                backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.82), rgba(1,57,32,0.55)), url(${s.photo ?? "/hero/subjects.jpg"})`,
+              }}
             >
               <h3 className="font-bold">{s.name}</h3>
-              <p className="text-xs text-ink-400 mt-1 uppercase tracking-wide">{s.category}</p>
-              {s.description && <p className="text-sm text-ink-600 mt-2 line-clamp-2">{s.description}</p>}
+              <p className="mt-1 text-xs uppercase tracking-wide text-white/70">{s.category}</p>
+              {s.description && <p className="mt-2 line-clamp-2 text-sm text-white/80">{s.description}</p>}
             </Link>
           ))}
         </div>

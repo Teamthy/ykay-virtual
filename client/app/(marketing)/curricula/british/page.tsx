@@ -12,9 +12,9 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const STAGES = [
-  { title: "Year 7–9", desc: "Build strong foundations across English, Maths, Sciences and Computing.", subjects: ["Mathematics", "English", "Science", "Computing"] },
-  { title: "IGCSE · Year 10–11", desc: "Structured subject cohorts with past-paper practice and coursework support.", subjects: ["Computer Science", "Mathematics", "Physics", "English"] },
-  { title: "A-Level · Year 12–13", desc: "Subject-specialist teaching for university-bound learners.", subjects: ["Computer Science", "Mathematics", "Further Maths", "Physics"] },
+  { title: "Year 7–9", desc: "Build strong foundations across English, Maths, Sciences and Computing.", subjects: ["Mathematics", "English", "Science", "Computing"], photo: "/hero/subjects.jpg" },
+  { title: "IGCSE · Year 10–11", desc: "Structured subject cohorts with past-paper practice and coursework support.", subjects: ["Computer Science", "Mathematics", "Physics", "English"], photo: "/hero/british.jpg" },
+  { title: "A-Level · Year 12–13", desc: "Subject-specialist teaching for university-bound learners.", subjects: ["Computer Science", "Mathematics", "Further Maths", "Physics"], photo: "/hero/programmes.jpg" },
 ];
 
 const FAQS = [
@@ -42,6 +42,7 @@ export default function BritishCurriculumPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <PageHero
+        cover="/hero/british.jpg"
         eyebrow="British pathway"
         title="British Curriculum Online"
         subtitle="From Key Stage 3 foundations to IGCSE and A-Level — a structured British pathway taught by vetted subject specialists, with parent visibility at every step."
@@ -57,22 +58,21 @@ export default function BritishCurriculumPage() {
         {STAGES.map((s) => (
           <div
             key={s.title}
-            className="overflow-hidden rounded-2xl border border-ink-100 bg-cover bg-center p-6 text-white shadow-card"
+            className="flex min-h-[280px] flex-col overflow-hidden rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
             style={{
-              backgroundImage:
-                "linear-gradient(160deg, rgba(6,15,38,0.88), rgba(1,57,32,0.72)), url(/hero/home-tutoring.jpg)",
+              backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.78), rgba(1,57,32,0.62)), url(${s.photo})`,
             }}
           >
             <h2 className="text-xl font-extrabold">{s.title}</h2>
-            <p className="mt-2 text-sm text-ink-600">{s.desc}</p>
+            <p className="mt-2 text-sm text-white/85">{s.desc}</p>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {s.subjects.map((sub) => (
-                <span key={sub} className="text-xs bg-brand-blue-light text-brand-blue px-2.5 py-1 rounded-full font-semibold">
+                <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold text-white">
                   {sub}
                 </span>
               ))}
             </div>
-            <Link href="/tutors" className="mt-5 inline-block text-sm font-semibold text-brand-blue hover:underline">
+            <Link href="/tutors" className="mt-auto pt-5 inline-block text-sm font-semibold text-brand-gold">
               Find a tutor →
             </Link>
           </div>

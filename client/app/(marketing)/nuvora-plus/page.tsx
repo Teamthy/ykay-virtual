@@ -43,6 +43,7 @@ export default function NuvoraPlusPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
       <PageHero
+        cover="/hero/nuvora-plus.jpg"
         eyebrow="NUVORA Plus"
         title="NUVORA Plus — advisor-led matching"
         subtitle="Priority matching with a vetted specialist, a named advisor, and weekly reports. Premium packaging — not invented rankings."
@@ -50,7 +51,7 @@ export default function NuvoraPlusPage() {
         align="center"
         image={{ src: "/hero/nuvora-plus.jpg", alt: "Tutor guiding a young learner one-on-one" }}
       >
-        <a href="/contact" className="btn-gold">Unlock Premium Tutoring</a>
+        <a href="/pricing" className="btn-gold">Unlock Premium Tutoring</a>
       </PageHero>
 
       {/* Value prop — foreign-standard without the price tag */}
@@ -142,7 +143,7 @@ export default function NuvoraPlusPage() {
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Link href="/contact" className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5">
+            <Link href="/pricing" className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5">
               Unlock Premium Tutoring
             </Link>
           </div>

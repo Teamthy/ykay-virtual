@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays } from "lucide-react";
+import { coverFor } from "@/lib/covers";
 
 export type ProgrammeCardData = {
   id: string;
@@ -39,9 +40,13 @@ export function ProgrammeCard({ p }: { p: ProgrammeCardData }) {
       href={p.href ?? `/programmes/${p.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-card"
     >
-      {/* Tinted format banner */}
-      <div className="flex items-center justify-between px-6 py-4" style={{ backgroundColor: fmt.bg }}>
-        <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: fmt.color }}>
+      <div
+        className="flex h-28 items-end justify-between bg-cover bg-center px-6 py-4"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.15), rgba(6,15,38,0.78)), url(${coverFor(p.title)})`,
+        }}
+      >
+        <span className="rounded-full bg-white/95 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-navy">
           {fmt.label}
         </span>
         {p.is_featured && (

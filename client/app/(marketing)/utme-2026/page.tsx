@@ -177,11 +177,17 @@ export default function Utme2026Page() {
       <SuccessChampions />
 
       {/* ── AI-powered prep ── */}
-      <section className="bg-[#013920] py-16 text-white">
+      <section
+        className="bg-cover bg-center py-16 text-white"
+        style={{
+          backgroundImage:
+            "linear-gradient(165deg, rgba(1,57,32,0.92), rgba(6,15,38,0.82)), url(/hero/utme.jpg)",
+        }}
+      >
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="font-display text-3xl tracking-[0.02em] md:text-4xl">
-              Ace your UTME with our AI-powered exam prep
+              UTME prep: live class, mocks and reports
             </h2>
             <p className="mt-4 leading-relaxed text-white/80">
               Tutors plan from{" "}

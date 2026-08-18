@@ -12,9 +12,9 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const STAGES = [
-  { title: "JSS1 – JSS3", desc: "Junior secondary foundations in Mathematics, English, Basic Science and more.", subjects: ["Mathematics", "English", "Basic Science", "Computer Studies"] },
-  { title: "SSS1 – SSS3", desc: "Senior secondary pathways with subject specialisation and exam focus.", subjects: ["Mathematics", "English", "Physics", "Biology", "Economics"] },
-  { title: "WAEC · NECO · JAMB", desc: "Focused exam preparation: past questions, mocks and revision plans.", subjects: ["WAEC", "NECO", "JAMB/UTME", "Post-UTME"] },
+  { title: "JSS1 – JSS3", desc: "Junior secondary foundations in Mathematics, English, Basic Science and more.", subjects: ["Mathematics", "English", "Basic Science", "Computer Studies"], photo: "/hero/nigerian.jpg" },
+  { title: "SSS1 – SSS3", desc: "Senior secondary pathways with subject specialisation and exam focus.", subjects: ["Mathematics", "English", "Physics", "Biology", "Economics"], photo: "/hero/exam-prep.jpg" },
+  { title: "WAEC · NECO · JAMB", desc: "Focused exam preparation: past questions, mocks and revision plans.", subjects: ["WAEC", "NECO", "JAMB/UTME", "Post-UTME"], photo: "/hero/utme.jpg" },
 ];
 
 const FAQS = [
@@ -42,6 +42,7 @@ export default function NigerianCurriculumPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <PageHero
+        cover="/hero/nigerian.jpg"
         eyebrow="Nigerian pathway"
         title="Nigerian Curriculum Online"
         subtitle="Junior and senior secondary learning with WAEC, NECO and JAMB preparation — structured, exam-focused and taught by vetted Nigerian educators."
@@ -55,17 +56,21 @@ export default function NigerianCurriculumPage() {
 
       <section className="mt-14 grid md:grid-cols-3 gap-5">
         {STAGES.map((s) => (
-          <div key={s.title} className="border rounded-2xl p-6 hover:shadow-lift transition-shadow">
+          <div
+            key={s.title}
+            className="flex min-h-[260px] flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+            style={{ backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.8), rgba(1,57,32,0.6)), url(${s.photo})` }}
+          >
             <h2 className="text-xl font-extrabold">{s.title}</h2>
-            <p className="mt-2 text-sm text-ink-600">{s.desc}</p>
+            <p className="mt-2 text-sm text-white/85">{s.desc}</p>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {s.subjects.map((sub) => (
-                <span key={sub} className="text-xs bg-brand-blue-light text-brand-blue px-2.5 py-1 rounded-full font-semibold">
+                <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">
                   {sub}
                 </span>
               ))}
             </div>
-            <Link href="/tutors" className="mt-5 inline-block text-sm font-semibold text-brand-blue hover:underline">
+            <Link href="/tutors" className="mt-auto pt-5 inline-block text-sm font-semibold text-brand-gold">
               Find a tutor →
             </Link>
           </div>
@@ -76,7 +81,7 @@ export default function NigerianCurriculumPage() {
         {[
           { title: "WAEC", desc: "Core and elective subjects with past-question practice." },
           { title: "NECO", desc: "Aligned preparation across the shared syllabus." },
-          { title: "JAMB / UTME", desc: "AI-analysed past questions, topic focus and CBT mocks." },
+          { title: "JAMB / UTME", desc: "Past-paper patterns, topic focus and timed CBT-style mocks." },
         ].map((e) => (
           <div key={e.title} className="text-center">
             <div className="text-2xl font-extrabold text-brand-blue">{e.title}</div>

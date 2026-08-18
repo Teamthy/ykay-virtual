@@ -17,6 +17,7 @@ export default function SubjectsPage() {
   return (
     <main className="container-x py-10">
       <PageHero
+        cover="/hero/subjects.jpg"
         title="Explore subjects"
         subtitle="Every subject links to its tutors, programmes and study guides — one curriculum-governed catalogue across British and Nigerian systems."
         crumbs={[{ name: "Home", href: "/" }, { name: "Subjects" }]}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, MapPin, Users } from "lucide-react";
+import { coverFor } from "@/lib/covers";
 
 export type CohortCardData = {
   id: string;
@@ -27,13 +28,17 @@ export function CohortCard({ c }: { c: CohortCardData }) {
   const fill = c.capacity > 0 ? Math.min((c.enrolled_count / c.capacity) * 100, 100) : 0;
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft transition-all hover:-translate-y-1 hover:shadow-card">
-      {/* Tinted header */}
-      <div className="flex items-center justify-between gap-2 bg-brand-blue-light px-6 py-4">
-        <span className="rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-blue">
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft">
+      <div
+        className="relative flex h-36 items-end justify-between gap-2 bg-cover bg-center px-6 py-4"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.15), rgba(6,15,38,0.82)), url(${coverFor(c.title + c.id)})`,
+        }}
+      >
+        <span className="rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
           Cohort
         </span>
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-brand-navy">
+        <span className="flex items-center gap-1.5 text-xs font-semibold text-white">
           <MapPin size={12} />
           {c.location_mode === "IN_PERSON" ? "In person" : c.location_mode === "HYBRID" ? "Hybrid" : "Online"}
         </span>

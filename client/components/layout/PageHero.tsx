@@ -23,6 +23,8 @@ export type PageHeroProps = {
   align?: "left" | "center";
   /** Optional split-hero image (bundled, local) — rendered right of the text. */
   image?: { src: string; alt: string };
+  /** Full-bleed photo behind the hero copy (local /hero/*.jpg). */
+  cover?: string;
   children?: React.ReactNode;
   className?: string;
 };
@@ -36,17 +38,19 @@ export function PageHero({
   ctas,
   align = "center",
   image,
+  cover,
   children,
   className,
 }: PageHeroProps) {
   const pill = announcement ?? eyebrow;
   const centered = align === "center";
-  const split = Boolean(image);
+  const split = Boolean(image) && !cover;
+  const onPhoto = Boolean(cover);
 
   const text = (
     <>
       {crumbs && crumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" className="mb-6 text-xs text-ink-500">
+        <nav aria-label="Breadcrumb" className={cn("mb-6 text-xs", onPhoto ? "text-white/70" : "text-ink-500")}>
           <ol className={cn("flex flex-wrap items-center gap-1.5", centered && !split && "justify-center")}>
             {crumbs.map((c, i) => (
               <li key={c.name} className="flex items-center gap-1.5">
@@ -56,7 +60,7 @@ export function PageHero({
                     {c.name}
                   </Link>
                 ) : (
-                  <span className="font-medium text-ink-700">{c.name}</span>
+                  <span className={cn("font-medium", onPhoto ? "text-white" : "text-ink-700")}>{c.name}</span>
                 )}
               </li>
             ))}
@@ -65,7 +69,10 @@ export function PageHero({
       )}
 
       {pill && (
-        <span className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-navy">
+        <span className={cn(
+          "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em]",
+          onPhoto ? "border-white/30 bg-white/10 text-white" : "border-ink-200 bg-white text-brand-navy"
+        )}>
           <span className="size-1.5 rounded-full bg-brand-gold" />
           {pill}
         </span>
@@ -73,7 +80,8 @@ export function PageHero({
 
       <h1
         className={cn(
-          "mt-6 font-display text-4xl leading-[1.08] tracking-[0.01em] text-brand-navy md:text-6xl",
+          "mt-6 font-display text-4xl leading-[1.08] tracking-[0.01em] md:text-6xl",
+          onPhoto ? "text-white drop-shadow-sm" : "text-brand-navy",
           centered && !split && "mx-auto max-w-[850px]"
         )}
       >
@@ -81,7 +89,7 @@ export function PageHero({
       </h1>
 
       {subtitle && (
-        <p className={cn("mt-5 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg", centered && !split && "mx-auto")}>
+        <p className={cn("mt-5 max-w-2xl text-base leading-relaxed md:text-lg", onPhoto ? "text-white/85" : "text-ink-600", centered && !split && "mx-auto")}>
           {subtitle}
         </p>
       )}

@@ -17,6 +17,7 @@ export default function ProgrammesPage() {
   return (
     <main className="container-x py-10">
       <PageHero
+        cover="/hero/programmes.jpg"
         title="Learning programmes"
         subtitle="Cohort classes, bootcamps and online courses led by vetted tutors. Enroll securely — your fees sit in escrow until the programme delivers."
         crumbs={[{ name: "Home", href: "/" }, { name: "Programmes" }]}

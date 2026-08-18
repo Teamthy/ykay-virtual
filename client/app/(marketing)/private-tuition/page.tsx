@@ -50,6 +50,7 @@ export default function PrivateTuitionPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <PageHero
+        cover="/hero/home-tutoring.jpg"
         eyebrow="One learner, one tutor"
         title="Private Tuition"
         subtitle="Tell us what your learner needs — we match a vetted tutor and hold payment in escrow until lessons are delivered."
@@ -57,7 +58,7 @@ export default function PrivateTuitionPage() {
         image={{ src: "/hero/home-tutoring.jpg", alt: "One-to-one home tutoring session" }}
       />
 
-      <div className="container-x max-w-3xl space-y-8 pb-16 pt-16 md:pt-20">
+      <div className="container-x mx-auto max-w-5xl space-y-8 pb-16 pt-16 md:pt-20">
         <PrivateTuitionWizard />
         <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-soft">
           <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Why private tuition at NUVORA</h2>

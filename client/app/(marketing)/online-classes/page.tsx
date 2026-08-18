@@ -15,9 +15,9 @@ export function generateMetadata(): Metadata {
 }
 
 const tracks = [
-  { title: "British curriculum live class", level: "IGCSE / A-Level", href: "/curricula/british", note: "Browse live cohorts when a group is open" },
-  { title: "UTME / JAMB prep", level: "UTME 2026", href: "/utme-2026", note: "Indicative packages — confirm before pay" },
-  { title: "WAEC / NECO boards", level: "SSS", href: "/entrance-exam", note: "Past papers, mocks, weekly reports" },
+  { title: "British curriculum live class", level: "IGCSE / A-Level", href: "/curricula/british", note: "Browse live cohorts when a group is open", photo: "/hero/british.jpg" },
+  { title: "UTME / JAMB prep", level: "UTME 2026", href: "/utme-2026", note: "Indicative packages — confirm before pay", photo: "/hero/utme.jpg" },
+  { title: "WAEC / NECO boards", level: "SSS", href: "/entrance-exam", note: "Past papers, mocks, weekly reports", photo: "/hero/nigerian.jpg" },
 ];
 
 export default function OnlineClassesPage() {
@@ -38,6 +38,7 @@ export default function OnlineClassesPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
 
       <PageHero
+        cover="/hero/programmes.jpg"
         eyebrow="Live small-group learning"
         title="Online Classes & Cohorts"
         subtitle="Live small-group classes on nuvora.com — same login on your phone. Open cohorts come from the live catalogue, not a dummy list."
@@ -55,11 +56,17 @@ export default function OnlineClassesPage() {
 
       <div className="grid md:grid-cols-3 gap-6">
         {tracks.map((c) => (
-          <div key={c.title} className="border rounded-2xl p-6 bg-white shadow-sm">
-            <div className="text-xs font-semibold text-brand-blue uppercase tracking-wide">{c.level}</div>
+          <div
+            key={c.title}
+            className="flex min-h-[220px] flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+            style={{
+              backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.82), rgba(1,57,32,0.55)), url(${c.photo})`,
+            }}
+          >
+            <div className="text-xs font-semibold uppercase tracking-wide text-brand-gold">{c.level}</div>
             <h3 className="mt-2 font-bold text-lg leading-tight">{c.title}</h3>
-            <p className="mt-3 text-sm text-ink-600">{c.note}</p>
-            <Link href={c.href} className="mt-5 btn-gold w-full text-center">Open this track</Link>
+            <p className="mt-3 text-sm text-white/80">{c.note}</p>
+            <Link href={c.href} className="mt-auto pt-5 text-sm font-bold text-brand-gold">Open this track →</Link>
           </div>
         ))}
       </div>

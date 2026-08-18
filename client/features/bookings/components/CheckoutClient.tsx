@@ -148,7 +148,13 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
       noValidate
     >
       {/* Navy summary header (Tuteria payment flow) */}
-      <div className="bg-gradient-to-br from-[#060F26] to-brand-navy px-6 py-5 text-white">
+      <div
+        className="bg-cover bg-center px-6 py-8 text-white md:px-8"
+        style={{
+          backgroundImage:
+            "linear-gradient(120deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/checkout.jpg)",
+        }}
+      >
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="font-display text-xl tracking-[0.02em]">Secure checkout</h2>
           <span className="font-display text-3xl tracking-[0.02em]">
@@ -266,9 +272,25 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           </div>
         ) : null}
 
-        <Button type="submit" variant="gold" size="lg" className="w-full" disabled={createBooking.isPending || payMutation.isPending}>
-          {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
-        </Button>
+        <form.Subscribe selector={(s) => s.values}>
+          {(values) => (
+            <Button
+              type="submit"
+              variant="gold"
+              size="lg"
+              className="w-full"
+              disabled={
+                createBooking.isPending ||
+                payMutation.isPending ||
+                !values.student_id ||
+                !values.email ||
+                seatsLeft === 0
+              }
+            >
+              {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
+            </Button>
+          )}
+        </form.Subscribe>
 
         {/* Secure badges */}
         <div className="flex items-center justify-center gap-5 border-t border-ink-100 pt-4 text-[11px] font-semibold text-ink-400">

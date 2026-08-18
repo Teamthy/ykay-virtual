@@ -82,6 +82,7 @@ export default function AboutPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
 
       <PageHero
+        cover="/hero/about.jpg"
         eyebrow="Who we are"
         title="A school without walls"
         subtitle="An online school, not a tutor directory — programmes, cohorts and vetted tutors with progress you can actually see."

@@ -29,13 +29,14 @@ export default async function CohortEnrollPage(props: Props) {
   return (
     <main>
       <PageHero
+        cover="/hero/checkout.jpg"
         title={`Enrol in ${cohort.title}`}
         subtitle={`Your enrolment is confirmed after payment. Lessons follow the published schedule in ${cohort.timezone}. Payment is held in escrow until lessons are delivered.`}
         crumbs={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title, href: `/cohorts/${cohort.id}` }, { name: "Enrol" }]}
         image={{ src: "/hero/utme.jpg", alt: "Students in a live NUVORA cohort class" }}
       />
 
-      <div className="container-x mx-auto max-w-2xl space-y-8 pb-20 pt-16 md:pt-20">
+      <div className="container-x mx-auto max-w-5xl space-y-8 pb-20 pt-16 md:pt-20">
         <CheckoutClient cohort={cohort} />
         <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
           <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">What you get</h2>

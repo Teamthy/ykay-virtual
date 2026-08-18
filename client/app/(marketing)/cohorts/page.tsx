@@ -3,6 +3,7 @@ import { buildMetadata } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import Link from "next/link";
+import { coverFor } from "@/lib/covers";
 
 export const revalidate = 300;
 
@@ -43,6 +44,7 @@ export default async function CohortsPage() {
   return (
     <main className="container-x py-10">
       <PageHero
+        cover="/hero/cohorts.jpg"
         eyebrow="Learn together"
         title="Group Cohorts"
         subtitle="Scheduled small-group classes with a vetted tutor — structured sessions, live lessons and a clear schedule. Enrol securely; your fee sits in escrow until the cohort delivers."
@@ -72,9 +74,16 @@ export default async function CohortsPage() {
               <Link
                 key={c.id}
                 href={`/cohorts/${c.id}`}
-                className="border rounded-2xl p-6 hover:shadow-lift hover:border-brand-blue/40 transition-all bg-white"
+                className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft"
               >
-                <h2 className="font-bold leading-snug">{c.title}</h2>
+                <div
+                  className="h-36 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.1), rgba(6,15,38,0.55)), url(${coverFor(c.title + c.id)})`,
+                  }}
+                />
+                <div className="p-6">
+                <h2 className="font-bold leading-snug text-brand-navy">{c.title}</h2>
                 <div className="mt-3 space-y-1.5 text-sm text-ink-600">
                   <p>🗓️ {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}</p>
                   <p>🌍 {c.timezone} · {c.location_mode.replace(/_/g, " ").toLowerCase()}</p>
