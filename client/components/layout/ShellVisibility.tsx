@@ -21,7 +21,6 @@ const APP_PREFIXES = [
   "/chat",
   "/offline",
   "/onboarding",
-  "/logout",
 ];
 
 export function isAppRoute(pathname: string): boolean {

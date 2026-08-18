@@ -104,6 +104,5 @@ export default function NotificationsPage() {
         </ul>
       )}
     </main>
-    </DashboardShell>
   );
 }

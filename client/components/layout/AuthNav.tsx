@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "@/hooks/useSession";
+import { LogoutDialog } from "@/components/layout/LogoutDialog";
 import { isAdmin } from "@/features/auth/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDict } from "@/hooks/useDict";
@@ -13,6 +14,7 @@ export function AuthNav() {
   const { user, isLoading } = useSession();
   const { t } = useDict();
   const [open, setOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   if (isLoading) {
     return <Skeleton className="h-9 w-24 rounded-full" />;

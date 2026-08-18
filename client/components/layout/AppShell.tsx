@@ -9,6 +9,7 @@ import { useSession } from "@/hooks/useSession";
 import { unreadCount } from "@/features/messaging/api";
 import { cn } from "@/lib/utils";
 import { APP_NAV, type AppShellVariant, variantForRoles } from "@/lib/app-nav";
+import { LogoutDialog } from "@/components/layout/LogoutDialog";
 
 // AppShell â€” one chrome system, four role layouts. Sidebar + top bar +
 // content. Marketing header stays off these routes (ShellVisibility).
@@ -23,6 +24,7 @@ export function AppShell({
   const { user, isLoading } = useSession();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const variant = forced ?? variantForRoles(user?.roles ?? []);
   const spec = APP_NAV[variant];
 
@@ -106,14 +108,15 @@ export function AppShell({
               </span>
               <span className="hidden max-w-[140px] truncate sm:block">{isLoading ? "â€¦" : greeting}</span>
             </Link>
-            <Link
-              href="/logout"
+            <button
+              type="button"
+              onClick={() => setLogoutOpen(true)}
               aria-label="Log out"
               title="Log out"
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900"
             >
               <LogOut size={16} />
-            </Link>
+            </button>
           </div>
         </div>
       </header>
@@ -132,6 +135,7 @@ export function AppShell({
 
         <div className="min-w-0">{children}</div>
       </div>
+      <LogoutDialog open={logoutOpen} onClose={() => setLogoutOpen(false)} />
     </div>
   );
 }
