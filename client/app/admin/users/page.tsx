@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/useSession";
+import { isAdmin } from "@/features/auth/api";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -24,6 +25,7 @@ import {
 export default function AdminUsersPage() {
   const { user } = useSession();
   const superAdmin = !!user?.roles?.includes("SUPER_ADMIN");
+  const isPlatformAdmin = isAdmin(user);
   const qc = useQueryClient();
 
   const [search, setSearch] = useState("");
@@ -37,7 +39,7 @@ export default function AdminUsersPage() {
     queryKey: ["admin", "users", debouncedSearch, statusFilter, page],
     queryFn: () =>
       listAdminUsers({ search: debouncedSearch, status: statusFilter, page, pageSize }),
-    enabled: !!user && superAdmin,
+    enabled: !!user && isPlatformAdmin,
     placeholderData: (prev) => prev,
   });
 
@@ -76,7 +78,7 @@ export default function AdminUsersPage() {
 
   const totalPages = Math.max(1, Math.ceil((usersQ.data?.total ?? 0) / pageSize));
 
-  if (!superAdmin) {
+  if (!isPlatformAdmin) {
     return (
       <div className="space-y-6">
         <PageHeader eyebrow="Staff" title="Users" cover="/hero/about.jpg" />
@@ -84,10 +86,9 @@ export default function AdminUsersPage() {
           <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-brand-navy">
             <Lock size={26} />
           </div>
-          <h2 className="mt-4 text-lg font-extrabold text-brand-navy">SUPER_ADMIN access only</h2>
+          <h2 className="mt-4 text-lg font-extrabold text-brand-navy">Admin access required</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
-            User and role management is reserved for SUPER_ADMIN. Academic admins manage content,
-            cohorts and operations from the admin console.
+            You need a platform admin account to view the user list.
           </p>
         </div>
       </div>
@@ -165,6 +166,7 @@ export default function AdminUsersPage() {
                     u={u}
                     roles={rolesQ.data ?? []}
                     selfId={user?.id}
+                    canManage={superAdmin}
                     roleMut={roleMut}
                     statusMut={statusMut}
                   />
@@ -213,12 +215,14 @@ function UserRow({
   u,
   roles,
   selfId,
+  canManage,
   roleMut,
   statusMut,
 }: {
   u: AdminUserRow;
   roles: AdminRole[];
   selfId?: string;
+  canManage: boolean;
   roleMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; role: string; grant: boolean }>>;
   statusMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; status: string }>>;
 }) {
@@ -264,10 +268,11 @@ function UserRow({
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center justify-end gap-2">
+          {!canManage && <span className="text-[11px] text-ink-400">View only</span>}
           <select
             value=""
             onChange={(e) => e.target.value && toggleRole(e.target.value, true)}
-            disabled={busy}
+            disabled={busy || !canManage}
             className="h-9 rounded-lg border border-ink-200 px-2 text-xs font-semibold text-ink-700 disabled:opacity-50"
             aria-label={`Add role to ${u.email}`}
           >
@@ -282,8 +287,8 @@ function UserRow({
             <button
               key={r}
               onClick={() => toggleRole(r, false)}
-              disabled={busy || (r === "SUPER_ADMIN" && isSelf)}
-              title={r === "SUPER_ADMIN" && isSelf ? "Cannot remove your own SUPER_ADMIN" : `Remove ${r}`}
+              disabled={busy || !canManage || (r === "SUPER_ADMIN" && isSelf)}
+              title={!canManage ? "SUPER_ADMIN required" : r === "SUPER_ADMIN" && isSelf ? "Cannot remove your own SUPER_ADMIN" : `Remove ${r}`}
               className="rounded-lg border border-ink-200 px-2 py-1.5 text-[11px] font-bold text-red-500 hover:bg-red-50 disabled:opacity-40"
             >
               −{r}
@@ -292,7 +297,7 @@ function UserRow({
           {u.status === "SUSPENDED" ? (
             <button
               onClick={() => u.id && statusMut.mutate({ userId: u.id, status: "ACTIVE" })}
-              disabled={busy}
+              disabled={busy || !canManage}
               className="inline-flex items-center gap-1 rounded-lg bg-brand-green px-2.5 py-1.5 text-[11px] font-bold text-white hover:opacity-90 disabled:opacity-40"
             >
               <UserCheck size={12} /> Reactivate
@@ -300,8 +305,8 @@ function UserRow({
           ) : (
             <button
               onClick={() => u.id && statusMut.mutate({ userId: u.id, status: "SUSPENDED" })}
-              disabled={busy || isSelf}
-              title={isSelf ? "You cannot suspend your own account" : "Suspend account"}
+              disabled={busy || !canManage || isSelf}
+              title={!canManage ? "SUPER_ADMIN required" : isSelf ? "You cannot suspend your own account" : "Suspend account"}
               className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-50 disabled:opacity-40"
             >
               <UserX size={12} /> Suspend

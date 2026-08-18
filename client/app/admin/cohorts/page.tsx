@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createAdminCohort, listAdminCohorts, setAdminCohortStatus, type AdminCohort } from "@/features/admin/api";
+import { listProgrammes } from "@/features/programmes/api/list";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -161,9 +162,18 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Auto-load published programmes so the cohort's programme is chosen from a
+  // dropdown (the ID is filled automatically — no hand-typed UUIDs).
+  const programmesQ = useQuery({
+    queryKey: ["admin", "cohort-programmes"],
+    queryFn: () => listProgrammes({ page_size: 200 }),
+    staleTime: 60_000,
+  });
+  const programmes = programmesQ.data?.data ?? [];
+
   const submit = async () => {
     if (!form.programme_id.trim() || !form.title.trim() || !form.start_date || !form.end_date) {
-      setError("Programme id, title, start and end dates are required");
+      setError("Programme, title, start and end dates are required");
       return;
     }
     setBusy(true);
@@ -202,7 +212,24 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
     <div className="rounded-2xl border border-ink-100 bg-white p-6 space-y-4 shadow-soft">
       <h2 className="font-bold text-brand-navy">New cohort</h2>
       <div className="grid md:grid-cols-2 gap-4">
-        {field("programme_id", "Programme ID *")}
+        <label className="block text-sm">
+          <span className="font-medium text-ink-700">Programme *</span>
+          <select
+            value={form.programme_id}
+            onChange={(e) => setForm({ ...form, programme_id: e.target.value })}
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          >
+            <option value="">Select a programme…</option>
+            {programmes.map((p) => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
+          {programmes.length === 0 && (
+            <span className="mt-1 block text-xs text-ink-400">
+              {programmesQ.isLoading ? "Loading programmes…" : "No published programmes yet."}
+            </span>
+          )}
+        </label>
         {field("title", "Title *")}
         {field("start_date", "Start date *", "date")}
         {field("end_date", "End date *", "date")}

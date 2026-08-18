@@ -524,9 +524,12 @@ func (h *AdminHandler) LessonsToday(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, lessons, nil)
 }
 
-// ListUsers — SUPER_ADMIN: paginated user list with roles, search + status filter.
+// ListUsers — platform admin: paginated user list with roles, search + status
+// filter. Read-only view is available to any platform admin (ACADEMIC_ADMIN
+// can review accounts); role grant/revoke and status changes remain
+// SUPER_ADMIN-only (requireSuperAdmin).
 func (h *AdminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
-	if h.requireSuperAdmin(w, r) == nil {
+	if h.requireAdmin(w, r) == nil {
 		return
 	}
 	p := ParsePagination(r)

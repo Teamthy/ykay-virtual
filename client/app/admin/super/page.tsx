@@ -20,18 +20,28 @@ import {
   BarChart3,
   ClipboardCheck,
   Lock,
+  ArrowUpRight,
+  AlertTriangle,
+  UserPlus,
+  BookOpen,
+  TrendingUp,
 } from "lucide-react";
 
 // Super Admin control center — SUPER_ADMIN only. Academic admins see a
 // restricted notice; role grants are never self-serve (server-side only).
 
-function Stat({ label, value }: { label: string; value?: string | number }) {
+function Stat({ label, value, hint }: { label: string; value?: string | number; hint?: string }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-4">
       <p className="text-2xl font-extrabold text-brand-navy">{value ?? "-"}</p>
       <p className="mt-0.5 text-xs font-semibold text-ink-500">{label}</p>
+      {hint && <p className="mt-0.5 text-[11px] text-ink-400">{hint}</p>}
     </div>
   );
+}
+
+function fmtNGN(n?: number) {
+  return `₦${(n ?? 0).toLocaleString()}`;
 }
 
 export default function SuperAdminPage() {
@@ -78,8 +88,19 @@ export default function SuperAdminPage() {
 
   const s = stats.data;
 
+  // Attention items derived from live stats — surfaced on the super dashboard.
+  const attention: { label: string; href?: string; count?: number; warn: boolean }[] = [
+    { label: "Pending tutor applications", href: "/admin/vetting", count: s?.tutors_pending, warn: (s?.tutors_pending ?? 0) > 0 },
+    { label: "Pending enrolments", href: "/admin/cohorts", count: s?.pending_enrolments, warn: (s?.pending_enrolments ?? 0) > 0 },
+    { label: "Open support tickets", href: "/admin/support", count: s?.support_open, warn: (s?.support_open ?? 0) > 0 },
+    { label: "Disputed escrow holds", href: "/admin/payments", count: s?.escrow_disputed, warn: (s?.escrow_disputed ?? 0) > 0 },
+    { label: "Pending refunds", href: "/admin/payments", count: s?.pending_refunds, warn: (s?.pending_refunds ?? 0) > 0 },
+    { label: "Overdue lesson notes", href: "/admin/lessons", count: s?.overdue_lesson_notes, warn: (s?.overdue_lesson_notes ?? 0) > 0 },
+    { label: "Reviews awaiting moderation", href: "/admin/reviews", count: s?.reviews_pending, warn: (s?.reviews_pending ?? 0) > 0 },
+  ].filter((a) => a.count);
+
   const modules = [
-    { href: "/admin/users", label: "Users & roles", desc: "Staff view, role model", icon: Users },
+    { href: "/admin/users", label: "Users & roles", desc: "Search accounts, roles, status", icon: Users },
     { href: "/admin/vetting", label: "Tutor vetting", desc: "Applications & approvals", icon: BadgeCheck },
     { href: "/admin/cohorts", label: "Cohorts", desc: "Create & publish cohorts", icon: CalendarDays },
     { href: "/admin/payments", label: "Payments", desc: "Orders, refunds, payouts", icon: Wallet },
@@ -92,20 +113,77 @@ export default function SuperAdminPage() {
     { href: "/admin/reviews", label: "Reviews", desc: "Consent-gated publishing", icon: Star },
   ];
 
+  const quickActions = [
+    { href: "/admin/users", label: "Add / manage admins", desc: "Grant SUPER_ADMIN or ACADEMIC_ADMIN", icon: UserPlus },
+    { href: "/admin/cohorts", label: "Create a cohort", desc: "Publish a new scheduled class", icon: BookOpen },
+    { href: "/admin/vetting", label: "Review tutors", desc: `${s?.tutors_pending ?? 0} awaiting approval`, icon: BadgeCheck },
+    { href: "/admin/blog", label: "Write a post", desc: "Publish study content", icon: Newspaper },
+  ];
+
+  const revenueGrowth = (s?.revenue_paid_out ?? 0) > 0;
+
   return (
     <div className="space-y-8">
       <PageHeader eyebrow="Super admin" title="Platform control center" cover="/hero/about.jpg" />
 
       {/* Platform KPI snapshot */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Registered users" value={s?.users?.toLocaleString()} />
-        <Stat label="Active users" value={s?.active_users?.toLocaleString()} />
-        <Stat label="Approved tutors" value={s?.tutors_approved?.toLocaleString()} />
-        <Stat label="Revenue in escrow" value={`₦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} />
-        <Stat label="Cohorts published" value={s?.cohorts_published?.toLocaleString()} />
-        <Stat label="Orders (total/paid)" value={`${s?.orders_total ?? 0}/${s?.orders_paid ?? 0}`} />
-        <Stat label="Pending enrolments" value={s?.pending_enrolments?.toLocaleString()} />
-        <Stat label="Open support" value={s?.support_open?.toLocaleString()} />
+        <Stat label="Registered users" value={s?.users?.toLocaleString()} hint={`${(s?.active_users ?? 0).toLocaleString()} active`} />
+        <Stat label="Tutors" value={s?.tutors_approved?.toLocaleString()} hint={`${(s?.tutors_total ?? 0).toLocaleString()} total · ${(s?.tutors_pending ?? 0).toLocaleString()} pending`} />
+        <Stat label="Cohorts published" value={s?.cohorts_published?.toLocaleString()} hint={`${(s?.lessons_today ?? 0)} lessons today`} />
+        <Stat label="Revenue (escrow)" value={fmtNGN(s?.revenue_in_escrow)} hint={`${fmtNGN(s?.revenue_paid_out)} paid out`} />
+        <Stat label="Orders" value={`${s?.orders_total ?? 0}`} hint={`${s?.orders_paid ?? 0} paid`} />
+        <Stat label="Pending enrolments" value={s?.pending_enrolments?.toLocaleString()} hint="Awaiting payment/confirmation" />
+        <Stat label="Institutions" value={s?.institutions?.toLocaleString()} hint="B2B accounts" />
+        <Stat label="Referrals issued" value={s?.referrals?.toLocaleString()} hint="Programme referrals" />
+        <Stat label="Blog posts" value={s?.blog_published?.toLocaleString()} hint={`${s?.blog_drafts?.toLocaleString()} drafts`} />
+        <Stat label="Reviews pending" value={s?.reviews_pending?.toLocaleString()} hint="Consent-gated moderation" />
+        <Stat label="Escrow disputed" value={s?.escrow_disputed?.toLocaleString()} hint="Needs review" />
+        <Stat label="Open support" value={s?.support_open?.toLocaleString()} hint="Awaiting response" />
+      </section>
+
+      {/* Attention needed */}
+      {attention.length > 0 && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={18} className="text-amber-700" />
+            <h2 className="font-bold text-amber-800">Needs attention</h2>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {attention.map((a) => (
+              <Link key={a.label} href={a.href ?? "/admin"} className="flex items-center justify-between rounded-xl bg-white/70 px-3 py-2 text-sm hover:bg-white">
+                <span className="font-semibold text-amber-900">{a.label}</span>
+                <span className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${a.warn ? "bg-amber-600 text-white" : "bg-ink-100 text-ink-600"}`}>
+                  {a.count}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Quick actions */}
+      <section>
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-brand-navy">Quick actions</h2>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {quickActions.map((a) => {
+            const Icon = a.icon;
+            return (
+              <Link key={a.href + a.label} href={a.href} className="group flex items-start justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition-all hover:border-brand-gold hover:shadow-lift">
+                <div className="flex items-start gap-3">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-gold-light text-brand-navy">
+                    <Icon size={16} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-brand-navy">{a.label}</p>
+                    <p className="text-xs text-ink-500">{a.desc}</p>
+                  </div>
+                </div>
+                <ArrowUpRight size={16} className="mt-1 shrink-0 text-ink-300 transition-colors group-hover:text-brand-gold" />
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
       {/* Platform modules */}
@@ -133,18 +211,42 @@ export default function SuperAdminPage() {
         </div>
       </section>
 
-      {/* Role model */}
-      <section className="rounded-2xl border border-ink-100 bg-white p-6">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={18} className="text-brand-green" />
-          <h2 className="font-display text-base font-bold text-brand-navy">Role model &amp; security</h2>
+      {/* Revenue / growth note */}
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-ink-100 bg-white p-6">
+          <div className="flex items-center gap-2">
+            <TrendingUp size={18} className="text-brand-green" />
+            <h2 className="font-display text-base font-bold text-brand-navy">Revenue position</h2>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-ink-500">In escrow (not yet paid to tutors)</p>
+              <p className="text-xl font-extrabold text-brand-navy">{fmtNGN(s?.revenue_in_escrow)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-500">Paid out to tutors</p>
+              <p className="text-xl font-extrabold text-brand-green">{fmtNGN(s?.revenue_paid_out)}</p>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-ink-400">
+            {revenueGrowth
+              ? "Escrow holds represent committed revenue that releases to tutors after delivery."
+              : "No paid-out revenue yet — escrow auto-releases on the weekly payout cycle."}
+          </p>
         </div>
-        <ul className="mt-3 space-y-2 text-sm text-ink-600">
-          <li>· <b>SUPER_ADMIN</b> — full platform access, including this control center and role management (granted server-side only, never self-serve).</li>
-          <li>· <b>ACADEMIC_ADMIN</b> — content, cohorts, operations; <b>not</b> platform role grants.</li>
-          <li>· <b>INSTITUTION_ADMIN</b> — scoped to its own institution; never platform-wide.</li>
-          <li>· Role assignments are enforced server-side on every admin route; the UI gate is cosmetic only.</li>
-        </ul>
+
+        <div className="rounded-2xl border border-ink-100 bg-white p-6">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} className="text-brand-green" />
+            <h2 className="font-display text-base font-bold text-brand-navy">Role model &amp; security</h2>
+          </div>
+          <ul className="mt-3 space-y-2 text-sm text-ink-600">
+            <li>· <b>SUPER_ADMIN</b> — full platform access, incl. role management (server-side only).</li>
+            <li>· <b>ACADEMIC_ADMIN</b> — content, cohorts, operations; can view users but not grant roles.</li>
+            <li>· <b>INSTITUTION_ADMIN</b> — scoped to its own institution; never platform-wide.</li>
+            <li>· Role/status changes are enforced server-side; you can't remove the last SUPER_ADMIN or suspend yourself.</li>
+          </ul>
+        </div>
       </section>
     </div>
   );
