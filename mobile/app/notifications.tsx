@@ -17,6 +17,7 @@ import {
   type NotificationItem as Notif,
 } from "@/src/lib/notifications";
 import { usePolling } from "@/src/lib/realtime";
+import { parseTarget, openNotification } from "@/src/lib/deeplink";
 
 // Notifications — premium notification centre: list, unread indicator,
 // mark read / read-all. Offline-cached + polled for a real-time feel.
@@ -48,10 +49,13 @@ export default function Notifications() {
   useFocusEffect(useCallback(() => void load(), [load]));
   usePolling(load, { intervalMs: 15000, enabled: !error }); // real-time-ish refresh
 
-  const markRead = async (id: string) => {
+  const markRead = async (n: Notif) => {
     void Haptics.selectionAsync().catch(() => {});
-    await markNotificationRead(id);
-    setNotifs((n) => n.map((x) => (x.id === id ? { ...x, is_read: true } : x)));
+    await markNotificationRead(n.id);
+    setNotifs((prev) => prev.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)));
+    // Deep-link: tap a notification to open the related screen (message thread,
+    // course, receipt, etc.).
+    openNotification(parseTarget(n.data));
   };
 
   const readAll = async () => {
@@ -107,7 +111,7 @@ export default function Notifications() {
           {notifs.map((n, i) => (
             <Animated.View key={n.id} entering={FadeInUp.delay(100 + i * 50).springify().damping(18)}>
               <Card
-                onPress={() => void markRead(n.id)}
+                onPress={() => void markRead(n)}
                 style={!n.is_read ? { ...styles.card, ...styles.cardUnread } : styles.card}
               >
                 <View style={styles.cardTop}>

@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { colors } from "@/src/lib/theme";
 import { recordLessonProgress, getLessonProgress } from "@/src/lib/api";
+import { getCachedVideoUri } from "@/src/lib/offline-video";
 
 // In-app on-demand lesson video player (expo-video).
-// - Streams `video_url` natively inside the app.
+// - Streams `video_url` natively inside the app (or plays the cached local
+//   file when the lesson was downloaded for offline playback).
 // - Resumes from the student's last `position_seconds` (000035 progress).
 // - Records watch progress on play and periodically (throttled).
 
@@ -16,12 +18,25 @@ type Props = {
 };
 
 export function VideoPlayer({ lessonId, videoUrl, style }: Props) {
-  const player = useVideoPlayer(videoUrl, (p) => {
+  const [playSource, setPlaySource] = useState(videoUrl);
+  const player = useVideoPlayer(playSource, (p) => {
     p.loop = false;
   });
   const [ready, setReady] = useState(false);
   const lastSaved = useRef(0);
   const endedRef = useRef(false);
+
+  // Prefer a locally cached copy (offline download) when one exists.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const cached = await getCachedVideoUri(lessonId);
+      if (!cancelled && cached) setPlaySource(cached);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lessonId]);
 
   // Resume from last position once the player is ready.
   useEffect(() => {

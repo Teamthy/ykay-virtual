@@ -1,12 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as Notifications from "expo-notifications";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { colors } from "@/src/lib/theme";
 import { setUnauthorizedHandler } from "@/src/lib/api";
+import { parseTarget, openNotification } from "@/src/lib/deeplink";
+
+// Configure push notifications: show a banner/alert while the app is open.
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function RootLayout() {
   const router = useRouter();
+  const responseListener = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener> | null>(null);
 
   // When any API call returns 401 (expired/revoked session), route the app to
   // the login screen. The apiFetch client clears the stale token first.
@@ -16,6 +29,19 @@ export default function RootLayout() {
     });
     return () => setUnauthorizedHandler(null);
   }, [router]);
+
+  // Deep-linking: when the app is opened by tapping a push notification, route
+  // to the related screen (message thread, course, receipt, etc.).
+  useEffect(() => {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data;
+      openNotification(parseTarget(data));
+    });
+    return () => {
+      responseListener.current?.remove();
+      responseListener.current = null;
+    };
+  }, []);
 
   return (
     <SafeAreaProvider>

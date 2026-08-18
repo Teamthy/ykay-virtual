@@ -8,6 +8,7 @@ export type NotificationItem = {
   type: string;
   title?: string | null;
   body?: string | null;
+  data?: string | null;
   is_read: boolean;
   created_at: string;
 };

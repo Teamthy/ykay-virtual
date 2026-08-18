@@ -7,12 +7,17 @@ import { AppText } from "@/src/components/ui/AppText";
 import { colors, radius } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { getMessages, sendMessage, type Message } from "@/src/lib/messaging";
+import { usePolling } from "@/src/lib/realtime";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Conversation thread — list messages and send replies. Messages are scoped to
-// the booking/cohort conversation (safeguarding by design).
+// the booking/cohort conversation (safeguarding by design). Polled at short
+// intervals for a real-time feel, with optimistic send (message appears
+// immediately, then reconciled with the server).
 
 export default function ConversationThreadScreen() {
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<Message[]>([]);
   const [myId, setMyId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -27,22 +32,38 @@ export default function ConversationThreadScreen() {
       setMyId(me.data?.id ?? null);
       setMessages(msgs);
     } catch {
-      setMessages([]);
+      // keep the stale cached thread readable offline
     }
   }, [conversationId]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
+  usePolling(load, { intervalMs: 6000 }); // real-time-ish refresh while open
 
   const send = async () => {
     const body = draft.trim();
     if (!body || sending) return;
     setSending(true);
+    // Optimistic: append a local message immediately for instant feedback.
+    const temp: Message = {
+      id: `temp-${Date.now()}`,
+      conversation_id: conversationId,
+      sender_user_id: myId ?? "",
+      type: "text",
+      body,
+      metadata: null,
+      is_edited: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [temp, ...prev]);
+    setDraft("");
     try {
       await sendMessage(conversationId, body);
-      setDraft("");
-      await load();
+      await load(); // reconcile with server truth
     } catch {
-      // keep the draft so nothing is lost
+      // send failed — restore draft so nothing is lost
+      setDraft(body);
+      setMessages((prev) => prev.filter((m) => m.id !== temp.id));
     } finally {
       setSending(false);
     }
@@ -60,6 +81,7 @@ export default function ConversationThreadScreen() {
         ) : (
           messages.map((m) => {
             const mine = m.sender_user_id === myId;
+            const isTemp = m.id.startsWith("temp-");
             return (
               <View key={m.id} style={[styles.bubbleRow, mine && styles.bubbleRowMine]}>
                 <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleTheirs]}>
@@ -68,6 +90,7 @@ export default function ConversationThreadScreen() {
                   </AppText>
                   <AppText variant="caption" style={{ color: mine ? "rgba(255,255,255,0.7)" : colors.ink[400], marginTop: 4 }}>
                     {new Date(m.created_at).toLocaleString("en-NG", { hour: "2-digit", minute: "2-digit" })}
+                    {isTemp ? " · sending…" : ""}
                   </AppText>
                 </View>
               </View>
@@ -76,7 +99,7 @@ export default function ConversationThreadScreen() {
         )}
       </Screen>
 
-      <View style={styles.composer}>
+      <View style={[styles.composer, { paddingBottom: insets.bottom + 10 }]}>
         <TextInput
           value={draft}
           onChangeText={setDraft}

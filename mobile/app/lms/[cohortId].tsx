@@ -11,6 +11,7 @@ import { AppText } from "@/src/components/ui/AppText";
 import { colors, radius, spacing, type } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { VideoPlayer } from "@/src/components/VideoPlayer";
+import { cacheVideo, removeCachedVideo, isVideoCached } from "@/src/lib/offline-video";
 
 // NUVORA course player — lessons (live + on-demand), resources, assignments.
 // Premium UI kit + in-app expo-video playback for recorded lessons.
@@ -38,6 +39,39 @@ export default function CourseDetail() {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [playing, setPlaying] = useState<Lesson | null>(null);
+  const [offlineState, setOfflineState] = useState<Record<string, "idle" | "downloading" | "cached">>({});
+  const [offlineChecked, setOfflineChecked] = useState(false);
+
+  // On mount, check which of the loaded lessons are already cached offline.
+  useEffect(() => {
+    if (offlineChecked) return;
+    let cancelled = false;
+    (async () => {
+      const map: Record<string, "idle" | "downloading" | "cached"> = {};
+      for (const l of lessons) {
+        map[l.id] = (await isVideoCached(l.id)) ? "cached" : "idle";
+        if (cancelled) return;
+      }
+      if (!cancelled) setOfflineState(map);
+      setOfflineChecked(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lessons, offlineChecked]);
+
+  const toggleOffline = async (l: Lesson) => {
+    if (!l.video_url) return;
+    void Haptics.selectionAsync().catch(() => {});
+    if (offlineState[l.id] === "cached") {
+      await removeCachedVideo(l.id);
+      setOfflineState((m) => ({ ...m, [l.id]: "idle" }));
+      return;
+    }
+    setOfflineState((m) => ({ ...m, [l.id]: "downloading" }));
+    const ok = await cacheVideo(l.id, l.video_url);
+    setOfflineState((m) => ({ ...m, [l.id]: ok ? "cached" : "idle" }));
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -112,6 +146,20 @@ export default function CourseDetail() {
               <AppText variant="caption" style={{ marginTop: 2 }}>
                 Now playing · recorded lesson
               </AppText>
+              <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                <Button
+                  label={
+                    offlineState[playing.id] === "cached"
+                      ? "Remove offline copy"
+                      : offlineState[playing.id] === "downloading"
+                      ? "Downloading…"
+                      : "Download for offline"
+                  }
+                  variant={offlineState[playing.id] === "cached" ? "secondary" : "dark"}
+                  onPress={() => void toggleOffline(playing)}
+                  disabled={offlineState[playing.id] === "downloading"}
+                />
+              </View>
             </View>
           </Card>
           <Button label="Close player" variant="ghost" style={{ marginTop: 8, alignSelf: "flex-start" }} onPress={() => setPlaying(null)} />
