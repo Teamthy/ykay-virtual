@@ -49,60 +49,63 @@ export default function NigerianCurriculumPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "Nigerian Curriculum" }]}
         align="center"
       >
-<Link href="/exam-prep" className="btn-primary">Exam preparation</Link>
-        <Link href="/private-tuition" className="btn-gold">Book private tuition</Link>
+        <Link href="/exam-prep" className="btn-gold">Exam preparation</Link>
+        <Link href="/private-tuition" className="rounded-full border border-white/40 px-7 py-3.5 text-sm font-bold text-white hover:bg-white/10">
+          Book private tuition
+        </Link>
       </PageHero>
 
       <div className="container-x pb-16">
-      <section className="mt-14 grid md:grid-cols-3 gap-5">
-        {STAGES.map((s) => (
-          <div
-            key={s.title}
-            className="flex min-h-[260px] flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
-            style={{ backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.8), rgba(1,57,32,0.6)), url(${s.photo})` }}
-          >
-            <h2 className="text-xl font-extrabold">{s.title}</h2>
-            <p className="mt-2 text-sm text-white/85">{s.desc}</p>
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {s.subjects.map((sub) => (
-                <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">
-                  {sub}
-                </span>
-              ))}
+        <section className="mt-14 grid gap-5 md:grid-cols-3">
+          {STAGES.map((s) => (
+            <div
+              key={s.title}
+              className="flex min-h-[260px] flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+              style={{ backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.8), rgba(1,57,32,0.6)), url(${s.photo})` }}
+            >
+              <h2 className="text-xl font-extrabold">{s.title}</h2>
+              <p className="mt-2 text-sm text-white/85">{s.desc}</p>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {s.subjects.map((sub) => (
+                  <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">
+                    {sub}
+                  </span>
+                ))}
+              </div>
+              <Link href="/tutors" className="mt-auto inline-block pt-5 text-sm font-semibold text-brand-gold">
+                Find a tutor →
+              </Link>
             </div>
-            <Link href="/tutors" className="mt-auto pt-5 inline-block text-sm font-semibold text-brand-gold">
-              Find a tutor →
-            </Link>
-          </div>
-        ))}
-      </section>
-
-      <section className="mt-14 rounded-3xl bg-ink-50 border border-ink-100 p-8 md:p-12 grid md:grid-cols-3 gap-8">
-        {[
-          { title: "WAEC", desc: "Core and elective subjects with past-question practice." },
-          { title: "NECO", desc: "Aligned preparation across the shared syllabus." },
-          { title: "JAMB / UTME", desc: "Past-paper patterns, topic focus and timed CBT-style mocks." },
-        ].map((e) => (
-          <div key={e.title} className="text-center">
-            <div className="text-2xl font-extrabold text-brand-blue">{e.title}</div>
-            <p className="mt-2 text-sm text-ink-600">{e.desc}</p>
-          </div>
-        ))}
-      </section>
-
-      <CohortStrip />
-
-      <section className="mt-14">
-        <h2 className="text-2xl font-extrabold mb-6">Frequently asked questions</h2>
-        <div className="max-w-2xl space-y-3">
-          {FAQS.map((f) => (
-            <details key={f.question} className="border rounded-xl px-5 py-4">
-              <summary className="font-semibold cursor-pointer">{f.question}</summary>
-              <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
-            </details>
           ))}
-        </div>
-      </section>
+        </section>
+
+        <section className="mt-14 grid gap-8 rounded-3xl border border-ink-100 bg-ink-50 p-8 md:grid-cols-3 md:p-12">
+          {[
+            { title: "WAEC", desc: "Core and elective subjects with past-question practice." },
+            { title: "NECO", desc: "Aligned preparation across the shared syllabus." },
+            { title: "JAMB / UTME", desc: "Past-paper patterns, topic focus and timed CBT-style mocks." },
+          ].map((e) => (
+            <div key={e.title} className="text-center">
+              <div className="text-2xl font-extrabold text-brand-blue">{e.title}</div>
+              <p className="mt-2 text-sm text-ink-600">{e.desc}</p>
+            </div>
+          ))}
+        </section>
+
+        <CohortStrip />
+
+        <section className="mt-14">
+          <h2 className="mb-6 text-2xl font-extrabold">Frequently asked questions</h2>
+          <div className="max-w-2xl space-y-3">
+            {FAQS.map((f) => (
+              <details key={f.question} className="rounded-xl border px-5 py-4">
+                <summary className="cursor-pointer font-semibold">{f.question}</summary>
+                <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
