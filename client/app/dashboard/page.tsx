@@ -31,12 +31,11 @@ import { createLearner, listLearners, type Learner } from "@/features/onboarding
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
-import { DashboardShell } from "@/components/layout/DashboardShell";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 
-// Parent portal — bookings-style family dashboard. Sidebar nav + sections:
-// Overview (KPIs + next lesson) · Bookings (status-filtered lessons) ·
-// Payments (orders + receipts) · Progress (attendance + reports) ·
+// Parent portal â€” bookings-style family dashboard. Sidebar nav + sections:
+// Overview (KPIs + next lesson) Â· Bookings (status-filtered lessons) Â·
+// Payments (orders + receipts) Â· Progress (attendance + reports) Â·
 // Learners (management).
 
 type Order = {
@@ -158,68 +157,30 @@ export default function ParentDashboardPage() {
   const paidCount = (orders.data ?? []).filter((o) => o.status === "PAID").length;
 
   return (
-    <DashboardShell>
-    <main className="bg-surface-muted min-h-screen">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-10 grid lg:grid-cols-[240px_1fr] gap-8 items-start">
-        {/* Sidebar nav */}
-        <aside className="lg:sticky lg:top-28">
-          <div className="rounded-2xl border border-ink-100 bg-white p-3 shadow-soft">
-            <p className="px-3 pb-2 pt-2 text-[10px] font-bold uppercase tracking-wider text-ink-400">
-              {user ? `Hi, ${user.email.split("@")[0]}` : "Dashboard"}
-            </p>
-            <ul className="space-y-0.5">
-              {NAV.map((n) => (
-                <li key={n.key}>
-                  <button
-                    onClick={() => setSection(n.key)}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                      section === n.key ? "bg-brand-gold text-ink-900" : "text-ink-700 hover:bg-ink-100"
-                    }`}
-                  >
-                    <span className={section === n.key ? "text-ink-900" : "text-brand-blue"}>{n.icon}</span>
-                    {n.label}
-                    {n.key === "payments" && paidCount > 0 && (
-                      <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${section === n.key ? "bg-black/10" : "bg-brand-gold-light text-brand-gold-dark"}`}>
-                        {paidCount}
-                      </span>
-                    )}
-                    {n.key === "learners" && (
-                      <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${section === n.key ? "bg-black/10" : "bg-brand-gold-light text-brand-gold-dark"}`}>
-                        {(learners.data ?? []).length}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className="border-t border-ink-100 mt-2 pt-2 space-y-0.5">
-              <Link href="/messages" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-700 hover:bg-ink-100">
-                <MessageSquareText size={16} className="text-brand-blue" />
-                Messages
-                {unread.data ? <span className="ml-auto rounded-full bg-brand-gold px-2 py-0.5 text-[10px] font-bold text-brand-navy">{unread.data}</span> : null}
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-2.5">
-            <Link href="/private-tuition" className="rounded-full bg-brand-gold px-5 py-3 text-center text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover">
-              Book more tuition
-            </Link>
-            <Link href="/programmes" className="rounded-xl border border-ink-200 bg-white px-5 py-3 text-center text-sm font-bold text-ink-700 hover:bg-ink-100 transition-colors">
-              Find a programme
-            </Link>
-          </div>
-        </aside>
-
-        {/* Main */}
+    <main className="px-4 py-8 md:px-8">
         <div className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {NAV.map((n) => (
+              <button
+                key={n.key}
+                type="button"
+                onClick={() => setSection(n.key)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                  section === n.key ? "bg-brand-gold text-ink-900" : "bg-white text-ink-700 ring-1 ring-ink-200 hover:bg-ink-50"
+                }`}
+              >
+                {n.icon}
+                {n.label}
+              </button>
+            ))}
+          </div>
           <RoleGate page="/dashboard" />
           <RecommendationsForYou />
 
           <PageHeader
             eyebrow="Parent portal"
             title="Family dashboard"
-            subline="Lessons, payments and progress for your family — in one place."
+            subline="Lessons, payments and progress for your family â€” in one place."
             actions={
               <label className="flex items-center gap-2 text-sm">
                 <span className="text-[10px] font-bold uppercase tracking-wide text-white/60">Learner</span>
@@ -231,7 +192,7 @@ export default function ParentDashboardPage() {
                   {(learners.data ?? []).map((l) => (
                     <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
                   ))}
-                  {(learners.data ?? []).length === 0 && <option value="">Add a learner…</option>}
+                  {(learners.data ?? []).length === 0 && <option value="">Add a learnerâ€¦</option>}
                 </select>
               </label>
             }
@@ -242,7 +203,7 @@ export default function ParentDashboardPage() {
               <strong className="text-brand-navy">No learner linked yet.</strong>{" "}
               <span className="text-ink-600">Add your first learner to see schedules, attendance and progress.</span>{" "}
               <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-brand-blue hover:underline">
-                <UserPlus size={15} /> Add a learner →
+                <UserPlus size={15} /> Add a learner â†’
               </button>
             </div>
           )}
@@ -254,8 +215,8 @@ export default function ParentDashboardPage() {
                   <CreditCard size={18} />
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-ink-800">Payment pending — {nextPayment.order_number}</p>
-                  <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} · completes your booking</p>
+                  <p className="text-sm font-bold text-ink-800">Payment pending â€” {nextPayment.order_number}</p>
+                  <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} Â· completes your booking</p>
                 </div>
               </div>
               <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-brand-gold px-6 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
@@ -273,7 +234,7 @@ export default function ParentDashboardPage() {
                 <StatCard label="Paid orders" value={paidCount} hint="completed payments" icon={<Wallet size={18} />} />
                 <StatCard
                   label="Attendance"
-                  value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"}
+                  value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "â€“"}
                   hint={attendance.data ? `${attendance.data.present} present of ${attendance.data.total}` : "link a learner"}
                   icon={<LineChart size={18} />}
                 />
@@ -290,7 +251,7 @@ export default function ParentDashboardPage() {
                         <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Next lesson</p>
                         <p className="font-bold text-ink-800">{nextLesson.title}</p>
                         <p className="text-xs text-ink-500">
-                          {new Date(nextLesson.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {nextLesson.timezone}
+                          {new Date(nextLesson.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} Â· {nextLesson.timezone}
                         </p>
                       </div>
                     </div>
@@ -355,7 +316,7 @@ export default function ParentDashboardPage() {
                           <div>
                             <p className="font-bold text-ink-800">{l.title}</p>
                             <p className="text-xs text-ink-500">
-                              {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                              {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
                             </p>
                           </div>
                         </div>
@@ -440,7 +401,7 @@ export default function ParentDashboardPage() {
                   <Skeleton className="mt-3 h-24 w-full" />
                 ) : (reports.data ?? []).length === 0 ? (
                   <p className="mt-3 text-sm text-ink-500 rounded-xl border border-dashed border-ink-200 p-6 text-center">
-                    No progress reports yet — your tutor shares them here after lessons begin.
+                    No progress reports yet â€” your tutor shares them here after lessons begin.
                   </p>
                 ) : (
                   <div className="mt-4 space-y-3">
@@ -448,10 +409,10 @@ export default function ParentDashboardPage() {
                       <div key={r.id} className="rounded-xl border border-ink-100 p-4">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-semibold text-ink-700">
-                            {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
+                            {new Date(r.period_start).toLocaleDateString()} â€“ {new Date(r.period_end).toLocaleDateString()}
                           </p>
                           <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-bold text-brand-navy">
-                            ★ {r.overall_rating}/5
+                            â˜… {r.overall_rating}/5
                           </span>
                         </div>
                         {r.strengths && <p className="mt-2 flex items-start gap-2 text-sm text-ink-600"><TrendingUp size={15} className="mt-0.5 shrink-0 text-brand-green" /> {r.strengths}</p>}
@@ -497,7 +458,7 @@ export default function ParentDashboardPage() {
                           <p className="font-bold text-ink-800">{l.first_name} {l.last_name ?? ""}</p>
                           <p className="text-xs text-ink-500">
                             {l.current_level ?? "Level not set"}
-                            {l.school_name ? ` · ${l.school_name}` : ""}
+                            {l.school_name ? ` Â· ${l.school_name}` : ""}
                           </p>
                         </div>
                       </div>
@@ -521,7 +482,6 @@ export default function ParentDashboardPage() {
             <span className="inline-flex items-center gap-2"><Settings size={16} /> Account settings</span>
           </Link>
         </div>
-      </div>
 
       {/* Add-learner modal */}
       <Modal open={addOpen} onClose={() => { setAddOpen(false); setAddError(null); }} title="Add a learner">
@@ -570,7 +530,7 @@ export default function ParentDashboardPage() {
           </div>
           {addError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{addError}</p>}
           <button type="submit" disabled={addSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-gold text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:opacity-50">
-            {addSubmitting ? "Adding…" : "Add learner"}
+            {addSubmitting ? "Addingâ€¦" : "Add learner"}
           </button>
         </form>
       </Modal>
@@ -580,7 +540,7 @@ export default function ParentDashboardPage() {
         open={receipt !== null || receiptLoading}
         onClose={() => setReceipt(null)}
         title="Receipt"
-        description={receipt ? receipt.order.order_number : "Loading…"}
+        description={receipt ? receipt.order.order_number : "Loadingâ€¦"}
       >
         {receipt && (
           <div className="space-y-4 text-sm">
@@ -593,7 +553,7 @@ export default function ParentDashboardPage() {
               <ul className="space-y-1.5">
                 {receipt.items.map((it, i) => (
                   <li key={i} className="flex justify-between text-ink-600">
-                    <span>{it.description ?? it.item_type.replace(/_/g, " ")} × {it.quantity}</span>
+                    <span>{it.description ?? it.item_type.replace(/_/g, " ")} Ã— {it.quantity}</span>
                     <span className="font-semibold text-ink-800">{receipt.order.currency} {it.total_price.toLocaleString()}</span>
                   </li>
                 ))}
@@ -607,7 +567,7 @@ export default function ParentDashboardPage() {
               <ul className="space-y-1.5 text-xs">
                 {receipt.payments.map((p) => (
                   <li key={p.id} className="flex justify-between text-ink-600">
-                    <span>{p.provider.replace(/_/g, " ")}{p.provider_reference ? ` · ${p.provider_reference.slice(0, 14)}…` : ""}</span>
+                    <span>{p.provider.replace(/_/g, " ")}{p.provider_reference ? ` Â· ${p.provider_reference.slice(0, 14)}â€¦` : ""}</span>
                     <StatusBadge label={p.status} kind={statusKindFor(p.status)} />
                   </li>
                 ))}
@@ -617,6 +577,5 @@ export default function ParentDashboardPage() {
         )}
       </Modal>
     </main>
-    </DashboardShell>
   );
 }

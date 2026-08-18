@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
@@ -17,12 +16,11 @@ import {
 import { StudentQuizzes } from "@/features/learning/StudentQuizzes";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
-import { DashboardShell } from "@/components/layout/DashboardShell";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/ui/stat-card";
-import { LineChart, FileText, CheckCircle2, BookOpen, MessageSquare, Settings, Bell, LifeBuoy } from "lucide-react";
+import { LineChart, FileText, CheckCircle2 } from "lucide-react";
 
-// Student portal (working-doc §9): side nav, Today panel, progress,
+// Student portal (working-doc Â§9): side nav, Today panel, progress,
 // assignments with submission, resources, announcements, support.
 
 type Lesson = {
@@ -47,7 +45,6 @@ const SECTIONS = ["Overview", "My Classes", "Calendar", "Assignments", "Quizzes"
 type Section = (typeof SECTIONS)[number];
 
 export default function StudentDashboardPage() {
-  const router = useRouter();
   const qc = useQueryClient();
   // G1: the learner profile resolves from the session server-side.
   const { user } = useSession();
@@ -100,58 +97,38 @@ export default function StudentDashboardPage() {
   const past = (lessons.data ?? []).filter((l) => l.status === "COMPLETED" || l.status === "NO_SHOW");
   const submittedIds = new Set((submissions.data ?? []).map((s) => s.assignment_id));
 
-  const nav = (
-    <aside className="border rounded-2xl p-3 lg:sticky lg:top-28 space-y-1">
-      {SECTIONS.map((s) => (
-        <button
-          key={s}
-          onClick={() => setSection(s)}
-          className={`block w-full text-left rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-            section === s ? "bg-brand-gold text-ink-900" : "text-ink-700 hover:bg-ink-50"
-          }`}
-        >
-          {s}
-        </button>
-      ))}
-      <div className="border-t border-ink-100 mt-2 pt-2 space-y-1">
-        <button onClick={() => router.push("/lms")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          <BookOpen size={15} /> My Learning (LMS)
-        </button>
-        <button onClick={() => router.push("/messages")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          <MessageSquare size={15} /> Messages
-        </button>
-        <button onClick={() => router.push("/account")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          <Settings size={15} /> Account settings
-        </button>
-        <button onClick={() => router.push("/notifications")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          <Bell size={15} /> Notifications
-        </button>
-        <button onClick={() => router.push("/contact")} className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-500 hover:bg-ink-50">
-          <LifeBuoy size={15} /> Support
-        </button>
-      </div>
-    </aside>
-  );
-
   return (
-    <DashboardShell>
-    <main className="container-x py-10">
+    <main className="px-4 py-8 md:px-8">
       <RoleGate page="/student-dashboard" />
       <RecommendationsForYou />
       <PageHeader
         eyebrow="Student portal"
         title="Student dashboard"
-        subline="Your classes, assignments and progress — in one place."
+        subline="Your classes, assignments and progress â€” in one place."
       />
 
-      <div className="mt-8 grid lg:grid-cols-[240px_1fr] gap-8 items-start">
-        {nav}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {SECTIONS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setSection(s)}
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+              section === s ? "bg-brand-gold text-ink-900" : "bg-white text-ink-700 ring-1 ring-ink-200 hover:bg-ink-50"
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-6">
         <div>
           {section === "Overview" && (
             <div className="space-y-6">
               {/* KPI snapshot */}
               <div className="grid gap-4 sm:grid-cols-3">
-                <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
+                <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "â€“"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
                 <StatCard label="Assignments" value={`${submittedIds.size}/${assignments.data?.length ?? 0}`} hint="submitted" icon={<FileText size={18} />} />
                 <StatCard label="Lessons completed" value={past.length} hint="all time" icon={<CheckCircle2 size={18} />} />
               </div>
@@ -170,7 +147,7 @@ export default function StudentDashboardPage() {
                         <div>
                           <div className="font-semibold">{l.title}</div>
                           <div className="text-xs text-white/70">
-                            {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                            {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
                           </div>
                         </div>
                         {l.meeting_url ? (
@@ -211,12 +188,12 @@ export default function StudentDashboardPage() {
           {section === "My Classes" && (
             <section className="border rounded-2xl p-6">
               <h2 className="font-bold text-lg">My classes</h2>
-              <p className="text-xs text-ink-500 mt-1">Your cohort lessons — join links appear within the lesson window.</p>
+              <p className="text-xs text-ink-500 mt-1">Your cohort lessons â€” join links appear within the lesson window.</p>
               {lessons.isLoading ? (
                 <Skeleton className="h-20 w-full mt-3" />
               ) : (lessons.data?.length ?? 0) === 0 ? (
                 <p className="mt-4 text-sm text-ink-500 border border-dashed border-ink-200 rounded-xl p-8 text-center">
-                  No lessons yet — join a cohort to get started.
+                  No lessons yet â€” join a cohort to get started.
                 </p>
               ) : (
                 <ul className="mt-4 space-y-3">
@@ -225,7 +202,7 @@ export default function StudentDashboardPage() {
                       <div>
                         <div className="font-semibold text-sm">{l.title}</div>
                         <div className="text-xs text-ink-500">
-                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
                         </div>
                       </div>
                       {l.meeting_url ? (
@@ -243,7 +220,7 @@ export default function StudentDashboardPage() {
           {section === "Calendar" && (
             <section className="border rounded-2xl p-6">
               <h2 className="font-bold text-lg">Calendar</h2>
-              <p className="text-xs text-ink-500 mt-1">All times in your lesson timezone — clearly shown for cross-country learners.</p>
+              <p className="text-xs text-ink-500 mt-1">All times in your lesson timezone â€” clearly shown for cross-country learners.</p>
               {lessons.isLoading ? (
                 <Skeleton className="h-20 w-full mt-3" />
               ) : (lessons.data?.length ?? 0) === 0 ? (
@@ -257,7 +234,7 @@ export default function StudentDashboardPage() {
                         {items.map((l) => (
                           <li key={l.id} className="border rounded-xl px-4 py-3 text-sm flex justify-between">
                             <span className="font-semibold">{l.title}</span>
-                            <span className="text-xs text-ink-500">{new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}</span>
+                            <span className="text-xs text-ink-500">{new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}</span>
                           </li>
                         ))}
                       </ul>
@@ -287,7 +264,7 @@ export default function StudentDashboardPage() {
                             {a.instructions && <p className="text-xs text-ink-500 mt-1">{a.instructions}</p>}
                             <p className="text-[10px] text-ink-400 mt-1">
                               {a.due_at ? `Due ${new Date(a.due_at).toLocaleDateString()}` : "No due date"}
-                              {a.max_score ? ` · max ${a.max_score} pts` : ""}
+                              {a.max_score ? ` Â· max ${a.max_score} pts` : ""}
                             </p>
                           </div>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${done ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
@@ -300,7 +277,7 @@ export default function StudentDashboardPage() {
                               rows={2}
                               value={drafts[a.id] ?? ""}
                               onChange={(e) => setDrafts((d) => ({ ...d, [a.id]: e.target.value }))}
-                              placeholder="Write your answer…"
+                              placeholder="Write your answerâ€¦"
                               className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
                             />
                             <Button size="sm" disabled={submit.isPending || !(drafts[a.id] ?? "").trim()}
@@ -351,7 +328,6 @@ export default function StudentDashboardPage() {
         </div>
       </div>
     </main>
-    </DashboardShell>
   );
 }
 
