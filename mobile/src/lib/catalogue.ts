@@ -1,8 +1,50 @@
 import { apiFetch } from "./api";
+import { formatNaira, formatRating, formatDate, formatDateTime, slugToTitle } from "./format";
+
+// Re-export formatters for backward compatibility with existing screens.
+export { formatNaira, formatRating, formatDate, formatDateTime, slugToTitle };
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Public catalogue types + fetchers for the mobile app — subjects and tutors.
 // Shapes mirror the web DTOs (TutorDTO, academics.Subject) so search, subject
 // and tutor-detail screens read the same data as the website.
+//
+// Offline-first: successful reads are cached to AsyncStorage (keyed by path)
+// and served as a stale fallback when the network fails, so the public
+// catalogue stays usable on poor/unavailable connections.
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+
+async function cacheGet<T>(key: string): Promise<T | null> {
+  try {
+    const raw = await AsyncStorage.getItem(`cat:${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed._ts === "number" && Date.now() - parsed._ts > CACHE_TTL_MS) return null;
+    return parsed._data as T;
+  } catch {
+    return null;
+  }
+}
+
+async function cacheSet(key: string, data: unknown): Promise<void> {
+  try {
+    await AsyncStorage.setItem(`cat:${key}`, JSON.stringify({ _ts: Date.now(), _data: data }));
+  } catch {
+    // caching is best-effort
+  }
+}
+
+// Fetch + cache a GET path: try network, fall back to stale cache.
+async function fetchCached<T>(path: string): Promise<T | null> {
+  try {
+    const res = await apiFetch<T>(path, {}, { retries: 1 });
+    cacheSet(path, res.data).catch(() => {});
+    return res.data ?? null;
+  } catch {
+    return cacheGet<T>(path);
+  }
+}
 
 export type CatalogueSubject = {
   id: string;
@@ -47,38 +89,20 @@ function qs(params: Record<string, string | number | undefined>): string {
   return parts.length ? `?${parts.join("&")}` : "";
 }
 
-export function listSubjects(params?: { search?: string; category?: string }): Promise<CatalogueSubject[]> {
-  return apiFetch<CatalogueSubject[]>(`/subjects${qs({ search: params?.search, category: params?.category, page_size: 100 })}`).then(
-    (r) => r.data ?? []
-  );
+export async function listSubjects(params?: { search?: string; category?: string }): Promise<CatalogueSubject[]> {
+  return (await fetchCached<CatalogueSubject[]>(`/subjects${qs({ search: params?.search, category: params?.category, page_size: 100 })}`)) ?? [];
 }
 
-export function getSubject(slug: string): Promise<CatalogueSubject | null> {
-  return apiFetch<CatalogueSubject>(`/subjects/${slug}`)
-    .then((r) => r.data)
-    .catch(() => null);
+export async function getSubject(slug: string): Promise<CatalogueSubject | null> {
+  return fetchCached<CatalogueSubject>(`/subjects/${slug}`);
 }
 
-export function searchTutors(params: { q?: string; subject?: string; page_size?: number }): Promise<TutorCard[]> {
-  return apiFetch<TutorCard[]>(`/tutors/search${qs({ q: params.q, subject: params.subject, page_size: params.page_size ?? 30 })}`).then(
-    (r) => r.data ?? []
-  );
+export async function searchTutors(params: { q?: string; subject?: string; page_size?: number }): Promise<TutorCard[]> {
+  return (await fetchCached<TutorCard[]>(`/tutors/search${qs({ q: params.q, subject: params.subject, page_size: params.page_size ?? 30 })}`)) ?? [];
 }
 
-export function getTutor(slug: string): Promise<TutorCard | null> {
-  return apiFetch<TutorCard>(`/tutors/${slug}`)
-    .then((r) => r.data)
-    .catch(() => null);
-}
-
-export function formatNaira(amount: number): string {
-  const n = Number.isFinite(amount) ? amount : 0;
-  return `₦${n.toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
-}
-
-export function formatRating(avg: number, count: number): string {
-  if (count === 0) return "No reviews yet";
-  return `${avg.toFixed(1)}★ · ${count} review${count === 1 ? "" : "s"}`;
+export async function getTutor(slug: string): Promise<TutorCard | null> {
+  return fetchCached<TutorCard>(`/tutors/${slug}`);
 }
 
 export type TutorReview = {
@@ -133,18 +157,14 @@ export type CohortDetail = {
   published_at?: string | null;
 };
 
-export function getTutorReviews(slug: string): Promise<TutorReview[]> {
-  return apiFetch<TutorReview[]>(`/tutors/${slug}/reviews`).then((r) => r.data ?? []);
+export async function getTutorReviews(slug: string): Promise<TutorReview[]> {
+  return (await fetchCached<TutorReview[]>(`/tutors/${slug}/reviews`)) ?? [];
 }
 
-export function getProgramme(slug: string): Promise<ProgrammeDetail | null> {
-  return apiFetch<ProgrammeDetail>(`/programmes/${slug}`)
-    .then((r) => r.data)
-    .catch(() => null);
+export async function getProgramme(slug: string): Promise<ProgrammeDetail | null> {
+  return fetchCached<ProgrammeDetail>(`/programmes/${slug}`);
 }
 
-export function getCohort(id: string): Promise<CohortDetail | null> {
-  return apiFetch<CohortDetail>(`/cohorts/${id}`)
-    .then((r) => r.data)
-    .catch(() => null);
+export async function getCohort(id: string): Promise<CohortDetail | null> {
+  return fetchCached<CohortDetail>(`/cohorts/${id}`);
 }

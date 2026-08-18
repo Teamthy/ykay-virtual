@@ -1,9 +1,22 @@
-import { Stack } from "expo-router";
+import { useEffect } from "react";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { colors } from "@/src/lib/theme";
+import { setUnauthorizedHandler } from "@/src/lib/api";
 
 export default function RootLayout() {
+  const router = useRouter();
+
+  // When any API call returns 401 (expired/revoked session), route the app to
+  // the login screen. The apiFetch client clears the stale token first.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      router.replace("/login");
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [router]);
+
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />

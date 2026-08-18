@@ -5,14 +5,23 @@ import { Platform } from "react-native";
 
 // NUVORA mobile API client — talks to the same /api/v1 backend as the web
 // app. The web uses httpOnly session cookies; the native app uses a bearer
-// token stored in the OS keychain (SecureStore). A token is issued by the
-// mobile-auth endpoint (phase M4 of the plan: POST /auth/login/mobile) —
-// until then, sessions flow via cookie for web previews or the dev bridge.
+// token stored in the OS keychain (SecureStore).
+//
+// Environment resolution (launch-safe):
+//   1. process.env.EXPO_PUBLIC_API_URL (injected at build time by EAS/Expo) —
+//      the recommended way to point each build at the right backend.
+//   2. Constants.expoConfig.extra.apiUrl (set in app.json / app.config).
+//   3. localhost fallback for local dev.
+// Never commit a production URL as the hard default.
 
 const API_BASE =
-  Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:8080/api/v1";
+  process.env.EXPO_PUBLIC_API_URL ||
+  Constants.expoConfig?.extra?.apiUrl ||
+  "http://localhost:8080/api/v1";
 
 const TOKEN_KEY = "nuvora_session_token";
+
+const DEFAULT_TIMEOUT_MS = 20000;
 
 export type Envelope<T> = { data: T; meta?: Record<string, unknown> };
 export type ErrorEnvelope = { error: { code: string; message: string } };
@@ -24,6 +33,32 @@ export async function getToken(): Promise<string | null> {
 export async function setToken(token: string | null): Promise<void> {
   if (token) await SecureStore.setItemAsync(TOKEN_KEY, token);
   else await SecureStore.deleteItemAsync(TOKEN_KEY);
+}
+
+// Signal that the stored session is invalid (401) so the app can route to
+// login. Screens / auth hooks subscribe via onUnauthorized.
+type UnauthorizedHandler = () => void;
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+export function setUnauthorizedHandler(h: UnauthorizedHandler | null) {
+  unauthorizedHandler = h;
+}
+
+function fireUnauthorized() {
+  // Best-effort: clear the stale token and notify the app once.
+  setToken(null).catch(() => {});
+  if (unauthorizedHandler) unauthorizedHandler();
+}
+
+// fetch with a hard timeout (AbortController).
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(t);
+  }
 }
 
 // Register this device for push (M4): fetch the Expo push token and POST it
@@ -49,7 +84,8 @@ export async function registerDevice(): Promise<void> {
 
 export async function apiFetch<T>(
   path: string,
-  init: RequestInit = {}
+  init: RequestInit = {},
+  opts: { retries?: number } = {}
 ): Promise<Envelope<T>> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -58,12 +94,36 @@ export async function apiFetch<T>(
   const token = await getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
-  if (!res.ok) {
-    const err = (await res.json().catch(() => null)) as ErrorEnvelope | null;
-    throw new Error(err?.error?.message || `Request failed ${res.status}`);
+  const maxRetries = opts.retries ?? 1; // default: one retry for transient failures
+  let lastErr: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE}${path}`, { ...init, headers });
+      if (res.status === 401) {
+        // Invalid/expired session — clear it and notify the app.
+        fireUnauthorized();
+        const err = (await res.json().catch(() => null)) as ErrorEnvelope | null;
+        throw new Error(err?.error?.message || "Session expired. Please log in again.");
+      }
+      if (!res.ok) {
+        const err = (await res.json().catch(() => null)) as ErrorEnvelope | null;
+        throw new Error(err?.error?.message || `Request failed ${res.status}`);
+      }
+      return (await res.json()) as Envelope<T>;
+    } catch (e) {
+      const isTimeout = e instanceof Error && e.name === "AbortError";
+      const retriable = isTimeout || (e instanceof Error && /network|fetch|failed to fetch/i.test(e.message));
+      lastErr = e instanceof Error ? e : new Error(String(e));
+      if (!retriable || attempt >= maxRetries) {
+        if (isTimeout) throw new Error("Request timed out. Check your connection.");
+        throw lastErr;
+      }
+      // small backoff before retry
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+    }
   }
-  return (await res.json()) as Envelope<T>;
+  throw lastErr ?? new Error("Request failed");
 }
 
 // --- On-demand video lesson progress (backend 000035) ---------------------

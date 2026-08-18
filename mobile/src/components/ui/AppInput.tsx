@@ -28,6 +28,7 @@ export const AppInput = forwardRef<TextInput, Props>(function AppInput(
           focused && styles.inputFocused,
           style,
         ]}
+        accessibilityLabel={label || rest.placeholder}
         onFocus={(e) => {
           setFocused(true);
           onFocus?.(e);

@@ -115,6 +115,7 @@ jobs:
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npx tsc --noEmit   # A-11: the mobile app now has a CI gate
+      - run: npm run test       # Node unit tests for pure mobile logic (format.ts)
 
   lighthouse:
     name: Lighthouse CI — Perf/SEO/A11y gate

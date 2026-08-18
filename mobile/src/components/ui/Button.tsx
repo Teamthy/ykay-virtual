@@ -71,6 +71,9 @@ export function Button({
       onPressIn={pressIn}
       onPressOut={pressOut}
       disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={[
         styles.base,
         { backgroundColor: bg },
