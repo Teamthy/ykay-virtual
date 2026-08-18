@@ -108,9 +108,10 @@ func (r *ConversationRepo) ListByParticipant(ctx context.Context, userID uuid.UU
 		       c.created_at, c.updated_at,
 		       (SELECT cp2.user_id FROM conversation_participants cp2
 		         WHERE cp2.conversation_id = c.id AND cp2.user_id <> $1 ORDER BY cp2.joined_at LIMIT 1) AS other_user_id,
-		       (SELECT u.display_name FROM conversation_participants cp3
-		         JOIN users u ON u.id = cp3.user_id
-		         WHERE cp3.conversation_id = c.id AND cp3.user_id <> $1 ORDER BY cp3.joined_at LIMIT 1) AS other_user_name,
+	       (SELECT COALESCE(NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), ''), u.email)
+	          FROM conversation_participants cp3
+	          JOIN users u ON u.id = cp3.user_id
+	          WHERE cp3.conversation_id = c.id AND cp3.user_id <> $1 ORDER BY cp3.joined_at LIMIT 1) AS other_user_name,
 		       (SELECT m.body FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
 		       (SELECT m.created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at,
 		       (SELECT COUNT(*) FROM messages m
