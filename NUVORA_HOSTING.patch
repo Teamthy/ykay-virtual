@@ -1,0 +1,401 @@
+diff --git a/.github/workflows/apk-release.yml b/.github/workflows/apk-release.yml
+new file mode 100644
+index 0000000..613ee16
+--- /dev/null
++++ b/.github/workflows/apk-release.yml
+@@ -0,0 +1,97 @@
++# APK Release — builds the Android APK and publishes it as a downloadable artifact.
++#
++# Runs on:
++#   - a version tag (vX.Y.Z) -> creates/updates a GitHub Release with the APK
++#   - workflow_dispatch        -> builds and uploads the APK to object storage
++#     (Cloudflare R2 / AWS S3) if those secrets are configured
++#
++# Why GitHub Releases for the APK: a 100MB+ APK exceeds Cloudflare's free 25MB
++# asset limit, but GitHub Releases have no practical size limit and serve a
++# stable "latest" download URL for free. R2 objects can exceed 25MB too, but
++# the Cloudflare Pages free 25MB asset cap does NOT apply to R2.
++#
++# After this runs, set the web env var on Vercel/Render:
++#   NEXT_PUBLIC_APK_URL=<release download url>  (or the R2/S3 URL if used)
++
++name: APK Release
++
++on:
++  workflow_dispatch:
++  push:
++    tags:
++      - "v*"
++
++permissions:
++  contents: write
++
++jobs:
++  build-apk:
++    name: Build Android APK
++    runs-on: ubuntu-latest
++    defaults:
++      run:
++        working-directory: mobile
++    steps:
++      - uses: actions/checkout@v4
++
++      - uses: actions/setup-node@v4
++        with:
++          node-version: "20"
++          cache: npm
++          cache-dependency-path: mobile/package-lock.json
++
++      - name: Install deps
++        run: npm ci --no-audit --no-fund
++
++      - name: Typecheck
++        run: npx tsc --noEmit
++
++      # GitHub Releases upload needs the APK as a file in the workspace. EAS
++      # builds on a remote server, so for the release artifact we do a LOCAL
++      # gradle build (assembleRelease) which outputs the APK into the repo.
++      - name: Local Android release build
++        env:
++          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
++        run: |
++          npx expo prebuild --platform android --no-install
++          cd android
++          ./gradlew :app:assembleRelease
++          cd ..
++
++      - name: Locate APK
++        id: apk
++        run: |
++          apk=$(ls android/app/build/outputs/apk/release/*.apk 2>/dev/null | head -1)
++          echo "APK=$apk"
++          echo "apk_path=$apk" >> "$GITHUB_OUTPUT"
++
++      # Upload the APK to GitHub Releases (works for files > 100MB).
++      - name: Upload APK to GitHub Release
++        if: startsWith(github.ref, 'refs/tags/') && steps.apk.outputs.apk_path != ''
++        uses: softprops/action-gh-release@v2
++        with:
++          tag_name: ${{ github.ref_name }}
++          files: ${{ steps.apk.outputs.apk_path }}
++          generate_release_notes: true
++
++      # Optional: upload to object storage (Cloudflare R2 / AWS S3) via the S3
++      # API. R2 supports objects larger than 25MB.
++      - name: Upload APK to R2/S3
++        if: steps.apk.outputs.apk_path != '' && env.R2_ACCESS_KEY_ID != ''
++        env:
++          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
++          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
++          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
++          R2_BUCKET: ${{ secrets.R2_BUCKET }}
++        run: |
++          export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
++          export AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
++          export AWS_ENDPOINT_URL="https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com"
++          aws --version || pip install awscli 2>/dev/null || true
++          aws s3 cp "${{ steps.apk.outputs.apk_path }}" "s3://$R2_BUCKET/nuvora-app.apk" --endpoint-url "$AWS_ENDPOINT_URL" || echo "R2 upload failed/skipped"
++
++      # Publish OTA update so installed apps get this build's JS (no reinstall).
++      - name: Publish OTA update
++        env:
++          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
++        run: npx eas-cli update --channel preview --message "Release ${{ github.ref_name }}" --non-interactive || echo "OTA update skipped"
+diff --git a/.gitignore b/.gitignore
+index 50772b6..e539ed4 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -27,6 +27,14 @@ metrics-textfile/
+ # staging harness binary
+ .staging-api
+ 
++# Mobile build artifacts (large) — never commit these; host the APK in
++# object storage (R2/S3/GitHub Releases) and set NEXT_PUBLIC_APK_URL.
++*.apk
++*.aab
++mobile/dist/
++mobile/android/app/build/
++mobile/ios/build/
++
+ # Local audit patches — do not commit
+ audit-round*.patch
+ seed-quickstart.sql
+diff --git a/docs/APK_HOSTING.md b/docs/APK_HOSTING.md
+new file mode 100644
+index 0000000..8e52ad8
+--- /dev/null
++++ b/docs/APK_HOSTING.md
+@@ -0,0 +1,74 @@
++# Hosting the NUVORA APK (direct download, no app store)
++
++## The 25MB problem
++- **Cloudflare Pages free tier** has a **25MB per-asset limit** — a 100MB+ APK
++  will be rejected there.
++- **Cloudflare R2 object storage** has NO such limit (up to 5TB per object).
++- **GitHub Releases** also have no practical size limit (2GB), and are free.
++
++So: serve the APK from **GitHub Releases** (simplest) or **R2**.
++
++---
++
++## Option A — GitHub Releases (recommended, zero setup)
++1. The CI workflow `.github/workflows/apk-release.yml` builds the APK and, on a
++   `v*` tag, uploads it to a GitHub Release.
++2. Push a tag:
++   ```bash
++   git tag v0.2.0
++   git push origin v0.2.0
++   ```
++3. The APK is available at the release's latest download URL:
++   `https://github.com/Teamthy/ykay-virtual/releases/latest/download/<apk-name>.apk`
++4. On Vercel/Render set:
++   ```
++   NEXT_PUBLIC_APK_URL=https://github.com/Teamthy/ykay-virtual/releases/latest/download/<apk-name>.apk
++   ```
++
++---
++
++## Option B — Cloudflare R2 (no 25MB limit, private/stable)
++1. In Cloudflare dashboard: **R2 → Create bucket** (e.g. `nuvora-apps`).
++2. Make the bucket public (or use a custom domain) so the APK is fetchable.
++3. Create an **R2 API token** (S3-compatible credentials): bucket read/write.
++4. Upload with the S3-compatible CLI (via CI or locally):
++   ```bash
++   export AWS_ACCESS_KEY_ID=...       # R2 token access key
++   export AWS_SECRET_ACCESS_KEY=...   # R2 token secret
++   export AWS_ENDPOINT_URL="https://<ACCOUNT_ID>.r2.cloudflarestorage.com"
++   aws s3 cp nuvora-app.apk s3://nuvora-apps/nuvora-app.apk --endpoint-url "$AWS_ENDPOINT_URL"
++   ```
++5. Public URL: `https://pub-<hash>.r2.dev/nuvora-app.apk` (or your custom domain).
++6. On Vercel/Render set:
++   ```
++   NEXT_PUBLIC_APK_URL=https://pub-<hash>.r2.dev/nuvora-app.apk
++   ```
++
++> R2 public buckets support objects larger than 25MB — only Cloudflare Pages
++> assets are capped at 25MB on the free plan.
++
++---
++
++## CI secrets to configure (for the GitHub Actions workflow)
++| Secret | Purpose |
++|---|---|
++| `EXPO_TOKEN` | EAS build/update (required for the APK + OTA) |
++| `R2_ACCESS_KEY_ID` | R2 S3 token access key (optional) |
++| `R2_SECRET_ACCESS_KEY` | R2 S3 token secret (optional) |
++| `R2_ACCOUNT_ID` | Cloudflare account id (optional) |
++| `R2_BUCKET` | bucket name, e.g. `nuvora-apps` (optional) |
++
++---
++
++## OTA updates (new features, no reinstall)
++```bash
++cd mobile
++npx eas update --channel preview --message "feat: ..."
++```
++Installed APKs check on launch, download, and prompt "Restart" (UpdateBanner).
++
++---
++
++## Native-only changes still need a new APK
++Adding a new native module requires a fresh `eas build` / the release workflow.
++Pure JS/TS features ship via `eas update` (no reinstall).
+diff --git a/mobile/app/_layout.tsx b/mobile/app/_layout.tsx
+index 48f47fb..3a85f1d 100644
+--- a/mobile/app/_layout.tsx
++++ b/mobile/app/_layout.tsx
+@@ -6,7 +6,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
+ import { colors } from "@/src/lib/theme";
+ import { setUnauthorizedHandler } from "@/src/lib/api";
+ import { parseTarget, openNotification } from "@/src/lib/deeplink";
+-import { checkForUpdates } from "@/src/lib/updates";
++import { UpdateBanner } from "@/src/components/UpdateBanner";
++import { View } from "react-native";
+ 
+ // Configure push notifications: show a banner/alert while the app is open.
+ Notifications.setNotificationHandler({
+@@ -44,16 +45,12 @@ export default function RootLayout() {
+     };
+   }, []);
+ 
+-  // OTA updates: on launch, check for a newer JS bundle (published via
+-  // `eas update`) and apply it. This means users get new features without
+-  // reinstalling the app. No-op in dev builds (expo-updates is disabled).
+-  useEffect(() => {
+-    void checkForUpdates();
+-  }, []);
+-
+   return (
+     <SafeAreaProvider>
+       <StatusBar style="light" />
++      {/* OTA update banner: checks on mount and prompts the user to restart
++          and apply a new bundle (published via `eas update`). */}
++      <UpdateBanner />
+       <Stack
+         screenOptions={{
+           headerStyle: { backgroundColor: colors.navy },
+diff --git a/mobile/app/account.tsx b/mobile/app/account.tsx
+index adae0f9..6d6a9ad 100644
+--- a/mobile/app/account.tsx
++++ b/mobile/app/account.tsx
+@@ -12,6 +12,7 @@ import { Skeleton } from "@/src/components/ui/Skeleton";
+ import { Ionicons } from "@expo/vector-icons";
+ import { colors, radius, spacing } from "@/src/lib/theme";
+ import { apiFetch, setToken } from "@/src/lib/api";
++import { currentAppVersion } from "@/src/lib/updates";
+ 
+ // Profile — grouped settings (per the mobile UI spec):
+ //   profile header → account → learning → notifications & privacy → support
+@@ -210,6 +211,9 @@ export default function Account() {
+ 
+         <View style={styles.logout}>
+           <Button label="Log out" variant="secondary" full onPress={() => void logout()} />
++          <AppText variant="caption" style={{ textAlign: "center", marginTop: spacing.lg, color: colors.ink[400] }}>
++            NUVORA · v{currentAppVersion()}
++          </AppText>
+         </View>
+       </Screen>
+     </TabLayout>
+diff --git a/mobile/src/components/UpdateBanner.tsx b/mobile/src/components/UpdateBanner.tsx
+new file mode 100644
+index 0000000..51fe3ae
+--- /dev/null
++++ b/mobile/src/components/UpdateBanner.tsx
+@@ -0,0 +1,60 @@
++import { useEffect, useState } from "react";
++import { StyleSheet, View } from "react-native";
++import { Ionicons } from "@expo/vector-icons";
++import { AppText } from "@/src/components/ui/AppText";
++import { Button } from "@/src/components/ui/Button";
++import { colors, radius, spacing } from "@/src/lib/theme";
++import { fetchUpdate, applyUpdate } from "@/src/lib/updates";
++
++// In-app update prompt — when a new JS bundle is available (published via
++// `eas update`), show a slim banner so the user can apply it on their own
++// terms. Non-intrusive; dismissible.
++
++export function UpdateBanner() {
++  const [state, setState] = useState<"idle" | "available" | "restarting">("idle");
++
++  useEffect(() => {
++    let cancelled = false;
++    (async () => {
++      const { available, downloaded } = await fetchUpdate();
++      if (!cancelled && available && downloaded) setState("available");
++    })();
++    return () => {
++      cancelled = true;
++    };
++  }, []);
++
++  if (state === "available") {
++    return (
++      <View style={styles.banner}>
++        <Ionicons name="cloud-download-outline" size={18} color={colors.navy} />
++        <View style={{ flex: 1, marginLeft: spacing.sm }}>
++          <AppText variant="bodySm" style={{ color: colors.navy, fontWeight: "700" }}>
++            New update ready
++          </AppText>
++          <AppText variant="caption" style={{ color: colors.ink[600], marginTop: 1 }}>
++            Restart to get the latest features.
++          </AppText>
++        </View>
++        <Button label="Restart" variant="dark" style={{ paddingVertical: 6, paddingHorizontal: 14, minHeight: 32 }} onPress={() => { setState("restarting"); void applyUpdate(); }} />
++        <Ionicons name="close" size={18} color={colors.ink[400]} onPress={() => setState("idle")} accessibilityLabel="Dismiss" />
++      </View>
++    );
++  }
++
++  return null;
++}
++
++const styles = StyleSheet.create({
++  banner: {
++    flexDirection: "row",
++    alignItems: "center",
++    backgroundColor: colors.greenLight,
++    borderRadius: radius.md,
++    paddingHorizontal: spacing.md,
++    paddingVertical: spacing.sm,
++    marginHorizontal: spacing.md,
++    marginTop: spacing.xs,
++    gap: spacing.xs,
++  },
++});
+diff --git a/mobile/src/lib/updates.ts b/mobile/src/lib/updates.ts
+index 0e434de..4df1555 100644
+--- a/mobile/src/lib/updates.ts
++++ b/mobile/src/lib/updates.ts
+@@ -1,27 +1,57 @@
+ import * as Updates from "expo-updates";
+ 
+-// OTA update helper — on launch (or on demand), check for a newer JS bundle
+-// published via `eas update`. If one exists, fetch it and reload so the user
+-// gets the latest features WITHOUT reinstalling the app (EAS Update).
++// OTA update helper — checks for a newer JS bundle published via `eas update`,
++// and exposes the current app version. Used by:
++//   - root layout: check-on-launch + auto-apply
++//   - a prompt: "Update available — restart to apply" (non-intrusive)
++//   - Profile: show the installed version
++//
++// Only meaningful in production/preview builds that embed expo-updates; in dev
++// builds `Updates.isEnabled` is false and everything degrades to no-ops.
+ 
+-export type UpdateCheckResult = { updateAvailable: boolean; downloaded: boolean };
++export type UpdateCheckResult = {
++  isEnabled: boolean;
++  updateAvailable: boolean;
++  currentVersion: string;
++};
+ 
+-export async function checkForUpdates(onChange?: (r: UpdateCheckResult) => void): Promise<UpdateCheckResult> {
++// The installed JS bundle version (e.g. "0.1.0"), or a fallback.
++export function currentAppVersion(): string {
+   try {
+-    // Only meaningful in a production/preview build that embeds expo-updates;
+-    // in dev builds Updates.isEnabled is false and this is a no-op.
+-    if (!Updates.isEnabled) return { updateAvailable: false, downloaded: false };
+-
+-    const update = await Updates.checkForUpdateAsync();
+-    if (!update.isAvailable) return { updateAvailable: false, downloaded: false };
++    return Updates.createdAt?.toISOString()?.slice(0, 10) || "0.1.0";
++  } catch {
++    return "0.1.0";
++  }
++}
+ 
++// Fetch (download) an available update WITHOUT reloading, so the UI can show
++// an explicit "Restart to apply" prompt. Returns true if an update was found
++// and downloaded.
++export async function fetchUpdate(): Promise<{ available: boolean; downloaded: boolean; updateId?: string }> {
++  try {
++    if (!Updates.isEnabled) return { available: false, downloaded: false };
++    const check = await Updates.checkForUpdateAsync();
++    if (!check.isAvailable) return { available: false, downloaded: false };
+     await Updates.fetchUpdateAsync();
+-    onChange?.({ updateAvailable: true, downloaded: true });
++    return { available: true, downloaded: true };
++  } catch {
++    return { available: false, downloaded: false };
++  }
++}
+ 
+-    // Prompt the user to apply (app reloads to the new bundle). Best-effort.
++// Apply a downloaded update by reloading into the new bundle.
++export async function applyUpdate(): Promise<void> {
++  try {
+     await Updates.reloadAsync();
+-    return { updateAvailable: true, downloaded: true };
+   } catch {
+-    return { updateAvailable: false, downloaded: false };
++    // ignore — reload failures are non-fatal
++  }
++}
++
++// One-shot convenience: check, fetch, and reload immediately (used on launch).
++export async function checkForUpdates(): Promise<void> {
++  const { available, downloaded } = await fetchUpdate();
++  if (available && downloaded) {
++    await applyUpdate();
+   }
+ }
