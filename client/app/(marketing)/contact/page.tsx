@@ -60,7 +60,8 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="container-x py-12">
+    <main>
+      
       <PageHero
         eyebrow="We&apos;re here to help"
         title="Contact & Support"
@@ -68,6 +69,8 @@ export default function ContactPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Contact / Support" }]}
         align="center"
       />
+
+      <div className="container-x py-12">
 
 
       <div className="mt-10 grid lg:grid-cols-[1fr_0.8fr] gap-10 items-start">
@@ -180,6 +183,8 @@ export default function ContactPage() {
             </ul>
           </div>
         </aside>
+      </div>
+    
       </div>
     </main>
   );

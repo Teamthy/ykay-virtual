@@ -64,7 +64,8 @@ export default async function BlogPage() {
   }
 
   return (
-    <main className="container-x py-12">
+    <main>
+      
       <PageHero
         eyebrow="From the academic team"
         title="Resources & Blog"
@@ -72,6 +73,8 @@ export default async function BlogPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Blog" }]}
         align="left"
       />
+
+      <div className="container-x py-12">
 
       <div className="mt-10 grid md:grid-cols-3 gap-6">
         {posts.map((p) => (
@@ -88,6 +91,8 @@ export default async function BlogPage() {
             {p.published_at && <div className="mt-3 text-xs text-ink-400">{p.published_at.slice(0, 10)}</div>}
           </Link>
         ))}
+      </div>
+    
       </div>
     </main>
   );

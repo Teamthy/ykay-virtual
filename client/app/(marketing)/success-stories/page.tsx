@@ -64,9 +64,10 @@ export default async function SuccessStoriesPage() {
   const testimonials = await fetchTestimonials();
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+      
       <PageHero
         eyebrow="Real outcomes, verified"
         title="Success Stories"
@@ -74,6 +75,8 @@ export default async function SuccessStoriesPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Success Stories" }]}
         align="center"
       />
+
+      <div className="container-x py-12">
 
       {/* Verified results */}
       <section className="mt-14 grid gap-5 md:grid-cols-2">
@@ -134,6 +137,8 @@ export default async function SuccessStoriesPage() {
           </div>
         )}
       </section>
+    
+      </div>
     </main>
   );
 }

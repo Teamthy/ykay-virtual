@@ -15,7 +15,8 @@ export function generateMetadata(): Metadata {
 
 export default function CorporatePage() {
   return (
-    <main className="container-x py-12">
+    <main>
+      
       <PageHero
         eyebrow="For organisations"
         title="Corporate Training & Workforce Academy"
@@ -23,6 +24,8 @@ export default function CorporatePage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Corporate Training" }]}
         align="left"
       />
+
+      <div className="container-x py-12">
 
       <div className="mt-10 grid md:grid-cols-2 gap-6">
         <div className="border rounded-2xl p-6"><h3 className="font-bold">Digital Academy for Teams</h3><p className="mt-2 text-sm">Computer Science, Python, AI, Cybersecurity — British curriculum expertise applied to workforce.</p></div>
@@ -32,6 +35,8 @@ export default function CorporatePage() {
         <B2BLeadForm defaultType="CORPORATE" ctaLabel="Request corporate training" />
       </section>
 
-</main>
+
+      </div>
+    </main>
   );
 }

@@ -35,16 +35,19 @@ export default function BecomeTutorPage() {
   const faq = faqJsonLd(FAQS);
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
 
+      
       <PageHero
         announcement="Earn from what you love"
         title="Become a NUVORA tutor"
         subtitle="A five-step, stateful application: build your profile, pick your subjects, verify your identity, pass a short competency quiz — then track your application live."
         ctas={[{ label: "Start tutor application", href: "/become-tutor/apply", primary: true }]}
       />
+
+      <div className="container-x py-12">
 
       <TutorCommunityStats />
       <TutorBenefits />
@@ -78,6 +81,8 @@ export default function BecomeTutorPage() {
           ))}
         </div>
       </section>
+    
+      </div>
     </main>
   );
 }

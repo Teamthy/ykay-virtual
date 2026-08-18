@@ -19,8 +19,9 @@ export default function ForSchoolsPage() {
     { name: "For Schools", item: "https://nuvora.com/for-schools" },
   ]);
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      
       <PageHero
         eyebrow="For institutions"
         title="For Schools — Institutional Accounts"
@@ -28,6 +29,8 @@ export default function ForSchoolsPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "For Schools" }]}
         align="left"
       />
+
+      <div className="container-x py-12">
 
 
       <div className="mt-10 grid md:grid-cols-3 gap-6">
@@ -58,6 +61,8 @@ export default function ForSchoolsPage() {
         <B2BLeadForm defaultType="SCHOOL" ctaLabel="Request a school account" />
       </section>
 
-</main>
+
+      </div>
+    </main>
   );
 }

@@ -1274,6 +1274,32 @@ html.dark .bg-brand-navy a {
 }
 
 
+html.dark .text-brand-blue,
+html.dark .text-brand-blue-dark {
+  color: #8ef56e;
+}
+
+
+html.dark .bg-brand-blue-light,
+html.dark .bg-brand-gold-light {
+  background-color: #173b2a;
+  color: #f4f7f5;
+}
+
+
+html.dark .bg-amber-50,
+html.dark .bg-red-50,
+html.dark .bg-green-50 {
+  background-color: #10281c;
+}
+
+
+html.dark .text-amber-800,
+html.dark .text-red-700 {
+  color: #fde68a;
+}
+
+
 /* ============================================================
    14. REDUCED MOTION
    ============================================================ */

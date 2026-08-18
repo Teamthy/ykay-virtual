@@ -5,8 +5,9 @@ import Link from "next/link";
 import { getAdminStats2 } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RoleGate } from "@/components/dashboard/RoleGate";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 
-// Admin dashboard (working-doc §12): KPI cards — active learners | tutors |
+// Admin dashboard (working-doc Â§12): KPI cards - active learners | tutors |
 // cohorts | lessons this week | revenue + pending applications/enrolments,
 // today's classes, capacity alerts, support tickets, QA alerts.
 
@@ -43,25 +44,22 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <RoleGate page="/admin" />
-      <div>
-        <h1 className="text-3xl font-extrabold">Operations overview</h1>
-        <p className="text-ink-500 text-sm mt-1">Live platform health — learners, tutors, cohorts, lessons, revenue.</p>
-      </div>
+      <PageHeader eyebrow="Admin" title="Overview" cover="/hero/checkout.jpg" />
 
       {/* KPI row */}
       <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Active learners" value={s?.active_users.toLocaleString() ?? "–"} sub={`${s?.users.toLocaleString()} registered`} accent />
-        <StatCard label="Tutors (approved)" value={s?.tutors_approved.toLocaleString() ?? "–"} sub={`${s?.tutors_pending.toLocaleString()} pending vetting`} />
-        <StatCard label="Cohorts (published)" value={s?.cohorts_published.toLocaleString() ?? "–"} sub={`${s?.lessons_this_week.toLocaleString()} lessons this week`} />
-        <StatCard label="Revenue" value={`₦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} sub={`${(s?.revenue_paid_out ?? 0).toLocaleString()} paid out`} accent />
+        <StatCard label="Active learners" value={s?.active_users.toLocaleString() ?? "-"} sub={`${s?.users.toLocaleString()} registered`} accent />
+        <StatCard label="Tutors (approved)" value={s?.tutors_approved.toLocaleString() ?? "-"} sub={`${s?.tutors_pending.toLocaleString()} pending vetting`} />
+        <StatCard label="Cohorts (published)" value={s?.cohorts_published.toLocaleString() ?? "-"} sub={`${s?.lessons_this_week.toLocaleString()} lessons this week`} />
+        <StatCard label="Revenue" value={`â‚¦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} sub={`${(s?.revenue_paid_out ?? 0).toLocaleString()} paid out`} accent />
       </section>
 
       {/* Operational */}
       <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Lessons today" value={s?.lessons_today.toLocaleString() ?? "–"} />
-        <StatCard label="Pending enrolments" value={s?.pending_enrolments.toLocaleString() ?? "–"} />
+        <StatCard label="Lessons today" value={s?.lessons_today.toLocaleString() ?? "-"} />
+        <StatCard label="Pending enrolments" value={s?.pending_enrolments.toLocaleString() ?? "-"} />
         <StatCard label="Orders (total / paid)" value={`${s?.orders_total ?? 0}/${s?.orders_paid ?? 0}`} />
-        <StatCard label="Blog published" value={s?.blog_published.toLocaleString() ?? "–"} sub={`${s?.blog_drafts.toLocaleString()} drafts`} />
+        <StatCard label="Blog published" value={s?.blog_published.toLocaleString() ?? "-"} sub={`${s?.blog_drafts.toLocaleString()} drafts`} />
       </section>
 
       {/* Attention needed */}

@@ -67,6 +67,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
     home: "/admin",
     items: [
       { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+      { href: "/admin/users", label: "Users", icon: Users },
       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
       { href: "/admin/lessons", label: "Today's classes", icon: Users },

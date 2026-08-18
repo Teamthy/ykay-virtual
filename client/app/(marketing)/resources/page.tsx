@@ -33,8 +33,9 @@ export default function ResourcesPage() {
   ]);
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      
       <PageHero
         eyebrow="Learn how to learn"
         title="Resources"
@@ -42,6 +43,8 @@ export default function ResourcesPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Resources" }]}
         align="center"
       />
+
+      <div className="container-x py-12">
 
 
       <section className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -77,6 +80,8 @@ export default function ResourcesPage() {
           <Link href="/cohorts" className="btn-gold">Join a cohort</Link>
         </div>
       </section>
+    
+      </div>
     </main>
   );
 }
