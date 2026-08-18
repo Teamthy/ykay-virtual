@@ -272,25 +272,15 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           </div>
         ) : null}
 
-        <form.Subscribe selector={(s) => s.values}>
-          {(values) => (
-            <Button
-              type="submit"
-              variant="gold"
-              size="lg"
-              className="w-full"
-              disabled={
-                createBooking.isPending ||
-                payMutation.isPending ||
-                !values.student_id ||
-                !values.email ||
-                seatsLeft === 0
-              }
-            >
-              {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
-            </Button>
-          )}
-        </form.Subscribe>
+        <Button
+          type="submit"
+          variant="gold"
+          size="lg"
+          className="w-full"
+          disabled={createBooking.isPending || payMutation.isPending || seatsLeft === 0}
+        >
+          {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
+        </Button>
 
         {/* Secure badges */}
         <div className="flex items-center justify-center gap-5 border-t border-ink-100 pt-4 text-[11px] font-semibold text-ink-400">

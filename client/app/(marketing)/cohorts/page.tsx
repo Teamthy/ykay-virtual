@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
-import { API_BASE, apiFetchSSR } from "@/lib/server-api";
+import { apiFetchSSR } from "@/lib/server-api";
 import Link from "next/link";
 import { coverFor } from "@/lib/covers";
 
@@ -42,7 +42,7 @@ export default async function CohortsPage() {
   }
 
   return (
-    <main className="container-x py-10">
+    <main>
       <PageHero
         cover="/hero/cohorts.jpg"
         eyebrow="Learn together"
@@ -52,16 +52,15 @@ export default async function CohortsPage() {
         align="center"
       />
 
-
-      <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="container-x mt-12 grid gap-5 pb-20 md:grid-cols-2 lg:grid-cols-3">
         {cohorts.length === 0 ? (
-          <div className="md:col-span-2 lg:col-span-3 border rounded-2xl p-12 text-center text-ink-500">
+          <div className="rounded-2xl border p-12 text-center text-ink-500 md:col-span-2 lg:col-span-3">
             No cohorts are open for enrolment right now —{" "}
-            <Link href="/programmes" className="text-brand-blue font-semibold hover:underline">
+            <Link href="/programmes" className="font-semibold text-brand-blue hover:underline">
               explore programmes
             </Link>{" "}
             or{" "}
-            <Link href="/private-tuition" className="text-brand-blue font-semibold hover:underline">
+            <Link href="/private-tuition" className="font-semibold text-brand-blue hover:underline">
               request private tuition
             </Link>
             .
@@ -83,19 +82,28 @@ export default async function CohortsPage() {
                   }}
                 />
                 <div className="p-6">
-                <h2 className="font-bold leading-snug text-brand-navy">{c.title}</h2>
-                <div className="mt-3 space-y-1.5 text-sm text-ink-600">
-                  <p>🗓️ {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}</p>
-                  <p>🌍 {c.timezone} · {c.location_mode.replace(/_/g, " ").toLowerCase()}</p>
-                  {c.schedule_description && <p className="text-xs text-ink-500">{c.schedule_description}</p>}
-                </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-extrabold text-brand-blue">
-                    {c.currency} {c.fee.toLocaleString()}
-                  </span>
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${full ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
-                    {full ? "Full" : `${seatsLeft} seats left`}
-                  </span>
+                  <h2 className="font-bold leading-snug text-brand-navy">{c.title}</h2>
+                  <div className="mt-3 space-y-1.5 text-sm text-ink-600">
+                    <p>
+                      🗓️ {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}
+                    </p>
+                    <p>
+                      🌍 {c.timezone} · {c.location_mode.replace(/_/g, " ").toLowerCase()}
+                    </p>
+                    {c.schedule_description && <p className="text-xs text-ink-500">{c.schedule_description}</p>}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-lg font-extrabold text-brand-blue">
+                      {c.currency} {c.fee.toLocaleString()}
+                    </span>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                        full ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {full ? "Full" : `${seatsLeft} seats left`}
+                    </span>
+                  </div>
                 </div>
               </Link>
             );
@@ -103,7 +111,9 @@ export default async function CohortsPage() {
         )}
       </div>
       {total > cohorts.length && (
-        <p className="mt-6 text-center text-sm text-ink-500">Showing {cohorts.length} of {total} cohorts — more launching soon.</p>
+        <p className="container-x pb-10 text-center text-sm text-ink-500">
+          Showing {cohorts.length} of {total} cohorts — more launching soon.
+        </p>
       )}
     </main>
   );
