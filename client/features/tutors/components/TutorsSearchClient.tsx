@@ -69,7 +69,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search by nameâ€¦"
+              placeholder="Search by name…"
               className="w-full rounded-xl border border-ink-200 py-2.5 pl-10 pr-3 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
             />
           </label>
@@ -135,7 +135,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
           >
             Clear
           </button>
-          <span className="ml-auto text-xs text-ink-500">{query.isLoading ? "Searchingâ€¦" : `${total} tutor(s)`}</span>
+          <span className="ml-auto text-xs text-ink-500">{query.isLoading ? "Searching…" : `${total} tutor(s)`}</span>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
         <EmptyState
           icon={<Users size={20} />}
           title="No tutors match your filters yet"
-          description="New vetted tutors join weekly â€” try widening your subject or rate filters."
+          description="New vetted tutors join weekly — try widening your subject or rate filters."
         />
       ) : (
         <>
@@ -165,7 +165,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
           {query.hasNextPage && (
             <div className="pt-2 text-center">
               <Button variant="outline" onClick={() => void query.fetchNextPage()} disabled={query.isFetchingNextPage}>
-                {query.isFetchingNextPage ? "Loadingâ€¦" : "Load more tutors"}
+                {query.isFetchingNextPage ? "Loading…" : "Load more tutors"}
               </Button>
             </div>
           )}

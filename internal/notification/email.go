@@ -9,10 +9,10 @@ import (
 	"strings"
 )
 
-// EmailSender â€” outbound email adapter (AGENTS.md internal/notification).
+// EmailSender — outbound email adapter (AGENTS.md internal/notification).
 // Implementations:
-//   - ConsoleEmailSender â€” logs emails to stdout (dev default)
-//   - SMTPEmailSender   â€” real SMTP delivery via SMTP_* env vars
+//   - ConsoleEmailSender — logs emails to stdout (dev default)
+//   - SMTPEmailSender   — real SMTP delivery via SMTP_* env vars
 type EmailSender interface {
 	Send(ctx context.Context, to, subject, htmlBody string) error
 }
@@ -30,16 +30,16 @@ func NewEmailSender() EmailSender {
 	return ConsoleEmailSender{}
 }
 
-// ConsoleEmailSender â€” dev: logs the email so links are clickable in the
+// ConsoleEmailSender — dev: logs the email so links are clickable in the
 // terminal during local development.
 type ConsoleEmailSender struct{}
 
 func (ConsoleEmailSender) Send(_ context.Context, to, subject, htmlBody string) error {
 	// Safe logging (A-20/A-21): the console sender runs only when SMTP is not
-	// configured. In production that is a misconfiguration â€” warn WITHOUT
+	// configured. In production that is a misconfiguration — warn WITHOUT
 	// logging the body (which may contain magic links/codes/PII).
 	if os.Getenv("ENVIRONMENT") == "production" {
-		slog.Error("email console sender used in production â€” SMTP_HOST is not set; OTP/codes are NOT emailed", "to", to, "subject", subject)
+		slog.Error("email console sender used in production — SMTP_HOST is not set; OTP/codes are NOT emailed", "to", to, "subject", subject)
 		return fmt.Errorf("smtp not configured: set SMTP_HOST, SMTP_USER, SMTP_PASS, EMAIL_FROM")
 	}
 	// Dev console: log enough of the body to include codes/links (the branded
@@ -48,7 +48,7 @@ func (ConsoleEmailSender) Send(_ context.Context, to, subject, htmlBody string) 
 	return nil
 }
 
-// SMTPEmailSender â€” production: plain SMTP (TLS/STARTTLS via smtp.SendMail).
+// SMTPEmailSender — production: plain SMTP (TLS/STARTTLS via smtp.SendMail).
 type SMTPEmailSender struct {
 	host, port, user, pass, from string
 }
@@ -104,19 +104,19 @@ func truncate(s string, n int) string {
 	if len(s) <= n {
 		return s
 	}
-	// Keep the TAIL â€” dev logs exist to expose codes/links, which live at
+	// Keep the TAIL — dev logs exist to expose codes/links, which live at
 	// the end of the branded email shell (verification/reset links).
 	head := 200
 	if n <= head+50 {
 		head = 0
 	}
 	if head == 0 {
-		return "â€¦" + s[len(s)-n:]
+		return "…" + s[len(s)-n:]
 	}
-	return s[:head] + " â€¦[truncated]â€¦ " + s[len(s)-(n-head):]
+	return s[:head] + " …[truncated]… " + s[len(s)-(n-head):]
 }
 
-// BrandEmail â€” wraps an HTML body in the NUVORA email shell (navy header,
+// BrandEmail — wraps an HTML body in the NUVORA email shell (navy header,
 // gold accent, footer). Used by every outbound template so transactional
 // emails carry the brand.
 func BrandEmail(bodyHTML string) string {

@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-// PageHero â€” the UNIFORM hero for every non-home page. Self-contained: the
+// PageHero — the UNIFORM hero for every non-home page. Self-contained: the
 // background is an inline SVG grid (no remote asset) unless `cover` is set,
 // in which case a local /hero photo is painted under a navy scrim so title,
 // crumbs and CTAs stay light. Never put dark ink on a photo or navy field.
@@ -21,7 +21,7 @@ export type PageHeroProps = {
   crumbs?: Crumb[];
   ctas?: HeroCTA[];
   align?: "left" | "center";
-  /** Optional split-hero image (bundled, local) â€” rendered right of the text. */
+  /** Optional split-hero image (bundled, local) — rendered right of the text. */
   image?: { src: string; alt: string };
   /** Full-bleed photo behind the hero copy (local /hero/*.jpg). */
   cover?: string;

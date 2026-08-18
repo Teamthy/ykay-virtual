@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"strings"
 	"time"
@@ -24,7 +25,7 @@ const (
 	loginCodeLength = 6
 )
 
-// RequestLoginCode â€” emails a 6-digit sign-in code. Always returns nil for a
+// RequestLoginCode — emails a 6-digit sign-in code. Always returns nil for a
 //
 // syntactically valid email so the response does not reveal account existence.
 func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error {
@@ -75,7 +76,7 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 	return nil
 }
 
-// ConfirmLoginCode â€” verifies the code, consumes it and starts a session
+// ConfirmLoginCode — verifies the code, consumes it and starts a session
 // (same session path as password login, including the audit trail).
 func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, userAgent string) (string, *identity.User, []string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -113,7 +114,7 @@ func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, use
 	return s.startSession(ctx, user, ip, userAgent)
 }
 
-// startSession â€” shared session creation used by password login and login code.
+// startSession — shared session creation used by password login and login code.
 func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip, userAgent string) (string, *identity.User, []string, error) {
 	raw, hash, err := newSessionToken()
 	if err != nil {

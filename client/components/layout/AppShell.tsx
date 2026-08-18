@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { APP_NAV, type AppShellVariant, variantForRoles } from "@/lib/app-nav";
 import { LogoutDialog } from "@/components/layout/LogoutDialog";
 
-// AppShell â€” one chrome system, four role layouts. Sidebar + top bar +
+// AppShell — one chrome system, four role layouts. Sidebar + top bar +
 // content. Marketing header stays off these routes (ShellVisibility).
 
 export function AppShell({
@@ -41,7 +41,9 @@ export function AppShell({
   const nav = (
     <nav className="flex flex-col gap-0.5" aria-label={`${spec.title} navigation`}>
       <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">{spec.title}</p>
-      {spec.items.map((item) => {
+      {spec.items
+        .filter((item) => !item.superAdminOnly || user?.roles?.includes("SUPER_ADMIN"))
+        .map((item) => {
         const active = item.exact
           ? pathname === item.href
           : pathname === item.href || pathname.startsWith(item.href + "/");
@@ -112,7 +114,7 @@ export function AppShell({
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-navy text-xs font-extrabold text-white">
                 {greeting.charAt(0).toUpperCase()}
               </span>
-              <span className="hidden max-w-[140px] truncate sm:block">{isLoading ? "â€¦" : greeting}</span>
+              <span className="hidden max-w-[140px] truncate sm:block">{isLoading ? "…" : greeting}</span>
             </Link>
             <button
               type="button"

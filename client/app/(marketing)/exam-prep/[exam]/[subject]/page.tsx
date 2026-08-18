@@ -7,7 +7,7 @@ import { InnerHero } from "@/components/layout/InnerHero";
 import { buildMetadata } from "@/lib/seo";
 import { getExam, getExamPrepPages, getSubject, type ExamSubject } from "@/lib/exam-prep-data";
 
-// Exam-prep subject pages â€” one indexable URL per exam Ã- subject (from
+// Exam-prep subject pages — one indexable URL per exam × subject (from
 // lib/exam-prep-data.ts). Factual paper structure + board-agnostic syllabus
 // themes, with links back to the live subject catalogue.
 
@@ -54,12 +54,12 @@ export default async function ExamPrepSubjectPage(props: Props) {
           items={[
             { name: "Home", href: "/" },
             { name: "Exam Preparation", href: "/exam-prep" },
-            { name: `${subject.name} â€” ${exam.code}` },
+            { name: `${subject.name} — ${exam.code}` },
           ]}
         />
         <div className="text-xs font-semibold uppercase text-brand-blue">{exam.name}</div>
         <h1 className="mt-2 max-w-3xl text-3xl font-extrabold leading-tight md:text-4xl">
-          {subject.name} â€” {exam.code} Preparation
+          {subject.name} — {exam.code} Preparation
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-ink-600">{exam.fullName}</p>
       </InnerHero>

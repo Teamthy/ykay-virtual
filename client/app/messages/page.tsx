@@ -16,7 +16,7 @@ export default function MessagesPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-extrabold">Messages</h1>
         <p className="text-ink-500 text-sm mt-1">
-          Conversations are scoped to your bookings â€” tutors, parents and cohort members only.
+          Conversations are scoped to your bookings — tutors, parents and cohort members only.
         </p>
       </div>
       <MessageCenter />

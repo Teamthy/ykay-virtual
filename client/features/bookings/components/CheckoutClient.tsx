@@ -17,7 +17,7 @@ import { apiFetch } from "@/lib/api";
 import type { Cohort } from "@/features/cohorts/api/get";
 import type { BookingResponse, InitiatePaymentResponse, Order, PaymentProvider } from "@/features/bookings/types";
 
-// Zod schema â€” client + server validation parity (AGENTS.md).
+// Zod schema — client + server validation parity (AGENTS.md).
 // G1: the paying parent is the session user (server-derived); the learner is
 // picked from the parent's linked learners.
 const checkoutSchema = z.object({
@@ -92,7 +92,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           idempotency_key: idempotencyKey,
         });
         if (!booking.payment_required) {
-          setStep({ name: "error", message: "This booking was already paid â€” please check your dashboard." });
+          setStep({ name: "error", message: "This booking was already paid — please check your dashboard." });
           return;
         }
         setStep({ name: "initiating" });
@@ -102,7 +102,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           email: value.email,
         });
         setStep({ name: "link", booking, payment });
-        toast.success("Order created â€” opening the payment page");
+        toast.success("Order created — opening the payment page");
         if (payment.payment_link) {
           window.location.assign(payment.payment_link);
         }
@@ -127,7 +127,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-5/6" />
         <p className="text-sm text-ink-500 pt-2">
-          {step.name === "creating" ? "Creating your secure booking orderâ€¦" : "Connecting to the payment gatewayâ€¦"}
+          {step.name === "creating" ? "Creating your secure booking order…" : "Connecting to the payment gateway…"}
         </p>
       </div>
     );
@@ -158,7 +158,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="font-display text-xl tracking-[0.02em] text-white">Secure checkout</h2>
           <span className="font-display text-3xl tracking-[0.02em] text-white">
-            â‚¦{cohort.fee.toLocaleString()}
+            ₦{cohort.fee.toLocaleString()}
             <span className="text-sm font-medium text-white/70"> {cohort.currency}</span>
           </span>
         </div>
@@ -169,7 +169,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         <div className="rounded-xl bg-brand-blue-light/50 p-4 text-sm text-ink-600 space-y-1">
           <p className="font-semibold text-ink-800">{cohort.title}</p>
           <p>
-            {cohort.start_date} â†' {cohort.end_date} · {cohort.timezone} · {cohort.location_mode}
+            {cohort.start_date} → {cohort.end_date} · {cohort.timezone} · {cohort.location_mode}
           </p>
           <p className={seatsLeft <= 5 ? "text-amber-700 font-medium" : ""}>
             {seatsLeft > 0 ? `${seatsLeft} of ${cohort.capacity} seats left` : "Cohort full"}
@@ -191,7 +191,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
 
         <p className="text-xs text-ink-500 leading-relaxed">
           Payment is held in escrow and only released to the tutor after delivery is confirmed (or auto-released
-          after 3 days). Your booking order is idempotent â€” retrying never double-charges.
+          after 3 days). Your booking order is idempotent — retrying never double-charges.
         </p>
 
         <form.Field name="student_id">
@@ -204,7 +204,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
               >
-                <option value="">Select the learner to enrolâ€¦</option>
+                <option value="">Select the learner to enrol…</option>
                 {(learners.data ?? []).map((l) => (
                   <option key={l.id} value={l.id}>
                     {l.first_name} {l.last_name}
@@ -213,7 +213,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
               </select>
               {(learners.data ?? []).length === 0 && !learners.isLoading ? (
                 <span className="mt-1 block text-xs text-ink-500">
-                  No learners linked yet â€” <a href="/onboarding/learner" className="font-semibold text-brand-blue hover:underline">add a learner</a> first.
+                  No learners linked yet — <a href="/onboarding/learner" className="font-semibold text-brand-blue hover:underline">add a learner</a> first.
                 </span>
               ) : null}
               {field.state.meta.errors?.length ? (
@@ -287,7 +287,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                 seatsLeft === 0
               }
             >
-              {createBooking.isPending || payMutation.isPending ? "Processingâ€¦" : "Pay securely now"}
+              {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
             </Button>
           )}
         </form.Subscribe>
@@ -308,7 +308,7 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
   const [status, setStatus] = useState<string>(order.status);
   const [checked, setChecked] = useState(0);
 
-  // Poll the order until it leaves PENDING (webhook round-trip â†' PAID/CANCELLED).
+  // Poll the order until it leaves PENDING (webhook round-trip → PAID/CANCELLED).
   useEffect(() => {
     if (status !== "PENDING") return;
     const t = setInterval(async () => {
@@ -317,7 +317,7 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
         setStatus(res.data.status);
         setChecked((c) => c + 1);
       } catch {
-        /* network hiccup â€” keep polling */
+        /* network hiccup — keep polling */
       }
     }, 6000);
     return () => clearInterval(t);
@@ -330,7 +330,7 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-brand-green">
         <ShieldCheck size={26} />
       </div>
-      <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy">Order {order.order_number} â€” ready to pay</h2>
+      <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy">Order {order.order_number} — ready to pay</h2>
       <p className="text-sm text-ink-600">
         {payment.amount.toLocaleString()} {payment.currency} via{" "}
         {payment.provider === "PAYSTACK" ? "Paystack" : "Flutterwave"}.
@@ -339,7 +339,7 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
       </p>
       {paid ? (
         <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-          âœ… Payment confirmed â€” your seat is secured! View it in your dashboard.
+          ✅ Payment confirmed — your seat is secured! View it in your dashboard.
         </div>
       ) : (
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -360,13 +360,13 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
               setCopied(true);
             }}
           >
-            {copied ? "Copied âœ“" : "Copy payment link"}
+            {copied ? "Copied ✓" : "Copy payment link"}
           </Button>
         </div>
       )}
       {stillPending && (
         <p className="text-xs text-ink-400">
-          Waiting for payment confirmationâ€¦ {checked > 0 ? `(checked ${checked}Ã-)` : "this page refreshes automatically"}
+          Waiting for payment confirmation… {checked > 0 ? `(checked ${checked}×)` : "this page refreshes automatically"}
         </p>
       )}
       <p className="text-xs text-ink-400">

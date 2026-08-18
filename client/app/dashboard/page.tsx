@@ -33,7 +33,7 @@ import { RecommendationsForYou } from "@/components/dashboard/RecommendationsFor
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 
-// Parent portal â€” bookings-style family dashboard. Sidebar nav + sections:
+// Parent portal — bookings-style family dashboard. Sidebar nav + sections:
 // Overview (KPIs + next lesson) · Bookings (status-filtered lessons) ·
 // Payments (orders + receipts) · Progress (attendance + reports) ·
 // Learners (management).
@@ -192,7 +192,7 @@ export default function ParentDashboardPage() {
                   {(learners.data ?? []).map((l) => (
                     <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
                   ))}
-                  {(learners.data ?? []).length === 0 && <option value="">Add a learnerâ€¦</option>}
+                  {(learners.data ?? []).length === 0 && <option value="">Add a learner…</option>}
                 </select>
               </label>
             }
@@ -203,7 +203,7 @@ export default function ParentDashboardPage() {
               <strong className="text-brand-navy">No learner linked yet.</strong>{" "}
               <span className="text-ink-600">Add your first learner to see schedules, attendance and progress.</span>{" "}
               <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-brand-blue hover:underline">
-                <UserPlus size={15} /> Add a learner â†'
+                <UserPlus size={15} /> Add a learner →
               </button>
             </div>
           )}
@@ -215,7 +215,7 @@ export default function ParentDashboardPage() {
                   <CreditCard size={18} />
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-ink-800">Payment pending â€” {nextPayment.order_number}</p>
+                  <p className="text-sm font-bold text-ink-800">Payment pending — {nextPayment.order_number}</p>
                   <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} · completes your booking</p>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function ParentDashboardPage() {
                 <StatCard label="Paid orders" value={paidCount} hint="completed payments" icon={<Wallet size={18} />} />
                 <StatCard
                   label="Attendance"
-                  value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "â€“"}
+                  value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"}
                   hint={attendance.data ? `${attendance.data.present} present of ${attendance.data.total}` : "link a learner"}
                   icon={<LineChart size={18} />}
                 />
@@ -401,7 +401,7 @@ export default function ParentDashboardPage() {
                   <Skeleton className="mt-3 h-24 w-full" />
                 ) : (reports.data ?? []).length === 0 ? (
                   <p className="mt-3 text-sm text-ink-500 rounded-xl border border-dashed border-ink-200 p-6 text-center">
-                    No progress reports yet â€” your tutor shares them here after lessons begin.
+                    No progress reports yet — your tutor shares them here after lessons begin.
                   </p>
                 ) : (
                   <div className="mt-4 space-y-3">
@@ -409,10 +409,10 @@ export default function ParentDashboardPage() {
                       <div key={r.id} className="rounded-xl border border-ink-100 p-4">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-semibold text-ink-700">
-                            {new Date(r.period_start).toLocaleDateString()} â€“ {new Date(r.period_end).toLocaleDateString()}
+                            {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
                           </p>
                           <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-bold text-brand-navy">
-                            â˜… {r.overall_rating}/5
+                            ★ {r.overall_rating}/5
                           </span>
                         </div>
                         {r.strengths && <p className="mt-2 flex items-start gap-2 text-sm text-ink-600"><TrendingUp size={15} className="mt-0.5 shrink-0 text-brand-green" /> {r.strengths}</p>}
@@ -530,7 +530,7 @@ export default function ParentDashboardPage() {
           </div>
           {addError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{addError}</p>}
           <button type="submit" disabled={addSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-gold text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:opacity-50">
-            {addSubmitting ? "Addingâ€¦" : "Add learner"}
+            {addSubmitting ? "Adding…" : "Add learner"}
           </button>
         </form>
       </Modal>
@@ -540,7 +540,7 @@ export default function ParentDashboardPage() {
         open={receipt !== null || receiptLoading}
         onClose={() => setReceipt(null)}
         title="Receipt"
-        description={receipt ? receipt.order.order_number : "Loadingâ€¦"}
+        description={receipt ? receipt.order.order_number : "Loading…"}
       >
         {receipt && (
           <div className="space-y-4 text-sm">
@@ -553,7 +553,7 @@ export default function ParentDashboardPage() {
               <ul className="space-y-1.5">
                 {receipt.items.map((it, i) => (
                   <li key={i} className="flex justify-between text-ink-600">
-                    <span>{it.description ?? it.item_type.replace(/_/g, " ")} Ã- {it.quantity}</span>
+                    <span>{it.description ?? it.item_type.replace(/_/g, " ")} × {it.quantity}</span>
                     <span className="font-semibold text-ink-800">{receipt.order.currency} {it.total_price.toLocaleString()}</span>
                   </li>
                 ))}
@@ -567,7 +567,7 @@ export default function ParentDashboardPage() {
               <ul className="space-y-1.5 text-xs">
                 {receipt.payments.map((p) => (
                   <li key={p.id} className="flex justify-between text-ink-600">
-                    <span>{p.provider.replace(/_/g, " ")}{p.provider_reference ? ` · ${p.provider_reference.slice(0, 14)}â€¦` : ""}</span>
+                    <span>{p.provider.replace(/_/g, " ")}{p.provider_reference ? ` · ${p.provider_reference.slice(0, 14)}…` : ""}</span>
                     <StatusBadge label={p.status} kind={statusKindFor(p.status)} />
                   </li>
                 ))}

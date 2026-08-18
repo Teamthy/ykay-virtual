@@ -52,7 +52,7 @@ export default async function CohortsPage() {
         align="center"
       />
 
-      <div className="container-x mt-12 grid gap-5 pb-20 md:grid-cols-2 lg:grid-cols-3">
+      <div className="container-x mt-10 grid gap-4 pb-20 md:grid-cols-2 lg:grid-cols-3">
         {cohorts.length === 0 ? (
           <div className="rounded-2xl border p-12 text-center text-ink-500 md:col-span-2 lg:col-span-3">
             No cohorts are open for enrolment right now -{" "}
@@ -76,28 +76,28 @@ export default async function CohortsPage() {
                 className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft"
               >
                 <div
-                  className="h-36 bg-cover bg-center"
+                  className="h-24 bg-cover bg-center"
                   style={{
                     backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.1), rgba(6,15,38,0.55)), url(${coverFor(c.title + c.id)})`,
                   }}
                 />
-                <div className="p-6">
-                  <h2 className="font-bold leading-snug text-brand-navy">{c.title}</h2>
-                  <div className="mt-3 space-y-1.5 text-sm text-ink-600">
+                <div className="p-4">
+                  <h2 className="line-clamp-2 text-base font-semibold leading-snug text-brand-navy">{c.title}</h2>
+                  <div className="mt-2 space-y-1 text-xs text-ink-600">
                     <p>
                       🗓️ {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}
                     </p>
-                    <p>
+                    <p className="line-clamp-1">
                       🌍 {c.timezone} · {c.location_mode.replace(/_/g, " ").toLowerCase()}
                     </p>
-                    {c.schedule_description && <p className="text-xs text-ink-500">{c.schedule_description}</p>}
+                    {c.schedule_description && <p className="line-clamp-2 text-[11px] text-ink-500">{c.schedule_description}</p>}
                   </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-extrabold text-brand-blue">
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-sm font-extrabold text-brand-blue">
                       {c.currency} {c.fee.toLocaleString()}
                     </span>
                     <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                      className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
                         full ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
                       }`}
                     >

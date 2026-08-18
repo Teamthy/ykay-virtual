@@ -21,7 +21,7 @@ import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorL
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 
-// Tutor portal â€” tabbed workspace: Overview (KPIs + status + today) ·
+// Tutor portal — tabbed workspace: Overview (KPIs + status + today) ·
 // Lessons (upcoming, attendance, notes) · Availability · Earnings · Profile
 // (application + gradebook + reports).
 
@@ -176,14 +176,14 @@ export default function TutorDashboardPage() {
         />
       </div>
 
-      {/* â”€â”€ Overview â”€â”€ */}
+      {/* ── Overview ── */}
       {tab === "overview" && (
         <div className="mt-6 space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Upcoming" value={today.length} hint="lessons" icon={<CalendarDays size={18} />} />
-            <StatCard label="Held (escrow)" value={`â‚¦${(earnings.data?.held_total ?? 0).toLocaleString()}`} hint="awaiting delivery" icon={<Wallet size={18} />} />
-            <StatCard label="Released" value={`â‚¦${(earnings.data?.released_total ?? 0).toLocaleString()}`} hint="awaiting payout" icon={<ClipboardCheck size={18} />} />
-            <StatCard label="Paid out" value={`â‚¦${(earnings.data?.paid_total ?? 0).toLocaleString()}`} hint="total earnings" icon={<Wallet size={18} />} />
+            <StatCard label="Held (escrow)" value={`₦${(earnings.data?.held_total ?? 0).toLocaleString()}`} hint="awaiting delivery" icon={<Wallet size={18} />} />
+            <StatCard label="Released" value={`₦${(earnings.data?.released_total ?? 0).toLocaleString()}`} hint="awaiting payout" icon={<ClipboardCheck size={18} />} />
+            <StatCard label="Paid out" value={`₦${(earnings.data?.paid_total ?? 0).toLocaleString()}`} hint="total earnings" icon={<Wallet size={18} />} />
           </div>
 
           {/* Application status */}
@@ -226,7 +226,7 @@ export default function TutorDashboardPage() {
                     <div>
                       <div className="font-semibold">{l.title}</div>
                       <div className="text-xs text-ink-800/70">
-                        {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} â€“ {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                        {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                       </div>
                     </div>
                     {l.meeting_url && (
@@ -258,7 +258,7 @@ export default function TutorDashboardPage() {
         </div>
       )}
 
-      {/* â”€â”€ Lessons â”€â”€ */}
+      {/* ── Lessons ── */}
       {tab === "lessons" && (
         <div className="mt-6 space-y-6">
           {/* Attendance to complete */}
@@ -278,7 +278,7 @@ export default function TutorDashboardPage() {
                       <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Mark attendance</span>
                     </div>
                     <Link href="/lms/tutor" className="mt-3 inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-brand-blue transition-colors">
-                      Open roster to mark attendance â†'
+                      Open roster to mark attendance →
                     </Link>
                   </li>
                 ))}
@@ -290,7 +290,7 @@ export default function TutorDashboardPage() {
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <h2 className="flex items-center gap-2 font-bold text-ink-800"><NotebookPen size={16} className="text-brand-green" /> Lesson notes &amp; homework</h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Write lesson notes and homework after each session â€” parents see them in their portal.
+              Write lesson notes and homework after each session — parents see them in their portal.
             </p>
             <Link href="/lms/tutor" className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-4 py-2 text-xs font-semibold text-brand-blue transition-colors hover:border-brand-blue">
               Open the teaching console <BookOpen size={13} />
@@ -331,7 +331,7 @@ export default function TutorDashboardPage() {
         </div>
       )}
 
-      {/* â”€â”€ Availability â”€â”€ */}
+      {/* ── Availability ── */}
       {tab === "availability" && (
         <div className="mt-6 grid lg:grid-cols-[1fr_1.2fr] gap-6 items-start">
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
@@ -344,12 +344,12 @@ export default function TutorDashboardPage() {
               </select>
               <input type="time" value={newSlot.start_time} onChange={(e) => setNewSlot({ ...newSlot, start_time: e.target.value })}
                 className="rounded-xl border border-ink-200 px-2 py-2 text-sm" />
-              <span className="self-center text-xs text-ink-400">â€“</span>
+              <span className="self-center text-xs text-ink-400">–</span>
               <input type="time" value={newSlot.end_time} onChange={(e) => setNewSlot({ ...newSlot, end_time: e.target.value })}
                 className="rounded-xl border border-ink-200 px-2 py-2 text-sm" />
             </div>
             <Button size="sm" className="mt-3 w-full" disabled={addSlot.isPending} onClick={() => addSlot.mutate()}>
-              {addSlot.isPending ? "Addingâ€¦" : "+ Add slot"}
+              {addSlot.isPending ? "Adding…" : "+ Add slot"}
             </Button>
           </section>
 
@@ -363,7 +363,7 @@ export default function TutorDashboardPage() {
               <ul className="mt-3 space-y-1.5">
                 {availability.data?.map((a) => (
                   <li key={a.id} className="flex items-center justify-between text-sm border-b border-ink-100 pb-1.5">
-                    <span className="font-semibold text-ink-700">{DAYS[a.day_of_week]} · {a.start_time}â€“{a.end_time}</span>
+                    <span className="font-semibold text-ink-700">{DAYS[a.day_of_week]} · {a.start_time}–{a.end_time}</span>
                     <button onClick={() => removeSlot.mutate(a.id)} className="text-xs text-red-600 hover:underline">Remove</button>
                   </li>
                 ))}
@@ -373,7 +373,7 @@ export default function TutorDashboardPage() {
         </div>
       )}
 
-      {/* â”€â”€ Earnings â”€â”€ */}
+      {/* ── Earnings ── */}
       {tab === "earnings" && (
         <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
           <div className="flex items-center justify-between">
@@ -385,15 +385,15 @@ export default function TutorDashboardPage() {
           <p className="mt-1 text-xs text-ink-500">Held until lessons are confirmed, then paid out on the weekly schedule.</p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center">
             <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-brand-navy">â‚¦{(earnings.data?.held_total ?? 0).toLocaleString()}</div>
+              <div className="text-lg font-extrabold text-brand-navy">₦{(earnings.data?.held_total ?? 0).toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-ink-500">Held</div>
             </div>
             <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-brand-navy">â‚¦{(earnings.data?.released_total ?? 0).toLocaleString()}</div>
+              <div className="text-lg font-extrabold text-brand-navy">₦{(earnings.data?.released_total ?? 0).toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-ink-500">Released</div>
             </div>
             <div className="rounded-xl bg-brand-gold-light p-3">
-              <div className="text-lg font-extrabold text-brand-green">â‚¦{(earnings.data?.paid_total ?? 0).toLocaleString()}</div>
+              <div className="text-lg font-extrabold text-brand-green">₦{(earnings.data?.paid_total ?? 0).toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-ink-600">Paid out</div>
             </div>
           </div>
@@ -401,13 +401,13 @@ export default function TutorDashboardPage() {
             <p className="text-sm font-bold text-ink-700">Recent payouts</p>
             {(earnings.data?.payouts ?? []).length === 0 ? (
               <p className="mt-2 rounded-xl border border-dashed border-ink-200 p-4 text-center text-xs text-ink-400">
-                No payouts yet â€” released earnings are paid out on the weekly schedule.
+                No payouts yet — released earnings are paid out on the weekly schedule.
               </p>
             ) : (
               <div className="mt-2 space-y-2">
                 {(earnings.data?.payouts ?? []).slice(0, 5).map((p) => (
                   <div key={p.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-2.5 text-sm">
-                    <span className="font-semibold text-ink-700">â‚¦{p.amount.toLocaleString()}</span>
+                    <span className="font-semibold text-ink-700">₦{p.amount.toLocaleString()}</span>
                     <span className="text-xs text-ink-400">
                       {new Date(p.created_at).toLocaleDateString()} ·{" "}
                       <span className={p.status === "PAID" ? "font-bold text-green-600" : "font-semibold text-ink-500"}>{p.status}</span>
@@ -420,7 +420,7 @@ export default function TutorDashboardPage() {
         </section>
       )}
 
-      {/* â”€â”€ Profile â”€â”€ */}
+      {/* ── Profile ── */}
       {tab === "profile" && (
         <div className="mt-6 space-y-6">
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">

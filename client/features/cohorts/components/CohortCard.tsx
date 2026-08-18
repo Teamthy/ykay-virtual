@@ -50,7 +50,7 @@ export function CohortCard({ c }: { c: CohortCardData }) {
 
         <div className="mt-2 flex items-center gap-1 text-[11px] text-ink-500">
           <CalendarDays size={12} className="text-brand-blue" />
-          {new Date(c.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} â†'{" "}
+          {new Date(c.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} →{" "}
           {new Date(c.end_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
         </div>
 

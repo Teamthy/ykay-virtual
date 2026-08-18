@@ -22,7 +22,7 @@ import { ReferralCard } from "@/features/referrals/ReferralCard";
 import { listLearners, type Learner } from "@/features/onboarding/api";
 import { Camera, UserPlus } from "lucide-react";
 
-// /account â€” settings hub (P0): profile, security, devices, preferences,
+// /account — settings hub (P0): profile, security, devices, preferences,
 // data export + deletion.
 
 type Profile = {
@@ -181,7 +181,7 @@ export default function AccountPage() {
     }
   };
 
-  if (isLoading || !user) return <p className="py-24 text-center text-ink-400">Loadingâ€¦</p>;
+  if (isLoading || !user) return <p className="py-24 text-center text-ink-400">Loading…</p>;
 
   return (
     <main className="min-h-screen bg-[#FFF7E4] pb-16">
@@ -246,7 +246,7 @@ export default function AccountPage() {
                   </label>
                 </div>
                 <div className="text-sm text-ink-500">
-                  <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploadingâ€¦" : "Profile photo"}</p>
+                  <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploading…" : "Profile photo"}</p>
                   <p>JPEG, PNG or WebP · up to 10 MB</p>
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function AccountPage() {
                 disabled={saveProfile.isPending}
                 className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-50"
               >
-                {saveProfile.isPending ? "Savingâ€¦" : "Save changes"}
+                {saveProfile.isPending ? "Saving…" : "Save changes"}
               </button>
             </section>
           )}
@@ -298,7 +298,7 @@ export default function AccountPage() {
                 ))}
                 {(learners.data ?? []).length === 0 && (
                   <li className="rounded-xl border border-dashed border-ink-200 px-4 py-6 text-center text-sm text-ink-500">
-                    No learners yet â€” add one to book tuition.
+                    No learners yet — add one to book tuition.
                   </li>
                 )}
               </ul>
@@ -325,7 +325,7 @@ export default function AccountPage() {
                   onClick={() => savePassword.mutate(newPw)}
                   className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
                 >
-                  {savePassword.isPending ? "Updatingâ€¦" : "Update password"}
+                  {savePassword.isPending ? "Updating…" : "Update password"}
                 </button>
               </div>
             </section>
@@ -339,10 +339,10 @@ export default function AccountPage() {
                 {(devices.data ?? []).map((d: Device) => (
                   <div key={d.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{d.platform === "ios" ? "ðŸŽ" : d.platform === "android" ? "ðŸ¤-" : "ðŸŒ"}</span>
+                      <span className="text-xl">{d.platform === "ios" ? "🍎" : d.platform === "android" ? "🤖" : "🌐"}</span>
                       <div>
                         <p className="text-sm font-semibold text-ink-800">{d.platform} · v{d.app_version ?? "?"}</p>
-                        <p className="text-xs text-ink-400">{d.token.slice(0, 24)}â€¦ · last seen {new Date(d.last_seen_at).toLocaleDateString()}</p>
+                        <p className="text-xs text-ink-400">{d.token.slice(0, 24)}… · last seen {new Date(d.last_seen_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <button
@@ -356,7 +356,7 @@ export default function AccountPage() {
                 ))}
                 {(devices.data ?? []).length === 0 && (
                   <p className="rounded-xl border border-dashed border-ink-200 p-6 text-center text-sm text-ink-500">
-                    No devices registered yet â€” install the app or allow notifications to see them here.
+                    No devices registered yet — install the app or allow notifications to see them here.
                   </p>
                 )}
               </div>
@@ -366,7 +366,7 @@ export default function AccountPage() {
           {tab === "Preferences" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-brand-navy">Email preferences</h2>
-              <p className="mt-1 text-sm text-ink-500">Stored on this device for now â€” server-side preferences ship with the notification centre.</p>
+              <p className="mt-1 text-sm text-ink-500">Stored on this device for now — server-side preferences ship with the notification centre.</p>
               <div className="mt-4 space-y-3">
                 {[
                   ["booking", "Booking confirmations & payment receipts"],
@@ -393,7 +393,7 @@ export default function AccountPage() {
                 <h2 className="text-lg font-bold text-brand-navy">Export your data</h2>
                 <p className="mt-1 text-sm leading-6 text-ink-500">
                   Download everything we hold on your account: profile, roles, learners, devices and chat
-                  history â€” as a JSON file. This fulfils the export right in our{" "}
+                  history — as a JSON file. This fulfils the export right in our{" "}
                   <Link href="/privacy" className="font-semibold text-brand-gold-dark hover:underline">privacy policy</Link>.
                 </p>
                 <button
@@ -401,7 +401,7 @@ export default function AccountPage() {
                   onClick={() => void doExport()}
                   className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white hover:bg-brand-navy/90"
                 >
-                  â¬‡ Download my data
+                  ⬇ Download my data
                 </button>
               </section>
 
@@ -410,7 +410,7 @@ export default function AccountPage() {
                 <p className="mt-1 text-sm leading-6 text-red-600/80">
                   This permanently deletes your sign-in access, push devices and active sessions. Learners
                   linked to you remain in the system for administrative records until purged. This cannot be
-                  undone â€” consider exporting your data first.
+                  undone — consider exporting your data first.
                 </p>
                 <div className="mt-4 flex max-w-md gap-2">
                   <input
@@ -426,7 +426,7 @@ export default function AccountPage() {
                     onClick={() => doDelete.mutate()}
                     className="shrink-0 rounded-lg bg-red-600 px-5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-40"
                   >
-                    {doDelete.isPending ? "Deletingâ€¦" : "Delete account"}
+                    {doDelete.isPending ? "Deleting…" : "Delete account"}
                   </button>
                 </div>
               </section>

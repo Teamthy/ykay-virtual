@@ -9,6 +9,7 @@ import {
   Settings,
   Wallet,
   Users,
+  ShieldCheck,
   BadgeCheck,
   Newspaper,
   Building2,
@@ -24,6 +25,8 @@ export type AppNavItem = {
   label: string;
   icon: LucideIcon;
   exact?: boolean;
+  /** Only shown to SUPER_ADMIN (not ACADEMIC_ADMIN / INSTITUTION_ADMIN). */
+  superAdminOnly?: boolean;
 };
 
 export type AppShellVariant = "parent" | "student" | "tutor" | "admin";
@@ -67,6 +70,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
     home: "/admin",
     items: [
       { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+      { href: "/admin/super", label: "Super admin", icon: ShieldCheck, superAdminOnly: true },
       { href: "/admin/users", label: "Users", icon: Users },
       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },

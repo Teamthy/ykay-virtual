@@ -22,7 +22,7 @@ import (
 	"ykay-virtual/internal/worker"
 )
 
-// AuthService â€” registration, session-based login (httpOnly cookie bound),
+// AuthService — registration, session-based login (httpOnly cookie bound),
 // logout, current-user lookup and session rotation on privilege change.
 //
 // Security invariants (per AGENTS.md / PRD):
@@ -38,7 +38,7 @@ const (
 	SessionCookie = "nuvora_session"
 )
 
-// selfAssignableRoles â€” the ONLY roles a user may grant themselves, either at
+// selfAssignableRoles — the ONLY roles a user may grant themselves, either at
 // registration or through the self-service onboarding role step
 // (POST /auth/me/role). Administrative roles (ACADEMIC_ADMIN, SUPER_ADMIN,
 // INSTITUTION_ADMIN) are deliberately absent: they grant privileged access to
@@ -92,7 +92,7 @@ func (s *AuthService) WithQueue(q worker.Queue) *AuthService {
 func (s *AuthService) WithDevLogging(enabled bool) *AuthService {
 	if enabled {
 		s.devLog = func(format string, args ...any) {
-			slog.Info(fmt.Sprintf("ðŸ”‘ "+format, args...))
+			slog.Info(fmt.Sprintf("🔑 "+format, args...))
 		}
 	} else {
 		s.devLog = nil
@@ -106,7 +106,7 @@ func (s *AuthService) logDev(format string, args ...any) {
 	}
 }
 
-// sendEmail â€” durable-queue first, direct SMTP/console fallback. The queue
+// sendEmail — durable-queue first, direct SMTP/console fallback. The queue
 // handler is idempotent and retries with backoff (at-least-once).
 func (s *AuthService) sendEmail(ctx context.Context, to, subject, htmlBody string) error {
 	// Auth codes must go out now. Queue-only delivery fails on Render when
@@ -118,7 +118,7 @@ func (s *AuthService) sendEmail(ctx context.Context, to, subject, htmlBody strin
 		if s.queue != nil {
 			payload := map[string]string{"to": to, "subject": subject, "body": htmlBody}
 			if _, qerr := s.queue.Enqueue(ctx, worker.JobSendEmail, payload); qerr == nil {
-				slog.Warn("smtp failed â€” queued email for retry", "to", to, "subject", subject, "error", err)
+				slog.Warn("smtp failed — queued email for retry", "to", to, "subject", subject, "error", err)
 				return nil
 			}
 		}
@@ -152,7 +152,7 @@ func (s *AuthService) WithStudentProfiles(students identity.StudentProfileReposi
 	return s
 }
 
-// ensureStudentProfile â€” creates the user's own student profile when the
+// ensureStudentProfile — creates the user's own student profile when the
 // STUDENT role is granted and none exists yet. Best-effort: failures are
 // logged to audit but never block auth flows.
 func (s *AuthService) ensureStudentProfile(ctx context.Context, user *identity.User) {
@@ -192,7 +192,7 @@ type RegisterInput struct {
 	ReferralCode string   `json:"referral_code,omitempty"`
 }
 
-// Register â€” creates the user with bcrypt hash, assigns roles (validated
+// Register — creates the user with bcrypt hash, assigns roles (validated
 // against the roles table), audits the event. Returns the sanitized user.
 func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity.User, error) {
 	email := strings.ToLower(strings.TrimSpace(in.Email))
@@ -250,7 +250,7 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 		}
 	}
 	if s.referrals != nil && strings.TrimSpace(in.ReferralCode) != "" {
-		// Record the referral (best-effort â€” never blocks registration).
+		// Record the referral (best-effort — never blocks registration).
 		_, _ = s.referrals.Apply(ctx, user.ID, in.ReferralCode)
 	}
 	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditCreate, "user",
@@ -259,7 +259,7 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 	return user, nil
 }
 
-// SetPrimaryRole â€” replaces the user's role grants with a single primary role
+// SetPrimaryRole — replaces the user's role grants with a single primary role
 // (self-service onboarding step: "select role"). Unknown role names are
 // rejected; the caller must already be authenticated.
 func (s *AuthService) SetPrimaryRole(ctx context.Context, userID uuid.UUID, roleName string) ([]string, error) {
@@ -299,7 +299,7 @@ func (s *AuthService) SetPrimaryRole(ctx context.Context, userID uuid.UUID, role
 	return out, nil
 }
 
-// ChangePassword â€” sets a new password for the authenticated user (used by the
+// ChangePassword — sets a new password for the authenticated user (used by the
 // onboarding "complete your profile" step, where accounts are first created
 // with a generated password, and by account settings).
 //
@@ -350,7 +350,7 @@ func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newP
 	return raw, nil
 }
 
-// Login â€” verifies credentials, creates a session, returns the raw token
+// Login — verifies credentials, creates a session, returns the raw token
 // (the handler puts it in the httpOnly cookie) + the user + roles.
 func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent string) (token string, user *identity.User, roles []string, err error) {
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -394,8 +394,8 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 	return raw, user, roles, nil
 }
 
-// Me â€” resolves the current user + roles from a session token hash.
-// MarkOnboarded â€” first-time wizard completion marker (idempotent).
+// Me — resolves the current user + roles from a session token hash.
+// MarkOnboarded — first-time wizard completion marker (idempotent).
 func (s *AuthService) MarkOnboarded(ctx context.Context, userID uuid.UUID) error {
 	return s.users.SetOnboarded(ctx, userID, s.now().UTC())
 }
@@ -426,7 +426,7 @@ func (s *AuthService) Me(ctx context.Context, tokenHash string) (*identity.User,
 	return user, roles, nil
 }
 
-// Logout â€” revokes the session by token hash (cookie cleared by handler).
+// Logout — revokes the session by token hash (cookie cleared by handler).
 func (s *AuthService) Logout(ctx context.Context, tokenHash string) error {
 	session, err := s.sessions.FindByTokenHash(ctx, tokenHash)
 	if err != nil {
@@ -438,7 +438,7 @@ func (s *AuthService) Logout(ctx context.Context, tokenHash string) error {
 	return s.sessions.Revoke(ctx, session.ID)
 }
 
-// RotateAllSessions â€” revokes every session for a user (privilege change).
+// RotateAllSessions — revokes every session for a user (privilege change).
 // The user re-authenticates to get a fresh session (session rotation per
 // AGENTS.md: "Sessions rotate on privilege change").
 func (s *AuthService) RotateAllSessions(ctx context.Context, userID uuid.UUID) error {
@@ -457,7 +457,7 @@ func newSessionToken() (raw, hash string, err error) {
 	return raw, hex.EncodeToString(sum[:]), nil
 }
 
-// HashToken â€” SHA-256 hex of a raw session token (for cookieâ†’lookup).
+// HashToken — SHA-256 hex of a raw session token (for cookie→lookup).
 func HashToken(raw string) string {
 	sum := sha256.Sum256([]byte(raw))
 	return hex.EncodeToString(sum[:])

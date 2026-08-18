@@ -124,7 +124,7 @@ export default function StudentDashboardPage() {
             <div className="space-y-6">
               {/* KPI snapshot */}
               <div className="grid gap-4 sm:grid-cols-3">
-                <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "â€“"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
+                <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
                 <StatCard label="Assignments" value={`${submittedIds.size}/${assignments.data?.length ?? 0}`} hint="submitted" icon={<FileText size={18} />} />
                 <StatCard label="Done" value={past.length} hint="lessons" icon={<CheckCircle2 size={18} />} />
               </div>
@@ -188,7 +188,7 @@ export default function StudentDashboardPage() {
                 <Skeleton className="h-20 w-full mt-3" />
               ) : (lessons.data?.length ?? 0) === 0 ? (
                 <p className="mt-4 text-sm text-ink-500 border border-dashed border-ink-200 rounded-xl p-8 text-center">
-                  No lessons yet â€” join a cohort to get started.
+                  No lessons yet — join a cohort to get started.
                 </p>
               ) : (
                 <ul className="mt-4 space-y-3">
@@ -271,7 +271,7 @@ export default function StudentDashboardPage() {
                               rows={2}
                               value={drafts[a.id] ?? ""}
                               onChange={(e) => setDrafts((d) => ({ ...d, [a.id]: e.target.value }))}
-                              placeholder="Write your answerâ€¦"
+                              placeholder="Write your answer…"
                               className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
                             />
                             <Button size="sm" disabled={submit.isPending || !(drafts[a.id] ?? "").trim()}

@@ -1,4 +1,4 @@
-// PageHeader â€” navy photo band. Keep titles short; the photo is the texture.
+// PageHeader — navy photo band. Keep titles short; the photo is the texture.
 
 export function PageHeader({
   eyebrow,

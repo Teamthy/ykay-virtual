@@ -33,4 +33,5 @@ export const DASHBOARD_ROLES: Record<string, string[]> = {
   "/tutor-dashboard": ["TUTOR"],
   "/admin": ADMIN_ROLES,
   "/lms": ["PARENT", "STUDENT", "TUTOR"],
+  "/lms/tutor": ["TUTOR"],
 };

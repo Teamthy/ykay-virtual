@@ -51,7 +51,7 @@ export default function AdminOverviewPage() {
         <StatCard label="Active learners" value={s?.active_users.toLocaleString() ?? "-"} sub={`${s?.users.toLocaleString()} registered`} accent />
         <StatCard label="Tutors (approved)" value={s?.tutors_approved.toLocaleString() ?? "-"} sub={`${s?.tutors_pending.toLocaleString()} pending vetting`} />
         <StatCard label="Cohorts (published)" value={s?.cohorts_published.toLocaleString() ?? "-"} sub={`${s?.lessons_this_week.toLocaleString()} lessons this week`} />
-        <StatCard label="Revenue" value={`â‚¦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} sub={`${(s?.revenue_paid_out ?? 0).toLocaleString()} paid out`} accent />
+        <StatCard label="Revenue" value={`₦${(s?.revenue_in_escrow ?? 0).toLocaleString()}`} sub={`${(s?.revenue_paid_out ?? 0).toLocaleString()} paid out`} accent />
       </section>
 
       {/* Operational */}

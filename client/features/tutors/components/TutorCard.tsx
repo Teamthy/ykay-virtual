@@ -22,7 +22,7 @@ export function TutorCard({ tutor }: { tutor: Tutor }) {
       <Link href={`/tutors/${tutor.slug}`} className="relative shrink-0">
         <Image
           src={photo}
-          alt={`${tutor.display_name} â€” NUVORA tutor`}
+          alt={`${tutor.display_name} — NUVORA tutor`}
           width={56}
           height={56}
           className="size-14 rounded-full object-cover object-top ring-2 ring-ink-100"

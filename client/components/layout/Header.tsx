@@ -11,7 +11,7 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/utils";
 
-// NUVORA header â€” clean Preline-style: brand · inline links · Services
+// NUVORA header — clean Preline-style: brand · inline links · Services
 // mega-menu (grouped + customer story) · divider · Sign in · Get started.
 
 const SERVICE_GROUPS = [
@@ -143,7 +143,7 @@ export function Header() {
                     ))}
                   </div>
 
-                  {/* Promo column â€” customer stories (no fabricated quotes) */}
+                  {/* Promo column — customer stories (no fabricated quotes) */}
                   <div className="flex flex-col bg-ink-50 p-4 sm:col-span-1">
                     <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
                       Parent stories
@@ -155,7 +155,7 @@ export function Header() {
                       loading="lazy"
                     />
                     <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                      Real families, real results â€” read parent stories published with explicit consent.
+                      Real families, real results — read parent stories published with explicit consent.
                     </p>
                     <a
                       href="/success-stories"

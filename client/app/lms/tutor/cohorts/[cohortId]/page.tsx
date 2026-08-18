@@ -193,7 +193,7 @@ export default function LmsTutorCohortPage() {
               </p>
             </div>
             <Link href="/lms/tutor" className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-300">
-              â† Back to My Teaching
+              ← Back to My Teaching
             </Link>
           </div>
         </div>
@@ -371,7 +371,7 @@ export default function LmsTutorCohortPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-ink-400">Q{qi + 1}</span>
                       <input type="text" aria-label="Question text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
-                      <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: d.questions.filter((_, i) => i !== qi) }))} className="text-xs font-bold text-red-500">âœ•</button>
+                      <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: d.questions.filter((_, i) => i !== qi) }))} className="text-xs font-bold text-red-500">✕</button>
                     </div>
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
                       {q.options.map((opt, oi) => (

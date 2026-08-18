@@ -10,6 +10,7 @@ import {
 } from "@/features/lms/api";
 import { listSubmissions } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
+import { RoleGate } from "@/components/dashboard/RoleGate";
 
 // Tutor LMS hub - cohorts I teach, pending grading, quick actions.
 
@@ -71,6 +72,7 @@ export default function LmsTutorHomePage() {
 
   return (
     <main className="min-h-screen bg-[#FFF7E4] pb-16">
+      <RoleGate page="/lms/tutor" />
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">

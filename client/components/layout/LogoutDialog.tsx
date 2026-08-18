@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession, useLogout } from "@/hooks/useSession";
 
-// Modal confirmation â€” stays on the current screen (not /logout).
+// Modal confirmation — stays on the current screen (not /logout).
 
 export function LogoutDialog({
   open,
@@ -62,7 +62,7 @@ export function LogoutDialog({
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-ink-600">
           {isLoading
-            ? "Checking your sessionâ€¦"
+            ? "Checking your session…"
             : user
               ? `You are signed in as ${user.email}. Logging out ends this session on this device.`
               : "You are not signed in on this device."}
@@ -81,7 +81,7 @@ export function LogoutDialog({
                 disabled={busy}
                 className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-brand-navy px-5 text-sm font-bold text-white hover:bg-brand-navy/90 disabled:opacity-50"
               >
-                {busy ? "Logging outâ€¦" : "Yes, log out"}
+                {busy ? "Logging out…" : "Yes, log out"}
               </button>
               <button
                 type="button"

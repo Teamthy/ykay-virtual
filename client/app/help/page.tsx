@@ -6,7 +6,7 @@ import { Search, LifeBuoy, ArrowRight, ChevronDown } from "lucide-react";
 import { HELP_CATEGORIES, slugify } from "@/lib/help-data";
 import { PageHero } from "@/components/layout/PageHero";
 
-// Help Center â€” searchable, categorised FAQ hub (single source of truth is
+// Help Center — searchable, categorised FAQ hub (single source of truth is
 // lib/help-data.ts). Client-side search across every question + answer.
 
 export default function HelpPage() {
@@ -48,7 +48,7 @@ export default function HelpPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search questions, e.g. escrow, refunds, vettingâ€¦"
+            placeholder="Search questions, e.g. escrow, refunds, vetting…"
             aria-label="Search help articles"
             className="w-full rounded-full border border-ink-200 bg-white py-4 pl-12 pr-5 text-sm shadow-card focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
           />

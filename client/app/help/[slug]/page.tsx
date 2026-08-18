@@ -7,7 +7,7 @@ import { InnerHero } from "@/components/layout/InnerHero";
 import { buildMetadata } from "@/lib/seo";
 import { getHelpArticle, getHelpArticles } from "@/lib/help-data";
 
-// Help article pages â€” one indexable URL per FAQ (from lib/help-data.ts, the
+// Help article pages — one indexable URL per FAQ (from lib/help-data.ts, the
 // single source of truth). Content is the same factual answers as /help, so the
 // two never drift.
 
@@ -30,7 +30,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
   return buildMetadata({
     title: `${article.q} | NUVORA Help`,
-    description: article.a.length > 150 ? `${article.a.slice(0, 147)}â€¦` : article.a,
+    description: article.a.length > 150 ? `${article.a.slice(0, 147)}…` : article.a,
     path: `/help/${article.slug}`,
   });
 }
