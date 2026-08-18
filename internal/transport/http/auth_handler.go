@@ -45,7 +45,7 @@ func newAuthHandlerWithCookieDomain(svc *service.AuthService, secureCookies bool
 	}
 	cfg := middleware.DefaultCookieConfig(secureCookies)
 	cfg.Domain = cookieDomain
-	return &AuthHandler{svc: svc, cfg: cfg, siteURL: siteURL}
+	return &AuthHandler{svc: svc, cfg: cfg, siteURL: siteURL, google: google}
 }
 
 type userResponse struct {

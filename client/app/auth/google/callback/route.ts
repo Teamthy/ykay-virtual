@@ -39,12 +39,11 @@ export async function GET(request: Request) {
     }
     const { token, user } = (await res.json()).data as {
       token: string;
-      user: { roles: string[]; status: string };
+      user: { roles: string[]; status: string; onboarded?: boolean };
     };
 
-    const response = NextResponse.redirect(
-      new URL(user.roles.length ? "/dashboard" : "/onboarding", url.origin)
-    );
+    const dest = user.onboarded ? "/dashboard" : "/onboarding/wizard";
+    const response = NextResponse.redirect(new URL(dest, url.origin));
     response.cookies.set("nuvora_session", token, {
       httpOnly: true,
       sameSite: "lax",
