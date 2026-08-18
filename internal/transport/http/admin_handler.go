@@ -6,6 +6,7 @@ import (
 
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/content"
+	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
@@ -529,8 +530,20 @@ func (h *AdminHandler) LessonsToday(w http.ResponseWriter, r *http.Request) {
 // can review accounts); role grant/revoke and status changes remain
 // SUPER_ADMIN-only (requireSuperAdmin).
 func (h *AdminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
-	if h.requireAdmin(w, r) == nil {
+	actor := requireActor(w, r)
+	if actor == nil {
 		return
+	}
+	if !actor.IsAdmin {
+		WriteAppError(w, pkg.Forbidden("admin access required"))
+		return
+	}
+	isSuper := false
+	for _, role := range actor.Roles {
+		if role == "SUPER_ADMIN" {
+			isSuper = true
+			break
+		}
 	}
 	p := ParsePagination(r)
 	users, total, err := h.svc.ListUsers(r.Context(),
@@ -540,6 +553,30 @@ func (h *AdminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		WriteAppError(w, err)
 		return
+	}
+	// A non-SUPER_ADMIN admin may review regular users but must NEVER see
+	// SUPER_ADMIN accounts or the SUPER_ADMIN role grant (least privilege).
+	// Filter server-side so the role is not even returned to them.
+	if !isSuper {
+		visible := make([]identity.UserWithRoles, 0, len(users))
+		for _, u := range users {
+			isSup := false
+			kept := make([]string, 0, len(u.Roles))
+			for _, role := range u.Roles {
+				if role == "SUPER_ADMIN" {
+					isSup = true
+					continue
+				}
+				kept = append(kept, role)
+			}
+			if isSup {
+				continue // hide super admin accounts entirely
+			}
+			u.Roles = kept
+			visible = append(visible, u)
+		}
+		users = visible
+		total = len(visible) // pagination reflects what this admin can see
 	}
 	pkg.WriteSuccess(w, http.StatusOK, users, p.Meta(int64(total)))
 }

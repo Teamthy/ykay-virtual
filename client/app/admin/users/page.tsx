@@ -160,17 +160,22 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-100">
-                {(usersQ.data?.users ?? []).map((u) => (
-                  <UserRow
-                    key={u.id}
-                    u={u}
-                    roles={rolesQ.data ?? []}
-                    selfId={user?.id}
-                    canManage={superAdmin}
-                    roleMut={roleMut}
-                    statusMut={statusMut}
-                  />
-                ))}
+                {(usersQ.data?.users ?? [])
+                  // Defense in depth: a non-SUPER_ADMIN admin must never see
+                  // SUPER_ADMIN accounts or the SUPER_ADMIN role, even if a
+                  // stale payload ever contained them. Server already filters.
+                  .filter((u) => superAdmin || !(u.roles ?? []).includes("SUPER_ADMIN"))
+                  .map((u) => (
+                    <UserRow
+                      key={u.id}
+                      u={u}
+                      roles={rolesQ.data ?? []}
+                      selfId={user?.id}
+                      canManage={superAdmin}
+                      roleMut={roleMut}
+                      statusMut={statusMut}
+                    />
+                  ))}
               </tbody>
             </table>
           </div>
