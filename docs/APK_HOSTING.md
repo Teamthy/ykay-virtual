@@ -72,3 +72,31 @@ Installed APKs check on launch, download, and prompt "Restart" (UpdateBanner).
 ## Native-only changes still need a new APK
 Adding a new native module requires a fresh `eas build` / the release workflow.
 Pure JS/TS features ship via `eas update` (no reinstall).
+
+---
+
+## Fixing "App not installed"
+
+The most common cause with a locally-built APK is an **unsigned/invalidly
+signed release APK**. Android refuses to install it.
+
+**Root cause:** a local `./gradlew assembleRelease` produces an
+**unsigned** `app-release-unsigned.apk` unless you configure a keystore +
+`signingConfig` manually. That APK will never install.
+
+**Fix:** build through **EAS** (`npx eas build`), which:
+- signs the APK automatically,
+- reuses the **same signing key** across every build (so updates install
+  cleanly over a previously installed version),
+- outputs a proper installable release APK.
+
+The CI workflow (`apk-release.yml`) now uses EAS for the APK build. It needs
+the `EXPO_TOKEN` secret.
+
+Other causes of "App not installed":
+1. A differently-signed version was already installed → **uninstall first**.
+2. Corrupt/incomplete download of a large APK → re-download, verify size.
+3. "Unknown sources" not allowed for your browser/file manager.
+4. Wrong CPU architecture (use a universal APK).
+5. Android version below the app's minSdk (Android 8.0+).
+6. Not enough storage (need ~2–3× the APK size free).
