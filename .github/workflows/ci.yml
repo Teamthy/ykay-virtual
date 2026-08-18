@@ -24,6 +24,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - name: Lint (gofmt + vet)
         run: |
           test -z "$(gofmt -l internal cmd pkg)" || (gofmt -l internal cmd pkg; exit 1)
@@ -41,6 +42,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - name: Run CI eval suite (deterministic rubric)
         run: go test ./internal/service/ -run 'TestChatPromptEvals_CI|TestChatService_|TestPushService_' -v
       - name: Live evals against Gemini (when key provided)
@@ -71,6 +73,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - name: Install postgres client (psql/pg_dump)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Run full E2E against real Postgres
@@ -125,6 +128,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - name: Install LHCI
         run: npm install -g @lhci/cli@0.14.x
       # All three processes must run inside ONE step — GitHub Actions kills
@@ -184,6 +188,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - name: Install postgres client (psql/pg_dump/pg_restore)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
       - name: Migrate + seed deterministic rows
@@ -208,6 +213,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - name: Metrics unit tests (telemetry + queue instrumentation)
         run: go test ./internal/telemetry/ ./internal/worker/
       - name: Validate Prometheus config + alert rules (promtool)
@@ -260,6 +266,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - run: go test ./internal/transport/http/ -run TestOpenAPIContract -v
 
   browser-e2e:
@@ -284,6 +291,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
+          cache: true
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

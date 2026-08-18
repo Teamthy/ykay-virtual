@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 import {
   getCohort,
   getCohortLessons,
@@ -175,31 +176,20 @@ export default function LmsTutorCohortPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#FFF7E4] pb-16">
-      <header className="border-b border-ink-100 bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/lms/tutor" className="hover:text-brand-gold-dark">My Teaching</Link> /{" "}
-            <span className="text-ink-600">{cohort.data?.title ?? "Cohort"}</span>
-          </p>
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">
-                {cohort.data?.title ?? "Loading cohort..."}
-              </h1>
-              <p className="mt-1 text-sm text-ink-500">
-                Teaching console - attendance, grading and reports.
-                {cohort.data ? `  |  ${cohort.data.enrolled_count} enrolled` : ""}
-              </p>
-            </div>
-            <Link href="/lms/tutor" className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-300">
-              ← Back to My Teaching
-            </Link>
-          </div>
-        </div>
-      </header>
+    <main className="px-4 py-8 md:px-8">
+      <PageHeader
+        eyebrow="Tutor"
+        title={cohort.data?.title ?? "Loading cohort..."}
+        cover="/hero/how-it-works.jpg"
+        subline={`Teaching console - attendance, grading and reports.${cohort.data ? `  |  ${cohort.data.enrolled_count} enrolled` : ""}`}
+        actions={
+          <Link href="/lms/tutor" className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-300">
+            ← Back to My Teaching
+          </Link>
+        }
+      />
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl">
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* Attendance console */}
           <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">

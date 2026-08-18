@@ -11,6 +11,7 @@ import {
 import { listSubmissions } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
 import { RoleGate } from "@/components/dashboard/RoleGate";
+import { PageHeader } from "@/components/dashboard/PageHeader";
 
 // Tutor LMS hub - cohorts I teach, pending grading, quick actions.
 
@@ -71,33 +72,21 @@ export default function LmsTutorHomePage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#FFF7E4] pb-16">
+    <main className="px-4 py-8 md:px-8">
       <RoleGate page="/lms/tutor" />
-      <header className="border-b border-ink-100 bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/" className="hover:text-brand-gold-dark">NUVORA</Link> / Teaching
-          </p>
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">My Teaching</h1>
-              <p className="mt-1 text-sm text-ink-500">
-                {user ? `Signed in as ${user.email}` : "Tutor portal"} - cohorts, lessons, attendance and grading.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Link href="/lms" className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-300">
-                Student view
-              </Link>
-              <Link href="/become-tutor/apply" className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover">
-                Tutor application
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Tutor"
+        title="My Teaching"
+        cover="/hero/how-it-works.jpg"
+        subline={user ? `Signed in as ${user.email}` : "Tutor portal"}
+        actions={
+          <Link href="/become-tutor/apply" className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover">
+            Tutor application
+          </Link>
+        }
+      />
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl">
         {/* Stats */}
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
           <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
