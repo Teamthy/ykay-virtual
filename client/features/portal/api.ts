@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 
-// Portal API — student/parent/tutor surfaces (Phase 11b).
+// Portal API - student/parent/tutor surfaces (Phase 11b).
 
 // --- Tutor availability ---
 

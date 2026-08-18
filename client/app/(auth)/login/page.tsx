@@ -30,7 +30,7 @@ function destinationFor(user: CurrentUser, next: string | null): string {
 function friendlyError(raw: string): string {
   if (/invalid credentials/i.test(raw))
     return "Email or password is incorrect. Try again, or reset your password below.";
-  if (/not active/i.test(raw)) return "This account isn't active yet — check your inbox for the verification email.";
+  if (/not active/i.test(raw)) return "This account isn't active yet - check your inbox for the verification email.";
   if (/rate limit|too many/i.test(raw)) return "Too many attempts. Wait a minute, then try again.";
   if (/failed to fetch|network|fetch/i.test(raw)) return "Can't reach NUVORA right now. Check your connection and try again.";
   return raw;
@@ -45,7 +45,7 @@ function LoginInner() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Already signed in? Don't show the form — go where you're headed.
+  // Already signed in? Don't show the form - go where you're headed.
   useEffect(() => {
     if (!isLoading && user) router.replace(destinationFor(user, next));
   }, [user, isLoading, next, router]);

@@ -66,7 +66,7 @@ export async function TutorsShowcase() {
                   <div className="mt-2 flex items-center gap-2">
                     <span className="flex items-center gap-1 text-xs font-bold text-ink-800">
                       <Star size={13} className="text-brand-gold" fill="currentColor" strokeWidth={0} />
-                      {t.rating_avg ? t.rating_avg.toFixed(1) : "—"}
+                      {t.rating_avg ? t.rating_avg.toFixed(1) : "-"}
                     </span>
                     <span className="text-xs text-ink-500">
                       {t.rating_count ? `${t.rating_count} reviews` : "New"}

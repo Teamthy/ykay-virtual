@@ -142,7 +142,7 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
               <Skeleton className="h-24 w-full" />
             ) : (cohorts.data?.length ?? 0) === 0 ? (
               <div className="border border-dashed border-ink-200 rounded-2xl p-8 text-center text-sm text-ink-500">
-                No cohorts are open for enrolment yet — new cohorts launch regularly.{" "}
+                No cohorts are open for enrolment yet - new cohorts launch regularly.{" "}
                 <Link href="/private-tuition" className="text-brand-blue font-semibold hover:underline">Request private tuition</Link> in the meantime.
               </div>
             ) : (
@@ -178,7 +178,7 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
             <h2 className="text-xl font-extrabold mb-3">One-to-one support</h2>
             <p className="text-sm text-ink-600 leading-relaxed">
               Prefer one-to-one? Request private tuition and our advisors match your learner with a
-              vetted tutor for {programme.title} — tailored pace, schedule and goals.
+              vetted tutor for {programme.title} - tailored pace, schedule and goals.
             </p>
             <ul className="mt-4 space-y-2 text-sm text-ink-700">
               <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Custom schedule around your family&apos;s week</li>
@@ -223,7 +223,7 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
           <div className="max-w-2xl space-y-3">
             {[
               { q: "Who is this programme for?", a: `${programme.title} is designed for learners at the ${programme.level_name ?? "appropriate"} level${programme.exam_name ? ` preparing for ${programme.exam_name}` : ""}.` },
-              { q: "How do I enrol?", a: "Pick a cohort from the Cohorts tab and enrol securely — your fee is held in escrow until lessons are delivered. Private tuition is also available." },
+              { q: "How do I enrol?", a: "Pick a cohort from the Cohorts tab and enrol securely - your fee is held in escrow until lessons are delivered. Private tuition is also available." },
               { q: "Can I change or cancel?", a: "Rescheduling is free within your package window. Cancellations follow our published policy; unused escrow balances are refundable per policy." },
             ].map((f) => (
               <details key={f.q} className="border rounded-xl px-5 py-4">
@@ -239,7 +239,7 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
 }
 
 function topicsFor(p: ProgrammeDetail): string[] {
-  const base = `${p.title} — foundations and key concepts`;
+  const base = `${p.title} - foundations and key concepts`;
   const exam = p.exam_name ? `Working through ${p.exam_name} past questions and mark schemes` : "Practical application and problem-solving";
   const level = p.level_name ? `Skills and techniques expected at ${p.level_name}` : "Core skills and techniques";
   return [

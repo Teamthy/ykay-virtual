@@ -1,4 +1,4 @@
-/** Local marketing photos — never remote Unsplash (preview has no network). */
+/** Local marketing photos - never remote Unsplash (preview has no network). */
 
 export const COVERS = [
   "/hero/exam-prep.jpg",

@@ -61,7 +61,7 @@ function LoginCodeInner() {
           return c - 1;
         });
       }, 1000);
-      toast.success("Login code sent — check your inbox");
+      toast.success("Login code sent - check your inbox");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not send code");
     } finally {
@@ -93,7 +93,7 @@ function LoginCodeInner() {
       title={step === "email" ? "Log in with a code" : "Enter your login code"}
       subtitle={
         step === "email"
-          ? "We'll email you a 6-digit sign-in code — no password needed."
+          ? "We'll email you a 6-digit sign-in code - no password needed."
           : `A code was sent to ${email}`
       }
       footer={

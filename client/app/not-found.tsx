@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Search, Compass, LifeBuoy, MessageSquare } from "lucide-react";
 
-// Hard 404 page (never a soft-404 200 — SEO rule). Suggests the most likely
+// Hard 404 page (never a soft-404 200 - SEO rule). Suggests the most likely
 // destinations instead of dead-ending the visitor.
 
 const POPULAR_SUBJECTS = [

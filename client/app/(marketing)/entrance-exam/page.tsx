@@ -8,9 +8,9 @@ import { Check } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Entrance Exams — Prepare for Top Schools in Nigeria & Abroad | NUVORA",
+  title: "Entrance Exams - Prepare for Top Schools in Nigeria & Abroad | NUVORA",
   description:
-    "Prep for WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT — past papers, mocks and weekly reports. We do not publish unverified success rates.",
+    "Prep for WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT - past papers, mocks and weekly reports. We do not publish unverified success rates.",
   path: "/entrance-exam",
 });
 
@@ -44,7 +44,7 @@ export default function EntranceExamPage() {
       <PageHero
         eyebrow="Entrance & board exams"
         title="Prepare for entrance exams in Nigeria and the UK"
-        subtitle="WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT — past papers, mocks and weekly reports. We do not publish unverified success rates."
+        subtitle="WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT - past papers, mocks and weekly reports. We do not publish unverified success rates."
         crumbs={[{ name: "Home", href: "/" }, { name: "Entrance Exams" }]}
         align="center"
         image={{ src: "/hero/entrance-exam.jpg", alt: "Young student preparing for entrance exams" }}
@@ -60,8 +60,8 @@ export default function EntranceExamPage() {
               Get top grades in tests &amp; exams
             </h2>
             <p className="mt-4 text-ink-600 leading-relaxed">
-              Prepare for entrance exams into top schools in Nigeria &amp; the UK — Loyola Jesuit,
-              Grange, St. Saviour&apos;s, King&apos;s College UK, CIS and federal schools — with
+              Prepare for entrance exams into top schools in Nigeria &amp; the UK - Loyola Jesuit,
+              Grange, St. Saviour&apos;s, King&apos;s College UK, CIS and federal schools - with
               past-paper practice and mock examinations.
             </p>
             <ul className="mt-6 space-y-3">

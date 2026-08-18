@@ -1,5 +1,5 @@
 // Types for the booking + escrow payment flow (Phase 3).
-// Mirrors api/openapi.yaml — regenerate from the contract when it changes.
+// Mirrors api/openapi.yaml - regenerate from the contract when it changes.
 
 export type OrderStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED" | "CANCELLED";
 

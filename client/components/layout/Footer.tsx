@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 
-// NUVORA footer — full-width dark band, white brand copy, three link columns
+// NUVORA footer - full-width dark band, white brand copy, three link columns
 // and a copyright bar. No social icons (removed), no rounded inset card.
 
 const PRODUCTS = [
@@ -65,7 +65,7 @@ export function Footer() {
               <Logo dark className="text-2xl" />
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white">
-              Africa&apos;s trusted tutoring platform — British &amp; Nigerian curricula, exam
+              Africa&apos;s trusted tutoring platform - British &amp; Nigerian curricula, exam
               preparation, private tuition and live cohorts. Learning beyond boundaries.
             </p>
           </div>

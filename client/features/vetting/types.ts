@@ -1,4 +1,4 @@
-// Vetting feature types — mirror api/openapi.yaml Phase 4 additions.
+// Vetting feature types - mirror api/openapi.yaml Phase 4 additions.
 
 export type TutorStatus =
   | "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "INTERVIEW"

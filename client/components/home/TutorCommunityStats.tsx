@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Users, Wallet, GraduationCap } from "lucide-react";
 
-// Qualitative tutor pitch — no invented earnings / hours / student counts.
+// Qualitative tutor pitch - no invented earnings / hours / student counts.
 
 const POINTS = [
   { icon: <Wallet size={18} />, title: "Escrow-protected payouts", body: "Lesson fees release after delivery, on a weekly payout cadence." },
@@ -18,7 +18,7 @@ export function TutorCommunityStats() {
           Teach with NUVORA
         </h2>
         <p className="mt-3 max-w-2xl mx-auto text-ink-600">
-          NUVORA is building a Nigeria-first tutoring marketplace — escrow-protected
+          NUVORA is building a Nigeria-first tutoring marketplace - escrow-protected
           payouts and a support team, without inflated community numbers.
         </p>
         <div className="mt-10 grid sm:grid-cols-3 gap-6">

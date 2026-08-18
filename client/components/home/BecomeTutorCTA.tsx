@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight, ArrowRight } from "lucide-react";
 
-// Become-a-tutor section — photo background (local, dark-green overlay) so
+// Become-a-tutor section - photo background (local, dark-green overlay) so
 // the white copy sits on real imagery instead of a grid pattern. Premium,
 // high-contrast, brand palette.
 
@@ -40,7 +40,7 @@ export function BecomeTutorCTA() {
 
           <p className="mx-auto mt-6 max-w-2xl text-white/80 md:text-base">
             Join NUVORA&apos;s community of vetted tutors. Set your own rates and schedule,
-            teach online or in person, and get paid weekly — while we handle the
+            teach online or in person, and get paid weekly - while we handle the
             bookings, payments and students for you.
           </p>
 

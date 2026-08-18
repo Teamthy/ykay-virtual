@@ -1,8 +1,8 @@
-// Exam-prep subject matrix — single source of truth for the /exam-prep
+// Exam-prep subject matrix - single source of truth for the /exam-prep
 // [exam]/[subject] pages. Content is factual and board-agnostic: each subject's
 // core topics are the themes common to the major syllabuses (WAEC, NECO, JAMB,
 // IGCSE, A-Level), and each exam's structure/grading reflects its published
-// format. Keep it factual — no invented statistics, cut-offs or "predicted"
+// format. Keep it factual - no invented statistics, cut-offs or "predicted"
 // questions.
 
 export type ExamSubject = {
@@ -77,7 +77,7 @@ export const EXAM_SUBJECTS: ExamSubject[] = [
     name: "Physics",
     catalogueSlug: "physics",
     overview:
-      "Physics papers test your understanding of matter, energy and their interactions — and, crucially, your ability to apply laws to numerical and practical problems.",
+      "Physics papers test your understanding of matter, energy and their interactions - and, crucially, your ability to apply laws to numerical and practical problems.",
     topics: [
       "Mechanics",
       "Waves & sound",
@@ -121,7 +121,7 @@ export const EXAM_SUBJECTS: ExamSubject[] = [
     name: "Biology",
     catalogueSlug: "biology",
     overview:
-      "Biology papers reward accurate recall, clear diagrams and the ability to apply processes to real systems — from cells to whole ecosystems.",
+      "Biology papers reward accurate recall, clear diagrams and the ability to apply processes to real systems - from cells to whole ecosystems.",
     topics: [
       "Cell biology",
       "Classification & diversity",
@@ -184,7 +184,7 @@ export const EXAM_SUBJECTS: ExamSubject[] = [
     name: "Literature in English",
     catalogueSlug: "literature-in-english",
     overview:
-      "Literature in English tests close reading and critical writing across prose, drama and poetry — including prescribed African and world texts.",
+      "Literature in English tests close reading and critical writing across prose, drama and poetry - including prescribed African and world texts.",
     topics: [
       "Prose analysis",
       "Drama & theatre",
@@ -270,17 +270,17 @@ export const EXAMS: ExamInfo[] = [
     slug: "jamb",
     code: "JAMB",
     name: "UTME (JAMB)",
-    fullName: "Unified Tertiary Matriculation Examination — Joint Admissions and Matriculation Board",
-    level: "University admission — Nigeria",
+    fullName: "Unified Tertiary Matriculation Examination - Joint Admissions and Matriculation Board",
+    level: "University admission - Nigeria",
     format: "Computer-based test (CBT).",
     structure: [
-      "Use of English — compulsory (60 questions).",
+      "Use of English - compulsory (60 questions).",
       "Three other subjects relevant to your chosen course (40 questions each).",
       "180 objective questions in total, answered in 2 hours.",
       "A four-subject combination tailored to the course you are applying for.",
     ],
     grading:
-      "Scored out of 400. Universities and courses set their own cut-off marks — check the institution's published requirement for your course.",
+      "Scored out of 400. Universities and courses set their own cut-off marks - check the institution's published requirement for your course.",
     subjects: [
       "english-language",
       "mathematics",
@@ -299,15 +299,15 @@ export const EXAMS: ExamInfo[] = [
     code: "WAEC",
     name: "WASSCE (WAEC)",
     fullName: "West African Senior School Certificate Examination",
-    level: "Secondary school leaving — Nigeria & West Africa",
+    level: "Secondary school leaving - Nigeria & West Africa",
     format: "Written papers (objective and essay/theory), with practical and oral papers in relevant subjects.",
     structure: [
-      "School candidates sit 8–9 subjects.",
+      "School candidates sit 8-9 subjects.",
       "English Language and Mathematics are compulsory.",
       "Science subjects include practical papers; languages include oral/aural components.",
     ],
     grading:
-      "Grades A1–F9 (A1 highest). University entry typically requires credit passes (A1–C6) in five subjects including English and Mathematics.",
+      "Grades A1-F9 (A1 highest). University entry typically requires credit passes (A1-C6) in five subjects including English and Mathematics.",
     subjects: [
       "english-language",
       "mathematics",
@@ -326,15 +326,15 @@ export const EXAMS: ExamInfo[] = [
     slug: "neco",
     code: "NECO",
     name: "SSCE (NECO)",
-    fullName: "National Examinations Council — Senior School Certificate Examination",
-    level: "Secondary school leaving — Nigeria",
+    fullName: "National Examinations Council - Senior School Certificate Examination",
+    level: "Secondary school leaving - Nigeria",
     format: "Written papers (objective and essay/theory), with practical papers where applicable; June/July and November/December sessions.",
     structure: [
-      "Candidates sit 8–9 subjects.",
+      "Candidates sit 8-9 subjects.",
       "English Language and Mathematics are compulsory.",
-      "Closely mirrors the WAEC syllabus — preparation overlaps.",
+      "Closely mirrors the WAEC syllabus - preparation overlaps.",
     ],
-    grading: "Grades A1–F9; credit passes are A1–C6, comparable to WASSCE.",
+    grading: "Grades A1-F9; credit passes are A1-C6, comparable to WASSCE.",
     subjects: [
       "english-language",
       "mathematics",
@@ -354,14 +354,14 @@ export const EXAMS: ExamInfo[] = [
     code: "IGCSE",
     name: "International GCSE",
     fullName: "International General Certificate of Secondary Education (Cambridge or Pearson Edexcel)",
-    level: "International secondary qualification (Years 10–11, ages 14–16)",
+    level: "International secondary qualification (Years 10-11, ages 14-16)",
     format: "Written exams; many subjects offer Core and Extended tiers; some include coursework or practical components.",
     structure: [
-      "Most learners take 5–9 subjects.",
+      "Most learners take 5-9 subjects.",
       "Mathematics and English are typical requirements for further study.",
       "Set by Cambridge Assessment International Education or Pearson Edexcel.",
     ],
-    grading: "Cambridge: A*–G (9–1 in newer syllabuses). Edexcel: 9–1, with 9 the highest.",
+    grading: "Cambridge: A*-G (9-1 in newer syllabuses). Edexcel: 9-1, with 9 the highest.",
     subjects: [
       "english-language",
       "mathematics",
@@ -380,13 +380,13 @@ export const EXAMS: ExamInfo[] = [
     code: "A-Level",
     name: "Advanced Level",
     fullName: "GCE Advanced Level (AS and A2)",
-    level: "Pre-university qualification (ages 16–18)",
+    level: "Pre-university qualification (ages 16-18)",
     format: "Linear written exams; AS is typically taken after the first year and A2 after the second (or examined together).",
     structure: [
-      "Learners usually take 3–4 subjects.",
+      "Learners usually take 3-4 subjects.",
       "Assessment is primarily written exams; some subjects include coursework or practicals.",
     ],
-    grading: "A*–E (A* highest). Universities make conditional offers based on predicted and final grades.",
+    grading: "A*-E (A* highest). Universities make conditional offers based on predicted and final grades.",
     subjects: [
       "english-language",
       "mathematics",

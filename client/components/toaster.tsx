@@ -2,7 +2,7 @@
 
 import { Toaster as Sonner } from "sonner";
 
-// Global toast host — rich toasts (success/error/info) with brand styling.
+// Global toast host - rich toasts (success/error/info) with brand styling.
 export function Toaster() {
   return (
     <Sonner

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// InnerHero — the same brand treatment as PageHero, applied as a wrapper
+// InnerHero - the same brand treatment as PageHero, applied as a wrapper
 // around a page's own header content (detail pages with tags/stats/CTAs).
 // Self-contained inline SVG grid, brand palette.
 

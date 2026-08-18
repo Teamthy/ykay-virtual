@@ -2,10 +2,10 @@ import { faqJsonLd } from "@/lib/seo";
 import Link from "next/link";
 
 const FAQS = [
-  { q: "How do I enrol my child in a cohort?", a: "Browse programmes, choose a cohort, enrol and pay — your payment is held in escrow until the programme delivers. See How It Works for the full walkthrough." },
+  { q: "How do I enrol my child in a cohort?", a: "Browse programmes, choose a cohort, enrol and pay - your payment is held in escrow until the programme delivers. See How It Works for the full walkthrough." },
   { q: "Are your tutors vetted?", a: "Yes. Every tutor passes identity verification, document review, an interview and a subject competency assessment before approval." },
-  { q: "Which curricula do you cover?", a: "British (Year 7–9, IGCSE, A-Level) and Nigerian (JSS, SSS) curricula, plus WAEC, NECO, JAMB and IGCSE exam preparation." },
-  { q: "How is my payment protected?", a: "Payments go into escrow and are released to the tutor only after lessons are delivered — or refunded per policy." },
+  { q: "Which curricula do you cover?", a: "British (Year 7-9, IGCSE, A-Level) and Nigerian (JSS, SSS) curricula, plus WAEC, NECO, JAMB and IGCSE exam preparation." },
+  { q: "How is my payment protected?", a: "Payments go into escrow and are released to the tutor only after lessons are delivered - or refunded per policy." },
 ];
 
 export function HomeFAQ() {

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-// Empty state (24.1) — icon + title + description + optional action.
+// Empty state (24.1) - icon + title + description + optional action.
 // Used whenever a list/panel has nothing to show: calm, never bare.
 
 export type EmptyStateProps = {

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// 3-step "Get a tutor" band (reference 003216) — place a request → meet your
+// 3-step "Get a tutor" band (reference 003216) - place a request → meet your
 // tutor → study & succeed. Props-driven so each product page customises copy.
 
 export type Step = { n: string; title: string; desc: string };

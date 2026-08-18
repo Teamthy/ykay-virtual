@@ -7,7 +7,7 @@ import { useSession } from "@/hooks/useSession";
 import { useTutorOnboarding } from "@/features/vetting/useTutorOnboarding";
 import { OnboardingStepper, ProfileStep } from "@/features/vetting/components/steps";
 
-// Tutor onboarding — step 1 of 5 (stateful multi-page flow).
+// Tutor onboarding - step 1 of 5 (stateful multi-page flow).
 
 export default function BecomeTutorApplyPage() {
   const router = useRouter();

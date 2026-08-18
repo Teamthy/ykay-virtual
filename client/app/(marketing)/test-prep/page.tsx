@@ -8,9 +8,9 @@ import { GraduationCap, Languages, FileCheck } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Test Prep — IELTS, GMAT, GRE, TOEFL, SAT | NUVORA",
+  title: "Test Prep - IELTS, GMAT, GRE, TOEFL, SAT | NUVORA",
   description:
-    "Structured prep for IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE with vetted tutors. Same login as the rest of NUVORA — works on mobile.",
+    "Structured prep for IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE with vetted tutors. Same login as the rest of NUVORA - works on mobile.",
   path: "/test-prep",
 });
 
@@ -36,7 +36,7 @@ export default function TestPrepPage() {
       <PageHero
         announcement="Same login on phone and desktop"
         title="Get expert help to ace your exam"
-        subtitle="IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE — structured sessions, mocks and weekly reports. Prep lives on nuvora.com, not a separate site."
+        subtitle="IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE - structured sessions, mocks and weekly reports. Prep lives on nuvora.com, not a separate site."
         ctas={[
           { label: "Browse tests", href: "#tests", primary: true },
           { label: "GMAT prep", href: "/gmat" },
@@ -66,9 +66,9 @@ export default function TestPrepPage() {
 
       <section className="bg-brand-navy py-14 text-white">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-          <h2 className="font-display text-3xl tracking-[0.02em]">How NUVORA prep works — on mobile too</h2>
+          <h2 className="font-display text-3xl tracking-[0.02em]">How NUVORA prep works - on mobile too</h2>
           <p className="mt-3 max-w-2xl text-white/75">
-            One account. Open this site on your phone for live lessons, recordings and reports — no extra subdomain or second login.
+            One account. Open this site on your phone for live lessons, recordings and reports - no extra subdomain or second login.
           </p>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {[

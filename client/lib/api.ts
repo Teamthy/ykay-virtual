@@ -3,7 +3,7 @@
 // Minimal client per AGENTS.md: trace-id header, response envelope handling.
 //
 // Browser fetches use a RELATIVE /api/v1 base so the request goes through the
-// Next.js rewrite (next.config.js) to the API — this works in local dev AND in
+// Next.js rewrite (next.config.js) to the API - this works in local dev AND in
 // the hosted preview, where an absolute localhost URL would hit the visitor's
 // own machine ("Failed to fetch"). Server-side (SSR/SSG) fetches keep an
 // absolute URL because the Next server CAN reach the API directly.

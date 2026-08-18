@@ -11,7 +11,7 @@ import {
 import { listSubmissions } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
 
-// Tutor LMS hub — cohorts I teach, pending grading, quick actions.
+// Tutor LMS hub - cohorts I teach, pending grading, quick actions.
 
 export default function LmsTutorHomePage() {
   // G1: the tutor profile is session-resolved server-side.
@@ -80,7 +80,7 @@ export default function LmsTutorHomePage() {
             <div>
               <h1 className="font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">My Teaching</h1>
               <p className="mt-1 text-sm text-ink-500">
-                {user ? `Signed in as ${user.email}` : "Tutor portal"} — cohorts, lessons, attendance and grading.
+                {user ? `Signed in as ${user.email}` : "Tutor portal"} - cohorts, lessons, attendance and grading.
               </p>
             </div>
             <div className="flex gap-2">
@@ -103,11 +103,11 @@ export default function LmsTutorHomePage() {
             <p className="mt-1 text-sm font-semibold text-ink-700">Cohorts I teach</p>
           </div>
           <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <p className="text-3xl font-extrabold text-brand-navy">{lessons.data?.length ?? "—"}</p>
+            <p className="text-3xl font-extrabold text-brand-navy">{lessons.data?.length ?? "-"}</p>
             <p className="mt-1 text-sm font-semibold text-ink-700">Upcoming lessons</p>
           </div>
           <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <p className="text-3xl font-extrabold text-brand-navy">{pendingGrading.data ?? "—"}</p>
+            <p className="text-3xl font-extrabold text-brand-navy">{pendingGrading.data ?? "-"}</p>
             <p className="mt-1 text-sm font-semibold text-ink-700">Awaiting grading</p>
             <p className="mt-0.5 text-xs text-ink-400">Check each cohort for submissions</p>
           </div>
@@ -189,7 +189,7 @@ export default function LmsTutorHomePage() {
             <p className="text-sm font-bold text-ink-700">Recent payouts</p>
             {(earnings.data?.payouts ?? []).length === 0 ? (
               <p className="mt-2 rounded-xl border border-dashed border-ink-200 p-4 text-center text-xs text-ink-400">
-                No payouts yet — released earnings are paid out on the weekly schedule.
+                No payouts yet - released earnings are paid out on the weekly schedule.
               </p>
             ) : (
               <div className="mt-2 space-y-2">

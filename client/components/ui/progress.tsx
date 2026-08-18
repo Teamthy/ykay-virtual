@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 
-// Progress indicator (24.1) — labelled bar with value text (text + colour,
+// Progress indicator (24.1) - labelled bar with value text (text + colour,
 // never colour alone).
 
 export type ProgressProps = {
-  value: number; // 0–100
+  value: number; // 0-100
   label?: string;
   showValue?: boolean;
   size?: "sm" | "md";

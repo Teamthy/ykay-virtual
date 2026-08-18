@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useSession } from "@/hooks/useSession";
 import { DASHBOARD_ROLES, homeForRoles, isAdmin } from "@/hooks/useDashboardRoute";
 
-// RoleGate — every dashboard mounts this first. Once the session resolves,
+// RoleGate - every dashboard mounts this first. Once the session resolves,
 // a user whose role does not match the page is redirected to their own
 // home (industry-standard role routing; middleware only checks the cookie).
 export function RoleGate({ page }: { page: keyof typeof DASHBOARD_ROLES }) {

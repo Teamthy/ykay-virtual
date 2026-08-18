@@ -21,8 +21,8 @@ import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorL
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 
-// Tutor portal â€” tabbed workspace: Overview (KPIs + status + today) Â·
-// Lessons (upcoming, attendance, notes) Â· Availability Â· Earnings Â· Profile
+// Tutor portal â€” tabbed workspace: Overview (KPIs + status + today) ·
+// Lessons (upcoming, attendance, notes) · Availability · Earnings · Profile
 // (application + gradebook + reports).
 
 type Lesson = {
@@ -193,7 +193,7 @@ export default function TutorDashboardPage() {
                 <h2 className="font-bold text-ink-800">Application</h2>
                 {p ? (
                   <>
-                    <p className="text-sm text-ink-600 mt-1">{p.display_name} Â· {p.slug}</p>
+                    <p className="text-sm text-ink-600 mt-1">{p.display_name} · {p.slug}</p>
                     <span className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-bold ${STATUS_BADGE[p.status] ?? "bg-ink-100"}`}>{p.status}</span>
                   </>
                 ) : (
@@ -226,7 +226,7 @@ export default function TutorDashboardPage() {
                     <div>
                       <div className="font-semibold">{l.title}</div>
                       <div className="text-xs text-ink-800/70">
-                        {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} â€“ {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
+                        {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} â€“ {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                       </div>
                     </div>
                     {l.meeting_url && (
@@ -278,7 +278,7 @@ export default function TutorDashboardPage() {
                       <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Mark attendance</span>
                     </div>
                     <Link href="/lms/tutor" className="mt-3 inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-brand-blue transition-colors">
-                      Open roster to mark attendance â†’
+                      Open roster to mark attendance â†'
                     </Link>
                   </li>
                 ))}
@@ -314,7 +314,7 @@ export default function TutorDashboardPage() {
                       <div>
                         <p className="font-bold text-ink-800">{l.title}</p>
                         <p className="text-xs text-ink-500">
-                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
+                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -363,7 +363,7 @@ export default function TutorDashboardPage() {
               <ul className="mt-3 space-y-1.5">
                 {availability.data?.map((a) => (
                   <li key={a.id} className="flex items-center justify-between text-sm border-b border-ink-100 pb-1.5">
-                    <span className="font-semibold text-ink-700">{DAYS[a.day_of_week]} Â· {a.start_time}â€“{a.end_time}</span>
+                    <span className="font-semibold text-ink-700">{DAYS[a.day_of_week]} · {a.start_time}â€“{a.end_time}</span>
                     <button onClick={() => removeSlot.mutate(a.id)} className="text-xs text-red-600 hover:underline">Remove</button>
                   </li>
                 ))}
@@ -409,7 +409,7 @@ export default function TutorDashboardPage() {
                   <div key={p.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-2.5 text-sm">
                     <span className="font-semibold text-ink-700">â‚¦{p.amount.toLocaleString()}</span>
                     <span className="text-xs text-ink-400">
-                      {new Date(p.created_at).toLocaleDateString()} Â·{" "}
+                      {new Date(p.created_at).toLocaleDateString()} ·{" "}
                       <span className={p.status === "PAID" ? "font-bold text-green-600" : "font-semibold text-ink-500"}>{p.status}</span>
                     </span>
                   </div>
@@ -428,7 +428,7 @@ export default function TutorDashboardPage() {
               <div>
                 <h2 className="font-bold text-ink-800">Application &amp; profile</h2>
                 {p ? (
-                  <p className="text-sm text-ink-600 mt-1">{p.display_name} Â· {p.slug} Â· <span className="font-semibold">{profileCompletion}% complete</span></p>
+                  <p className="text-sm text-ink-600 mt-1">{p.display_name} · {p.slug} · <span className="font-semibold">{profileCompletion}% complete</span></p>
                 ) : (
                   <p className="text-sm text-ink-500 mt-1">Start your application to appear in tutor search.</p>
                 )}

@@ -14,7 +14,7 @@ import {
 import { useSession } from "@/hooks/useSession";
 import { loginWithReturn } from "@/lib/safe-next";
 
-// Floating AI assistant — mini chat panel. Opens the latest thread (or starts
+// Floating AI assistant - mini chat panel. Opens the latest thread (or starts
 // a new one), streams replies from the chat API, and links to the full page.
 
 export function ChatWidget() {
@@ -185,7 +185,7 @@ export function ChatWidget() {
               <div className="py-8 text-center">
                 <p className="text-3xl">👋</p>
                 <p className="mt-2 text-sm font-semibold text-ink-700">Hi there! Ask me anything.</p>
-                <p className="mt-1 text-xs text-ink-400">Programmes, cohorts, tutors, fees — or ask for a human.</p>
+                <p className="mt-1 text-xs text-ink-400">Programmes, cohorts, tutors, fees - or ask for a human.</p>
               </div>
             ) : (
               (messages.data ?? []).map((m) => (

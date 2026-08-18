@@ -9,7 +9,7 @@ import { useSession } from "@/hooks/useSession";
 import { createReview, listTutorReviews } from "@/features/reviews/api";
 
 /**
- * ReviewsSection — published reviews for a tutor (consent-gated) + a review
+ * ReviewsSection - published reviews for a tutor (consent-gated) + a review
  * form for signed-in parents. Reviews start PENDING and publish after admin
  * moderation; the tutor's rating recomputes automatically on publish.
  */
@@ -38,7 +38,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
         consent_given: consent,
       }),
     onSuccess: () => {
-      toast.success("Review submitted — thank you!", {
+      toast.success("Review submitted - thank you!", {
         description: "It appears publicly after our team moderates it.",
       });
       setTitle("");
@@ -64,7 +64,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
         </div>
       ) : data.length === 0 ? (
         <p className="mt-3 text-sm text-ink-500 border border-dashed border-ink-200 rounded-xl p-6 text-center">
-          No published reviews yet — every review appears with the reviewer's explicit consent.
+          No published reviews yet - every review appears with the reviewer's explicit consent.
         </p>
       ) : (
         <ul className="mt-3 space-y-3">
@@ -83,7 +83,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
         </ul>
       )}
 
-      {/* Review form — signed-in users only */}
+      {/* Review form - signed-in users only */}
       {user ? (
         <div className="mt-6 border rounded-2xl p-6">
           <h4 className="font-bold">Had tuition with this tutor? Leave a review</h4>

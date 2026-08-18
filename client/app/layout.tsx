@@ -17,7 +17,7 @@ import { organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {
-    default: "NUVORA — Learning beyond boundaries. British & Nigerian curricula, exam preparation, private tuition and live cohorts.",
+    default: "NUVORA - Learning beyond boundaries. British & Nigerian curricula, exam preparation, private tuition and live cohorts.",
     template: "%s | NUVORA",
   },
   description: "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "NUVORA",
-    title: "NUVORA — Learning beyond boundaries",
+    title: "NUVORA - Learning beyond boundaries",
     description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "NUVORA — Learning beyond boundaries" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "NUVORA - Learning beyond boundaries" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NUVORA — Learning beyond boundaries",
+    title: "NUVORA - Learning beyond boundaries",
     description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
     images: ["/og.png"],
   },

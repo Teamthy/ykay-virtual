@@ -11,8 +11,8 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/utils";
 
-// NUVORA header â€” clean Preline-style: brand Â· inline links Â· Services
-// mega-menu (grouped + customer story) Â· divider Â· Sign in Â· Get started.
+// NUVORA header â€” clean Preline-style: brand · inline links · Services
+// mega-menu (grouped + customer story) · divider · Sign in · Get started.
 
 const SERVICE_GROUPS = [
   {

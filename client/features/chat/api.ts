@@ -57,7 +57,7 @@ export async function escalateChatThread(threadId: string, note?: string): Promi
   });
 }
 
-// --- C4–C6: ratings + agent inbox ---
+// --- C4-C6: ratings + agent inbox ---
 
 export type ChatAnalytics = {
   total_threads: number;

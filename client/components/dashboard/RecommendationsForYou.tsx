@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// RecommendationsForYou — the suggestions engine's UI (G6 polish): cohorts,
+// RecommendationsForYou - the suggestions engine's UI (G6 polish): cohorts,
 // programmes and tutors ranked against the session user's learners, each
 // with a server-computed reason. Renders a compact "For you" shelf that
 // drops gracefully into any dashboard.
@@ -76,7 +76,7 @@ export function RecommendationsForYou() {
   const data = recs.data;
   if (!data || !data.cohorts || !data.programmes || !data.tutors ||
     (data.cohorts.length === 0 && data.programmes.length === 0 && data.tutors.length === 0)) {
-    return null; // no personalisation available — dashboards render without it
+    return null; // no personalisation available - dashboards render without it
   }
 
   return (

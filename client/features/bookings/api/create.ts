@@ -9,7 +9,7 @@ export type CreateCohortBookingParams = {
 
 /**
  * Creates a cohort booking (transactional order + PENDING enrollment).
- * Idempotency key replays return the original order — safe to retry.
+ * Idempotency key replays return the original order - safe to retry.
  */
 export async function createCohortBooking(params: CreateCohortBookingParams): Promise<BookingResponse> {
   const res = await apiFetch<BookingResponse>("/bookings", {
@@ -53,7 +53,7 @@ export type InitiatePaymentParams = {
 
 /**
  * Initiates payment for a PENDING order. Returns the hosted checkout link;
- * the client redirect is never trusted — confirmation arrives only via the
+ * the client redirect is never trusted - confirmation arrives only via the
  * signature-verified webhook.
  */
 export async function initiatePayment(params: InitiatePaymentParams): Promise<InitiatePaymentResponse> {

@@ -1,7 +1,7 @@
 import { CheckCircle2, Clock, XCircle, MinusCircle, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Status (brand spec) — text + icon + colour together, never colour alone.
+// Status (brand spec) - text + icon + colour together, never colour alone.
 
 const KINDS = {
   success: { icon: <CheckCircle2 size={13} />, cls: "bg-green-50 text-brand-green-dark border-green-200" },

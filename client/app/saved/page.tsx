@@ -30,7 +30,7 @@ export default function SavedPage() {
           </h1>
           <p className="mt-1 text-sm text-ink-500">
             {saved.length > 0
-              ? `${saved.length} tutor${saved.length > 1 ? "s" : ""} on your list — stored on this device.`
+              ? `${saved.length} tutor${saved.length > 1 ? "s" : ""} on your list - stored on this device.`
               : "Tutors you heart will appear here."}
           </p>
         </div>

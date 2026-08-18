@@ -9,7 +9,7 @@ import type {
   VettingDocument,
 } from "./types";
 
-// G1 (phase 43): the dev-auth header bridge is gone — the API resolves the
+// G1 (phase 43): the dev-auth header bridge is gone - the API resolves the
 // actor exclusively from the httpOnly session cookie. No caller-supplied
 // user IDs; object-level authorization is enforced server-side.
 

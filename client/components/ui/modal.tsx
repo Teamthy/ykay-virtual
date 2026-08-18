@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-// Modal / drawer (24.1) — accessible overlay: Esc to close, backdrop click,
+// Modal / drawer (24.1) - accessible overlay: Esc to close, backdrop click,
 // focus on close button. `side` renders a right-hand drawer variant.
 
 export type ModalProps = {

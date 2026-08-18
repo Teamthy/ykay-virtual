@@ -4,14 +4,14 @@ import { PageHero } from "@/components/layout/PageHero";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "How It Works — Choose, Enrol, Learn, Track | NUVORA",
+  title: "How It Works - Choose, Enrol, Learn, Track | NUVORA",
   description:
     "How NUVORA works for parents, students and tutors: discover programmes, enrol securely with escrow, attend lessons and track progress.",
   path: "/how-it-works",
 });
 
 const PARENT_STEPS = [
-  { title: "Choose", body: "Browse programmes, cohorts and vetted tutors — filter by curriculum, level and exam." },
+  { title: "Choose", body: "Browse programmes, cohorts and vetted tutors - filter by curriculum, level and exam." },
   { title: "Enrol / Book", body: "Apply to a cohort or request private tuition. Payments are held in escrow." },
   { title: "Learn", body: "Join live lessons, access resources and complete assignments on schedule." },
   { title: "Track progress", body: "Attendance, tutor notes and progress reports in the parent dashboard." },
@@ -37,7 +37,7 @@ export default function HowItWorksPage() {
         cover="/hero/how-it-works.jpg"
         eyebrow="Simple by design"
         title="How NUVORA works"
-        subtitle="Four steps for families, four steps for tutors — with escrow protection and full visibility at every stage."
+        subtitle="Four steps for families, four steps for tutors - with escrow protection and full visibility at every stage."
         crumbs={[{ name: "Home", href: "/" }, { name: "How It Works" }]}
         align="center"
       />

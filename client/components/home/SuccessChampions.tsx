@@ -1,7 +1,7 @@
 import { Quote, MapPin } from "lucide-react";
 import { apiFetchSSR } from "@/lib/server-api";
 
-// SuccessChampions — consent-gated learner/parent stories (no fabricated
+// SuccessChampions - consent-gated learner/parent stories (no fabricated
 // names, scores or quotes). Fetches /content/testimonials like the home
 // carousel; when none have been consented yet, it renders an honest
 // invitation instead of invented champions.
@@ -33,7 +33,7 @@ export async function SuccessChampions() {
   const stories = (await fetchStories()).filter((t) => !isSeedQuote(t));
 
   if (stories.length === 0) {
-    return null; // no consented stories yet — don't invent any
+    return null; // no consented stories yet - don't invent any
   }
 
   return (

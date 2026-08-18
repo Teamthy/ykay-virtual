@@ -104,7 +104,7 @@ export default function AdminBlogPage() {
         </div>
       ) : data.length === 0 ? (
         <div className="border rounded-2xl p-12 text-center text-ink-500">
-          No posts yet — publish your first study guide.
+          No posts yet - publish your first study guide.
         </div>
       ) : (
         <div className="border rounded-2xl overflow-x-auto">
@@ -242,7 +242,7 @@ function CreatePostForm({ onDone }: { onDone: () => void }) {
       <h2 className="font-bold">New blog post</h2>
       <div className="grid md:grid-cols-2 gap-4">
         {field("title", "Title *")}
-        {field("slug", "Slug (optional — auto-generated)")}
+        {field("slug", "Slug (optional - auto-generated)")}
       </div>
       {field("excerpt", "Excerpt (SEO meta description source)")}
       {field("content", "Content *", 8)}

@@ -21,7 +21,7 @@ export async function PopularProgrammes() {
       <section className="container-x py-16">
         <div className="rounded-2xl border border-dashed border-ink-200 p-10 text-center">
           <h2 className="text-2xl font-extrabold">Popular programmes</h2>
-          <p className="mt-2 text-sm text-ink-500">Programmes are being finalised for the new term — check back soon or request private tuition.</p>
+          <p className="mt-2 text-sm text-ink-500">Programmes are being finalised for the new term - check back soon or request private tuition.</p>
           <Link href="/private-tuition" className="btn-gold mt-5 inline-block text-sm">Request private tuition</Link>
         </div>
       </section>

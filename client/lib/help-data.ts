@@ -1,4 +1,4 @@
-// Help Center data — the single source of truth for support FAQs, grouped by
+// Help Center data - the single source of truth for support FAQs, grouped by
 // category. The /help page renders this with client-side search; keep answers
 // factual and synced with the actual product behaviour (escrow, vetting,
 // curricula, payments).
@@ -15,7 +15,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
       { q: "How do I create an account?", a: "Click Get started (or Create an account), enter your name and email, verify the 6-digit code we send you, choose your role and set a password. It takes under two minutes." },
       { q: "Which role should I choose?", a: "Parent if you're booking for a child, Student if you're learning yourself, Tutor if you want to teach, or School/Company for an institution." },
       { q: "How do I add a learner?", a: "From your dashboard or Account → Learners, tap Add a learner and enter their name and level. A minor (under 17) must be linked to a parent or guardian to enrol." },
-      { q: "I didn't get my verification code", a: "Check your spam folder, then use Resend code. If it still doesn't arrive, contact support — codes are single-use and expire after 10 minutes." },
+      { q: "I didn't get my verification code", a: "Check your spam folder, then use Resend code. If it still doesn't arrive, contact support - codes are single-use and expire after 10 minutes." },
     ],
   },
   {
@@ -25,7 +25,7 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     faqs: [
       { q: "How do I join a live lesson?", a: "Open My Learning, choose your course, and open the lesson. The meeting link is available inside the join window before the session." },
       { q: "Are lessons recorded?", a: "Cohort sessions include recordings and resources where the programme provides them. Private tuition recordings follow your tutor's agreement." },
-      { q: "Can I reschedule a private lesson?", a: "Yes — reschedule within your package window. Contact your tutor or support; the schedule update keeps your escrow and sessions intact." },
+      { q: "Can I reschedule a private lesson?", a: "Yes - reschedule within your package window. Contact your tutor or support; the schedule update keeps your escrow and sessions intact." },
       { q: "How do I see my child's progress?", a: "The parent dashboard shows attendance, assignments, submissions and weekly progress reports with strengths, weaknesses and recommendations." },
     ],
   },
@@ -34,9 +34,9 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Payments & escrow",
     blurb: "How billing, escrow and refunds work.",
     faqs: [
-      { q: "How is my payment protected?", a: "Your fee is held in escrow and released to the tutor only after lessons are delivered — either when you confirm or automatically after the delivery window." },
+      { q: "How is my payment protected?", a: "Your fee is held in escrow and released to the tutor only after lessons are delivered - either when you confirm or automatically after the delivery window." },
       { q: "Which payment methods do you accept?", a: "We accept card payments and bank transfers through Paystack and Flutterwave. Never pay a tutor directly off-platform." },
-      { q: "How do refunds work?", a: "Refunds follow our Cancellation & Refund policy — see the policy page for the full terms. Unused escrow can be returned per the policy." },
+      { q: "How do refunds work?", a: "Refunds follow our Cancellation & Refund policy - see the policy page for the full terms. Unused escrow can be returned per the policy." },
       { q: "When do tutors get paid?", a: "Tutors are paid weekly from released escrow after lessons are confirmed delivered." },
     ],
   },
@@ -45,8 +45,8 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Becoming a tutor",
     blurb: "Vetting, subjects, assessments and earnings.",
     faqs: [
-      { q: "How do I apply to teach?", a: "Start at Become a tutor: create your profile, choose subjects, upload a government-issued ID and pass a subject competency quiz. We review within 5–7 working days." },
-      { q: "What is the competency assessment?", a: "A short quiz on each subject you applied to teach — 70% to pass, valid for 12 months. You're tested only on the subjects you chose." },
+      { q: "How do I apply to teach?", a: "Start at Become a tutor: create your profile, choose subjects, upload a government-issued ID and pass a subject competency quiz. We review within 5-7 working days." },
+      { q: "What is the competency assessment?", a: "A short quiz on each subject you applied to teach - 70% to pass, valid for 12 months. You're tested only on the subjects you chose." },
       { q: "What do tutors earn?", a: "You set your own rates; NUVORA takes a platform fee and holds learner payments in escrow until lessons are delivered." },
       { q: "How does vetting work?", a: "Staged: identity + documents, competency assessment, interview and background checks before approval. Documents live in a private bucket with signed URLs." },
     ],

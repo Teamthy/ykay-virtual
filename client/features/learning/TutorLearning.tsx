@@ -44,7 +44,7 @@ export function TutorGradebook() {
     mutationFn: ({ id, score, note }: { id: string; score: number; note?: string }) =>
       gradeSubmission(id, score, note),
     onSuccess: () => {
-      toast.success("Submission graded — student notified.");
+      toast.success("Submission graded - student notified.");
       qc.invalidateQueries({ queryKey: ["tutor", "submissions", assignmentId] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not grade"),
@@ -54,7 +54,7 @@ export function TutorGradebook() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold">Gradebook</h2>
-        <p className="text-sm text-ink-500">Score submissions and leave feedback — results release to the student.</p>
+        <p className="text-sm text-ink-500">Score submissions and leave feedback - results release to the student.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -106,7 +106,7 @@ export function TutorGradebook() {
                       Student {sub.student_profile_id.slice(0, 8)} · submitted{" "}
                       {new Date(sub.submitted_at).toLocaleString()}
                     </p>
-                    <p className="mt-1 text-sm text-ink-700 line-clamp-3">{sub.content ?? "—"}</p>
+                    <p className="mt-1 text-sm text-ink-700 line-clamp-3">{sub.content ?? "-"}</p>
                     {sub.score !== undefined && (
                       <p className="mt-2 text-sm font-semibold text-green-600">
                         Scored {sub.score} · {sub.feedback}
@@ -118,7 +118,7 @@ export function TutorGradebook() {
                       type="number"
                       min={0}
                       max={100}
-                      placeholder="Score (0–100)"
+                      placeholder="Score (0-100)"
                       value={scores[sub.id] ?? ""}
                       onChange={(e) => setScores((m) => ({ ...m, [sub.id]: e.target.value }))}
                       className="w-full rounded-xl border px-3 py-2 text-sm"
@@ -205,7 +205,7 @@ export function TutorProgressReports() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold">Progress reports</h2>
-        <p className="text-sm text-ink-500">Write term/period reports — visible to the student and their linked parent.</p>
+        <p className="text-sm text-ink-500">Write term/period reports - visible to the student and their linked parent.</p>
       </div>
 
       <Card>
@@ -303,7 +303,7 @@ export function TutorProgressReports() {
             <CardContent className="pt-5 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold">
-                  {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
+                  {new Date(r.period_start).toLocaleDateString()} - {new Date(r.period_end).toLocaleDateString()}
                 </p>
                 <p className="text-xs text-ink-500">Student {r.student_profile_id.slice(0, 8)} · {r.strengths ?? "no notes"}</p>
               </div>

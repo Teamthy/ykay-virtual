@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 
-// Admin dashboard (working-doc Â§12): KPI cards - active learners | tutors |
+// Admin dashboard (working-doc §12): KPI cards - active learners | tutors |
 // cohorts | lessons this week | revenue + pending applications/enrolments,
 // today's classes, capacity alerts, support tickets, QA alerts.
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 
-// B2B lead form — creates a real institution account (POST /institutions).
+// B2B lead form - creates a real institution account (POST /institutions).
 // Signed-in users become the institution OWNER membership.
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
@@ -129,7 +129,7 @@ export function B2BLeadForm({ defaultType, ctaLabel }: { defaultType: string; ct
       </label>
       {user && (
         <p className="text-xs text-ink-400">
-          Signed in as <strong>{user.email}</strong> — you&apos;ll be added as the institution owner.
+          Signed in as <strong>{user.email}</strong> - you&apos;ll be added as the institution owner.
         </p>
       )}
       <Button type="submit" variant="gold" size="lg" className="w-full" disabled={busy}>

@@ -14,7 +14,7 @@ function portraitSrc(tutor: Tutor): string {
 }
 
 export function TutorCard({ tutor }: { tutor: Tutor }) {
-  const subjectLine = (tutor.subjects ?? []).slice(0, 2).map((s) => s.name).join(" Â· ");
+  const subjectLine = (tutor.subjects ?? []).slice(0, 2).map((s) => s.name).join(" · ");
   const photo = portraitSrc(tutor);
 
   return (
@@ -43,7 +43,7 @@ export function TutorCard({ tutor }: { tutor: Tutor }) {
           <Star size={11} className="text-brand-gold" fill="currentColor" strokeWidth={0} />
           <b className="text-ink-800">{tutor.rating_avg.toFixed(1)}</b>
           <span>({tutor.rating_count})</span>
-          {tutor.years_experience ? <span>Â· {tutor.years_experience} yrs</span> : null}
+          {tutor.years_experience ? <span>· {tutor.years_experience} yrs</span> : null}
         </p>
       </div>
 

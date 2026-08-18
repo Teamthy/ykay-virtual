@@ -6,7 +6,7 @@ import { getHelpArticles } from "@/lib/help-data";
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
 const now = new Date();
 
-// Dynamic sitemap — static pages + live tutors/subjects/programmes/blog,
+// Dynamic sitemap - static pages + live tutors/subjects/programmes/blog,
 // filtered to published/active/approved only (the API only ever returns those).
 // Fixes Tuteria's soft-404 sitemap bug and keeps search indexes clean.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

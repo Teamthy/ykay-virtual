@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-// Google OAuth callback — runs on the APP host so the session cookie is set
+// Google OAuth callback - runs on the APP host so the session cookie is set
 // for the web app (fixes the cookie-domain bug of the old API-only flow).
 // 1. Browser is redirected here by Google with ?code=&state=
 // 2. We exchange code+state with the API server-side (never expose the

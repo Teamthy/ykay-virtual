@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser, getSessionContext, logout, type CurrentUser } from "@/features/auth/api";
 import { clearOnboardingDraft } from "@/lib/onboarding";
 
-// Session hook — resolves the httpOnly-cookie session via /auth/me.
+// Session hook - resolves the httpOnly-cookie session via /auth/me.
 // Used by the header nav and any authenticated surface.
 
 export function useSession() {

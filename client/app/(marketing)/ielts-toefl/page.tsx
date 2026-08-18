@@ -7,7 +7,7 @@ import { Check, ArrowRight } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "IELTS & TOEFL Prep — Band 7+ / 100+ | NUVORA",
+  title: "IELTS & TOEFL Prep - Band 7+ / 100+ | NUVORA",
   description:
     "IELTS and TOEFL iBT preparation with vetted tutors: speaking drills, writing correction, listening practice and full mock tests.",
   path: "/ielts-toefl",
@@ -23,8 +23,8 @@ const INCLUDES = [
 ];
 
 const FAQS = [
-  { question: "How long does IELTS/TOEFL prep take?", answer: "Most students prepare 6–12 weeks with 2–3 sessions per week, depending on their current band and target score." },
-  { question: "Do you cover both IELTS and TOEFL?", answer: "Yes — we cover IELTS Academic and General Training as well as TOEFL iBT, including the current TOEFL format." },
+  { question: "How long does IELTS/TOEFL prep take?", answer: "Most students prepare 6-12 weeks with 2-3 sessions per week, depending on their current band and target score." },
+  { question: "Do you cover both IELTS and TOEFL?", answer: "Yes - we cover IELTS Academic and General Training as well as TOEFL iBT, including the current TOEFL format." },
   { question: "Can we start before booking a full package?", answer: "Yes, request a free placement test with a tutor and decide after." },
 ];
 
@@ -35,7 +35,7 @@ export default function IeltsToeflPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd({
           name: "NUVORA IELTS & TOEFL Preparation",
-          description: "IELTS and TOEFL iBT preparation with vetted tutors — speaking drills, writing correction and full mock tests.",
+          description: "IELTS and TOEFL iBT preparation with vetted tutors - speaking drills, writing correction and full mock tests.",
           provider: "NUVORA",
           url: "https://nuvora.com/ielts-toefl",
         })) }}
@@ -46,7 +46,7 @@ export default function IeltsToeflPage() {
       />
       <PageHero
         eyebrow="Exam preparation"
-        title="IELTS & TOEFL Prep — Band 7+ / 100+"
+        title="IELTS & TOEFL Prep - Band 7+ / 100+"
         subtitle="Reach your target band with a vetted tutor: speaking practice, writing correction and full mock tests for IELTS or TOEFL iBT."
       />
       <section className="mx-auto max-w-5xl px-6 py-14">

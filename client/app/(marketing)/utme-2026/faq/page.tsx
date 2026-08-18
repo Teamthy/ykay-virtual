@@ -5,7 +5,7 @@ import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "UTME 2026 FAQ — NUVORA Prep | NUVORA",
+  title: "UTME 2026 FAQ - NUVORA Prep | NUVORA",
   description:
     "Frequently asked questions about NUVORA UTME 2026 prep: lessons, schedules, instalments, scholarships, exam boards and more.",
   path: "/utme-2026/faq",
@@ -21,7 +21,7 @@ const FAQS = [
   {
     question: "Why are our courses better than one-to-one tuition?",
     answer:
-      "You get expert-led live classes, a structured curriculum, 200+ practice exams, weekly mock CBT and peer support — plus remedial classes when you need them. That combination is far more effective than isolated private lessons.",
+      "You get expert-led live classes, a structured curriculum, 200+ practice exams, weekly mock CBT and peer support - plus remedial classes when you need them. That combination is far more effective than isolated private lessons.",
   },
   {
     question: "When are the live lessons?",
@@ -36,17 +36,17 @@ const FAQS = [
   {
     question: "How can I be sure that the course will be effective for me?",
     answer:
-      "Our AI has analyzed 20,000+ JAMB questions from the past 15 years to focus the curriculum on the most likely exam topics — and our 2025 cohort produced scores of 345, 341, 338 and 317.",
+      "Our AI has analyzed 20,000+ JAMB questions from the past 15 years to focus the curriculum on the most likely exam topics - and our 2025 cohort produced scores of 345, 341, 338 and 317.",
   },
   {
     question: "What exam boards do the courses cover?",
     answer:
-      "The UTME 2026 prep is built for JAMB. We also run prep for WAEC, NECO, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT — see the entrance exam page.",
+      "The UTME 2026 prep is built for JAMB. We also run prep for WAEC, NECO, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT - see the entrance exam page.",
   },
   {
     question: "Are there any special requirements for enrolling?",
     answer:
-      "None — any candidate writing JAMB 2026 can join. We run a free diagnostic test at enrolment to place you on the right track.",
+      "None - any candidate writing JAMB 2026 can join. We run a free diagnostic test at enrolment to place you on the right track.",
   },
   {
     question: "What happens if I miss a lesson?",
@@ -94,7 +94,7 @@ export default function UtmeFaqPage() {
               Read our FAQs
             </p>
             <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-[#013920] md:text-5xl">
-              UTME 2026 — Frequently Asked Questions
+              UTME 2026 - Frequently Asked Questions
             </h1>
           </div>
 
@@ -111,7 +111,7 @@ export default function UtmeFaqPage() {
 
           <div className="mt-10 rounded-2xl bg-[#013920] p-8 text-center text-white">
             <p className="font-display text-2xl tracking-[0.02em]">Still have questions?</p>
-            <p className="mt-2 text-white/70">Chat with our advisors — we answer within one business day.</p>
+            <p className="mt-2 text-white/70">Chat with our advisors - we answer within one business day.</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Link href="/utme-2026#callback" className="rounded-xl bg-[#4CCB31] px-7 py-3.5 text-sm font-bold text-white hover:bg-[#5FE63F] transition-colors">
                 Get a callback

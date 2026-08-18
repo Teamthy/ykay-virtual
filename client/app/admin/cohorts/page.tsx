@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { CalendarDays, Users } from "lucide-react";
 
-// Admin cohort manager (working-doc §12) — NUVORA design system:
+// Admin cohort manager (working-doc §12) - NUVORA design system:
 // DataTable + StatusBadge (text+icon+colour) + EmptyState + Progress capacity.
 
 const FILTERS = ["", "DRAFT", "PUBLISHED", "FULL", "ONGOING", "COMPLETED", "CANCELLED"];

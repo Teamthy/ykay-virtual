@@ -9,7 +9,7 @@ import { Users, BookOpen, FileText } from "lucide-react";
 
 type Props = { params: Promise<{ slug: string }> };
 
-// Subject detail — fetched from the API like programmes/tutors, so every
+// Subject detail - fetched from the API like programmes/tutors, so every
 // catalogue subject has a real page (the old version was a hardcoded
 // 3-subject stub that 404'd the other ~57 subjects).
 type SubjectDTO = {
@@ -37,10 +37,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     return buildMetadata({ title: "Subject Not Found", description: "Subject not found", path: `/subjects/${params.slug}`, noIndex: true });
   }
   return buildMetadata({
-    title: `${s.name} Tutoring — ${s.category} | NUVORA`,
+    title: `${s.name} Tutoring - ${s.category} | NUVORA`,
     description:
       s.description ??
-      `${s.name} tutoring with vetted NUVORA tutors — private tuition, small-group cohorts and exam preparation (${s.category}).`,
+      `${s.name} tutoring with vetted NUVORA tutors - private tuition, small-group cohorts and exam preparation (${s.category}).`,
     path: `/subjects/${params.slug}`,
   });
 }
@@ -52,7 +52,7 @@ export default async function SubjectPage(props: Props) {
 
   const desc =
     subject.description ??
-    `${subject.name} tutoring with vetted NUVORA tutors — one-to-one private tuition and small-group cohorts, with progress reports for parents and escrow-protected payments.`;
+    `${subject.name} tutoring with vetted NUVORA tutors - one-to-one private tuition and small-group cohorts, with progress reports for parents and escrow-protected payments.`;
 
   const course = courseJsonLd({
     name: `${subject.name} Tutoring`,
@@ -61,7 +61,7 @@ export default async function SubjectPage(props: Props) {
     url: `https://nuvora.com/subjects/${subject.slug}`,
   });
   const faqs = faqJsonLd([
-    { question: `How do I start ${subject.name} lessons?`, answer: "Browse tutors for this subject, request private tuition, or join a small-group cohort — your payment stays in escrow until lessons are delivered." },
+    { question: `How do I start ${subject.name} lessons?`, answer: "Browse tutors for this subject, request private tuition, or join a small-group cohort - your payment stays in escrow until lessons are delivered." },
     { question: "How are NUVORA tutors verified?", answer: "Every tutor passes identity and document verification, a competency assessment in their subject, an interview and background checks before they can teach." },
   ]);
 

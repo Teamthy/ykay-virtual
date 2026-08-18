@@ -55,10 +55,10 @@ function WizardInner() {
     mutationFn: markOnboarded,
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["session"] });
-      toast.success("You're all set — welcome to NUVORA!");
+      toast.success("You're all set - welcome to NUVORA!");
       router.replace(next ?? homeForRoles(user?.roles ?? []));
     },
-    onError: () => toast.error("Could not save — please try again"),
+    onError: () => toast.error("Could not save - please try again"),
   });
 
   const finish = async () => {
@@ -178,7 +178,7 @@ function WizardInner() {
           <section>
             <h2 className="font-display text-2xl text-brand-navy">What do you teach?</h2>
             <p className="mt-2 text-sm text-ink-600">
-              You&apos;ll pick subjects during vetting — for now, tell us your strongest area so we can
+              You&apos;ll pick subjects during vetting - for now, tell us your strongest area so we can
               order your onboarding.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
@@ -205,7 +205,7 @@ function WizardInner() {
           <section>
             <h2 className="font-display text-2xl text-brand-navy">Almost there</h2>
             <p className="mt-2 text-sm text-ink-600">
-              Your admin console is ready — pick your goals to finish setup.
+              Your admin console is ready - pick your goals to finish setup.
             </p>
             <div className="mt-8 flex justify-between">
               <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
@@ -217,7 +217,7 @@ function WizardInner() {
         {step === 2 && (
           <section>
             <h2 className="font-display text-2xl text-brand-navy">What are your goals?</h2>
-            <p className="mt-2 text-sm text-ink-600">Pick as many as you like — they shape your “For you” feed.</p>
+            <p className="mt-2 text-sm text-ink-600">Pick as many as you like - they shape your “For you” feed.</p>
             <div className="mt-6 space-y-2">
               {GOALS.map((g) => {
                 const active = goals.includes(g.id);
@@ -239,7 +239,7 @@ function WizardInner() {
             <div className="mt-8 flex justify-between">
               <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
               <Button onClick={() => void finish()} disabled={saving}>
-                {saving ? "Saving…" : "Finish — take me to my dashboard"}
+                {saving ? "Saving…" : "Finish - take me to my dashboard"}
               </Button>
             </div>
           </section>

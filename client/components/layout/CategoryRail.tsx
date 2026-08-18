@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, BookOpenCheck, MonitorPlay, GraduationCap, Globe2, Star, FileCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Category rail — reference-grade left navigation used on product pages
+// Category rail - reference-grade left navigation used on product pages
 // (Home Tutoring · UTME 2026 · GMAT Prep · Healthcare · Entrance Exam ·
 // Study Abroad · Tuteria Plus · Languages equivalent, mapped to NUVORA pages).
 

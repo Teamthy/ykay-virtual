@@ -1,4 +1,4 @@
-// G6.1 — browser pilot E2E: parent journey (register → learner → booking →
+// G6.1 - browser pilot E2E: parent journey (register → learner → booking →
 // webhook settlement → LMS), cross-family isolation, role tampering, and the
 // public catalogue. All identities are generated per run (G1.3 rule: no
 // fixture users); the seeded CATALOGUE rows (tutor 0102, cohort c010) are
@@ -136,7 +136,7 @@ test("parent pilot journey: register → learner → booking → webhook → LMS
   });
   expect(wh.status()).toBe(200);
 
-  // UI: sign in as the parent — the dashboard renders its bookings shell
+  // UI: sign in as the parent - the dashboard renders its bookings shell
   // and the settled enrolment shows up in the LMS hub.
   await completeVerification(request, email);
   await uiLogin(page, email);
@@ -197,7 +197,7 @@ test("student role cannot reach admin surfaces", async ({ page, request }) => {
 
 test("first-time wizard: 3 steps then the role dashboard", async ({ page, request }) => {
   const email = uniq("wizard");
-  // Register + login WITHOUT marking onboarded — the wizard must appear.
+  // Register + login WITHOUT marking onboarded - the wizard must appear.
   const reg = await request.post(`${API}/auth/register`, {
     data: { email, password: "password123", roles: ["PARENT"] },
   });
@@ -220,7 +220,7 @@ test("first-time wizard: 3 steps then the role dashboard", async ({ page, reques
   // Step 3 → finish lands on the parent dashboard.
   await page.getByRole("button", { name: /Exam success/ }).click();
   // The button re-renders to a disabled "Saving…" while the finish POST is
-  // in flight — click without waiting for navigation, then assert the URL.
+  // in flight - click without waiting for navigation, then assert the URL.
   await page.getByRole("button", { name: /Finish/ }).click({ noWaitAfter: true });
   await expect(page).toHaveURL(/dashboard/, { timeout: 20_000 });
   await expect(page.getByRole("heading", { name: /Family dashboard/ })).toBeVisible();
@@ -235,7 +235,7 @@ test("become-a-tutor: marketing page + apply step creates the vetting profile", 
   });
   expect(reg.status()).toBe(201);
   await completeVerification(request, email);
-  // Log in via the API (session cookie jar) BEFORE marking onboarded —
+  // Log in via the API (session cookie jar) BEFORE marking onboarded -
   // the endpoint requires an authenticated session.
   const login = await request.post(`${API}/auth/login`, {
     data: { email, password: "password123" },

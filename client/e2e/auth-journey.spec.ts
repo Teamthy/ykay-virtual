@@ -1,4 +1,4 @@
-// Auth friction E2E — signup + login journeys end to end.
+// Auth friction E2E - signup + login journeys end to end.
 //  1. login honors ?next= and returns to the page the user came for
 //  2. open-redirect is blocked; wrong password shows a friendly error
 //  3. full 7-step signup: account -> emailed code -> role -> profile ->
@@ -98,41 +98,41 @@ test("signup: full 7-step onboarding with the emailed code, back to ?next=", asy
 
   await page.goto("/onboarding?next=/account");
 
-  // Step 1 — account.
+  // Step 1 - account.
   await page.locator("#ob-name").fill("Test Parent");
   await page.locator("#ob-email").fill(email);
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
-  // Step 2 — the code is auto-sent when the step opens (friction-free);
+  // Step 2 - the code is auto-sent when the step opens (friction-free);
   // pull it from the dev-logged email sender and let auto-verify fire.
   const code = await readLoginCode(email);
   await page.locator("#ob-code").fill(code);
   await expect(page.getByText(/How are you planning to use NUVORA/)).toBeVisible({ timeout: 20_000 });
 
-  // Step 3 — role.
+  // Step 3 - role.
   await page.getByRole("button", { name: /^Parent/ }).click();
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
-  // Step 4 — learner details (child fields appear once "My child" is chosen).
+  // Step 4 - learner details (child fields appear once "My child" is chosen).
   await page.getByRole("button", { name: "My child", exact: true }).click();
   await page.locator("#ob-child").fill("Kemi");
   await page.getByRole("button", { name: "Secondary", exact: true }).click();
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
-  // Step 5 — phone + password.
+  // Step 5 - phone + password.
   await page.locator("#ob-phone").fill("+2348000000000");
   await page.locator("#ob-pw").fill("password123");
   await page.locator("#ob-pw2").fill("password123");
   await page.getByRole("button", { name: "Save & continue" }).click();
 
-  // Step 6 — about (optional) → done.
+  // Step 6 - about (optional) → done.
   await page.getByRole("button", { name: "Finish setup" }).click();
   await page.getByRole("button", { name: "Go to my dashboard" }).click();
 
   // The deep link target survives the whole signup journey.
   await expect(page).toHaveURL(/\/account/, { timeout: 20_000 });
 
-  // A brand-new session must go straight to the dashboard — never the wizard.
+  // A brand-new session must go straight to the dashboard - never the wizard.
   const ctx2 = await browser.newContext({
     storageState: {
       cookies: [],

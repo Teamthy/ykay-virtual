@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-// G6.1 browser E2E — orchestrated by scripts/e2e-web.sh (which boots the API
+// G6.1 browser E2E - orchestrated by scripts/e2e-web.sh (which boots the API
 // and the standalone Next server). Env overrides:
 //   WEB_BASE_URL   (default http://localhost:3000)
 //   API_BASE_URL   (default http://localhost:8080/api/v1)

@@ -2,10 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "@/components/layout/Logo";
 
-// Auth shell — Preline split-panel: left 30% FULL-BLEED education photo with
+// Auth shell - Preline split-panel: left 30% FULL-BLEED education photo with
 // overlaid brand header + headline + trusted strip, right 70% white panel
 // with the form. Navigation: logo → home, "← Back to home" top-left of the
-// form panel. Skip is OPT-IN (`skip` prop) — auth pages don't show it; only
+// form panel. Skip is OPT-IN (`skip` prop) - auth pages don't show it; only
 // onboarding steps where skipping makes sense pass it.
 
 export type AuthShellProps = {
@@ -90,7 +90,7 @@ export function AuthShell({
             Back to home
           </Link>
 
-          {/* Skip — only where the page opts in */}
+          {/* Skip - only where the page opts in */}
           {skip && (
             <Link
               href={skip.href}

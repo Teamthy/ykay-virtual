@@ -7,9 +7,9 @@ import { PrivateTuitionWizard } from "@/features/tuition/PrivateTuitionWizard";
 import { Check, PhoneCall } from "lucide-react";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Private Tuition — One-to-One Learning with Vetted Tutors | NUVORA",
+  title: "Private Tuition - One-to-One Learning with Vetted Tutors | NUVORA",
   description:
-    "Request one-to-one tuition: tell us the learner's level, subject, goals and schedule — we match you with a vetted tutor. Escrow-protected payments.",
+    "Request one-to-one tuition: tell us the learner's level, subject, goals and schedule - we match you with a vetted tutor. Escrow-protected payments.",
   path: "/private-tuition",
 });
 
@@ -22,7 +22,7 @@ const FAQS = [
   {
     question: "How much does private tuition cost?",
     answer:
-      "Rates vary by subject, level and tutor. The rate is agreed before any payment — funds sit in escrow until lessons are delivered.",
+      "Rates vary by subject, level and tutor. The rate is agreed before any payment - funds sit in escrow until lessons are delivered.",
   },
   {
     question: "Can I change or cancel lessons?",
@@ -38,7 +38,7 @@ export default function PrivateTuitionPage() {
   ]);
   const course = courseJsonLd({
     name: "Private Tuition at NUVORA",
-    description: "One-to-one learning with vetted tutors — British and Nigerian curricula and exam preparation.",
+    description: "One-to-one learning with vetted tutors - British and Nigerian curricula and exam preparation.",
     provider: "NUVORA",
     url: "https://nuvora.com/private-tuition",
   });
@@ -53,7 +53,7 @@ export default function PrivateTuitionPage() {
         cover="/hero/home-tutoring.jpg"
         eyebrow="One learner, one tutor"
         title="Private Tuition"
-        subtitle="Tell us what your learner needs — we match a vetted tutor and hold payment in escrow until lessons are delivered."
+        subtitle="Tell us what your learner needs - we match a vetted tutor and hold payment in escrow until lessons are delivered."
         crumbs={[{ name: "Home", href: "/" }, { name: "Private Tuition" }]}
         image={{ src: "/hero/home-tutoring.jpg", alt: "One-to-one home tutoring session" }}
       />
@@ -66,7 +66,7 @@ export default function PrivateTuitionPage() {
             {[
               "Tutors are identity-verified, background-checked and competency-assessed",
               "Lesson notes, homework and progress reports after every session",
-              "Payments held in escrow — released only after delivery",
+              "Payments held in escrow - released only after delivery",
               "Reschedule-friendly within your package window",
             ].map((t) => (
               <li key={t} className="flex items-start gap-3">

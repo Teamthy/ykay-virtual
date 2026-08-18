@@ -7,7 +7,7 @@ import { InnerHero } from "@/components/layout/InnerHero";
 import { buildMetadata } from "@/lib/seo";
 import { getExam, getExamPrepPages, getSubject, type ExamSubject } from "@/lib/exam-prep-data";
 
-// Exam-prep subject pages â€” one indexable URL per exam Ã— subject (from
+// Exam-prep subject pages â€” one indexable URL per exam Ã- subject (from
 // lib/exam-prep-data.ts). Factual paper structure + board-agnostic syllabus
 // themes, with links back to the live subject catalogue.
 
@@ -72,7 +72,7 @@ export default async function ExamPrepSubjectPage(props: Props) {
               <BookOpen size={18} className="text-brand-green" /> About this paper
             </h2>
             <p className="mt-2 text-sm text-ink-500">
-              {exam.level} Â· {exam.format}
+              {exam.level} · {exam.format}
             </p>
             <ul className="mt-4 space-y-3">
               {exam.structure.map((line) => (
@@ -128,10 +128,10 @@ export default async function ExamPrepSubjectPage(props: Props) {
               <GraduationCap size={18} className="text-brand-gold" /> How NUVORA prepares you
             </h2>
             <ul className="mt-4 space-y-2.5 text-sm text-white/85">
-              <li>Â· Vetted subject specialists matched to your syllabus</li>
-              <li>Â· Past-paper practice mapped to each topic</li>
-              <li>Â· Timed mocks with feedback and a predicted-grade view</li>
-              <li>Â· Weekly progress reports for parents</li>
+              <li>· Vetted subject specialists matched to your syllabus</li>
+              <li>· Past-paper practice mapped to each topic</li>
+              <li>· Timed mocks with feedback and a predicted-grade view</li>
+              <li>· Weekly progress reports for parents</li>
             </ul>
             <div className="mt-5 space-y-2.5">
               <Link

@@ -124,7 +124,7 @@ export default function LmsHomePage() {
         </div>
 
         {/* Courses */}
-        <Section title="My courses" action={<Link href="/cohorts" className="text-sm font-semibold text-brand-gold-dark hover:underline">View all â†’</Link>}>
+        <Section title="My courses" action={<Link href="/cohorts" className="text-sm font-semibold text-brand-gold-dark hover:underline">View all â†'</Link>}>
           {lessons.isLoading ? (
             <p className="py-8 text-center text-sm text-ink-400">Loading your coursesâ€¦</p>
           ) : courses.length === 0 ? (
@@ -158,7 +158,7 @@ export default function LmsHomePage() {
                         Next: <span className="font-semibold text-ink-700">{next.title}</span>
                       </p>
                     )}
-                    <p className="mt-1 text-xs text-ink-400">Open course â†’</p>
+                    <p className="mt-1 text-xs text-ink-400">Open course â†'</p>
                   </Link>
                 );
               })}
@@ -167,7 +167,7 @@ export default function LmsHomePage() {
         </Section>
 
         {/* Assignments */}
-        <Section title="Assignments" action={<Link href="/lms" className="text-sm font-semibold text-brand-gold-dark hover:underline">Manage â†’</Link>}>
+        <Section title="Assignments" action={<Link href="/lms" className="text-sm font-semibold text-brand-gold-dark hover:underline">Manage â†'</Link>}>
           {assignments.isLoading ? (
             <p className="py-6 text-center text-sm text-ink-400">Loadingâ€¦</p>
           ) : (assignments.data ?? []).length === 0 ? (
@@ -185,7 +185,7 @@ export default function LmsHomePage() {
                       <p className="font-semibold text-ink-800">{a.title}</p>
                       <p className="mt-0.5 text-xs text-ink-400">
                         {a.due_at ? `Due ${new Date(a.due_at).toLocaleDateString()}` : "No deadline"}
-                        {a.max_score ? ` Â· Max ${a.max_score} pts` : ""}
+                        {a.max_score ? ` · Max ${a.max_score} pts` : ""}
                       </p>
                     </div>
                     <span
@@ -225,7 +225,7 @@ export default function LmsHomePage() {
                       â˜… {r.overall_rating}/5
                     </span>
                   </div>
-                  {r.strengths && <p className="mt-2 text-sm text-ink-600">ðŸ’ª {r.strengths}</p>}
+                  {r.strengths && <p className="mt-2 text-sm text-ink-600">ðŸ'ª {r.strengths}</p>}
                   {r.recommendations && <p className="mt-1 text-sm text-ink-600">ðŸŽ¯ {r.recommendations}</p>}
                 </div>
               ))}

@@ -42,7 +42,7 @@ export type Notification = {
 };
 
 // G1 (phase 43): the actor is resolved server-side from the httpOnly session
-// cookie — the retired X-User-ID/X-User-Roles bridge headers are gone.
+// cookie - the retired X-User-ID/X-User-Roles bridge headers are gone.
 
 export async function listConversations(page = 1): Promise<Envelope<Conversation[]>> {
   return apiFetch<Conversation[]>(`/me/conversations?page=${page}`);

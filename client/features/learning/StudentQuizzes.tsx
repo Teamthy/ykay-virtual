@@ -61,7 +61,7 @@ export function StudentQuizzes() {
     onSuccess: (data) => {
       setResult(data);
       setSession(null);
-      toast.success(data.passed ? "Quiz passed — well done!" : "Quiz submitted.");
+      toast.success(data.passed ? "Quiz passed - well done!" : "Quiz submitted.");
       qc.invalidateQueries({ queryKey: ["student", "assessments"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not submit quiz"),
@@ -132,7 +132,7 @@ export function StudentQuizzes() {
               {result.correct}/{result.total}
             </p>
             <p className={`mt-2 font-semibold ${result.passed ? "text-green-600" : "text-red-600"}`}>
-              {result.passed ? "Passed 🎉" : "Not passed — keep practising!"}
+              {result.passed ? "Passed 🎉" : "Not passed - keep practising!"}
             </p>
             <p className="mt-1 text-sm text-ink-500">Score {Math.round(result.score * 100)}%</p>
             <Button className="mt-4" onClick={() => setResult(null)}>
@@ -148,7 +148,7 @@ export function StudentQuizzes() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold">Quizzes & assessments</h2>
-        <p className="text-sm text-ink-500">One attempt per quiz — your result is graded automatically.</p>
+        <p className="text-sm text-ink-500">One attempt per quiz - your result is graded automatically.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -189,7 +189,7 @@ export function StudentQuizzes() {
               <CardContent className="pt-5">
                 <div className="flex items-center justify-between">
                   <p className="font-semibold">
-                    {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
+                    {new Date(r.period_start).toLocaleDateString()} - {new Date(r.period_end).toLocaleDateString()}
                   </p>
                   <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
                     {r.overall_rating}/5
@@ -205,7 +205,7 @@ export function StudentQuizzes() {
             <EmptyState
               icon={<FileText size={20} />}
               title="No progress reports yet"
-              description="Reports written by your tutor appear here — you and your parent can see them."
+              description="Reports written by your tutor appear here - you and your parent can see them."
             />
           )}
         </div>

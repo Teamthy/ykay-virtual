@@ -5,21 +5,21 @@ import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "British Curriculum Online — Year 7–9, IGCSE & A-Level | NUVORA",
+  title: "British Curriculum Online - Year 7-9, IGCSE & A-Level | NUVORA",
   description:
-    "British curriculum learning online: Year 7, 8 and 9, IGCSE (Year 10–11) and A-Level — cohorts, private tuition and exam preparation with vetted tutors.",
+    "British curriculum learning online: Year 7, 8 and 9, IGCSE (Year 10-11) and A-Level - cohorts, private tuition and exam preparation with vetted tutors.",
   path: "/curricula/british",
 });
 
 const STAGES = [
-  { title: "Year 7–9", desc: "Build strong foundations across English, Maths, Sciences and Computing.", subjects: ["Mathematics", "English", "Science", "Computing"], photo: "/hero/subjects.jpg" },
-  { title: "IGCSE · Year 10–11", desc: "Structured subject cohorts with past-paper practice and coursework support.", subjects: ["Computer Science", "Mathematics", "Physics", "English"], photo: "/hero/british.jpg" },
-  { title: "A-Level · Year 12–13", desc: "Subject-specialist teaching for university-bound learners.", subjects: ["Computer Science", "Mathematics", "Further Maths", "Physics"], photo: "/hero/programmes.jpg" },
+  { title: "Year 7-9", desc: "Build strong foundations across English, Maths, Sciences and Computing.", subjects: ["Mathematics", "English", "Science", "Computing"], photo: "/hero/subjects.jpg" },
+  { title: "IGCSE · Year 10-11", desc: "Structured subject cohorts with past-paper practice and coursework support.", subjects: ["Computer Science", "Mathematics", "Physics", "English"], photo: "/hero/british.jpg" },
+  { title: "A-Level · Year 12-13", desc: "Subject-specialist teaching for university-bound learners.", subjects: ["Computer Science", "Mathematics", "Further Maths", "Physics"], photo: "/hero/programmes.jpg" },
 ];
 
 const FAQS = [
   { question: "Which exam boards do you support?", answer: "We prepare learners for Cambridge and Pearson IGCSE and A-Level specifications. Contact us for your specific syllabus." },
-  { question: "Can my child join mid-year?", answer: "Yes — we assess the learner's level and place them in the right cohort or a tailored private programme." },
+  { question: "Can my child join mid-year?", answer: "Yes - we assess the learner's level and place them in the right cohort or a tailored private programme." },
   { question: "Do you offer IGCSE exam preparation?", answer: "Yes. IGCSE cohorts include revision sessions, past-paper practice and mock examinations." },
 ];
 
@@ -30,7 +30,7 @@ export default function BritishCurriculumPage() {
   ]);
   const course = courseJsonLd({
     name: "British Curriculum Online",
-    description: "Year 7–9, IGCSE and A-Level learning with vetted tutors, structured cohorts and exam preparation.",
+    description: "Year 7-9, IGCSE and A-Level learning with vetted tutors, structured cohorts and exam preparation.",
     provider: "NUVORA",
     url: "https://nuvora.com/curricula/british",
   });
@@ -45,7 +45,7 @@ export default function BritishCurriculumPage() {
         cover="/hero/british.jpg"
         eyebrow="British pathway"
         title="British Curriculum Online"
-        subtitle="From Key Stage 3 foundations to IGCSE and A-Level — a structured British pathway taught by vetted subject specialists, with parent visibility at every step."
+        subtitle="From Key Stage 3 foundations to IGCSE and A-Level - a structured British pathway taught by vetted subject specialists, with parent visibility at every step."
         crumbs={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "British Curriculum" }]}
         align="center"
       >
@@ -98,11 +98,11 @@ export default function BritishCurriculumPage() {
           <div className="mt-4 space-y-3">
             <Link href="/programmes" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
               <span className="font-semibold text-sm">IGCSE Computer Science</span>
-              <span className="block text-xs text-ink-500 mt-0.5">Year 10–11 · cohort + private</span>
+              <span className="block text-xs text-ink-500 mt-0.5">Year 10-11 · cohort + private</span>
             </Link>
             <Link href="/programmes" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
               <span className="font-semibold text-sm">IGCSE Mathematics</span>
-              <span className="block text-xs text-ink-500 mt-0.5">Year 10–11 · cohort + private</span>
+              <span className="block text-xs text-ink-500 mt-0.5">Year 10-11 · cohort + private</span>
             </Link>
             <Link href="/private-tuition" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
               <span className="font-semibold text-sm">A-Level subject tuition</span>

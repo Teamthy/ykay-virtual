@@ -33,7 +33,7 @@ export default function AdminReviewsPage() {
       <div>
         <h1 className="text-3xl font-extrabold">Review moderation</h1>
         <p className="text-ink-500 text-sm mt-1">
-          Reviews publish only with reviewer consent — SEO Review JSON-LD uses published reviews only.
+          Reviews publish only with reviewer consent - SEO Review JSON-LD uses published reviews only.
         </p>
       </div>
 

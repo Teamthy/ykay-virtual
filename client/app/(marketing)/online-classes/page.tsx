@@ -8,7 +8,7 @@ export const revalidate = 600; // ISR 10min
 
 export function generateMetadata(): Metadata {
   return buildMetadata({
-    title: "Online Classes & Cohorts — NUVORA | Live Small-Group Learning",
+    title: "Online Classes & Cohorts - NUVORA | Live Small-Group Learning",
     description: "Join live, small-group cohorts: IGCSE, WAEC/NECO, JAMB, A-Level, Digital Skills. Structured schemes, vetted tutors, progress reports. What Tuteria Prep does, but on one platform.",
     path: "/online-classes",
   });
@@ -16,7 +16,7 @@ export function generateMetadata(): Metadata {
 
 const tracks = [
   { title: "British curriculum live class", level: "IGCSE / A-Level", href: "/curricula/british", note: "Browse live cohorts when a group is open", photo: "/hero/british.jpg" },
-  { title: "UTME / JAMB prep", level: "UTME 2026", href: "/utme-2026", note: "Indicative packages — confirm before pay", photo: "/hero/utme.jpg" },
+  { title: "UTME / JAMB prep", level: "UTME 2026", href: "/utme-2026", note: "Indicative packages - confirm before pay", photo: "/hero/utme.jpg" },
   { title: "WAEC / NECO boards", level: "SSS", href: "/entrance-exam", note: "Past papers, mocks, weekly reports", photo: "/hero/nigerian.jpg" },
 ];
 
@@ -41,7 +41,7 @@ export default function OnlineClassesPage() {
         cover="/hero/programmes.jpg"
         eyebrow="Live small-group learning"
         title="Online Classes & Cohorts"
-        subtitle="Live small-group classes on nuvora.com — same login on your phone. Open cohorts come from the live catalogue, not a dummy list."
+        subtitle="Live small-group classes on nuvora.com - same login on your phone. Open cohorts come from the live catalogue, not a dummy list."
         crumbs={[{ name: "Home", href: "/" }, { name: "Online Classes" }]}
         align="center"
       >
@@ -84,7 +84,7 @@ export default function OnlineClassesPage() {
         </div>
         <div className="rounded-2xl bg-ink-100 p-8">
           <h3 className="font-bold">One site, one login</h3>
-          <p className="mt-2 text-sm text-ink-600">Cohorts sit on nuvora.com — same wallet and account as private tuition. There is no second prep domain.</p>
+          <p className="mt-2 text-sm text-ink-600">Cohorts sit on nuvora.com - same wallet and account as private tuition. There is no second prep domain.</p>
           <Link href="/cohorts" className="mt-4 inline-block text-sm font-bold text-brand-navy">Browse live cohorts →</Link>
         </div>
       </section>

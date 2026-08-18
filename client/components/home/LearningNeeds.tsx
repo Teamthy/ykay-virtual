@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Home, MonitorPlay, GraduationCap, Baby, FileCheck } from "lucide-react";
 
-// "No Matter The Learning Need, There's A Tutor For Your Child!" — Tuteria v2
+// "No Matter The Learning Need, There's A Tutor For Your Child!" - Tuteria v2
 // with real descriptions per need.
 
 const NEEDS = [
@@ -26,13 +26,13 @@ const NEEDS = [
   {
     icon: <Baby size={20} />,
     label: "Early Years Foundation",
-    desc: "Not just catching up — propelling your child forward with a strong academic foundation that lasts a lifetime.",
+    desc: "Not just catching up - propelling your child forward with a strong academic foundation that lasts a lifetime.",
     href: "/curricula/british",
   },
   {
     icon: <FileCheck size={20} />,
     label: "Exam Preparation",
-    desc: "Pass entrance exams into top schools — Common Entrance, Checkpoint, 11+, IGCSE, SATs, SSCE, BECE, UTME/JAMB.",
+    desc: "Pass entrance exams into top schools - Common Entrance, Checkpoint, 11+, IGCSE, SATs, SSCE, BECE, UTME/JAMB.",
     href: "/exam-prep",
   },
 ];

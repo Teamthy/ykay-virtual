@@ -1,6 +1,6 @@
 "use client";
 
-// global-error — production error boundary (industry-standard chunk-load
+// global-error - production error boundary (industry-standard chunk-load
 // resilience): when a lazy chunk fails to load (e.g. a deploy while a user
 // has an old tab open) the app shows a recoverable screen instead of a
 // blank page. Must include its own <html>/<body> per Next.js.

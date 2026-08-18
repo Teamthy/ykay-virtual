@@ -63,7 +63,7 @@ export default function DigitalSkillsPage() {
             >
               <h2 className="font-bold text-white">{t.title}</h2>
               <p className="mt-2 text-sm text-white/80">{t.desc}</p>
-              <span className="mt-4 inline-block text-sm font-semibold text-brand-gold">Explore â†’</span>
+              <span className="mt-4 inline-block text-sm font-semibold text-brand-gold">Explore â†'</span>
             </Link>
           ))}
         </section>

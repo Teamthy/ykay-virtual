@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-// Stat card (24.1) — KPI tile: label, value, optional trend + icon.
+// Stat card (24.1) - KPI tile: label, value, optional trend + icon.
 
 export type StatCardProps = {
   label: string;

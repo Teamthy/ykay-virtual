@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 
-// Learning, Assessment & Reporting — phase 11c API client (working-doc §13).
+// Learning, Assessment & Reporting - phase 11c API client (working-doc §13).
 
 export type AssessmentQuestionView = {
   id: string;

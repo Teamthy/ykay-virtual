@@ -7,9 +7,9 @@ import Link from "next/link";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Blog — Study Guides, Exam Tips & Learning Insights | NUVORA",
+  title: "Blog - Study Guides, Exam Tips & Learning Insights | NUVORA",
   description:
-    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB, IELTS, A-Level and more — from the NUVORA academic team.",
+    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB, IELTS, A-Level and more - from the NUVORA academic team.",
   path: "/blog",
 });
 
@@ -29,7 +29,7 @@ const fallbackPosts: BlogPostDTO[] = [
     id: "1",
     slug: "how-to-score-8-ielts",
     title: "How to Score 8.0 in IELTS: Techniques Our Tutors Use",
-    excerpt: "IELTS is not English — it's a technique exam. Learn the patterns our tutors teach.",
+    excerpt: "IELTS is not English - it's a technique exam. Learn the patterns our tutors teach.",
     subject_slugs: ["ielts-prep"],
     exam_slugs: ["IELTS"],
     published_at: "2026-08-01",
@@ -69,7 +69,7 @@ export default async function BlogPage() {
       <PageHero
         eyebrow="From the academic team"
         title="Resources & Blog"
-        subtitle="Study guides, exam-prep strategies and curriculum insights — written by our academic team and tagged by subject and exam for easy discovery."
+        subtitle="Study guides, exam-prep strategies and curriculum insights - written by our academic team and tagged by subject and exam for easy discovery."
         crumbs={[{ name: "Home", href: "/" }, { name: "Blog" }]}
         align="left"
       />

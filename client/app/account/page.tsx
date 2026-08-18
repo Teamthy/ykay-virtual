@@ -193,7 +193,7 @@ export default function AccountPage() {
           <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">Account settings</h1>
           <p className="mt-1 text-sm text-ink-500">
             {user.email}
-            {user.first_name ? ` Â· ${user.first_name} ${user.last_name ?? ""}` : ""}
+            {user.first_name ? ` · ${user.first_name} ${user.last_name ?? ""}` : ""}
           </p>
         </div>
       </header>
@@ -247,7 +247,7 @@ export default function AccountPage() {
                 </div>
                 <div className="text-sm text-ink-500">
                   <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploadingâ€¦" : "Profile photo"}</p>
-                  <p>JPEG, PNG or WebP Â· up to 10 MB</p>
+                  <p>JPEG, PNG or WebP · up to 10 MB</p>
                 </div>
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -292,7 +292,7 @@ export default function AccountPage() {
                   <li key={l.id} className="flex items-center justify-between rounded-xl border border-ink-100 bg-surface-muted px-4 py-3">
                     <div>
                       <p className="font-semibold text-ink-800">{l.first_name} {l.last_name}</p>
-                      <p className="text-xs text-ink-500">{l.current_level || "Level not set"}{l.school_name ? ` Â· ${l.school_name}` : ""}</p>
+                      <p className="text-xs text-ink-500">{l.current_level || "Level not set"}{l.school_name ? ` · ${l.school_name}` : ""}</p>
                     </div>
                   </li>
                 ))}
@@ -339,10 +339,10 @@ export default function AccountPage() {
                 {(devices.data ?? []).map((d: Device) => (
                   <div key={d.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{d.platform === "ios" ? "ðŸŽ" : d.platform === "android" ? "ðŸ¤–" : "ðŸŒ"}</span>
+                      <span className="text-xl">{d.platform === "ios" ? "ðŸŽ" : d.platform === "android" ? "ðŸ¤-" : "ðŸŒ"}</span>
                       <div>
-                        <p className="text-sm font-semibold text-ink-800">{d.platform} Â· v{d.app_version ?? "?"}</p>
-                        <p className="text-xs text-ink-400">{d.token.slice(0, 24)}â€¦ Â· last seen {new Date(d.last_seen_at).toLocaleDateString()}</p>
+                        <p className="text-sm font-semibold text-ink-800">{d.platform} · v{d.app_version ?? "?"}</p>
+                        <p className="text-xs text-ink-400">{d.token.slice(0, 24)}â€¦ · last seen {new Date(d.last_seen_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <button

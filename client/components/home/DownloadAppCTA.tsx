@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Play, Apple, WifiOff, Bell, FileCheck2 } from "lucide-react";
 
-// Download-app section — self-contained: no remote store-button SVGs, no
+// Download-app section - self-contained: no remote store-button SVGs, no
 // remote gradient, no invented social-proof counts. Local image + brand
 // palette + real product perks.
 
@@ -25,7 +25,7 @@ export function DownloadAppCTA() {
           </h2>
           <p className="mt-5 max-w-md leading-relaxed text-ink-600">
             Attend live lessons, take quizzes, submit assignments and track progress from your
-            phone — even offline.
+            phone - even offline.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
@@ -38,11 +38,11 @@ export function DownloadAppCTA() {
             </Link>
             <button
               type="button"
-              title="App Store listing coming soon — use the Android APK for now."
+              title="App Store listing coming soon - use the Android APK for now."
               className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-ink-300 px-5 py-3 text-sm font-bold text-ink-500"
             >
               <Apple size={16} />
-              App Store — soon
+              App Store - soon
             </button>
           </div>
 

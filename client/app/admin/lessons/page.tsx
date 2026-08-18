@@ -45,7 +45,7 @@ export default function AdminLessonsPage() {
               <div>
                 <p className="font-semibold text-sm">{l.title}</p>
                 <p className="text-xs text-ink-500">
-                  {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                  {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                 </p>
               </div>
               <div className="flex items-center gap-3">

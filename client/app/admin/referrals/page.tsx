@@ -55,7 +55,7 @@ export default function AdminReferralsPage() {
         <EmptyState
           icon={<Inbox size={20} />}
           title="No referrals yet"
-          description="Share your code to start earning — qualifying referrals appear here."
+          description="Share your code to start earning - qualifying referrals appear here."
         />
       ) : (
         <div className="border rounded-2xl overflow-x-auto">

@@ -24,7 +24,7 @@ import {
   markOnboarded,
 } from "@/features/auth/api";
 
-// ── Stateful 7-step onboarding (phase 30) — hardened (phase 32) ───────────
+// ── Stateful 7-step onboarding (phase 30) - hardened (phase 32) ───────────
 //  1 Account        name + email (creates the account with a generated
 //                   password; the user sets a real one in step 5)
 //  2 Verify email  6-digit code via login-code (proves ownership → session)
@@ -65,7 +65,7 @@ const ROLES = [
 ] as const;
 
 const STEP_META: Record<number, { title: string; subtitle: string }> = {
-  1: { title: "Create your account", subtitle: "Start with your name and email — it takes under 2 minutes." },
+  1: { title: "Create your account", subtitle: "Start with your name and email - it takes under 2 minutes." },
   2: { title: "Verify your email", subtitle: "Enter the 6-digit code we emailed you." },
   3: { title: "How are you planning to use NUVORA?", subtitle: "Select the role that best describes you." },
   4: { title: "What's next for you?", subtitle: "Tell us a little more so we can point you in the right direction." },
@@ -566,7 +566,7 @@ function StrengthMeter({ pw }: { pw: string }) {
       </div>
       <p className="mt-1 text-xs text-ink-500">
         Password strength: <span className="font-semibold">{labels[s]}</span>
-        {s < 3 && <span className="text-ink-400"> — aim for 8+ characters with mixed case, a number and a symbol.</span>}
+        {s < 3 && <span className="text-ink-400"> - aim for 8+ characters with mixed case, a number and a symbol.</span>}
       </p>
     </div>
   );
@@ -637,7 +637,7 @@ function Step5({
         disabled={submitting}
       />
       <p className="text-xs leading-5 text-ink-400">
-        Leave the password empty to keep using email codes to sign in — you can add one later.
+        Leave the password empty to keep using email codes to sign in - you can add one later.
       </p>
     </div>
   );
@@ -735,7 +735,7 @@ function OnboardingInner() {
   const [codeSent, setCodeSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
-  // verifier flags (refs are synchronous — they don't go through React's
+  // verifier flags (refs are synchronous - they don't go through React's
   // render/batch cycle, so the recovery effect below can never race them).
   const verifyingRef = useRef(false); // a verify request is in flight
   const verifiedRef = useRef(false);  // email verified in THIS mount
@@ -746,7 +746,7 @@ function OnboardingInner() {
       try {
         window.localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(next));
       } catch {
-        /* storage full/blocked — flow continues in memory */
+        /* storage full/blocked - flow continues in memory */
       }
       return next;
     });
@@ -779,7 +779,7 @@ function OnboardingInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sp]);
 
-  // Finished accounts never see the signup steps again — straight through.
+  // Finished accounts never see the signup steps again - straight through.
   // Reads state.next (persisted) because the step URLs drop the ?next= param.
   useEffect(() => {
     if (!sessionLoading && user?.onboarded) {
@@ -822,7 +822,7 @@ function OnboardingInner() {
       await requestLoginCode(state.email);
       setCodeSent(true);
       setCountdown(30);
-      toast.success("Code sent — check your inbox (and spam).");
+      toast.success("Code sent - check your inbox (and spam).");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not send the code");
     } finally {
@@ -830,7 +830,7 @@ function OnboardingInner() {
     }
   };
 
-  // The verify step promises "we emailed you" — so send the code the moment
+  // The verify step promises "we emailed you" - so send the code the moment
   // the step opens instead of making the user click "Send code" first.
   useEffect(() => {
     if (step === 2 && !codeSent && !submitting && state.email) void sendCode();
@@ -844,17 +844,17 @@ function OnboardingInner() {
     setError(null);
     try {
       const user = await confirmLoginCode(state.email, code);
-      // The confirm planted the session cookie — sync the session cache
+      // The confirm planted the session cookie - sync the session cache
       // immediately so the page's own guards see the signed-in user.
       qc.setQueryData(["session"], user);
       void qc.invalidateQueries({ queryKey: ["session", "context"] });
       // Mark verification synchronously BEFORE navigating, so the
       // session-lost recovery effect (below) can never bounce a user who
-      // JUST verified to /login — even if the session query hasn't
+      // JUST verified to /login - even if the session query hasn't
       // re-rendered yet (A-26: "verified then redirected to login").
       verifiedRef.current = true;
       save({ verified: true, userId: user.id });
-      toast.success("Email verified — welcome to NUVORA!");
+      toast.success("Email verified - welcome to NUVORA!");
       go(3);
     } catch (err) {
       setError(err instanceof Error ? err.message : "That code didn't work");
@@ -879,7 +879,7 @@ function OnboardingInner() {
       // and retrying forever just shows a raw "not authenticated". Send the
       // user back to login once instead of trapping them.
       if (/authentication required|not authenticated|unauthorized/i.test(msg)) {
-        toast.error("Your session expired — please log in again.");
+        toast.error("Your session expired - please log in again.");
         router.replace("/login");
         return;
       }
@@ -912,7 +912,7 @@ function OnboardingInner() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not create your account";
       if (/already registered|already exists/i.test(msg)) {
-        setError("This email already has an account — log in instead.");
+        setError("This email already has an account - log in instead.");
       } else {
         setError(msg);
       }
@@ -931,7 +931,7 @@ function OnboardingInner() {
     setError(null);
     try {
       await changePassword(pw);
-      toast.success("Password set — you can now log in with it anytime.");
+      toast.success("Password set - you can now log in with it anytime.");
       go(6);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not set your password");
@@ -942,12 +942,12 @@ function OnboardingInner() {
 
   // Session-lost recovery for steps ≥ 3 (session is created in step 2).
   // If a user reaches a signed-in-only step without a session, they already
-  // have an account (their email was verified earlier) — route them to login
+  // have an account (their email was verified earlier) - route them to login
   // so they can sign back in and continue, instead of trapping them on a
-  // dead-end "Hold on — sign in first" screen.
+  // dead-end "Hold on - sign in first" screen.
   // A-27: a draft is stale when (a) a DIFFERENT account is signed in than the
   // one the draft belongs to, or (b) the draft was verified by a previous
-  // session that is now gone (logged out). Both must start over from step 1 —
+  // session that is now gone (logged out). Both must start over from step 1 -
   // they must never bounce a brand-new visitor to /login, and never show the
   // previous user's data.
   const staleDraft =
@@ -963,9 +963,9 @@ function OnboardingInner() {
 
   // Session-lost recovery for steps ≥ 3 (session is created in step 2).
   // If a user reaches a signed-in-only step without a session, they already
-  // have an account (their email was verified earlier) — route them to login
+  // have an account (their email was verified earlier) - route them to login
   // so they can sign back in and continue, instead of trapping them on a
-  // dead-end "Hold on — sign in first" screen. A stale draft is exempt: it is
+  // dead-end "Hold on - sign in first" screen. A stale draft is exempt: it is
   // reset to step 1 above instead of bouncing.
   useEffect(() => {
     if (sessionLoading || step < 3 || step > 6) return;

@@ -43,7 +43,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
   return buildMetadata({
     title: p.title,
-    description: p.summary ?? `${p.title} — ${[p.curriculum_name, p.level_name, p.exam_name].filter(Boolean).join(" · ")} at NUVORA.`,
+    description: p.summary ?? `${p.title} - ${[p.curriculum_name, p.level_name, p.exam_name].filter(Boolean).join(" · ")} at NUVORA.`,
     path: `/programmes/${params.slug}`,
   });
 }
@@ -70,7 +70,7 @@ export default async function ProgrammeDetailPage(props: Props) {
   });
   const faq = faqJsonLd([
     { question: "Who is this programme for?", answer: `${p.title} is designed for learners at the ${p.level_name ?? "appropriate"} level${p.exam_name ? ` preparing for ${p.exam_name}` : ""}.` },
-    { question: "How do I join?", answer: "Choose a cohort from the Cohorts tab and enrol securely — your fee is held in escrow until lessons are delivered. Private tuition is also available." },
+    { question: "How do I join?", answer: "Choose a cohort from the Cohorts tab and enrol securely - your fee is held in escrow until lessons are delivered. Private tuition is also available." },
   ]);
 
   return (
@@ -79,7 +79,7 @@ export default async function ProgrammeDetailPage(props: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Programmes", href: "/programmes" }, { name: p.title }]} />
 
-      {/* Header — PrebuiltUI template background (InnerHero preserves content) */}
+      {/* Header - PrebuiltUI template background (InnerHero preserves content) */}
       <InnerHero>
       <div className="flex flex-wrap items-start justify-between gap-8">
         <div className="max-w-3xl">
@@ -105,7 +105,7 @@ export default async function ProgrammeDetailPage(props: Props) {
             <p className="text-xs text-ink-500">Next cohort starts <span className="font-semibold text-ink-800">{new Date(p.next_start).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></p>
           )}
           <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">
-            {p.price_min != null ? `${p.currency} ${p.price_min.toLocaleString()}${p.price_max && p.price_max !== p.price_min ? `–${p.price_max.toLocaleString()}` : ""}` : "Price on request"}
+            {p.price_min != null ? `${p.currency} ${p.price_min.toLocaleString()}${p.price_max && p.price_max !== p.price_min ? `-${p.price_max.toLocaleString()}` : ""}` : "Price on request"}
           </p>
           <ul className="space-y-2 text-xs text-ink-600">
             <li className="flex items-center gap-2"><span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Live lessons with a vetted tutor</li>

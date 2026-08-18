@@ -15,7 +15,7 @@ export const navServices = {
 
 // Unused invented hero/stat fixtures removed (round 52).
 
-// Local portrait pool (Batch 3) — the community collage cycles these;
+// Local portrait pool (Batch 3) - the community collage cycles these;
 // no remote hotlinks on the home page.
 export const tutorImages = [
   "/tutors/chinasa.jpg",

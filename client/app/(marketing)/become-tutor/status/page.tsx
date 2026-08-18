@@ -10,7 +10,7 @@ import { OnboardingStepper, SubmittedState } from "@/features/vetting/components
 import { getMyProfile } from "@/features/vetting/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Tutor onboarding — step 5 of 5: live application status.
+// Tutor onboarding - step 5 of 5: live application status.
 
 export default function BecomeTutorStatusPage() {
   const router = useRouter();
@@ -44,12 +44,12 @@ export default function BecomeTutorStatusPage() {
           <SubmittedState profile={profile.data} />
         ) : (
           <div className="border rounded-2xl p-8 text-center">
-            <p className="text-ink-500">No application yet — start with your profile.</p>
+            <p className="text-ink-500">No application yet - start with your profile.</p>
             <Link href="/become-tutor/apply" className="btn-gold mt-4 inline-block">Start application</Link>
           </div>
         )}
         <p className="mt-6 text-center text-xs text-ink-400">
-          Application id: {state.profileId ? state.profileId.slice(0, 8) : "—"} · saved locally so you can return anytime
+          Application id: {state.profileId ? state.profileId.slice(0, 8) : "-"} · saved locally so you can return anytime
         </p>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link

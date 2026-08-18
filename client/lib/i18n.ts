@@ -3,7 +3,7 @@
 // Lightweight i18n (P2): dictionary + t() helper + language switcher state.
 // Languages: English (default), French, Yoruba. Persisted in localStorage;
 // the switcher lives in the header. Scope: chrome strings (nav, hero, auth,
-// dashboards) — full page translation is a follow-up per content team.
+// dashboards) - full page translation is a follow-up per content team.
 
 export type Lang = "en" | "fr" | "yo";
 
@@ -19,7 +19,7 @@ const DICTS = {
     "nav.contact": "Contact",
     "hero.title": "Learning beyond boundaries",
     "hero.subtitle":
-      "British & Nigerian curricula, exam preparation, private tuition and live cohorts — with vetted tutors.",
+      "British & Nigerian curricula, exam preparation, private tuition and live cohorts - with vetted tutors.",
     "hero.cta": "Get started",
     "hero.cta2": "Find a tutor",
     "footer.tagline": "Learning beyond boundaries",
@@ -41,7 +41,7 @@ const DICTS = {
     "nav.contact": "Contact",
     "hero.title": "Apprendre au-delà des frontières",
     "hero.subtitle":
-      "Curriculums britannique et nigérian, préparation aux examens, cours particuliers et cohortes en direct — avec des tuteurs vérifiés.",
+      "Curriculums britannique et nigérian, préparation aux examens, cours particuliers et cohortes en direct - avec des tuteurs vérifiés.",
     "hero.cta": "Commencer",
     "hero.cta2": "Trouver un tuteur",
     "footer.tagline": "Apprendre au-delà des frontières",
@@ -63,7 +63,7 @@ const DICTS = {
     "nav.contact": "Kanasii",
     "hero.title": "Keko kọja awọn ala",
     "hero.subtitle":
-      "Awọn eto-eko ti Ilu Gẹẹsi ati Naijiria, igbaradi idanwo, ẹkọ ikọkọ ati awọn ẹgbẹ ifiwe — pẹlu awọn oluko ti a fọwọsi.",
+      "Awọn eto-eko ti Ilu Gẹẹsi ati Naijiria, igbaradi idanwo, ẹkọ ikọkọ ati awọn ẹgbẹ ifiwe - pẹlu awọn oluko ti a fọwọsi.",
     "hero.cta": "Bẹrẹ",
     "hero.cta2": "Wa oluko",
     "footer.tagline": "Keko kọja awọn ala",

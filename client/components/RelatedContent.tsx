@@ -14,7 +14,7 @@ export type RelatedContentData = {
 };
 
 /**
- * RelatedContent — the internal-linking graph (tutor↔subject↔programme↔blog)
+ * RelatedContent - the internal-linking graph (tutor↔subject↔programme↔blog)
  * per AGENTS.md. Server-rendered; degrades gracefully when the API is down.
  */
 export async function RelatedContent({ subjectSlug }: { subjectSlug: string }) {

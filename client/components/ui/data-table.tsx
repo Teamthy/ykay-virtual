@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 
-// Data table (24.1) — typed columns with loading skeleton + empty state.
+// Data table (24.1) - typed columns with loading skeleton + empty state.
 
 export type Column<T> = {
   key: string;

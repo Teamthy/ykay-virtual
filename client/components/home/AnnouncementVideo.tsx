@@ -2,7 +2,7 @@ import { Play } from "lucide-react";
 
 // v2.tuteria.com announcement band: "Watch our announcement video" with the
 // award/press recognition strip (Forbes, internet.org, BBC, ROYAL, Microsoft,
-// Pitch@Palace, TEF — reference 003244).
+// Pitch@Palace, TEF - reference 003244).
 
 const AWARDS = [
   "Forbes",

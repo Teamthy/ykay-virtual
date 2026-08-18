@@ -27,7 +27,7 @@ import {
 } from "@/features/lms/api";
 import { listProgressReports } from "@/features/learning/api";
 
-// Student course page — lessons, resources, assignments, auto-graded quiz,
+// Student course page - lessons, resources, assignments, auto-graded quiz,
 // notes and progress reports for one cohort.
 
 type QuizState =
@@ -102,7 +102,7 @@ export default function LmsCoursePage() {
     onSuccess: (result) => {
       setQuiz({ phase: "done", result });
       qc.invalidateQueries({ queryKey: ["lms", "quizzes"] });
-      toast.success(result.passed ? "Quiz passed — well done!" : "Quiz completed — review your weak spots.");
+      toast.success(result.passed ? "Quiz passed - well done!" : "Quiz completed - review your weak spots.");
     },
     onError: (e) => {
       toast.error(e instanceof Error ? e.message : "Could not submit the quiz");
@@ -114,7 +114,7 @@ export default function LmsCoursePage() {
     mutationFn: ({ assignmentId, content }: { assignmentId: string; content: string }) =>
       submitAssignment(studentId, assignmentId, content),
     onSuccess: () => {
-      toast.success("Assignment submitted — your tutor will grade it.");
+      toast.success("Assignment submitted - your tutor will grade it.");
       setSubmitText({});
       qc.invalidateQueries({ queryKey: ["lms", "assignments"] });
     },
@@ -151,7 +151,7 @@ export default function LmsCoursePage() {
               </h1>
               <p className="mt-1 text-sm text-ink-500">
                 {cohort.data?.start_date
-                  ? `${new Date(cohort.data.start_date).toLocaleDateString()} – ${new Date(cohort.data.end_date).toLocaleDateString()}`
+                  ? `${new Date(cohort.data.start_date).toLocaleDateString()} - ${new Date(cohort.data.end_date).toLocaleDateString()}`
                   : ""}
                 {cohort.data?.schedule_description ? ` · ${cohort.data.schedule_description}` : ""}
                 {cohort.data?.location_mode ? ` · ${cohort.data.location_mode}` : ""}
@@ -177,7 +177,7 @@ export default function LmsCoursePage() {
                 const late = row?.status === "LATE";
                 return (
                   <div key={l.id} className="flex flex-1 flex-col items-center gap-1">
-                    <span className="text-[10px] font-bold">{row ? "✓" : "–"}</span>
+                    <span className="text-[10px] font-bold">{row ? "✓" : "-"}</span>
                     <div
                       className={`w-full rounded-t ${present ? "bg-green-500" : late ? "bg-amber-400" : "bg-ink-200"}`}
                       style={{ height: row ? 56 : 16 }}
@@ -194,7 +194,7 @@ export default function LmsCoursePage() {
           <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
             <h3 className="text-sm font-bold text-brand-navy">Quizzes</h3>
             <p className="mt-2 text-3xl font-extrabold text-brand-navy">
-              {quizzesTotal > 0 ? Math.round((quizzesPassed / quizzesTotal) * 100) : "—"}
+              {quizzesTotal > 0 ? Math.round((quizzesPassed / quizzesTotal) * 100) : "-"}
               {quizzesTotal > 0 && <span className="text-base font-bold text-ink-400">% passed</span>}
             </p>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-100">
@@ -250,7 +250,7 @@ export default function LmsCoursePage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
           {/* Left column */}
           <div className="space-y-6">
-            {/* Course player — curriculum sidebar + persistent player */}
+            {/* Course player - curriculum sidebar + persistent player */}
             <section className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
               <div className="grid lg:grid-cols-[300px_1fr]">
                 {/* Curriculum sidebar */}
@@ -526,7 +526,7 @@ export default function LmsCoursePage() {
                   <div key={r.id} className="rounded-xl border border-ink-100 p-4 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-ink-400">
-                        {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
+                        {new Date(r.period_start).toLocaleDateString()} - {new Date(r.period_end).toLocaleDateString()}
                       </span>
                       <span className="rounded-full bg-brand-gold-light px-2 py-0.5 text-xs font-bold text-brand-navy">★ {r.overall_rating}/5</span>
                     </div>
@@ -611,7 +611,7 @@ export default function LmsCoursePage() {
             <p className="mt-2 text-sm text-ink-500">
               You scored <span className="font-extrabold text-brand-navy">{quiz.result.score}/{quiz.result.max_score}</span>{" "}
               ({quiz.result.correct}/{quiz.result.total} correct)
-              {quiz.result.passed ? "" : " — you can retake it anytime."}
+              {quiz.result.passed ? "" : " - you can retake it anytime."}
             </p>
             <button
               type="button"

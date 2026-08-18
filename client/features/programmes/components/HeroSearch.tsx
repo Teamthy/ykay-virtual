@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
 // Home hero search (working-doc §8.1): Subject + Curriculum/Exam + Level.
-// Routes to the programmes hub with URL-driven filters — never a dead end.
+// Routes to the programmes hub with URL-driven filters - never a dead end.
 
 const CURRICULA = [
   { value: "british", label: "British Curriculum" },
@@ -23,8 +23,8 @@ const LEVELS = [
   "year-7-9", "igcse", "a-level", "jss1-3", "sss1-3", "adult",
 ];
 const LEVEL_LABELS: Record<string, string> = {
-  "year-7-9": "Year 7–9", igcse: "IGCSE (Y10–11)", "a-level": "A-Level",
-  "jss1-3": "JSS1–3", "sss1-3": "SSS1–3", adult: "Adult / professional",
+  "year-7-9": "Year 7-9", igcse: "IGCSE (Y10-11)", "a-level": "A-Level",
+  "jss1-3": "JSS1-3", "sss1-3": "SSS1-3", adult: "Adult / professional",
 };
 
 export function HeroSearch() {

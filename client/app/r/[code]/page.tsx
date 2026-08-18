@@ -89,7 +89,7 @@ export default async function ReferralLandingPage(props: Props) {
             </h1>
             <p className="mx-auto mt-4 max-w-md leading-relaxed text-ink-600">
               The referral code may have expired or the link is incomplete. You can still join NUVORA
-              directly — no code needed.
+              directly - no code needed.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link

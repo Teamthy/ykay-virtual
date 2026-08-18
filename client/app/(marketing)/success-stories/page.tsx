@@ -6,19 +6,19 @@ import Link from "next/link";
 import { Trophy, GraduationCap, Quote, MapPin } from "lucide-react";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Success Stories — Results, Competitions & Testimonials | NUVORA",
+  title: "Success Stories - Results, Competitions & Testimonials | NUVORA",
   description:
     "Learner results, competition achievements and parent stories at NUVORA. Testimonials appear with consent only.",
   path: "/success-stories",
 });
 
-// Verified results from our academic leadership (see About page) — these are
+// Verified results from our academic leadership (see About page) - these are
 // real, documented achievements, not marketing fabrication.
 const RESULTS = [
   {
     icon: Trophy,
-    title: "International Coding Olympiad 2026 — Rome, Italy",
-    body: "Our delegation competed at the 2026 International Coding Olympiad and won medals — including a Nigerian student achieving a world Top-3 result in the Codementum category.",
+    title: "International Coding Olympiad 2026 - Rome, Italy",
+    body: "Our delegation competed at the 2026 International Coding Olympiad and won medals - including a Nigerian student achieving a world Top-3 result in the Codementum category.",
     tag: "Competitions",
   },
   {
@@ -38,7 +38,7 @@ type Testimonial = {
   rating?: number;
 };
 
-// Parent stories come ONLY from the consent-gated endpoint — never hardcoded.
+// Parent stories come ONLY from the consent-gated endpoint - never hardcoded.
 async function fetchTestimonials(): Promise<Testimonial[]> {
   try {
     const res = await apiFetchSSR<Testimonial[]>("/content/testimonials?featured=true");
@@ -57,7 +57,7 @@ export default async function SuccessStoriesPage() {
     {
       question: "Can I share my family's story?",
       answer:
-        "Yes — we'd love to hear it. Testimonials are published only with explicit consent. Get in touch through the contact page.",
+        "Yes - we'd love to hear it. Testimonials are published only with explicit consent. Get in touch through the contact page.",
     },
   ]);
 
@@ -71,7 +71,7 @@ export default async function SuccessStoriesPage() {
       <PageHero
         eyebrow="Real outcomes, verified"
         title="Success Stories"
-        subtitle="Results, competition achievements and family stories. Testimonials are published with explicit consent only — no fabricated claims."
+        subtitle="Results, competition achievements and family stories. Testimonials are published with explicit consent only - no fabricated claims."
         crumbs={[{ name: "Home", href: "/" }, { name: "Success Stories" }]}
         align="center"
       />
@@ -94,7 +94,7 @@ export default async function SuccessStoriesPage() {
         ))}
       </section>
 
-      {/* Parent stories — consent-gated, live from the API */}
+      {/* Parent stories - consent-gated, live from the API */}
       <section className="mt-16">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-green">Parent stories</p>
         <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-brand-navy">What families say</h2>

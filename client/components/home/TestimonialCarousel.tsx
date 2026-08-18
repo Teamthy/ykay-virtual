@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// TestimonialCarousel — presentational carousel for the consent-gated
+// TestimonialCarousel - presentational carousel for the consent-gated
 // testimonials fetched by TestimonialSlider (server component). G5.3:
 // only rows with consent_given + is_public ever reach this component.
 

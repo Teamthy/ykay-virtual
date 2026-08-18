@@ -8,9 +8,9 @@ import { coverFor } from "@/lib/covers";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Group Cohorts — Scheduled Small-Group Classes | NUVORA",
+  title: "Group Cohorts - Scheduled Small-Group Classes | NUVORA",
   description:
-    "Join scheduled small-group cohort classes across British and Nigerian curricula, exam preparation and digital skills — with vetted tutors and escrow-protected enrolment.",
+    "Join scheduled small-group cohort classes across British and Nigerian curricula, exam preparation and digital skills - with vetted tutors and escrow-protected enrolment.",
   path: "/cohorts",
 });
 
@@ -47,7 +47,7 @@ export default async function CohortsPage() {
         cover="/hero/cohorts.jpg"
         eyebrow="Learn together"
         title="Group Cohorts"
-        subtitle="Scheduled small-group classes with a vetted tutor — structured sessions, live lessons and a clear schedule. Enrol securely; your fee sits in escrow until the cohort delivers."
+        subtitle="Scheduled small-group classes with a vetted tutor - structured sessions, live lessons and a clear schedule. Enrol securely; your fee sits in escrow until the cohort delivers."
         crumbs={[{ name: "Home", href: "/" }, { name: "Group Cohorts" }]}
         align="center"
       />
@@ -55,7 +55,7 @@ export default async function CohortsPage() {
       <div className="container-x mt-12 grid gap-5 pb-20 md:grid-cols-2 lg:grid-cols-3">
         {cohorts.length === 0 ? (
           <div className="rounded-2xl border p-12 text-center text-ink-500 md:col-span-2 lg:col-span-3">
-            No cohorts are open for enrolment right now —{" "}
+            No cohorts are open for enrolment right now -{" "}
             <Link href="/programmes" className="font-semibold text-brand-blue hover:underline">
               explore programmes
             </Link>{" "}
@@ -112,7 +112,7 @@ export default async function CohortsPage() {
       </div>
       {total > cohorts.length && (
         <p className="container-x pb-10 text-center text-sm text-ink-500">
-          Showing {cohorts.length} of {total} cohorts — more launching soon.
+          Showing {cohorts.length} of {total} cohorts - more launching soon.
         </p>
       )}
     </main>

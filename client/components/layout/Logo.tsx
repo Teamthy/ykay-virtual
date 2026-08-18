@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-// NUVORA brand — text-only wordmark for now (mark comes with the final
+// NUVORA brand - text-only wordmark for now (mark comes with the final
 // design). Anton display, tracked uppercase, navy on light / white on dark.
 
 export function Logo({ className, dark = false }: { className?: string; dark?: boolean }) {

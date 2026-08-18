@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-// Stateful multi-page tutor onboarding — profile id travels via localStorage
+// Stateful multi-page tutor onboarding - profile id travels via localStorage
 // so each step page (/become-tutor/{apply,subjects,documents,assessment,status})
 // knows where the applicant is in the flow.
 //
@@ -10,7 +10,7 @@ import { useState } from "react";
 // localStorage. A previous version hydrated in a useEffect, which raced the
 // step pages' redirect guards: on first render profileId was still null, so
 // /become-tutor/subjects instantly bounced returning applicants back to
-// /apply — they could never reach step 2. (Caught by the become-a-tutor e2e.)
+// /apply - they could never reach step 2. (Caught by the become-a-tutor e2e.)
 
 const KEY = "ykay-tutor-onboarding";
 

@@ -34,8 +34,8 @@ import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/feat
 import { PageHeader } from "@/components/dashboard/PageHeader";
 
 // Parent portal â€” bookings-style family dashboard. Sidebar nav + sections:
-// Overview (KPIs + next lesson) Â· Bookings (status-filtered lessons) Â·
-// Payments (orders + receipts) Â· Progress (attendance + reports) Â·
+// Overview (KPIs + next lesson) · Bookings (status-filtered lessons) ·
+// Payments (orders + receipts) · Progress (attendance + reports) ·
 // Learners (management).
 
 type Order = {
@@ -203,7 +203,7 @@ export default function ParentDashboardPage() {
               <strong className="text-brand-navy">No learner linked yet.</strong>{" "}
               <span className="text-ink-600">Add your first learner to see schedules, attendance and progress.</span>{" "}
               <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-brand-blue hover:underline">
-                <UserPlus size={15} /> Add a learner â†’
+                <UserPlus size={15} /> Add a learner â†'
               </button>
             </div>
           )}
@@ -216,7 +216,7 @@ export default function ParentDashboardPage() {
                 </span>
                 <div>
                   <p className="text-sm font-bold text-ink-800">Payment pending â€” {nextPayment.order_number}</p>
-                  <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} Â· completes your booking</p>
+                  <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} · completes your booking</p>
                 </div>
               </div>
               <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-brand-gold px-6 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
@@ -251,7 +251,7 @@ export default function ParentDashboardPage() {
                         <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Next lesson</p>
                         <p className="font-bold text-ink-800">{nextLesson.title}</p>
                         <p className="text-xs text-ink-500">
-                          {new Date(nextLesson.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} Â· {nextLesson.timezone}
+                          {new Date(nextLesson.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {nextLesson.timezone}
                         </p>
                       </div>
                     </div>
@@ -316,7 +316,7 @@ export default function ParentDashboardPage() {
                           <div>
                             <p className="font-bold text-ink-800">{l.title}</p>
                             <p className="text-xs text-ink-500">
-                              {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
+                              {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                             </p>
                           </div>
                         </div>
@@ -458,7 +458,7 @@ export default function ParentDashboardPage() {
                           <p className="font-bold text-ink-800">{l.first_name} {l.last_name ?? ""}</p>
                           <p className="text-xs text-ink-500">
                             {l.current_level ?? "Level not set"}
-                            {l.school_name ? ` Â· ${l.school_name}` : ""}
+                            {l.school_name ? ` · ${l.school_name}` : ""}
                           </p>
                         </div>
                       </div>
@@ -553,7 +553,7 @@ export default function ParentDashboardPage() {
               <ul className="space-y-1.5">
                 {receipt.items.map((it, i) => (
                   <li key={i} className="flex justify-between text-ink-600">
-                    <span>{it.description ?? it.item_type.replace(/_/g, " ")} Ã— {it.quantity}</span>
+                    <span>{it.description ?? it.item_type.replace(/_/g, " ")} Ã- {it.quantity}</span>
                     <span className="font-semibold text-ink-800">{receipt.order.currency} {it.total_price.toLocaleString()}</span>
                   </li>
                 ))}
@@ -567,7 +567,7 @@ export default function ParentDashboardPage() {
               <ul className="space-y-1.5 text-xs">
                 {receipt.payments.map((p) => (
                   <li key={p.id} className="flex justify-between text-ink-600">
-                    <span>{p.provider.replace(/_/g, " ")}{p.provider_reference ? ` Â· ${p.provider_reference.slice(0, 14)}â€¦` : ""}</span>
+                    <span>{p.provider.replace(/_/g, " ")}{p.provider_reference ? ` · ${p.provider_reference.slice(0, 14)}â€¦` : ""}</span>
                     <StatusBadge label={p.status} kind={statusKindFor(p.status)} />
                   </li>
                 ))}

@@ -46,7 +46,7 @@ export function withNext(route: string, next: string | null | undefined): string
   return n ? `${route}?next=${encodeURIComponent(n)}` : route;
 }
 
-/** "/login?next=<current page>" — for client-side "log in first" redirects. */
+/** "/login?next=<current page>" - for client-side "log in first" redirects. */
 export function loginWithReturn(): string {
   if (typeof window === "undefined") return "/login";
   return withNext("/login", window.location.pathname + window.location.search);

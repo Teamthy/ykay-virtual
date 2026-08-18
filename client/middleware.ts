@@ -7,12 +7,12 @@ import { NextRequest, NextResponse } from "next/server";
 // Authenticated surfaces. Any page here requires a session; unauthenticated
 // visitors are sent to /login with a `next` return target.
 //
-// NOTE: /onboarding (the exact path) is the PUBLIC create-account entry — its
+// NOTE: /onboarding (the exact path) is the PUBLIC create-account entry - its
 // step 1 registers the account, so it must be reachable WITHOUT a session.
 // Previously "/onboarding" was in this list, which made the flow
 // /register → /onboarding → (no session) → /login: clicking "Create an
 // account" bounced straight back to the login page, users could never create
-// an account, and — because no account could ever be onboarded — login kept
+// an account, and - because no account could ever be onboarded - login kept
 // sending every user to the wizard instead of their dashboard. The post-login
 // steps (/onboarding/wizard and /onboarding/learner) stay protected.
 const PROTECTED_PREFIXES = [

@@ -1,6 +1,6 @@
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 
-// Home testimonials (working-doc §8.1): admin-managed, consent-gated —
+// Home testimonials (working-doc §8.1): admin-managed, consent-gated -
 // only testimonials with consent_given + is_public are ever shown.
 
 export type Testimonial = {
@@ -29,7 +29,7 @@ export async function TestimonialsSection() {
           <p className="tag-handwritten">In their words</p>
           <h2 className="text-3xl font-extrabold mt-1">What families say</h2>
           <p className="mt-4 text-sm text-ink-500 border border-dashed border-ink-200 rounded-2xl p-6">
-            Real stories are published here as families give their consent —{" "}
+            Real stories are published here as families give their consent -{" "}
             <a href="/success-stories" className="text-brand-blue font-semibold hover:underline">see our success stories</a>.
           </p>
         </div>
@@ -51,7 +51,7 @@ export async function TestimonialsSection() {
             </div>
             <blockquote className="mt-3 text-sm text-ink-700 leading-relaxed">“{t.body}”</blockquote>
             <figcaption className="mt-4 text-xs font-semibold text-ink-500">
-              — {t.author_name}
+              - {t.author_name}
               {t.author_role ? `, ${t.author_role}` : ""}
               {t.author_location ? ` · ${t.author_location}` : ""}
             </figcaption>

@@ -40,7 +40,7 @@ export default function AdminPaymentsPage() {
   const confirm = useMutation({
     mutationFn: (orderId: string) => confirmManualPayment(orderId, "Manual confirmation (admin)"),
     onSuccess: () => {
-      toast.success("Payment confirmed — enrollment secured");
+      toast.success("Payment confirmed - enrollment secured");
       qc.invalidateQueries({ queryKey: ["admin", "payments"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not confirm"),
@@ -49,7 +49,7 @@ export default function AdminPaymentsPage() {
   const refund = useMutation({
     mutationFn: () => refundOrder(refundFor!, refundReason || "Refund requested"),
     onSuccess: () => {
-      toast.success("Order refunded — escrow returned to the parent wallet");
+      toast.success("Order refunded - escrow returned to the parent wallet");
       setRefundFor(null);
       setRefundReason("");
       qc.invalidateQueries({ queryKey: ["admin", "payments"] });
@@ -161,7 +161,7 @@ export default function AdminPaymentsPage() {
             <h2 className="font-display text-lg font-bold text-brand-navy">Tutor payouts</h2>
           </div>
           {(payouts.data ?? []).length === 0 ? (
-            <p className="py-10 text-center text-sm text-ink-400">No payouts yet — released escrow generates them on the payout schedule.</p>
+            <p className="py-10 text-center text-sm text-ink-400">No payouts yet - released escrow generates them on the payout schedule.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">

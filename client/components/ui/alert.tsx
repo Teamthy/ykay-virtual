@@ -2,7 +2,7 @@ import * as React from "react";
 import { AlertCircle, CheckCircle2, Info, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Alert / banner (24.1) — text + icon + colour together, never colour alone.
+// Alert / banner (24.1) - text + icon + colour together, never colour alone.
 // Variants: info (blue) · success (green) · warning (gold/amber) · error (red).
 
 const VARIANTS = {

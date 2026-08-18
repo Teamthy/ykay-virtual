@@ -1,7 +1,7 @@
 import { WifiOff, Bell, FileCheck2 } from "lucide-react";
 import { GooglePlayBadge } from "@/components/ui/StoreBadges";
 
-// DownloadHero — on-brand download hero. Self-contained (no remote store
+// DownloadHero - on-brand download hero. Self-contained (no remote store
 // buttons, no invented social proof). Android uses the official Google Play
 // badge (APK download today); iOS shows the official App Store badge disabled
 // until the listing exists.
@@ -22,7 +22,7 @@ export function DownloadHero() {
             Download NUVORA on the go
           </h1>
           <p className="mt-5 max-w-md leading-relaxed text-ink-600">
-            Learn anywhere — tutors, live cohorts, quizzes, progress reports and the AI assistant in one app.
+            Learn anywhere - tutors, live cohorts, quizzes, progress reports and the AI assistant in one app.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">

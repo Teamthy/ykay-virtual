@@ -32,10 +32,10 @@ const STEPS: string[] = [
   "Review",
 ] as const;
 
-const LEVELS = ["Year 7–9 (British)", "IGCSE (Year 10–11)", "A-Level (Year 12–13)", "JSS1–3 (Nigerian)", "SSS1–3 (Nigerian)", "Other"];
+const LEVELS = ["Year 7-9 (British)", "IGCSE (Year 10-11)", "A-Level (Year 12-13)", "JSS1-3 (Nigerian)", "SSS1-3 (Nigerian)", "Other"];
 const SUBJECTS = ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Computer Science", "Python Programming", "Economics", "IELTS / English exam", "Other"];
 const DAYS = ["Weekdays", "Weekends", "Both"];
-const TIMES = ["Morning (8am–12pm)", "Afternoon (12–4pm)", "Evening (4–8pm)", "Flexible"];
+const TIMES = ["Morning (8am-12pm)", "Afternoon (12-4pm)", "Evening (4-8pm)", "Flexible"];
 
 type FormState = {
   learnerName: string;
@@ -52,7 +52,7 @@ type FormState = {
 
 const EMPTY: FormState = {
   learnerName: "", level: "", subject: "", goals: "",
-  days: "", time: "", timezone: "Africa/Lagos", tutorPreference: "No preference — match me",
+  days: "", time: "", timezone: "Africa/Lagos", tutorPreference: "No preference - match me",
   email: "", phone: "",
 };
 
@@ -86,7 +86,7 @@ export function PrivateTuitionWizard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: user?.email ?? form.email,
-            subject: `Private tuition request — ${form.subject} (${form.level})`,
+            subject: `Private tuition request - ${form.subject} (${form.level})`,
             message: [
               `Learner: ${form.learnerName}`,
               `Level: ${form.level}`,
@@ -227,7 +227,7 @@ export function PrivateTuitionWizard() {
         {step === 4 && (
           <div className="space-y-4">
             <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Tutor preference (optional)</h2>
-            {["No preference — match me", "Female tutor", "Male tutor", "Specific tutor (I'll name them)"].map((t) => (
+            {["No preference - match me", "Female tutor", "Male tutor", "Specific tutor (I'll name them)"].map((t) => (
               <button key={t} type="button" onClick={() => set("tutorPreference", t)}
                 className={`block w-full rounded-xl border px-4 py-3 text-sm text-left ${form.tutorPreference === t ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}>
                 {t}
@@ -276,7 +276,7 @@ export function PrivateTuitionWizard() {
               <SummaryRow k="Contact" v={user?.email ?? form.email} />
             </dl>
             <p className="text-xs text-ink-400">
-              Submitting creates a request ticket — our advisors match you with a vetted tutor and agree
+              Submitting creates a request ticket - our advisors match you with a vetted tutor and agree
               the price before any payment (escrow-protected).
             </p>
           </div>

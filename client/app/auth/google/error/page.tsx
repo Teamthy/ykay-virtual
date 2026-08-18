@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/layout/AuthShell";
 
-// Friendly OAuth error page — replaces the raw JSON the API used to return
+// Friendly OAuth error page - replaces the raw JSON the API used to return
 // when Google sign-in fails (denied, misconfigured, state mismatch…).
 
 function GoogleErrorInner() {
@@ -19,7 +19,7 @@ function GoogleErrorInner() {
           {reason}
         </div>
         <p className="text-sm leading-6 text-ink-600">
-          You can try again, or use email instead — your account details are untouched.
+          You can try again, or use email instead - your account details are untouched.
         </p>
         <div className="space-y-3">
           <Link

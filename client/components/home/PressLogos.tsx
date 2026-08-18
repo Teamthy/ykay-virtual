@@ -1,4 +1,4 @@
-// Press wordmark logos — "We are backed by" strip (Forbes · internet.org ·
+// Press wordmark logos - "We are backed by" strip (Forbes · internet.org ·
 // BBC · Microsoft · TEF) rendered as clean grayscale wordmarks, matching the
 // v2.tuteria.com press strip treatment.
 

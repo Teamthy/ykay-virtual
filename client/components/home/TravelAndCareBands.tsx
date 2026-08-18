@@ -16,7 +16,7 @@ export function TravelAndCareBands() {
             Live, work and study abroad
           </h2>
           <p className="mt-3 leading-relaxed text-ink-600">
-            Test prep and application coaching for study in the US, UK, Canada and Australia —
+            Test prep and application coaching for study in the US, UK, Canada and Australia -
             we do not publish an unverified university-count.
           </p>
           <Link
@@ -29,7 +29,7 @@ export function TravelAndCareBands() {
         </div>
         <div className="overflow-hidden rounded-3xl bg-[#111111] p-8 text-white shadow-card">
           <p className="font-display text-3xl tracking-[0.02em] text-white">Study destinations</p>
-          <p className="mt-1 text-white/80">US, UK, Canada &amp; Australia — shortlisting with your advisor</p>
+          <p className="mt-1 text-white/80">US, UK, Canada &amp; Australia - shortlisting with your advisor</p>
           <div className="mt-6 flex flex-wrap gap-2">
             {["IELTS", "GRE", "GMAT", "TOEFL", "SAT"].map((t) => (
               <span key={t} className="rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold">

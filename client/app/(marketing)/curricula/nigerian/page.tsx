@@ -5,20 +5,20 @@ import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Nigerian Curriculum Online — JSS1–3, SSS1–3, WAEC, NECO, JAMB | NUVORA",
+  title: "Nigerian Curriculum Online - JSS1-3, SSS1-3, WAEC, NECO, JAMB | NUVORA",
   description:
-    "Nigerian curriculum learning online: JSS1–3 and SSS1–3 with WAEC, NECO and JAMB preparation — cohorts, private tuition and exam bootcamps with vetted tutors.",
+    "Nigerian curriculum learning online: JSS1-3 and SSS1-3 with WAEC, NECO and JAMB preparation - cohorts, private tuition and exam bootcamps with vetted tutors.",
   path: "/curricula/nigerian",
 });
 
 const STAGES = [
-  { title: "JSS1 – JSS3", desc: "Junior secondary foundations in Mathematics, English, Basic Science and more.", subjects: ["Mathematics", "English", "Basic Science", "Computer Studies"], photo: "/hero/nigerian.jpg" },
-  { title: "SSS1 – SSS3", desc: "Senior secondary pathways with subject specialisation and exam focus.", subjects: ["Mathematics", "English", "Physics", "Biology", "Economics"], photo: "/hero/exam-prep.jpg" },
+  { title: "JSS1 - JSS3", desc: "Junior secondary foundations in Mathematics, English, Basic Science and more.", subjects: ["Mathematics", "English", "Basic Science", "Computer Studies"], photo: "/hero/nigerian.jpg" },
+  { title: "SSS1 - SSS3", desc: "Senior secondary pathways with subject specialisation and exam focus.", subjects: ["Mathematics", "English", "Physics", "Biology", "Economics"], photo: "/hero/exam-prep.jpg" },
   { title: "WAEC · NECO · JAMB", desc: "Focused exam preparation: past questions, mocks and revision plans.", subjects: ["WAEC", "NECO", "JAMB/UTME", "Post-UTME"], photo: "/hero/utme.jpg" },
 ];
 
 const FAQS = [
-  { question: "Can I prepare for WAEC and NECO at the same time?", answer: "Yes — the syllabuses overlap heavily. Our tutors align lesson plans to both examinations." },
+  { question: "Can I prepare for WAEC and NECO at the same time?", answer: "Yes - the syllabuses overlap heavily. Our tutors align lesson plans to both examinations." },
   { question: "Is JAMB preparation separate from school lessons?", answer: "JAMB/UTME prep runs as a focused programme (cohort or private) with past-question analysis and CBT mocks." },
   { question: "Do you cover the new Nigerian curriculum?", answer: "We follow the current national curriculum framework (NERDC) across JSS and SSS." },
 ];
@@ -30,7 +30,7 @@ export default function NigerianCurriculumPage() {
   ]);
   const course = courseJsonLd({
     name: "Nigerian Curriculum Online",
-    description: "JSS1–3 and SSS1–3 learning with WAEC, NECO and JAMB preparation from vetted subject specialists.",
+    description: "JSS1-3 and SSS1-3 learning with WAEC, NECO and JAMB preparation from vetted subject specialists.",
     provider: "NUVORA",
     url: "https://nuvora.com/curricula/nigerian",
   });
@@ -45,7 +45,7 @@ export default function NigerianCurriculumPage() {
         cover="/hero/nigerian.jpg"
         eyebrow="Nigerian pathway"
         title="Nigerian Curriculum Online"
-        subtitle="Junior and senior secondary learning with WAEC, NECO and JAMB preparation — structured, exam-focused and taught by vetted Nigerian educators."
+        subtitle="Junior and senior secondary learning with WAEC, NECO and JAMB preparation - structured, exam-focused and taught by vetted Nigerian educators."
         crumbs={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "Nigerian Curriculum" }]}
         align="center"
       >

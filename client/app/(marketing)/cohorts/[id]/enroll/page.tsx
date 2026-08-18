@@ -10,7 +10,7 @@ export const revalidate = 120;
 type Props = { params: Promise<{ id: string }> };
 
 export const metadata: Metadata = buildMetadata({
-  title: "Enrol — Secure Checkout",
+  title: "Enrol - Secure Checkout",
   description: "Enrol securely in a NUVORA cohort. Funds are held in escrow until lessons are delivered.",
   path: "/cohorts/enroll",
   noIndex: true,

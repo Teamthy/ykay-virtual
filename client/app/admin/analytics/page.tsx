@@ -10,7 +10,7 @@ import { API_BASE } from "@/lib/api";
 import { getAnalytics } from "@/features/learning/api";
 
 // Admin analytics (working-doc §13): enrolment funnel, cohort fill rates,
-// revenue by programme — with CSV exports.
+// revenue by programme - with CSV exports.
 
 const FUNNEL_STEPS = [
   { key: "registered_users", label: "Registered users" },
@@ -55,12 +55,12 @@ export default function AdminAnalyticsPage() {
         <div>
           <h1 className="text-2xl font-extrabold">Learning analytics</h1>
           <p className="text-sm text-ink-500 mt-1">
-            Enrolment funnel, cohort fill and revenue — conversion{" "}
+            Enrolment funnel, cohort fill and revenue - conversion{" "}
             <b>{data.funnel.conversion_rate.toFixed(1)}%</b>.
           </p>
         </div>
         <div className="flex gap-2">
-          {/* G1: the export needs a real lesson id — prompt instead of a fixture UUID. */}
+          {/* G1: the export needs a real lesson id - prompt instead of a fixture UUID. */}
           <button
             type="button"
             onClick={() => {

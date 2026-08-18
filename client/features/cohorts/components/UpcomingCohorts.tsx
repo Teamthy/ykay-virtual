@@ -4,7 +4,7 @@ import { hideDemo } from "@/lib/content-filter";
 import { CohortCard } from "@/features/cohorts/components/CohortCard";
 
 // Home "Upcoming cohorts" strip (working-doc §8.1): capacity/status,
-// schedule, fee, enrol CTA — live from the API.
+// schedule, fee, enrol CTA - live from the API.
 
 type Cohort = {
   id: string;

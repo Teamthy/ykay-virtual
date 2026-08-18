@@ -9,9 +9,9 @@ import { TutorsShowcase } from "@/components/home/TutorsShowcase";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Home Tutoring — One-on-One Lessons with Vetted Tutors | NUVORA",
+  title: "Home Tutoring - One-on-One Lessons with Vetted Tutors | NUVORA",
   description:
-    "Personalized home tutoring with vetted tutors — exam prep, confidence, and better school grades.",
+    "Personalized home tutoring with vetted tutors - exam prep, confidence, and better school grades.",
   path: "/hometutors",
 });
 
@@ -25,7 +25,7 @@ export default function HomeTutorsPage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      {/* Hero — PrebuiltUI template */}
+      {/* Hero - PrebuiltUI template */}
       <PageHero
         announcement="Home tutoring · Vetted tutors"
         title="Better, Brighter Future For Your Kids."

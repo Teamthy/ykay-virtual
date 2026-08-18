@@ -20,7 +20,7 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/ui/stat-card";
 import { LineChart, FileText, CheckCircle2 } from "lucide-react";
 
-// Student portal (working-doc Â§9): side nav, Today panel, progress,
+// Student portal (working-doc §9): side nav, Today panel, progress,
 // assignments with submission, resources, announcements, support.
 
 type Lesson = {
@@ -143,7 +143,7 @@ export default function StudentDashboardPage() {
                         <div>
                           <div className="font-semibold">{l.title}</div>
                           <div className="text-xs text-white/70">
-                            {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
+                            {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                           </div>
                         </div>
                         {l.meeting_url ? (
@@ -197,7 +197,7 @@ export default function StudentDashboardPage() {
                       <div>
                         <div className="font-semibold text-sm">{l.title}</div>
                         <div className="text-xs text-ink-500">
-                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}
+                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                         </div>
                       </div>
                       {l.meeting_url ? (
@@ -228,7 +228,7 @@ export default function StudentDashboardPage() {
                         {items.map((l) => (
                           <li key={l.id} className="border rounded-xl px-4 py-3 text-sm flex justify-between">
                             <span className="font-semibold">{l.title}</span>
-                            <span className="text-xs text-ink-500">{new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} Â· {l.timezone}</span>
+                            <span className="text-xs text-ink-500">{new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}</span>
                           </li>
                         ))}
                       </ul>
@@ -258,7 +258,7 @@ export default function StudentDashboardPage() {
                             {a.instructions && <p className="text-xs text-ink-500 mt-1">{a.instructions}</p>}
                             <p className="text-[10px] text-ink-400 mt-1">
                               {a.due_at ? `Due ${new Date(a.due_at).toLocaleDateString()}` : "No due date"}
-                              {a.max_score ? ` Â· max ${a.max_score} pts` : ""}
+                              {a.max_score ? ` · max ${a.max_score} pts` : ""}
                             </p>
                           </div>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${done ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>

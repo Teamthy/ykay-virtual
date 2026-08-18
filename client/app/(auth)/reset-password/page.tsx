@@ -37,7 +37,7 @@ function ResetPasswordInner() {
     },
     onSubmit: async ({ value }) => {
       if (!token) {
-        setError("This reset link is invalid — please request a new one.");
+        setError("This reset link is invalid - please request a new one.");
         return;
       }
       setSubmitting(true);

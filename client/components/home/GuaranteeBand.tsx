@@ -1,6 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 
-// Escrow commitment — no invented “100% satisfaction” legal guarantee.
+// Escrow commitment - no invented “100% satisfaction” legal guarantee.
 
 export function GuaranteeBand() {
   return (
@@ -15,7 +15,7 @@ export function GuaranteeBand() {
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-ink-800/80 leading-relaxed">
             Tuition is held until the lesson happens. If something goes wrong, we
-            work with you and the tutor to put it right — we do not advertise a
+            work with you and the tutor to put it right - we do not advertise a
             blanket satisfaction statistic.
           </p>
         </div>

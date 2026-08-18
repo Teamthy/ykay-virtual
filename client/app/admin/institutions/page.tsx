@@ -28,7 +28,7 @@ export default function AdminInstitutionsPage() {
       <div>
         <h1 className="text-3xl font-extrabold">Institutions</h1>
         <p className="text-ink-500 text-sm mt-1">
-          B2B accounts — schools and corporate training partners (for-schools / corporate-training flow).
+          B2B accounts - schools and corporate training partners (for-schools / corporate-training flow).
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default function AdminInstitutionsPage() {
                     <StatusBadge label={i.type} kind={statusKindFor(i.type)} />
                   </td>
                   <td className="px-5 py-3 text-xs text-ink-500">
-                    {i.email ?? "—"}
+                    {i.email ?? "-"}
                     {i.website ? ` · ${i.website.replace("https://", "")}` : ""}
                   </td>
                   <td className="px-5 py-3">

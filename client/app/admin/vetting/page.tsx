@@ -177,7 +177,7 @@ function Dossier({
           {detail.documents.map((d) => (
             <li key={d.id} className="flex items-center justify-between gap-2 border rounded-xl px-4 py-2 text-sm">
               <span>
-                {d.type} — {d.file_name}
+                {d.type} - {d.file_name}
                 <StatusBadge label={d.status} kind={statusKindFor(d.status)} />
                 {d.rejection_reason ? <span className="block text-xs text-red-600">{d.rejection_reason}</span> : null}
               </span>
@@ -221,7 +221,7 @@ function Dossier({
           {detail.events.map((e) => (
             <li key={e.id} className="relative">
               <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-brand-blue" />
-              <span className="font-semibold">{e.from_status ?? "—"} → {e.to_status}</span>
+              <span className="font-semibold">{e.from_status ?? "-"} → {e.to_status}</span>
               <span className="text-ink-400"> · {new Date(e.created_at).toLocaleString()}</span>
               {e.notes ? <p className="text-ink-500">{e.notes}</p> : null}
             </li>
@@ -259,7 +259,7 @@ function Dossier({
             value={rejectReason}
             onChange={(e) => { setRejectReason(e.target.value); setRejectError(null); }}
             rows={3}
-            placeholder="e.g. Document is blurry or expired — please re-upload a clear copy."
+            placeholder="e.g. Document is blurry or expired - please re-upload a clear copy."
             className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
           />
         </label>

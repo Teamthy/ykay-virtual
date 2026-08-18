@@ -5,7 +5,7 @@ import { UploadCloud, FileText, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-// File uploader (24.1) — drag & drop / browse, file list with remove.
+// File uploader (24.1) - drag & drop / browse, file list with remove.
 // Controlled: parent owns the files array.
 
 export type UploadedFile = { name: string; size: number };

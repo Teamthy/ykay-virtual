@@ -13,7 +13,7 @@ import { loginWithReturn } from "@/lib/safe-next";
 
 // Direct private-tuition booking (P1): pick subject/sessions/duration and
 // pay via the escrow-protected order flow. Works for the tutor's subjects.
-// G1: subject IDs come from the live catalogue — no fixture UUIDs.
+// G1: subject IDs come from the live catalogue - no fixture UUIDs.
 
 export function PrivateBookingForm({
   tutorProfileId,
@@ -68,7 +68,7 @@ export function PrivateBookingForm({
       (s) => s.name.toLowerCase() === subject.toLowerCase() || s.slug === subject.toLowerCase()
     )?.id;
     if (!subject || !subjectId || !studentId || sessions < 1) {
-      toast.error("Complete all fields — subject, learner and sessions.");
+      toast.error("Complete all fields - subject, learner and sessions.");
       return;
     }
     if (publishedRate <= 0) {
@@ -95,7 +95,7 @@ export function PrivateBookingForm({
       });
       setOrderNumber(payment.order_number);
       setPaymentLink(payment.payment_link);
-      toast.success("Order created — complete payment to confirm your tutor");
+      toast.success("Order created - complete payment to confirm your tutor");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not create your booking");
     } finally {
@@ -107,7 +107,7 @@ export function PrivateBookingForm({
     return (
       <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
         <p className="text-3xl">🔒</p>
-        <h3 className="mt-2 font-bold text-brand-navy">Order {orderNumber} — ready to pay</h3>
+        <h3 className="mt-2 font-bold text-brand-navy">Order {orderNumber} - ready to pay</h3>
         <p className="mt-1 text-sm text-ink-600">
           Funds are held in escrow until your lessons are delivered. Complete payment to secure your tutor.
         </p>
@@ -137,7 +137,7 @@ export function PrivateBookingForm({
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
       <h3 className="font-display text-lg font-bold text-brand-navy">Book private lessons</h3>
-      <p className="mt-1 text-sm text-ink-500">Pay per session — escrow-protected until each lesson is delivered.</p>
+      <p className="mt-1 text-sm text-ink-500">Pay per session - escrow-protected until each lesson is delivered.</p>
 
       <div className="mt-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -178,7 +178,7 @@ export function PrivateBookingForm({
           <div>
             <label className="mb-1.5 block text-sm font-medium text-ink-800">Price per session (₦)</label>
             <p className="rounded-lg border border-ink-100 bg-surface-muted px-3 py-2.5 text-sm font-semibold text-ink-800">
-              {publishedRate > 0 ? `₦${publishedRate.toLocaleString()} (tutor’s published rate)` : "Not published"}
+              {publishedRate > 0 ? `₦${publishedRate.toLocaleString()} (tutor's published rate)` : "Not published"}
             </p>
           </div>
         </div>

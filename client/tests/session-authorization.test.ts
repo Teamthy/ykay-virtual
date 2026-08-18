@@ -1,4 +1,4 @@
-// G1 regression tests — client API layers must NEVER send fixture identity
+// G1 regression tests - client API layers must NEVER send fixture identity
 // UUIDs or dev-auth headers. The actor is the httpOnly session cookie; profile
 // IDs are session-resolved server-side.
 

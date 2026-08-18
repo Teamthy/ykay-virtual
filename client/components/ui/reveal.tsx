@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-// Reveal — lightweight scroll-reveal (IntersectionObserver + CSS transition,
+// Reveal - lightweight scroll-reveal (IntersectionObserver + CSS transition,
 // no animation library). Fades + slides content up once as it enters the
 // viewport; respects prefers-reduced-motion.
 

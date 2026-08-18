@@ -1,7 +1,7 @@
-// Official store marks — self-contained inline SVGs (no external assets, no
+// Official store marks - self-contained inline SVGs (no external assets, no
 // fabricated logos). The Apple silhouette and Google Play triangle are the
 // standard published marks, rendered in currentColor so they adapt to light/
-// dark surfaces. Store badge TEXT is composed here so the "App Store — soon"
+// dark surfaces. Store badge TEXT is composed here so the "App Store - soon"
 // state is honest until the iOS listing exists.
 
 export function AppleLogo({ size = 16, className }: { size?: number; className?: string }) {
@@ -34,7 +34,7 @@ export function GooglePlayLogo({ size = 16, className }: { size?: number; classN
   );
 }
 
-// Store badge shells — the standard badge layout (logo + two-line text).
+// Store badge shells - the standard badge layout (logo + two-line text).
 export function GooglePlayBadge({ href, onClick, disabled }: { href?: string; onClick?: () => void; disabled?: boolean }) {
   const inner = (
     <>
@@ -60,7 +60,7 @@ export function GooglePlayBadge({ href, onClick, disabled }: { href?: string; on
       onClick={onClick}
       disabled={disabled}
       aria-label={disabled ? "App Store listing coming soon" : "Download on the App Store"}
-      title={disabled ? "App Store listing coming soon — use the Android APK for now." : undefined}
+      title={disabled ? "App Store listing coming soon - use the Android APK for now." : undefined}
       className={`${cls} ${disabled ? "cursor-not-allowed bg-black/40" : "bg-black hover:bg-black/85"}`}
     >
       <AppleLogo size={20} />

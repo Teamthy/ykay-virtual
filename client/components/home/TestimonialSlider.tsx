@@ -1,7 +1,7 @@
 import { apiFetchSSR } from "@/lib/server-api";
 import { TestimonialCarousel, type CarouselItem } from "./TestimonialCarousel";
 
-// TestimonialSlider — G5.3: the carousel is fed ONLY by consent-gated
+// TestimonialSlider - G5.3: the carousel is fed ONLY by consent-gated
 // testimonials (consent_given + is_public, served by /content/testimonials).
 // No fixture marketing copy ships here; when nothing consented exists yet,
 // an honest empty state links to the success stories.
@@ -29,7 +29,7 @@ export async function TestimonialSlider() {
             Parents love NUVORA
           </h2>
           <p className="text-lg text-ink-900 leading-relaxed">
-            Real parent stories appear here as families give their consent —{" "}
+            Real parent stories appear here as families give their consent -{" "}
             <a href="/success-stories" className="font-semibold underline">
               read our success stories
             </a>

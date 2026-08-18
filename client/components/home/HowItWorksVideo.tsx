@@ -8,7 +8,7 @@ const STEPS = [
   {
     n: "1",
     t: "Tell us what your child needs",
-    d: "Choose a subject, level and schedule — or let our advisors recommend the right programme.",
+    d: "Choose a subject, level and schedule - or let our advisors recommend the right programme.",
   },
   {
     n: "2",
@@ -18,7 +18,7 @@ const STEPS = [
   {
     n: "3",
     t: "Watch progress in real time",
-    d: "Attendance, lesson notes, homework and progress reports — visible to you at every step.",
+    d: "Attendance, lesson notes, homework and progress reports - visible to you at every step.",
   },
 ];
 
@@ -34,7 +34,7 @@ export function HowItWorksVideo() {
           </h2>
           <p className="mt-3 text-ink-600 leading-relaxed">
             Watch how families across Nigeria use NUVORA to find vetted tutors, book lessons
-            and track progress — in under two minutes.
+            and track progress - in under two minutes.
           </p>
 
           <a

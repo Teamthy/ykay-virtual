@@ -8,7 +8,7 @@ import { listConversations, listMessages, markConversationRead, sendMessage } fr
 import type { Conversation, Message } from "@/features/messaging/api";
 import { useSession } from "@/hooks/useSession";
 
-// G1: the acting user comes from the session — the API scopes conversations
+// G1: the acting user comes from the session - the API scopes conversations
 // to the authenticated cookie; no fixture user IDs.
 export function MessageCenter() {
   const { user } = useSession();
@@ -34,7 +34,7 @@ export function MessageCenter() {
   });
 
   // Envelope-normalised data (apiFetch returns {data, meta}; a fresh account
-  // can receive `data: null` from the API — never deref without a default).
+  // can receive `data: null` from the API - never deref without a default).
   // listConversations keeps the envelope; listMessages already unwraps.
   const conversationList: Conversation[] = conversations.data?.data ?? [];
   const messageList: Message[] = messages.data ?? [];
@@ -137,7 +137,7 @@ export function MessageCenter() {
               {messages.isLoading ? (
                 <Skeleton className="h-16 w-2/3" />
               ) : messageList.length === 0 ? (
-                <p className="text-sm text-ink-400 text-center pt-10">No messages yet — say hello!</p>
+                <p className="text-sm text-ink-400 text-center pt-10">No messages yet - say hello!</p>
               ) : (
                 [...messageList].reverse().map((m) => {
                   const mine = m.sender_user_id === currentUserId;

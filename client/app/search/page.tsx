@@ -11,7 +11,7 @@ import { listProgrammes, type Programme } from "@/features/programmes/api/list";
 import { listSubjects, type Subject } from "@/features/subjects/api/list";
 import { useWishlist } from "@/features/wishlist/hook";
 
-// /search — site-wide search (P0): tutors (free-text + subject + online
+// /search - site-wide search (P0): tutors (free-text + subject + online
 // filter), programmes and subjects in one place. Debounced as-you-type,
 // URL-synced, with loading states and empty states.
 
@@ -116,7 +116,7 @@ function SearchInner() {
         {!activeQ ? (
           <p className="py-16 text-center text-ink-400">
             {debounced.length === 1
-              ? "Keep typing — search needs at least 2 characters."
+              ? "Keep typing - search needs at least 2 characters."
               : "Type above to search tutors, programmes and subjects."}
           </p>
         ) : (

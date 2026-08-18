@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, Minus } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
 
-// NUVORA pricing — Preline-style: billing switch, 4 plan cards, comparison
+// NUVORA pricing - Preline-style: billing switch, 4 plan cards, comparison
 // table (desktop table + mobile per-plan sections). Gold highlights.
 
 const PLANS = [
@@ -35,7 +35,7 @@ const PLANS = [
     desc: "One-to-one with a top-rated tutor",
     features: [
       "One-to-one, 60-minute sessions",
-      "Flexible scheduling — home or online",
+      "Flexible scheduling - home or online",
       "Attendance tracking",
       "Escrow-protected payment",
     ],
@@ -98,7 +98,7 @@ export default function PricingPage() {
       <PageHero
         announcement="Clear, honest pricing"
         title="Pricing"
-        subtitle="Whatever your status, our offers evolve according to your needs — every payment is escrow-protected."
+        subtitle="Whatever your status, our offers evolve according to your needs - every payment is escrow-protected."
       />
 
       {/* Switch */}
@@ -250,7 +250,7 @@ export default function PricingPage() {
           <div className="mt-4 grid gap-6 text-sm text-ink-700 md:grid-cols-3">
             <div>
               <h3 className="font-bold text-ink-900">Rescheduling</h3>
-              <p className="mt-1.5">Lessons can be rescheduled free of charge within your package window — with at least 24 hours notice where possible.</p>
+              <p className="mt-1.5">Lessons can be rescheduled free of charge within your package window - with at least 24 hours notice where possible.</p>
             </div>
             <div>
               <h3 className="font-bold text-ink-900">Cancellation</h3>
@@ -258,7 +258,7 @@ export default function PricingPage() {
             </div>
             <div>
               <h3 className="font-bold text-ink-900">Tutor no-show</h3>
-              <p className="mt-1.5">If a tutor cannot deliver a scheduled lesson, the session is not counted and the escrow balance is protected — full refunds where required.</p>
+              <p className="mt-1.5">If a tutor cannot deliver a scheduled lesson, the session is not counted and the escrow balance is protected - full refunds where required.</p>
             </div>
           </div>
         </section>

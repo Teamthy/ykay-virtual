@@ -1,4 +1,4 @@
-// G6.2 — automated accessibility gate on the core conversion + auth pages.
+// G6.2 - automated accessibility gate on the core conversion + auth pages.
 // Critical violations fail the run; serious ones are listed for the formal
 // acceptance register (docs/UI_OPTIMIZATION_PLAN.md) with remediation dates.
 import { test, expect, request, APIRequestContext } from "@playwright/test";
@@ -18,9 +18,9 @@ test("no critical a11y violations on landing, login and dashboard", async ({ pag
   const serious = results.violations.filter((v) => v.impact === "serious");
   console.log(`[/] axe: ${results.violations.length} violations (${critical.length} critical, ${serious.length} serious)`);
   for (const v of critical)
-    console.log(`[/] CRITICAL: ${v.id} — targets: ${JSON.stringify(v.nodes.map((n) => n.target))}`);
+    console.log(`[/] CRITICAL: ${v.id} - targets: ${JSON.stringify(v.nodes.map((n) => n.target))}`);
   for (const v of serious.slice(0, 8))
-    console.log(`[/] SERIOUS: ${v.id} — ${v.nodes.length} nodes — targets: ${JSON.stringify(v.nodes.slice(0, 5).map((n) => ({ t: n.target, s: n.failureSummary })))}`);
+    console.log(`[/] SERIOUS: ${v.id} - ${v.nodes.length} nodes - targets: ${JSON.stringify(v.nodes.slice(0, 5).map((n) => ({ t: n.target, s: n.failureSummary })))}`);
   expect(critical, "critical violations on /").toEqual([]);
 
   // Login

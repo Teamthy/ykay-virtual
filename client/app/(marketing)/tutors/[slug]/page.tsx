@@ -13,7 +13,7 @@ import { tutorPortraitSrc } from "@/lib/portraits";
 type Props = { params: Promise<{ slug: string }> };
 
 // G1 (phase 43): the page fetches the REAL tutor from /api/v1/tutors/{slug}
-// (ISR 1h) — no fixture UUIDs or hard-coded tutor content.
+// (ISR 1h) - no fixture UUIDs or hard-coded tutor content.
 type TutorDTO = {
   id: string;
   slug: string;
@@ -49,7 +49,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   if (!t) return buildMetadata({ title: "Tutor Not Found", description: "Tutor not found", path: `/tutors/${params.slug}`, noIndex: true });
   const subjectNames = (t.subjects ?? []).map((s) => s.name);
   return buildMetadata({
-    title: `${t.display_name}${subjectNames.length ? ` — ${subjectNames.join(", ")} Tutor` : ""} | NUVORA`,
+    title: `${t.display_name}${subjectNames.length ? ` - ${subjectNames.join(", ")} Tutor` : ""} | NUVORA`,
     description: (t.bio ?? t.headline ?? `${t.display_name} teaches on NUVORA.`).slice(0, 155),
     path: `/tutors/${params.slug}`,
   });
@@ -60,7 +60,7 @@ function fmtRate(t: TutorDTO): string {
   const max = t.hourly_rate_max;
   const cur = t.currency || "NGN";
   if (min == null && max == null) return "Rate on request";
-  if (max && min && max !== min) return `${cur} ${min.toLocaleString()}–${max.toLocaleString()}/hr`;
+  if (max && min && max !== min) return `${cur} ${min.toLocaleString()}-${max.toLocaleString()}/hr`;
   const r = min ?? max;
   return `${cur} ${r!.toLocaleString()}/hr`;
 }
@@ -93,7 +93,7 @@ export default async function TutorPage(props: Props) {
           <div className="mb-6 overflow-hidden rounded-3xl bg-brand-navy">
             <Image
               src={tutorPortraitSrc(tutor.slug, (tutor as { avatar_url?: string }).avatar_url)}
-              alt={`${tutor.display_name} — NUVORA tutor`}
+              alt={`${tutor.display_name} - NUVORA tutor`}
               width={960}
               height={420}
               className="h-64 w-full object-cover object-top md:h-80"
@@ -133,7 +133,7 @@ export default async function TutorPage(props: Props) {
           <section className="mt-8 rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Child-centred teaching approach</h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Adaptive learning plans, child-centred delivery and periodic evaluation — plus NUVORA progress reports
+              Adaptive learning plans, child-centred delivery and periodic evaluation - plus NUVORA progress reports
               with strengths, weaknesses and recommendations, all audited.
             </p>
           </section>
@@ -174,17 +174,17 @@ export default async function TutorPage(props: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-ink-100 bg-white p-4">
               <GraduationCap size={18} className="text-brand-navy" />
-              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.years_experience ?? "—"} yrs</p>
+              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.years_experience ?? "-"} yrs</p>
               <p className="text-xs text-ink-500">Experience</p>
             </div>
             <div className="rounded-2xl border border-ink-100 bg-white p-4">
               <Users size={18} className="text-brand-navy" />
-              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.total_students ?? "—"}</p>
+              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.total_students ?? "-"}</p>
               <p className="text-xs text-ink-500">Students</p>
             </div>
             <div className="rounded-2xl border border-ink-100 bg-white p-4">
               <Clock size={18} className="text-brand-navy" />
-              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.total_hours_taught ?? "—"}</p>
+              <p className="mt-2 text-lg font-bold text-ink-900">{tutor.total_hours_taught ?? "-"}</p>
               <p className="text-xs text-ink-500">Hours taught</p>
             </div>
             <div className="rounded-2xl border border-ink-100 bg-white p-4">
@@ -195,7 +195,7 @@ export default async function TutorPage(props: Props) {
           </div>
 
           <p className="rounded-2xl border border-brand-gold/30 bg-brand-gold-light/40 p-4 text-xs leading-relaxed text-ink-700">
-            Escrow protected — you pay into the NUVORA wallet; the tutor is paid after confirmation or a 3-day
+            Escrow protected - you pay into the NUVORA wallet; the tutor is paid after confirmation or a 3-day
             auto-release. No off-platform payment.
           </p>
         </aside>
@@ -206,4 +206,4 @@ export default async function TutorPage(props: Props) {
   );
 }
 
-export const revalidate = 3600; // ISR 1h — tutor pages change on reviews
+export const revalidate = 3600; // ISR 1h - tutor pages change on reviews

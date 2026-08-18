@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Home, Globe2, GraduationCap, BookOpenCheck, Star, FileCheck } from "lucide-react";
 
-// Services showcase — Tuteria v2 "Popular services" rail: six flagship
+// Services showcase - Tuteria v2 "Popular services" rail: six flagship
 // offers with real reference copy.
 
 const SERVICES = [

@@ -7,9 +7,9 @@ import { Check } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "UTME 2026 Pricing — Mastery & Plus | NUVORA",
+  title: "UTME 2026 Pricing - Mastery & Plus | NUVORA",
   description:
-    "Indicative UTME prep packages on nuvora.com — live classes, recordings, mocks and parent reports. Same login on mobile.",
+    "Indicative UTME prep packages on nuvora.com - live classes, recordings, mocks and parent reports. Same login on mobile.",
   path: "/utme-2026/pricing",
 });
 
@@ -52,7 +52,7 @@ export default function UtmePricingPage() {
       <PageHero
         eyebrow="Same login on mobile"
         title="UTME 2026 pricing"
-        subtitle="Packages sit on nuvora.com — one wallet, one account. Figures below are indicative until you enrol."
+        subtitle="Packages sit on nuvora.com - one wallet, one account. Figures below are indicative until you enrol."
         crumbs={[{ name: "Home", href: "/" }, { name: "UTME 2026", href: "/utme-2026" }, { name: "Pricing" }]}
         image={{ src: "/hero/utme.jpg", alt: "Student preparing for UTME" }}
         ctas={[{ label: "Request a callback", href: "/utme-2026", primary: true }]}

@@ -8,9 +8,9 @@ import { Star, Crown, UserCheck, Award, Check } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "NUVORA Plus — Premium Tutoring for International Learners | NUVORA",
+  title: "NUVORA Plus - Premium Tutoring for International Learners | NUVORA",
   description:
-    "Upgrade your child's learning with NUVORA Plus — priority matching with vetted specialist tutors and a dedicated advisor.",
+    "Upgrade your child's learning with NUVORA Plus - priority matching with vetted specialist tutors and a dedicated advisor.",
   path: "/nuvora-plus",
 });
 
@@ -45,8 +45,8 @@ export default function NuvoraPlusPage() {
       <PageHero
         cover="/hero/nuvora-plus.jpg"
         eyebrow="NUVORA Plus"
-        title="NUVORA Plus — advisor-led matching"
-        subtitle="Priority matching with a vetted specialist, a named advisor, and weekly reports. Premium packaging — not invented rankings."
+        title="NUVORA Plus - advisor-led matching"
+        subtitle="Priority matching with a vetted specialist, a named advisor, and weekly reports. Premium packaging - not invented rankings."
         crumbs={[{ name: "Home", href: "/" }, { name: "NUVORA Plus" }]}
         align="center"
         image={{ src: "/hero/nuvora-plus.jpg", alt: "Tutor guiding a young learner one-on-one" }}
@@ -54,7 +54,7 @@ export default function NuvoraPlusPage() {
         <a href="/pricing" className="btn-gold">Unlock Premium Tutoring</a>
       </PageHero>
 
-      {/* Value prop — foreign-standard without the price tag */}
+      {/* Value prop - foreign-standard without the price tag */}
       <section className="bg-white py-16">
         <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-[1fr_1fr] gap-12 items-center">
           <div>
@@ -66,7 +66,7 @@ export default function NuvoraPlusPage() {
               Foreign-Standard Tutoring without the Foreign Price Tag
             </h2>
             <p className="mt-4 text-ink-600 leading-relaxed">
-              Give your child the quality of education families abroad pay thousands for —
+              Give your child the quality of education families abroad pay thousands for -
               delivered by vetted Nigerian tutors on British and Nigerian curricula.
             </p>
             <ul className="mt-6 space-y-3">
@@ -115,7 +115,7 @@ export default function NuvoraPlusPage() {
             ))}
             <div className="rounded-2xl border-2 border-brand-gold bg-brand-gold-light p-6 text-center">
               <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">Local pricing</p>
-              <p className="mt-1 text-sm text-ink-600">Nigerian tutors — no invented discount percentage</p>
+              <p className="mt-1 text-sm text-ink-600">Nigerian tutors - no invented discount percentage</p>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function NuvoraPlusPage() {
           </h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {[
-              { n: "1", t: "Book a discovery call", d: "Tell us your child's goals, level and schedule — we'll design a premium plan." },
+              { n: "1", t: "Book a discovery call", d: "Tell us your child's goals, level and schedule - we'll design a premium plan." },
               { n: "2", t: "Meet your tutor", d: "We match a vetted specialist to your child's goals and schedule." },
               { n: "3", t: "Track premium progress", d: "Weekly premium reports, live classes and priority support throughout." },
             ].map((s) => (

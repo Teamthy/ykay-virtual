@@ -28,10 +28,10 @@ const fallback: Record<string, BlogPostDTO> = {
     id: "1",
     title: "How to Score 8.0 in IELTS: Techniques Our Tutors Use",
     slug: "how-to-score-8-ielts",
-    excerpt: "IELTS is not your usual English exam — it's a technique exam.",
+    excerpt: "IELTS is not your usual English exam - it's a technique exam.",
     content:
       "This guide covers the four IELTS bands and the techniques our tutors teach: question-pattern recognition for Reading, signpost words for Listening, the two-part answer structure for Writing, and fluency-building for Speaking. Combine these with weekly timed mocks and you can raise your band score within six weeks.",
-    seo_title: "How to Score 8.0 in IELTS — Techniques & Patterns",
+    seo_title: "How to Score 8.0 in IELTS - Techniques & Patterns",
     seo_description: "IELTS preparation techniques: reading patterns, listening signposts, writing structure, speaking fluency.",
     published_at: "2026-08-01T00:00:00Z",
     subject_slugs: ["ielts-prep"],

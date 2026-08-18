@@ -12,7 +12,7 @@ export const revalidate = 300;
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   return buildMetadata({
-    title: "Checkout — Enrol securely",
+    title: "Checkout - Enrol securely",
     description: "Pay securely. Funds are held in escrow until lessons are delivered.",
     path: `/checkout/${params.cohortId}`,
     noIndex: true, // checkout is an app surface, not an indexable page

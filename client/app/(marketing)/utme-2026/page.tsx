@@ -9,7 +9,7 @@ import { Check, BrainCircuit, FileCheck2, CalendarCheck2, LifeBuoy, Trophy } fro
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "UTME 2026 prep — live class, mocks, reports | NUVORA",
+  title: "UTME 2026 prep - live class, mocks, reports | NUVORA",
   description:
     "JAMB/UTME prep on nuvora.com: live lessons, recordings, timed mocks and parent notes. Same login on mobile. No 320+ guarantee.",
   path: "/utme-2026",
@@ -19,7 +19,7 @@ const INCLUDED = [
   {
     icon: <CalendarCheck2 size={20} />,
     title: "Live, Expert-Led Classes",
-    desc: "Master the entire UTME syllabus in 100+ interactive live online lessons — watch or re-watch anytime, anywhere.",
+    desc: "Master the entire UTME syllabus in 100+ interactive live online lessons - watch or re-watch anytime, anywhere.",
   },
   {
     icon: <FileCheck2 size={20} />,
@@ -29,7 +29,7 @@ const INCLUDED = [
   {
     icon: <BrainCircuit size={20} />,
     title: "Weekly Live CBT Mock Exams",
-    desc: "Simulate the real UTME with full-length timed exams every Saturday — boosting speed and confidence.",
+    desc: "Simulate the real UTME with full-length timed exams every Saturday - boosting speed and confidence.",
   },
   {
     icon: <LifeBuoy size={20} />,
@@ -40,7 +40,7 @@ const INCLUDED = [
 
 const PRIZES = [
   { n: "1", text: "Prize places are listed only when a round is funded" },
-  { n: "★", text: "Weekly recognition for effort — not a published cash pool" },
+  { n: "★", text: "Weekly recognition for effort - not a published cash pool" },
 ];
 
 const PACKAGES = [
@@ -94,7 +94,7 @@ export default function Utme2026Page() {
           <div className="grid items-center gap-8 md:grid-cols-2 lg:gap-12">
             <div>
               <p className="inline-block bg-clip-text bg-gradient-to-l from-[#013920] to-[#4CCB31] text-sm font-semibold uppercase tracking-[0.14em] text-transparent">
-                Online Prep · Jan – Apr 2026
+                Online Prep · Jan - Apr 2026
               </p>
 
               <div className="mt-4 max-w-2xl md:mb-8">
@@ -114,7 +114,7 @@ export default function Utme2026Page() {
                 <div className="relative z-10">
                   <p className="text-xl italic text-[#013920]">
                     &ldquo;Preparing for UTME a second time was tough emotionally. The structured prep,
-                    daily practice, and constant support helped me believe in myself — I didn&apos;t just
+                    daily practice, and constant support helped me believe in myself - I didn&apos;t just
                     pass, I soared.&rdquo;
                   </p>
                 </div>
@@ -124,7 +124,7 @@ export default function Utme2026Page() {
                   </div>
                   <div>
                     <div className="font-semibold text-[#013920]">Omoloja Olumuyiwa Eghosa</div>
-                    <div className="text-xs text-ink-500">Parent note — attributed story, not a published average</div>
+                    <div className="text-xs text-ink-500">Parent note - attributed story, not a published average</div>
                   </div>
                 </footer>
               </blockquote>
@@ -152,10 +152,10 @@ export default function Utme2026Page() {
 
       <section className="bg-white py-16">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-gold-dark">On nuvora.com — including your phone</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-gold-dark">On nuvora.com - including your phone</p>
           <h2 className="mt-2 font-display text-3xl text-brand-navy">What this prep includes</h2>
           <p className="mt-2 max-w-2xl text-ink-600">
-            One login. Open this site on mobile for live class, recordings and reports — not a separate prep domain.
+            One login. Open this site on mobile for live class, recordings and reports - not a separate prep domain.
           </p>
           <ul className="mt-8 grid gap-4 md:grid-cols-2">
             {[
@@ -191,7 +191,7 @@ export default function Utme2026Page() {
             </h2>
             <p className="mt-4 leading-relaxed text-white/80">
               Tutors plan from{" "}
-              <b className="text-[#4CCB31]">past-paper patterns</b> — we do not claim a secret
+              <b className="text-[#4CCB31]">past-paper patterns</b> - we do not claim a secret
               15-year AI score or a predicted paper.
             </p>
             <p className="mt-3 leading-relaxed text-white/80">

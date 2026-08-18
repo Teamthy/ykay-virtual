@@ -187,7 +187,7 @@ export function SubjectsStep({ profileId, onNext }: { profileId: string; onNext:
   return (
     <div className="border rounded-2xl p-6 space-y-4">
       <h2 className="text-xl font-bold">What can you teach?</h2>
-      <p className="text-sm text-ink-600">Choose at least one subject — you can add more later.</p>
+      <p className="text-sm text-ink-600">Choose at least one subject - you can add more later.</p>
       <input
         type="text"
         value={q}
@@ -246,7 +246,7 @@ export function DocumentsStep({ profileId, onNext }: { profileId: string; onNext
         <h2 className="text-xl font-bold text-brand-navy">Identity verification</h2>
         <p className="text-sm text-ink-600">
           Upload a government-issued ID (national ID, passport, or driver&apos;s licence). Files go to a{" "}
-          <strong>private bucket</strong> — only you and our review team can access them, via signed URLs.
+          <strong>private bucket</strong> - only you and our review team can access them, via signed URLs.
         </p>
         <FileUploader
           files={files}
@@ -343,7 +343,7 @@ export function AssessmentStep({ profileId, onDone }: { profileId: string; onDon
         <h2 className="text-xl font-bold">{result.passed ? "You passed!" : "Not quite this time"}</h2>
         <p className="text-sm text-ink-700">
           Score: <strong>{result.correct}/{result.total}</strong> ({Math.round((result.score / result.max_score) * 100)}%)
-          {result.passed ? " — competency valid for 12 months." : " — you can retake once your profile is under review."}
+          {result.passed ? " - competency valid for 12 months." : " - you can retake once your profile is under review."}
         </p>
         <Button variant="gold" onClick={onDone}>Continue</Button>
       </div>
@@ -380,7 +380,7 @@ export function AssessmentStep({ profileId, onDone }: { profileId: string; onDon
   return (
     <div className="border rounded-2xl p-6 space-y-4">
       <h2 className="text-xl font-bold">Competency assessment</h2>
-      <p className="text-sm text-ink-600">Pick a subject from your teaching scope — 5 questions, 30 minutes, 70% to pass.</p>
+      <p className="text-sm text-ink-600">Pick a subject from your teaching scope - 5 questions, 30 minutes, 70% to pass.</p>
       <div className="grid sm:grid-cols-2 gap-2">
         {(mySubjects.data ?? []).map((s) => (
           <button key={s.subject_id} type="button" disabled={busy} onClick={() => begin(s.subject_id)}
@@ -403,7 +403,7 @@ export function SubmittedState({ profile }: { profile: TutorProfile }) {
     VERIFICATION: { label: "Verification", hint: "Final identity checks in progress." },
     APPROVED: { label: "Approved", hint: "You are live on the marketplace. Bookings can come in now." },
     REJECTED: { label: "Not approved", hint: "Our team will contact you with next steps." },
-    HOLD: { label: "On hold", hint: "Your application is paused — we will be in touch." },
+    HOLD: { label: "On hold", hint: "Your application is paused - we will be in touch." },
     SUSPENDED: { label: "Suspended", hint: "Contact support for details." },
   };
   const st = statusCopy[profile.status] ?? { label: profile.status, hint: "" };

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// ReferralCard — share your code, track referred signups and rewards.
+// ReferralCard - share your code, track referred signups and rewards.
 // Every qualified referral credits the referrer's wallet (₦2,000).
 
 type ReferralInfo = {
@@ -56,7 +56,7 @@ export function ReferralCard({ userId }: { userId: string }) {
       await navigator.clipboard.writeText(link);
       toast.success("Referral link copied!", { description: "Share it with friends and family." });
     } catch {
-      toast.error("Could not copy — please copy the code manually.");
+      toast.error("Could not copy - please copy the code manually.");
     }
   };
 

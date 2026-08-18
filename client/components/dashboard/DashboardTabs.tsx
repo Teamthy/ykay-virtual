@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-// DashboardTabs — the shared horizontal tab nav for dashboard surfaces.
+// DashboardTabs - the shared horizontal tab nav for dashboard surfaces.
 // Pills with optional counts, brand gold active state.
 
 export type TabDef = { key: string; label: string; count?: number };

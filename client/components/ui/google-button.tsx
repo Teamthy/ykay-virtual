@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getGoogleAuthURL } from "@/features/auth/api";
 
-// "Continue with Google" — fetches the OAuth consent URL and redirects.
+// "Continue with Google" - fetches the OAuth consent URL and redirects.
 // Disabled (with hint) when the backend has no Google credentials.
 
 export function GoogleButton({ label = "Continue with Google" }: { label?: string }) {
@@ -18,7 +18,7 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Google sign-in is not configured yet";
       if (/not configured/i.test(msg)) {
-        toast.error("Google sign-in isn't enabled yet — use email instead", {
+        toast.error("Google sign-in isn't enabled yet - use email instead", {
           description: "The server needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET configured.",
         });
       } else {

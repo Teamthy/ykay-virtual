@@ -7,9 +7,9 @@ import { ProgrammesHub } from "@/features/programmes/components/ProgrammesHub";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Programmes — Cohorts, Bootcamps & Exam Prep | NUVORA",
+  title: "Programmes - Cohorts, Bootcamps & Exam Prep | NUVORA",
   description:
-    "Structured learning programmes: live cohort classes, holiday bootcamps and online classes for IGCSE, WAEC, NECO, JAMB, A-Level and IELTS — with escrow-protected enrollment.",
+    "Structured learning programmes: live cohort classes, holiday bootcamps and online classes for IGCSE, WAEC, NECO, JAMB, A-Level and IELTS - with escrow-protected enrollment.",
   path: "/programmes",
 });
 
@@ -19,7 +19,7 @@ export default function ProgrammesPage() {
       <PageHero
         cover="/hero/programmes.jpg"
         title="Learning programmes"
-        subtitle="Cohort classes, bootcamps and online courses led by vetted tutors. Enroll securely — your fees sit in escrow until the programme delivers."
+        subtitle="Cohort classes, bootcamps and online courses led by vetted tutors. Enroll securely - your fees sit in escrow until the programme delivers."
         crumbs={[{ name: "Home", href: "/" }, { name: "Programmes" }]}
         align="left"
       />

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-// Saved tutors (P2 wishlist) — localStorage-backed for now; a server-side
+// Saved tutors (P2 wishlist) - localStorage-backed for now; a server-side
 // wishlist keyed on the session user is the documented follow-up.
 
 export type SavedTutor = {

@@ -5,7 +5,7 @@ import { PageHero } from "@/components/layout/PageHero";
 export const metadata: Metadata = buildMetadata({
   title: "Privacy Policy",
   description:
-    "How NUVORA collects, uses and protects your data — and the rights you have over it.",
+    "How NUVORA collects, uses and protects your data - and the rights you have over it.",
   path: "/privacy",
 });
 
@@ -16,7 +16,7 @@ const SECTIONS = [
   },
   {
     h: "2. What we collect",
-    body: "Account data: name, email address, phone number, password (hashed), role (student, parent, tutor, institution). Learning data: learner profiles, lesson attendance, assignment submissions, quiz results and progress reports. Payment data: processed by Paystack/Flutterwave — we store only order references and status, never card details. Chat data: messages you send to our AI assistant or support team. Technical data: device platform, app version, push tokens and basic usage logs.",
+    body: "Account data: name, email address, phone number, password (hashed), role (student, parent, tutor, institution). Learning data: learner profiles, lesson attendance, assignment submissions, quiz results and progress reports. Payment data: processed by Paystack/Flutterwave - we store only order references and status, never card details. Chat data: messages you send to our AI assistant or support team. Technical data: device platform, app version, push tokens and basic usage logs.",
   },
   {
     h: "3. How we use your data",

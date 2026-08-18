@@ -36,14 +36,14 @@ export function UtmeCallbackForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: "utme-2026@callback.nuvora",
-          subject: `UTME 2026 enrolment — ${form.name.trim()} (${form.level})`,
+          subject: `UTME 2026 enrolment - ${form.name.trim()} (${form.level})`,
           message: `UTME lead: ${form.name.trim()} · ${form.phone.trim()} · ${form.level}.`,
         }),
       });
       setDone(true);
-      toast.success("Request received — we will text to confirm");
+      toast.success("Request received - we will text to confirm");
     } catch {
-      setError("Could not submit — please use the contact page");
+      setError("Could not submit - please use the contact page");
     } finally {
       setBusy(false);
     }

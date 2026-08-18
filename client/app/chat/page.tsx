@@ -18,7 +18,7 @@ import {
 } from "@/features/chat/api";
 import { useSession } from "@/hooks/useSession";
 
-// Full-page AI assistant — threads sidebar + conversation + composer.
+// Full-page AI assistant - threads sidebar + conversation + composer.
 // The backend degrades gracefully when no Gemini key is configured.
 
 export default function ChatPage() {
@@ -107,7 +107,7 @@ export default function ChatPage() {
     setEscalating(true);
     try {
       await escalateChatThread(activeId, input.trim() || undefined);
-      toast.success("Handed to a human — our team will reply here shortly.");
+      toast.success("Handed to a human - our team will reply here shortly.");
       qc.invalidateQueries({ queryKey: ["chat", "threads"] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not escalate");
@@ -143,7 +143,7 @@ export default function ChatPage() {
             Chat with Nuvora ✨
           </h1>
           <p className="text-sm text-ink-500">
-            Ask about programmes, cohorts, tutors or fees — or ask for a human anytime.
+            Ask about programmes, cohorts, tutors or fees - or ask for a human anytime.
           </p>
         </div>
         <button
@@ -162,7 +162,7 @@ export default function ChatPage() {
             <p className="p-4 text-center text-sm text-ink-400">Loading…</p>
           ) : (threads.data ?? []).length === 0 ? (
             <p className="p-4 text-center text-sm text-ink-400">
-              No conversations yet — start a new chat below.
+              No conversations yet - start a new chat below.
             </p>
           ) : (
             <div className="space-y-1">
@@ -255,7 +255,7 @@ export default function ChatPage() {
             )}
             {escalated && (
               <p className="mb-3 rounded-xl bg-brand-gold-light px-4 py-2.5 text-xs font-semibold text-brand-navy">
-                👤 A human agent is on this thread — they&apos;ll reply here. You can keep messaging.
+                👤 A human agent is on this thread - they&apos;ll reply here. You can keep messaging.
               </p>
             )}
             <div className="flex gap-2">

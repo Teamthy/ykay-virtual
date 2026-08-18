@@ -29,7 +29,7 @@ const FORMAT_META: Record<string, { label: string; bg: string; color: string }> 
   HYBRID: { label: "Hybrid", bg: "#F2F9EE", color: "#009A49" },
 };
 
-// Programme card — v2.tuteria.com treatment: tinted format banner, display
+// Programme card - v2.tuteria.com treatment: tinted format banner, display
 // title, curriculum/level line, subject pills, next-start + price footer.
 export function ProgrammeCard({ p }: { p: ProgrammeCardData }) {
   const fmt = FORMAT_META[p.format] ?? { label: p.format.replace(/_/g, " ").toLowerCase(), bg: "#DFFFF2", color: "#013920" };
@@ -84,7 +84,7 @@ export function ProgrammeCard({ p }: { p: ProgrammeCardData }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-extrabold text-brand-navy">
-              {p.price_min != null ? `${p.currency} ${p.price_min.toLocaleString()}${p.price_max && p.price_max !== p.price_min ? `–${p.price_max.toLocaleString()}` : ""}` : "Price on request"}
+              {p.price_min != null ? `${p.currency} ${p.price_min.toLocaleString()}${p.price_max && p.price_max !== p.price_min ? `-${p.price_max.toLocaleString()}` : ""}` : "Price on request"}
             </span>
             <ArrowRight size={14} className="text-brand-blue transition-transform group-hover:translate-x-0.5" />
           </div>

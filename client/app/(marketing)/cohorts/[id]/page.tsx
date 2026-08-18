@@ -18,8 +18,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   try {
     const cohort = await getCohortSSR(params.id);
     return buildMetadata({
-      title: `${cohort.title} — Cohort Sessions & Enrolment | NUVORA`,
-      description: cohort.schedule_description ?? `Join the ${cohort.title} cohort — ${cohort.capacity} seats, ${cohort.timezone}, ${cohort.currency} ${cohort.fee.toLocaleString()}. Escrow-protected.`,
+      title: `${cohort.title} - Cohort Sessions & Enrolment | NUVORA`,
+      description: cohort.schedule_description ?? `Join the ${cohort.title} cohort - ${cohort.capacity} seats, ${cohort.timezone}, ${cohort.currency} ${cohort.fee.toLocaleString()}. Escrow-protected.`,
       path: `/cohorts/${params.id}`,
     });
   } catch {
@@ -140,7 +140,7 @@ export default async function CohortDetailPage(props: Props) {
               <button disabled className="btn-gold w-full opacity-50 cursor-not-allowed">Cohort full</button>
             ) : (
               <Link href={`/cohorts/${cohort.id}/enroll`} className="btn-gold w-full inline-flex items-center justify-center">
-                Enrol now — pay securely
+                Enrol now - pay securely
               </Link>
             )}
             <p className="text-[11px] text-ink-400 text-center">

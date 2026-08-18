@@ -7,7 +7,7 @@ import { TutorBenefits } from "@/components/home/TutorBenefits";
 import { PageHero } from "@/components/layout/PageHero";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Become a Tutor — Apply to Teach at NUVORA",
+  title: "Become a Tutor - Apply to Teach at NUVORA",
   description:
     "Join NUVORA's vetted tutor network. Pass our competency assessment, complete identity verification and start earning from private tuition and cohort programmes.",
   path: "/become-tutor",
@@ -22,9 +22,9 @@ const STEPS = [
 ];
 
 const FAQS = [
-  { question: "How long does tutor vetting take?", answer: "Most applications move from submission to decision within 5–7 working days, including document verification, interview and competency assessment." },
+  { question: "How long does tutor vetting take?", answer: "Most applications move from submission to decision within 5-7 working days, including document verification, interview and competency assessment." },
   { question: "What do I need to apply?", answer: "A government-issued ID, details of your teaching experience and qualifications, and a 70% pass in the subject competency quiz." },
-  { question: "When do I get paid?", answer: "Payments for completed lessons are released from escrow weekly — either after the parent confirms delivery or automatically 3 days after each lesson." },
+  { question: "When do I get paid?", answer: "Payments for completed lessons are released from escrow weekly - either after the parent confirms delivery or automatically 3 days after each lesson." },
 ];
 
 export default function BecomeTutorPage() {
@@ -43,7 +43,7 @@ export default function BecomeTutorPage() {
       <PageHero
         announcement="Earn from what you love"
         title="Become a NUVORA tutor"
-        subtitle="A five-step, stateful application: build your profile, pick your subjects, verify your identity, pass a short competency quiz — then track your application live."
+        subtitle="A five-step, stateful application: build your profile, pick your subjects, verify your identity, pass a short competency quiz - then track your application live."
         ctas={[{ label: "Start tutor application", href: "/become-tutor/apply", primary: true }]}
       />
 

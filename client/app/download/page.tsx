@@ -8,7 +8,7 @@ import { GooglePlayBadge } from "@/components/ui/StoreBadges";
 export const metadata: Metadata = buildMetadata({
   title: "Download the NUVORA Android App",
   description:
-    "Download the NUVORA Android app (APK) for learning on the go — tutors, live cohorts, quizzes and AI chat in your pocket.",
+    "Download the NUVORA Android app (APK) for learning on the go - tutors, live cohorts, quizzes and AI chat in your pocket.",
   path: "/download",
 });
 
@@ -46,7 +46,7 @@ export default function DownloadPage() {
           <p className="mx-auto mt-4 max-w-md text-xs leading-5 text-ink-400">
             On your phone: allow <span className="font-semibold">“Install unknown apps”</span> for your
             browser or file manager when prompted (Settings → Security → Unknown sources). iOS users can
-            use the web app for now — the App Store version is in review prep.
+            use the web app for now - the App Store version is in review prep.
           </p>
         </div>
 
@@ -54,7 +54,7 @@ export default function DownloadPage() {
           {[
             { icon: GraduationCap, title: "Cohorts & tutors", desc: "Browse programmes, join live classes, book 1:1 tuition." },
             { icon: BarChart3, title: "LMS on the go", desc: "Lessons, quizzes, assignments, attendance and reports." },
-            { icon: MessageSquare, title: "AI chat 24/7", desc: "Ask Nuvora anything — or hand over to a human agent." },
+            { icon: MessageSquare, title: "AI chat 24/7", desc: "Ask Nuvora anything - or hand over to a human agent." },
           ].map((f) => (
             <div key={f.title} className="rounded-2xl border border-ink-100 bg-white p-5 text-center dark:border-ink-700 dark:bg-[#141C2E]">
               <span className="mx-auto grid size-11 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
@@ -71,7 +71,7 @@ export default function DownloadPage() {
           <Link href="/" className="font-semibold text-brand-gold-dark hover:underline">
             Open NUVORA on the web
           </Link>{" "}
-          — or{" "}
+          - or{" "}
           <Link href="/contact" className="font-semibold text-brand-gold-dark hover:underline">
             contact support
           </Link>{" "}

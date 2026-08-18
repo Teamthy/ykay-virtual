@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHero } from "@/components/layout/PageHero";
 
-// Contact / support — creates a real support ticket (POST /support/tickets)
+// Contact / support - creates a real support ticket (POST /support/tickets)
 // with toast feedback; advisor channels listed alongside.
 
 const CATEGORIES = ["General enquiry", "Private tuition", "Cohort enrolment", "Payments & refunds", "Technical support", "Safeguarding concern"];
@@ -65,7 +65,7 @@ export default function ContactPage() {
       <PageHero
         eyebrow="We&apos;re here to help"
         title="Contact & Support"
-        subtitle="Questions about programmes, payments or your account — send a message and our team will respond within one business day."
+        subtitle="Questions about programmes, payments or your account - send a message and our team will respond within one business day."
         crumbs={[{ name: "Home", href: "/" }, { name: "Contact / Support" }]}
         align="center"
       />
@@ -112,11 +112,11 @@ export default function ContactPage() {
               <select value={learnerLevel} onChange={(e) => setLearnerLevel(e.target.value)}
                 className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none">
                 <option value="">Select level…</option>
-                <option>Year 7–9 (British)</option>
-                <option>IGCSE (Year 10–11)</option>
-                <option>A-Level (Year 12–13)</option>
-                <option>JSS1–3 (Nigerian)</option>
-                <option>SSS1–3 (Nigerian)</option>
+                <option>Year 7-9 (British)</option>
+                <option>IGCSE (Year 10-11)</option>
+                <option>A-Level (Year 12-13)</option>
+                <option>JSS1-3 (Nigerian)</option>
+                <option>SSS1-3 (Nigerian)</option>
                 <option>Adult / professional</option>
               </select>
             </label>
@@ -156,7 +156,7 @@ export default function ContactPage() {
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-green-100 text-green-700">💬</span>
                 <div>
                   <div className="font-semibold">WhatsApp</div>
-                  <div className="text-xs text-ink-500">+234 [number to confirm] · Mon–Sat, 8am–8pm</div>
+                  <div className="text-xs text-ink-500">+234 [number to confirm] · Mon-Sat, 8am-8pm</div>
                 </div>
               </li>
               <li className="flex items-center gap-3">

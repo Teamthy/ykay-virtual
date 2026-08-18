@@ -169,7 +169,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         <div className="rounded-xl bg-brand-blue-light/50 p-4 text-sm text-ink-600 space-y-1">
           <p className="font-semibold text-ink-800">{cohort.title}</p>
           <p>
-            {cohort.start_date} â†’ {cohort.end_date} Â· {cohort.timezone} Â· {cohort.location_mode}
+            {cohort.start_date} â†' {cohort.end_date} · {cohort.timezone} · {cohort.location_mode}
           </p>
           <p className={seatsLeft <= 5 ? "text-amber-700 font-medium" : ""}>
             {seatsLeft > 0 ? `${seatsLeft} of ${cohort.capacity} seats left` : "Cohort full"}
@@ -258,7 +258,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                         : "border-ink-200 bg-white text-ink-700 hover:border-ink-400"
                     }`}
                   >
-                    {p === "PAYSTACK" ? "Card Â· Paystack" : "Bank Â· Flutterwave"}
+                    {p === "PAYSTACK" ? "Card · Paystack" : "Bank · Flutterwave"}
                   </button>
                 ))}
               </div>
@@ -308,7 +308,7 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
   const [status, setStatus] = useState<string>(order.status);
   const [checked, setChecked] = useState(0);
 
-  // Poll the order until it leaves PENDING (webhook round-trip â†’ PAID/CANCELLED).
+  // Poll the order until it leaves PENDING (webhook round-trip â†' PAID/CANCELLED).
   useEffect(() => {
     if (status !== "PENDING") return;
     const t = setInterval(async () => {
@@ -366,7 +366,7 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
       )}
       {stillPending && (
         <p className="text-xs text-ink-400">
-          Waiting for payment confirmationâ€¦ {checked > 0 ? `(checked ${checked}Ã—)` : "this page refreshes automatically"}
+          Waiting for payment confirmationâ€¦ {checked > 0 ? `(checked ${checked}Ã-)` : "this page refreshes automatically"}
         </p>
       )}
       <p className="text-xs text-ink-400">

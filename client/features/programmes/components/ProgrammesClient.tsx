@@ -78,7 +78,7 @@ export function ProgrammesClient() {
         <div className="border rounded-2xl p-10 text-center text-red-600">Could not load programmes.</div>
       ) : (programmes.data?.data ?? []).length === 0 ? (
         <div className="border rounded-2xl p-10 text-center text-ink-500">
-          No programmes match yet — new cohorts launch regularly.
+          No programmes match yet - new cohorts launch regularly.
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -102,7 +102,7 @@ export function ProgrammesClient() {
                 {p.price_min ? (
                   <span className="font-bold">
                     {p.currency} {p.price_min.toLocaleString()}
-                    {p.price_max && p.price_max !== p.price_min ? `–${p.price_max.toLocaleString()}` : ""}
+                    {p.price_max && p.price_max !== p.price_min ? `-${p.price_max.toLocaleString()}` : ""}
                   </span>
                 ) : (
                   <span className="text-ink-400">Price on request</span>

@@ -7,8 +7,8 @@ export const revalidate = 3600;
 
 export function generateMetadata(): Metadata {
   return buildMetadata({
-    title: "For Schools — NUVORA B2B | Institutional Accounts",
-    description: "Partner your school with NUVORA: managed tutor network, cohort scheduling, institutional dashboards, pooled billing, safeguarding. Tuteria lacks true B2B infra — NUVORA builds it.",
+    title: "For Schools - NUVORA B2B | Institutional Accounts",
+    description: "Partner your school with NUVORA: managed tutor network, cohort scheduling, institutional dashboards, pooled billing, safeguarding. Tuteria lacks true B2B infra - NUVORA builds it.",
     path: "/for-schools",
   });
 }
@@ -24,7 +24,7 @@ export default function ForSchoolsPage() {
       
       <PageHero
         eyebrow="For institutions"
-        title="For Schools — Institutional Accounts"
+        title="For Schools - Institutional Accounts"
         subtitle="Schools, learning centres and NGOs get institutional accounts: bulk-enrol students, assign teachers, pool invoices and monitor attendance and progress in one dashboard."
         crumbs={[{ name: "Home", href: "/" }, { name: "For Schools" }]}
         align="left"

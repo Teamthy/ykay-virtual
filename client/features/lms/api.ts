@@ -32,7 +32,7 @@ import {
   type ReportInput,
 } from "@/features/learning/api";
 
-// ── LMS API (phase 32) — student + tutor portals over the learning surface ──
+// ── LMS API (phase 32) - student + tutor portals over the learning surface ──
 // G1 (phase 43): profile IDs are session-resolved server-side; the optional
 // parameters below exist only for admin views acting on an explicit profile.
 

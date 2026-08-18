@@ -1,4 +1,4 @@
-// Server-safe API helpers (NO "use client" — callable from RSC/SSR).
+// Server-safe API helpers (NO "use client" - callable from RSC/SSR).
 // Client-side helpers live in lib/api.ts.
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";

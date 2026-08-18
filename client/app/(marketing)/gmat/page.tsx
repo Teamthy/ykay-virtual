@@ -10,7 +10,7 @@ import { Globe2, Briefcase, MonitorPlay, Check, ArrowRight } from "lucide-react"
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "GMAT Prep — Diagnostic, drills and mocks | NUVORA",
+  title: "GMAT Prep - Diagnostic, drills and mocks | NUVORA",
   description:
     "GMAT prep with a vetted tutor: diagnostic, section drills, timed mocks and weekly notes. We do not publish an average score or pass rate.",
   path: "/gmat",
@@ -23,13 +23,13 @@ export default function GmatPage() {
   ]);
   const course = courseJsonLd({
     name: "NUVORA GMAT Preparation",
-    description: "GMAT prep with vetted tutors — diagnostic, structured study plan, mock tests and section drills.",
+    description: "GMAT prep with vetted tutors - diagnostic, structured study plan, mock tests and section drills.",
     provider: "NUVORA",
     url: "https://nuvora.com/gmat",
   });
   const faq = faqJsonLd([
-    { question: "How long does GMAT prep take?", answer: "Most students study 8–12 weeks with 2–3 sessions per week, depending on your diagnostic score and target." },
-    { question: "Are lessons online or in-person?", answer: "Both. Choose in-person lessons or online via Zoom or Google Meet — whichever fits your schedule." },
+    { question: "How long does GMAT prep take?", answer: "Most students study 8-12 weeks with 2-3 sessions per week, depending on your diagnostic score and target." },
+    { question: "Are lessons online or in-person?", answer: "Both. Choose in-person lessons or online via Zoom or Google Meet - whichever fits your schedule." },
   ]);
 
   return (
@@ -70,7 +70,7 @@ export default function GmatPage() {
 
           <div className="mx-auto mt-5 max-w-3xl text-center">
             <p className="text-lg text-ink-600">
-              Work a plan from your diagnostic — Quant, Verbal, IR and AWA. We do not promise a
+              Work a plan from your diagnostic - Quant, Verbal, IR and AWA. We do not promise a
               sitting, school or score.
             </p>
           </div>
@@ -93,7 +93,7 @@ export default function GmatPage() {
           </div>
 
           {/* Meta row */}
-          <p className="mt-6 text-center text-sm text-ink-500">Quant, Verbal, IR and AWA — plan from your diagnostic, not a published average.</p>
+          <p className="mt-6 text-center text-sm text-ink-500">Quant, Verbal, IR and AWA - plan from your diagnostic, not a published average.</p>
         </div>
       </section>
 
@@ -118,7 +118,7 @@ export default function GmatPage() {
               700 to get into INSEAD MBA. Getting a GMAT tutor was the best decision I made. I was
               challenged, encouraged and thankfully, got the executive MBA admission.&rdquo;
             </p>
-            <p className="mt-3 text-sm font-bold text-ink-800">— Past NUVORA GMAT student</p>
+            <p className="mt-3 text-sm font-bold text-ink-800">- Past NUVORA GMAT student</p>
           </div>
 
           <div id="lead" className="scroll-mt-24">
@@ -156,7 +156,7 @@ export default function GmatPage() {
               </div>
               <h3 className="mt-4 font-bold text-white">Study abroad</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/80">
-                Prep for graduate applications — we do not promise a specific school or score.
+                Prep for graduate applications - we do not promise a specific school or score.
               </p>
               <Link href="/gmat" className="mt-4 inline-block text-sm font-bold text-brand-gold">
                 Study-abroad prep →
@@ -174,7 +174,7 @@ export default function GmatPage() {
               </div>
               <h3 className="mt-4 font-bold text-white">Career applications</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/80">
-                Use GMAT prep as part of a job or MBA application — we do not promise a specific employer.
+                Use GMAT prep as part of a job or MBA application - we do not promise a specific employer.
               </p>
               <Link href="/gmat" className="mt-4 inline-block text-sm font-bold text-brand-gold">
                 Get a tutor →
@@ -192,7 +192,7 @@ export default function GmatPage() {
               </div>
               <h3 className="mt-4 font-bold text-white">Study on your phone</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/80">
-                Same NUVORA login on mobile — live lessons and recordings in the browser. No second site.
+                Same NUVORA login on mobile - live lessons and recordings in the browser. No second site.
               </p>
               <Link href="/online-classes" className="mt-4 inline-block text-sm font-bold text-brand-gold">
                 Book online lessons →
@@ -201,7 +201,7 @@ export default function GmatPage() {
           </div>
           <div className="mt-8 rounded-2xl border border-ink-100 bg-white p-6">
             <ul className="grid gap-3 sm:grid-cols-2 text-sm text-ink-600">
-              {["Personalised study plan from your diagnostic", "Section drills — Quant, Verbal, IR, AWA", "Official mock exams every 2 weeks", "Weekly progress reports to your inbox"].map((f) => (
+              {["Personalised study plan from your diagnostic", "Section drills - Quant, Verbal, IR, AWA", "Official mock exams every 2 weeks", "Weekly progress reports to your inbox"].map((f) => (
                 <li key={f} className="flex items-start gap-2.5">
                   <Check size={15} className="mt-0.5 shrink-0 text-brand-green" /> {f}
                 </li>

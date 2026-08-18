@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Stepper (24.1) — progress steps for long applications/forms.
+// Stepper (24.1) - progress steps for long applications/forms.
 // Each step: numbered node + label; completed steps get a check.
 
 export type StepperProps = {

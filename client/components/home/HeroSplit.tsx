@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, ShieldCheck, BadgeCheck, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Homepage hero — STACKED layout: the brand story + CTA sit on TOP, and the
+// Homepage hero - STACKED layout: the brand story + CTA sit on TOP, and the
 // image carousel runs full-width BELOW it. The copy is static (one clear
 // message); only the images rotate. Real photography, never AI-looking.
 
@@ -51,7 +51,7 @@ export function HeroSplit() {
 
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg">
           Personalised tutoring that guides your child toward exam success, better grades and
-          real confidence — from identity-verified, background-checked tutors.
+          real confidence - from identity-verified, background-checked tutors.
         </p>
 
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">

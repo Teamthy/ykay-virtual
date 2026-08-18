@@ -10,14 +10,14 @@ import { EXAM_MATRIX } from "@/lib/exam-prep-data";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Exam Preparation — WAEC, NECO, JAMB, IGCSE & A-Level | NUVORA",
+  title: "Exam Preparation - WAEC, NECO, JAMB, IGCSE & A-Level | NUVORA",
   description:
     "Structured exam preparation: WAEC, NECO, JAMB/UTME, IGCSE and A-Level revision cohorts, past-paper practice, mocks and private support from vetted tutors.",
   path: "/exam-prep",
 });
 
 const EXAMS = [
-  { code: "IGCSE", name: "Cambridge & Pearson IGCSE", desc: "Year 10–11 revision cohorts with past-paper practice and mocks.", href: "/curricula/british", photo: "/hero/british.jpg" },
+  { code: "IGCSE", name: "Cambridge & Pearson IGCSE", desc: "Year 10-11 revision cohorts with past-paper practice and mocks.", href: "/curricula/british", photo: "/hero/british.jpg" },
   { code: "WAEC", name: "West African Examinations Council", desc: "Core and elective subjects, aligned lesson plans and practice.", href: "/curricula/nigerian", photo: "/hero/nigerian.jpg" },
   { code: "NECO", name: "National Examinations Council", desc: "Shared-syllabus preparation alongside WAEC where applicable.", href: "/curricula/nigerian", photo: "/hero/exam-prep.jpg" },
   { code: "JAMB", name: "UTME / Post-UTME", desc: "Topic-focused revision, question analysis and CBT mock tests.", href: "/utme-2026", photo: "/hero/utme.jpg" },
@@ -49,7 +49,7 @@ export default function ExamPrepPage() {
         cover="/hero/exam-prep.jpg"
         eyebrow="Exam season, handled"
         title="Examination Preparation"
-        subtitle="Revision cohorts, past-paper practice and mock examinations — built for WAEC, NECO, JAMB, IGCSE and A-Level candidates."
+        subtitle="Revision cohorts, past-paper practice and mock examinations - built for WAEC, NECO, JAMB, IGCSE and A-Level candidates."
         crumbs={[{ name: "Home", href: "/" }, { name: "Exam Preparation" }]}
         align="center"
       >
@@ -84,7 +84,7 @@ export default function ExamPrepPage() {
           <div>
             <h2 className="font-bold text-lg">Not sure where to start?</h2>
             <p className="mt-2 text-sm text-white/80">
-              Tell us the exam and target date — we&apos;ll design the revision plan.
+              Tell us the exam and target date - we&apos;ll design the revision plan.
             </p>
           </div>
           <Link href="/private-tuition" className="mt-4 inline-flex items-center justify-center rounded-xl bg-white text-brand-blue font-bold text-sm px-5 py-3">
@@ -138,7 +138,7 @@ export default function ExamPrepPage() {
           <StepsToTutor
         title="Get exam-ready in 3 simple steps"
         steps={[
-          { n: "1", title: "Pick your exam", desc: "Choose WAEC, NECO, JAMB, IGCSE, A-Level or an entrance exam — we cover every major syllabus." },
+          { n: "1", title: "Pick your exam", desc: "Choose WAEC, NECO, JAMB, IGCSE, A-Level or an entrance exam - we cover every major syllabus." },
           { n: "2", title: "Join your revision cohort", desc: "Match with a vetted subject specialist and a small-group cohort that fits your schedule." },
           { n: "3", title: "Pass with past papers", desc: "Work through past-paper practice, mocks and weekly progress checks until exam day." },
         ]}

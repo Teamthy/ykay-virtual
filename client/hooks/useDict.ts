@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getDict, getStoredLang, type Dict, type Lang } from "@/lib/i18n";
 
-// useDict — reactive dictionary access for the stored language.
+// useDict - reactive dictionary access for the stored language.
 export function useDict(): { lang: Lang; t: (key: keyof Dict) => string } {
   const [lang, setLang] = useState<Lang>("en");
 

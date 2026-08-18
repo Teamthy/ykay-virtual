@@ -7,7 +7,7 @@ import { useSession } from "@/hooks/useSession";
 import { useTutorOnboarding } from "@/features/vetting/useTutorOnboarding";
 import { OnboardingStepper, DocumentsStep } from "@/features/vetting/components/steps";
 
-// Tutor onboarding — step 3 of 5.
+// Tutor onboarding - step 3 of 5.
 
 export default function BecomeTutorDocumentsPage() {
   const router = useRouter();

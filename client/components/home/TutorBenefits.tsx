@@ -17,12 +17,12 @@ const BENEFITS = [
   {
     icon: <CalendarClock size={20} />,
     title: "Teach anytime, anywhere",
-    desc: "Private lessons, small-group cohorts or online classes — choose the format and pace that works for you and your learners.",
+    desc: "Private lessons, small-group cohorts or online classes - choose the format and pace that works for you and your learners.",
   },
   {
     icon: <LifeBuoy size={20} />,
     title: "Amazing support",
-    desc: "We support every step of the way and are always on-hand to answer your questions — or give you a well-deserved pat on the back!",
+    desc: "We support every step of the way and are always on-hand to answer your questions - or give you a well-deserved pat on the back!",
   },
 ];
 

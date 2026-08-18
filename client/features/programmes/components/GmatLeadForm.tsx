@@ -34,14 +34,14 @@ export function GmatLeadForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: form.email.trim(),
-          subject: `GMAT prep request — ${form.first_name.trim()}`,
+          subject: `GMAT prep request - ${form.first_name.trim()}`,
           message: `GMAT lead: ${form.first_name.trim()} · ${form.phone.trim()} · ${form.country}.`,
         }),
       });
       setDone(true);
-      toast.success("Request received — our advisors will be in touch");
+      toast.success("Request received - our advisors will be in touch");
     } catch {
-      setError("Could not submit — please use the contact page");
+      setError("Could not submit - please use the contact page");
     } finally {
       setBusy(false);
     }

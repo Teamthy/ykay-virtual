@@ -7,7 +7,7 @@ import { useSession } from "@/hooks/useSession";
 import { useTutorOnboarding } from "@/features/vetting/useTutorOnboarding";
 import { OnboardingStepper, SubjectsStep } from "@/features/vetting/components/steps";
 
-// Tutor onboarding — step 2 of 5.
+// Tutor onboarding - step 2 of 5.
 
 export default function BecomeTutorSubjectsPage() {
   const router = useRouter();

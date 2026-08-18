@@ -1,7 +1,7 @@
 import { apiFetch, Envelope } from "@/lib/api";
 import type { Order } from "@/features/bookings/types";
 
-// Admin console API — all endpoints require the session cookie with an
+// Admin console API - all endpoints require the session cookie with an
 // ACADEMIC_ADMIN / SUPER_ADMIN role (enforced server-side).
 
 export type AdminStats = {
