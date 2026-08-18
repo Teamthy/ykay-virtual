@@ -6,6 +6,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { colors } from "@/src/lib/theme";
 import { setUnauthorizedHandler } from "@/src/lib/api";
 import { parseTarget, openNotification } from "@/src/lib/deeplink";
+import { checkForUpdates } from "@/src/lib/updates";
 
 // Configure push notifications: show a banner/alert while the app is open.
 Notifications.setNotificationHandler({
@@ -41,6 +42,13 @@ export default function RootLayout() {
       responseListener.current?.remove();
       responseListener.current = null;
     };
+  }, []);
+
+  // OTA updates: on launch, check for a newer JS bundle (published via
+  // `eas update`) and apply it. This means users get new features without
+  // reinstalling the app. No-op in dev builds (expo-updates is disabled).
+  useEffect(() => {
+    void checkForUpdates();
   }, []);
 
   return (
