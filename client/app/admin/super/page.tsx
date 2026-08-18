@@ -25,7 +25,10 @@ import {
   UserPlus,
   BookOpen,
   TrendingUp,
+  History,
+  ShieldAlert,
 } from "lucide-react";
+import { listAuditLogs } from "@/features/admin/api";
 
 // Super Admin control center — SUPER_ADMIN only. Academic admins see a
 // restricted notice; role grants are never self-serve (server-side only).
@@ -53,6 +56,13 @@ export default function SuperAdminPage() {
     queryFn: getAdminStats2,
     enabled: !!user && superAdmin,
     staleTime: 60_000,
+  });
+
+  const auditLogs = useQuery({
+    queryKey: ["admin", "audit"],
+    queryFn: () => listAuditLogs({ limit: 20 }),
+    enabled: !!user && superAdmin,
+    refetchInterval: 60_000,
   });
 
   if (isLoading) {
@@ -209,6 +219,49 @@ export default function SuperAdminPage() {
             );
           })}
         </div>
+      </section>
+
+      {/* Recent audit trail */}
+      <section className="rounded-2xl border border-ink-100 bg-white p-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <History size={18} className="text-brand-green" />
+            <h2 className="font-display text-base font-bold text-brand-navy">Recent audit trail</h2>
+          </div>
+          <Link href="/admin/users" className="text-xs font-bold text-brand-blue hover:underline">
+            Manage users →
+          </Link>
+        </div>
+        <div className="mt-3 overflow-hidden rounded-xl border border-ink-100">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-ink-100 bg-ink-50/60 text-[11px] uppercase tracking-[0.12em] text-ink-500">
+              <tr>
+                <th className="px-3 py-2 font-bold">When</th>
+                <th className="px-3 py-2 font-bold">Action</th>
+                <th className="px-3 py-2 font-bold">Target</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink-100">
+              {(auditLogs.data ?? []).map((a) => (
+                <tr key={a.id}>
+                  <td className="whitespace-nowrap px-3 py-2 text-xs text-ink-500">
+                    {a.created_at ? new Date(a.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-700">
+                      <ShieldAlert size={11} /> {a.action}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-xs text-ink-600">{a.target_type}{a.target_id ? ` · ${a.target_id.slice(0, 8)}` : ""}</td>
+                </tr>
+              ))}
+              {(auditLogs.data ?? []).length === 0 && (
+                <tr><td colSpan={3} className="px-3 py-6 text-center text-xs text-ink-400">No audit entries yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-[11px] text-ink-400">Super-admin visible only. Logs money, access and role/status changes.</p>
       </section>
 
       {/* Revenue / growth note */}

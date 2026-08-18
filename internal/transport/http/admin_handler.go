@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"ykay-virtual/internal/domain/booking"
@@ -579,6 +580,27 @@ func (h *AdminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 		total = len(visible) // pagination reflects what this admin can see
 	}
 	pkg.WriteSuccess(w, http.StatusOK, users, p.Meta(int64(total)))
+}
+
+// ListAuditLogs — SUPER_ADMIN: recent audit entries (filter by action/target).
+func (h *AdminHandler) ListAuditLogs(w http.ResponseWriter, r *http.Request) {
+	if h.requireSuperAdmin(w, r) == nil {
+		return
+	}
+	action := r.URL.Query().Get("action")
+	targetType := r.URL.Query().Get("target_type")
+	limit := 100
+	if v := r.URL.Query().Get("limit"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			limit = n
+		}
+	}
+	logs, err := h.svc.ListRecentAudit(r.Context(), action, targetType, limit)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, logs, nil)
 }
 
 // ListRoles — SUPER_ADMIN: all assignable platform roles (admin UI dropdown).

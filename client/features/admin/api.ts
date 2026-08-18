@@ -327,3 +327,30 @@ export async function setUserRole(userId: string, role: string, grant: boolean):
 export async function setUserStatus(userId: string, status: string): Promise<void> {
   await apiFetch(`/admin/users/${userId}/status`, { method: "POST", body: JSON.stringify({ status }) });
 }
+
+// --- SUPER_ADMIN audit log viewer ----------------------------------------
+
+export type AuditLogRow = {
+  id: string;
+  actor_user_id?: string | null;
+  action: string;
+  target_type: string;
+  target_id?: string | null;
+  before_json?: string | null;
+  after_json?: string | null;
+  ip_address?: string | null;
+  created_at: string;
+};
+
+export async function listAuditLogs(params: {
+  action?: string;
+  target_type?: string;
+  limit?: number;
+}): Promise<AuditLogRow[]> {
+  const qs = new URLSearchParams();
+  if (params.action) qs.set("action", params.action);
+  if (params.target_type) qs.set("target_type", params.target_type);
+  qs.set("limit", String(params.limit ?? 100));
+  const res = await apiFetch<AuditLogRow[]>(`/admin/audit?${qs}`);
+  return res.data ?? [];
+}

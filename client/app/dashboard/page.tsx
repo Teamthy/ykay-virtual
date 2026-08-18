@@ -24,6 +24,7 @@ import {
   Compass,
   LayoutDashboard,
   Users,
+  FileText,
 } from "lucide-react";
 import { unreadCount } from "@/features/messaging/api";
 import { listProgressReports } from "@/features/learning/api";
@@ -238,6 +239,21 @@ export default function ParentDashboardPage() {
                   hint={attendance.data ? `${attendance.data.present} present of ${attendance.data.total}` : "link a learner"}
                   icon={<LineChart size={18} />}
                 />
+              </div>
+
+              {/* Quick actions */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { href: "/tutors", label: "Find a tutor", icon: <Users size={16} /> },
+                  { href: "/private-tuition", label: "Request tuition", icon: <Wallet size={16} /> },
+                  { href: "/cohorts", label: "Browse cohorts", icon: <CalendarDays size={16} /> },
+                  { href: "/dashboard?section=bookings", label: "My bookings", icon: <FileText size={16} /> },
+                ].map((a) => (
+                  <Link key={a.label} href={a.href} className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-brand-navy transition-all hover:border-brand-blue hover:shadow-lift">
+                    <span className="grid size-8 place-items-center rounded-lg bg-brand-blue-light text-brand-blue">{a.icon}</span>
+                    {a.label}
+                  </Link>
+                ))}
               </div>
 
               {nextLesson ? (

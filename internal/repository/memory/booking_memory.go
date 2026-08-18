@@ -139,4 +139,31 @@ func (m *AuditLogMemory) ListByTarget(_ context.Context, targetType string, targ
 	return out, nil
 }
 
+func (m *AuditLogMemory) ListRecent(_ context.Context, action, targetType string, limit int) ([]identity.AuditLog, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var all []identity.AuditLog
+	for _, l := range m.rows {
+		if action != "" && string(l.Action) != action {
+			continue
+		}
+		if targetType != "" && l.TargetType != targetType {
+			continue
+		}
+		all = append(all, *l)
+	}
+	// newest first
+	for i := 0; i < len(all); i++ {
+		for j := i + 1; j < len(all); j++ {
+			if all[j].CreatedAt.After(all[i].CreatedAt) {
+				all[i], all[j] = all[j], all[i]
+			}
+		}
+	}
+	if limit > 0 && len(all) > limit {
+		all = all[:limit]
+	}
+	return all, nil
+}
+
 var _ identity.AuditLogRepository = (*AuditLogMemory)(nil)

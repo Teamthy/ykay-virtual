@@ -32,6 +32,11 @@ export default function AdminUsersPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
+  const [tab, setTab] = useState<"all" | "admins">("all");
+
+  // Platform staff roles (admin accounts).
+  const isStaffRole = (roles: string[]) =>
+    roles.some((r) => ["SUPER_ADMIN", "ACADEMIC_ADMIN", "INSTITUTION_ADMIN"].includes(r));
 
   const pageSize = 25;
 
@@ -104,6 +109,24 @@ export default function AdminUsersPage() {
         subline="Search accounts, review roles, grant/revoke access and suspend accounts."
       />
 
+      {/* Tab filter */}
+      <div className="flex gap-2">
+        {([
+          { id: "all", label: "All users" },
+          { id: "admins", label: "Admins & staff" },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            onClick={() => { setTab(t.id); setPage(1); }}
+            className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
+              tab === t.id ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white p-4">
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-200 px-3 focus-within:border-brand-gold">
@@ -165,6 +188,7 @@ export default function AdminUsersPage() {
                   // SUPER_ADMIN accounts or the SUPER_ADMIN role, even if a
                   // stale payload ever contained them. Server already filters.
                   .filter((u) => superAdmin || !(u.roles ?? []).includes("SUPER_ADMIN"))
+                  .filter((u) => tab === "all" || isStaffRole(u.roles ?? []))
                   .map((u) => (
                     <UserRow
                       key={u.id}

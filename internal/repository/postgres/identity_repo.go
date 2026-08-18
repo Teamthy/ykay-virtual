@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"ykay-virtual/internal/domain"
@@ -60,6 +61,72 @@ func (r *AuditLogRepo) ArchiveOlderThan(ctx context.Context, cutoff time.Time, b
 }
 
 func NewAuditLogRepo(db TxQuerier) *AuditLogRepo { return &AuditLogRepo{db: db} }
+
+func (r *AuditLogRepo) ListRecent(ctx context.Context, action, targetType string, limit int) ([]identity.AuditLog, error) {
+	if limit < 1 || limit > 500 {
+		limit = 100
+	}
+	q := `SELECT id, actor_user_id, action, target_type, target_id, before_json, after_json, ip_address, request_id, trace_id, created_at
+	      FROM audit_logs`
+	args := []any{}
+	where := []string{}
+	arg := func(v any) string {
+		args = append(args, v)
+		return fmt.Sprintf("$%d", len(args))
+	}
+	if action != "" {
+		where = append(where, "action = "+arg(action))
+	}
+	if targetType != "" {
+		where = append(where, "target_type = "+arg(targetType))
+	}
+	if len(where) > 0 {
+		q += " WHERE " + strings.Join(where, " AND ")
+	}
+	q += " ORDER BY created_at DESC LIMIT " + arg(limit)
+	rows, err := r.db.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, fmt.Errorf("list recent audit logs: %w", err)
+	}
+	defer rows.Close()
+	out := []identity.AuditLog{}
+	for rows.Next() {
+		var l identity.AuditLog
+		var actorID, targetID sql.NullString
+		var before, after, ip, reqID, traceID sql.NullString
+		if err := rows.Scan(&l.ID, &actorID, &l.Action, &l.TargetType, &targetID, &before, &after,
+			&ip, &reqID, &traceID, &l.CreatedAt); err != nil {
+			return nil, err
+		}
+		if actorID.Valid {
+			if id, err := uuid.Parse(actorID.String); err == nil {
+				l.ActorUserID = &id
+			}
+		}
+		if targetID.Valid {
+			if id, err := uuid.Parse(targetID.String); err == nil {
+				l.TargetID = &id
+			}
+		}
+		if before.Valid {
+			l.BeforeJSON = &before.String
+		}
+		if after.Valid {
+			l.AfterJSON = &after.String
+		}
+		if ip.Valid {
+			l.IPAddress = &ip.String
+		}
+		if reqID.Valid {
+			l.RequestID = &reqID.String
+		}
+		if traceID.Valid {
+			l.TraceID = &traceID.String
+		}
+		out = append(out, l)
+	}
+	return out, rows.Err()
+}
 
 func (r *AuditLogRepo) Create(ctx context.Context, log *identity.AuditLog) error {
 	err := r.db.QueryRowContext(ctx, `

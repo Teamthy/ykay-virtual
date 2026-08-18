@@ -273,6 +273,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// SUPER_ADMIN — user/role management
 	mux.HandleFunc("GET "+v1+"/admin/users", handlers.Admin.ListUsers)
 	mux.HandleFunc("GET "+v1+"/admin/users/roles", handlers.Admin.ListRoles)
+	mux.HandleFunc("GET "+v1+"/admin/audit", handlers.Admin.ListAuditLogs)
 	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/role", handlers.Admin.SetUserRole)
 	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/status", handlers.Admin.SetUserStatus)
 	mux.HandleFunc("GET "+v1+"/admin/stats/overview2", handlers.Admin.Stats2)

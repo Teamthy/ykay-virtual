@@ -18,7 +18,8 @@ import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/ui/stat-card";
-import { LineChart, FileText, CheckCircle2 } from "lucide-react";
+import { LineChart, FileText, CheckCircle2, BookOpen, ClipboardList, GraduationCap } from "lucide-react";
+import Link from "next/link";
 
 // Student portal (working-doc §9): side nav, Today panel, progress,
 // assignments with submission, resources, announcements, support.
@@ -127,6 +128,21 @@ export default function StudentDashboardPage() {
                 <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
                 <StatCard label="Assignments" value={`${submittedIds.size}/${assignments.data?.length ?? 0}`} hint="submitted" icon={<FileText size={18} />} />
                 <StatCard label="Done" value={past.length} hint="lessons" icon={<CheckCircle2 size={18} />} />
+              </div>
+
+              {/* Quick learning actions */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { href: "/lms", label: "My courses", icon: <BookOpen size={16} /> },
+                  { href: "/lms/courses", label: "Materials", icon: <FileText size={16} /> },
+                  { href: "/lms", label: "Assignments", icon: <ClipboardList size={16} /> },
+                  { href: "/lms", label: "Quizzes", icon: <GraduationCap size={16} /> },
+                ].map((a) => (
+                  <Link key={a.label} href={a.href} className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-brand-navy transition-all hover:border-brand-blue hover:shadow-lift">
+                    <span className="grid size-8 place-items-center rounded-lg bg-brand-blue-light text-brand-blue">{a.icon}</span>
+                    {a.label}
+                  </Link>
+                ))}
               </div>
 
               {/* Today */}

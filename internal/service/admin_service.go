@@ -43,6 +43,7 @@ type AdminService struct {
 	payouts        payment.PayoutRepository
 	users          identity.UserRepository
 	roles          identity.RoleRepository
+	auditLogs      identity.AuditLogRepository
 	audit          identity.AuditService
 	now            func() time.Time
 }
@@ -53,6 +54,21 @@ func (s *AdminService) WithUsers(users identity.UserRepository, roles identity.R
 	s.users = users
 	s.roles = roles
 	return s
+}
+
+// WithAuditLogs wires the audit-log reader for the super-admin audit viewer.
+func (s *AdminService) WithAuditLogs(repo identity.AuditLogRepository) *AdminService {
+	s.auditLogs = repo
+	return s
+}
+
+// ListRecentAudit returns the most recent audit entries, optionally filtered
+// by action/targetType (super-admin audit viewer).
+func (s *AdminService) ListRecentAudit(ctx context.Context, action, targetType string, limit int) ([]identity.AuditLog, error) {
+	if s.auditLogs == nil {
+		return nil, errors.New("audit log store unavailable")
+	}
+	return s.auditLogs.ListRecent(ctx, action, targetType, limit)
 }
 
 // ListUsers returns a paginated, filtered list of platform users with their
