@@ -88,8 +88,8 @@ export default function Utme2026Page() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
 
-      {/* ── Prep hero (Preline-style): gradient + blockquote + form card ── */}
-      <section className="relative bg-gradient-to-bl from-[#F3E8FF] via-transparent to-[#FFF7E4]">
+      {/* ── Prep hero: brand gradient + blockquote + form card ── */}
+      <section className="relative bg-gradient-to-bl from-[#E9F4EB] via-transparent to-[#FFF7E4]">
         <div className="mx-auto max-w-[1400px] px-6 py-10 sm:px-6 md:px-10 lg:py-14">
           <div className="grid items-center gap-8 md:grid-cols-2 lg:gap-12">
             <div>

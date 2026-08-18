@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { INPUT_CLS } from "@/components/ui/password-input";
 import {
   listAdminOrders,
@@ -82,7 +83,9 @@ export default function AdminPaymentsPage() {
             <h2 className="font-display text-lg font-bold text-brand-navy">Orders</h2>
           </div>
           {orders.isLoading ? (
-            <p className="py-10 text-center text-sm text-ink-400">Loading orders…</p>
+            <div className="space-y-2 p-4">
+              {[0, 1, 2].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+            </div>
           ) : (orders.data?.orders ?? []).length === 0 ? (
             <p className="py-10 text-center text-sm text-ink-400">No orders yet.</p>
           ) : (

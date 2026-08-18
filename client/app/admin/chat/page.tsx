@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   listAllChatThreads,
   getChatAnalytics,
@@ -120,7 +121,9 @@ export default function AdminChatPage() {
         {/* Thread list */}
         <aside className="h-fit rounded-2xl border border-ink-100 bg-white p-3 shadow-sm">
           {threads.isLoading ? (
-            <p className="p-4 text-center text-sm text-ink-400">Loading…</p>
+            <div className="space-y-2 p-1">
+              {[0, 1, 2].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+            </div>
           ) : (threads.data ?? []).length === 0 ? (
             <p className="p-4 text-center text-sm text-ink-400">No chat threads yet.</p>
           ) : (
@@ -183,7 +186,9 @@ export default function AdminChatPage() {
             {!activeId ? (
               <p className="grid flex-1 place-items-center text-center text-sm text-ink-400">Select a thread from the inbox.</p>
             ) : messages.isLoading ? (
-              <p className="py-10 text-center text-sm text-ink-400">Loading transcript…</p>
+              <div className="space-y-3">
+                {[0, 1, 2].map((i) => <Skeleton key={i} className="h-10 w-2/3" />)}
+              </div>
             ) : (
               <>
                 {(messages.data ?? []).map((m) => (
