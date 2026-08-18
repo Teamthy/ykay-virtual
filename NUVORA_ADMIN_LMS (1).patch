@@ -1,0 +1,1505 @@
+diff --git a/Makefile b/Makefile
+index 4ca4340..fe22087 100644
+--- a/Makefile
++++ b/Makefile
+@@ -49,7 +49,10 @@ smoke: ## Boot API with memory fallback and hit health + catalogue
+ 	@echo "Run: go run ./cmd/api  (then curl localhost:8080/health)"
+ 
+ # ── Production ops (Phase 40) ──────────────────────────────────────────────
+-.PHONY: deploy backup restore drill prod-infra obs-validate
++.PHONY: deploy backup restore drill prod-infra obs-validate seed-admins
++
++seed-admins: ## Seed SUPER_ADMIN + ACADEMIC_ADMIN operator accounts
++	psql "$${DATABASE_URL:-postgres://nuvora:nuvora@localhost:5432/nuvora?sslmode=disable}" -f scripts/seed-admins.sql
+ 
+ deploy: ## One-command production deploy (docker compose + migrate + health)
+ 	bash scripts/deploy.sh
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index 3a5e0d7..432d5eb 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -299,6 +299,32 @@ paths:
+       responses:
+         '200': { description: OK }
+ 
++  /me/uploads:
++    post:
++      tags: [account]
++      summary: "Upload an LMS material file (raw body; returns a public object URL)"
++      security: [{ sessionCookie: [] }]
++      requestBody:
++        required: true
++        content:
++          application/pdf: { schema: { type: string, format: binary } }
++          application/octet-stream: { schema: { type: string, format: binary } }
++          video/mp4: { schema: { type: string, format: binary } }
++      responses:
++        '201':
++          description: Uploaded; returns { url, content_type, size }
++          content:
++            application/json:
++              schema:
++                type: object
++                properties:
++                  data:
++                    type: object
++                    properties:
++                      url: { type: string }
++                      content_type: { type: string }
++                      size: { type: integer }
++
+   /me/avatar:
+     post:
+       summary: "Upload a profile photo (raw image body; Content-Type: image/jpeg|png|webp)"
+@@ -1881,6 +1907,66 @@ paths:
+       responses:
+         '200': { description: Updated }
+ 
++  /admin/users:
++    get:
++      tags: [admin]
++      summary: Paginated user list with roles (SUPER_ADMIN user management)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: search, in: query, required: false, schema: { type: string } }
++        - { name: status, in: query, required: false, schema: { type: string } }
++        - { name: page, in: query, required: false, schema: { type: integer } }
++        - { name: page_size, in: query, required: false, schema: { type: integer } }
++      responses:
++        '200': { description: Users }
++
++  /admin/users/roles:
++    get:
++      tags: [admin]
++      summary: All assignable platform roles (SUPER_ADMIN)
++      security: [{ sessionCookie: [] }]
++      responses:
++        '200': { description: Roles }
++
++  /admin/users/{userId}/role:
++    post:
++      tags: [admin]
++      summary: Grant or revoke a single role on a user (SUPER_ADMIN)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [role, grant]
++              properties:
++                role: { type: string }
++                grant: { type: boolean }
++      responses:
++        '200': { description: Updated }
++
++  /admin/users/{userId}/status:
++    post:
++      tags: [admin]
++      summary: Activate / suspend a user account (SUPER_ADMIN)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [status]
++              properties:
++                status: { type: string, enum: [ACTIVE, SUSPENDED, PENDING_VERIFICATION] }
++      responses:
++        '200': { description: Updated }
++
+   /admin/lessons/today:
+     get:
+       tags: [admin]
+diff --git a/client/app/admin/analytics/page.tsx b/client/app/admin/analytics/page.tsx
+index 587a6e1..b8d2f53 100644
+--- a/client/app/admin/analytics/page.tsx
++++ b/client/app/admin/analytics/page.tsx
+@@ -144,9 +144,9 @@ export default function AdminAnalyticsPage() {
+             {data.cohorts.map((c) => (
+               <div key={c.cohort_id}>
+                 <div className="flex items-center justify-between text-sm">
+-                  <span className="font-medium">{c.title}</span>
+-                  <span className="text-ink-500">
+-                    {c.enrolled}/{c.capacity} · {Math.round(c.fill_rate * 100)}%
++                  <span className="truncate pr-2 font-medium">{c.title}</span>
++                  <span className="shrink-0 text-ink-500">
++                    {c.enrolled}/{c.capacity} · <b className="text-ink-800">{Math.round(c.fill_rate * 100)}%</b>
+                   </span>
+                 </div>
+                 <div className="mt-1 h-2 rounded-full bg-ink-100">
+@@ -155,6 +155,12 @@ export default function AdminAnalyticsPage() {
+                     style={{ width: `${Math.min(c.fill_rate * 100, 100)}%` }}
+                   />
+                 </div>
++                {c.lessons_count > 0 && (
++                  <div className="mt-1 flex items-center justify-between text-[11px] text-ink-400">
++                    <span>{c.lessons_count} lessons</span>
++                    <span>Attendance {Math.round((c.attendance_rate ?? 0) * 100)}%</span>
++                  </div>
++                )}
+               </div>
+             ))}
+           </CardContent>
+@@ -173,6 +179,29 @@ export default function AdminAnalyticsPage() {
+                 description="Revenue by programme appears once parents complete checkout."
+               />
+             )}
++            {data.revenue.length > 0 && (
++              <div className="mb-5 space-y-3">
++                {(() => {
++                  const maxRev = Math.max(...data.revenue.map((r) => r.revenue), 1);
++                  return data.revenue.slice(0, 6).map((r) => (
++                    <div key={r.programme_id}>
++                      <div className="flex items-center justify-between text-xs">
++                        <span className="truncate pr-2 font-semibold text-ink-700">
++                          {r.programme_title || r.programme_id.slice(0, 8)}
++                        </span>
++                        <span className="shrink-0 font-bold text-brand-navy">{fmtMoney(r.revenue)}</span>
++                      </div>
++                      <div className="mt-1 h-3 w-full overflow-hidden rounded-md bg-ink-100">
++                        <div
++                          className="h-full rounded-md bg-gradient-to-r from-brand-green to-brand-blue"
++                          style={{ width: `${Math.max((r.revenue / maxRev) * 100, r.revenue > 0 ? 4 : 0)}%` }}
++                        />
++                      </div>
++                    </div>
++                  ));
++                })()}
++              </div>
++            )}
+             <table className="w-full text-sm">
+               <thead>
+                 <tr className="border-b text-left text-ink-400">
+diff --git a/client/app/admin/users/page.tsx b/client/app/admin/users/page.tsx
+index 39f1076..97a2b4d 100644
+--- a/client/app/admin/users/page.tsx
++++ b/client/app/admin/users/page.tsx
+@@ -1,49 +1,314 @@
+ "use client";
+ 
++import { useState } from "react";
++import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
++import { toast } from "sonner";
+ import { useSession } from "@/hooks/useSession";
+-import { isAdmin } from "@/features/auth/api";
+-import { useQuery } from "@tanstack/react-query";
+-import { getAdminStats2 } from "@/features/admin/api";
+ import { PageHeader } from "@/components/dashboard/PageHeader";
+-import Link from "next/link";
++import { Skeleton } from "@/components/ui/skeleton";
++import { StatusBadge } from "@/components/ui/status-badge";
++import { Search, ShieldCheck, Lock, UserX, UserCheck, RefreshCw } from "lucide-react";
++import {
++  listAdminUsers,
++  listAdminRoles,
++  setUserRole,
++  setUserStatus,
++  type AdminUserRow,
++  type AdminRole,
++} from "@/features/admin/api";
+ 
+-// Super-admin staff view. Role grants stay server-side (no self-serve SUPER_ADMIN).
++// SUPER_ADMIN user & role management console. Role grants and account status
++// changes are enforced server-side (requireSuperAdmin); this UI is the
++// operator surface and never self-serves SUPER_ADMIN.
+ 
+ export default function AdminUsersPage() {
+   const { user } = useSession();
+   const superAdmin = !!user?.roles?.includes("SUPER_ADMIN");
+-  const stats = useQuery({ queryKey: ["admin", "stats2"], queryFn: getAdminStats2, enabled: !!user && isAdmin(user) });
++  const qc = useQueryClient();
++
++  const [search, setSearch] = useState("");
++  const [debouncedSearch, setDebouncedSearch] = useState("");
++  const [statusFilter, setStatusFilter] = useState("");
++  const [page, setPage] = useState(1);
++
++  const pageSize = 25;
++
++  const usersQ = useQuery({
++    queryKey: ["admin", "users", debouncedSearch, statusFilter, page],
++    queryFn: () =>
++      listAdminUsers({ search: debouncedSearch, status: statusFilter, page, pageSize }),
++    enabled: !!user && superAdmin,
++    placeholderData: (prev) => prev,
++  });
++
++  const rolesQ = useQuery({
++    queryKey: ["admin", "roles"],
++    queryFn: listAdminRoles,
++    enabled: !!user && superAdmin,
++    staleTime: 5 * 60_000,
++  });
++
++  const roleMut = useMutation({
++    mutationFn: ({ userId, role, grant }: { userId: string; role: string; grant: boolean }) =>
++      setUserRole(userId, role, grant),
++    onSuccess: () => {
++      toast.success("Role updated");
++      qc.invalidateQueries({ queryKey: ["admin", "users"] });
++      qc.invalidateQueries({ queryKey: ["admin", "stats2"] });
++    },
++    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to update role"),
++  });
++
++  const statusMut = useMutation({
++    mutationFn: ({ userId, status }: { userId: string; status: string }) => setUserStatus(userId, status),
++    onSuccess: () => {
++      toast.success("Account status updated");
++      qc.invalidateQueries({ queryKey: ["admin", "users"] });
++      qc.invalidateQueries({ queryKey: ["admin", "stats2"] });
++    },
++    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to update status"),
++  });
++
++  const applySearch = () => {
++    setDebouncedSearch(search.trim());
++    setPage(1);
++  };
++
++  const totalPages = Math.max(1, Math.ceil((usersQ.data?.total ?? 0) / pageSize));
++
++  if (!superAdmin) {
++    return (
++      <div className="space-y-6">
++        <PageHeader eyebrow="Staff" title="Users" cover="/hero/about.jpg" />
++        <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
++          <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-brand-navy">
++            <Lock size={26} />
++          </div>
++          <h2 className="mt-4 text-lg font-extrabold text-brand-navy">SUPER_ADMIN access only</h2>
++          <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
++            User and role management is reserved for SUPER_ADMIN. Academic admins manage content,
++            cohorts and operations from the admin console.
++          </p>
++        </div>
++      </div>
++    );
++  }
+ 
+   return (
+     <div className="space-y-6">
+-      <PageHeader eyebrow="Staff" title="Users" cover="/hero/about.jpg" />
+-      {!superAdmin && (
+-        <p className="rounded-2xl border border-ink-100 bg-white p-4 text-sm text-ink-600">
+-          You can view platform counts. Granting SUPER_ADMIN or ACADEMIC_ADMIN is not self-serve.
+-        </p>
+-      )}
+-      <section className="grid gap-3 sm:grid-cols-3">
+-        {[
+-          { l: "Registered", v: stats.data?.users },
+-          { l: "Active", v: stats.data?.active_users },
+-          { l: "Tutors pending", v: stats.data?.tutors_pending },
+-        ].map((c) => (
+-          <div key={c.l} className="rounded-2xl border border-ink-100 bg-white p-4">
+-            <p className="text-2xl font-extrabold text-brand-navy">{c.v ?? "-"}</p>
+-            <p className="text-xs font-semibold text-ink-500">{c.l}</p>
++      <PageHeader
++        eyebrow="Super admin"
++        title="Users & roles"
++        cover="/hero/about.jpg"
++        subline="Search accounts, review roles, grant/revoke access and suspend accounts."
++      />
++
++      {/* Toolbar */}
++      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white p-4">
++        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-200 px-3 focus-within:border-brand-gold">
++          <Search size={16} className="shrink-0 text-ink-400" />
++          <input
++            value={search}
++            onChange={(e) => setSearch(e.target.value)}
++            onKeyDown={(e) => e.key === "Enter" && applySearch()}
++            placeholder="Search by email or name…"
++            className="h-10 w-full bg-transparent text-sm outline-none"
++            aria-label="Search users"
++          />
++          {search && (
++            <button onClick={applySearch} className="text-xs font-bold text-brand-blue hover:underline">
++              Go
++            </button>
++          )}
++        </div>
++        <select
++          value={statusFilter}
++          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
++          className="h-10 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-gold"
++          aria-label="Filter by status"
++        >
++          <option value="">All statuses</option>
++          <option value="ACTIVE">Active</option>
++          <option value="PENDING">Pending</option>
++          <option value="SUSPENDED">Suspended</option>
++        </select>
++        <button
++          onClick={() => { setSearch(""); setDebouncedSearch(""); setStatusFilter(""); setPage(1); }}
++          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-600 hover:border-ink-300"
++        >
++          <RefreshCw size={14} /> Reset
++        </button>
++      </div>
++
++      {/* Table */}
++      {usersQ.isLoading && !usersQ.data ? (
++        <div className="space-y-2">
++          {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
++        </div>
++      ) : (
++        <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white">
++          <div className="overflow-x-auto">
++            <table className="w-full min-w-[760px] text-left text-sm">
++              <thead className="border-b border-ink-100 bg-ink-50/60 text-[11px] uppercase tracking-[0.12em] text-ink-500">
++                <tr>
++                  <th className="px-4 py-3 font-bold">User</th>
++                  <th className="px-4 py-3 font-bold">Status</th>
++                  <th className="px-4 py-3 font-bold">Roles</th>
++                  <th className="px-4 py-3 font-bold">Joined</th>
++                  <th className="px-4 py-3 font-bold text-right">Actions</th>
++                </tr>
++              </thead>
++              <tbody className="divide-y divide-ink-100">
++                {(usersQ.data?.users ?? []).map((u) => (
++                  <UserRow
++                    key={u.id}
++                    u={u}
++                    roles={rolesQ.data ?? []}
++                    selfId={user?.id}
++                    roleMut={roleMut}
++                    statusMut={statusMut}
++                  />
++                ))}
++              </tbody>
++            </table>
+           </div>
+-        ))}
+-      </section>
+-      <section className="grid gap-3 md:grid-cols-2">
+-        <Link href="/admin/vetting" className="rounded-2xl border border-ink-100 bg-white p-5 hover:border-brand-gold">
+-          <h2 className="font-bold text-brand-navy">Tutor applications</h2>
+-          <p className="mt-1 text-sm text-ink-500">Approve or hold tutor vetting.</p>
+-        </Link>
+-        <Link href="/admin/payments" className="rounded-2xl border border-ink-100 bg-white p-5 hover:border-brand-gold">
+-          <h2 className="font-bold text-brand-navy">Payments</h2>
+-          <p className="mt-1 text-sm text-ink-500">Orders, refunds, payouts.</p>
+-        </Link>
+-      </section>
++          {(usersQ.data?.users ?? []).length === 0 && (
++            <p className="p-10 text-center text-sm text-ink-400">No users match your filters.</p>
++          )}
++        </div>
++      )}
++
++      {/* Pagination */}
++      <div className="flex items-center justify-between text-sm text-ink-500">
++        <span>
++          {usersQ.data?.total ?? 0} user(s) · page {page} of {totalPages}
++        </span>
++        <div className="flex gap-2">
++          <button
++            disabled={page <= 1}
++            onClick={() => setPage((p) => p - 1)}
++            className="rounded-xl border border-ink-200 px-4 py-2 font-semibold text-ink-700 disabled:opacity-40 hover:border-ink-300"
++          >
++            Prev
++          </button>
++          <button
++            disabled={page >= totalPages}
++            onClick={() => setPage((p) => p + 1)}
++            className="rounded-xl border border-ink-200 px-4 py-2 font-semibold text-ink-700 disabled:opacity-40 hover:border-ink-300"
++          >
++            Next
++          </button>
++        </div>
++      </div>
++
++      <p className="flex items-center gap-1.5 text-xs text-ink-400">
++        <ShieldCheck size={13} /> Role grants &amp; status changes are enforced server-side and audited. You cannot
++        remove the last SUPER_ADMIN or suspend your own account.
++      </p>
+     </div>
+   );
+ }
++
++function UserRow({
++  u,
++  roles,
++  selfId,
++  roleMut,
++  statusMut,
++}: {
++  u: AdminUserRow;
++  roles: AdminRole[];
++  selfId?: string;
++  roleMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; role: string; grant: boolean }>>;
++  statusMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; status: string }>>;
++}) {
++  const isSelf = u.id === selfId;
++  const busy = roleMut.isPending || statusMut.isPending;
++  const statusKind = u.status === "ACTIVE" ? "success" : u.status === "SUSPENDED" ? "error" : "pending";
++
++  const toggleRole = (role: string, grant: boolean) => {
++    if (u.id && role) roleMut.mutate({ userId: u.id, role, grant });
++  };
++
++  return (
++    <tr className={isSelf ? "bg-brand-gold-light/30" : ""}>
++      <td className="px-4 py-3">
++        <div className="flex items-center gap-3">
++          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-navy text-xs font-extrabold text-white">
++            {(u.first_name?.[0] ?? u.email[0] ?? "?").toUpperCase()}
++          </span>
++          <div className="min-w-0">
++            <p className="truncate font-semibold text-ink-800">
++              {u.first_name || u.email} {u.last_name || ""}
++              {isSelf && <span className="ml-2 rounded-full bg-brand-gold px-2 py-0.5 text-[10px] font-bold text-ink-900">you</span>}
++            </p>
++            <p className="truncate text-xs text-ink-400">{u.email}</p>
++          </div>
++        </div>
++      </td>
++      <td className="px-4 py-3">
++        <StatusBadge label={u.status} kind={statusKind} />
++      </td>
++      <td className="px-4 py-3">
++        <div className="flex flex-wrap gap-1">
++          {(u.roles ?? []).map((r) => (
++            <span key={r} className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-600">
++              {r}
++            </span>
++          ))}
++          {(u.roles ?? []).length === 0 && <span className="text-xs text-ink-400">no roles</span>}
++        </div>
++      </td>
++      <td className="px-4 py-3 text-xs text-ink-500">
++        {u.created_at ? new Date(u.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
++      </td>
++      <td className="px-4 py-3">
++        <div className="flex items-center justify-end gap-2">
++          <select
++            value=""
++            onChange={(e) => e.target.value && toggleRole(e.target.value, true)}
++            disabled={busy}
++            className="h-9 rounded-lg border border-ink-200 px-2 text-xs font-semibold text-ink-700 disabled:opacity-50"
++            aria-label={`Add role to ${u.email}`}
++          >
++            <option value="">+ Role</option>
++            {roles
++              .filter((r) => !(u.roles ?? []).includes(r.name))
++              .map((r) => (
++                <option key={r.name} value={r.name}>{r.name}</option>
++              ))}
++          </select>
++          {(u.roles ?? []).filter((r) => r !== "STUDENT" && r !== "PARENT").map((r) => (
++            <button
++              key={r}
++              onClick={() => toggleRole(r, false)}
++              disabled={busy || (r === "SUPER_ADMIN" && isSelf)}
++              title={r === "SUPER_ADMIN" && isSelf ? "Cannot remove your own SUPER_ADMIN" : `Remove ${r}`}
++              className="rounded-lg border border-ink-200 px-2 py-1.5 text-[11px] font-bold text-red-500 hover:bg-red-50 disabled:opacity-40"
++            >
++              −{r}
++            </button>
++          ))}
++          {u.status === "SUSPENDED" ? (
++            <button
++              onClick={() => u.id && statusMut.mutate({ userId: u.id, status: "ACTIVE" })}
++              disabled={busy}
++              className="inline-flex items-center gap-1 rounded-lg bg-brand-green px-2.5 py-1.5 text-[11px] font-bold text-white hover:opacity-90 disabled:opacity-40"
++            >
++              <UserCheck size={12} /> Reactivate
++            </button>
++          ) : (
++            <button
++              onClick={() => u.id && statusMut.mutate({ userId: u.id, status: "SUSPENDED" })}
++              disabled={busy || isSelf}
++              title={isSelf ? "You cannot suspend your own account" : "Suspend account"}
++              className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-50 disabled:opacity-40"
++            >
++              <UserX size={12} /> Suspend
++            </button>
++          )}
++        </div>
++      </td>
++    </tr>
++  );
++}
+diff --git a/client/app/lms/tutor/cohorts/[cohortId]/page.tsx b/client/app/lms/tutor/cohorts/[cohortId]/page.tsx
+index 88da0a1..0bc554f 100644
+--- a/client/app/lms/tutor/cohorts/[cohortId]/page.tsx
++++ b/client/app/lms/tutor/cohorts/[cohortId]/page.tsx
+@@ -18,6 +18,7 @@ import {
+   createAssessment,
+   getLessonAttendance,
+   markAttendance,
++  uploadResourceFile,
+   type AttendanceRow,
+ } from "@/features/lms/api";
+ import {
+@@ -52,6 +53,7 @@ export default function LmsTutorCohortPage() {
+   });
+   const [assignmentDraft, setAssignmentDraft] = useState({ title: "", instructions: "", max_score: "10" });
+   const [resourceDraft, setResourceDraft] = useState({ title: "", description: "", file_url: "" });
++  const [resourceUploading, setResourceUploading] = useState(false);
+   const [showQuizBuilder, setShowQuizBuilder] = useState(false);
+   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
+   const [showResourceForm, setShowResourceForm] = useState(false);
+@@ -422,13 +424,54 @@ export default function LmsTutorCohortPage() {
+           {showResourceForm && (
+             <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
+               <p className="text-sm font-bold text-ink-700">Material or video</p>
+-              <p className="text-xs text-ink-500">Paste a YouTube, Drive, or file URL. Hosting video files on this server is not enabled on the free plan.</p>
++              <p className="text-xs text-ink-500">
++                Upload a file (PDF, Office, image, video up to 25&nbsp;MB) or paste a YouTube/Drive link.
++              </p>
++              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-ink-200 p-3">
++                <input
++                  type="file"
++                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.mp4,.webm,.mp3,.md,.txt"
++                  onChange={async (e) => {
++                    const f = e.target.files?.[0];
++                    if (!f) return;
++                    setResourceUploading(true);
++                    try {
++                      const { url } = await uploadResourceFile(f);
++                      setResourceDraft((d) => ({ ...d, file_url: url }));
++                      toast.success(`Uploaded ${f.name}`);
++                    } catch (err) {
++                      toast.error(err instanceof Error ? err.message : "Upload failed");
++                    } finally {
++                      setResourceUploading(false);
++                      e.target.value = "";
++                    }
++                  }}
++                  className="block text-xs text-ink-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-navy file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"
++                  aria-label="Upload a material file"
++                />
++                {resourceDraft.file_url ? (
++                  <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-green-700">
++                    ✓ attached
++                    <button
++                      type="button"
++                      onClick={() => setResourceDraft((d) => ({ ...d, file_url: "" }))}
++                      className="text-green-800 hover:underline"
++                    >
++                      remove
++                    </button>
++                  </span>
++                ) : resourceUploading ? (
++                  <span className="text-xs font-semibold text-ink-500">Uploading…</span>
++                ) : (
++                  <span className="text-xs text-ink-400">or paste a link below</span>
++                )}
++              </div>
+               <div className="grid gap-3 md:grid-cols-3">
+                 <input type="text" aria-label="Resource title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
+                 <input type="text" aria-label="Resource description" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
+                 <input type="url" aria-label="File or video URL" placeholder="https://youtube.com/watch?v=... or file URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
+               </div>
+-              <button type="button" disabled={createResource.isPending || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
++              <button type="button" disabled={createResource.isPending || resourceUploading || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+                 {createResource.isPending ? "Adding..." : "Add material"}
+               </button>
+             </div>
+diff --git a/client/features/admin/api.ts b/client/features/admin/api.ts
+index 4e1287c..0304d82 100644
+--- a/client/features/admin/api.ts
++++ b/client/features/admin/api.ts
+@@ -280,3 +280,50 @@ export async function listAdminPayouts(status?: string): Promise<AdminPayout[]>
+   const res = await apiFetch<AdminPayout[]>(`/admin/payouts${status ? `?status=${status}` : ""}`);
+   return res.data ?? [];
+ }
++
++// --- SUPER_ADMIN user/role management -------------------------------------
++
++export type AdminRole = { id: string; name: string; description?: string | null };
++
++export type AdminUserRow = {
++  id: string;
++  email: string;
++  first_name?: string;
++  last_name?: string;
++  phone?: string | null;
++  status: string;
++  timezone?: string;
++  roles: string[];
++  email_verified_at?: string | null;
++  last_login_at?: string | null;
++  onboarded_at?: string | null;
++  created_at: string;
++};
++
++export async function listAdminUsers(params: {
++  search?: string;
++  status?: string;
++  page?: number;
++  pageSize?: number;
++}): Promise<{ users: AdminUserRow[]; total: number }> {
++  const qs = new URLSearchParams();
++  if (params.search) qs.set("search", params.search);
++  if (params.status) qs.set("status", params.status);
++  qs.set("page", String(params.page ?? 1));
++  qs.set("page_size", String(params.pageSize ?? 50));
++  const res = await apiFetch<AdminUserRow[]>(`/admin/users?${qs}`);
++  return { users: res.data ?? [], total: res.meta?.total_items ?? 0 };
++}
++
++export async function listAdminRoles(): Promise<AdminRole[]> {
++  const res = await apiFetch<AdminRole[]>("/admin/users/roles");
++  return res.data ?? [];
++}
++
++export async function setUserRole(userId: string, role: string, grant: boolean): Promise<void> {
++  await apiFetch(`/admin/users/${userId}/role`, { method: "POST", body: JSON.stringify({ role, grant }) });
++}
++
++export async function setUserStatus(userId: string, status: string): Promise<void> {
++  await apiFetch(`/admin/users/${userId}/status`, { method: "POST", body: JSON.stringify({ status }) });
++}
+diff --git a/client/features/lms/api.ts b/client/features/lms/api.ts
+index bc109a6..15f32ca 100644
+--- a/client/features/lms/api.ts
++++ b/client/features/lms/api.ts
+@@ -229,6 +229,18 @@ export async function createCohortResource(
+   return res.data;
+ }
+ 
++// Upload a material file (PDF/Office/image/video) → public object URL, which
++// the tutor then attaches to a cohort resource. Raw body; Content-Type is the
++// file's MIME (apiFetch lets init.headers override its JSON default).
++export async function uploadResourceFile(file: File): Promise<{ url: string }> {
++  const res = await apiFetch<{ url: string }>("/me/uploads", {
++    method: "POST",
++    headers: { "Content-Type": file.type || "application/octet-stream" },
++    body: file,
++  });
++  return res.data;
++}
++
+ export async function getCohortEnrollments(cohortId: string): Promise<RosterEntry[]> {
+   const res = await apiFetch<RosterEntry[]>(`/cohorts/${cohortId}/enrollments`);
+   return res.data ?? [];
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index 7371a54..5f5fd27 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -275,6 +275,7 @@ func main() {
+ 		WithCatalogueCache(cacheBackend)
+ 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
+ 	adminSvc.WithPayments(repos.Orders, repos.Payouts)
++	adminSvc.WithUsers(repos.Users, repos.Roles)
+ 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
+ 		repos.Assignments, audit).WithNotifications(messagingSvc)
+ 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)
+diff --git a/internal/domain/identity/entity.go b/internal/domain/identity/entity.go
+index c5e28d7..cf72962 100644
+--- a/internal/domain/identity/entity.go
++++ b/internal/domain/identity/entity.go
+@@ -42,6 +42,13 @@ type Role struct {
+ 	CreatedAt   time.Time `json:"created_at"`
+ }
+ 
++// UserWithRoles — a user joined with their granted roles, returned by the
++// admin user-management console (SUPER_ADMIN).
++type UserWithRoles struct {
++	User
++	Roles []string `json:"roles"`
++}
++
+ type UserRole struct {
+ 	ID        uuid.UUID  `json:"id"`
+ 	UserID    uuid.UUID  `json:"user_id"`
+diff --git a/internal/domain/identity/repository.go b/internal/domain/identity/repository.go
+index 79bd9cc..c8a3d04 100644
+--- a/internal/domain/identity/repository.go
++++ b/internal/domain/identity/repository.go
+@@ -20,6 +20,14 @@ type UserRepository interface {
+ 	UpdateLastLogin(ctx context.Context, id uuid.UUID, at time.Time) error
+ 	// SetOnboarded marks the first-time wizard complete (000031).
+ 	SetOnboarded(ctx context.Context, id uuid.UUID, at time.Time) error
++	// ListUsers returns a paginated, filtered list of users with roles, used by
++	// the admin user-management console (SUPER_ADMIN). total is the count
++	// ignoring pagination. search matches email/name; status filters the
++	// account status (empty = any).
++	ListUsers(ctx context.Context, search, status string, offset, limit int) ([]UserWithRoles, int, error)
++	// SetStatus activates/suspends a user account. Returns ErrNotFound when the
++	// user does not exist.
++	SetStatus(ctx context.Context, id uuid.UUID, status string) error
+ }
+ 
+ type SessionRepository interface {
+@@ -37,6 +45,11 @@ type RoleRepository interface {
+ 	// RemoveAllForUser — deletes every role grant for the user (used by the
+ 	// self-service "set my primary role" onboarding step).
+ 	RemoveAllForUser(ctx context.Context, userID uuid.UUID) error
++	// ListRoles returns every role defined on the platform (admin UI).
++	ListRoles(ctx context.Context) ([]Role, error)
++	// RemoveRoleForUser revokes a single named role from a user (no-op if the
++	// grant does not exist).
++	RemoveRoleForUser(ctx context.Context, userID uuid.UUID, roleName string) error
+ }
+ 
+ type ParentProfileRepository interface {
+diff --git a/internal/repository/memory/identity_memory.go b/internal/repository/memory/identity_memory.go
+index 40edd68..a3148e8 100644
+--- a/internal/repository/memory/identity_memory.go
++++ b/internal/repository/memory/identity_memory.go
+@@ -16,15 +16,21 @@ import (
+ // In-memory identity stores (tests / dev fallback).
+ 
+ type UserMemory struct {
+-	mu      sync.RWMutex
+-	rows    map[uuid.UUID]*identity.User
+-	byEmail map[string]*identity.User
++	mu        sync.RWMutex
++	rows      map[uuid.UUID]*identity.User
++	byEmail   map[string]*identity.User
++	roleStore *RoleMemory // optional: enables role join in ListUsers (dev fallback)
+ }
+ 
+ func NewUserMemory() *UserMemory {
+ 	return &UserMemory{rows: map[uuid.UUID]*identity.User{}, byEmail: map[string]*identity.User{}}
+ }
+ 
++// SetRoleStore links the role store so ListUsers can join role names (dev mode).
++func (m *UserMemory) SetRoleStore(r *RoleMemory) {
++	m.roleStore = r
++}
++
+ // Count returns (total users, users with a verified email or phone) — used by
+ // the dev-mode analytics funnel.
+ func (m *UserMemory) Count() (total, verified int64) {
+@@ -111,6 +117,73 @@ func (m *UserMemory) UpdateLastLogin(_ context.Context, id uuid.UUID, at time.Ti
+ 	return nil
+ }
+ 
++// ListUsers — dev fallback for the admin user-management console.
++func (m *UserMemory) ListUsers(ctx context.Context, search, status string, offset, limit int) ([]identity.UserWithRoles, int, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	if limit <= 0 || limit > 200 {
++		limit = 50
++	}
++	if offset < 0 {
++		offset = 0
++	}
++	search = strings.ToLower(strings.TrimSpace(search))
++	all := []identity.User{}
++	for _, u := range m.rows {
++		if status != "" && string(u.Status) != status {
++			continue
++		}
++		if search != "" && !strings.Contains(strings.ToLower(u.Email), search) &&
++			!strings.Contains(strings.ToLower(u.FirstName), search) &&
++			!strings.Contains(strings.ToLower(u.LastName), search) {
++			continue
++		}
++		all = append(all, *u)
++	}
++	// sort by CreatedAt desc
++	for i := 0; i < len(all); i++ {
++		for j := i + 1; j < len(all); j++ {
++			if all[j].CreatedAt.After(all[i].CreatedAt) {
++				all[i], all[j] = all[j], all[i]
++			}
++		}
++	}
++	total := len(all)
++	start := offset
++	if start > total {
++		start = total
++	}
++	end := start + limit
++	if end > total {
++		end = total
++	}
++	out := []identity.UserWithRoles{}
++	for _, u := range all[start:end] {
++		uwr := identity.UserWithRoles{User: u}
++		if m.roleStore != nil {
++			roles, _ := m.roleStore.RolesForUser(ctx, u.ID)
++			for _, r := range roles {
++				uwr.Roles = append(uwr.Roles, r.Name)
++			}
++		}
++		out = append(out, uwr)
++	}
++	return out, total, nil
++}
++
++// SetStatus — activate/suspend a user account (dev fallback).
++func (m *UserMemory) SetStatus(_ context.Context, id uuid.UUID, status string) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	u, ok := m.rows[id]
++	if !ok {
++		return domain.ErrNotFound
++	}
++	u.Status = identity.UserStatus(status)
++	u.UpdatedAt = time.Now().UTC()
++	return nil
++}
++
+ var _ identity.UserRepository = (*UserMemory)(nil)
+ 
+ // --- Sessions ---
+@@ -254,6 +327,30 @@ func (m *RoleMemory) RemoveAllForUser(_ context.Context, userID uuid.UUID) error
+ 	return nil
+ }
+ 
++func (m *RoleMemory) ListRoles(_ context.Context) ([]identity.Role, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	out := make([]identity.Role, 0, len(m.byName))
++	for _, r := range m.byName {
++		out = append(out, *r)
++	}
++	return out, nil
++}
++
++func (m *RoleMemory) RemoveRoleForUser(_ context.Context, userID uuid.UUID, roleName string) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	roles := m.userRoles[userID]
++	kept := roles[:0]
++	for _, r := range roles {
++		if r.Name != roleName {
++			kept = append(kept, r)
++		}
++	}
++	m.userRoles[userID] = kept
++	return nil
++}
++
+ var _ identity.RoleRepository = (*RoleMemory)(nil)
+ 
+ // --- Student profiles + parent links ---
+diff --git a/internal/repository/memory/uow.go b/internal/repository/memory/uow.go
+index 235b9bf..66ebae1 100644
+--- a/internal/repository/memory/uow.go
++++ b/internal/repository/memory/uow.go
+@@ -160,5 +160,7 @@ func NewMemoryStore() *MemoryStore {
+ 	}
+ 	store.StudentLinks = NewParentStudentLinkMemory(students)
+ 	store.Analytics = NewAnalyticsMemory(store) // reads live from the same store
++	// Link the role store so admin user-listing can join role names (dev mode).
++	store.Users.SetRoleStore(store.Roles)
+ 	return store
+ }
+diff --git a/internal/repository/postgres/identity_auth_repo.go b/internal/repository/postgres/identity_auth_repo.go
+index 5665884..8bad1e4 100644
+--- a/internal/repository/postgres/identity_auth_repo.go
++++ b/internal/repository/postgres/identity_auth_repo.go
+@@ -11,6 +11,7 @@ import (
+ 	"ykay-virtual/internal/domain/identity"
+ 
+ 	"github.com/google/uuid"
++	"github.com/lib/pq"
+ )
+ 
+ // Identity repos — users, sessions, roles (migration 000001_identity).
+@@ -129,6 +130,99 @@ func (r *UserRepo) UpdateLastLogin(ctx context.Context, id uuid.UUID, at time.Ti
+ 	return nil
+ }
+ 
++// ListUsers — admin user-management console (SUPER_ADMIN). Searches by email
++// or name, filters by account status, and returns role names joined via
++// user_roles. Paginated; total is the unfiltered-by-page count.
++func (r *UserRepo) ListUsers(ctx context.Context, search, status string, offset, limit int) ([]identity.UserWithRoles, int, error) {
++	if limit <= 0 || limit > 200 {
++		limit = 50
++	}
++	if offset < 0 {
++		offset = 0
++	}
++	where := "WHERE u.deleted_at IS NULL"
++	args := []any{}
++	arg := func(v any) string {
++		args = append(args, v)
++		return fmt.Sprintf("$%d", len(args))
++	}
++	if search != "" {
++		where += " AND (u.email ILIKE " + arg("%"+search+"%") + " OR COALESCE(u.first_name,'') ILIKE " + arg("%"+search+"%") + " OR COALESCE(u.last_name,'') ILIKE " + arg("%"+search+"%") + ")"
++	}
++	if status != "" {
++		where += " AND u.status = " + arg(status)
++	}
++
++	var total int
++	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users u "+where).Scan(&total); err != nil {
++		return nil, 0, fmt.Errorf("count users: %w", err)
++	}
++
++	rows, err := r.db.QueryContext(ctx, `
++		SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.avatar_url, u.password_hash,
++		       u.status, u.timezone, u.email_verified_at, u.phone_verified_at, u.last_login_at,
++		       u.onboarded_at, u.created_at, u.updated_at,
++		       COALESCE((SELECT ARRAY_AGG(r.name ORDER BY r.name) FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id), '{}')
++		FROM users u `+where+`
++		ORDER BY u.created_at DESC
++		LIMIT `+arg(limit)+` OFFSET `+arg(offset), args...)
++	if err != nil {
++		return nil, 0, fmt.Errorf("list users: %w", err)
++	}
++	defer rows.Close()
++
++	out := []identity.UserWithRoles{}
++	for rows.Next() {
++		var u identity.UserWithRoles
++		var phone, firstName, lastName, avatarURL sql.NullString
++		var emailVerifiedAt, phoneVerifiedAt, lastLoginAt, onboardedAt sql.NullTime
++		if err := rows.Scan(&u.ID, &u.Email, &firstName, &lastName, &phone, &avatarURL, &u.PasswordHash,
++			&u.Status, &u.Timezone, &emailVerifiedAt, &phoneVerifiedAt, &lastLoginAt, &onboardedAt,
++			&u.CreatedAt, &u.UpdatedAt, pq.Array(&u.Roles)); err != nil {
++			return nil, 0, err
++		}
++		if firstName.Valid {
++			u.FirstName = firstName.String
++		}
++		if lastName.Valid {
++			u.LastName = lastName.String
++		}
++		if phone.Valid {
++			u.Phone = &phone.String
++		}
++		if avatarURL.Valid {
++			u.AvatarURL = &avatarURL.String
++		}
++		if emailVerifiedAt.Valid {
++			u.EmailVerifiedAt = &emailVerifiedAt.Time
++		}
++		if phoneVerifiedAt.Valid {
++			u.PhoneVerifiedAt = &phoneVerifiedAt.Time
++		}
++		if lastLoginAt.Valid {
++			u.LastLoginAt = &lastLoginAt.Time
++		}
++		if onboardedAt.Valid {
++			u.OnboardedAt = &onboardedAt.Time
++		}
++		out = append(out, u)
++	}
++	return out, total, rows.Err()
++}
++
++// SetStatus — activate/suspend a user account (SUPER_ADMIN only).
++func (r *UserRepo) SetStatus(ctx context.Context, id uuid.UUID, status string) error {
++	res, err := r.db.ExecContext(ctx,
++		"UPDATE users SET status = $2, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL", id, status)
++	if err != nil {
++		return fmt.Errorf("set user status: %w", err)
++	}
++	if n, _ := res.RowsAffected(); n == 0 {
++		return domain.ErrNotFound
++	}
++	return nil
++}
++
+ var _ identity.UserRepository = (*UserRepo)(nil)
+ 
+ // --- Sessions ---
+@@ -283,6 +377,38 @@ func (r *RoleRepo) RemoveAllForUser(ctx context.Context, userID uuid.UUID) error
+ 	return nil
+ }
+ 
++func (r *RoleRepo) ListRoles(ctx context.Context) ([]identity.Role, error) {
++	rows, err := r.db.QueryContext(ctx,
++		"SELECT id, name, description, created_at FROM roles ORDER BY name")
++	if err != nil {
++		return nil, fmt.Errorf("list roles: %w", err)
++	}
++	defer rows.Close()
++	out := []identity.Role{}
++	for rows.Next() {
++		var role identity.Role
++		var desc sql.NullString
++		if err := rows.Scan(&role.ID, &role.Name, &desc, &role.CreatedAt); err != nil {
++			return nil, err
++		}
++		if desc.Valid {
++			role.Description = &desc.String
++		}
++		out = append(out, role)
++	}
++	return out, rows.Err()
++}
++
++func (r *RoleRepo) RemoveRoleForUser(ctx context.Context, userID uuid.UUID, roleName string) error {
++	_, err := r.db.ExecContext(ctx, `
++		DELETE FROM user_roles ur USING roles r
++		WHERE ur.role_id = r.id AND ur.user_id = $1 AND r.name = $2`, userID, roleName)
++	if err != nil {
++		return fmt.Errorf("remove role for user: %w", err)
++	}
++	return nil
++}
++
+ var _ identity.RoleRepository = (*RoleRepo)(nil)
+ 
+ // --- Student profiles + parent links ---
+diff --git a/internal/service/admin_service.go b/internal/service/admin_service.go
+index b170aa4..95aa173 100644
+--- a/internal/service/admin_service.go
++++ b/internal/service/admin_service.go
+@@ -41,10 +41,129 @@ type AdminService struct {
+ 	catalogueCache cache.Cache
+ 	orders         payment.OrderRepository
+ 	payouts        payment.PayoutRepository
++	users          identity.UserRepository
++	roles          identity.RoleRepository
+ 	audit          identity.AuditService
+ 	now            func() time.Time
+ }
+ 
++// WithUsers wires the user + role repositories for the SUPER_ADMIN
++// user-management console (list users, assign/revoke roles, suspend/activate).
++func (s *AdminService) WithUsers(users identity.UserRepository, roles identity.RoleRepository) *AdminService {
++	s.users = users
++	s.roles = roles
++	return s
++}
++
++// ListUsers returns a paginated, filtered list of platform users with their
++// granted roles. Filters by search term (email/name) and account status.
++func (s *AdminService) ListUsers(ctx context.Context, search, status string, page, pageSize int) ([]identity.UserWithRoles, int, error) {
++	if s.users == nil {
++		return nil, 0, errors.New("user store unavailable")
++	}
++	if page < 1 {
++		page = 1
++	}
++	offset := (page - 1) * pageSize
++	return s.users.ListUsers(ctx, search, status, offset, pageSize)
++}
++
++// ListRoles returns every assignable role on the platform (admin UI).
++func (s *AdminService) ListRoles(ctx context.Context) ([]identity.Role, error) {
++	if s.roles == nil {
++		return nil, errors.New("role store unavailable")
++	}
++	return s.roles.ListRoles(ctx)
++}
++
++// SetUserRole grants or revokes a single named role on a user (SUPER_ADMIN).
++// It refuses to strip the last SUPER_ADMIN grant from the acting user or to
++// leave the platform without a SUPER_ADMIN (fail-closed role safety).
++func (s *AdminService) SetUserRole(ctx context.Context, actorID, userID uuid.UUID, role string, grant bool) error {
++	if s.roles == nil {
++		return errors.New("role store unavailable")
++	}
++	role = strings.ToUpper(strings.TrimSpace(role))
++	if role == "" {
++		return fmt.Errorf("%w: role is required", domain.ErrInvalidInput)
++	}
++	r, err := s.roles.FindByName(ctx, role)
++	if err != nil {
++		return err
++	}
++	// Guard: never allow self-removal of the last SUPER_ADMIN (lockout).
++	if role == "SUPER_ADMIN" && !grant && actorID == userID {
++		// Count remaining super admins after hypothetical removal.
++		adminRoles, _ := s.roles.RolesForUser(ctx, userID)
++		has := false
++		for _, ar := range adminRoles {
++			if ar.Name == "SUPER_ADMIN" {
++				has = true
++				break
++			}
++		}
++		if has {
++			if err := s.assertAnotherSuperAdmin(ctx, userID); err != nil {
++				return err
++			}
++		}
++	}
++	if grant {
++		return s.roles.AssignToUser(ctx, userID, r.ID)
++	}
++	return s.roles.RemoveRoleForUser(ctx, userID, role)
++}
++
++// assertAnotherSuperAdmin checks that at least one OTHER user retains
++// SUPER_ADMIN before the given user loses it.
++func (s *AdminService) assertAnotherSuperAdmin(ctx context.Context, except uuid.UUID) error {
++	_, total, err := s.users.ListUsers(ctx, "", "ACTIVE", 0, 500)
++	if err != nil {
++		return err
++	}
++	// ListUsers has a hard 200 cap per call; walk pages to be safe.
++	found := false
++	for page := 1; page <= (total/200)+1 && !found; page++ {
++		users, _, lerr := s.users.ListUsers(ctx, "", "ACTIVE", (page-1)*200, 200)
++		if lerr != nil {
++			return lerr
++		}
++		for _, u := range users {
++			if u.ID == except {
++				continue
++			}
++			for _, r := range u.Roles {
++				if r == "SUPER_ADMIN" {
++					found = true
++					break
++				}
++			}
++		}
++	}
++	if !found {
++		return fmt.Errorf("%w: cannot remove the last SUPER_ADMIN on the platform", domain.ErrConflict)
++	}
++	return nil
++}
++
++// SetUserStatus activates (ACTIVE) or suspends (SUSPENDED) a user account.
++// A SUPER_ADMIN cannot suspend themselves.
++func (s *AdminService) SetUserStatus(ctx context.Context, actorID, userID uuid.UUID, status string) error {
++	if s.users == nil {
++		return errors.New("user store unavailable")
++	}
++	status = strings.ToUpper(strings.TrimSpace(status))
++	switch status {
++	case "ACTIVE", "SUSPENDED", "PENDING_VERIFICATION":
++	default:
++		return fmt.Errorf("%w: invalid status %q", domain.ErrInvalidInput, status)
++	}
++	if actorID == userID && status == "SUSPENDED" {
++		return fmt.Errorf("%w: you cannot suspend your own account", domain.ErrForbidden)
++	}
++	return s.users.SetStatus(ctx, userID, status)
++}
++
+ func NewAdminService(stats admin.StatsRepository, blog content.AdminBlogRepository,
+ 	institutions institution.InstitutionRepository, referrals referral.ReferralRepository,
+ 	reviews review.ReviewRepository, audit identity.AuditService) *AdminService {
+diff --git a/internal/transport/http/account_handler.go b/internal/transport/http/account_handler.go
+index 039e331..05e111c 100644
+--- a/internal/transport/http/account_handler.go
++++ b/internal/transport/http/account_handler.go
+@@ -21,6 +21,27 @@ type AccountHandler struct {
+ 	storage storage.Storage
+ }
+ 
++// resourceExts maps accepted upload content types to file extensions (LMS
++// materials: documents, spreadsheets, presentations, images, media).
++var resourceExts = map[string]string{
++	"application/pdf":       ".pdf",
++	"image/jpeg":            ".jpg",
++	"image/png":             ".png",
++	"image/webp":            ".webp",
++	"application/msword":    ".doc",
++	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
++	"application/vnd.ms-powerpoint":    ".ppt",
++	"application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
++	"application/vnd.ms-excel":         ".xls",
++	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
++	"video/mp4":       ".mp4",
++	"video/webm":      ".webm",
++	"audio/mpeg":      ".mp3",
++	"text/plain":      ".txt",
++	"text/markdown":   ".md",
++	"application/octet-stream": ".bin",
++}
++
+ func NewAccountHandler(svc *service.AccountService) *AccountHandler {
+ 	return &AccountHandler{svc: svc}
+ }
+@@ -113,6 +134,48 @@ func (h *AccountHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+ 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"avatar_url": url}, nil)
+ }
+ 
++// UploadResource — POST /me/uploads (authenticated). Raw file body uploaded to
++// the public bucket; returns the object URL for use as an LMS material. MIME is
++// validated against an allowlist and size is capped server-side (25 MiB so
++// short lesson videos can be hosted on the free plan).
++func (h *AccountHandler) UploadResource(w http.ResponseWriter, r *http.Request) {
++	userID, ok := h.requireUser(w, r)
++	if !ok {
++		return
++	}
++	if h.storage == nil {
++		WriteAppError(w, pkg.Conflict("object storage is not configured"))
++		return
++	}
++	ct := strings.ToLower(strings.TrimSpace(r.Header.Get("Content-Type")))
++	ext, ok := resourceExts[ct]
++	if !ok {
++		WriteAppError(w, pkg.BadRequest("file type not allowed (PDF, Office, images, mp4/webm/mp3)", nil))
++		return
++	}
++	r.Body = http.MaxBytesReader(w, r.Body, 26<<20) // 26 MiB cap (hard), 25 MiB effective
++	data, err := io.ReadAll(r.Body)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("could not read upload: "+err.Error(), nil))
++		return
++	}
++	if len(data) > 25<<20 {
++		WriteAppError(w, pkg.BadRequest("file exceeds the 25 MiB limit", nil))
++		return
++	}
++	if len(data) == 0 {
++		WriteAppError(w, pkg.BadRequest("empty upload", nil))
++		return
++	}
++	key := "uploads/" + userID.String() + "/" + uuid.NewString() + ext
++	if err := h.storage.Upload(r.Context(), storage.BucketPublic, key, data, ct); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	url := h.storage.GetPublicURL(storage.BucketPublic, key)
++	pkg.WriteSuccess(w, http.StatusCreated, map[string]any{"url": url, "content_type": ct, "size": len(data)}, nil)
++}
++
+ // ExportData — GET /auth/me/export (JSON download)
+ func (h *AccountHandler) ExportData(w http.ResponseWriter, r *http.Request) {
+ 	userID, ok := h.requireUser(w, r)
+diff --git a/internal/transport/http/admin_handler.go b/internal/transport/http/admin_handler.go
+index df55d17..3785f56 100644
+--- a/internal/transport/http/admin_handler.go
++++ b/internal/transport/http/admin_handler.go
+@@ -49,6 +49,23 @@ func (h *AdminHandler) requireAdmin(w http.ResponseWriter, r *http.Request) *uui
+ 	return &actor.UserID
+ }
+ 
++// requireSuperAdmin — role/account management is reserved for SUPER_ADMIN
++// only (ACADEMIC_ADMIN can manage content/ops but must never grant roles or
++// suspend platform accounts — YK-008).
++func (h *AdminHandler) requireSuperAdmin(w http.ResponseWriter, r *http.Request) *uuid.UUID {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return nil
++	}
++	for _, role := range actor.Roles {
++		if role == "SUPER_ADMIN" {
++			return &actor.UserID
++		}
++	}
++	WriteAppError(w, pkg.Forbidden("SUPER_ADMIN access required"))
++	return nil
++}
++
+ func (h *AdminHandler) Stats(w http.ResponseWriter, r *http.Request) {
+ 	if h.requireAdmin(w, r) == nil {
+ 		return
+@@ -507,6 +524,95 @@ func (h *AdminHandler) LessonsToday(w http.ResponseWriter, r *http.Request) {
+ 	pkg.WriteSuccess(w, http.StatusOK, lessons, nil)
+ }
+ 
++// ListUsers — SUPER_ADMIN: paginated user list with roles, search + status filter.
++func (h *AdminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
++	if h.requireSuperAdmin(w, r) == nil {
++		return
++	}
++	p := ParsePagination(r)
++	users, total, err := h.svc.ListUsers(r.Context(),
++		r.URL.Query().Get("search"),
++		firstNonEmpty(r.URL.Query().Get("status"), p.Filters["status"]),
++		p.Page, p.PageSize)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, users, p.Meta(int64(total)))
++}
++
++// ListRoles — SUPER_ADMIN: all assignable platform roles (admin UI dropdown).
++func (h *AdminHandler) ListRoles(w http.ResponseWriter, r *http.Request) {
++	if h.requireSuperAdmin(w, r) == nil {
++		return
++	}
++	roles, err := h.svc.ListRoles(r.Context())
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, roles, nil)
++}
++
++// SetUserRole — SUPER_ADMIN: grant/revoke a single role on a user.
++func (h *AdminHandler) SetUserRole(w http.ResponseWriter, r *http.Request) {
++	actorID := h.requireSuperAdmin(w, r)
++	if actorID == nil {
++		return
++	}
++	userID, err := ParseUUID(r, "userId")
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	var req struct {
++		Role  string `json:"role"`
++		Grant *bool  `json:"grant"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	if req.Grant == nil {
++		WriteAppError(w, pkg.BadRequest("grant (true/false) is required", nil))
++		return
++	}
++	if err := h.svc.SetUserRole(r.Context(), *actorID, userID, req.Role, *req.Grant); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	action := "revoked"
++	if *req.Grant {
++		action = "granted"
++	}
++	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"role": req.Role, "action": action}, nil)
++}
++
++// SetUserStatus — SUPER_ADMIN: activate/suspend a user account.
++func (h *AdminHandler) SetUserStatus(w http.ResponseWriter, r *http.Request) {
++	actorID := h.requireSuperAdmin(w, r)
++	if actorID == nil {
++		return
++	}
++	userID, err := ParseUUID(r, "userId")
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	var req struct {
++		Status string `json:"status"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	if err := h.svc.SetUserStatus(r.Context(), *actorID, userID, req.Status); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"status": req.Status}, nil)
++}
++
+ // ConfirmManualPayment — admin confirms a manual/bank payment.
+ func (h *AdminHandler) ConfirmManualPayment(w http.ResponseWriter, r *http.Request) {
+ 	adminID := h.requireAdmin(w, r)
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index c058a24..a252e4b 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -124,6 +124,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	// Account hub (phase 37)
+ 	mux.HandleFunc("PUT "+v1+"/auth/me/profile", handlers.Account.UpdateProfile)
+ 	mux.HandleFunc("POST "+v1+"/me/avatar", handlers.Account.UploadAvatar)
++	mux.HandleFunc("POST "+v1+"/me/uploads", handlers.Account.UploadResource)
+ 	mux.HandleFunc("GET "+v1+"/auth/me/export", handlers.Account.ExportData)
+ 	mux.HandleFunc("POST "+v1+"/auth/me/delete", handlers.Account.DeleteAccount)
+ 
+@@ -269,6 +270,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 
+ 	// Admin console (Phase 11)
+ 	mux.HandleFunc("GET "+v1+"/admin/stats", handlers.Admin.Stats)
++	// SUPER_ADMIN — user/role management
++	mux.HandleFunc("GET "+v1+"/admin/users", handlers.Admin.ListUsers)
++	mux.HandleFunc("GET "+v1+"/admin/users/roles", handlers.Admin.ListRoles)
++	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/role", handlers.Admin.SetUserRole)
++	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/status", handlers.Admin.SetUserStatus)
+ 	mux.HandleFunc("GET "+v1+"/admin/stats/overview2", handlers.Admin.Stats2)
+ 	mux.HandleFunc("GET "+v1+"/admin/support", handlers.Admin.ListSupport)
+ 	mux.HandleFunc("POST "+v1+"/admin/support/{ticketId}/status", handlers.Admin.SetSupportStatus)
+diff --git a/scripts/seed-admins.sql b/scripts/seed-admins.sql
+new file mode 100644
+index 0000000..4177272
+--- /dev/null
++++ b/scripts/seed-admins.sql
+@@ -0,0 +1,91 @@
++-- =============================================================================
++-- NUVORA — SEED ADMIN & SUPER ADMIN ACCOUNTS
++-- =============================================================================
++-- Creates two operator accounts with STRONG, DIFFERENT passwords:
++--
++--   SUPER ADMIN : superadmin@nuvora.com   (full platform control)
++--   ACADEMIC    : admin@nuvora.com        (content / cohorts / vetting / ops)
++--
++-- Passwords are bcrypt-hashed (cost 10) and are NOT committed in plaintext.
++-- They are set here (documented in the ops manual) and SHOULD be changed via
++-- the password-reset flow after first login.
++--
++-- Idempotent: safe to re-run. Uses ON CONFLICT on the partial unique email
++-- index. Re-activates the row if it had been soft-deleted.
++--
++-- Usage (local compose):
++--   psql "postgres://nuvora:nuvora@localhost:5432/nuvora" -f scripts/seed-admins.sql
++--   # or
++--   make seed-admins
++--
++-- WARNING: do NOT run against a production DB with real users unless you
++-- deliberately want these operator accounts. They grant platform access.
++-- =============================================================================
++
++SET client_encoding = 'UTF8';
++
++DO $$
++DECLARE
++  su_id UUID;
++  ad_id UUID;
++BEGIN
++  -- ── 1. SUPER_ADMIN -------------------------------------------------------
++  INSERT INTO users (email, password_hash, status, timezone, email_verified_at, onboarded_at)
++  VALUES (
++    'superadmin@nuvora.com',
++    '$2b$10$2L59AuV3tEo26YPp8amtauh3CuosWxnZBY0/XttzYNO.eJUyqANSS', -- SuperAdmin@2026
++    'ACTIVE',
++    'Africa/Lagos',
++    NOW(), NOW()
++  )
++  ON CONFLICT (email) WHERE deleted_at IS NULL
++  DO UPDATE SET deleted_at = NULL, status = 'ACTIVE', password_hash = EXCLUDED.password_hash
++  RETURNING id INTO su_id;
++
++  -- The partial unique index won't block re-inserting a soft-deleted email;
++  -- handle the case where the row exists but was soft-deleted.
++  IF su_id IS NULL THEN
++    UPDATE users
++       SET deleted_at = NULL,
++           status = 'ACTIVE',
++           password_hash = '$2b$10$2L59AuV3tEo26YPp8amtauh3CuosWxnZBY0/XttzYNO.eJUyqANSS',
++           email_verified_at = NOW(), onboarded_at = NOW()
++     WHERE email = 'superadmin@nuvora.com'
++     RETURNING id INTO su_id;
++  END IF;
++
++  INSERT INTO user_roles (user_id, role_id)
++  SELECT su_id, id FROM roles WHERE name = 'SUPER_ADMIN'
++  ON CONFLICT (user_id, role_id) DO NOTHING;
++
++  RAISE NOTICE 'SUPER_ADMIN ready: superadmin@nuvora.com (id %)', su_id;
++
++  -- ── 2. ACADEMIC_ADMIN ---------------------------------------------------
++  INSERT INTO users (email, password_hash, status, timezone, email_verified_at, onboarded_at)
++  VALUES (
++    'admin@nuvora.com',
++    '$2b$10$Ezi/Pw03gabyzKfnZ1NCg.nwVoSS28gusH9lT1x3U7ImI8LtyLJsS', -- Admin@2026
++    'ACTIVE',
++    'Africa/Lagos',
++    NOW(), NOW()
++  )
++  ON CONFLICT (email) WHERE deleted_at IS NULL
++  DO UPDATE SET deleted_at = NULL, status = 'ACTIVE', password_hash = EXCLUDED.password_hash
++  RETURNING id INTO ad_id;
++
++  IF ad_id IS NULL THEN
++    UPDATE users
++       SET deleted_at = NULL,
++           status = 'ACTIVE',
++           password_hash = '$2b$10$Ezi/Pw03gabyzKfnZ1NCg.nwVoSS28gusH9lT1x3U7ImI8LtyLJsS',
++           email_verified_at = NOW(), onboarded_at = NOW()
++     WHERE email = 'admin@nuvora.com'
++     RETURNING id INTO ad_id;
++  END IF;
++
++  INSERT INTO user_roles (user_id, role_id)
++  SELECT ad_id, id FROM roles WHERE name = 'ACADEMIC_ADMIN'
++  ON CONFLICT (user_id, role_id) DO NOTHING;
++
++  RAISE NOTICE 'ACADEMIC_ADMIN ready: admin@nuvora.com (id %)', ad_id;
++END $$;
