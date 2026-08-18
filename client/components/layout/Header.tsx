@@ -11,8 +11,8 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/utils";
 
-// NUVORA header — clean Preline-style: brand · inline links · Services
-// mega-menu (grouped + customer story) · divider · Sign in · Get started.
+// NUVORA header â€” clean Preline-style: brand Â· inline links Â· Services
+// mega-menu (grouped + customer story) Â· divider Â· Sign in Â· Get started.
 
 const SERVICE_GROUPS = [
   {
@@ -41,7 +41,7 @@ const SERVICE_GROUPS = [
     items: [
       { label: "Online Classes", href: "/online-classes" },
       { label: "Digital Skills", href: "/digital-skills" },
-      { label: "GMAT / GRE", href: "/gmat" },
+      { label: "Study Abroad", href: "/study-abroad" },
     ],
   },
   {
@@ -83,7 +83,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 isolate w-full border-b border-ink-200 bg-white/95 shadow-sm backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-ink-200 bg-white dark:border-[#214c37] dark:bg-[#0d1f16]">
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-6 py-3 md:px-10">
         {/* Brand */}
         <Link href="/" onClick={closeAll} className="flex-none" aria-label="NUVORA home">
@@ -143,7 +143,7 @@ export function Header() {
                     ))}
                   </div>
 
-                  {/* Promo column — customer stories (no fabricated quotes) */}
+                  {/* Promo column â€” customer stories (no fabricated quotes) */}
                   <div className="flex flex-col bg-ink-50 p-4 sm:col-span-1">
                     <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
                       Parent stories
@@ -155,7 +155,7 @@ export function Header() {
                       loading="lazy"
                     />
                     <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                      Real families, real results — read parent stories published with explicit consent.
+                      Real families, real results â€” read parent stories published with explicit consent.
                     </p>
                     <a
                       href="/success-stories"

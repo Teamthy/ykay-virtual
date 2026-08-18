@@ -3,6 +3,7 @@ import { buildMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import { PageHero } from "@/components/layout/PageHero";
 import { TutorsSearchClient } from "@/features/tutors/components/TutorsSearchClient";
+import { TutorRowSkeleton } from "@/components/ui/skeleton";
 
 export const revalidate = 60;
 
@@ -18,14 +19,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   // Thin filter combos (noindex) vs. core indexable pages (AGENTS.md SEO rule).
   if (filterCount >= 2) {
     return buildMetadata({
-      title: "Find Tutors — Filtered Search",
+      title: "Find Tutors â€” Filtered Search",
       description: "Filtered tutor search on NUVORA.",
       path: "/tutors",
       noIndex: true,
     });
   }
   return buildMetadata({
-    title: "Find Private Tutors Online — Vetted & Verified | NUVORA",
+    title: "Find Private Tutors Online â€” Vetted & Verified | NUVORA",
     description:
       "Search NUVORA's vetted private tutors for British & Nigerian curricula, WAEC, NECO, JAMB, IGCSE, A-Level and IELTS preparation. ID-verified, background-checked, escrow-protected.",
     path: "/tutors",
@@ -46,15 +47,23 @@ export default async function TutorsPage(props: Props) {
         align="left"
         image={{ src: "/hero/home-tutoring.jpg", alt: "Tutor working with a student at home" }}
       />
-      <div className="container-x pb-20 pt-16 md:pt-20">
+      <div className="container-x pt-12 pb-16">
         {!marketplaceEnabled && (
           <div className="mb-8 rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-5 text-sm text-ink-700">
             <strong>Managed matching mode:</strong> tell us what your learner needs and our
-            advisors will match a vetted tutor —{" "}
+            advisors will match a vetted tutor â€”{" "}
             <a href="/private-tuition" className="font-semibold text-brand-blue hover:underline">request a tutor</a>.
           </div>
         )}
-        <Suspense>
+        <Suspense
+          fallback={
+            <div className="grid gap-2 md:grid-cols-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TutorRowSkeleton key={i} />
+              ))}
+            </div>
+          }
+        >
           <TutorsSearchClient initialSubject={subject} />
         </Suspense>
       </div>
