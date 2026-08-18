@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSession, useLogout } from "@/hooks/useSession";
+import { useSession } from "@/hooks/useSession";
 import { isAdmin } from "@/features/auth/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDict } from "@/hooks/useDict";
@@ -12,7 +12,6 @@ import { useDict } from "@/hooks/useDict";
 export function AuthNav() {
   const { user, isLoading } = useSession();
   const { t } = useDict();
-  const logout = useLogout();
   const [open, setOpen] = useState(false);
 
   if (isLoading) {
@@ -84,14 +83,13 @@ export function AuthNav() {
                 {l.label}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                if (window.confirm("Log out of NUVORA?")) void logout();
-              }}
+            <Link
+              href="/logout"
+              onClick={() => setOpen(false)}
               className="block w-full text-left rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50"
             >
               Log out
-            </button>
+            </Link>
           </div>
         </div>
       )}
