@@ -5,7 +5,7 @@ import Link from "next/link";
 import { GraduationCap, BookOpen, Eye, ShieldCheck, Check, Award, Briefcase } from "lucide-react";
 
 export const metadata: Metadata = buildMetadata({
-  title: "About — Academic Leadership, Standards & Safeguarding | NUVORA",
+  title: "About â€” Academic Leadership, Standards & Safeguarding | NUVORA",
   description:
     "NUVORA combines excellent teachers, strong academic systems and technology to give learners structured, high-quality education anywhere. Meet our academic leader.",
   path: "/about",
@@ -15,16 +15,16 @@ const FOUNDER = {
   name: "Yinka Oladimeji",
   role: "Founder & Academic Leader",
   summary:
-    "Experienced educator, Computing leader and IT professional — a career spanning leading international schools in Nigeria.",
+    "Experienced educator, Computing leader and IT professional â€” a career spanning leading international schools in Nigeria.",
   career: [
     "Atlantic Hall Educational Trust Council",
     "Day Waterman College",
-    "Children's International School, Lekki — Head of Computing",
+    "Children's International School, Lekki â€” Head of Computing",
   ],
   credentials: ["BSc Computer Science", "MSc Information Technology", "Fellow, COBIS Middle Leaders"],
   achievements: [
     "Prepared learners for IGCSE Computer Science with exceptional national outcomes.",
-    "Led a delegation at the 2026 International Coding Olympiad (Rome) — medals, and a Nigerian student world Top-3 in Codementum.",
+    "Led a delegation at the 2026 International Coding Olympiad (Rome) â€” medals, and a Nigerian student world Top-3 in Codementum.",
   ],
 };
 
@@ -37,12 +37,12 @@ const PILLARS = [
   {
     icon: BookOpen,
     title: "Multi-curriculum",
-    body: "British and Nigerian pathways in one platform — Year 7 to IGCSE, WAEC, NECO, JAMB and A-Level.",
+    body: "British and Nigerian pathways in one platform â€” Year 7 to IGCSE, WAEC, NECO, JAMB and A-Level.",
   },
   {
     icon: Eye,
     title: "Parent visibility",
-    body: "Attendance, progress, feedback and payments — one parent dashboard.",
+    body: "Attendance, progress, feedback and payments â€” one parent dashboard.",
   },
   {
     icon: ShieldCheck,
@@ -61,7 +61,7 @@ const QUALITY = [
 const SAFEGUARDING = [
   "Minors are created and linked by parents or guardians",
   "Learner contact details are never exposed to tutors unnecessarily",
-  "Messaging is booking-scoped — no direct contact between strangers",
+  "Messaging is booking-scoped â€” no direct contact between strangers",
   "A clear reporting path for safeguarding concerns",
 ];
 
@@ -81,21 +81,23 @@ export default function AboutPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
 
+      
       <PageHero
         cover="/hero/about.jpg"
         eyebrow="Who we are"
         title="A school without walls"
-        subtitle="An online school, not a tutor directory — programmes, cohorts and vetted tutors with progress you can actually see."
+        subtitle="An online school, not a tutor directory â€” programmes, cohorts and vetted tutors with progress you can actually see."
         crumbs={[{ name: "Home", href: "/" }, { name: "About" }]}
         align="center"
       />
 
       <div className="container-x py-12">
+
       {/* Vision */}
       <section className="mt-12 rounded-3xl bg-[#70F250] px-8 py-10 text-center md:px-14">
         <h2 className="font-display text-2xl tracking-[0.02em] text-black md:text-3xl">Our vision</h2>
         <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-black/80">
-          High-quality, accountable teaching beyond geography — for every learner, wherever they are.
+          High-quality, accountable teaching beyond geography â€” for every learner, wherever they are.
         </p>
       </section>
 
@@ -118,7 +120,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Founder — compact card */}
+      {/* Founder â€” compact card */}
       <section className="mt-14 overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-soft">
         <div className="grid items-stretch lg:grid-cols-[0.85fr_1.15fr]">
           <div className="flex flex-col items-center justify-center gap-3 bg-brand-navy p-8 text-center text-white">
@@ -189,7 +191,7 @@ export default function AboutPage() {
 
       {/* CTA */}
       <section className="mt-12 rounded-3xl bg-brand-navy p-10 text-center text-white md:p-12">
-        <h2 className="font-display text-2xl tracking-[0.02em] md:text-3xl">Explore what NUVORA offers</h2>
+        <h2 className="font-display text-2xl tracking-[0.02em] text-white md:text-3xl">Explore what NUVORA offers</h2>
         <p className="mx-auto mt-3 max-w-xl text-sm text-white/80">
           British or Nigerian curriculum, exam preparation or digital skills.
         </p>
@@ -202,6 +204,7 @@ export default function AboutPage() {
           </Link>
         </div>
       </section>
+    
       </div>
     </main>
   );

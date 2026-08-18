@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Careers — Join the team building NUVORA",
+  title: "Careers â€” Join the team building NUVORA",
   description:
-    "We're building Africa's trusted virtual school — engineering, academic operations and tutor success. See open roles and how we hire.",
+    "We're building Africa's trusted virtual school â€” engineering, academic operations and tutor success. See open roles and how we hire.",
   path: "/careers",
 });
 
@@ -24,7 +24,7 @@ const VALUES = [
   {
     icon: ShieldCheck,
     title: "Safeguarding first",
-    body: "We serve children, so safety is a product requirement — restricted messaging, governed lesson access and careful handling of learner data.",
+    body: "We serve children, so safety is a product requirement â€” restricted messaging, governed lesson access and careful handling of learner data.",
   },
   {
     icon: GraduationCap,
@@ -34,12 +34,12 @@ const VALUES = [
   {
     icon: Lock,
     title: "Honest money",
-    body: "Payments are escrow-protected and fail closed. Funds move only when they should — safety is built in, not bolted on.",
+    body: "Payments are escrow-protected and fail closed. Funds move only when they should â€” safety is built in, not bolted on.",
   },
   {
     icon: Code2,
     title: "Small team, real ownership",
-    body: "We ship across the whole system — a Next.js client, a Go API, PostgreSQL and Redis — and everyone owns their work end to end.",
+    body: "We ship across the whole system â€” a Next.js client, a Go API, PostgreSQL and Redis â€” and everyone owns their work end to end.",
   },
 ];
 
@@ -54,13 +54,13 @@ const ROLES = [
   {
     icon: Code2,
     title: "Full-Stack Engineer (Next.js + Go)",
-    body: "Build across the web client and the Go API — dashboards, bookings, escrow payments and the tutor experience. Comfortable with TypeScript and Go, and you care about shipping working systems.",
+    body: "Build across the web client and the Go API â€” dashboards, bookings, escrow payments and the tutor experience. Comfortable with TypeScript and Go, and you care about shipping working systems.",
     tags: ["Next.js", "Go", "PostgreSQL", "Redis"],
   },
   {
     icon: Users,
     title: "Academic Operations Lead",
-    body: "Own programme quality and academic governance — tutor vetting and interviews, curriculum pathways, safeguarding and the learner experience. An educator who can run operations, not just teach.",
+    body: "Own programme quality and academic governance â€” tutor vetting and interviews, curriculum pathways, safeguarding and the learner experience. An educator who can run operations, not just teach.",
     tags: ["Vetting", "Safeguarding", "Programmes", "Quality"],
   },
 ];
@@ -68,7 +68,7 @@ const ROLES = [
 const PROCESS = [
   { step: "01", title: "Apply", body: "Write to us with a short note and, for engineering roles, links to work you are proud of." },
   { step: "02", title: "Intro call", body: "A conversation about the role, the team and what you would like to build." },
-  { step: "03", title: "Work sample", body: "A focused, take-home exercise or technical conversation — no all-day interviews." },
+  { step: "03", title: "Work sample", body: "A focused, take-home exercise or technical conversation â€” no all-day interviews." },
   { step: "04", title: "Meet the team & offer", body: "Meet the people you would work with, then a clear decision either way." },
 ];
 
@@ -79,16 +79,19 @@ export default function CareersPage() {
   ]);
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
+      
       <PageHero
         eyebrow="Join the team"
         title="Build the school of the future"
-        subtitle="NUVORA is a full commercial, SEO-first virtual school — not just a lead-gen site. We hire people who want to build real education infrastructure: engineering, academic operations and tutor success."
+        subtitle="NUVORA is a full commercial, SEO-first virtual school â€” not just a lead-gen site. We hire people who want to build real education infrastructure: engineering, academic operations and tutor success."
         crumbs={[{ name: "Home", href: "/" }, { name: "Careers" }]}
         align="center"
       />
+
+      <div className="container-x py-12">
 
       {/* Mission */}
       <section className="mt-14 rounded-3xl bg-[#70F250] p-10 text-center md:p-14">
@@ -174,7 +177,7 @@ export default function CareersPage() {
                 ))}
               </div>
               <a
-                href={`mailto:support@nuvora.com?subject=${encodeURIComponent(`Application — ${r.title}`)}`}
+                href={`mailto:support@nuvora.com?subject=${encodeURIComponent(`Application â€” ${r.title}`)}`}
                 className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover"
               >
                 Apply <Send size={14} />
@@ -201,7 +204,7 @@ export default function CareersPage() {
 
       {/* CTA */}
       <section className="mt-16 rounded-3xl bg-brand-navy p-12 text-center text-white">
-        <h2 className="font-display text-2xl tracking-[0.02em] md:text-3xl">Build with us</h2>
+        <h2 className="font-display text-2xl tracking-[0.02em] text-white md:text-3xl">Build with us</h2>
         <p className="mx-auto mt-3 max-w-xl text-sm text-white/80">
           Tell us what you would bring to NUVORA. We read every application.
         </p>
@@ -220,6 +223,8 @@ export default function CareersPage() {
           </Link>
         </div>
       </section>
+    
+      </div>
     </main>
   );
 }

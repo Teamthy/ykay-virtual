@@ -6,7 +6,7 @@ import { Search, LifeBuoy, ArrowRight, ChevronDown } from "lucide-react";
 import { HELP_CATEGORIES, slugify } from "@/lib/help-data";
 import { PageHero } from "@/components/layout/PageHero";
 
-// Help Center — searchable, categorised FAQ hub (single source of truth is
+// Help Center â€” searchable, categorised FAQ hub (single source of truth is
 // lib/help-data.ts). Client-side search across every question + answer.
 
 export default function HelpPage() {
@@ -29,13 +29,16 @@ export default function HelpPage() {
   }, [q]);
 
   return (
-    <main className="container-x py-12">
+    <main>
+      
       <PageHero
         eyebrow="Help Center"
         title="How can we help?"
         subtitle="Search for an answer, or browse by topic. If you can't find it, our team is one message away."
         align="center"
       />
+
+      <div className="container-x py-12">
 
       {/* Search */}
       <div className="mx-auto -mt-8 max-w-xl">
@@ -45,7 +48,7 @@ export default function HelpPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search questions, e.g. escrow, refunds, vetting…"
+            placeholder="Search questions, e.g. escrow, refunds, vettingâ€¦"
             aria-label="Search help articles"
             className="w-full rounded-full border border-ink-200 bg-white py-4 pl-12 pr-5 text-sm shadow-card focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
           />
@@ -122,7 +125,7 @@ export default function HelpPage() {
       {/* Contact CTA */}
       <section className="mx-auto mt-14 max-w-3xl rounded-3xl bg-brand-navy p-10 text-center text-white">
         <LifeBuoy size={28} className="mx-auto text-brand-gold" />
-        <h2 className="mt-4 font-display text-2xl tracking-[0.02em]">Still need help?</h2>
+        <h2 className="mt-4 font-display text-2xl tracking-[0.02em] text-white">Still need help?</h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-white/80">
           Our support team usually replies within one working day.
         </p>
@@ -133,6 +136,8 @@ export default function HelpPage() {
           Contact support <ArrowRight size={15} />
         </Link>
       </section>
+    
+      </div>
     </main>
   );
 }

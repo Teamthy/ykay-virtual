@@ -7,7 +7,7 @@ import { InnerHero } from "@/components/layout/InnerHero";
 import { buildMetadata } from "@/lib/seo";
 import { getHelpArticle, getHelpArticles } from "@/lib/help-data";
 
-// Help article pages — one indexable URL per FAQ (from lib/help-data.ts, the
+// Help article pages â€” one indexable URL per FAQ (from lib/help-data.ts, the
 // single source of truth). Content is the same factual answers as /help, so the
 // two never drift.
 
@@ -30,7 +30,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
   return buildMetadata({
     title: `${article.q} | NUVORA Help`,
-    description: article.a.length > 150 ? `${article.a.slice(0, 147)}…` : article.a,
+    description: article.a.length > 150 ? `${article.a.slice(0, 147)}â€¦` : article.a,
     path: `/help/${article.slug}`,
   });
 }
@@ -91,7 +91,7 @@ export default async function HelpArticlePage(props: Props) {
 
       <section className="mx-auto mt-14 max-w-3xl rounded-3xl bg-brand-navy p-10 text-center text-white">
         <LifeBuoy size={28} className="mx-auto text-brand-gold" />
-        <h2 className="mt-4 font-display text-2xl tracking-[0.02em]">Still need help?</h2>
+        <h2 className="mt-4 font-display text-2xl tracking-[0.02em] text-white">Still need help?</h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-white/80">
           Our support team usually replies within one working day.
         </p>

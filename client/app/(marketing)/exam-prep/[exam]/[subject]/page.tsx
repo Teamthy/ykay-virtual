@@ -7,7 +7,7 @@ import { InnerHero } from "@/components/layout/InnerHero";
 import { buildMetadata } from "@/lib/seo";
 import { getExam, getExamPrepPages, getSubject, type ExamSubject } from "@/lib/exam-prep-data";
 
-// Exam-prep subject pages — one indexable URL per exam × subject (from
+// Exam-prep subject pages â€” one indexable URL per exam Ã— subject (from
 // lib/exam-prep-data.ts). Factual paper structure + board-agnostic syllabus
 // themes, with links back to the live subject catalogue.
 
@@ -54,12 +54,12 @@ export default async function ExamPrepSubjectPage(props: Props) {
           items={[
             { name: "Home", href: "/" },
             { name: "Exam Preparation", href: "/exam-prep" },
-            { name: `${subject.name} — ${exam.code}` },
+            { name: `${subject.name} â€” ${exam.code}` },
           ]}
         />
         <div className="text-xs font-semibold uppercase text-brand-blue">{exam.name}</div>
         <h1 className="mt-2 max-w-3xl text-3xl font-extrabold leading-tight md:text-4xl">
-          {subject.name} — {exam.code} Preparation
+          {subject.name} â€” {exam.code} Preparation
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-ink-600">{exam.fullName}</p>
       </InnerHero>
@@ -72,7 +72,7 @@ export default async function ExamPrepSubjectPage(props: Props) {
               <BookOpen size={18} className="text-brand-green" /> About this paper
             </h2>
             <p className="mt-2 text-sm text-ink-500">
-              {exam.level} · {exam.format}
+              {exam.level} Â· {exam.format}
             </p>
             <ul className="mt-4 space-y-3">
               {exam.structure.map((line) => (
@@ -124,14 +124,14 @@ export default async function ExamPrepSubjectPage(props: Props) {
 
           {/* How NUVORA prepares you */}
           <section className="rounded-2xl bg-brand-navy p-6 text-white">
-            <h2 className="flex items-center gap-2 font-display text-lg tracking-[0.02em]">
+            <h2 className="flex items-center gap-2 font-display text-lg tracking-[0.02em] text-white">
               <GraduationCap size={18} className="text-brand-gold" /> How NUVORA prepares you
             </h2>
             <ul className="mt-4 space-y-2.5 text-sm text-white/85">
-              <li>· Vetted subject specialists matched to your syllabus</li>
-              <li>· Past-paper practice mapped to each topic</li>
-              <li>· Timed mocks with feedback and a predicted-grade view</li>
-              <li>· Weekly progress reports for parents</li>
+              <li>Â· Vetted subject specialists matched to your syllabus</li>
+              <li>Â· Past-paper practice mapped to each topic</li>
+              <li>Â· Timed mocks with feedback and a predicted-grade view</li>
+              <li>Â· Weekly progress reports for parents</li>
             </ul>
             <div className="mt-5 space-y-2.5">
               <Link

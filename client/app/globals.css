@@ -198,7 +198,9 @@
 
     font-family: var(--font-display);
 
-    color: var(--color-text-primary);
+    /* Inherit so navy/photo bands with `text-white` stay readable.
+       Body still supplies the default ink color. */
+    color: inherit;
 
     font-weight: 400;
     line-height: 1.05;
@@ -242,7 +244,7 @@
   p {
     margin: 0;
 
-    color: var(--color-text-secondary);
+    color: inherit;
 
     font-family: var(--font-body);
     line-height: 1.7;
@@ -267,6 +269,23 @@
 
   a:hover {
     color: var(--color-primary-dark);
+  }
+
+  /* Dark / photo surfaces: do not paint deep-green links or black headings. */
+  .text-white a,
+  .bg-brand-navy a,
+  .bg-ink-900 a,
+  .section-dark-green a,
+  .section-black a {
+    color: inherit;
+  }
+
+  .text-white a:hover,
+  .bg-brand-navy a:hover,
+  .bg-ink-900 a:hover,
+  .section-dark-green a:hover,
+  .section-black a:hover {
+    color: var(--color-primary);
   }
 
 

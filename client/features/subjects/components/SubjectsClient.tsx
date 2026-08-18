@@ -74,7 +74,7 @@ export function SubjectsClient() {
               router.push(`/subjects?${qs.toString()}`, { scroll: false });
             }
           }}
-          placeholder="Search subjects…"
+          placeholder="Search subjectsâ€¦"
           className="flex-1 max-w-sm rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
         />
         <div className="flex flex-wrap gap-2">
@@ -119,7 +119,7 @@ export function SubjectsClient() {
                 backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.82), rgba(1,57,32,0.55)), url(${s.photo ?? "/hero/subjects.jpg"})`,
               }}
             >
-              <h3 className="font-bold">{s.name}</h3>
+              <h3 className="font-bold text-white">{s.name}</h3>
               <p className="mt-1 text-xs uppercase tracking-wide text-white/70">{s.category}</p>
               {s.description && <p className="mt-2 line-clamp-2 text-sm text-white/80">{s.description}</p>}
             </Link>

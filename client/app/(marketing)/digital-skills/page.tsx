@@ -5,9 +5,9 @@ import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
 import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Computing & Digital Skills — CS, Python, AI, Cybersecurity | NUVORA",
+  title: "Computing & Digital Skills â€” CS, Python, AI, Cybersecurity | NUVORA",
   description:
-    "Computer Science, ICT, Python, AI, Cybersecurity and Microsoft Office — cohorts and private tuition.",
+    "Computer Science, ICT, Python, AI, Cybersecurity and Microsoft Office â€” cohorts and private tuition.",
   path: "/digital-skills",
 });
 
@@ -40,7 +40,7 @@ export default function DigitalSkillsPage() {
         cover="/hero/digital.jpg"
         eyebrow="The digital academy"
         title="Computing & Digital Skills"
-        subtitle="Computer Science, programming, AI and digital safety — taught as structured cohorts or one-to-one."
+        subtitle="Computer Science, programming, AI and digital safety â€” taught as structured cohorts or one-to-one."
         crumbs={[{ name: "Home", href: "/" }, { name: "Digital Skills" }]}
         image={{ src: "/hero/test-prep.jpg", alt: "Student learning to code" }}
         ctas={[
@@ -61,18 +61,18 @@ export default function DigitalSkillsPage() {
                   "linear-gradient(165deg, rgba(6,15,38,0.9), rgba(1,57,32,0.7)), url(/hero/test-prep.jpg)",
               }}
             >
-              <h2 className="font-bold">{t.title}</h2>
+              <h2 className="font-bold text-white">{t.title}</h2>
               <p className="mt-2 text-sm text-white/80">{t.desc}</p>
-              <span className="mt-4 inline-block text-sm font-semibold text-brand-gold">Explore →</span>
+              <span className="mt-4 inline-block text-sm font-semibold text-brand-gold">Explore â†’</span>
             </Link>
           ))}
         </section>
 
         <section className="mt-14 rounded-3xl bg-[#12121e] p-8 text-white md:grid md:grid-cols-2 md:items-center md:gap-8 md:p-12">
           <div>
-            <h2 className="text-2xl font-extrabold">Competition coaching</h2>
+            <h2 className="text-2xl font-extrabold text-white">Competition coaching</h2>
             <p className="mt-3 text-sm leading-relaxed text-white/75">
-              Optional coaching for coding contests — mock rounds and strategy. Ask us what we currently run.
+              Optional coaching for coding contests â€” mock rounds and strategy. Ask us what we currently run.
             </p>
           </div>
           <div className="mt-6 md:mt-0 md:text-right">

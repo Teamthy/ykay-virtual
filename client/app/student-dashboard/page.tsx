@@ -135,7 +135,7 @@ export default function StudentDashboardPage() {
 
               {/* Today */}
               <section className="rounded-2xl bg-brand-blue text-white p-6">
-                <h2 className="font-bold">Today&apos;s lessons</h2>
+                <h2 className="font-bold text-white">Today&apos;s lessons</h2>
                 {lessons.isLoading ? (
                   <Skeleton className="h-12 w-full mt-3 bg-white/20" />
                 ) : upcoming.length === 0 ? (
