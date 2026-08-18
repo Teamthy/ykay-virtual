@@ -67,7 +67,7 @@ export function FileUploader({ files, onChange, accept, maxFiles = 5, hint, clas
         <span className="text-sm font-semibold text-ink-700">
           Drag &amp; drop files here, or <span className="text-brand-blue underline underline-offset-2">browse</span>
         </span>
-        {hint && <span className="text-xs text-ink-400">{hint}</span>}
+        {hint && <span className="text-xs text-ink-500">{hint}</span>}
       </button>
       <input
         ref={inputRef}
@@ -90,7 +90,7 @@ export function FileUploader({ files, onChange, accept, maxFiles = 5, hint, clas
             >
               <FileText size={16} className="shrink-0 text-brand-blue" aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink-700">{f.name}</span>
-              <span className="shrink-0 text-xs text-ink-400 tabular-nums">{fmtSize(f.size)}</span>
+              <span className="shrink-0 text-xs text-ink-500 tabular-nums">{fmtSize(f.size)}</span>
               <Button
                 variant="ghost"
                 size="icon"

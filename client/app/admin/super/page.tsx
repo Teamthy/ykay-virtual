@@ -38,7 +38,7 @@ function Stat({ label, value, hint }: { label: string; value?: string | number; 
     <div className="rounded-2xl border border-ink-100 bg-white p-4">
       <p className="text-2xl font-extrabold text-brand-navy">{value ?? "-"}</p>
       <p className="mt-0.5 text-xs font-semibold text-ink-500">{label}</p>
-      {hint && <p className="mt-0.5 text-[11px] text-ink-400">{hint}</p>}
+      {hint && <p className="mt-0.5 text-[11px] text-ink-500">{hint}</p>}
     </div>
   );
 }
@@ -256,12 +256,12 @@ export default function SuperAdminPage() {
                 </tr>
               ))}
               {(auditLogs.data ?? []).length === 0 && (
-                <tr><td colSpan={3} className="px-3 py-6 text-center text-xs text-ink-400">No audit entries yet.</td></tr>
+                <tr><td colSpan={3} className="px-3 py-6 text-center text-xs text-ink-500">No audit entries yet.</td></tr>
               )}
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-[11px] text-ink-400">Super-admin visible only. Logs money, access and role/status changes.</p>
+        <p className="mt-2 text-[11px] text-ink-500">Super-admin visible only. Logs money, access and role/status changes.</p>
       </section>
 
       {/* Revenue / growth note */}
@@ -281,7 +281,7 @@ export default function SuperAdminPage() {
               <p className="text-xl font-extrabold text-brand-green">{fmtNGN(s?.revenue_paid_out)}</p>
             </div>
           </div>
-          <p className="mt-3 text-xs text-ink-400">
+          <p className="mt-3 text-xs text-ink-500">
             {revenueGrowth
               ? "Escrow holds represent committed revenue that releases to tutors after delivery."
               : "No paid-out revenue yet — escrow auto-releases on the weekly payout cycle."}

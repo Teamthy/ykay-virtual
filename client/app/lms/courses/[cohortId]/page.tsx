@@ -174,7 +174,7 @@ export default function LmsCoursePage() {
                 );
               })}
             </div>
-            <p className="mt-1 text-[11px] text-ink-400">Last lessons · green = present, amber = late, grey = untracked</p>
+            <p className="mt-1 text-[11px] text-ink-500">Last lessons · green = present, amber = late, grey = untracked</p>
           </div>
 
           {/* Quiz pass rate */}
@@ -182,7 +182,7 @@ export default function LmsCoursePage() {
             <h3 className="text-sm font-bold text-brand-navy">Quizzes</h3>
             <p className="mt-2 text-3xl font-extrabold text-brand-navy">
               {quizzesTotal > 0 ? Math.round((quizzesPassed / quizzesTotal) * 100) : "-"}
-              {quizzesTotal > 0 && <span className="text-base font-bold text-ink-400">% passed</span>}
+              {quizzesTotal > 0 && <span className="text-base font-bold text-ink-500">% passed</span>}
             </p>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-100">
               <div
@@ -190,7 +190,7 @@ export default function LmsCoursePage() {
                 style={{ width: quizzesTotal > 0 ? `${(quizzesPassed / quizzesTotal) * 100}%` : "0%" }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-ink-400">{quizzesPassed} of {quizzesTotal} quizzes passed</p>
+            <p className="mt-2 text-[11px] text-ink-500">{quizzesPassed} of {quizzesTotal} quizzes passed</p>
           </div>
 
           {/* Report ratings */}
@@ -199,7 +199,7 @@ export default function LmsCoursePage() {
             <div className="mt-3 space-y-2">
               {(reports.data ?? []).slice(-4).map((r) => (
                 <div key={r.id} className="flex items-center gap-2">
-                  <span className="w-14 shrink-0 text-[10px] text-ink-400">
+                  <span className="w-14 shrink-0 text-[10px] text-ink-500">
                     {new Date(r.period_start).toLocaleDateString(undefined, { month: "short" })}
                   </span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-100">
@@ -208,7 +208,7 @@ export default function LmsCoursePage() {
                   <span className="w-8 shrink-0 text-right text-[11px] font-bold text-brand-navy">★{r.overall_rating}</span>
                 </div>
               ))}
-              {(reports.data ?? []).length === 0 && <p className="py-6 text-center text-[11px] text-ink-400">No reports yet</p>}
+              {(reports.data ?? []).length === 0 && <p className="py-6 text-center text-[11px] text-ink-500">No reports yet</p>}
             </div>
           </div>
         </div>
@@ -241,8 +241,8 @@ export default function LmsCoursePage() {
             <section className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
               <div className="grid lg:grid-cols-[300px_1fr]">
                 {/* Curriculum sidebar */}
-                <div className="border-b border-ink-100 bg-[#0B1220] p-4 text-white lg:border-b-0 lg:border-r">
-                  <h2 className="px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+                <div className="border-b border-ink-100 bg-brand-navy p-4 text-white lg:border-b-0 lg:border-r">
+                  <h2 className="px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/80">
                     Course content
                   </h2>
                   <div className="mt-3 space-y-1">
@@ -268,13 +268,13 @@ export default function LmsCoursePage() {
                       );
                     })}
                     {(lessons.data ?? []).length === 0 && (
-                      <p className="px-1 py-6 text-center text-sm text-white/50">No lessons yet</p>
+                      <p className="px-1 py-6 text-center text-sm text-white/80">No lessons yet</p>
                     )}
                   </div>
 
                   {resources.data && (resources.data.length > 0) && (
                     <>
-                      <h2 className="mt-6 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+                      <h2 className="mt-6 px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/80">
                         Resources
                       </h2>
                       <div className="mt-3 space-y-1">
@@ -299,11 +299,11 @@ export default function LmsCoursePage() {
                 <div className="p-5">
                   {(() => {
                     const active = (lessons.data ?? []).find((l) => l.id === activeLessonId) ?? (lessons.data ?? [])[0];
-                    if (!active) return <p className="py-16 text-center text-sm text-ink-400">Select a lesson to begin.</p>;
+                    if (!active) return <p className="py-16 text-center text-sm text-ink-500">Select a lesson to begin.</p>;
                     return (
                       <>
                         <div className="overflow-hidden rounded-xl border border-ink-200 bg-black">
-                          <div className="flex aspect-video w-full items-center justify-center bg-[#0B1220]">
+                          <div className="flex aspect-video w-full items-center justify-center bg-brand-navy">
                             {active.video_url ? (
                               <video
                                 key={active.id}
@@ -328,7 +328,7 @@ export default function LmsCoursePage() {
                                 <p className="mt-1 text-sm">
                                   Live session · {new Date(active.start_at).toLocaleString()} · {active.timezone}
                                 </p>
-                                <p className="mt-3 text-xs text-white/50">The meeting link will unlock when the session goes live.</p>
+                                <p className="mt-3 text-xs text-white/80">The meeting link will unlock when the session goes live.</p>
                               </div>
                             )}
                           </div>
@@ -336,7 +336,7 @@ export default function LmsCoursePage() {
                         <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
                           <div className="min-w-0">
                             <h3 className="font-display text-lg font-bold text-brand-navy">{active.title}</h3>
-                            <p className="mt-0.5 text-xs text-ink-400">
+                            <p className="mt-0.5 text-xs text-ink-500">
                               {new Date(active.start_at).toLocaleString()} · {active.timezone}
                               {active.meeting_provider ? ` · ${active.meeting_provider}` : ""}
                             </p>
@@ -371,7 +371,7 @@ export default function LmsCoursePage() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-semibold text-ink-800">{a.title}</p>
-                        <p className="mt-0.5 text-xs text-ink-400">
+                        <p className="mt-0.5 text-xs text-ink-500">
                           {a.instructions}
                           {a.due_at ? ` · Due ${new Date(a.due_at).toLocaleDateString()}` : ""}
                           {a.max_score ? ` · Max ${a.max_score} pts` : ""}
@@ -398,7 +398,7 @@ export default function LmsCoursePage() {
                   </div>
                 ))}
                 {(assignments.data ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-ink-400">No assignments yet.</p>
+                  <p className="py-6 text-center text-sm text-ink-500">No assignments yet.</p>
                 )}
               </div>
             </section>
@@ -412,7 +412,7 @@ export default function LmsCoursePage() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-semibold text-ink-800">{q.title}</p>
-                        <p className="mt-0.5 text-xs text-ink-400">
+                        <p className="mt-0.5 text-xs text-ink-500">
                           {q.instructions ?? "Auto-graded quiz"}
                           {q.due_at ? ` · Due ${new Date(q.due_at).toLocaleDateString()}` : ""} · Pass {q.pass_threshold}%
                         </p>
@@ -438,7 +438,7 @@ export default function LmsCoursePage() {
                   </div>
                 ))}
                 {(quizzes.data ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-ink-400">No quizzes yet.</p>
+                  <p className="py-6 text-center text-sm text-ink-500">No quizzes yet.</p>
                 )}
               </div>
             </section>
@@ -461,12 +461,12 @@ export default function LmsCoursePage() {
                     <span>📄</span>
                     <span className="flex-1">
                       <span className="block font-semibold text-ink-800">{r.title}</span>
-                      {r.description && <span className="block text-xs text-ink-400">{r.description}</span>}
+                      {r.description && <span className="block text-xs text-ink-500">{r.description}</span>}
                     </span>
                   </a>
                 ))}
                 {(resources.data ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-ink-400">No resources yet.</p>
+                  <p className="py-6 text-center text-sm text-ink-500">No resources yet.</p>
                 )}
               </div>
             </section>
@@ -479,11 +479,11 @@ export default function LmsCoursePage() {
                   <div key={n.id} className="rounded-xl bg-[#F8EBCF] px-4 py-3 text-sm">
                     <p className="text-ink-700">{n.content}</p>
                     {n.homework && <p className="mt-1 text-xs font-semibold text-brand-gold-dark">Homework: {n.homework}</p>}
-                    <p className="mt-1 text-[11px] text-ink-400">{new Date(n.created_at).toLocaleDateString()}</p>
+                    <p className="mt-1 text-[11px] text-ink-500">{new Date(n.created_at).toLocaleDateString()}</p>
                   </div>
                 ))}
                 {(notes.data ?? []).length === 0 && (
-                  <p className="py-4 text-center text-sm text-ink-400">No notes yet.</p>
+                  <p className="py-4 text-center text-sm text-ink-500">No notes yet.</p>
                 )}
               </div>
               <div className="mt-3 flex gap-2">
@@ -512,7 +512,7 @@ export default function LmsCoursePage() {
                 {(reports.data ?? []).map((r) => (
                   <div key={r.id} className="rounded-xl border border-ink-100 p-4 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-ink-400">
+                      <span className="text-xs font-semibold text-ink-500">
                         {new Date(r.period_start).toLocaleDateString()} - {new Date(r.period_end).toLocaleDateString()}
                       </span>
                       <span className="rounded-full bg-brand-gold-light px-2 py-0.5 text-xs font-bold text-brand-navy">★ {r.overall_rating}/5</span>
@@ -523,7 +523,7 @@ export default function LmsCoursePage() {
                   </div>
                 ))}
                 {(reports.data ?? []).length === 0 && (
-                  <p className="py-4 text-center text-sm text-ink-400">No reports yet.</p>
+                  <p className="py-4 text-center text-sm text-ink-500">No reports yet.</p>
                 )}
               </div>
             </section>
@@ -546,7 +546,7 @@ export default function LmsCoursePage() {
                 ✕
               </button>
             </div>
-            <p className="mt-1 text-xs text-ink-400">Pass mark: {quiz.data.pass_threshold}% · Answer all questions, then submit.</p>
+            <p className="mt-1 text-xs text-ink-500">Pass mark: {quiz.data.pass_threshold}% · Answer all questions, then submit.</p>
             <div className="mt-4 space-y-5">
               {quiz.data.questions.map((q, qi) => (
                 <div key={q.id} className="rounded-xl border border-ink-100 p-4">

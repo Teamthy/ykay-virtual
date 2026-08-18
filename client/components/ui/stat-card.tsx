@@ -19,7 +19,7 @@ export function StatCard({ label, value, hint, icon, trend, className }: StatCar
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-wide text-ink-500">{label}</p>
           <p className="mt-1.5 text-2xl font-extrabold tracking-tight text-brand-navy tabular-nums">{value}</p>
-          {hint && <p className="mt-1 text-xs text-ink-400">{hint}</p>}
+          {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}
           {trend && (
             <p
               className={cn(

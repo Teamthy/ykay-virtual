@@ -59,7 +59,7 @@ export default function BecomeTutorPage() {
               <span className="grid size-10 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
                 <s.icon size={18} />
               </span>
-              <span className="text-xs font-bold text-ink-300">0{i + 1}</span>
+              <span className="text-xs font-bold text-ink-500">0{i + 1}</span>
             </div>
             <h2 className="mt-4 font-display text-base tracking-[0.02em] text-brand-navy">{s.title}</h2>
             <p className="mt-2 flex-1 text-xs leading-relaxed text-ink-600">{s.desc}</p>

@@ -28,7 +28,7 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
       <p className="text-3xl font-extrabold text-brand-navy">{value}</p>
       <p className="mt-1 text-sm font-semibold text-ink-700">{label}</p>
-      {hint && <p className="mt-0.5 text-xs text-ink-400">{hint}</p>}
+      {hint && <p className="mt-0.5 text-xs text-ink-500">{hint}</p>}
     </div>
   );
 }
@@ -109,7 +109,7 @@ export default function LmsHomePage() {
       {/* Header */}
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
             <Link href="/" className="hover:text-brand-gold-dark">NUVORA</Link> / My learning
           </p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
@@ -144,7 +144,7 @@ export default function LmsHomePage() {
         {/* Courses */}
         <Section title="My courses" action={<Link href="/cohorts" className="text-sm font-semibold text-brand-gold-dark hover:underline">View all →</Link>}>
           {lessons.isLoading ? (
-            <p className="py-8 text-center text-sm text-ink-400">Loading your courses…</p>
+            <p className="py-8 text-center text-sm text-ink-500">Loading your courses…</p>
           ) : courses.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
               <GraduationCap size={28} className="text-brand-navy" />
@@ -176,7 +176,7 @@ export default function LmsHomePage() {
                         Next: <span className="font-semibold text-ink-700">{next.title}</span>
                       </p>
                     )}
-                    <p className="mt-1 text-xs text-ink-400">Open course →</p>
+                    <p className="mt-1 text-xs text-ink-500">Open course →</p>
                   </Link>
                 );
               })}
@@ -187,7 +187,7 @@ export default function LmsHomePage() {
         {/* Assignments */}
         <Section title="Assignments" action={<Link href="/lms" className="text-sm font-semibold text-brand-gold-dark hover:underline">Manage →</Link>}>
           {assignments.isLoading ? (
-            <p className="py-6 text-center text-sm text-ink-400">Loading…</p>
+            <p className="py-6 text-center text-sm text-ink-500">Loading…</p>
           ) : (assignments.data ?? []).length === 0 ? (
             <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-6 text-center text-sm text-ink-500">No assignments yet.</p>
           ) : (
@@ -201,7 +201,7 @@ export default function LmsHomePage() {
                   >
                     <div>
                       <p className="font-semibold text-ink-800">{a.title}</p>
-                      <p className="mt-0.5 text-xs text-ink-400">
+                      <p className="mt-0.5 text-xs text-ink-500">
                         {a.due_at ? `Due ${new Date(a.due_at).toLocaleDateString()}` : "No deadline"}
                         {a.max_score ? ` · Max ${a.max_score} pts` : ""}
                       </p>
