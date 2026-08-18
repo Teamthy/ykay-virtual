@@ -16,7 +16,7 @@ const CATEGORIES = [
   { label: "Entrance Exams", href: "/entrance-exam", icon: <BookOpenCheck size={16} /> },
   { label: "Test Prep", href: "/test-prep", icon: <FileCheck size={16} /> },
   { label: "Online Classes", href: "/online-classes", icon: <MonitorPlay size={16} /> },
-  { label: "Study Abroad", href: "/study-abroad", icon: <Globe2 size={16} /> },
+  { label: "Digital Skills", href: "/digital-skills", icon: <Globe2 size={16} /> },
   { label: "NUVORA Plus", href: "/nuvora-plus", icon: <Star size={16} /> },
 ];
 

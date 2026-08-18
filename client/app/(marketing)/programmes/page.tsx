@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default function ProgrammesPage() {
   return (
-    <main className="container-x py-10">
+    <main>
       <PageHero
         cover="/hero/programmes.jpg"
         title="Learning programmes"
@@ -24,7 +24,7 @@ export default function ProgrammesPage() {
         align="left"
       />
 
-      <div className="mt-10">
+      <div className="container-x mt-10 pb-16">
         <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading programmes…</p>}>
           <ProgrammesHub />
         </Suspense>

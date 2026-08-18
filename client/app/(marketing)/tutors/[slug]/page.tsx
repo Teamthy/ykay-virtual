@@ -6,7 +6,9 @@ import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
 import { PrivateBookingForm } from "@/features/tuition/PrivateBookingForm";
 import { apiFetchSSR } from "@/lib/server-api";
+import Image from "next/image";
 import { BadgeCheck, Star, MapPin, Clock, Users, GraduationCap } from "lucide-react";
+import { tutorPortraitSrc } from "@/lib/portraits";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,6 +25,7 @@ type TutorDTO = {
   currency?: string;
   rating_avg: number;
   rating_count: number;
+  avatar_url?: string;
   location?: string;
   subjects?: { name: string; slug: string }[];
   years_experience?: number;
@@ -87,6 +90,16 @@ export default async function TutorPage(props: Props) {
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_340px]">
         {/* ── Left: identity + booking ── */}
         <div>
+          <div className="mb-6 overflow-hidden rounded-3xl bg-brand-navy">
+            <Image
+              src={tutorPortraitSrc(tutor.slug, (tutor as { avatar_url?: string }).avatar_url)}
+              alt={`${tutor.display_name} — NUVORA tutor`}
+              width={960}
+              height={420}
+              className="h-64 w-full object-cover object-top md:h-80"
+              priority
+            />
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             {verified ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold-light px-3 py-1 text-xs font-bold text-brand-green">
@@ -149,6 +162,12 @@ export default async function TutorPage(props: Props) {
               className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-brand-gold px-5 py-3 text-sm font-bold text-ink-900 transition-transform hover:-translate-y-0.5"
             >
               Request tuition
+            </a>
+            <a
+              href={`/messages?tutor=${encodeURIComponent(tutor.slug)}`}
+              className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-bold text-white hover:bg-white/10"
+            >
+              Message tutor
             </a>
           </div>
 

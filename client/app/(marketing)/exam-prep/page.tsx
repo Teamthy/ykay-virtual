@@ -44,7 +44,7 @@ export default function ExamPrepPage() {
   });
 
   return (
-    <main className="container-x py-10">
+    <main>
       <PageHero
         cover="/hero/exam-prep.jpg"
         eyebrow="Exam season, handled"
@@ -53,11 +53,13 @@ export default function ExamPrepPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Exam Preparation" }]}
         align="center"
       >
-        <Link href="/programmes" className="btn-primary">Join a revision cohort</Link>
-          <Link href="/private-tuition" className="btn-gold">Get private support</Link>
+        <Link href="/programmes" className="btn-gold">Join a revision cohort</Link>
+        <Link href="/private-tuition" className="rounded-full border border-white/40 px-7 py-3.5 text-sm font-bold text-white hover:bg-white/10">
+          Get private support
+        </Link>
       </PageHero>
 
-      <div className="mt-10 grid lg:grid-cols-[220px_1fr] gap-8 items-start">
+      <div className="container-x mt-10 grid items-start gap-8 pb-16 lg:grid-cols-[220px_1fr]">
         <aside className="lg:sticky lg:top-28">
           <CategoryRail />
         </aside>

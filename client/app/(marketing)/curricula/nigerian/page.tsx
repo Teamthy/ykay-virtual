@@ -37,7 +37,7 @@ export default function NigerianCurriculumPage() {
   const faq = faqJsonLd(FAQS);
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
@@ -53,7 +53,7 @@ export default function NigerianCurriculumPage() {
         <Link href="/private-tuition" className="btn-gold">Book private tuition</Link>
       </PageHero>
 
-
+      <div className="container-x pb-16">
       <section className="mt-14 grid md:grid-cols-3 gap-5">
         {STAGES.map((s) => (
           <div

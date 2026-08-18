@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default function SubjectsPage() {
   return (
-    <main className="container-x py-10">
+    <main>
       <PageHero
         cover="/hero/subjects.jpg"
         title="Explore subjects"
@@ -24,7 +24,7 @@ export default function SubjectsPage() {
         align="left"
       />
 
-      <div className="mt-10">
+      <div className="container-x mt-10 pb-16">
         <Suspense>
           <SubjectsClient />
         </Suspense>

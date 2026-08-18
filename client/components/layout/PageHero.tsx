@@ -124,8 +124,16 @@ export function PageHero({
 
   return (
     <section
-      className={cn("w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center", className)}
-      style={{ backgroundImage: GRID_BG }}
+      className={cn(
+        "relative w-full overflow-hidden border-b border-ink-100 bg-surface bg-cover bg-center bg-no-repeat",
+        onPhoto && "min-h-[380px]",
+        className
+      )}
+      style={{
+        backgroundImage: cover
+          ? `linear-gradient(160deg, rgba(6,15,38,0.78), rgba(1,57,32,0.58)), url(${cover})`
+          : GRID_BG,
+      }}
     >
       {split ? (
         <div className="mx-auto grid max-w-[1200px] items-center gap-10 px-6 pb-20 pt-16 md:pb-28 md:pt-24 lg:grid-cols-[1.05fr_0.95fr]">

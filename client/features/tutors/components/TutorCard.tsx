@@ -2,78 +2,52 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star, BadgeCheck } from "lucide-react";
 import { Tutor } from "../api/search";
-
-// Tutor card (Batch 3) — rebuilt on the requested template: photo on top,
-// centered name, SUBJECT TEACHING instead of contact details, a vetted
-// badge, and a message CTA. No email/phone is ever shown on cards.
-
-const PORTRAITS = ["chinasa", "olanike", "oluwatobi", "adewale", "judith", "demilola"] as const;
-
-function portraitSrc(tutor: Tutor): string {
-  if (tutor.avatar_url) return tutor.avatar_url;
-  if ((PORTRAITS as readonly string[]).includes(tutor.slug)) return `/tutors/${tutor.slug}.jpg`;
-  let h = 0;
-  for (let i = 0; i < tutor.slug.length; i++) h = (h + tutor.slug.charCodeAt(i)) % PORTRAITS.length;
-  return `/tutors/${PORTRAITS[h]}.jpg`;
-}
+import { tutorPortraitSrc } from "@/lib/portraits";
 
 export function TutorCard({ tutor }: { tutor: Tutor }) {
   const subjectLine = (tutor.subjects ?? []).slice(0, 2).map((s) => s.name).join(" · ");
-  const photo = portraitSrc(tutor);
+  const photo = tutorPortraitSrc(tutor.slug, tutor.avatar_url);
 
   return (
-    <div className="relative z-0 overflow-hidden rounded-2xl border border-ink-100 bg-white pb-4 shadow-soft">
-      <div className="relative h-52 w-full overflow-hidden bg-brand-navy">
-        {photo ? (
-          <Image
-            src={photo}
-            alt={`${tutor.display_name} — NUVORA tutor`}
-            width={400}
-            height={208}
-            className="h-52 w-full object-cover object-top"
-          />
-        ) : (
-          <div className="grid h-52 w-full place-items-center bg-gradient-to-br from-[#060F26] to-brand-navy font-display text-6xl text-white/90">
-            {tutor.display_name.slice(0, 1)}
-          </div>
-        )}
-
-        {/* Vetted badge */}
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-brand-green shadow-sm">
-          <BadgeCheck size={12} /> Vetted
+    <div className="relative z-0 overflow-hidden rounded-xl border border-ink-100 bg-white shadow-soft">
+      <div className="relative h-36 w-full overflow-hidden bg-brand-navy">
+        <Image
+          src={photo}
+          alt={`${tutor.display_name} — NUVORA tutor`}
+          width={320}
+          height={144}
+          className="h-36 w-full object-cover object-top"
+        />
+        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-bold text-brand-green shadow-sm">
+          <BadgeCheck size={11} /> Vetted
         </span>
       </div>
-
-      {/* Centered identity block */}
-      <div className="flex flex-col items-center px-4 pt-3 text-center">
-        <Link
-          href={`/tutors/${tutor.slug}`}
-          className="font-medium text-ink-900 transition-colors hover:text-brand-blue"
-        >
+      <div className="flex flex-col items-center px-3 py-3 text-center">
+        <Link href={`/tutors/${tutor.slug}`} className="text-sm font-semibold text-ink-900 hover:text-brand-blue">
           {tutor.display_name}
         </Link>
-
-        <p className="mt-0.5 text-sm text-ink-500">
+        <p className="mt-0.5 line-clamp-1 text-xs text-ink-500">
           {subjectLine ? `Teaches ${subjectLine}` : "Verified NUVORA tutor"}
         </p>
-
-        <div className="mt-1.5 flex items-center gap-1 text-xs">
-          <span className="flex items-center gap-0.5 text-brand-gold">
-            <Star size={12} fill="currentColor" strokeWidth={0} />
-            <b className="text-ink-800">{tutor.rating_avg.toFixed(1)}</b>
-          </span>
+        <div className="mt-1 flex items-center gap-1 text-[11px]">
+          <Star size={11} fill="currentColor" className="text-brand-gold" strokeWidth={0} />
+          <b className="text-ink-800">{tutor.rating_avg.toFixed(1)}</b>
           <span className="text-ink-400">({tutor.rating_count})</span>
-          {tutor.years_experience ? (
-            <span className="text-ink-400">· {tutor.years_experience} yrs</span>
-          ) : null}
         </div>
-
-        <Link
-          href={`/tutors/${tutor.slug}`}
-          className="mt-4 rounded-full border border-ink-200 px-6 py-1.5 text-sm text-ink-600 transition hover:bg-ink-100"
-        >
-          message
-        </Link>
+        <div className="mt-3 flex w-full gap-2">
+          <Link
+            href={`/tutors/${tutor.slug}`}
+            className="flex-1 rounded-full border border-ink-200 py-1.5 text-xs font-semibold text-ink-700 hover:bg-ink-50"
+          >
+            Profile
+          </Link>
+          <Link
+            href={`/messages?tutor=${encodeURIComponent(tutor.slug)}`}
+            className="flex-1 rounded-full bg-brand-navy py-1.5 text-xs font-semibold text-white hover:bg-brand-blue"
+          >
+            Message
+          </Link>
+        </div>
       </div>
     </div>
   );

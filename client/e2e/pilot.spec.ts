@@ -268,7 +268,7 @@ test("page sweep: every public surface renders (no application errors)", async (
   const routes = [
     "/", "/tutors", "/cohorts", "/programmes", "/subjects", "/pricing",
     "/how-it-works", "/about", "/contact", "/become-tutor", "/hometutors",
-    "/private-tuition", "/exam-prep", "/test-prep", "/study-abroad",
+    "/private-tuition", "/exam-prep", "/test-prep", "/gmat",
     "/nuvora-plus", "/for-schools", "/online-classes", "/digital-skills",
     "/entrance-exam", "/utme-2026", "/success-stories", "/download",
     "/login", "/register",

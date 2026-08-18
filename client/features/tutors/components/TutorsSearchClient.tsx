@@ -27,7 +27,11 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
 
   const params: SearchParams = useMemo(() => {
     const p: SearchParams = { sort, page_size: 12 };
-    if (subject) p.subject = subject;
+    const q = subject.trim();
+    if (q) {
+      p.q = q;
+      p.subject = q.toLowerCase().replace(/\s+/g, "-");
+    }
     if (online) p.online = true;
     if (inPerson) p.in_person = true;
     if (minPrice) p.min_price = Number(minPrice);
@@ -67,7 +71,11 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
           <span className="font-medium">Subject</span>
           <input
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSubject(v);
+            }}
+            onBlur={() => applyFilters({ subject })}
             onKeyDown={(e) => e.key === "Enter" && applyFilters({ subject })}
             placeholder="e.g. mathematics"
             className="mt-1 w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
@@ -138,7 +146,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
             <p className="text-sm text-ink-500 mb-4">
               {query.data?.pages[0]?.meta?.total_items ?? tutors.length} tutor(s) found
             </p>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
               {tutors.map((t) => (
                 <TutorCard key={t.id} tutor={t} />
               ))}

@@ -31,7 +31,7 @@ export default function HowItWorksPage() {
   ]);
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <PageHero
         cover="/hero/how-it-works.jpg"
@@ -42,7 +42,7 @@ export default function HowItWorksPage() {
         align="center"
       />
 
-
+      <div className="container-x py-12">
       <section className="mt-14">
         <h2 className="text-2xl font-extrabold mb-6">For families</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -75,6 +75,7 @@ export default function HowItWorksPage() {
           <Link href="/become-tutor" className="btn-gold inline-block">Apply to teach</Link>
         </div>
       </section>
+      </div>
     </main>
   );
 }

@@ -33,7 +33,7 @@ export default function OnlineClassesPage() {
   });
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
 
@@ -48,7 +48,7 @@ export default function OnlineClassesPage() {
         <Link href="/cohorts" className="btn-gold">Browse cohorts</Link>
       </PageHero>
 
-      <div className="mt-10 grid lg:grid-cols-[220px_1fr] gap-8 items-start">
+      <div className="container-x mt-10 grid items-start gap-8 pb-16 lg:grid-cols-[220px_1fr]">
         <aside className="lg:sticky lg:top-28">
           <CategoryRail />
         </aside>

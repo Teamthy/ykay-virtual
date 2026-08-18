@@ -10,48 +10,42 @@ const SERVICES = [
     label: "Home Tutoring",
     desc: "One-on-one lessons in the comfort of your home",
     href: "/hometutors",
-    bg: "#DFFFF2",
-    color: "#013920",
+    photo: "/hero/home-tutoring.jpg",
   },
   {
     icon: <Globe2 size={20} />,
     label: "International Tutoring",
-    desc: "Foreign-standard learning, local prices",
+    desc: "British and Nigerian curricula with a vetted tutor",
     href: "/private-tuition",
-    bg: "#FDF0E8",
-    color: "#ED6D20",
+    photo: "/hero/international.jpg",
   },
   {
     icon: <GraduationCap size={20} />,
     label: "UTME 2026",
-    desc: "Your best chance at a 300+ score",
+    desc: "Live class, recordings and CBT-style mocks",
     href: "/utme-2026",
-    bg: "#F2F9EE",
-    color: "#009A49",
+    photo: "/hero/utme.jpg",
   },
   {
     icon: <BookOpenCheck size={20} />,
     label: "Test Prep",
-    desc: "IELTS, GRE, GMAT, TEF & more",
+    desc: "IELTS, GRE, GMAT, TEF and more",
     href: "/exam-prep",
-    bg: "#FFF8E6",
-    color: "#C9A227",
+    photo: "/hero/exam-prep.jpg",
   },
   {
     icon: <Star size={20} />,
     label: "NUVORA Plus",
     desc: "Priority matching with vetted specialist tutors",
     href: "/pricing",
-    bg: "#DFFFF2",
-    color: "#4CCB31",
+    photo: "/hero/nuvora-plus.jpg",
   },
   {
     icon: <FileCheck size={20} />,
     label: "Entrance Exam",
     desc: "WAEC, IGCSE, 11+, Common Entrance, SAT",
     href: "/exam-prep",
-    bg: "#FDF0E8",
-    color: "#C8102E",
+    photo: "/hero/entrance-exam.jpg",
   },
 ];
 
@@ -72,14 +66,16 @@ export function ServicesShowcase() {
             <Link
               key={s.label}
               href={s.href}
-              className="group rounded-2xl border border-ink-100 p-5 transition-all hover:-translate-y-1 hover:shadow-card"
-              style={{ backgroundColor: s.bg }}
+              className="group overflow-hidden rounded-2xl border border-ink-100 bg-cover bg-center p-5 text-white shadow-soft"
+              style={{
+                backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.78), rgba(1,57,32,0.55)), url(${s.photo ?? "/hero/programmes.jpg"})`,
+              }}
             >
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white text-brand-navy shadow-soft">
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">
                 {s.icon}
               </div>
-              <p className="mt-3 font-bold leading-tight text-ink-800">{s.label}</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-500">{s.desc}</p>
+              <p className="mt-3 font-bold leading-tight text-white">{s.label}</p>
+              <p className="mt-1 text-xs leading-relaxed text-white/80">{s.desc}</p>
             </Link>
           ))}
         </div>

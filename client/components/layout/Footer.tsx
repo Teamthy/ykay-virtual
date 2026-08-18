@@ -17,7 +17,7 @@ const RESOURCES = [
   { href: "/resources", label: "Study Guides" },
   { href: "/blog", label: "Blog" },
   { href: "/test-prep", label: "Test Prep" },
-  { href: "/study-abroad", label: "Study Abroad" },
+  { href: "/gmat", label: "GMAT / GRE" },
   { href: "/download", label: "Android App" },
 ];
 

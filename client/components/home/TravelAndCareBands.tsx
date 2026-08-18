@@ -20,7 +20,7 @@ export function TravelAndCareBands() {
             we do not publish an unverified university-count.
           </p>
           <Link
-            href="/study-abroad"
+            href="/gmat"
             className="group mt-6 inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition-all hover:-translate-y-0.5 hover:bg-brand-gold-hover"
           >
             Start your journey

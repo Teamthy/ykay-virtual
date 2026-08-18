@@ -77,7 +77,7 @@ export default function AboutPage() {
   ]);
 
   return (
-    <main className="container-x py-12">
+    <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }} />
 
@@ -90,6 +90,7 @@ export default function AboutPage() {
         align="center"
       />
 
+      <div className="container-x py-12">
       {/* Vision */}
       <section className="mt-12 rounded-3xl bg-[#70F250] px-8 py-10 text-center md:px-14">
         <h2 className="font-display text-2xl tracking-[0.02em] text-black md:text-3xl">Our vision</h2>
@@ -201,6 +202,7 @@ export default function AboutPage() {
           </Link>
         </div>
       </section>
+      </div>
     </main>
   );
 }

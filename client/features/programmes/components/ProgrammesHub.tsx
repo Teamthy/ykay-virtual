@@ -66,7 +66,7 @@ export function ProgrammesHub() {
     { id: "s6", title: "UTME 2026 Mastery", slug: "utme-2026", href: "/utme-2026", summary: "Live class, recordings and CBT-style mocks.", format: "ONLINE_CLASS", curriculum_name: "Nigerian", exam_name: "JAMB", currency: "NGN", is_featured: true, price_min: 35000 },
     { id: "s7", title: "JSS Core Sciences", slug: "jss-sciences", href: "/curricula/nigerian", summary: "Basic science foundations for JSS1–3.", format: "COHORT", curriculum_name: "Nigerian", level_name: "JSS", currency: "NGN", is_featured: false },
     { id: "s8", title: "Python Programming", slug: "python", href: "/digital-skills", summary: "First programs to small projects.", format: "BOOTCAMP", currency: "NGN", is_featured: false, price_min: 25000 },
-    { id: "s9", title: "IELTS Academic", slug: "ielts", href: "/study-abroad", summary: "Speaking, writing, listening, reading.", format: "PRIVATE", currency: "NGN", is_featured: false },
+    { id: "s9", title: "IELTS Academic", slug: "ielts", href: "/ielts-toefl", summary: "Speaking, writing, listening, reading.", format: "PRIVATE", currency: "NGN", is_featured: false },
     { id: "s10", title: "GMAT Diagnostic Track", slug: "gmat", href: "/gmat", summary: "Plan from a diagnostic — no score promise.", format: "PRIVATE", currency: "NGN", is_featured: false },
   ];
 

@@ -158,7 +158,7 @@ export default function GmatPage() {
               <p className="mt-2 text-sm leading-relaxed text-white/80">
                 Prep for graduate applications — we do not promise a specific school or score.
               </p>
-              <Link href="/study-abroad" className="mt-4 inline-block text-sm font-bold text-brand-gold">
+              <Link href="/gmat" className="mt-4 inline-block text-sm font-bold text-brand-gold">
                 Study-abroad prep →
               </Link>
             </div>

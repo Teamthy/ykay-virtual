@@ -28,12 +28,8 @@ export default function HomePage() {
   return (
     <>
       <HeroSplit />
-      {/* Retention/marketing order: trust band right after the hook, then
-          what we offer → how it works → concrete offers → social proof →
-          objection handling → conversion CTAs. Each section scroll-reveals
-          (respects prefers-reduced-motion). */}
-      <Reveal><GuaranteeBand /></Reveal>
-      <Reveal delay={50}><ServicesShowcase /></Reveal>
+      <Reveal><ServicesShowcase /></Reveal>
+      <Reveal delay={50}><GuaranteeBand /></Reveal>
       <Reveal delay={50}><PopularProgrammes /></Reveal>
       <Reveal delay={50}><HowItWorksStrip /></Reveal>
       <Reveal delay={50}><UpcomingCohorts /></Reveal>
