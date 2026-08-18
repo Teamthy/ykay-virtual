@@ -54,9 +54,9 @@ export function PageHero({
           <ol className={cn("flex flex-wrap items-center gap-1.5", centered && !split && "justify-center")}>
             {crumbs.map((c, i) => (
               <li key={c.name} className="flex items-center gap-1.5">
-                {i > 0 && <span aria-hidden="true" className="text-ink-300">/</span>}
+                {i > 0 && <span aria-hidden="true" className={onPhoto ? "text-white/40" : "text-ink-300"}>/</span>}
                 {c.href ? (
-                  <Link href={c.href} className="hover:text-brand-navy hover:underline underline-offset-2">
+                  <Link href={c.href} className={cn("underline-offset-2 hover:underline", onPhoto ? "text-white/80 hover:text-white" : "hover:text-brand-navy")}>
                     {c.name}
                   </Link>
                 ) : (
@@ -109,7 +109,12 @@ export function PageHero({
               <Link
                 key={cta.label}
                 href={cta.href}
-                className="rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+                className={cn(
+                  "rounded-full border px-7 py-3.5 text-sm font-bold transition",
+                  onPhoto
+                    ? "border-white/50 text-white hover:bg-white/10"
+                    : "border-ink-300 text-ink-800 hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+                )}
               >
                 {cta.label}
               </Link>

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 	"time"
 
@@ -389,7 +390,37 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 // Me — resolves the current user + roles from a session token hash.
 // MarkOnboarded — first-time wizard completion marker (idempotent).
 func (s *AuthService) MarkOnboarded(ctx context.Context, userID uuid.UUID) error {
-	return s.users.SetOnboarded(ctx, userID, s.now().UTC())
+	if err := s.users.SetOnboarded(ctx, userID, s.now().UTC()); err != nil {
+		return err
+	}
+	user, err := s.users.FindByID(ctx, userID)
+	if err != nil || user == nil {
+		return nil
+	}
+	name := strings.TrimSpace(user.FirstName)
+	if name == "" {
+		if at := strings.IndexByte(user.Email, '@'); at > 0 {
+			name = user.Email[:at]
+		} else {
+			name = "there"
+		}
+	}
+	site := strings.TrimRight(os.Getenv("SITE_URL"), "/")
+	if site == "" {
+		site = "https://ykay-virtual-wtar.vercel.app"
+	}
+	_ = s.sendEmail(ctx, user.Email, "Welcome to NUVORA — you're set up",
+		notification.BrandEmail(
+			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#111111;\">Welcome to NUVORA, "+htmlEscape(name)+"</h1>"+
+				"<p style=\"margin:0 0 16px;\">Your account is ready. You can book tuition, join cohorts and message tutors from your dashboard.</p>"+
+				"<p><a href=\""+site+"/dashboard\" style=\"display:inline-block;background:#F4B400;color:#111111;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;\">Open my dashboard</a></p>"+
+				"<p style=\"margin:20px 0 0;color:#555555;font-size:13px;\">British &amp; Nigerian curricula · Exam prep · Private tuition · Live cohorts</p>"))
+	return nil
+}
+
+func htmlEscape(s string) string {
+	r := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", "\"", "&quot;")
+	return r.Replace(s)
 }
 
 func (s *AuthService) Me(ctx context.Context, tokenHash string) (*identity.User, []string, error) {

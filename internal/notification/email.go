@@ -58,12 +58,14 @@ func NewSMTPEmailSender(host, port, user, pass, from string) *SMTPEmailSender {
 }
 
 func (s *SMTPEmailSender) Send(_ context.Context, to, subject, htmlBody string) error {
-	if s.from == "" {
-		s.from = "no-reply@nuvora.com"
+	headerFrom, addr := parseFrom(s.from)
+	port := s.port
+	if port == "" {
+		port = "587"
 	}
-	addr := fmt.Sprintf("%s:%s", s.host, s.port)
+	addrHost := fmt.Sprintf("%s:%s", s.host, port)
 	msg := strings.Join([]string{
-		"From: NUVORA <" + s.from + ">",
+		"From: " + headerFrom,
 		"To: " + to,
 		"Subject: " + subject,
 		"MIME-Version: 1.0",
@@ -72,10 +74,30 @@ func (s *SMTPEmailSender) Send(_ context.Context, to, subject, htmlBody string) 
 		htmlBody,
 	}, "\r\n")
 	auth := smtp.PlainAuth("", s.user, s.pass, s.host)
-	if err := smtp.SendMail(addr, auth, s.from, []string{to}, []byte(msg)); err != nil {
+	if err := smtp.SendMail(addrHost, auth, addr, []string{to}, []byte(msg)); err != nil {
+		slog.Error("smtp send failed", "to", to, "subject", subject, "error", err)
 		return fmt.Errorf("smtp send: %w", err)
 	}
+	slog.Info("smtp sent", "to", to, "subject", subject)
 	return nil
+}
+
+// parseFrom accepts "you@domain" or "NUVORA <you@domain>" without double-wrapping.
+func parseFrom(from string) (header, addr string) {
+	from = strings.TrimSpace(from)
+	if from == "" {
+		return "NUVORA <no-reply@nuvora.com>", "no-reply@nuvora.com"
+	}
+	if i := strings.Index(from, "<"); i >= 0 {
+		j := strings.Index(from, ">")
+		if j > i {
+			addr = strings.TrimSpace(from[i+1 : j])
+			if addr != "" {
+				return from, addr
+			}
+		}
+	}
+	return "NUVORA <" + from + ">", from
 }
 
 func truncate(s string, n int) string {
