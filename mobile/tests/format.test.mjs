@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { formatNaira, formatRating, formatDate, formatDateTime, slugToTitle } from "../src/lib/format.mjs";
+import { formatNaira, formatRating, formatDate, formatDateTime, slugToTitle, countUnread } from "../src/lib/format.mjs";
 
 test("formatNaira formats whole naira", () => {
   assert.equal(formatNaira(50000), "₦50,000");
@@ -32,4 +32,10 @@ test("formatDate returns dash for empty", () => {
 test("slugToTitle capitalizes words", () => {
   assert.equal(slugToTitle("igcse-maths"), "Igcse Maths");
   assert.equal(slugToTitle(""), "");
+});
+
+test("countUnread counts unread messages", () => {
+  assert.equal(countUnread([{ is_read: true }, { is_read: false }]), 1);
+  assert.equal(countUnread([]), 0);
+  assert.equal(countUnread([{ is_read: false }, { is_read: false }]), 2);
 });

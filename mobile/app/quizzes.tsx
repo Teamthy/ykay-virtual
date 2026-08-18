@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { Screen } from "@/src/components/ui/Screen";
+import { TabLayout } from "@/src/components/TabLayout";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
@@ -58,6 +59,7 @@ export default function Quizzes() {
   useFocusEffect(useCallback(() => void load(), [load]));
 
   return (
+    <TabLayout>
     <Screen scroll>
       <ScreenHeader
         eyebrow="ASSESSMENTS"
@@ -133,6 +135,7 @@ export default function Quizzes() {
         <TabBar />
       </View>
     </Screen>
+    </TabLayout>
   );
 }
 

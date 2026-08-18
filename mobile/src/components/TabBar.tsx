@@ -20,6 +20,45 @@ type IconName = keyof typeof Ionicons.glyphMap;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+// TabItem is a separate component so the animated shared values are created
+// per tab (React rules of hooks — never call hooks inside a loop/map).
+function TabItem({
+  href,
+  label,
+  icon,
+  iconOutline,
+  active,
+}: {
+  href: string;
+  label: string;
+  icon: IconName;
+  iconOutline: IconName;
+  active: boolean;
+}) {
+  const scale = useSharedValue(1);
+  const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  return (
+    <AnimatedPressable
+      style={[styles.tab, anim]}
+      onPress={() => {
+        scale.value = withSpring(0.9, { damping: 16, stiffness: 320 });
+        void Haptics.selectionAsync().catch(() => {});
+        router.push(href as never);
+      }}
+      onPressOut={() => (scale.value = withSpring(1, { damping: 16, stiffness: 320 }))}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={label}
+    >
+      <View style={[styles.iconWrap, active && styles.iconWrapActive]}>
+        <Ionicons name={(active ? icon : iconOutline) as IconName} size={19} color={active ? colors.navy : colors.ink[400]} />
+      </View>
+      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
+    </AnimatedPressable>
+  );
+}
+
 export function TabBar() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
@@ -28,24 +67,15 @@ export function TabBar() {
     <View style={[styles.bar, { paddingBottom: insets.bottom + 8 }]}>
       {TABS.map((t) => {
         const active = pathname === t.href || pathname.startsWith(t.href + "/");
-        const scale = useSharedValue(1);
-        const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
         return (
-          <AnimatedPressable
+          <TabItem
             key={t.key}
-            style={[styles.tab, anim]}
-            onPress={() => {
-              scale.value = withSpring(0.9, { damping: 16, stiffness: 320 });
-              void Haptics.selectionAsync().catch(() => {});
-              router.push(t.href as never);
-            }}
-            onPressOut={() => (scale.value = withSpring(1, { damping: 16, stiffness: 320 }))}
-          >
-            <View style={[styles.iconWrap, active && styles.iconWrapActive]}>
-              <Ionicons name={(active ? t.icon : t.iconOutline) as IconName} size={19} color={active ? colors.navy : colors.ink[400]} />
-            </View>
-            <Text style={[styles.label, active && styles.labelActive]}>{t.label}</Text>
-          </AnimatedPressable>
+            href={t.href}
+            label={t.label}
+            icon={t.icon as IconName}
+            iconOutline={t.iconOutline as IconName}
+            active={active}
+          />
         );
       })}
     </View>
@@ -70,7 +100,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconWrapActive: { backgroundColor: colors.goldLight },
-  icon: { fontSize: 18 },
   label: { fontSize: type.caption, fontWeight: "600", color: colors.ink[400] },
   labelActive: { color: colors.navy, fontWeight: "800" },
 });

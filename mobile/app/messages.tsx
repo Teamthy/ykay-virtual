@@ -8,22 +8,27 @@ import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
 import { colors } from "@/src/lib/theme";
 import { getConversations, type ConversationItem } from "@/src/lib/messaging";
+import { usePolling } from "@/src/lib/realtime";
 
 // Messages — booking/cohort-scoped conversations with tutors, parents and
-// learners. Direct contact outside these threads is not possible.
+// learners. Direct contact outside these threads is not possible. Polled at
+// short intervals for a real-time feel (no websocket transport), and
+// offline-cached so the last thread list stays readable.
 
 export default function MessagesScreen() {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
 
   const load = useCallback(async () => {
     try {
-      setConversations(await getConversations());
+      const list = await getConversations();
+      setConversations(list);
     } catch {
-      setConversations([]);
+      setConversations((prev) => prev); // keep stale cache
     }
   }, []);
 
   useFocusEffect(useCallback(() => void load(), [load]));
+  usePolling(load, { intervalMs: 8000 }); // real-time-ish refresh while mounted
 
   return (
     <Screen scroll>

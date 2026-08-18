@@ -38,3 +38,7 @@ export function slugToTitle(slug) {
     .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
     .join(" ");
 }
+
+export function countUnread(messages) {
+  return messages.filter((m) => !m.is_read).length;
+}

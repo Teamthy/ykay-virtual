@@ -1,8 +1,13 @@
 import { apiFetch } from "./api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Messaging — booking/cohort-scoped conversations (GET /me/conversations).
 // Same backend shapes the tutor screens use; this module is role-agnostic so
 // parents, students and tutors all read their own threads.
+//
+// Offline-first: conversations and messages are cached to AsyncStorage and
+// served as stale fallback when the network fails, so recent chats stay
+// readable offline. Sends are best-effort with an optimistic append.
 
 export type ConversationItem = {
   id: string;
@@ -33,17 +38,62 @@ export type Message = {
   updated_at: string;
 };
 
-export function getConversations(): Promise<ConversationItem[]> {
-  return apiFetch<ConversationItem[]>("/me/conversations").then((r) => r.data ?? []);
+const CONV_KEY = "msg:conversations";
+const msgKey = (id: string) => `msg:thread:${id}`;
+
+async function readCache<T>(key: string): Promise<T | null> {
+  try {
+    const raw = await AsyncStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
 }
 
-export function getMessages(conversationId: string): Promise<Message[]> {
-  return apiFetch<Message[]>(`/me/conversations/${conversationId}/messages`).then((r) => r.data ?? []);
+async function writeCache(key: string, data: unknown): Promise<void> {
+  try {
+    await AsyncStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // best-effort
+  }
 }
 
-export function sendMessage(conversationId: string, body: string): Promise<Message> {
-  return apiFetch<Message>(`/me/conversations/${conversationId}/messages`, {
-    method: "POST",
-    body: JSON.stringify({ body }),
-  }).then((r) => r.data);
+export async function getConversations(): Promise<ConversationItem[]> {
+  try {
+    const res = await apiFetch<ConversationItem[]>("/me/conversations");
+    const list = res.data ?? [];
+    writeCache(CONV_KEY, list).catch(() => {});
+    return list;
+  } catch {
+    return (await readCache<ConversationItem[]>(CONV_KEY)) ?? [];
+  }
+}
+
+export async function getMessages(conversationId: string): Promise<Message[]> {
+  const key = msgKey(conversationId);
+  try {
+    const res = await apiFetch<Message[]>(`/me/conversations/${conversationId}/messages`);
+    const list = res.data ?? [];
+    writeCache(key, list).catch(() => {});
+    return list;
+  } catch {
+    return (await readCache<Message[]>(key)) ?? [];
+  }
+}
+
+export async function sendMessage(conversationId: string, body: string): Promise<Message | null> {
+  try {
+    const msg = await apiFetch<Message>(`/me/conversations/${conversationId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    }).then((r) => r.data);
+    // Optimistically refresh the cached thread with the new message.
+    const existing = await readCache<Message[]>(msgKey(conversationId));
+    if (existing) {
+      writeCache(msgKey(conversationId), [msg, ...existing]).catch(() => {});
+    }
+    return msg;
+  } catch {
+    return null; // caller can surface an error
+  }
 }

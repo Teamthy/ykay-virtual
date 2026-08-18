@@ -5,6 +5,7 @@ import Animated, { FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "@/src/components/ui/Screen";
+import { TabLayout } from "@/src/components/TabLayout";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
@@ -81,6 +82,7 @@ export default function Account() {
   const initial = me?.first_name?.[0] ?? me?.email?.[0]?.toUpperCase() ?? "?";
 
   return (
+    <TabLayout>
     <Screen scroll>
       {/* Profile hero */}
       <Animated.View entering={FadeInUp.delay(60).springify().damping(16)}>
@@ -172,6 +174,7 @@ export default function Account() {
         <TabBar />
       </View>
     </Screen>
+    </TabLayout>
   );
 }
 

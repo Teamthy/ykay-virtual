@@ -9,20 +9,17 @@ import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { colors, radius } from "@/src/lib/theme";
-import { apiFetch } from "@/src/lib/api";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  type NotificationItem as Notif,
+} from "@/src/lib/notifications";
+import { usePolling } from "@/src/lib/realtime";
 
 // Notifications — premium notification centre: list, unread indicator,
-// mark read / read-all.
-
-type Notif = {
-  id: string;
-  type: string;
-  title: string;
-  body?: string;
-  is_read: boolean;
-  created_at: string;
-};
+// mark read / read-all. Offline-cached + polled for a real-time feel.
 
 const TYPE_ICONS: Record<string, string> = {
   LESSON_REMINDER: "alarm-outline",
@@ -38,11 +35,9 @@ export default function Notifications() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch<Notif[]>("/me/notifications");
-      setNotifs(res.data ?? []);
+      setNotifs(await getNotifications());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load notifications");
     } finally {
@@ -51,24 +46,17 @@ export default function Notifications() {
   }, []);
 
   useFocusEffect(useCallback(() => void load(), [load]));
+  usePolling(load, { intervalMs: 15000, enabled: !error }); // real-time-ish refresh
 
   const markRead = async (id: string) => {
     void Haptics.selectionAsync().catch(() => {});
-    try {
-      await apiFetch(`/me/notifications/${id}/read`, { method: "POST" });
-      setNotifs((n) => n.map((x) => (x.id === id ? { ...x, is_read: true } : x)));
-    } catch {
-      // best-effort
-    }
+    await markNotificationRead(id);
+    setNotifs((n) => n.map((x) => (x.id === id ? { ...x, is_read: true } : x)));
   };
 
   const readAll = async () => {
-    try {
-      await apiFetch("/me/notifications/read-all", { method: "POST" });
-      setNotifs((n) => n.map((x) => ({ ...x, is_read: true })));
-    } catch {
-      // best-effort
-    }
+    await markAllNotificationsRead();
+    setNotifs((n) => n.map((x) => ({ ...x, is_read: true })));
   };
 
   const unread = notifs.filter((n) => !n.is_read).length;

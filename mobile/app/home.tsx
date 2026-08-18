@@ -5,7 +5,7 @@ import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { TabBar } from "@/src/components/TabBar";
+import { TabLayout } from "@/src/components/TabLayout";
 import { colors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { Ionicons } from "@expo/vector-icons";
@@ -48,6 +48,7 @@ export default function Home() {
   const greeting = me?.first_name?.trim() || "there";
 
   return (
+    <TabLayout>
     <Screen scroll>
       <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
         <AppText variant="h1">Welcome back, {greeting}</AppText>
@@ -106,10 +107,8 @@ export default function Home() {
         </Animated.View>
       </View>
 
-      <View style={styles.tab}>
-        <TabBar />
-      </View>
     </Screen>
+    </TabLayout>
   );
 }
 
@@ -126,5 +125,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 6,
   },
-  tab: { marginTop: 24 },
 });

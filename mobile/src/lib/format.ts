@@ -39,3 +39,8 @@ export function slugToTitle(slug: string): string {
     .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
     .join(" ");
 }
+
+// Pure helper: optimistic unread count from a message list.
+export function countUnread(messages: { is_read?: boolean }[]): number {
+  return messages.filter((m) => !m.is_read).length;
+}

@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "@/src/components/ui/Screen";
+import { TabLayout } from "@/src/components/TabLayout";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
@@ -96,6 +97,7 @@ export default function Lms() {
   );
 
   return (
+    <TabLayout>
     <Screen scroll contentContainerStyle={styles.screen}>
       <ScreenHeader
         eyebrow="LEARNING"
@@ -255,6 +257,7 @@ export default function Lms() {
         <TabBar />
       </View>
     </Screen>
+    </TabLayout>
   );
 }
 
