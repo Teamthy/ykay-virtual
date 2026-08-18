@@ -124,6 +124,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// Account hub (phase 37)
 	mux.HandleFunc("PUT "+v1+"/auth/me/profile", handlers.Account.UpdateProfile)
 	mux.HandleFunc("POST "+v1+"/me/avatar", handlers.Account.UploadAvatar)
+	mux.HandleFunc("POST "+v1+"/me/uploads", handlers.Account.UploadResource)
 	mux.HandleFunc("GET "+v1+"/auth/me/export", handlers.Account.ExportData)
 	mux.HandleFunc("POST "+v1+"/auth/me/delete", handlers.Account.DeleteAccount)
 
@@ -269,6 +270,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 
 	// Admin console (Phase 11)
 	mux.HandleFunc("GET "+v1+"/admin/stats", handlers.Admin.Stats)
+	// SUPER_ADMIN — user/role management
+	mux.HandleFunc("GET "+v1+"/admin/users", handlers.Admin.ListUsers)
+	mux.HandleFunc("GET "+v1+"/admin/users/roles", handlers.Admin.ListRoles)
+	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/role", handlers.Admin.SetUserRole)
+	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/status", handlers.Admin.SetUserStatus)
 	mux.HandleFunc("GET "+v1+"/admin/stats/overview2", handlers.Admin.Stats2)
 	mux.HandleFunc("GET "+v1+"/admin/support", handlers.Admin.ListSupport)
 	mux.HandleFunc("POST "+v1+"/admin/support/{ticketId}/status", handlers.Admin.SetSupportStatus)

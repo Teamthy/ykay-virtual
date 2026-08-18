@@ -144,9 +144,9 @@ export default function AdminAnalyticsPage() {
             {data.cohorts.map((c) => (
               <div key={c.cohort_id}>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{c.title}</span>
-                  <span className="text-ink-500">
-                    {c.enrolled}/{c.capacity} · {Math.round(c.fill_rate * 100)}%
+                  <span className="truncate pr-2 font-medium">{c.title}</span>
+                  <span className="shrink-0 text-ink-500">
+                    {c.enrolled}/{c.capacity} · <b className="text-ink-800">{Math.round(c.fill_rate * 100)}%</b>
                   </span>
                 </div>
                 <div className="mt-1 h-2 rounded-full bg-ink-100">
@@ -155,6 +155,12 @@ export default function AdminAnalyticsPage() {
                     style={{ width: `${Math.min(c.fill_rate * 100, 100)}%` }}
                   />
                 </div>
+                {c.lessons_count > 0 && (
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-ink-400">
+                    <span>{c.lessons_count} lessons</span>
+                    <span>Attendance {Math.round((c.attendance_rate ?? 0) * 100)}%</span>
+                  </div>
+                )}
               </div>
             ))}
           </CardContent>
@@ -172,6 +178,29 @@ export default function AdminAnalyticsPage() {
                 title="No paid orders yet"
                 description="Revenue by programme appears once parents complete checkout."
               />
+            )}
+            {data.revenue.length > 0 && (
+              <div className="mb-5 space-y-3">
+                {(() => {
+                  const maxRev = Math.max(...data.revenue.map((r) => r.revenue), 1);
+                  return data.revenue.slice(0, 6).map((r) => (
+                    <div key={r.programme_id}>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="truncate pr-2 font-semibold text-ink-700">
+                          {r.programme_title || r.programme_id.slice(0, 8)}
+                        </span>
+                        <span className="shrink-0 font-bold text-brand-navy">{fmtMoney(r.revenue)}</span>
+                      </div>
+                      <div className="mt-1 h-3 w-full overflow-hidden rounded-md bg-ink-100">
+                        <div
+                          className="h-full rounded-md bg-gradient-to-r from-brand-green to-brand-blue"
+                          style={{ width: `${Math.max((r.revenue / maxRev) * 100, r.revenue > 0 ? 4 : 0)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
             )}
             <table className="w-full text-sm">
               <thead>

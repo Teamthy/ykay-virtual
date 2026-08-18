@@ -275,6 +275,7 @@ func main() {
 		WithCatalogueCache(cacheBackend)
 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
 	adminSvc.WithPayments(repos.Orders, repos.Payouts)
+	adminSvc.WithUsers(repos.Users, repos.Roles)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
 		repos.Assignments, audit).WithNotifications(messagingSvc)
 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)

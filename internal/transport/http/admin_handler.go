@@ -49,6 +49,23 @@ func (h *AdminHandler) requireAdmin(w http.ResponseWriter, r *http.Request) *uui
 	return &actor.UserID
 }
 
+// requireSuperAdmin — role/account management is reserved for SUPER_ADMIN
+// only (ACADEMIC_ADMIN can manage content/ops but must never grant roles or
+// suspend platform accounts — YK-008).
+func (h *AdminHandler) requireSuperAdmin(w http.ResponseWriter, r *http.Request) *uuid.UUID {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return nil
+	}
+	for _, role := range actor.Roles {
+		if role == "SUPER_ADMIN" {
+			return &actor.UserID
+		}
+	}
+	WriteAppError(w, pkg.Forbidden("SUPER_ADMIN access required"))
+	return nil
+}
+
 func (h *AdminHandler) Stats(w http.ResponseWriter, r *http.Request) {
 	if h.requireAdmin(w, r) == nil {
 		return
@@ -505,6 +522,95 @@ func (h *AdminHandler) LessonsToday(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, lessons, nil)
+}
+
+// ListUsers — SUPER_ADMIN: paginated user list with roles, search + status filter.
+func (h *AdminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+	if h.requireSuperAdmin(w, r) == nil {
+		return
+	}
+	p := ParsePagination(r)
+	users, total, err := h.svc.ListUsers(r.Context(),
+		r.URL.Query().Get("search"),
+		firstNonEmpty(r.URL.Query().Get("status"), p.Filters["status"]),
+		p.Page, p.PageSize)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, users, p.Meta(int64(total)))
+}
+
+// ListRoles — SUPER_ADMIN: all assignable platform roles (admin UI dropdown).
+func (h *AdminHandler) ListRoles(w http.ResponseWriter, r *http.Request) {
+	if h.requireSuperAdmin(w, r) == nil {
+		return
+	}
+	roles, err := h.svc.ListRoles(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, roles, nil)
+}
+
+// SetUserRole — SUPER_ADMIN: grant/revoke a single role on a user.
+func (h *AdminHandler) SetUserRole(w http.ResponseWriter, r *http.Request) {
+	actorID := h.requireSuperAdmin(w, r)
+	if actorID == nil {
+		return
+	}
+	userID, err := ParseUUID(r, "userId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Role  string `json:"role"`
+		Grant *bool  `json:"grant"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if req.Grant == nil {
+		WriteAppError(w, pkg.BadRequest("grant (true/false) is required", nil))
+		return
+	}
+	if err := h.svc.SetUserRole(r.Context(), *actorID, userID, req.Role, *req.Grant); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	action := "revoked"
+	if *req.Grant {
+		action = "granted"
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"role": req.Role, "action": action}, nil)
+}
+
+// SetUserStatus — SUPER_ADMIN: activate/suspend a user account.
+func (h *AdminHandler) SetUserStatus(w http.ResponseWriter, r *http.Request) {
+	actorID := h.requireSuperAdmin(w, r)
+	if actorID == nil {
+		return
+	}
+	userID, err := ParseUUID(r, "userId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Status string `json:"status"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetUserStatus(r.Context(), *actorID, userID, req.Status); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"status": req.Status}, nil)
 }
 
 // ConfirmManualPayment — admin confirms a manual/bank payment.

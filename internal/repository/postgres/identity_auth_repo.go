@@ -11,6 +11,7 @@ import (
 	"ykay-virtual/internal/domain/identity"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 // Identity repos — users, sessions, roles (migration 000001_identity).
@@ -125,6 +126,99 @@ func (r *UserRepo) UpdateLastLogin(ctx context.Context, id uuid.UUID, at time.Ti
 		"UPDATE users SET last_login_at = $1, updated_at = NOW() WHERE id = $2", at, id)
 	if err != nil {
 		return fmt.Errorf("update last login: %w", err)
+	}
+	return nil
+}
+
+// ListUsers — admin user-management console (SUPER_ADMIN). Searches by email
+// or name, filters by account status, and returns role names joined via
+// user_roles. Paginated; total is the unfiltered-by-page count.
+func (r *UserRepo) ListUsers(ctx context.Context, search, status string, offset, limit int) ([]identity.UserWithRoles, int, error) {
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	where := "WHERE u.deleted_at IS NULL"
+	args := []any{}
+	arg := func(v any) string {
+		args = append(args, v)
+		return fmt.Sprintf("$%d", len(args))
+	}
+	if search != "" {
+		where += " AND (u.email ILIKE " + arg("%"+search+"%") + " OR COALESCE(u.first_name,'') ILIKE " + arg("%"+search+"%") + " OR COALESCE(u.last_name,'') ILIKE " + arg("%"+search+"%") + ")"
+	}
+	if status != "" {
+		where += " AND u.status = " + arg(status)
+	}
+
+	var total int
+	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users u "+where).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("count users: %w", err)
+	}
+
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.avatar_url, u.password_hash,
+		       u.status, u.timezone, u.email_verified_at, u.phone_verified_at, u.last_login_at,
+		       u.onboarded_at, u.created_at, u.updated_at,
+		       COALESCE((SELECT ARRAY_AGG(r.name ORDER BY r.name) FROM user_roles ur JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id), '{}')
+		FROM users u `+where+`
+		ORDER BY u.created_at DESC
+		LIMIT `+arg(limit)+` OFFSET `+arg(offset), args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list users: %w", err)
+	}
+	defer rows.Close()
+
+	out := []identity.UserWithRoles{}
+	for rows.Next() {
+		var u identity.UserWithRoles
+		var phone, firstName, lastName, avatarURL sql.NullString
+		var emailVerifiedAt, phoneVerifiedAt, lastLoginAt, onboardedAt sql.NullTime
+		if err := rows.Scan(&u.ID, &u.Email, &firstName, &lastName, &phone, &avatarURL, &u.PasswordHash,
+			&u.Status, &u.Timezone, &emailVerifiedAt, &phoneVerifiedAt, &lastLoginAt, &onboardedAt,
+			&u.CreatedAt, &u.UpdatedAt, pq.Array(&u.Roles)); err != nil {
+			return nil, 0, err
+		}
+		if firstName.Valid {
+			u.FirstName = firstName.String
+		}
+		if lastName.Valid {
+			u.LastName = lastName.String
+		}
+		if phone.Valid {
+			u.Phone = &phone.String
+		}
+		if avatarURL.Valid {
+			u.AvatarURL = &avatarURL.String
+		}
+		if emailVerifiedAt.Valid {
+			u.EmailVerifiedAt = &emailVerifiedAt.Time
+		}
+		if phoneVerifiedAt.Valid {
+			u.PhoneVerifiedAt = &phoneVerifiedAt.Time
+		}
+		if lastLoginAt.Valid {
+			u.LastLoginAt = &lastLoginAt.Time
+		}
+		if onboardedAt.Valid {
+			u.OnboardedAt = &onboardedAt.Time
+		}
+		out = append(out, u)
+	}
+	return out, total, rows.Err()
+}
+
+// SetStatus — activate/suspend a user account (SUPER_ADMIN only).
+func (r *UserRepo) SetStatus(ctx context.Context, id uuid.UUID, status string) error {
+	res, err := r.db.ExecContext(ctx,
+		"UPDATE users SET status = $2, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL", id, status)
+	if err != nil {
+		return fmt.Errorf("set user status: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
 	}
 	return nil
 }
@@ -279,6 +373,38 @@ func (r *RoleRepo) RemoveAllForUser(ctx context.Context, userID uuid.UUID) error
 	if _, err := r.db.ExecContext(ctx,
 		`DELETE FROM user_roles WHERE user_id = $1`, userID); err != nil {
 		return fmt.Errorf("remove roles for user: %w", err)
+	}
+	return nil
+}
+
+func (r *RoleRepo) ListRoles(ctx context.Context) ([]identity.Role, error) {
+	rows, err := r.db.QueryContext(ctx,
+		"SELECT id, name, description, created_at FROM roles ORDER BY name")
+	if err != nil {
+		return nil, fmt.Errorf("list roles: %w", err)
+	}
+	defer rows.Close()
+	out := []identity.Role{}
+	for rows.Next() {
+		var role identity.Role
+		var desc sql.NullString
+		if err := rows.Scan(&role.ID, &role.Name, &desc, &role.CreatedAt); err != nil {
+			return nil, err
+		}
+		if desc.Valid {
+			role.Description = &desc.String
+		}
+		out = append(out, role)
+	}
+	return out, rows.Err()
+}
+
+func (r *RoleRepo) RemoveRoleForUser(ctx context.Context, userID uuid.UUID, roleName string) error {
+	_, err := r.db.ExecContext(ctx, `
+		DELETE FROM user_roles ur USING roles r
+		WHERE ur.role_id = r.id AND ur.user_id = $1 AND r.name = $2`, userID, roleName)
+	if err != nil {
+		return fmt.Errorf("remove role for user: %w", err)
 	}
 	return nil
 }

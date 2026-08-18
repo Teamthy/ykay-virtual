@@ -21,6 +21,27 @@ type AccountHandler struct {
 	storage storage.Storage
 }
 
+// resourceExts maps accepted upload content types to file extensions (LMS
+// materials: documents, spreadsheets, presentations, images, media).
+var resourceExts = map[string]string{
+	"application/pdf":       ".pdf",
+	"image/jpeg":            ".jpg",
+	"image/png":             ".png",
+	"image/webp":            ".webp",
+	"application/msword":    ".doc",
+	"application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+	"application/vnd.ms-powerpoint":    ".ppt",
+	"application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
+	"application/vnd.ms-excel":         ".xls",
+	"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+	"video/mp4":       ".mp4",
+	"video/webm":      ".webm",
+	"audio/mpeg":      ".mp3",
+	"text/plain":      ".txt",
+	"text/markdown":   ".md",
+	"application/octet-stream": ".bin",
+}
+
 func NewAccountHandler(svc *service.AccountService) *AccountHandler {
 	return &AccountHandler{svc: svc}
 }
@@ -111,6 +132,48 @@ func (h *AccountHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"avatar_url": url}, nil)
+}
+
+// UploadResource — POST /me/uploads (authenticated). Raw file body uploaded to
+// the public bucket; returns the object URL for use as an LMS material. MIME is
+// validated against an allowlist and size is capped server-side (25 MiB so
+// short lesson videos can be hosted on the free plan).
+func (h *AccountHandler) UploadResource(w http.ResponseWriter, r *http.Request) {
+	userID, ok := h.requireUser(w, r)
+	if !ok {
+		return
+	}
+	if h.storage == nil {
+		WriteAppError(w, pkg.Conflict("object storage is not configured"))
+		return
+	}
+	ct := strings.ToLower(strings.TrimSpace(r.Header.Get("Content-Type")))
+	ext, ok := resourceExts[ct]
+	if !ok {
+		WriteAppError(w, pkg.BadRequest("file type not allowed (PDF, Office, images, mp4/webm/mp3)", nil))
+		return
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 26<<20) // 26 MiB cap (hard), 25 MiB effective
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("could not read upload: "+err.Error(), nil))
+		return
+	}
+	if len(data) > 25<<20 {
+		WriteAppError(w, pkg.BadRequest("file exceeds the 25 MiB limit", nil))
+		return
+	}
+	if len(data) == 0 {
+		WriteAppError(w, pkg.BadRequest("empty upload", nil))
+		return
+	}
+	key := "uploads/" + userID.String() + "/" + uuid.NewString() + ext
+	if err := h.storage.Upload(r.Context(), storage.BucketPublic, key, data, ct); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	url := h.storage.GetPublicURL(storage.BucketPublic, key)
+	pkg.WriteSuccess(w, http.StatusCreated, map[string]any{"url": url, "content_type": ct, "size": len(data)}, nil)
 }
 
 // ExportData — GET /auth/me/export (JSON download)

@@ -18,6 +18,7 @@ import {
   createAssessment,
   getLessonAttendance,
   markAttendance,
+  uploadResourceFile,
   type AttendanceRow,
 } from "@/features/lms/api";
 import {
@@ -52,6 +53,7 @@ export default function LmsTutorCohortPage() {
   });
   const [assignmentDraft, setAssignmentDraft] = useState({ title: "", instructions: "", max_score: "10" });
   const [resourceDraft, setResourceDraft] = useState({ title: "", description: "", file_url: "" });
+  const [resourceUploading, setResourceUploading] = useState(false);
   const [showQuizBuilder, setShowQuizBuilder] = useState(false);
   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
   const [showResourceForm, setShowResourceForm] = useState(false);
@@ -422,13 +424,54 @@ export default function LmsTutorCohortPage() {
           {showResourceForm && (
             <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
               <p className="text-sm font-bold text-ink-700">Material or video</p>
-              <p className="text-xs text-ink-500">Paste a YouTube, Drive, or file URL. Hosting video files on this server is not enabled on the free plan.</p>
+              <p className="text-xs text-ink-500">
+                Upload a file (PDF, Office, image, video up to 25&nbsp;MB) or paste a YouTube/Drive link.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-ink-200 p-3">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.mp4,.webm,.mp3,.md,.txt"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    setResourceUploading(true);
+                    try {
+                      const { url } = await uploadResourceFile(f);
+                      setResourceDraft((d) => ({ ...d, file_url: url }));
+                      toast.success(`Uploaded ${f.name}`);
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Upload failed");
+                    } finally {
+                      setResourceUploading(false);
+                      e.target.value = "";
+                    }
+                  }}
+                  className="block text-xs text-ink-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-navy file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"
+                  aria-label="Upload a material file"
+                />
+                {resourceDraft.file_url ? (
+                  <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-green-700">
+                    ✓ attached
+                    <button
+                      type="button"
+                      onClick={() => setResourceDraft((d) => ({ ...d, file_url: "" }))}
+                      className="text-green-800 hover:underline"
+                    >
+                      remove
+                    </button>
+                  </span>
+                ) : resourceUploading ? (
+                  <span className="text-xs font-semibold text-ink-500">Uploading…</span>
+                ) : (
+                  <span className="text-xs text-ink-400">or paste a link below</span>
+                )}
+              </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <input type="text" aria-label="Resource title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
                 <input type="text" aria-label="Resource description" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
                 <input type="url" aria-label="File or video URL" placeholder="https://youtube.com/watch?v=... or file URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
               </div>
-              <button type="button" disabled={createResource.isPending || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+              <button type="button" disabled={createResource.isPending || resourceUploading || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
                 {createResource.isPending ? "Adding..." : "Add material"}
               </button>
             </div>

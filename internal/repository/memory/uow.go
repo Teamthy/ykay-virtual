@@ -160,5 +160,7 @@ func NewMemoryStore() *MemoryStore {
 	}
 	store.StudentLinks = NewParentStudentLinkMemory(students)
 	store.Analytics = NewAnalyticsMemory(store) // reads live from the same store
+	// Link the role store so admin user-listing can join role names (dev mode).
+	store.Users.SetRoleStore(store.Roles)
 	return store
 }

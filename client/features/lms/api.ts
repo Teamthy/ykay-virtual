@@ -229,6 +229,18 @@ export async function createCohortResource(
   return res.data;
 }
 
+// Upload a material file (PDF/Office/image/video) → public object URL, which
+// the tutor then attaches to a cohort resource. Raw body; Content-Type is the
+// file's MIME (apiFetch lets init.headers override its JSON default).
+export async function uploadResourceFile(file: File): Promise<{ url: string }> {
+  const res = await apiFetch<{ url: string }>("/me/uploads", {
+    method: "POST",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  });
+  return res.data;
+}
+
 export async function getCohortEnrollments(cohortId: string): Promise<RosterEntry[]> {
   const res = await apiFetch<RosterEntry[]>(`/cohorts/${cohortId}/enrollments`);
   return res.data ?? [];

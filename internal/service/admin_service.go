@@ -41,8 +41,127 @@ type AdminService struct {
 	catalogueCache cache.Cache
 	orders         payment.OrderRepository
 	payouts        payment.PayoutRepository
+	users          identity.UserRepository
+	roles          identity.RoleRepository
 	audit          identity.AuditService
 	now            func() time.Time
+}
+
+// WithUsers wires the user + role repositories for the SUPER_ADMIN
+// user-management console (list users, assign/revoke roles, suspend/activate).
+func (s *AdminService) WithUsers(users identity.UserRepository, roles identity.RoleRepository) *AdminService {
+	s.users = users
+	s.roles = roles
+	return s
+}
+
+// ListUsers returns a paginated, filtered list of platform users with their
+// granted roles. Filters by search term (email/name) and account status.
+func (s *AdminService) ListUsers(ctx context.Context, search, status string, page, pageSize int) ([]identity.UserWithRoles, int, error) {
+	if s.users == nil {
+		return nil, 0, errors.New("user store unavailable")
+	}
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * pageSize
+	return s.users.ListUsers(ctx, search, status, offset, pageSize)
+}
+
+// ListRoles returns every assignable role on the platform (admin UI).
+func (s *AdminService) ListRoles(ctx context.Context) ([]identity.Role, error) {
+	if s.roles == nil {
+		return nil, errors.New("role store unavailable")
+	}
+	return s.roles.ListRoles(ctx)
+}
+
+// SetUserRole grants or revokes a single named role on a user (SUPER_ADMIN).
+// It refuses to strip the last SUPER_ADMIN grant from the acting user or to
+// leave the platform without a SUPER_ADMIN (fail-closed role safety).
+func (s *AdminService) SetUserRole(ctx context.Context, actorID, userID uuid.UUID, role string, grant bool) error {
+	if s.roles == nil {
+		return errors.New("role store unavailable")
+	}
+	role = strings.ToUpper(strings.TrimSpace(role))
+	if role == "" {
+		return fmt.Errorf("%w: role is required", domain.ErrInvalidInput)
+	}
+	r, err := s.roles.FindByName(ctx, role)
+	if err != nil {
+		return err
+	}
+	// Guard: never allow self-removal of the last SUPER_ADMIN (lockout).
+	if role == "SUPER_ADMIN" && !grant && actorID == userID {
+		// Count remaining super admins after hypothetical removal.
+		adminRoles, _ := s.roles.RolesForUser(ctx, userID)
+		has := false
+		for _, ar := range adminRoles {
+			if ar.Name == "SUPER_ADMIN" {
+				has = true
+				break
+			}
+		}
+		if has {
+			if err := s.assertAnotherSuperAdmin(ctx, userID); err != nil {
+				return err
+			}
+		}
+	}
+	if grant {
+		return s.roles.AssignToUser(ctx, userID, r.ID)
+	}
+	return s.roles.RemoveRoleForUser(ctx, userID, role)
+}
+
+// assertAnotherSuperAdmin checks that at least one OTHER user retains
+// SUPER_ADMIN before the given user loses it.
+func (s *AdminService) assertAnotherSuperAdmin(ctx context.Context, except uuid.UUID) error {
+	_, total, err := s.users.ListUsers(ctx, "", "ACTIVE", 0, 500)
+	if err != nil {
+		return err
+	}
+	// ListUsers has a hard 200 cap per call; walk pages to be safe.
+	found := false
+	for page := 1; page <= (total/200)+1 && !found; page++ {
+		users, _, lerr := s.users.ListUsers(ctx, "", "ACTIVE", (page-1)*200, 200)
+		if lerr != nil {
+			return lerr
+		}
+		for _, u := range users {
+			if u.ID == except {
+				continue
+			}
+			for _, r := range u.Roles {
+				if r == "SUPER_ADMIN" {
+					found = true
+					break
+				}
+			}
+		}
+	}
+	if !found {
+		return fmt.Errorf("%w: cannot remove the last SUPER_ADMIN on the platform", domain.ErrConflict)
+	}
+	return nil
+}
+
+// SetUserStatus activates (ACTIVE) or suspends (SUSPENDED) a user account.
+// A SUPER_ADMIN cannot suspend themselves.
+func (s *AdminService) SetUserStatus(ctx context.Context, actorID, userID uuid.UUID, status string) error {
+	if s.users == nil {
+		return errors.New("user store unavailable")
+	}
+	status = strings.ToUpper(strings.TrimSpace(status))
+	switch status {
+	case "ACTIVE", "SUSPENDED", "PENDING":
+	default:
+		return fmt.Errorf("%w: invalid status %q", domain.ErrInvalidInput, status)
+	}
+	if actorID == userID && status == "SUSPENDED" {
+		return fmt.Errorf("%w: you cannot suspend your own account", domain.ErrForbidden)
+	}
+	return s.users.SetStatus(ctx, userID, status)
 }
 
 func NewAdminService(stats admin.StatsRepository, blog content.AdminBlogRepository,

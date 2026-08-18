@@ -42,6 +42,13 @@ type Role struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+// UserWithRoles — a user joined with their granted roles, returned by the
+// admin user-management console (SUPER_ADMIN).
+type UserWithRoles struct {
+	User
+	Roles []string `json:"roles"`
+}
+
 type UserRole struct {
 	ID        uuid.UUID  `json:"id"`
 	UserID    uuid.UUID  `json:"user_id"`

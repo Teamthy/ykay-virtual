@@ -20,6 +20,14 @@ type UserRepository interface {
 	UpdateLastLogin(ctx context.Context, id uuid.UUID, at time.Time) error
 	// SetOnboarded marks the first-time wizard complete (000031).
 	SetOnboarded(ctx context.Context, id uuid.UUID, at time.Time) error
+	// ListUsers returns a paginated, filtered list of users with roles, used by
+	// the admin user-management console (SUPER_ADMIN). total is the count
+	// ignoring pagination. search matches email/name; status filters the
+	// account status (empty = any).
+	ListUsers(ctx context.Context, search, status string, offset, limit int) ([]UserWithRoles, int, error)
+	// SetStatus activates/suspends a user account. Returns ErrNotFound when the
+	// user does not exist.
+	SetStatus(ctx context.Context, id uuid.UUID, status string) error
 }
 
 type SessionRepository interface {
@@ -37,6 +45,11 @@ type RoleRepository interface {
 	// RemoveAllForUser — deletes every role grant for the user (used by the
 	// self-service "set my primary role" onboarding step).
 	RemoveAllForUser(ctx context.Context, userID uuid.UUID) error
+	// ListRoles returns every role defined on the platform (admin UI).
+	ListRoles(ctx context.Context) ([]Role, error)
+	// RemoveRoleForUser revokes a single named role from a user (no-op if the
+	// grant does not exist).
+	RemoveRoleForUser(ctx context.Context, userID uuid.UUID, roleName string) error
 }
 
 type ParentProfileRepository interface {

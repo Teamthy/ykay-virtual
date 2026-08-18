@@ -280,3 +280,50 @@ export async function listAdminPayouts(status?: string): Promise<AdminPayout[]> 
   const res = await apiFetch<AdminPayout[]>(`/admin/payouts${status ? `?status=${status}` : ""}`);
   return res.data ?? [];
 }
+
+// --- SUPER_ADMIN user/role management -------------------------------------
+
+export type AdminRole = { id: string; name: string; description?: string | null };
+
+export type AdminUserRow = {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string | null;
+  status: string;
+  timezone?: string;
+  roles: string[];
+  email_verified_at?: string | null;
+  last_login_at?: string | null;
+  onboarded_at?: string | null;
+  created_at: string;
+};
+
+export async function listAdminUsers(params: {
+  search?: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<{ users: AdminUserRow[]; total: number }> {
+  const qs = new URLSearchParams();
+  if (params.search) qs.set("search", params.search);
+  if (params.status) qs.set("status", params.status);
+  qs.set("page", String(params.page ?? 1));
+  qs.set("page_size", String(params.pageSize ?? 50));
+  const res = await apiFetch<AdminUserRow[]>(`/admin/users?${qs}`);
+  return { users: res.data ?? [], total: res.meta?.total_items ?? 0 };
+}
+
+export async function listAdminRoles(): Promise<AdminRole[]> {
+  const res = await apiFetch<AdminRole[]>("/admin/users/roles");
+  return res.data ?? [];
+}
+
+export async function setUserRole(userId: string, role: string, grant: boolean): Promise<void> {
+  await apiFetch(`/admin/users/${userId}/role`, { method: "POST", body: JSON.stringify({ role, grant }) });
+}
+
+export async function setUserStatus(userId: string, status: string): Promise<void> {
+  await apiFetch(`/admin/users/${userId}/status`, { method: "POST", body: JSON.stringify({ status }) });
+}

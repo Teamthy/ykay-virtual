@@ -16,13 +16,19 @@ import (
 // In-memory identity stores (tests / dev fallback).
 
 type UserMemory struct {
-	mu      sync.RWMutex
-	rows    map[uuid.UUID]*identity.User
-	byEmail map[string]*identity.User
+	mu        sync.RWMutex
+	rows      map[uuid.UUID]*identity.User
+	byEmail   map[string]*identity.User
+	roleStore *RoleMemory // optional: enables role join in ListUsers (dev fallback)
 }
 
 func NewUserMemory() *UserMemory {
 	return &UserMemory{rows: map[uuid.UUID]*identity.User{}, byEmail: map[string]*identity.User{}}
+}
+
+// SetRoleStore links the role store so ListUsers can join role names (dev mode).
+func (m *UserMemory) SetRoleStore(r *RoleMemory) {
+	m.roleStore = r
 }
 
 // Count returns (total users, users with a verified email or phone) — used by
@@ -108,6 +114,73 @@ func (m *UserMemory) UpdateLastLogin(_ context.Context, id uuid.UUID, at time.Ti
 		return domain.ErrNotFound
 	}
 	u.LastLoginAt = &at
+	return nil
+}
+
+// ListUsers — dev fallback for the admin user-management console.
+func (m *UserMemory) ListUsers(ctx context.Context, search, status string, offset, limit int) ([]identity.UserWithRoles, int, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	search = strings.ToLower(strings.TrimSpace(search))
+	all := []identity.User{}
+	for _, u := range m.rows {
+		if status != "" && string(u.Status) != status {
+			continue
+		}
+		if search != "" && !strings.Contains(strings.ToLower(u.Email), search) &&
+			!strings.Contains(strings.ToLower(u.FirstName), search) &&
+			!strings.Contains(strings.ToLower(u.LastName), search) {
+			continue
+		}
+		all = append(all, *u)
+	}
+	// sort by CreatedAt desc
+	for i := 0; i < len(all); i++ {
+		for j := i + 1; j < len(all); j++ {
+			if all[j].CreatedAt.After(all[i].CreatedAt) {
+				all[i], all[j] = all[j], all[i]
+			}
+		}
+	}
+	total := len(all)
+	start := offset
+	if start > total {
+		start = total
+	}
+	end := start + limit
+	if end > total {
+		end = total
+	}
+	out := []identity.UserWithRoles{}
+	for _, u := range all[start:end] {
+		uwr := identity.UserWithRoles{User: u}
+		if m.roleStore != nil {
+			roles, _ := m.roleStore.RolesForUser(ctx, u.ID)
+			for _, r := range roles {
+				uwr.Roles = append(uwr.Roles, r.Name)
+			}
+		}
+		out = append(out, uwr)
+	}
+	return out, total, nil
+}
+
+// SetStatus — activate/suspend a user account (dev fallback).
+func (m *UserMemory) SetStatus(_ context.Context, id uuid.UUID, status string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	u, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	u.Status = identity.UserStatus(status)
+	u.UpdatedAt = time.Now().UTC()
 	return nil
 }
 
@@ -251,6 +324,30 @@ func (m *RoleMemory) RemoveAllForUser(_ context.Context, userID uuid.UUID) error
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	delete(m.userRoles, userID)
+	return nil
+}
+
+func (m *RoleMemory) ListRoles(_ context.Context) ([]identity.Role, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := make([]identity.Role, 0, len(m.byName))
+	for _, r := range m.byName {
+		out = append(out, *r)
+	}
+	return out, nil
+}
+
+func (m *RoleMemory) RemoveRoleForUser(_ context.Context, userID uuid.UUID, roleName string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	roles := m.userRoles[userID]
+	kept := roles[:0]
+	for _, r := range roles {
+		if r.Name != roleName {
+			kept = append(kept, r)
+		}
+	}
+	m.userRoles[userID] = kept
 	return nil
 }
 

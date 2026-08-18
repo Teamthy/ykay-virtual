@@ -299,6 +299,32 @@ paths:
       responses:
         '200': { description: OK }
 
+  /me/uploads:
+    post:
+      tags: [account]
+      summary: "Upload an LMS material file (raw body; returns a public object URL)"
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/pdf: { schema: { type: string, format: binary } }
+          application/octet-stream: { schema: { type: string, format: binary } }
+          video/mp4: { schema: { type: string, format: binary } }
+      responses:
+        '201':
+          description: Uploaded; returns { url, content_type, size }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      url: { type: string }
+                      content_type: { type: string }
+                      size: { type: integer }
+
   /me/avatar:
     post:
       summary: "Upload a profile photo (raw image body; Content-Type: image/jpeg|png|webp)"
@@ -1878,6 +1904,66 @@ paths:
               required: [status]
               properties:
                 status: { type: string, enum: [DRAFT, PUBLISHED, FULL, ONGOING, COMPLETED, CANCELLED] }
+      responses:
+        '200': { description: Updated }
+
+  /admin/users:
+    get:
+      tags: [admin]
+      summary: Paginated user list with roles (SUPER_ADMIN user management)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { type: string } }
+        - { name: page, in: query, required: false, schema: { type: integer } }
+        - { name: page_size, in: query, required: false, schema: { type: integer } }
+      responses:
+        '200': { description: Users }
+
+  /admin/users/roles:
+    get:
+      tags: [admin]
+      summary: All assignable platform roles (SUPER_ADMIN)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Roles }
+
+  /admin/users/{userId}/role:
+    post:
+      tags: [admin]
+      summary: Grant or revoke a single role on a user (SUPER_ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role, grant]
+              properties:
+                role: { type: string }
+                grant: { type: boolean }
+      responses:
+        '200': { description: Updated }
+
+  /admin/users/{userId}/status:
+    post:
+      tags: [admin]
+      summary: Activate / suspend a user account (SUPER_ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [ACTIVE, SUSPENDED, PENDING] }
       responses:
         '200': { description: Updated }
 
