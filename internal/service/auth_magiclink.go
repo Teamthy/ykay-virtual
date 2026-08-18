@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"log/slog"
 	"math/big"
 	"strings"
 	"time"
@@ -25,7 +24,7 @@ const (
 	loginCodeLength = 6
 )
 
-// RequestLoginCode — emails a 6-digit sign-in code. Always returns nil for a
+// RequestLoginCode â€” emails a 6-digit sign-in code. Always returns nil for a
 //
 // syntactically valid email so the response does not reveal account existence.
 func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error {
@@ -59,22 +58,24 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 	}
 
 	s.logDev("login code for %s: %s (expires in 10 minutes)", user.Email, code)
-	if err := s.sendEmail(ctx, user.Email, "Your NUVORA login code",
-		notification.BrandEmail(
-			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#111111;\">Your NUVORA login code</h1>"+
-				"<p style=\"margin:0 0 16px;\">Hi,</p>"+
-				"<p style=\"margin:0 0 20px;\">Use this code to verify your email or sign in. It expires in 10 minutes.</p>"+
-				"<p style=\"margin:0 0 20px;text-align:center;\"><span style=\"display:inline-block;background:#FFF4CC;color:#111111;font-size:30px;font-weight:800;letter-spacing:0.35em;padding:14px 22px;border-radius:12px;font-family:monospace;\">"+code+"</span></p>"+
-				"<p style=\"margin:0;color:#555555;font-size:13px;\">If you did not request this code, ignore this email.</p>")); err != nil {
-		slog.Error("login code email failed", "email", user.Email, "error", err)
-		return fmt.Errorf("could not send login code: %w", err)
+	if s.email != nil {
+		if err := s.sendEmail(ctx, user.Email, "Your NUVORA login code",
+			notification.BrandEmail(
+				"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Your login code</h1>"+
+					"<p style=\"margin:0 0 16px;\">Hi,</p>"+
+					"<p style=\"margin:0 0 20px;\">Use this code to sign in to your NUVORA account. It expires in 10 minutes.</p>"+
+					"<p style=\"margin:0 0 20px;text-align:center;\"><span style=\"display:inline-block;background:#E9F0FF;color:#0A1F44;font-size:30px;font-weight:800;letter-spacing:0.35em;padding:14px 22px;border-radius:12px;font-family:monospace;\">"+code+"</span></p>"+
+					"<p style=\"margin:0 0 0;color:#8794AC;font-size:13px;\">If you didn't request this code, you can safely ignore this email.</p>")); err != nil {
+			slog.Error("login code email failed", "to", user.Email, "error", err)
+			return fmt.Errorf("could not send login code: %w", err)
+		}
 	}
 	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "auth_token",
 		nil, nil, map[string]any{"purpose": string(identity.TokenLoginCode)}, nil, nil)
 	return nil
 }
 
-// ConfirmLoginCode — verifies the code, consumes it and starts a session
+// ConfirmLoginCode â€” verifies the code, consumes it and starts a session
 // (same session path as password login, including the audit trail).
 func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, userAgent string) (string, *identity.User, []string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -112,7 +113,7 @@ func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, use
 	return s.startSession(ctx, user, ip, userAgent)
 }
 
-// startSession — shared session creation used by password login and login code.
+// startSession â€” shared session creation used by password login and login code.
 func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip, userAgent string) (string, *identity.User, []string, error) {
 	raw, hash, err := newSessionToken()
 	if err != nil {

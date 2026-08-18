@@ -70,7 +70,13 @@ export function AppShell({
   );
 
   return (
-    <div className="min-h-screen bg-surface-muted dark:bg-[#07140e]">
+    <div
+      className="min-h-screen bg-surface-muted bg-cover bg-fixed bg-center dark:bg-[#07140e]"
+      style={{
+        backgroundImage:
+          "linear-gradient(180deg, rgba(255,247,228,0.92) 0%, rgba(248,235,207,0.94) 100%), url(/hero/about.jpg)",
+      }}
+    >
       <header className="sticky top-0 z-40 border-b border-ink-100 bg-white/95 backdrop-blur dark:border-[#214c37] dark:bg-[#0d1f16]/95">
         <div className="flex h-16 items-center justify-between gap-3 px-4 md:px-6">
           <div className="flex items-center gap-3">

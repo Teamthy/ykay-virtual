@@ -139,11 +139,11 @@ export default function TutorDashboardPage() {
   const profileCompletion = p ? Math.min(100, 40 + (p.bio ? 20 : 0) + (p.headline ? 10 : 0) + ((p.hourly_rate_min ?? 0) > 0 ? 15 : 0) + (p.accepts_online || p.accepts_in_person ? 15 : 0)) : 0;
 
   const quickLinks = [
-    { href: "/lms/tutor", label: "Teaching console", desc: "Roster, notes, grading", icon: BookOpen },
-    { href: "/messages", label: "Messages", desc: "Parents & learners", icon: MessageSquare },
-    { href: "/notifications", label: "Notifications", desc: "Reminders", icon: Bell },
-    { href: "/contact", label: "Support", desc: "Get help", icon: LifeBuoy },
-    { href: "/account", label: "Account settings", desc: "Profile & security", icon: Settings },
+    { href: "/lms/tutor", label: "Teach", desc: "Roster", icon: BookOpen },
+    { href: "/messages", label: "Inbox", desc: "Chat", icon: MessageSquare },
+    { href: "/notifications", label: "Alerts", desc: "Reminders", icon: Bell },
+    { href: "/contact", label: "Help", desc: "Support", icon: LifeBuoy },
+    { href: "/account", label: "Account", desc: "Profile", icon: Settings },
   ];
 
   return (
@@ -151,15 +151,15 @@ export default function TutorDashboardPage() {
       <RoleGate page="/tutor-dashboard" />
       <RecommendationsForYou />
       <PageHeader
-        eyebrow="Tutor workspace"
-        title="Tutor dashboard"
-        subline="Your application, schedule, attendance and earnings â€” all in one place."
+        eyebrow="Tutor"
+        title="Home"
+        cover="/hero/how-it-works.jpg"
         actions={
           <Link
             href="/lms/tutor"
-            className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
+            className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
           >
-            <BookOpen size={15} /> Teaching console
+            <BookOpen size={15} /> Teach
           </Link>
         }
       />
@@ -180,7 +180,7 @@ export default function TutorDashboardPage() {
       {tab === "overview" && (
         <div className="mt-6 space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Upcoming lessons" value={today.length} hint="scheduled or ongoing" icon={<CalendarDays size={18} />} />
+            <StatCard label="Upcoming" value={today.length} hint="lessons" icon={<CalendarDays size={18} />} />
             <StatCard label="Held (escrow)" value={`â‚¦${(earnings.data?.held_total ?? 0).toLocaleString()}`} hint="awaiting delivery" icon={<Wallet size={18} />} />
             <StatCard label="Released" value={`â‚¦${(earnings.data?.released_total ?? 0).toLocaleString()}`} hint="awaiting payout" icon={<ClipboardCheck size={18} />} />
             <StatCard label="Paid out" value={`â‚¦${(earnings.data?.paid_total ?? 0).toLocaleString()}`} hint="total earnings" icon={<Wallet size={18} />} />
@@ -190,7 +190,7 @@ export default function TutorDashboardPage() {
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="font-bold text-ink-800">Application status</h2>
+                <h2 className="font-bold text-ink-800">Application</h2>
                 {p ? (
                   <>
                     <p className="text-sm text-ink-600 mt-1">{p.display_name} Â· {p.slug}</p>
@@ -214,7 +214,7 @@ export default function TutorDashboardPage() {
 
           {/* Today's lessons */}
           <section className="rounded-2xl bg-brand-gold text-ink-900 p-6">
-            <h2 className="font-bold">Today&apos;s lessons</h2>
+            <h2 className="font-bold text-ink-900">Today</h2>
             {lessons.isLoading ? (
               <Skeleton className="h-12 w-full mt-3 bg-white/20" />
             ) : today.length === 0 ? (
@@ -240,7 +240,7 @@ export default function TutorDashboardPage() {
 
           {/* Quick links */}
           <section>
-            <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Quick links</h2>
+            <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Links</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {quickLinks.map((q) => (
                 <Link key={q.href} href={q.href} className="group flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-brand-gold">

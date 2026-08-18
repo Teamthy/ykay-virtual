@@ -101,11 +101,7 @@ export default function StudentDashboardPage() {
     <main className="px-4 py-8 md:px-8">
       <RoleGate page="/student-dashboard" />
       <RecommendationsForYou />
-      <PageHeader
-        eyebrow="Student portal"
-        title="Student dashboard"
-        subline="Your classes, assignments and progress â€” in one place."
-      />
+      <PageHeader eyebrow="Student" title="Home" cover="/hero/exam-prep.jpg" />
 
       <div className="mt-6 flex flex-wrap gap-2">
         {SECTIONS.map((s) => (
@@ -130,12 +126,12 @@ export default function StudentDashboardPage() {
               <div className="grid gap-4 sm:grid-cols-3">
                 <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "â€“"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
                 <StatCard label="Assignments" value={`${submittedIds.size}/${assignments.data?.length ?? 0}`} hint="submitted" icon={<FileText size={18} />} />
-                <StatCard label="Lessons completed" value={past.length} hint="all time" icon={<CheckCircle2 size={18} />} />
+                <StatCard label="Done" value={past.length} hint="lessons" icon={<CheckCircle2 size={18} />} />
               </div>
 
               {/* Today */}
               <section className="rounded-2xl bg-brand-blue text-white p-6">
-                <h2 className="font-bold text-white">Today&apos;s lessons</h2>
+                <h2 className="font-bold text-white">Today</h2>
                 {lessons.isLoading ? (
                   <Skeleton className="h-12 w-full mt-3 bg-white/20" />
                 ) : upcoming.length === 0 ? (
@@ -165,7 +161,7 @@ export default function StudentDashboardPage() {
 
               {/* Recent tutor feedback / notes */}
               <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-                <h2 className="font-bold">Recent lessons & feedback</h2>
+                <h2 className="font-bold">Recent</h2>
                 {past.length === 0 ? (
                   <p className="mt-3 text-sm text-ink-500">No completed lessons yet.</p>
                 ) : (
@@ -187,8 +183,7 @@ export default function StudentDashboardPage() {
 
           {section === "My Classes" && (
             <section className="border rounded-2xl p-6">
-              <h2 className="font-bold text-lg">My classes</h2>
-              <p className="text-xs text-ink-500 mt-1">Your cohort lessons â€” join links appear within the lesson window.</p>
+              <h2 className="font-bold text-lg">Classes</h2>
               {lessons.isLoading ? (
                 <Skeleton className="h-20 w-full mt-3" />
               ) : (lessons.data?.length ?? 0) === 0 ? (
@@ -220,7 +215,6 @@ export default function StudentDashboardPage() {
           {section === "Calendar" && (
             <section className="border rounded-2xl p-6">
               <h2 className="font-bold text-lg">Calendar</h2>
-              <p className="text-xs text-ink-500 mt-1">All times in your lesson timezone â€” clearly shown for cross-country learners.</p>
               {lessons.isLoading ? (
                 <Skeleton className="h-20 w-full mt-3" />
               ) : (lessons.data?.length ?? 0) === 0 ? (
@@ -305,7 +299,7 @@ export default function StudentDashboardPage() {
 
           {section === "Progress" && (
             <section className="border rounded-2xl p-6">
-              <h2 className="font-bold text-lg">Progress summary</h2>
+              <h2 className="font-bold text-lg">Progress</h2>
               {attendance.data ? (
                 <div className="mt-4 space-y-4">
                   <div>

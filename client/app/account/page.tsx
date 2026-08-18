@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
 import { useSession } from "@/hooks/useSession";
+import { homeForRoles } from "@/hooks/useDashboardRoute";
 import { changePassword, logout } from "@/features/auth/api";
 import { clearOnboardingDraft } from "@/lib/onboarding";
 import {
@@ -21,7 +22,7 @@ import { ReferralCard } from "@/features/referrals/ReferralCard";
 import { listLearners, type Learner } from "@/features/onboarding/api";
 import { Camera, UserPlus } from "lucide-react";
 
-// /account — settings hub (P0): profile, security, devices, preferences,
+// /account â€” settings hub (P0): profile, security, devices, preferences,
 // data export + deletion.
 
 type Profile = {
@@ -34,14 +35,21 @@ type Profile = {
   status: string;
 };
 
-const TABS = ["Profile", "Learners", "Referrals", "Security", "Devices", "Preferences", "Data"] as const;
-type Tab = (typeof TABS)[number];
+const ALL_TABS = ["Profile", "Learners", "Referrals", "Security", "Devices", "Preferences", "Data"] as const;
+type Tab = (typeof ALL_TABS)[number];
+
+function tabsForRoles(roles: string[]): readonly Tab[] {
+  if (roles.includes("PARENT")) return ALL_TABS;
+  return ["Profile", "Security", "Devices", "Preferences", "Data"];
+}
 
 export default function AccountPage() {
   const router = useRouter();
   const qc = useQueryClient();
   const { user, isLoading } = useSession();
+  const tabs = tabsForRoles(user?.roles ?? []);
   const [tab, setTab] = useState<Tab>("Profile");
+  const dashHome = homeForRoles(user?.roles ?? []);
 
   useEffect(() => {
     if (!isLoading && !user) router.replace(loginWithReturn());
@@ -173,7 +181,7 @@ export default function AccountPage() {
     }
   };
 
-  if (isLoading || !user) return <p className="py-24 text-center text-ink-400">Loading…</p>;
+  if (isLoading || !user) return <p className="py-24 text-center text-ink-400">Loadingâ€¦</p>;
 
   return (
     <main className="min-h-screen bg-[#FFF7E4] pb-16">
@@ -185,7 +193,7 @@ export default function AccountPage() {
           <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">Account settings</h1>
           <p className="mt-1 text-sm text-ink-500">
             {user.email}
-            {user.first_name ? ` · ${user.first_name} ${user.last_name ?? ""}` : ""}
+            {user.first_name ? ` Â· ${user.first_name} ${user.last_name ?? ""}` : ""}
           </p>
         </div>
       </header>
@@ -193,7 +201,7 @@ export default function AccountPage() {
       <div className="mx-auto mt-6 grid max-w-5xl gap-6 px-6 lg:grid-cols-[220px_1fr]">
         {/* Tabs */}
         <aside className="h-fit rounded-2xl border border-ink-100 bg-white p-3 shadow-sm">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t}
               type="button"
@@ -238,8 +246,8 @@ export default function AccountPage() {
                   </label>
                 </div>
                 <div className="text-sm text-ink-500">
-                  <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploading…" : "Profile photo"}</p>
-                  <p>JPEG, PNG or WebP · up to 10 MB</p>
+                  <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploadingâ€¦" : "Profile photo"}</p>
+                  <p>JPEG, PNG or WebP Â· up to 10 MB</p>
                 </div>
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -270,7 +278,7 @@ export default function AccountPage() {
                 disabled={saveProfile.isPending}
                 className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-50"
               >
-                {saveProfile.isPending ? "Saving…" : "Save changes"}
+                {saveProfile.isPending ? "Savingâ€¦" : "Save changes"}
               </button>
             </section>
           )}
@@ -284,13 +292,13 @@ export default function AccountPage() {
                   <li key={l.id} className="flex items-center justify-between rounded-xl border border-ink-100 bg-surface-muted px-4 py-3">
                     <div>
                       <p className="font-semibold text-ink-800">{l.first_name} {l.last_name}</p>
-                      <p className="text-xs text-ink-500">{l.current_level || "Level not set"}{l.school_name ? ` · ${l.school_name}` : ""}</p>
+                      <p className="text-xs text-ink-500">{l.current_level || "Level not set"}{l.school_name ? ` Â· ${l.school_name}` : ""}</p>
                     </div>
                   </li>
                 ))}
                 {(learners.data ?? []).length === 0 && (
                   <li className="rounded-xl border border-dashed border-ink-200 px-4 py-6 text-center text-sm text-ink-500">
-                    No learners yet — add one to book tuition.
+                    No learners yet â€” add one to book tuition.
                   </li>
                 )}
               </ul>
@@ -317,7 +325,7 @@ export default function AccountPage() {
                   onClick={() => savePassword.mutate(newPw)}
                   className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
                 >
-                  {savePassword.isPending ? "Updating…" : "Update password"}
+                  {savePassword.isPending ? "Updatingâ€¦" : "Update password"}
                 </button>
               </div>
             </section>
@@ -331,10 +339,10 @@ export default function AccountPage() {
                 {(devices.data ?? []).map((d: Device) => (
                   <div key={d.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{d.platform === "ios" ? "🍎" : d.platform === "android" ? "🤖" : "🌐"}</span>
+                      <span className="text-xl">{d.platform === "ios" ? "ðŸŽ" : d.platform === "android" ? "ðŸ¤–" : "ðŸŒ"}</span>
                       <div>
-                        <p className="text-sm font-semibold text-ink-800">{d.platform} · v{d.app_version ?? "?"}</p>
-                        <p className="text-xs text-ink-400">{d.token.slice(0, 24)}… · last seen {new Date(d.last_seen_at).toLocaleDateString()}</p>
+                        <p className="text-sm font-semibold text-ink-800">{d.platform} Â· v{d.app_version ?? "?"}</p>
+                        <p className="text-xs text-ink-400">{d.token.slice(0, 24)}â€¦ Â· last seen {new Date(d.last_seen_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <button
@@ -348,7 +356,7 @@ export default function AccountPage() {
                 ))}
                 {(devices.data ?? []).length === 0 && (
                   <p className="rounded-xl border border-dashed border-ink-200 p-6 text-center text-sm text-ink-500">
-                    No devices registered yet — install the app or allow notifications to see them here.
+                    No devices registered yet â€” install the app or allow notifications to see them here.
                   </p>
                 )}
               </div>
@@ -358,7 +366,7 @@ export default function AccountPage() {
           {tab === "Preferences" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-brand-navy">Email preferences</h2>
-              <p className="mt-1 text-sm text-ink-500">Stored on this device for now — server-side preferences ship with the notification centre.</p>
+              <p className="mt-1 text-sm text-ink-500">Stored on this device for now â€” server-side preferences ship with the notification centre.</p>
               <div className="mt-4 space-y-3">
                 {[
                   ["booking", "Booking confirmations & payment receipts"],
@@ -385,7 +393,7 @@ export default function AccountPage() {
                 <h2 className="text-lg font-bold text-brand-navy">Export your data</h2>
                 <p className="mt-1 text-sm leading-6 text-ink-500">
                   Download everything we hold on your account: profile, roles, learners, devices and chat
-                  history — as a JSON file. This fulfils the export right in our{" "}
+                  history â€” as a JSON file. This fulfils the export right in our{" "}
                   <Link href="/privacy" className="font-semibold text-brand-gold-dark hover:underline">privacy policy</Link>.
                 </p>
                 <button
@@ -393,7 +401,7 @@ export default function AccountPage() {
                   onClick={() => void doExport()}
                   className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white hover:bg-brand-navy/90"
                 >
-                  ⬇ Download my data
+                  â¬‡ Download my data
                 </button>
               </section>
 
@@ -402,7 +410,7 @@ export default function AccountPage() {
                 <p className="mt-1 text-sm leading-6 text-red-600/80">
                   This permanently deletes your sign-in access, push devices and active sessions. Learners
                   linked to you remain in the system for administrative records until purged. This cannot be
-                  undone — consider exporting your data first.
+                  undone â€” consider exporting your data first.
                 </p>
                 <div className="mt-4 flex max-w-md gap-2">
                   <input
@@ -418,7 +426,7 @@ export default function AccountPage() {
                     onClick={() => doDelete.mutate()}
                     className="shrink-0 rounded-lg bg-red-600 px-5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-40"
                   >
-                    {doDelete.isPending ? "Deleting…" : "Delete account"}
+                    {doDelete.isPending ? "Deletingâ€¦" : "Delete account"}
                   </button>
                 </div>
               </section>

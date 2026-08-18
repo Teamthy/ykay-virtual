@@ -178,9 +178,9 @@ export default function ParentDashboardPage() {
           <RecommendationsForYou />
 
           <PageHeader
-            eyebrow="Parent portal"
-            title="Family dashboard"
-            subline="Lessons, payments and progress for your family â€” in one place."
+            eyebrow="Family"
+            title="Home"
+            cover="/hero/home-tutoring.jpg"
             actions={
               <label className="flex items-center gap-2 text-sm">
                 <span className="text-[10px] font-bold uppercase tracking-wide text-white/60">Learner</span>
@@ -229,7 +229,7 @@ export default function ParentDashboardPage() {
           {section === "overview" && (
             <div className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Upcoming lessons" value={upcoming.length} hint="scheduled or ongoing" icon={<CalendarDays size={18} />} />
+                <StatCard label="Upcoming" value={upcoming.length} hint="lessons" icon={<CalendarDays size={18} />} />
                 <StatCard label="Learners" value={(learners.data ?? []).length} hint="linked to your account" icon={<Users size={18} />} />
                 <StatCard label="Paid orders" value={paidCount} hint="completed payments" icon={<Wallet size={18} />} />
                 <StatCard
@@ -479,7 +479,7 @@ export default function ParentDashboardPage() {
             href="/account"
             className="mt-4 block rounded-2xl border border-ink-100 bg-white p-5 shadow-soft text-center text-sm font-bold text-brand-navy hover:border-brand-gold"
           >
-            <span className="inline-flex items-center gap-2"><Settings size={16} /> Account settings</span>
+            <span className="inline-flex items-center gap-2"><Settings size={16} /> Account</span>
           </Link>
         </div>
 
