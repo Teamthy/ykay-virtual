@@ -27,6 +27,14 @@ metrics-textfile/
 # staging harness binary
 .staging-api
 
+# Mobile build artifacts (large) — never commit these; host the APK in
+# object storage (R2/S3/GitHub Releases) and set NEXT_PUBLIC_APK_URL.
+*.apk
+*.aab
+mobile/dist/
+mobile/android/app/build/
+mobile/ios/build/
+
 # Local audit patches — do not commit
 audit-round*.patch
 seed-quickstart.sql

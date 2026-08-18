@@ -12,6 +12,7 @@ import { Skeleton } from "@/src/components/ui/Skeleton";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing } from "@/src/lib/theme";
 import { apiFetch, setToken } from "@/src/lib/api";
+import { currentAppVersion } from "@/src/lib/updates";
 
 // Profile — grouped settings (per the mobile UI spec):
 //   profile header → account → learning → notifications & privacy → support
@@ -210,6 +211,9 @@ export default function Account() {
 
         <View style={styles.logout}>
           <Button label="Log out" variant="secondary" full onPress={() => void logout()} />
+          <AppText variant="caption" style={{ textAlign: "center", marginTop: spacing.lg, color: colors.ink[400] }}>
+            NUVORA · v{currentAppVersion()}
+          </AppText>
         </View>
       </Screen>
     </TabLayout>

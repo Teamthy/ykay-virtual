@@ -1,0 +1,218 @@
+diff --git a/.gitignore b/.gitignore
+index 50772b6..e539ed4 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -27,6 +27,14 @@ metrics-textfile/
+ # staging harness binary
+ .staging-api
+ 
++# Mobile build artifacts (large) — never commit these; host the APK in
++# object storage (R2/S3/GitHub Releases) and set NEXT_PUBLIC_APK_URL.
++*.apk
++*.aab
++mobile/dist/
++mobile/android/app/build/
++mobile/ios/build/
++
+ # Local audit patches — do not commit
+ audit-round*.patch
+ seed-quickstart.sql
+diff --git a/mobile/app/_layout.tsx b/mobile/app/_layout.tsx
+index 48f47fb..3a85f1d 100644
+--- a/mobile/app/_layout.tsx
++++ b/mobile/app/_layout.tsx
+@@ -6,7 +6,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
+ import { colors } from "@/src/lib/theme";
+ import { setUnauthorizedHandler } from "@/src/lib/api";
+ import { parseTarget, openNotification } from "@/src/lib/deeplink";
+-import { checkForUpdates } from "@/src/lib/updates";
++import { UpdateBanner } from "@/src/components/UpdateBanner";
++import { View } from "react-native";
+ 
+ // Configure push notifications: show a banner/alert while the app is open.
+ Notifications.setNotificationHandler({
+@@ -44,16 +45,12 @@ export default function RootLayout() {
+     };
+   }, []);
+ 
+-  // OTA updates: on launch, check for a newer JS bundle (published via
+-  // `eas update`) and apply it. This means users get new features without
+-  // reinstalling the app. No-op in dev builds (expo-updates is disabled).
+-  useEffect(() => {
+-    void checkForUpdates();
+-  }, []);
+-
+   return (
+     <SafeAreaProvider>
+       <StatusBar style="light" />
++      {/* OTA update banner: checks on mount and prompts the user to restart
++          and apply a new bundle (published via `eas update`). */}
++      <UpdateBanner />
+       <Stack
+         screenOptions={{
+           headerStyle: { backgroundColor: colors.navy },
+diff --git a/mobile/app/account.tsx b/mobile/app/account.tsx
+index adae0f9..6d6a9ad 100644
+--- a/mobile/app/account.tsx
++++ b/mobile/app/account.tsx
+@@ -12,6 +12,7 @@ import { Skeleton } from "@/src/components/ui/Skeleton";
+ import { Ionicons } from "@expo/vector-icons";
+ import { colors, radius, spacing } from "@/src/lib/theme";
+ import { apiFetch, setToken } from "@/src/lib/api";
++import { currentAppVersion } from "@/src/lib/updates";
+ 
+ // Profile — grouped settings (per the mobile UI spec):
+ //   profile header → account → learning → notifications & privacy → support
+@@ -210,6 +211,9 @@ export default function Account() {
+ 
+         <View style={styles.logout}>
+           <Button label="Log out" variant="secondary" full onPress={() => void logout()} />
++          <AppText variant="caption" style={{ textAlign: "center", marginTop: spacing.lg, color: colors.ink[400] }}>
++            NUVORA · v{currentAppVersion()}
++          </AppText>
+         </View>
+       </Screen>
+     </TabLayout>
+diff --git a/mobile/src/components/UpdateBanner.tsx b/mobile/src/components/UpdateBanner.tsx
+new file mode 100644
+index 0000000..51fe3ae
+--- /dev/null
++++ b/mobile/src/components/UpdateBanner.tsx
+@@ -0,0 +1,60 @@
++import { useEffect, useState } from "react";
++import { StyleSheet, View } from "react-native";
++import { Ionicons } from "@expo/vector-icons";
++import { AppText } from "@/src/components/ui/AppText";
++import { Button } from "@/src/components/ui/Button";
++import { colors, radius, spacing } from "@/src/lib/theme";
++import { fetchUpdate, applyUpdate } from "@/src/lib/updates";
++
++// In-app update prompt — when a new JS bundle is available (published via
++// `eas update`), show a slim banner so the user can apply it on their own
++// terms. Non-intrusive; dismissible.
++
++export function UpdateBanner() {
++  const [state, setState] = useState<"idle" | "available" | "restarting">("idle");
++
++  useEffect(() => {
++    let cancelled = false;
++    (async () => {
++      const { available, downloaded } = await fetchUpdate();
++      if (!cancelled && available && downloaded) setState("available");
++    })();
++    return () => {
++      cancelled = true;
++    };
++  }, []);
++
++  if (state === "available") {
++    return (
++      <View style={styles.banner}>
++        <Ionicons name="cloud-download-outline" size={18} color={colors.navy} />
++        <View style={{ flex: 1, marginLeft: spacing.sm }}>
++          <AppText variant="bodySm" style={{ color: colors.navy, fontWeight: "700" }}>
++            New update ready
++          </AppText>
++          <AppText variant="caption" style={{ color: colors.ink[600], marginTop: 1 }}>
++            Restart to get the latest features.
++          </AppText>
++        </View>
++        <Button label="Restart" variant="dark" style={{ paddingVertical: 6, paddingHorizontal: 14, minHeight: 32 }} onPress={() => { setState("restarting"); void applyUpdate(); }} />
++        <Ionicons name="close" size={18} color={colors.ink[400]} onPress={() => setState("idle")} accessibilityLabel="Dismiss" />
++      </View>
++    );
++  }
++
++  return null;
++}
++
++const styles = StyleSheet.create({
++  banner: {
++    flexDirection: "row",
++    alignItems: "center",
++    backgroundColor: colors.greenLight,
++    borderRadius: radius.md,
++    paddingHorizontal: spacing.md,
++    paddingVertical: spacing.sm,
++    marginHorizontal: spacing.md,
++    marginTop: spacing.xs,
++    gap: spacing.xs,
++  },
++});
+diff --git a/mobile/src/lib/updates.ts b/mobile/src/lib/updates.ts
+index 0e434de..4df1555 100644
+--- a/mobile/src/lib/updates.ts
++++ b/mobile/src/lib/updates.ts
+@@ -1,27 +1,57 @@
+ import * as Updates from "expo-updates";
+ 
+-// OTA update helper — on launch (or on demand), check for a newer JS bundle
+-// published via `eas update`. If one exists, fetch it and reload so the user
+-// gets the latest features WITHOUT reinstalling the app (EAS Update).
++// OTA update helper — checks for a newer JS bundle published via `eas update`,
++// and exposes the current app version. Used by:
++//   - root layout: check-on-launch + auto-apply
++//   - a prompt: "Update available — restart to apply" (non-intrusive)
++//   - Profile: show the installed version
++//
++// Only meaningful in production/preview builds that embed expo-updates; in dev
++// builds `Updates.isEnabled` is false and everything degrades to no-ops.
+ 
+-export type UpdateCheckResult = { updateAvailable: boolean; downloaded: boolean };
++export type UpdateCheckResult = {
++  isEnabled: boolean;
++  updateAvailable: boolean;
++  currentVersion: string;
++};
+ 
+-export async function checkForUpdates(onChange?: (r: UpdateCheckResult) => void): Promise<UpdateCheckResult> {
++// The installed JS bundle version (e.g. "0.1.0"), or a fallback.
++export function currentAppVersion(): string {
+   try {
+-    // Only meaningful in a production/preview build that embeds expo-updates;
+-    // in dev builds Updates.isEnabled is false and this is a no-op.
+-    if (!Updates.isEnabled) return { updateAvailable: false, downloaded: false };
+-
+-    const update = await Updates.checkForUpdateAsync();
+-    if (!update.isAvailable) return { updateAvailable: false, downloaded: false };
++    return Updates.createdAt?.toISOString()?.slice(0, 10) || "0.1.0";
++  } catch {
++    return "0.1.0";
++  }
++}
+ 
++// Fetch (download) an available update WITHOUT reloading, so the UI can show
++// an explicit "Restart to apply" prompt. Returns true if an update was found
++// and downloaded.
++export async function fetchUpdate(): Promise<{ available: boolean; downloaded: boolean; updateId?: string }> {
++  try {
++    if (!Updates.isEnabled) return { available: false, downloaded: false };
++    const check = await Updates.checkForUpdateAsync();
++    if (!check.isAvailable) return { available: false, downloaded: false };
+     await Updates.fetchUpdateAsync();
+-    onChange?.({ updateAvailable: true, downloaded: true });
++    return { available: true, downloaded: true };
++  } catch {
++    return { available: false, downloaded: false };
++  }
++}
+ 
+-    // Prompt the user to apply (app reloads to the new bundle). Best-effort.
++// Apply a downloaded update by reloading into the new bundle.
++export async function applyUpdate(): Promise<void> {
++  try {
+     await Updates.reloadAsync();
+-    return { updateAvailable: true, downloaded: true };
+   } catch {
+-    return { updateAvailable: false, downloaded: false };
++    // ignore — reload failures are non-fatal
++  }
++}
++
++// One-shot convenience: check, fetch, and reload immediately (used on launch).
++export async function checkForUpdates(): Promise<void> {
++  const { available, downloaded } = await fetchUpdate();
++  if (available && downloaded) {
++    await applyUpdate();
+   }
+ }
