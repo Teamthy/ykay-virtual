@@ -1,20 +1,24 @@
 import { useState } from "react";
 import { router } from "expo-router";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { colors, radius } from "@/src/lib/theme";
+import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { AppText } from "@/src/components/ui/AppText";
+import { AppInput } from "@/src/components/ui/AppInput";
+import { Button } from "@/src/components/ui/Button";
+import { Screen } from "@/src/components/ui/Screen";
+import { colors, radius, spacing } from "@/src/lib/theme";
 import { apiFetch, setToken, registerDevice } from "@/src/lib/api";
 
 // Onboarding — mirrors the web 7-step flow in a compact 4-screen version:
 //   1. name + email     2. verify code (6-digit)
 //   3. role             4. done → dashboard
-// State survives via React state; a native async-storage persistence layer
-// lands in M3.
+// Clean, premium form styling with the shared AppInput/Button primitives.
 
 const ROLES = [
-  { value: "PARENT", label: "Parent", icon: "👪" },
-  { value: "STUDENT", label: "Student", icon: "🎓" },
-  { value: "TUTOR", label: "Tutor", icon: "✍️" },
-  { value: "INSTITUTION", label: "School / Company", icon: "🏫" },
+  { value: "PARENT", label: "Parent", icon: "people-outline" as const },
+  { value: "STUDENT", label: "Student", icon: "school-outline" as const },
+  { value: "TUTOR", label: "Tutor", icon: "create-outline" as const },
+  { value: "INSTITUTION", label: "School / Company", icon: "business-outline" as const },
 ] as const;
 
 export default function Onboarding() {
@@ -73,95 +77,130 @@ export default function Onboarding() {
     }
   };
 
+  const titles = {
+    1: "Create your account",
+    2: "Verify your email",
+    3: "How will you use NUVORA?",
+    4: "You're all set!",
+  } as const;
+
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <Text style={styles.step}>Step {step} of 4</Text>
-      <Text style={styles.title}>
-        {step === 1 && "Create your account"}
-        {step === 2 && "Verify your email"}
-        {step === 3 && "How will you use NUVORA?"}
-        {step === 4 && "You're all set! 🎉"}
-      </Text>
+    <Screen scroll>
+      <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <AppText variant="caption" style={styles.step}>
+          Step {step} of 4
+        </AppText>
+        <AppText variant="h1" style={styles.title}>
+          {titles[step as keyof typeof titles]}
+        </AppText>
 
-      {step === 1 && (
-        <View style={styles.form}>
-          <TextInput style={styles.input} placeholder="Full name" placeholderTextColor={colors.ink[400]} value={name} onChangeText={setName} />
-          <TextInput style={styles.input} placeholder="Email address" placeholderTextColor={colors.ink[400]} autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-          <Pressable style={styles.btn} onPress={() => void createAccount()} disabled={busy}>
-            <Text style={styles.btnText}>{busy ? "Creating…" : "Continue"}</Text>
-          </Pressable>
-        </View>
-      )}
+        {step === 1 && (
+          <View style={styles.form}>
+            <AppInput label="Full name" placeholder="Jane Doe" value={name} onChangeText={setName} autoCapitalize="words" />
+            <AppInput label="Email address" placeholder="you@example.com" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+            <Button label={busy ? "Creating…" : "Continue"} onPress={() => void createAccount()} loading={busy} full style={{ marginTop: spacing.sm }} />
+          </View>
+        )}
 
-      {step === 2 && (
-        <View style={styles.form}>
-          <Text style={styles.hint}>We emailed a 6-digit code to {email}.</Text>
-          <TextInput
-            style={[styles.input, styles.codeInput]}
-            placeholder="000000"
-            placeholderTextColor={colors.ink[400]}
-            keyboardType="number-pad"
-            maxLength={6}
-            value={code}
-            onChangeText={(v) => setCode(v.replace(/\D/g, ""))}
-          />
-          <Pressable style={styles.btn} onPress={() => void verify()} disabled={busy || code.length !== 6}>
-            <Text style={styles.btnText}>{busy ? "Verifying…" : "Verify email"}</Text>
-          </Pressable>
-        </View>
-      )}
+        {step === 2 && (
+          <View style={styles.form}>
+            <AppText variant="bodySm" style={styles.hint}>
+              We emailed a 6-digit code to {email}.
+            </AppText>
+            <AppInput
+              label="Verification code"
+              placeholder="000000"
+              keyboardType="number-pad"
+              maxLength={6}
+              value={code}
+              onChangeText={(v) => setCode(v.replace(/\D/g, ""))}
+              style={styles.codeInput}
+            />
+            <Button label={busy ? "Verifying…" : "Verify email"} onPress={() => void verify()} loading={busy} disabled={code.length !== 6} full style={{ marginTop: spacing.sm }} />
+          </View>
+        )}
 
-      {step === 3 && (
-        <View style={styles.form}>
-          {ROLES.map((r) => (
-            <Pressable
-              key={r.value}
-              style={[styles.roleCard, role === r.value && styles.roleCardActive]}
-              onPress={() => setRole(r.value)}
-            >
-              <Text style={styles.roleIcon}>{r.icon}</Text>
-              <Text style={styles.roleLabel}>{r.label}</Text>
-            </Pressable>
-          ))}
-          <Pressable style={styles.btn} onPress={() => void pickRole()} disabled={busy || !role}>
-            <Text style={styles.btnText}>{busy ? "Saving…" : "Continue"}</Text>
-          </Pressable>
-        </View>
-      )}
+        {step === 3 && (
+          <View style={styles.form}>
+            {ROLES.map((r) => {
+              const active = role === r.value;
+              return (
+                <View
+                  key={r.value}
+                  style={[styles.roleCard, active && styles.roleCardActive]}
+                >
+                  <Pressable onPress={() => setRole(r.value)} style={styles.roleInner} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={r.label}>
+                    <View style={[styles.roleIconWrap, active && styles.roleIconWrapActive]}>
+                      <Ionicons name={r.icon} size={20} color={active ? colors.greenDark : colors.ink[600]} />
+                    </View>
+                    <AppText variant="heading" style={{ flex: 1 }}>
+                      {r.label}
+                    </AppText>
+                    <Ionicons name={active ? "checkmark-circle" : "ellipse-outline"} size={20} color={active ? colors.green : colors.ink[200]} />
+                  </Pressable>
+                </View>
+              );
+            })}
+            <Button label={busy ? "Saving…" : "Continue"} onPress={() => void pickRole()} loading={busy} disabled={!role} full style={{ marginTop: spacing.sm }} />
+          </View>
+        )}
 
-      {step === 4 && (
-        <View style={styles.form}>
-          <Text style={styles.hint}>
-            {name.split(" ")[0]}, your account is ready. Explore programmes, cohorts and tutors.
-          </Text>
-          <Pressable style={styles.btn} onPress={() => router.replace("/home")}>
-            <Text style={styles.btnText}>Go to my dashboard</Text>
-          </Pressable>
-        </View>
-      )}
-    </ScrollView>
+        {step === 4 && (
+          <View style={styles.form}>
+            <View style={styles.successIcon}>
+              <Ionicons name="checkmark" size={40} color={colors.white} />
+            </View>
+            <AppText variant="bodySm" style={styles.hint}>
+              {name.split(" ")[0]}, your account is ready. Explore programmes, cohorts and tutors.
+            </AppText>
+            <Button label="Go to my dashboard" onPress={() => router.replace("/home")} full style={{ marginTop: spacing.sm }} />
+          </View>
+        )}
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
-  content: { padding: 24, paddingTop: 48 },
-  step: { fontSize: 12, fontWeight: "700", letterSpacing: 2, color: colors.goldDark, textTransform: "uppercase" },
-  title: { fontSize: 24, fontWeight: "800", color: colors.navy, marginTop: 6, marginBottom: 20 },
-  form: { gap: 12 },
-  input: {
-    backgroundColor: colors.white, borderRadius: radius.md, borderWidth: 1,
-    borderColor: "#E8E4DA", paddingHorizontal: 16, paddingVertical: 14, fontSize: 15,
-  },
+  root: { flex: 1 },
+  content: { paddingTop: spacing.xxl, paddingBottom: spacing.xxl },
+  step: { color: colors.greenDark, letterSpacing: 2, textTransform: "uppercase", marginBottom: spacing.xs },
+  title: { marginBottom: spacing.xl },
+  form: { gap: spacing.sm },
+  hint: { color: colors.ink[600], lineHeight: 19 },
   codeInput: { fontSize: 22, letterSpacing: 8, textAlign: "center", fontVariant: ["tabular-nums"] },
-  hint: { fontSize: 13, color: colors.ink[600], lineHeight: 19 },
-  btn: { backgroundColor: colors.gold, borderRadius: radius.md, paddingVertical: 16, alignItems: "center", marginTop: 8 },
-  btnText: { color: colors.ink[900], fontWeight: "800", fontSize: 15 },
   roleCard: {
-    flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 2,
-    borderColor: "#E8E4DA", borderRadius: radius.lg, padding: 16, backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    overflow: "hidden",
   },
-  roleCardActive: { borderColor: colors.gold, backgroundColor: colors.goldLight },
-  roleIcon: { fontSize: 22 },
-  roleLabel: { fontSize: 15, fontWeight: "700", color: colors.navy },
+  roleCardActive: { borderColor: colors.green, backgroundColor: colors.greenLight },
+  roleInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    padding: spacing.md,
+    minHeight: 56,
+  },
+  roleIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    backgroundColor: colors.ink[50],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  roleIconWrapActive: { backgroundColor: colors.surface },
+  successIcon: {
+    alignSelf: "center",
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.green,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
+  },
 });

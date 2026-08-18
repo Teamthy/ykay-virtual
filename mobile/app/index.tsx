@@ -1,19 +1,19 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
-import { Screen } from "@/src/components/ui/Screen";
-import { Button } from "@/src/components/ui/Button";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { OnboardingCarousel } from "@/src/components/OnboardingCarousel";
+import { colors, spacing } from "@/src/lib/theme";
 import { apiFetch, getToken } from "@/src/lib/api";
 
-// Premium welcome — animated entrance, gradient brand, session-aware routing.
+// Premium splash + onboarding — session-aware. Logged-in users route to their
+// dashboard; logged-out users see the light brand mark + onboarding carousel.
 
 type Me = { id: string; email: string; roles: string[]; onboarded: boolean };
 
 export default function Welcome() {
+  const insets = useSafeAreaInsets();
   const [checking, setChecking] = useState(true);
 
   useFocusEffect(
@@ -52,88 +52,35 @@ export default function Welcome() {
   if (checking) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={colors.gold} size="large" />
+        <ActivityIndicator color={colors.green} size="large" />
       </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={["#013920", "#002A18", "#013920"]}
-      style={styles.gradient}
-    >
-      <Screen scroll gradient={["#013920", "#002A18"]} padded>
-        <View style={styles.top}>
-          <View style={styles.monogram}>
-            <AppText style={{ color: colors.ink[900], fontWeight: "900", fontSize: 26 }}>N</AppText>
-          </View>
-          <AppText variant="h2" style={{ color: colors.gold, letterSpacing: 4, fontWeight: "900", marginTop: 14 }}>
-            NUVORA
-          </AppText>
-          <AppText variant="caption" style={{ color: colors.white, opacity: 0.6, letterSpacing: 2 }}>
-            LEARNING BEYOND BOUNDARIES
-          </AppText>
+    <View style={[styles.root, { paddingTop: insets.top + spacing.lg }]}>
+      <View style={styles.brand}>
+        <View style={styles.monogram}>
+          <AppText style={{ color: colors.white, fontWeight: "900", fontSize: 24 }}>N</AppText>
         </View>
-
-        <View style={styles.hero}>
-          <Animated.View entering={FadeInUp.delay(100).springify().damping(16)}>
-            <AppText
-              variant="display"
-              style={{ color: colors.white, lineHeight: 44 }}
-            >
-              Tutors, programmes{"\n"}and live cohorts{"\n"}
-              <AppText variant="display" style={{ color: colors.gold }}>
-                in your pocket.
-              </AppText>
-            </AppText>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(220).springify().damping(16)}>
-            <AppText variant="body" style={{ color: colors.white, opacity: 0.75, marginTop: 14, lineHeight: 22 }}>
-              British &amp; Nigerian curricula · Exam prep (UTME, IGCSE, SAT, GMAT) · Private tuition.
-            </AppText>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(340).springify().damping(16)} style={styles.pills}>
-            {["Vetted tutors", "Live cohorts", "Exam prep"].map((p) => (
-              <View key={p} style={styles.pill}>
-                <AppText variant="label" style={{ color: colors.navy }}>
-                  {p}
-                </AppText>
-              </View>
-            ))}
-          </Animated.View>
-        </View>
-
-        <Animated.View entering={FadeInDown.delay(460).springify().damping(16)} style={styles.actions}>
-          <Button label="Create an account" onPress={() => router.push("/onboarding")} full />
-          <Button
-            label="I already have an account"
-            variant="ghost"
-            onPress={() => router.push("/login")}
-            full
-            style={{ marginTop: 12 }}
-          />
-        </Animated.View>
-      </Screen>
-    </LinearGradient>
+        <AppText style={styles.brandName}>NUVORA</AppText>
+      </View>
+      <OnboardingCarousel />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: { flex: 1 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.navy },
-  top: { alignItems: "center", gap: 4, marginTop: 12 },
+  root: { flex: 1, backgroundColor: colors.bg },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg },
+  brand: { alignItems: "center", paddingTop: spacing.xs },
   monogram: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.gold,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: colors.green,
     alignItems: "center",
     justifyContent: "center",
   },
-  hero: { flex: 1, justifyContent: "center", marginTop: 40 },
-  pills: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 20 },
-  pill: { backgroundColor: colors.gold, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7 },
-  actions: { marginTop: 20 },
+  brandName: { color: colors.navy, fontWeight: "900", fontSize: 18, letterSpacing: 3, marginTop: spacing.xs },
 });
