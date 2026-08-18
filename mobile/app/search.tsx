@@ -1,28 +1,61 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
-import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
-import { Card } from "@/src/components/ui/Card";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
-import { formatRating, searchTutors, type TutorCard } from "@/src/lib/catalogue";
+import { Card } from "@/src/components/ui/Card";
+import { EmptyState } from "@/src/components/ui/EmptyState";
+import { Skeleton } from "@/src/components/ui/Skeleton";
+import { TabLayout } from "@/src/components/TabLayout";
+import { colors, radius, spacing } from "@/src/lib/theme";
+import {
+  formatRating,
+  listSubjects,
+  searchTutors,
+  type CatalogueSubject,
+  type TutorCard,
+} from "@/src/lib/catalogue";
 import { isSaved, toggleSaved, type SavedTutor } from "@/src/lib/wishlist";
 
-// Search — free-text and subject-filtered tutor search over the live catalogue
-// (GET /tutors/search), with a save/heart toggle wired to the device wishlist.
+// Explore / Discovery — header → search → categories → featured → recommended
+// → popular. Horizontal-scrolling sections are used sparingly; cards
+// communicate the most important info (name, subject, rating) immediately.
 
-export default function SearchScreen() {
+const FEATURED_QUERIES = ["Mathematics", "IELTS", "Python"] as const;
+
+export default function ExploreScreen() {
   const params = useLocalSearchParams<{ q?: string; subject?: string }>();
   const subjectSlug = typeof params.subject === "string" ? params.subject : undefined;
   const [query, setQuery] = useState(typeof params.q === "string" ? params.q : "");
   const [results, setResults] = useState<TutorCard[]>([]);
+  const [categories, setCategories] = useState<CatalogueSubject[]>([]);
+  const [featured, setFeatured] = useState<TutorCard[]>([]);
+  const [recommended, setRecommended] = useState<TutorCard[]>([]);
   const [savedSet, setSavedSet] = useState<Set<string>>(new Set());
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingDiscovery, setLoadingDiscovery] = useState(true);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const loadDiscovery = useCallback(async () => {
+    setLoadingDiscovery(true);
+    try {
+      const subs = await listSubjects();
+      setCategories(subs.filter((s) => s.is_active).slice(0, 12));
+      const [feat, rec] = await Promise.all([
+        searchTutors({ q: FEATURED_QUERIES[0], page_size: 6 }),
+        searchTutors({ page_size: 10 }),
+      ]);
+      setFeatured(feat);
+      setRecommended(rec);
+    } catch {
+      // catalogue is offline-cached; screens degrade gracefully
+    } finally {
+      setLoadingDiscovery(false);
+    }
+  }, []);
 
   const runSearch = useCallback(
     async (q: string) => {
@@ -54,21 +87,16 @@ export default function SearchScreen() {
     [subjectSlug]
   );
 
-  // Run once on focus (subject-filtered deep links), then on each keystroke.
   useFocusEffect(
     useCallback(() => {
+      void loadDiscovery();
       void runSearch(query);
       return () => {
         if (timer.current) clearTimeout(timer.current);
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [runSearch])
+    }, [loadDiscovery, runSearch])
   );
-
-  useEffect(() => {
-    if (subjectSlug) void runSearch(query);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjectSlug]);
 
   const toggle = async (t: TutorCard) => {
     const card: SavedTutor = {
@@ -81,75 +109,214 @@ export default function SearchScreen() {
     setSavedSet(new Set(next.map((x) => x.slug)));
   };
 
+  const active = query.trim().length >= 2 || !!subjectSlug;
+
   return (
-    <Screen scroll>
-      <ScreenHeader
-        eyebrow="Discover"
-        title={subjectSlug ? "Tutors for this subject" : "Find a tutor"}
-        subtitle="Search vetted tutors by name, subject or keyword."
-      />
-
-      <AppInput
-        value={query}
-        onChangeText={(t) => {
-          setQuery(t);
-          void runSearch(t);
-        }}
-        placeholder="Try “Mathematics”, “IELTS”, “Python”…"
-        style={{ marginBottom: 12 }}
-        returnKeyType="search"
-      />
-
-      {loading ? (
-        <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 24 }}>
-          Searching…
-        </AppText>
-      ) : searched && results.length === 0 ? (
-        <Card padded>
-          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center" }}>
-            No tutors match that search yet. Try a broader term.
+    <TabLayout>
+      <Screen scroll>
+        <View style={styles.header}>
+          <AppText variant="h1">Explore</AppText>
+          <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
+            Find the right tutor, subject or programme.
           </AppText>
-        </Card>
-      ) : (
-        results.map((t) => {
-          const saved = savedSet.has(t.slug);
-          return (
-            <Card key={t.id} padded style={styles.row}>
-              <View style={styles.avatar}>
-                <AppText style={{ fontWeight: "800", color: colors.navy }}>{t.display_name.slice(0, 1)}</AppText>
+        </View>
+
+        <AppInput
+          value={query}
+          onChangeText={(t) => {
+            setQuery(t);
+            void runSearch(t);
+          }}
+          placeholder="Try “Mathematics”, “IELTS”, “Python”…"
+          style={{ marginBottom: spacing.sm }}
+          returnKeyType="search"
+        />
+
+        {active ? (
+          // ── Search results ──────────────────────────────────────────────
+          loading ? (
+            <View style={{ marginTop: spacing.sm }}>
+              <Skeleton height={72} radius={radius.lg} />
+              <Skeleton height={72} radius={radius.lg} style={{ marginTop: spacing.sm }} />
+              <Skeleton height={72} radius={radius.lg} style={{ marginTop: spacing.sm }} />
+            </View>
+          ) : searched && results.length === 0 ? (
+            <EmptyState
+              icon="search-outline"
+              title="No tutors found"
+              description="No tutors match that search yet. Try a broader term or a different subject."
+            />
+          ) : (
+            results.map((t) => {
+              const saved = savedSet.has(t.slug);
+              return (
+                <Card key={t.id} style={styles.tutorRow}>
+                  <View style={styles.avatar}>
+                    <AppText style={{ fontWeight: "800", color: colors.navy }}>{t.display_name.slice(0, 1)}</AppText>
+                  </View>
+                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                    <AppText variant="h3" onPress={() => router.push(`/tutors/${t.slug}` as never)}>
+                      {t.display_name}
+                    </AppText>
+                    <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }} numberOfLines={1}>
+                      {t.subjects.map((s) => s.name).join(", ") || "General"}
+                    </AppText>
+                    <AppText variant="caption" style={{ color: colors.greenDark, marginTop: 2, fontWeight: "700" }}>
+                      {formatRating(t.rating_avg, t.rating_count)}
+                    </AppText>
+                  </View>
+                  <Ionicons
+                    name={saved ? "heart" : "heart-outline"}
+                    size={20}
+                    color={saved ? colors.danger : colors.ink[300]}
+                    onPress={() => void toggle(t)}
+                  />
+                </Card>
+              );
+            })
+          )
+        ) : loadingDiscovery ? (
+          // ── Discovery loading ───────────────────────────────────────────
+          <View style={{ marginTop: spacing.xl }}>
+            <Skeleton width="30%" height={16} />
+            <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm }}>
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} width={90} height={36} radius={radius.pill} />
+              ))}
+            </View>
+            <Skeleton width="30%" height={16} style={{ marginTop: spacing.xl }} />
+            <Skeleton height={120} radius={radius.lg} style={{ marginTop: spacing.sm }} />
+            <Skeleton height={120} radius={radius.lg} style={{ marginTop: spacing.sm }} />
+          </View>
+        ) : (
+          // ── Discovery content ───────────────────────────────────────────
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.section}>
+            <AppText variant="label" style={styles.sectionTitle}>
+              CATEGORIES
+            </AppText>
+            <View style={styles.chips}>
+              {categories.map((s) => (
+                <View
+                  key={s.slug}
+                  style={styles.chip}
+                  onTouchEnd={() => router.push(`/search?subject=${s.slug}` as never)}
+                >
+                  <AppText variant="bodySm" style={{ color: colors.greenDark, fontWeight: "700" }}>
+                    {s.name}
+                  </AppText>
+                </View>
+              ))}
+              {categories.length === 0 && (
+                <AppText variant="bodySm" style={{ color: colors.ink[400] }}>Subjects loading…</AppText>
+              )}
+            </View>
+          </ScrollView>
+        )}
+
+        {/* Featured — shown regardless of search for discovery richness */}
+        {!active && featured.length > 0 && (
+          <View style={styles.section}>
+            <AppText variant="label" style={styles.sectionTitle}>
+              FEATURED
+            </AppText>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -spacing.lg }}>
+              <View style={styles.hScroll}>
+                {featured.map((t) => (
+                  <Card key={t.id} style={styles.featuredCard} onPress={() => router.push(`/tutors/${t.slug}` as never)}>
+                    <View style={styles.fAvatar}>
+                      <AppText style={{ fontWeight: "800", color: colors.white }}>{t.display_name.slice(0, 1)}</AppText>
+                    </View>
+                    <AppText variant="heading" style={{ marginTop: spacing.sm }}>
+                      {t.display_name}
+                    </AppText>
+                    <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }} numberOfLines={1}>
+                      {t.subjects.map((s) => s.name).join(", ") || "General"}
+                    </AppText>
+                    <AppText variant="caption" style={{ color: colors.greenDark, marginTop: 4, fontWeight: "700" }}>
+                      {formatRating(t.rating_avg, t.rating_count)}
+                    </AppText>
+                  </Card>
+                ))}
               </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <AppText variant="h3" onPress={() => router.push(`/tutors/${t.slug}` as never)}>
-                  {t.display_name}
-                </AppText>
-                <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }} numberOfLines={1}>
-                  {t.subjects.map((s) => s.name).join(", ") || "General"}
-                </AppText>
-                <AppText variant="caption" style={{ color: colors.goldDark, marginTop: 2, fontWeight: "700" }}>
-                  {formatRating(t.rating_avg, t.rating_count)}
-                </AppText>
-              </View>
-              <Ionicons
-                name={saved ? "heart" : "heart-outline"}
-                size={20}
-                color={saved ? colors.danger : colors.ink[300]}
-                onPress={() => void toggle(t)}
-              />
-            </Card>
-          );
-        })
-      )}
-    </Screen>
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Recommended */}
+        {!active && recommended.length > 0 && (
+          <View style={styles.section}>
+            <AppText variant="label" style={styles.sectionTitle}>
+              RECOMMENDED FOR YOU
+            </AppText>
+            {recommended.slice(0, 5).map((t) => {
+              const saved = savedSet.has(t.slug);
+              return (
+                <Card key={t.id} style={styles.tutorRow}>
+                  <View style={styles.avatar}>
+                    <AppText style={{ fontWeight: "800", color: colors.navy }}>{t.display_name.slice(0, 1)}</AppText>
+                  </View>
+                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                    <AppText variant="h3" onPress={() => router.push(`/tutors/${t.slug}` as never)}>
+                      {t.display_name}
+                    </AppText>
+                    <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }} numberOfLines={1}>
+                      {t.subjects.map((s) => s.name).join(", ") || "General"}
+                    </AppText>
+                  </View>
+                  <AppText variant="caption" style={{ color: colors.greenDark, fontWeight: "700" }}>
+                    {formatRating(t.rating_avg, t.rating_count)}
+                  </AppText>
+                  <Ionicons
+                    name={saved ? "heart" : "heart-outline"}
+                    size={18}
+                    color={saved ? colors.danger : colors.ink[300]}
+                    onPress={() => void toggle(t)}
+                    style={{ marginLeft: spacing.sm }}
+                  />
+                </Card>
+              );
+            })}
+          </View>
+        )}
+      </Screen>
+    </TabLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  header: { marginBottom: spacing.lg },
+  section: { marginTop: spacing.xl, marginBottom: spacing.xs },
+  sectionTitle: { color: colors.ink[500], letterSpacing: 1.1, marginBottom: spacing.sm },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
+  chip: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+  },
+  hScroll: { flexDirection: "row", gap: spacing.sm, paddingHorizontal: spacing.lg },
+  featuredCard: { width: 200, padding: spacing.md },
+  fAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.green,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tutorRow: {
+    padding: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.goldLight,
+    backgroundColor: colors.greenLight,
     alignItems: "center",
     justifyContent: "center",
   },

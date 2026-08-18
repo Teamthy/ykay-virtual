@@ -33,6 +33,7 @@ const TYPE_ICONS: Record<string, string> = {
 export default function Notifications() {
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -45,6 +46,12 @@ export default function Notifications() {
       setLoading(false);
     }
   }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
   usePolling(load, { intervalMs: 15000, enabled: !error }); // real-time-ish refresh
@@ -66,7 +73,7 @@ export default function Notifications() {
   const unread = notifs.filter((n) => !n.is_read).length;
 
   return (
-    <Screen scroll>
+    <Screen scroll refreshing={refreshing} onRefresh={onRefresh}>
       <ScreenHeader
         eyebrow="INBOX"
         title="Notifications"

@@ -18,6 +18,7 @@ import { usePolling } from "@/src/lib/realtime";
 
 export default function MessagesScreen() {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -28,11 +29,17 @@ export default function MessagesScreen() {
     }
   }, []);
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
+
   useFocusEffect(useCallback(() => void load(), [load]));
   usePolling(load, { intervalMs: 8000 }); // real-time-ish refresh while mounted
 
   return (
-    <Screen scroll>
+    <Screen scroll refreshing={refreshing} onRefresh={onRefresh}>
       <ScreenHeader
         eyebrow="Messages"
         title="Conversations"

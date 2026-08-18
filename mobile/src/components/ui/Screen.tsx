@@ -1,10 +1,11 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ScrollView, StyleSheet, View, type ViewStyle, type StyleProp } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, View, type ViewStyle, type StyleProp } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors, layout, type } from "@/src/lib/theme";
+import { colors, layout } from "@/src/lib/theme";
 
 // Premium screen wrapper — consistent padding, optional gradient/background,
-// scroll behaviour. Every screen composes this so chrome stays uniform.
+// scroll behaviour, and pull-to-refresh. Every screen composes this so chrome
+// stays uniform.
 
 type Props = {
   children: React.ReactNode;
@@ -13,6 +14,9 @@ type Props = {
   padded?: boolean;
   style?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  // Pull-to-refresh support (iOS/Android). Provide refreshing + onRefresh.
+  refreshing?: boolean;
+  onRefresh?: () => void;
 };
 
 export function Screen({
@@ -22,6 +26,8 @@ export function Screen({
   padded = true,
   style,
   contentContainerStyle,
+  refreshing,
+  onRefresh,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -45,6 +51,16 @@ export function Screen({
       ]}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={!!refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.green}
+            colors={[colors.green]}
+          />
+        ) : undefined
+      }
     >
       {body}
     </ScrollView>
@@ -68,7 +84,7 @@ export function Screen({
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  plain: { backgroundColor: colors.cream },
+  plain: { backgroundColor: colors.bg },
   inner: { flexGrow: 1, paddingBottom: 32 },
   scrollContent: { flexGrow: 1 },
 });
