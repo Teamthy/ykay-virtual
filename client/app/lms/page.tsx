@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { cn } from "@/lib/utils";
-import { isAdmin } from "@/features/auth/api";
+import { isAdmin } from "@/hooks/useDashboardRoute";
 import {
   getMyLessons,
   getCohortLessons,
