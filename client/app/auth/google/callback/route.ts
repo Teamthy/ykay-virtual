@@ -37,19 +37,21 @@ export async function GET(request: Request) {
       const body = await res.json().catch(() => null);
       return fail(body?.error?.message || "Google sign-in could not be completed");
     }
-    const { token, user } = (await res.json()).data as {
-      token: string;
-      user: { roles: string[]; status: string; onboarded?: boolean };
-    };
+    const body = (await res.json()) as { data?: { token?: string; user?: { onboarded?: boolean } } };
+    const token = body.data?.token;
+    const user = body.data?.user;
+    if (!token) {
+      return fail("Google sign-in returned no session token");
+    }
 
-    const dest = user.onboarded ? "/dashboard" : "/onboarding/wizard";
+    const dest = user?.onboarded ? "/dashboard" : "/onboarding/wizard";
     const response = NextResponse.redirect(new URL(dest, url.origin));
     response.cookies.set("nuvora_session", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       path: "/",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: 30 * 24 * 60 * 60,
     });
     return response;
   } catch {

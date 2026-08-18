@@ -10,7 +10,7 @@
 export const API_BASE =
   typeof window === "undefined"
     ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
-    : process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+    : "/api/v1";
 
 export type Envelope<T> = {
   data: T;
