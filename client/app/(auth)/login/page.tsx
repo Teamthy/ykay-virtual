@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
 import { GoogleButton } from "@/components/ui/google-button";
-import { login, type CurrentUser } from "@/features/auth/api";
+import { login, confirmMFA, type CurrentUser } from "@/features/auth/api";
 import { useSession } from "@/hooks/useSession";
 import { safeNextPath, withNext } from "@/lib/safe-next";
 
@@ -44,6 +44,12 @@ function LoginInner() {
   const { user, isLoading } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Admin MFA: after a correct password, we hold the email and ask for the
+  // code before a session is issued.
+  const [mfaEmail, setMfaEmail] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaError, setMfaError] = useState<string | null>(null);
+  const [mfaSubmitting, setMfaSubmitting] = useState(false);
 
   // Already signed in? Don't show the form - go where you're headed.
   useEffect(() => {
@@ -63,10 +69,15 @@ function LoginInner() {
       setError(null);
       try {
         const email = value.email.trim();
-        const user = await login(email, value.password);
-        qc.setQueryData(["session"], user);
-        toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
-        router.push(destinationFor(user, next));
+        const result = await login(email, value.password);
+        if (result.mfa_required) {
+          // Admin MFA: hold the email, show the code screen. No session yet.
+          setMfaEmail(result.email ?? email);
+          return;
+        }
+        qc.setQueryData(["session"], result);
+        toast.success(`Welcome back, ${result.email.split("@")[0]}!`);
+        router.push(destinationFor(result, next));
       } catch (err) {
         setError(friendlyError(err instanceof Error ? err.message : "Login failed"));
       } finally {
@@ -74,6 +85,23 @@ function LoginInner() {
       }
     },
   });
+
+
+  const confirmMfaSubmit = async () => {
+    if (!mfaEmail) return;
+    setMfaSubmitting(true);
+    setMfaError(null);
+    try {
+      const user = await confirmMFA(mfaEmail, mfaCode);
+      qc.setQueryData(["session"], user);
+      toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
+      router.push(destinationFor(user, next));
+    } catch (err) {
+      setMfaError(err instanceof Error ? err.message : "That code was invalid or expired.");
+    } finally {
+      setMfaSubmitting(false);
+    }
+  };
 
   return (
     <AuthShell
@@ -89,6 +117,49 @@ function LoginInner() {
       }
     >
       <div className="space-y-5">
+        {mfaEmail ? (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-brand-blue/20 bg-brand-blue/5 px-4 py-3 text-sm text-ink-700">
+              Two-step verification: we emailed a 6-digit code to{" "}
+              <strong className="font-semibold text-brand-navy">{mfaEmail}</strong>. Enter it to finish signing in.
+            </div>
+            <label className="block text-sm">
+              <span className="font-medium text-ink-800">Verification code</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                autoFocus
+                autoComplete="one-time-code"
+                className={INPUT_CLS}
+                placeholder="6-digit code"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+              />
+            </label>
+            {mfaError && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                {mfaError}
+              </div>
+            )}
+            <button
+              type="button"
+              disabled={mfaSubmitting || mfaCode.length !== 6}
+              onClick={() => void confirmMfaSubmit()}
+              className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+            >
+              {mfaSubmitting ? "Verifying…" : "Verify & sign in"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMfaEmail(null); setMfaCode(""); setMfaError(null); }}
+              className="w-full text-center text-sm text-ink-500 hover:text-ink-800 hover:underline"
+            >
+              Use a different account
+            </button>
+          </div>
+        ) : (
+          <>
         <GoogleButton />
 
         <div className="flex items-center gap-3 text-xs uppercase text-ink-400 before:flex-1 before:border-t before:border-ink-200 before:me-4 after:flex-1 after:border-t after:border-ink-200 after:ms-4">
@@ -164,6 +235,8 @@ function LoginInner() {
             </Link>
           </div>
         </form>
+          </>
+        )}
       </div>
     </AuthShell>
   );

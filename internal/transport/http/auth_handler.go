@@ -114,13 +114,44 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ip := clientIP(r)
-	token, user, roles, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
+	res, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
 	if err != nil {
 		WriteAppError(w, err)
 		return
 	}
-	middleware.SetSessionCookie(w, r, h.cfg, token)
-	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
+	if res.MFARequired {
+		// Admin MFA: no session issued yet - the admin must enter the emailed
+		// code via /auth/mfa/confirm.
+		pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+			"mfa_required": true,
+			"email":        res.User.Email,
+			"user":         toUserResponse(res.User, res.Roles),
+		}, nil)
+		return
+	}
+	middleware.SetSessionCookie(w, r, h.cfg, res.Token)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(res.User, res.Roles), nil)
+}
+
+// ConfirmMFA — POST /auth/mfa/confirm — completes an admin login with the
+// emailed second factor, then issues the session cookie.
+func (h *AuthHandler) ConfirmMFA(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+		Code  string `json:"code"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	ip := clientIP(r)
+	res, err := h.svc.ConfirmMFA(r.Context(), req.Email, req.Code, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	middleware.SetSessionCookie(w, r, h.cfg, res.Token)
+	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(res.User, res.Roles), nil)
 }
 
 func (h *AuthHandler) RequestLoginCode(w http.ResponseWriter, r *http.Request) {
@@ -395,14 +426,22 @@ func (h *AuthHandler) MobileLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ip := clientIP(r)
-	token, user, roles, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
+	res, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
 	if err != nil {
 		WriteAppError(w, err)
 		return
 	}
+	if res.MFARequired {
+		pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+			"mfa_required": true,
+			"email":        res.User.Email,
+			"user":         toUserResponse(res.User, res.Roles),
+		}, nil)
+		return
+	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
-		"token": token,
-		"user":  toUserResponse(user, roles),
+		"token": res.Token,
+		"user":  toUserResponse(res.User, res.Roles),
 	}, nil)
 }
 

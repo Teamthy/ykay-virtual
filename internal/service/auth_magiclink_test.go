@@ -132,7 +132,9 @@ func TestAuth_OnboardingBackend(t *testing.T) {
 	require.NotEmpty(t, newTok, "a fresh session token must be issued after a password change")
 	_, err = env.svc.ChangePassword(ctx, u.ID, "short")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
-	_, user, roles, err := env.svc.Login(ctx, "ob@example.com", "my-new-password-1", "1.2.3.4", "test")
+	res, err := env.svc.Login(ctx, "ob@example.com", "my-new-password-1", "1.2.3.4", "test")
+	user := res.User
+	roles = res.Roles
 	require.NoError(t, err)
 	require.Equal(t, "ob@example.com", user.Email)
 	require.Contains(t, roles, "TUTOR")

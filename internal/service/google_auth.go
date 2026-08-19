@@ -193,7 +193,7 @@ func (g *GoogleAuthService) ExchangeCode(ctx context.Context, code, state, ip, u
 	}
 
 	// 4) Session (same path as password login).
-	return g.auth.startSession(ctx, user, ip, userAgent)
+	return g.auth.startSession(ctx, user, ip, userAgent, "google")
 }
 
 // createOAuthUser — registers a Google-sourced user as email-verified ACTIVE.

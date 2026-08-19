@@ -38,10 +38,28 @@ export async function register(input: RegisterInput): Promise<CurrentUser> {
   return res.data;
 }
 
-export async function login(email: string, password: string): Promise<CurrentUser> {
-  const res = await apiFetch<CurrentUser>("/auth/login", {
+export type LoginResult =
+  | (CurrentUser & { mfa_required?: false })
+  | { mfa_required: true; email: string; user: CurrentUser };
+
+/**
+ * Log in with email + password. Non-admins get a session immediately.
+ * Platform admins get `{ mfa_required: true, email, user }` — they must then
+ * confirm the emailed code via `confirmMFA` before a session is issued.
+ */
+export async function login(email: string, password: string): Promise<LoginResult> {
+  const res = await apiFetch<LoginResult>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
+  });
+  return res.data;
+}
+
+/** Confirm the emailed MFA code for an admin login (issues the session). */
+export async function confirmMFA(email: string, code: string): Promise<CurrentUser> {
+  const res = await apiFetch<CurrentUser>("/auth/mfa/confirm", {
+    method: "POST",
+    body: JSON.stringify({ email, code }),
   });
   return res.data;
 }

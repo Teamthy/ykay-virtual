@@ -40,7 +40,7 @@ func TestAccountService_ProfileExportDelete(t *testing.T) {
 	assert.Contains(t, exp.Roles, "PARENT")
 
 	// Delete: status DELETED + sessions revoked + cannot log in.
-	_, _, _, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
+	_, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
 	require.NoError(t, err)
 	require.NoError(t, svc.DeleteAccount(ctx, user.ID))
 
@@ -48,6 +48,6 @@ func TestAccountService_ProfileExportDelete(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, identity.UserStatusDeleted, got.Status)
 
-	_, _, _, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
+	_, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
 	require.Error(t, err, "deleted account must not be able to log in")
 }

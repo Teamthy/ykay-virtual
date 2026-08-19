@@ -109,8 +109,9 @@ func TestPasswordReset_Flow_RotatesSessions(t *testing.T) {
 	require.NoError(t, err)
 
 	// Active session before the reset.
-	token, _, _, err := env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
+	res, err := env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
 	require.NoError(t, err)
+	token := res.Token
 	_, _, err = env.svc.Me(ctx, HashToken(token))
 	require.NoError(t, err)
 
@@ -121,9 +122,10 @@ func TestPasswordReset_Flow_RotatesSessions(t *testing.T) {
 	require.NoError(t, env.svc.ResetPassword(ctx, raw, "new-password-2"))
 
 	// Old password no longer works; new one does.
-	_, _, _, err = env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
+	_, err = env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
-	_, user, _, err := env.svc.Login(ctx, "parent@example.com", "new-password-2", "", "")
+	res, err = env.svc.Login(ctx, "parent@example.com", "new-password-2", "", "")
+	user := res.User
 	require.NoError(t, err)
 
 	// All sessions rotated: the pre-reset session is dead.

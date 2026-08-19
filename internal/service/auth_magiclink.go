@@ -111,11 +111,12 @@ func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, use
 			return "", nil, nil, err
 		}
 	}
-	return s.startSession(ctx, user, ip, userAgent)
+	return s.startSession(ctx, user, ip, userAgent, "login_code")
 }
 
-// startSession — shared session creation used by password login and login code.
-func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip, userAgent string) (string, *identity.User, []string, error) {
+// startSession — shared session creation used by password login, login code
+// and admin MFA confirmation.
+func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip, userAgent, auditMethod string) (string, *identity.User, []string, error) {
 	raw, hash, err := newSessionToken()
 	if err != nil {
 		return "", nil, nil, err
@@ -138,7 +139,7 @@ func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip,
 		roles = append(roles, r.Name)
 	}
 	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
-		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip, "method": "login_code"}, nil, nil)
+		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip, "method": auditMethod}, nil, nil)
 	return raw, user, roles, nil
 }
 

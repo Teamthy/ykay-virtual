@@ -14,6 +14,7 @@ const (
 	TokenVerifyEmail   AuthTokenPurpose = "VERIFY_EMAIL"
 	TokenPasswordReset AuthTokenPurpose = "PASSWORD_RESET"
 	TokenLoginCode     AuthTokenPurpose = "LOGIN_CODE"
+	TokenMFAChallenge  AuthTokenPurpose = "MFA_CHALLENGE"
 )
 
 // AuthToken — single-use, expiring, hash-only-stored token for email

@@ -579,6 +579,30 @@ paths:
                 $ref: '#/components/schemas/AuthUser'
         '401': { description: Invalid credentials }
 
+  /auth/mfa/confirm:
+    post:
+      tags: [identity]
+      summary: Complete an admin login with the emailed second factor (MFA)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string, description: 6-digit emailed verification code }
+      responses:
+        '200':
+          description: Session issued (admin login complete)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUser'
+        '401': { description: Invalid or expired MFA code }
+
   /auth/logout:
     post:
       tags: [identity]

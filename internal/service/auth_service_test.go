@@ -82,7 +82,10 @@ func TestLogin_Success_ReturnsTokenAndRoles(t *testing.T) {
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "tutor@example.com", Password: "password123", Roles: []string{"TUTOR"}})
 	require.NoError(t, err)
 
-	token, user, roles, err := env.svc.Login(ctx, "tutor@example.com", "password123", "127.0.0.1", "test-agent")
+	res, err := env.svc.Login(ctx, "tutor@example.com", "password123", "127.0.0.1", "test-agent")
+	token := res.Token
+	user := res.User
+	roles := res.Roles
 	require.NoError(t, err)
 	assert.NotEmpty(t, token)
 	assert.Equal(t, "tutor@example.com", user.Email)
@@ -107,14 +110,14 @@ func TestLogin_WrongPassword_Unauthorized(t *testing.T) {
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
 
-	_, _, _, err = env.svc.Login(ctx, "a@b.com", "wrong-password", "", "")
+	_, err = env.svc.Login(ctx, "a@b.com", "wrong-password", "", "")
 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
 }
 
 func TestLogin_UnknownEmail_Unauthorized(t *testing.T) {
 	env := newAuthEnv(t)
 	ctx := context.Background()
-	_, _, _, err := env.svc.Login(ctx, "nobody@example.com", "password123", "", "")
+	_, err := env.svc.Login(ctx, "nobody@example.com", "password123", "", "")
 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
 }
 
@@ -123,7 +126,8 @@ func TestMe_ValidSession(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "parent@example.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
-	token, _, _, err := env.svc.Login(ctx, "parent@example.com", "password123", "", "")
+	res, err := env.svc.Login(ctx, "parent@example.com", "password123", "", "")
+	token := res.Token
 	require.NoError(t, err)
 
 	user, roles, err := env.svc.Me(ctx, HashToken(token))
@@ -137,7 +141,8 @@ func TestMe_RevokedOrExpired_Unauthorized(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
-	token, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	token := res.Token
 	require.NoError(t, err)
 
 	// Revoke → unauthorized
@@ -146,7 +151,8 @@ func TestMe_RevokedOrExpired_Unauthorized(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
 
 	// Expired → unauthorized
-	token2, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	res2, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	token2 := res2.Token
 	require.NoError(t, err)
 	env.svc.now = func() time.Time { return fixedTime.Add(31 * 24 * time.Hour) }
 	_, _, err = env.svc.Me(ctx, HashToken(token2))
@@ -158,7 +164,8 @@ func TestLogout_Idempotent(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
-	token, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	token := res.Token
 	require.NoError(t, err)
 
 	require.NoError(t, env.svc.Logout(ctx, HashToken(token)))
@@ -171,7 +178,9 @@ func TestRotateAllSessions_PrivilegeChange(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
-	token, user, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	token := res.Token
+	user := res.User
 	require.NoError(t, err)
 
 	require.NoError(t, env.svc.RotateAllSessions(ctx, user.ID))
@@ -179,7 +188,8 @@ func TestRotateAllSessions_PrivilegeChange(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
 
 	// Re-login works after rotation
-	token2, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	res2, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
+	token2 := res2.Token
 	require.NoError(t, err)
 	assert.NotEmpty(t, token2)
 	_ = uuid.New()
@@ -244,9 +254,11 @@ func TestChangePassword_RotatesAllSessions(t *testing.T) {
 	require.NoError(t, err)
 
 	// Two existing sessions (e.g. two devices).
-	tokA, _, _, err := env.svc.Login(ctx, "rot@example.com", "password123", "1.1.1.1", "devA")
+	resA, err := env.svc.Login(ctx, "rot@example.com", "password123", "1.1.1.1", "devA")
+	tokA := resA.Token
 	require.NoError(t, err)
-	tokB, _, _, err := env.svc.Login(ctx, "rot@example.com", "password123", "2.2.2.2", "devB")
+	resB, err := env.svc.Login(ctx, "rot@example.com", "password123", "2.2.2.2", "devB")
+	tokB := resB.Token
 	require.NoError(t, err)
 
 	// Change the password → all old sessions revoked, one fresh token issued.
@@ -267,6 +279,6 @@ func TestChangePassword_RotatesAllSessions(t *testing.T) {
 	require.NoError(t, err)
 
 	// Old password no longer authenticates; new password does.
-	_, _, _, err = env.svc.Login(ctx, "rot@example.com", "password123", "3.3.3.3", "devC")
+	_, err = env.svc.Login(ctx, "rot@example.com", "password123", "3.3.3.3", "devC")
 	require.ErrorIs(t, err, domain.ErrUnauthorized)
 }

@@ -350,27 +350,67 @@ func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newP
 	return raw, nil
 }
 
-// Login — verifies credentials, creates a session, returns the raw token
-// (the handler puts it in the httpOnly cookie) + the user + roles.
-func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent string) (token string, user *identity.User, roles []string, err error) {
+// LoginResult — the outcome of an attempted login. When MFARequired is true the
+// password was correct but the user must confirm a second factor (emailed code)
+// before a session is issued (admin MFA).
+type LoginResult struct {
+	Token       string
+	User        *identity.User
+	Roles       []string
+	MFARequired bool
+}
+
+// isPlatformAdmin — MFA is enforced for platform admins (YK-008 parity):
+// SUPER_ADMIN and ACADEMIC_ADMIN require a second factor; INSTITUTION_ADMIN is
+// scoped and not granted platform admin privileges.
+func isPlatformAdmin(roles []string) bool {
+	for _, role := range roles {
+		if role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" {
+			return true
+		}
+	}
+	return false
+}
+
+// Login — verifies credentials, creates a session, returns the raw token.
+// For platform admins it defers the session and instead issues an emailed
+// MFA code (challenge); the session is created only after ConfirmMFA.
+func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent string) (*LoginResult, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
-	user, err = s.users.FindByEmail(ctx, email)
+	user, err := s.users.FindByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			return "", nil, nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
+			return nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
 		}
-		return "", nil, nil, err
+		return nil, err
 	}
 	if !user.CanLogin() {
-		return "", nil, nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
+		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
-		return "", nil, nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
+		return nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
+	}
+
+	roleList, _ := s.roles.RolesForUser(ctx, user.ID)
+	roles := make([]string, 0, len(roleList))
+	for _, r := range roleList {
+		roles = append(roles, r.Name)
+	}
+
+	// Admin MFA: the second factor (emailed code) must be confirmed before a
+	// session is created. No cookie/token is returned yet.
+	if isPlatformAdmin(roles) {
+		if err := s.issueMFAChallenge(ctx, user); err != nil {
+			return nil, err
+		}
+		_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
+			nil, nil, map[string]any{"email": user.Email, "ip": ip, "mfa": "challenge_sent"}, nil, nil)
+		return &LoginResult{User: user, Roles: roles, MFARequired: true}, nil
 	}
 
 	raw, hash, err := newSessionToken()
 	if err != nil {
-		return "", nil, nil, err
+		return nil, err
 	}
 	now := s.now().UTC()
 	session := &identity.Session{
@@ -381,17 +421,83 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 		ExpiresAt: now.Add(SessionTTL),
 	}
 	if err := s.sessions.Create(ctx, session); err != nil {
-		return "", nil, nil, err
+		return nil, err
 	}
 	_ = s.users.UpdateLastLogin(ctx, user.ID, now)
+	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
+		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip, "method": "password"}, nil, nil)
+	return &LoginResult{Token: raw, User: user, Roles: roles}, nil
+}
+
+// ConfirmMFA — validates the emailed second factor for a pending admin login
+// and then creates the session (the two-factor gate before admin access).
+func (s *AuthService) ConfirmMFA(ctx context.Context, email, code, ip, userAgent string) (*LoginResult, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	code = strings.TrimSpace(code)
+	user, err := s.users.FindByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid MFA code", domain.ErrUnauthorized)
+	}
+	if !user.CanLogin() {
+		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
+	}
+
+	t, err := s.tokens.FindByHash(ctx, HashToken(fmt.Sprintf("%s:%s", user.ID, code)))
+	if err != nil || t.Purpose != identity.TokenMFAChallenge || t.UserID != user.ID {
+		return nil, fmt.Errorf("%w: invalid MFA code", domain.ErrUnauthorized)
+	}
+	if t.IsConsumed() || s.now().UTC().After(t.ExpiresAt) {
+		return nil, fmt.Errorf("%w: MFA code expired", domain.ErrUnauthorized)
+	}
+	if err := s.tokens.Consume(ctx, t.ID); err != nil {
+		return nil, err
+	}
 	roleList, _ := s.roles.RolesForUser(ctx, user.ID)
-	roles = make([]string, 0, len(roleList))
+	roles := make([]string, 0, len(roleList))
 	for _, r := range roleList {
 		roles = append(roles, r.Name)
 	}
-	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
-		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip}, nil, nil)
-	return raw, user, roles, nil
+	// Re-verify the user is still a platform admin (defense in depth: a role
+	// change between challenge and confirm must not mint an admin session).
+	if !isPlatformAdmin(roles) {
+		return nil, fmt.Errorf("%w: account no longer holds admin access", domain.ErrForbidden)
+	}
+	token, u, roles, err := s.startSession(ctx, user, ip, userAgent, "password+mfa")
+	if err != nil {
+		return nil, err
+	}
+	return &LoginResult{Token: token, User: u, Roles: roles}, nil
+}
+
+// issueMFAChallenge — generates a single-use emailed code for an admin login.
+func (s *AuthService) issueMFAChallenge(ctx context.Context, user *identity.User) error {
+	code, err := generateLoginCode()
+	if err != nil {
+		return err
+	}
+	_ = s.tokens.InvalidateAllForUser(ctx, user.ID, identity.TokenMFAChallenge)
+	token := &identity.AuthToken{
+		UserID:    user.ID,
+		Purpose:   identity.TokenMFAChallenge,
+		TokenHash: HashToken(fmt.Sprintf("%s:%s", user.ID, code)),
+		ExpiresAt: s.now().UTC().Add(loginCodeTTL),
+	}
+	if err := s.tokens.Create(ctx, token); err != nil {
+		return err
+	}
+	s.logDev("MFA code for admin %s: %s (expires in 10 minutes)", user.Email, code)
+	if s.email != nil {
+		if err := s.sendEmail(ctx, user.Email, "Your NUVORA admin verification code",
+			notification.BrandEmail(
+				"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Admin sign-in verification</h1>"+
+					"<p style=\"margin:0 0 16px;\">Hi,</p>"+
+					"<p style=\"margin:0 0 20px;\">Enter this code to finish signing in to your NUVORA admin account. It expires in 10 minutes.</p>"+
+					"<p style=\"margin:0 0 20px;text-align:center;\"><span style=\"display:inline-block;background:#E9F0FF;color:#0A1F44;font-size:30px;font-weight:800;letter-spacing:0.35em;padding:14px 22px;border-radius:12px;font-family:monospace;\">"+code+"</span></p>"+
+					"<p style=\"margin:0 0 0;color:#8794AC;font-size:13px;\">If you didn't try to sign in, reset your password and contact support immediately.</p>")); err != nil {
+			return fmt.Errorf("could not send MFA code: %w", err)
+		}
+	}
+	return nil
 }
 
 // Me — resolves the current user + roles from a session token hash.

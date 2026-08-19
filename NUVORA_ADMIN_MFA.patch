@@ -1,0 +1,815 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index ff0b334..754bcfe 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -579,6 +579,30 @@ paths:
+                 $ref: '#/components/schemas/AuthUser'
+         '401': { description: Invalid credentials }
+ 
++  /auth/mfa/confirm:
++    post:
++      tags: [identity]
++      summary: Complete an admin login with the emailed second factor (MFA)
++      security: []
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [email, code]
++              properties:
++                email: { type: string, format: email }
++                code: { type: string, description: 6-digit emailed verification code }
++      responses:
++        '200':
++          description: Session issued (admin login complete)
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/AuthUser'
++        '401': { description: Invalid or expired MFA code }
++
+   /auth/logout:
+     post:
+       tags: [identity]
+diff --git a/client/app/(auth)/login/page.tsx b/client/app/(auth)/login/page.tsx
+index 4c9e223..e23435e 100644
+--- a/client/app/(auth)/login/page.tsx
++++ b/client/app/(auth)/login/page.tsx
+@@ -11,7 +11,7 @@ import { toast } from "sonner";
+ import { AuthShell } from "@/components/layout/AuthShell";
+ import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
+ import { GoogleButton } from "@/components/ui/google-button";
+-import { login, type CurrentUser } from "@/features/auth/api";
++import { login, confirmMFA, type CurrentUser } from "@/features/auth/api";
+ import { useSession } from "@/hooks/useSession";
+ import { safeNextPath, withNext } from "@/lib/safe-next";
+ 
+@@ -44,6 +44,12 @@ function LoginInner() {
+   const { user, isLoading } = useSession();
+   const [error, setError] = useState<string | null>(null);
+   const [submitting, setSubmitting] = useState(false);
++  // Admin MFA: after a correct password, we hold the email and ask for the
++  // code before a session is issued.
++  const [mfaEmail, setMfaEmail] = useState<string | null>(null);
++  const [mfaCode, setMfaCode] = useState("");
++  const [mfaError, setMfaError] = useState<string | null>(null);
++  const [mfaSubmitting, setMfaSubmitting] = useState(false);
+ 
+   // Already signed in? Don't show the form - go where you're headed.
+   useEffect(() => {
+@@ -63,10 +69,15 @@ function LoginInner() {
+       setError(null);
+       try {
+         const email = value.email.trim();
+-        const user = await login(email, value.password);
+-        qc.setQueryData(["session"], user);
+-        toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
+-        router.push(destinationFor(user, next));
++        const result = await login(email, value.password);
++        if (result.mfa_required) {
++          // Admin MFA: hold the email, show the code screen. No session yet.
++          setMfaEmail(result.email ?? email);
++          return;
++        }
++        qc.setQueryData(["session"], result);
++        toast.success(`Welcome back, ${result.email.split("@")[0]}!`);
++        router.push(destinationFor(result, next));
+       } catch (err) {
+         setError(friendlyError(err instanceof Error ? err.message : "Login failed"));
+       } finally {
+@@ -75,6 +86,23 @@ function LoginInner() {
+     },
+   });
+ 
++
++  const confirmMfaSubmit = async () => {
++    if (!mfaEmail) return;
++    setMfaSubmitting(true);
++    setMfaError(null);
++    try {
++      const user = await confirmMFA(mfaEmail, mfaCode);
++      qc.setQueryData(["session"], user);
++      toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
++      router.push(destinationFor(user, next));
++    } catch (err) {
++      setMfaError(err instanceof Error ? err.message : "That code was invalid or expired.");
++    } finally {
++      setMfaSubmitting(false);
++    }
++  };
++
+   return (
+     <AuthShell
+       title="Welcome back"
+@@ -89,6 +117,49 @@ function LoginInner() {
+       }
+     >
+       <div className="space-y-5">
++        {mfaEmail ? (
++          <div className="space-y-4">
++            <div className="rounded-lg border border-brand-blue/20 bg-brand-blue/5 px-4 py-3 text-sm text-ink-700">
++              Two-step verification: we emailed a 6-digit code to{" "}
++              <strong className="font-semibold text-brand-navy">{mfaEmail}</strong>. Enter it to finish signing in.
++            </div>
++            <label className="block text-sm">
++              <span className="font-medium text-ink-800">Verification code</span>
++              <input
++                type="text"
++                inputMode="numeric"
++                maxLength={6}
++                autoFocus
++                autoComplete="one-time-code"
++                className={INPUT_CLS}
++                placeholder="6-digit code"
++                value={mfaCode}
++                onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
++              />
++            </label>
++            {mfaError && (
++              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
++                {mfaError}
++              </div>
++            )}
++            <button
++              type="button"
++              disabled={mfaSubmitting || mfaCode.length !== 6}
++              onClick={() => void confirmMfaSubmit()}
++              className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
++            >
++              {mfaSubmitting ? "Verifying…" : "Verify & sign in"}
++            </button>
++            <button
++              type="button"
++              onClick={() => { setMfaEmail(null); setMfaCode(""); setMfaError(null); }}
++              className="w-full text-center text-sm text-ink-500 hover:text-ink-800 hover:underline"
++            >
++              Use a different account
++            </button>
++          </div>
++        ) : (
++          <>
+         <GoogleButton />
+ 
+         <div className="flex items-center gap-3 text-xs uppercase text-ink-400 before:flex-1 before:border-t before:border-ink-200 before:me-4 after:flex-1 after:border-t after:border-ink-200 after:ms-4">
+@@ -164,6 +235,8 @@ function LoginInner() {
+             </Link>
+           </div>
+         </form>
++          </>
++        )}
+       </div>
+     </AuthShell>
+   );
+diff --git a/client/features/auth/api.ts b/client/features/auth/api.ts
+index 14879ed..93d388c 100644
+--- a/client/features/auth/api.ts
++++ b/client/features/auth/api.ts
+@@ -38,14 +38,32 @@ export async function register(input: RegisterInput): Promise<CurrentUser> {
+   return res.data;
+ }
+ 
+-export async function login(email: string, password: string): Promise<CurrentUser> {
+-  const res = await apiFetch<CurrentUser>("/auth/login", {
++export type LoginResult =
++  | (CurrentUser & { mfa_required?: false })
++  | { mfa_required: true; email: string; user: CurrentUser };
++
++/**
++ * Log in with email + password. Non-admins get a session immediately.
++ * Platform admins get `{ mfa_required: true, email, user }` — they must then
++ * confirm the emailed code via `confirmMFA` before a session is issued.
++ */
++export async function login(email: string, password: string): Promise<LoginResult> {
++  const res = await apiFetch<LoginResult>("/auth/login", {
+     method: "POST",
+     body: JSON.stringify({ email, password }),
+   });
+   return res.data;
+ }
+ 
++/** Confirm the emailed MFA code for an admin login (issues the session). */
++export async function confirmMFA(email: string, code: string): Promise<CurrentUser> {
++  const res = await apiFetch<CurrentUser>("/auth/mfa/confirm", {
++    method: "POST",
++    body: JSON.stringify({ email, code }),
++  });
++  return res.data;
++}
++
+ export async function logout(): Promise<void> {
+   await apiFetch("/auth/logout", { method: "POST" });
+ }
+diff --git a/internal/domain/identity/token.go b/internal/domain/identity/token.go
+index 7e3b4f4..a2153a2 100644
+--- a/internal/domain/identity/token.go
++++ b/internal/domain/identity/token.go
+@@ -14,6 +14,7 @@ const (
+ 	TokenVerifyEmail   AuthTokenPurpose = "VERIFY_EMAIL"
+ 	TokenPasswordReset AuthTokenPurpose = "PASSWORD_RESET"
+ 	TokenLoginCode     AuthTokenPurpose = "LOGIN_CODE"
++	TokenMFAChallenge  AuthTokenPurpose = "MFA_CHALLENGE"
+ )
+ 
+ // AuthToken — single-use, expiring, hash-only-stored token for email
+diff --git a/internal/service/account_service_test.go b/internal/service/account_service_test.go
+index c3218b8..1fc9ba1 100644
+--- a/internal/service/account_service_test.go
++++ b/internal/service/account_service_test.go
+@@ -40,7 +40,7 @@ func TestAccountService_ProfileExportDelete(t *testing.T) {
+ 	assert.Contains(t, exp.Roles, "PARENT")
+ 
+ 	// Delete: status DELETED + sessions revoked + cannot log in.
+-	_, _, _, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
++	_, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
+ 	require.NoError(t, err)
+ 	require.NoError(t, svc.DeleteAccount(ctx, user.ID))
+ 
+@@ -48,6 +48,6 @@ func TestAccountService_ProfileExportDelete(t *testing.T) {
+ 	require.NoError(t, err)
+ 	assert.Equal(t, identity.UserStatusDeleted, got.Status)
+ 
+-	_, _, _, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
++	_, err = env.svc.Login(ctx, "acct@example.com", "password123", "1.2.3.4", "test")
+ 	require.Error(t, err, "deleted account must not be able to log in")
+ }
+diff --git a/internal/service/auth_magiclink.go b/internal/service/auth_magiclink.go
+index 2ed16aa..36d94d2 100644
+--- a/internal/service/auth_magiclink.go
++++ b/internal/service/auth_magiclink.go
+@@ -111,11 +111,12 @@ func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, use
+ 			return "", nil, nil, err
+ 		}
+ 	}
+-	return s.startSession(ctx, user, ip, userAgent)
++	return s.startSession(ctx, user, ip, userAgent, "login_code")
+ }
+ 
+-// startSession — shared session creation used by password login and login code.
+-func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip, userAgent string) (string, *identity.User, []string, error) {
++// startSession — shared session creation used by password login, login code
++// and admin MFA confirmation.
++func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip, userAgent, auditMethod string) (string, *identity.User, []string, error) {
+ 	raw, hash, err := newSessionToken()
+ 	if err != nil {
+ 		return "", nil, nil, err
+@@ -138,7 +139,7 @@ func (s *AuthService) startSession(ctx context.Context, user *identity.User, ip,
+ 		roles = append(roles, r.Name)
+ 	}
+ 	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
+-		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip, "method": "login_code"}, nil, nil)
++		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip, "method": auditMethod}, nil, nil)
+ 	return raw, user, roles, nil
+ }
+ 
+diff --git a/internal/service/auth_magiclink_test.go b/internal/service/auth_magiclink_test.go
+index 6d5c1cb..529ff2f 100644
+--- a/internal/service/auth_magiclink_test.go
++++ b/internal/service/auth_magiclink_test.go
+@@ -132,7 +132,9 @@ func TestAuth_OnboardingBackend(t *testing.T) {
+ 	require.NotEmpty(t, newTok, "a fresh session token must be issued after a password change")
+ 	_, err = env.svc.ChangePassword(ctx, u.ID, "short")
+ 	require.ErrorIs(t, err, domain.ErrInvalidInput)
+-	_, user, roles, err := env.svc.Login(ctx, "ob@example.com", "my-new-password-1", "1.2.3.4", "test")
++	res, err := env.svc.Login(ctx, "ob@example.com", "my-new-password-1", "1.2.3.4", "test")
++	user := res.User
++	roles = res.Roles
+ 	require.NoError(t, err)
+ 	require.Equal(t, "ob@example.com", user.Email)
+ 	require.Contains(t, roles, "TUTOR")
+diff --git a/internal/service/auth_mfa_test.go b/internal/service/auth_mfa_test.go
+new file mode 100644
+index 0000000..266876b
+--- /dev/null
++++ b/internal/service/auth_mfa_test.go
+@@ -0,0 +1,112 @@
++package service
++
++import (
++	"context"
++	"regexp"
++	"strings"
++	"testing"
++
++	"ykay-virtual/internal/domain"
++
++	"github.com/stretchr/testify/require"
++)
++
++// mfaCodeFromBody pulls the 6-digit verification code out of the emailed body.
++// The code is wrapped in a monospace span, so we anchor on that to avoid
++// matching coincidental 6-digit runs elsewhere in the email template.
++func mfaCodeFromBody(body string) string {
++	const marker = `monospace;">`
++	i := strings.Index(body, marker)
++	if i < 0 {
++		return ""
++	}
++	region := body[i+len(marker):]
++	m := regexp.MustCompile(`\d{6}`).FindStringSubmatch(region)
++	if len(m) == 0 {
++		return ""
++	}
++	return m[0]
++}
++
++// grantRole registers the user (self-assignment of admin roles is forbidden)
++// and then grants the platform-admin role through the store.
++func grantRole(t *testing.T, env *authEnv, email, password, role string) {
++	t.Helper()
++	ctx := context.Background()
++	_, err := env.svc.Register(ctx, RegisterInput{Email: email, Password: password, Roles: []string{"PARENT"}})
++	require.NoError(t, err)
++	user, err := env.store.Users.FindByEmail(ctx, email)
++	require.NoError(t, err)
++	adminRole, err := env.store.Roles.FindByName(ctx, role)
++	require.NoError(t, err)
++	require.NoError(t, env.store.Roles.AssignToUser(ctx, user.ID, adminRole.ID))
++}
++
++// TestAdminLogin_RequiresMFA — platform admins must confirm a second factor
++// (emailed code) before a session is issued; regular users do not.
++func TestAdminLogin_RequiresMFA(t *testing.T) {
++	env, mail := newAuthEnvWithTokens(t)
++	ctx := context.Background()
++	grantRole(t, env, "admin@example.com", "password123", "SUPER_ADMIN")
++
++	// Admin login: password correct, but NO session yet - MFA required.
++	res, err := env.svc.Login(ctx, "admin@example.com", "password123", "1.2.3.4", "test-agent")
++	require.NoError(t, err)
++	require.True(t, res.MFARequired)
++	require.Empty(t, res.Token, "no session token before the second factor")
++	require.Len(t, mail.sent, 1)
++
++	code := mfaCodeFromBody(mail.sent[len(mail.sent)-1].body)
++	require.Len(t, code, 6, "an emailed 6-digit MFA code must be sent")
++
++	// A wrong code is rejected and does not mint a session.
++	_, err = env.svc.ConfirmMFA(ctx, "admin@example.com", "000000", "1.2.3.4", "test-agent")
++	require.ErrorIs(t, err, domain.ErrUnauthorized)
++
++	// The correct code issues the session.
++	res2, err := env.svc.ConfirmMFA(ctx, "admin@example.com", code, "1.2.3.4", "test-agent")
++	require.NoError(t, err)
++	require.False(t, res2.MFARequired)
++	require.NotEmpty(t, res2.Token)
++
++	// The session is live and the code is single-use (cannot be replayed).
++	_, _, err = env.svc.Me(ctx, HashToken(res2.Token))
++	require.NoError(t, err)
++	_, err = env.svc.ConfirmMFA(ctx, "admin@example.com", code, "1.2.3.4", "test-agent")
++	require.Error(t, err, "an MFA code must be single-use")
++}
++
++// TestNonAdminLogin_NoMFA — a non-admin login issues a session immediately.
++func TestNonAdminLogin_NoMFA(t *testing.T) {
++	env, mail := newAuthEnvWithTokens(t)
++	ctx := context.Background()
++
++	_, err := env.svc.Register(ctx, RegisterInput{Email: "parent@example.com", Password: "password123", Roles: []string{"PARENT"}})
++	require.NoError(t, err)
++
++	res, err := env.svc.Login(ctx, "parent@example.com", "password123", "", "test-agent")
++	require.NoError(t, err)
++	require.False(t, res.MFARequired)
++	require.NotEmpty(t, res.Token)
++	require.Len(t, mail.sent, 0, "no MFA email for non-admins")
++}
++
++// TestMFA_NotGrantedIfRoleRemoved — defense in depth: if admin role is gone by
++// confirm time, no session is minted.
++func TestMFA_NotGrantedIfRoleRemoved(t *testing.T) {
++	env, mail := newAuthEnvWithTokens(t)
++	ctx := context.Background()
++	grantRole(t, env, "adm2@example.com", "password123", "ACADEMIC_ADMIN")
++
++	res, err := env.svc.Login(ctx, "adm2@example.com", "password123", "", "t")
++	require.NoError(t, err)
++	require.True(t, res.MFARequired)
++	code := mfaCodeFromBody(mail.sent[len(mail.sent)-1].body)
++
++	// Remove the admin role before confirming.
++	user, _ := env.store.Users.FindByEmail(ctx, "adm2@example.com")
++	require.NoError(t, env.store.Roles.RemoveRoleForUser(ctx, user.ID, "ACADEMIC_ADMIN"))
++
++	_, err = env.svc.ConfirmMFA(ctx, "adm2@example.com", code, "", "t")
++	require.ErrorIs(t, err, domain.ErrForbidden)
++}
+diff --git a/internal/service/auth_service.go b/internal/service/auth_service.go
+index 6ef941a..4771b96 100644
+--- a/internal/service/auth_service.go
++++ b/internal/service/auth_service.go
+@@ -350,27 +350,67 @@ func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newP
+ 	return raw, nil
+ }
+ 
+-// Login — verifies credentials, creates a session, returns the raw token
+-// (the handler puts it in the httpOnly cookie) + the user + roles.
+-func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent string) (token string, user *identity.User, roles []string, err error) {
++// LoginResult — the outcome of an attempted login. When MFARequired is true the
++// password was correct but the user must confirm a second factor (emailed code)
++// before a session is issued (admin MFA).
++type LoginResult struct {
++	Token       string
++	User        *identity.User
++	Roles       []string
++	MFARequired bool
++}
++
++// isPlatformAdmin — MFA is enforced for platform admins (YK-008 parity):
++// SUPER_ADMIN and ACADEMIC_ADMIN require a second factor; INSTITUTION_ADMIN is
++// scoped and not granted platform admin privileges.
++func isPlatformAdmin(roles []string) bool {
++	for _, role := range roles {
++		if role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" {
++			return true
++		}
++	}
++	return false
++}
++
++// Login — verifies credentials, creates a session, returns the raw token.
++// For platform admins it defers the session and instead issues an emailed
++// MFA code (challenge); the session is created only after ConfirmMFA.
++func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent string) (*LoginResult, error) {
+ 	email = strings.ToLower(strings.TrimSpace(email))
+-	user, err = s.users.FindByEmail(ctx, email)
++	user, err := s.users.FindByEmail(ctx, email)
+ 	if err != nil {
+ 		if errors.Is(err, domain.ErrNotFound) {
+-			return "", nil, nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
++			return nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
+ 		}
+-		return "", nil, nil, err
++		return nil, err
+ 	}
+ 	if !user.CanLogin() {
+-		return "", nil, nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
++		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
+ 	}
+ 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
+-		return "", nil, nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
++		return nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
++	}
++
++	roleList, _ := s.roles.RolesForUser(ctx, user.ID)
++	roles := make([]string, 0, len(roleList))
++	for _, r := range roleList {
++		roles = append(roles, r.Name)
++	}
++
++	// Admin MFA: the second factor (emailed code) must be confirmed before a
++	// session is created. No cookie/token is returned yet.
++	if isPlatformAdmin(roles) {
++		if err := s.issueMFAChallenge(ctx, user); err != nil {
++			return nil, err
++		}
++		_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
++			nil, nil, map[string]any{"email": user.Email, "ip": ip, "mfa": "challenge_sent"}, nil, nil)
++		return &LoginResult{User: user, Roles: roles, MFARequired: true}, nil
+ 	}
+ 
+ 	raw, hash, err := newSessionToken()
+ 	if err != nil {
+-		return "", nil, nil, err
++		return nil, err
+ 	}
+ 	now := s.now().UTC()
+ 	session := &identity.Session{
+@@ -381,17 +421,83 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent
+ 		ExpiresAt: now.Add(SessionTTL),
+ 	}
+ 	if err := s.sessions.Create(ctx, session); err != nil {
+-		return "", nil, nil, err
++		return nil, err
+ 	}
+ 	_ = s.users.UpdateLastLogin(ctx, user.ID, now)
++	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
++		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip, "method": "password"}, nil, nil)
++	return &LoginResult{Token: raw, User: user, Roles: roles}, nil
++}
++
++// ConfirmMFA — validates the emailed second factor for a pending admin login
++// and then creates the session (the two-factor gate before admin access).
++func (s *AuthService) ConfirmMFA(ctx context.Context, email, code, ip, userAgent string) (*LoginResult, error) {
++	email = strings.ToLower(strings.TrimSpace(email))
++	code = strings.TrimSpace(code)
++	user, err := s.users.FindByEmail(ctx, email)
++	if err != nil {
++		return nil, fmt.Errorf("%w: invalid MFA code", domain.ErrUnauthorized)
++	}
++	if !user.CanLogin() {
++		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
++	}
++
++	t, err := s.tokens.FindByHash(ctx, HashToken(fmt.Sprintf("%s:%s", user.ID, code)))
++	if err != nil || t.Purpose != identity.TokenMFAChallenge || t.UserID != user.ID {
++		return nil, fmt.Errorf("%w: invalid MFA code", domain.ErrUnauthorized)
++	}
++	if t.IsConsumed() || s.now().UTC().After(t.ExpiresAt) {
++		return nil, fmt.Errorf("%w: MFA code expired", domain.ErrUnauthorized)
++	}
++	if err := s.tokens.Consume(ctx, t.ID); err != nil {
++		return nil, err
++	}
+ 	roleList, _ := s.roles.RolesForUser(ctx, user.ID)
+-	roles = make([]string, 0, len(roleList))
++	roles := make([]string, 0, len(roleList))
+ 	for _, r := range roleList {
+ 		roles = append(roles, r.Name)
+ 	}
+-	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "session",
+-		&session.ID, nil, map[string]any{"email": user.Email, "ip": ip}, nil, nil)
+-	return raw, user, roles, nil
++	// Re-verify the user is still a platform admin (defense in depth: a role
++	// change between challenge and confirm must not mint an admin session).
++	if !isPlatformAdmin(roles) {
++		return nil, fmt.Errorf("%w: account no longer holds admin access", domain.ErrForbidden)
++	}
++	token, u, roles, err := s.startSession(ctx, user, ip, userAgent, "password+mfa")
++	if err != nil {
++		return nil, err
++	}
++	return &LoginResult{Token: token, User: u, Roles: roles}, nil
++}
++
++// issueMFAChallenge — generates a single-use emailed code for an admin login.
++func (s *AuthService) issueMFAChallenge(ctx context.Context, user *identity.User) error {
++	code, err := generateLoginCode()
++	if err != nil {
++		return err
++	}
++	_ = s.tokens.InvalidateAllForUser(ctx, user.ID, identity.TokenMFAChallenge)
++	token := &identity.AuthToken{
++		UserID:    user.ID,
++		Purpose:   identity.TokenMFAChallenge,
++		TokenHash: HashToken(fmt.Sprintf("%s:%s", user.ID, code)),
++		ExpiresAt: s.now().UTC().Add(loginCodeTTL),
++	}
++	if err := s.tokens.Create(ctx, token); err != nil {
++		return err
++	}
++	s.logDev("MFA code for admin %s: %s (expires in 10 minutes)", user.Email, code)
++	if s.email != nil {
++		if err := s.sendEmail(ctx, user.Email, "Your NUVORA admin verification code",
++			notification.BrandEmail(
++				"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Admin sign-in verification</h1>"+
++					"<p style=\"margin:0 0 16px;\">Hi,</p>"+
++					"<p style=\"margin:0 0 20px;\">Enter this code to finish signing in to your NUVORA admin account. It expires in 10 minutes.</p>"+
++					"<p style=\"margin:0 0 20px;text-align:center;\"><span style=\"display:inline-block;background:#E9F0FF;color:#0A1F44;font-size:30px;font-weight:800;letter-spacing:0.35em;padding:14px 22px;border-radius:12px;font-family:monospace;\">"+code+"</span></p>"+
++					"<p style=\"margin:0 0 0;color:#8794AC;font-size:13px;\">If you didn't try to sign in, reset your password and contact support immediately.</p>")); err != nil {
++			return fmt.Errorf("could not send MFA code: %w", err)
++		}
++	}
++	return nil
+ }
+ 
+ // Me — resolves the current user + roles from a session token hash.
+diff --git a/internal/service/auth_service_test.go b/internal/service/auth_service_test.go
+index 4da7acf..7f42584 100644
+--- a/internal/service/auth_service_test.go
++++ b/internal/service/auth_service_test.go
+@@ -82,7 +82,10 @@ func TestLogin_Success_ReturnsTokenAndRoles(t *testing.T) {
+ 	_, err := env.svc.Register(ctx, RegisterInput{Email: "tutor@example.com", Password: "password123", Roles: []string{"TUTOR"}})
+ 	require.NoError(t, err)
+ 
+-	token, user, roles, err := env.svc.Login(ctx, "tutor@example.com", "password123", "127.0.0.1", "test-agent")
++	res, err := env.svc.Login(ctx, "tutor@example.com", "password123", "127.0.0.1", "test-agent")
++	token := res.Token
++	user := res.User
++	roles := res.Roles
+ 	require.NoError(t, err)
+ 	assert.NotEmpty(t, token)
+ 	assert.Equal(t, "tutor@example.com", user.Email)
+@@ -107,14 +110,14 @@ func TestLogin_WrongPassword_Unauthorized(t *testing.T) {
+ 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
+ 	require.NoError(t, err)
+ 
+-	_, _, _, err = env.svc.Login(ctx, "a@b.com", "wrong-password", "", "")
++	_, err = env.svc.Login(ctx, "a@b.com", "wrong-password", "", "")
+ 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
+ }
+ 
+ func TestLogin_UnknownEmail_Unauthorized(t *testing.T) {
+ 	env := newAuthEnv(t)
+ 	ctx := context.Background()
+-	_, _, _, err := env.svc.Login(ctx, "nobody@example.com", "password123", "", "")
++	_, err := env.svc.Login(ctx, "nobody@example.com", "password123", "", "")
+ 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
+ }
+ 
+@@ -123,7 +126,8 @@ func TestMe_ValidSession(t *testing.T) {
+ 	ctx := context.Background()
+ 	_, err := env.svc.Register(ctx, RegisterInput{Email: "parent@example.com", Password: "password123", Roles: []string{"PARENT"}})
+ 	require.NoError(t, err)
+-	token, _, _, err := env.svc.Login(ctx, "parent@example.com", "password123", "", "")
++	res, err := env.svc.Login(ctx, "parent@example.com", "password123", "", "")
++	token := res.Token
+ 	require.NoError(t, err)
+ 
+ 	user, roles, err := env.svc.Me(ctx, HashToken(token))
+@@ -137,7 +141,8 @@ func TestMe_RevokedOrExpired_Unauthorized(t *testing.T) {
+ 	ctx := context.Background()
+ 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
+ 	require.NoError(t, err)
+-	token, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	token := res.Token
+ 	require.NoError(t, err)
+ 
+ 	// Revoke → unauthorized
+@@ -146,7 +151,8 @@ func TestMe_RevokedOrExpired_Unauthorized(t *testing.T) {
+ 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
+ 
+ 	// Expired → unauthorized
+-	token2, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	res2, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	token2 := res2.Token
+ 	require.NoError(t, err)
+ 	env.svc.now = func() time.Time { return fixedTime.Add(31 * 24 * time.Hour) }
+ 	_, _, err = env.svc.Me(ctx, HashToken(token2))
+@@ -158,7 +164,8 @@ func TestLogout_Idempotent(t *testing.T) {
+ 	ctx := context.Background()
+ 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
+ 	require.NoError(t, err)
+-	token, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	token := res.Token
+ 	require.NoError(t, err)
+ 
+ 	require.NoError(t, env.svc.Logout(ctx, HashToken(token)))
+@@ -171,7 +178,9 @@ func TestRotateAllSessions_PrivilegeChange(t *testing.T) {
+ 	ctx := context.Background()
+ 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
+ 	require.NoError(t, err)
+-	token, user, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	token := res.Token
++	user := res.User
+ 	require.NoError(t, err)
+ 
+ 	require.NoError(t, env.svc.RotateAllSessions(ctx, user.ID))
+@@ -179,7 +188,8 @@ func TestRotateAllSessions_PrivilegeChange(t *testing.T) {
+ 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
+ 
+ 	// Re-login works after rotation
+-	token2, _, _, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	res2, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
++	token2 := res2.Token
+ 	require.NoError(t, err)
+ 	assert.NotEmpty(t, token2)
+ 	_ = uuid.New()
+@@ -244,9 +254,11 @@ func TestChangePassword_RotatesAllSessions(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	// Two existing sessions (e.g. two devices).
+-	tokA, _, _, err := env.svc.Login(ctx, "rot@example.com", "password123", "1.1.1.1", "devA")
++	resA, err := env.svc.Login(ctx, "rot@example.com", "password123", "1.1.1.1", "devA")
++	tokA := resA.Token
+ 	require.NoError(t, err)
+-	tokB, _, _, err := env.svc.Login(ctx, "rot@example.com", "password123", "2.2.2.2", "devB")
++	resB, err := env.svc.Login(ctx, "rot@example.com", "password123", "2.2.2.2", "devB")
++	tokB := resB.Token
+ 	require.NoError(t, err)
+ 
+ 	// Change the password → all old sessions revoked, one fresh token issued.
+@@ -267,6 +279,6 @@ func TestChangePassword_RotatesAllSessions(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	// Old password no longer authenticates; new password does.
+-	_, _, _, err = env.svc.Login(ctx, "rot@example.com", "password123", "3.3.3.3", "devC")
++	_, err = env.svc.Login(ctx, "rot@example.com", "password123", "3.3.3.3", "devC")
+ 	require.ErrorIs(t, err, domain.ErrUnauthorized)
+ }
+diff --git a/internal/service/auth_verification_test.go b/internal/service/auth_verification_test.go
+index 0b655f4..63f9a17 100644
+--- a/internal/service/auth_verification_test.go
++++ b/internal/service/auth_verification_test.go
+@@ -109,8 +109,9 @@ func TestPasswordReset_Flow_RotatesSessions(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	// Active session before the reset.
+-	token, _, _, err := env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
++	res, err := env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
+ 	require.NoError(t, err)
++	token := res.Token
+ 	_, _, err = env.svc.Me(ctx, HashToken(token))
+ 	require.NoError(t, err)
+ 
+@@ -121,9 +122,10 @@ func TestPasswordReset_Flow_RotatesSessions(t *testing.T) {
+ 	require.NoError(t, env.svc.ResetPassword(ctx, raw, "new-password-2"))
+ 
+ 	// Old password no longer works; new one does.
+-	_, _, _, err = env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
++	_, err = env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")
+ 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
+-	_, user, _, err := env.svc.Login(ctx, "parent@example.com", "new-password-2", "", "")
++	res, err = env.svc.Login(ctx, "parent@example.com", "new-password-2", "", "")
++	user := res.User
+ 	require.NoError(t, err)
+ 
+ 	// All sessions rotated: the pre-reset session is dead.
+diff --git a/internal/service/google_auth.go b/internal/service/google_auth.go
+index cc0c5e9..068fd20 100644
+--- a/internal/service/google_auth.go
++++ b/internal/service/google_auth.go
+@@ -193,7 +193,7 @@ func (g *GoogleAuthService) ExchangeCode(ctx context.Context, code, state, ip, u
+ 	}
+ 
+ 	// 4) Session (same path as password login).
+-	return g.auth.startSession(ctx, user, ip, userAgent)
++	return g.auth.startSession(ctx, user, ip, userAgent, "google")
+ }
+ 
+ // createOAuthUser — registers a Google-sourced user as email-verified ACTIVE.
+diff --git a/internal/transport/http/auth_handler.go b/internal/transport/http/auth_handler.go
+index 9ba9a87..eac49cc 100644
+--- a/internal/transport/http/auth_handler.go
++++ b/internal/transport/http/auth_handler.go
+@@ -114,13 +114,44 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+ 		return
+ 	}
+ 	ip := clientIP(r)
+-	token, user, roles, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
++	res, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
+ 	if err != nil {
+ 		WriteAppError(w, err)
+ 		return
+ 	}
+-	middleware.SetSessionCookie(w, r, h.cfg, token)
+-	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(user, roles), nil)
++	if res.MFARequired {
++		// Admin MFA: no session issued yet - the admin must enter the emailed
++		// code via /auth/mfa/confirm.
++		pkg.WriteSuccess(w, http.StatusOK, map[string]any{
++			"mfa_required": true,
++			"email":        res.User.Email,
++			"user":         toUserResponse(res.User, res.Roles),
++		}, nil)
++		return
++	}
++	middleware.SetSessionCookie(w, r, h.cfg, res.Token)
++	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(res.User, res.Roles), nil)
++}
++
++// ConfirmMFA — POST /auth/mfa/confirm — completes an admin login with the
++// emailed second factor, then issues the session cookie.
++func (h *AuthHandler) ConfirmMFA(w http.ResponseWriter, r *http.Request) {
++	var req struct {
++		Email string `json:"email"`
++		Code  string `json:"code"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	ip := clientIP(r)
++	res, err := h.svc.ConfirmMFA(r.Context(), req.Email, req.Code, ip, r.UserAgent())
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	middleware.SetSessionCookie(w, r, h.cfg, res.Token)
++	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(res.User, res.Roles), nil)
+ }
+ 
+ func (h *AuthHandler) RequestLoginCode(w http.ResponseWriter, r *http.Request) {
+@@ -395,14 +426,22 @@ func (h *AuthHandler) MobileLogin(w http.ResponseWriter, r *http.Request) {
+ 		return
+ 	}
+ 	ip := clientIP(r)
+-	token, user, roles, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
++	res, err := h.svc.Login(r.Context(), req.Email, req.Password, ip, r.UserAgent())
+ 	if err != nil {
+ 		WriteAppError(w, err)
+ 		return
+ 	}
++	if res.MFARequired {
++		pkg.WriteSuccess(w, http.StatusOK, map[string]any{
++			"mfa_required": true,
++			"email":        res.User.Email,
++			"user":         toUserResponse(res.User, res.Roles),
++		}, nil)
++		return
++	}
+ 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+-		"token": token,
+-		"user":  toUserResponse(user, roles),
++		"token": res.Token,
++		"user":  toUserResponse(res.User, res.Roles),
+ 	}, nil)
+ }
+ 
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index 837fc80..41585dc 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -94,6 +94,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	// Auth + sessions (Phase 7)
+ 	mux.HandleFunc("POST "+v1+"/auth/register", authRate(handlers.Auth.Register))
+ 	mux.HandleFunc("POST "+v1+"/auth/login", authRate(handlers.Auth.Login))
++	mux.HandleFunc("POST "+v1+"/auth/mfa/confirm", authRate(handlers.Auth.ConfirmMFA))
+ 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
+ 	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
+ 	mux.HandleFunc("GET "+v1+"/auth/me/context", handlers.SessionContext.Get)

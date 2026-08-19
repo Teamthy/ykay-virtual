@@ -94,6 +94,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// Auth + sessions (Phase 7)
 	mux.HandleFunc("POST "+v1+"/auth/register", authRate(handlers.Auth.Register))
 	mux.HandleFunc("POST "+v1+"/auth/login", authRate(handlers.Auth.Login))
+	mux.HandleFunc("POST "+v1+"/auth/mfa/confirm", authRate(handlers.Auth.ConfirmMFA))
 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
 	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
 	mux.HandleFunc("GET "+v1+"/auth/me/context", handlers.SessionContext.Get)
