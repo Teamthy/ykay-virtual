@@ -825,6 +825,77 @@ paths:
         '403': { description: Student not linked to parent / tutor cannot teach }
         '409': { description: Capacity full, duplicate enrollment, or order conflict }
 
+  /private-tuition/requests:
+    post:
+      tags: [bookings]
+      summary: Request to be matched to a private tutor (managed matching)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [student_id, subject_id]
+              properties:
+                student_id: { type: string, format: uuid }
+                subject_id: { type: string, format: uuid }
+                goals: { type: string }
+                preferred_days: { type: string }
+                preferred_time: { type: string }
+                timezone: { type: string, default: Africa/Lagos }
+                location_mode: { type: string, default: ONLINE }
+      responses:
+        '201': { description: Request created (PENDING) }
+    get:
+      tags: [bookings]
+      summary: List the authenticated parent's own tuition requests
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Requests }
+
+  /private-tuition/requests/{id}:
+    get:
+      tags: [bookings]
+      summary: Get one tuition request (owner or admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Request }
+
+  /admin/private-tuition/requests:
+    get:
+      tags: [admin]
+      summary: Admin matching queue of tuition requests
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Requests }
+
+  /admin/private-tuition/requests/{id}/match:
+    post:
+      tags: [admin]
+      summary: Match a vetted tutor to a request (creates payable package + escrow order)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tutor_profile_id, total_sessions, session_duration_minutes]
+              properties:
+                tutor_profile_id: { type: string, format: uuid }
+                total_sessions: { type: integer, minimum: 1 }
+                session_duration_minutes: { type: integer, minimum: 15 }
+      responses:
+        '201': { description: Matched - package + order created for the parent to pay }
+        '409': { description: Request already progressing, or tutor cannot teach subject }
+
   /payments/initiate:
     post:
       tags: [payments]

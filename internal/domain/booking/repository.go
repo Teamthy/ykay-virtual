@@ -38,6 +38,14 @@ type CohortEnrollmentRepository interface {
 type PrivateTuitionRequestRepository interface {
 	Create(ctx context.Context, r *PrivateTuitionRequest) error
 	GetByID(ctx context.Context, id uuid.UUID) (*PrivateTuitionRequest, error)
+	// SetMatchedTutor records the tutor an admin matched to the request.
+	SetMatchedTutor(ctx context.Context, id, tutorProfileID uuid.UUID) error
+	// UpdateStatus advances a request's status (PENDING → MATCHED → …).
+	UpdateStatus(ctx context.Context, id uuid.UUID, status PrivateRequestStatus) error
+	// ListByParent returns a parent's own requests (newest first).
+	ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]PrivateTuitionRequest, error)
+	// ListAll returns the admin matching queue (filterable by status).
+	ListAll(ctx context.Context, status string, page, pageSize int) ([]PrivateTuitionRequest, int64, error)
 }
 
 type PrivatePackageRepository interface {

@@ -1,0 +1,1145 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index 141e5e0..ff0b334 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -825,6 +825,77 @@ paths:
+         '403': { description: Student not linked to parent / tutor cannot teach }
+         '409': { description: Capacity full, duplicate enrollment, or order conflict }
+ 
++  /private-tuition/requests:
++    post:
++      tags: [bookings]
++      summary: Request to be matched to a private tutor (managed matching)
++      security: [{ sessionCookie: [] }]
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [student_id, subject_id]
++              properties:
++                student_id: { type: string, format: uuid }
++                subject_id: { type: string, format: uuid }
++                goals: { type: string }
++                preferred_days: { type: string }
++                preferred_time: { type: string }
++                timezone: { type: string, default: Africa/Lagos }
++                location_mode: { type: string, default: ONLINE }
++      responses:
++        '201': { description: Request created (PENDING) }
++    get:
++      tags: [bookings]
++      summary: List the authenticated parent's own tuition requests
++      security: [{ sessionCookie: [] }]
++      responses:
++        '200': { description: Requests }
++
++  /private-tuition/requests/{id}:
++    get:
++      tags: [bookings]
++      summary: Get one tuition request (owner or admin)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
++      responses:
++        '200': { description: Request }
++
++  /admin/private-tuition/requests:
++    get:
++      tags: [admin]
++      summary: Admin matching queue of tuition requests
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: status, in: query, schema: { type: string } }
++      responses:
++        '200': { description: Requests }
++
++  /admin/private-tuition/requests/{id}/match:
++    post:
++      tags: [admin]
++      summary: Match a vetted tutor to a request (creates payable package + escrow order)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [tutor_profile_id, total_sessions, session_duration_minutes]
++              properties:
++                tutor_profile_id: { type: string, format: uuid }
++                total_sessions: { type: integer, minimum: 1 }
++                session_duration_minutes: { type: integer, minimum: 15 }
++      responses:
++        '201': { description: Matched - package + order created for the parent to pay }
++        '409': { description: Request already progressing, or tutor cannot teach subject }
++
+   /payments/initiate:
+     post:
+       tags: [payments]
+diff --git a/client/app/admin/private-tuition/page.tsx b/client/app/admin/private-tuition/page.tsx
+new file mode 100644
+index 0000000..6c3e727
+--- /dev/null
++++ b/client/app/admin/private-tuition/page.tsx
+@@ -0,0 +1,169 @@
++"use client";
++
++import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
++import { useState } from "react";
++import { toast } from "sonner";
++import { listApprovedTutors } from "@/features/admin/api";
++import { listSubjects } from "@/features/subjects/api/list";
++import {
++  listAdminPrivateRequests,
++  matchPrivateRequest,
++  type PrivateTuitionRequest,
++} from "@/features/tuition/api";
++import { Button } from "@/components/ui/button";
++import { EmptyState } from "@/components/ui/empty-state";
++import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
++import { UserPlus } from "lucide-react";
++
++// Admin private-tuition matching queue: a parent requests to be matched, and
++// an admin assigns a vetted tutor (creating a payable package + escrow order
++// the parent then pays). This completes the request → match → pay → escrow
++// journey.
++const STATUSES = ["PENDING", "MATCHED", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
++
++export default function AdminPrivateTuitionPage() {
++  const qc = useQueryClient();
++  const [status, setStatus] = useState("PENDING");
++
++  const requests = useQuery({
++    queryKey: ["admin", "private-tuition", status],
++    queryFn: () => listAdminPrivateRequests(status === "ALL" ? undefined : status),
++    staleTime: 15_000,
++  });
++  const tutors = useQuery({ queryKey: ["admin", "tutors", "approved"], queryFn: () => listApprovedTutors(), staleTime: 30_000 });
++  const subjects = useQuery({ queryKey: ["subjects", "catalogue"], queryFn: () => listSubjects(), staleTime: 300_000 });
++
++  const subjectName = (id: string) => (subjects.data?.data ?? []).find((s) => s.id === id)?.name ?? id.slice(0, 8);
++
++  const rows = requests.data?.data ?? [];
++
++  return (
++    <div className="space-y-6">
++      <div>
++        <h1 className="text-3xl font-extrabold text-brand-navy">Private tuition requests</h1>
++        <p className="text-ink-500 text-sm mt-1">
++          Parents request a vetted tutor; match one here to create their payable escrow order.
++        </p>
++      </div>
++
++      <div className="flex gap-2 flex-wrap">
++        {["ALL", ...STATUSES].map((s) => (
++          <button
++            key={s}
++            onClick={() => setStatus(s)}
++            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
++              status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
++            }`}
++          >
++            {s}
++          </button>
++        ))}
++      </div>
++
++      {rows.length === 0 ? (
++        <EmptyState
++          icon={<UserPlus size={20} />}
++          title="No requests in this view"
++          description="New 'request a tutor' submissions will appear here as PENDING."
++        />
++      ) : (
++        <div className="grid gap-4 lg:grid-cols-2">
++          {rows.map((r) => (
++            <RequestCard key={r.id} r={r} subjectName={subjectName(r.subject_id)} tutors={tutors.data ?? []} onMatched={() => qc.invalidateQueries({ queryKey: ["admin", "private-tuition"] })} />
++          ))}
++        </div>
++      )}
++    </div>
++  );
++}
++
++function RequestCard({
++  r,
++  subjectName,
++  tutors,
++  onMatched,
++}: {
++  r: PrivateTuitionRequest;
++  subjectName: string;
++  tutors: { id: string; display_name: string }[];
++  onMatched: () => void;
++}) {
++  const [tutorId, setTutorId] = useState("");
++  const [sessions, setSessions] = useState(10);
++  const [duration, setDuration] = useState(60);
++  const [matched, setMatched] = useState<{ order_number: string; total_amount: number; currency: string } | null>(null);
++
++  const match = useMutation({
++    mutationFn: () =>
++      matchPrivateRequest(r.id, {
++        tutor_profile_id: tutorId,
++        total_sessions: sessions,
++        session_duration_minutes: duration,
++      }),
++    onSuccess: (res) => {
++      setMatched({ order_number: res.order.order_number, total_amount: res.order.total_amount, currency: res.order.currency });
++      toast.success("Tutor matched — payable order created");
++      onMatched();
++    },
++    onError: () => toast.error("Could not match (check the tutor can teach this subject and has a rate)"),
++  });
++
++  return (
++    <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
++      <div className="flex items-start justify-between gap-3">
++        <div>
++          <h3 className="font-bold text-brand-navy">{subjectName}</h3>
++          <p className="text-xs text-ink-500 mt-0.5">Requested {new Date(r.created_at).toLocaleDateString()}</p>
++        </div>
++        <StatusBadge label={r.status} kind={statusKindFor(r.status)} />
++      </div>
++
++      {r.goals && <p className="mt-3 text-sm text-ink-600 line-clamp-2">{r.goals}</p>}
++      <p className="mt-2 text-xs text-ink-400">
++        {[r.preferred_days, r.preferred_time_range].filter(Boolean).join(" · ") || "No schedule preference"} · {r.timezone}
++      </p>
++
++      {matched ? (
++        <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm">
++          <p className="font-semibold text-green-700">Order {matched.order_number} created for the parent to pay.</p>
++          <p className="text-xs text-green-700/80">{matched.currency} {matched.total_amount.toLocaleString()} — held in escrow until lessons are delivered.</p>
++        </div>
++      ) : (
++        r.status === "PENDING" && (
++          <div className="mt-4 space-y-3 border-t border-ink-100 pt-4">
++            <div className="grid gap-3 sm:grid-cols-3">
++              <label className="block text-xs sm:col-span-3">
++                <span className="font-medium text-ink-700">Vetted tutor</span>
++                <select
++                  value={tutorId}
++                  onChange={(e) => setTutorId(e.target.value)}
++                  className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-sm"
++                >
++                  <option value="">Select approved tutor…</option>
++                  {tutors.map((t) => (
++                    <option key={t.id} value={t.id}>{t.display_name}</option>
++                  ))}
++                </select>
++              </label>
++              <label className="block text-xs">
++                <span className="font-medium text-ink-700">Sessions</span>
++                <input type="number" min={1} max={60} value={sessions} onChange={(e) => setSessions(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-sm" />
++              </label>
++              <label className="block text-xs sm:col-span-2">
++                <span className="font-medium text-ink-700">Duration / session</span>
++                <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-sm">
++                  {[45, 60, 90, 120].map((d) => (
++                    <option key={d} value={d}>{d} min</option>
++                  ))}
++                </select>
++              </label>
++            </div>
++            <Button size="sm" variant="gold" disabled={!tutorId || match.isPending} onClick={() => match.mutate()}>
++              {match.isPending ? "Matching…" : "Match tutor & create order"}
++            </Button>
++          </div>
++        )
++      )}
++    </div>
++  );
++}
+diff --git a/client/features/tuition/PrivateTuitionWizard.tsx b/client/features/tuition/PrivateTuitionWizard.tsx
+index 913ecc2..40de591 100644
+--- a/client/features/tuition/PrivateTuitionWizard.tsx
++++ b/client/features/tuition/PrivateTuitionWizard.tsx
+@@ -1,10 +1,14 @@
+ "use client";
+ 
+ import { useState } from "react";
++import { useQuery } from "@tanstack/react-query";
+ import { toast } from "sonner";
+ import { Button } from "@/components/ui/button";
+ import { useSession } from "@/hooks/useSession";
+ import { Stepper } from "@/components/ui/stepper";
++import { listLearners } from "@/features/onboarding/api";
++import { listSubjects } from "@/features/subjects/api/list";
++import { createPrivateTuitionRequest } from "@/features/tuition/api";
+ 
+ const FLOAT_INPUT =
+   "peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 " +
+@@ -63,6 +67,11 @@ export function PrivateTuitionWizard() {
+   const [done, setDone] = useState(false);
+   const { user } = useSession();
+ 
++  // For logged-in parents we create a real matching request (request →
++  // match → pay → escrow). We need their linked learner + a subject id.
++  const learners = useQuery({ queryKey: ["onboarding", "learners"], queryFn: listLearners, enabled: !!user, staleTime: 30_000 });
++  const subjects = useQuery({ queryKey: ["subjects", "catalogue"], queryFn: () => listSubjects(), staleTime: 300_000 });
++
+   const set = (k: keyof FormState, v: string) => setForm((f) => ({ ...f, [k]: v }));
+ 
+   const canNext = () => {
+@@ -79,6 +88,31 @@ export function PrivateTuitionWizard() {
+   const submit = async () => {
+     setSubmitting(true);
+     try {
++      // Logged-in parents with a linked learner create a REAL request through
++      // the booking engine (managed matching → admin assigns a tutor → pay).
++      const myLearners = learners.data ?? [];
++      const subjectId = (subjects.data?.data ?? []).find(
++        (s) => s.name.toLowerCase() === form.subject.toLowerCase()
++      )?.id;
++
++      if (user && myLearners.length > 0 && subjectId) {
++        await createPrivateTuitionRequest({
++          student_id: myLearners[0].id,
++          subject_id: subjectId,
++          goals: form.goals,
++          preferred_days: form.days,
++          preferred_time: form.time,
++          timezone: form.timezone,
++          location_mode: "ONLINE",
++        });
++        setDone(true);
++        toast.success("Request received — matching in progress", {
++          description: "An advisor will match a vetted tutor, then you'll pay securely (escrow-protected).",
++        });
++        return;
++      }
++
++      // Otherwise fall back to a support ticket (anonymous / no linked learner).
+       const res = await fetch(
+         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"}/support/tickets`,
+         {
+diff --git a/client/features/tuition/api.ts b/client/features/tuition/api.ts
+new file mode 100644
+index 0000000..1f78db9
+--- /dev/null
++++ b/client/features/tuition/api.ts
+@@ -0,0 +1,82 @@
++import { apiFetch, Envelope } from "@/lib/api";
++
++export type PrivateTuitionRequest = {
++  id: string;
++  parent_user_id: string;
++  student_profile_id: string;
++  subject_id: string;
++  goals?: string;
++  preferred_days?: string;
++  preferred_time_range?: string;
++  timezone: string;
++  location_mode: string;
++  status: string;
++  matched_tutor_id?: string | null;
++  created_at: string;
++};
++
++export type CreatePrivateRequestParams = {
++  student_id: string;
++  subject_id: string;
++  goals?: string;
++  preferred_days?: string;
++  preferred_time?: string;
++  timezone?: string;
++  location_mode?: string;
++};
++
++/** Request to be matched to a private tutor (managed matching). */
++export async function createPrivateTuitionRequest(params: CreatePrivateRequestParams): Promise<PrivateTuitionRequest> {
++  const res = await apiFetch<PrivateTuitionRequest>("/private-tuition/requests", {
++    method: "POST",
++    body: JSON.stringify(params),
++  });
++  return res.data;
++}
++
++/** A parent's own tuition requests. */
++export async function listMyPrivateRequests(): Promise<PrivateTuitionRequest[]> {
++  const res = await apiFetch<PrivateTuitionRequest[]>("/private-tuition/requests");
++  return res.data ?? [];
++}
++
++// --- Admin matching queue ---
++
++export async function listAdminPrivateRequests(status?: string): Promise<Envelope<PrivateTuitionRequest[]>> {
++  const qs = status ? `?status=${status}` : "";
++  return apiFetch<PrivateTuitionRequest[]>(`/admin/private-tuition/requests${qs}`);
++}
++
++export type MatchRequestInput = {
++  tutor_profile_id: string;
++  total_sessions: number;
++  session_duration_minutes: number;
++};
++
++export type MatchRequestResult = {
++  request: PrivateTuitionRequest;
++  package: {
++    id: string;
++    total_sessions: number;
++    price_per_session: number;
++    total_price: number;
++    currency: string;
++    status: string;
++  };
++  order: {
++    id: string;
++    order_number: string;
++    total_amount: number;
++    currency: string;
++    status: string;
++  };
++};
++
++/** Admin matches a vetted tutor → creates the payable package + escrow order. */
++export async function matchPrivateRequest(requestId: string, input: MatchRequestInput): Promise<MatchRequestResult> {
++  const res = await apiFetch<MatchRequestResult>(`/admin/private-tuition/requests/${requestId}/match`, {
++    method: "POST",
++    body: JSON.stringify(input),
++  });
++  return res.data;
++}
+diff --git a/client/lib/app-nav.ts b/client/lib/app-nav.ts
+index fa2a0ed..6def8dc 100644
+--- a/client/lib/app-nav.ts
++++ b/client/lib/app-nav.ts
+@@ -18,6 +18,7 @@ import {
+   LifeBuoy,
+   BarChart3,
+   ClipboardCheck,
++  UserPlus,
+ } from "lucide-react";
+ 
+ export type AppNavItem = {
+@@ -74,6 +75,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
+       { href: "/admin/users", label: "Users", icon: Users },
+       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
+       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
++      { href: "/admin/private-tuition", label: "Private tuition", icon: UserPlus },
+       { href: "/admin/lessons", label: "Today's classes", icon: Users },
+       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+       { href: "/admin/support", label: "Support", icon: LifeBuoy },
+diff --git a/internal/domain/booking/repository.go b/internal/domain/booking/repository.go
+index 65c9511..097f96a 100644
+--- a/internal/domain/booking/repository.go
++++ b/internal/domain/booking/repository.go
+@@ -38,6 +38,14 @@ type CohortEnrollmentRepository interface {
+ type PrivateTuitionRequestRepository interface {
+ 	Create(ctx context.Context, r *PrivateTuitionRequest) error
+ 	GetByID(ctx context.Context, id uuid.UUID) (*PrivateTuitionRequest, error)
++	// SetMatchedTutor records the tutor an admin matched to the request.
++	SetMatchedTutor(ctx context.Context, id, tutorProfileID uuid.UUID) error
++	// UpdateStatus advances a request's status (PENDING → MATCHED → …).
++	UpdateStatus(ctx context.Context, id uuid.UUID, status PrivateRequestStatus) error
++	// ListByParent returns a parent's own requests (newest first).
++	ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]PrivateTuitionRequest, error)
++	// ListAll returns the admin matching queue (filterable by status).
++	ListAll(ctx context.Context, status string, page, pageSize int) ([]PrivateTuitionRequest, int64, error)
+ }
+ 
+ type PrivatePackageRepository interface {
+diff --git a/internal/repository/memory/booking_memory.go b/internal/repository/memory/booking_memory.go
+index 3916964..9ee606f 100644
+--- a/internal/repository/memory/booking_memory.go
++++ b/internal/repository/memory/booking_memory.go
+@@ -2,6 +2,7 @@ package memory
+ 
+ import (
+ 	"context"
++	"sort"
+ 	"sync"
+ 	"time"
+ 
+@@ -47,6 +48,75 @@ func (m *PrivateReqMemory) GetByID(_ context.Context, id uuid.UUID) (*booking.Pr
+ 	return nil, domain.ErrNotFound
+ }
+ 
++func (m *PrivateReqMemory) SetMatchedTutor(_ context.Context, id, tutorProfileID uuid.UUID) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	r, ok := m.rows[id]
++	if !ok {
++		return domain.ErrNotFound
++	}
++	r.MatchedTutorID = &tutorProfileID
++	r.UpdatedAt = time.Now().UTC()
++	return nil
++}
++
++func (m *PrivateReqMemory) UpdateStatus(_ context.Context, id uuid.UUID, status booking.PrivateRequestStatus) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	r, ok := m.rows[id]
++	if !ok {
++		return domain.ErrNotFound
++	}
++	r.Status = status
++	r.UpdatedAt = time.Now().UTC()
++	return nil
++}
++
++func (m *PrivateReqMemory) ListByParent(_ context.Context, parentUserID uuid.UUID, limit int) ([]booking.PrivateTuitionRequest, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	var out []booking.PrivateTuitionRequest
++	for _, r := range m.rows {
++		if r.ParentUserID == parentUserID {
++			out = append(out, *r)
++		}
++	}
++	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
++	if limit > 0 && len(out) > limit {
++		out = out[:limit]
++	}
++	return out, nil
++}
++
++func (m *PrivateReqMemory) ListAll(_ context.Context, status string, page, pageSize int) ([]booking.PrivateTuitionRequest, int64, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	var out []booking.PrivateTuitionRequest
++	for _, r := range m.rows {
++		if status == "" || string(r.Status) == status {
++			out = append(out, *r)
++		}
++	}
++	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
++	total := int64(len(out))
++	limit := pageSize
++	if limit < 1 {
++		limit = 20
++	}
++	start := (page - 1) * limit
++	if start < 0 {
++		start = 0
++	}
++	if start > len(out) {
++		start = len(out)
++	}
++	end := start + limit
++	if end > len(out) {
++		end = len(out)
++	}
++	return out[start:end], total, nil
++}
++
+ var _ booking.PrivateTuitionRequestRepository = (*PrivateReqMemory)(nil)
+ 
+ // --- Private packages ---
+diff --git a/internal/repository/postgres/booking_repo.go b/internal/repository/postgres/booking_repo.go
+index ad01fe9..fc2dc29 100644
+--- a/internal/repository/postgres/booking_repo.go
++++ b/internal/repository/postgres/booking_repo.go
+@@ -238,6 +238,124 @@ func (r *PrivateTuitionRequestRepo) GetByID(ctx context.Context, id uuid.UUID) (
+ 	return &req, nil
+ }
+ 
++// SetMatchedTutor records the tutor an admin matched to the request.
++func (r *PrivateTuitionRequestRepo) SetMatchedTutor(ctx context.Context, id, tutorProfileID uuid.UUID) error {
++	_, err := r.db.ExecContext(ctx, `UPDATE private_tuition_requests SET matched_tutor_id=$1, updated_at=NOW() WHERE id=$2`, tutorProfileID, id)
++	if err != nil {
++		return fmt.Errorf("set matched tutor: %w", err)
++	}
++	return nil
++}
++
++// UpdateStatus advances a request's status.
++func (r *PrivateTuitionRequestRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status booking.PrivateRequestStatus) error {
++	_, err := r.db.ExecContext(ctx, `UPDATE private_tuition_requests SET status=$1, updated_at=NOW() WHERE id=$2`, status, id)
++	if err != nil {
++		return fmt.Errorf("update private request status: %w", err)
++	}
++	return nil
++}
++
++const privateRequestColumns = `id, parent_user_id, student_profile_id, subject_id, curriculum_id, level_id,
++	goals, preferred_days, preferred_time_range, timezone, location_mode, location_id,
++	status, matched_tutor_id, created_at, updated_at`
++
++func scanPrivateRequest(row interface{ Scan(...any) error }) (*booking.PrivateTuitionRequest, error) {
++	var req booking.PrivateTuitionRequest
++	var curriculumID, levelID, locID, matchedTutor uuidNull
++	var goals, preferredDays, preferredTime sql.NullString
++	if err := row.Scan(&req.ID, &req.ParentUserID, &req.StudentProfileID, &req.SubjectID,
++		&curriculumID, &levelID, &goals, &preferredDays, &preferredTime, &req.Timezone,
++		&req.LocationMode, &locID, &req.Status, &matchedTutor, &req.CreatedAt, &req.UpdatedAt); err != nil {
++		return nil, err
++	}
++	if curriculumID.Valid {
++		req.CurriculumID = &curriculumID.UUID
++	}
++	if levelID.Valid {
++		req.LevelID = &levelID.UUID
++	}
++	if locID.Valid {
++		req.LocationID = &locID.UUID
++	}
++	if matchedTutor.Valid {
++		req.MatchedTutorID = &matchedTutor.UUID
++	}
++	if goals.Valid {
++		req.Goals = &goals.String
++	}
++	if preferredDays.Valid {
++		req.PreferredDays = &preferredDays.String
++	}
++	if preferredTime.Valid {
++		req.PreferredTime = &preferredTime.String
++	}
++	return &req, nil
++}
++
++// ListByParent returns a parent's own requests, newest first.
++func (r *PrivateTuitionRequestRepo) ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]booking.PrivateTuitionRequest, error) {
++	if limit < 1 || limit > 100 {
++		limit = 50
++	}
++	rows, err := r.db.QueryContext(ctx, `SELECT `+privateRequestColumns+`
++		FROM private_tuition_requests WHERE parent_user_id=$1 ORDER BY created_at DESC LIMIT $2`, parentUserID, limit)
++	if err != nil {
++		return nil, fmt.Errorf("list private requests by parent: %w", err)
++	}
++	defer rows.Close()
++	out := []booking.PrivateTuitionRequest{}
++	for rows.Next() {
++		req, err := scanPrivateRequest(rows)
++		if err != nil {
++			return nil, err
++		}
++		out = append(out, *req)
++	}
++	return out, rows.Err()
++}
++
++// ListAll returns the admin matching queue, newest first.
++func (r *PrivateTuitionRequestRepo) ListAll(ctx context.Context, status string, page, pageSize int) ([]booking.PrivateTuitionRequest, int64, error) {
++	where := ""
++	args := []any{}
++	if status != "" {
++		where = " WHERE status = $1"
++		args = append(args, status)
++	}
++	var total int64
++	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM private_tuition_requests"+where, args...).Scan(&total); err != nil {
++		return nil, 0, fmt.Errorf("count private requests: %w", err)
++	}
++	limit := pageSize
++	if limit < 1 {
++		limit = 20
++	}
++	if limit > 100 {
++		limit = 100
++	}
++	offset := (page - 1) * limit
++	if offset < 0 {
++		offset = 0
++	}
++	rows, err := r.db.QueryContext(ctx, `SELECT `+privateRequestColumns+` FROM private_tuition_requests`+where+
++		` ORDER BY created_at DESC LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
++		append(args, limit, offset)...)
++	if err != nil {
++		return nil, 0, fmt.Errorf("list all private requests: %w", err)
++	}
++	defer rows.Close()
++	out := []booking.PrivateTuitionRequest{}
++	for rows.Next() {
++		req, err := scanPrivateRequest(rows)
++		if err != nil {
++			return nil, 0, err
++		}
++		out = append(out, *req)
++	}
++	return out, total, rows.Err()
++}
++
+ type PrivatePackageRepo struct{ db TxQuerier }
+ 
+ func NewPrivatePackageRepo(db TxQuerier) *PrivatePackageRepo { return &PrivatePackageRepo{db: db} }
+diff --git a/internal/service/booking_request_test.go b/internal/service/booking_request_test.go
+new file mode 100644
+index 0000000..786ad35
+--- /dev/null
++++ b/internal/service/booking_request_test.go
+@@ -0,0 +1,72 @@
++package service
++
++import (
++	"context"
++	"testing"
++
++	"ykay-virtual/internal/domain/booking"
++	"ykay-virtual/internal/domain/payment"
++
++	"github.com/google/uuid"
++	"github.com/stretchr/testify/require"
++)
++
++// TestPrivateTuitionRequestMatch covers the request → match → payable order
++// journey: a request is created PENDING with no tutor, then an admin match
++// creates a PENDING_PAYMENT package + PENDING order the parent can pay.
++func TestPrivateTuitionRequestMatch(t *testing.T) {
++	env := newTestEnv(t)
++	ctx := context.Background()
++
++	// 1) Parent requests to be matched (no tutor chosen).
++	req, err := env.booking.CreatePrivateTuitionRequest(ctx, CreatePrivateRequestInput{
++		ParentUserID: env.parent,
++		StudentID:    env.student,
++		SubjectID:    env.subject,
++		Goals:        "Prepare for UTME",
++	})
++	require.NoError(t, err)
++	require.Equal(t, booking.PrivatePending, req.Status)
++	require.Nil(t, req.MatchedTutorID)
++
++	// 2) Admin matches a vetted tutor → payable package + order.
++	admin := uuid.New()
++	res, err := env.booking.MatchPrivateTuitionRequest(ctx, admin, req.ID, env.tutor, 10, 60)
++	require.NoError(t, err)
++	require.NotNil(t, res.Package)
++	require.NotNil(t, res.Order)
++	require.Equal(t, booking.PrivatePackagePendingPayment, res.Package.Status)
++	require.Equal(t, payment.OrderPending, res.Order.Status)
++	require.Equal(t, booking.PrivateMatched, res.Request.Status)
++	require.NotNil(t, res.Request.MatchedTutorID)
++	require.Equal(t, env.tutor, *res.Request.MatchedTutorID)
++
++	// Package belongs to the request and carries the tutor's published rate.
++	require.Equal(t, req.ID, res.Package.RequestID)
++	require.Equal(t, env.tutor, res.Package.TutorProfileID)
++	require.Equal(t, 10, res.Package.TotalSessions)
++	require.Equal(t, float64(8000*10), res.Package.TotalPrice)
++
++	// 3) The parent can read it back.
++	got, err := env.booking.GetPrivateTuitionRequest(ctx, env.parent, req.ID, false)
++	require.NoError(t, err)
++	require.Equal(t, booking.PrivateMatched, got.Status)
++
++	// 4) A non-owner is forbidden.
++	other := uuid.New()
++	_, err = env.booking.GetPrivateTuitionRequest(ctx, other, req.ID, false)
++	require.Error(t, err)
++}
++
++// TestPrivateTuitionRequest_InvalidSessionCount guards the match validation.
++func TestPrivateTuitionRequest_InvalidSessionCount(t *testing.T) {
++	env := newTestEnv(t)
++	ctx := context.Background()
++	req, err := env.booking.CreatePrivateTuitionRequest(ctx, CreatePrivateRequestInput{
++		ParentUserID: env.parent, StudentID: env.student, SubjectID: env.subject,
++	})
++	require.NoError(t, err)
++
++	_, err = env.booking.MatchPrivateTuitionRequest(ctx, uuid.New(), req.ID, env.tutor, 0, 60)
++	require.Error(t, err)
++}
+diff --git a/internal/service/booking_service.go b/internal/service/booking_service.go
+index bd52178..67d1682 100644
+--- a/internal/service/booking_service.go
++++ b/internal/service/booking_service.go
+@@ -112,6 +112,29 @@ type BookingResult struct {
+ 	Replayed     bool       // true when idempotency key matched an existing order
+ }
+ 
++// CreatePrivateRequestInput — the "request" leg of the managed-matching journey:
++// a parent asks to be matched to a tutor for a subject, without picking one yet.
++type CreatePrivateRequestInput struct {
++	ParentUserID  uuid.UUID
++	StudentID     uuid.UUID
++	SubjectID     uuid.UUID
++	Goals         string
++	PreferredDays string
++	PreferredTime string
++	Timezone      string
++	LocationMode  string
++	RequestID     *string
++	TraceID       *string
++}
++
++// MatchPrivateRequestResult — the "match" leg: an admin assigns a tutor, which
++// creates a payable package + order the parent then pays (escrow).
++type MatchPrivateRequestResult struct {
++	Request *booking.PrivateTuitionRequest
++	Package *booking.PrivatePackage
++	Order   *payment.Order
++}
++
+ // CreateCohortBooking — transactional: order + order item + PENDING enrollment
+ // + capacity increment (row locked), wallet ensured, audit written. A
+ // duplicate idempotency_key returns the existing order untouched (replay).
+@@ -344,6 +367,199 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
+ 	return &BookingResult{Order: order, Items: items, PackageID: &pkg.ID}, nil
+ }
+ 
++// CreatePrivateTuitionRequest — the request leg of managed matching. Unlike
++// CreatePrivateBooking it requires NO tutor and creates NO order: the parent
++// asks to be matched, and an admin assigns a vetted tutor later.
++func (s *BookingService) CreatePrivateTuitionRequest(ctx context.Context, in CreatePrivateRequestInput) (*booking.PrivateTuitionRequest, error) {
++	if err := s.authorizeEnrollment(ctx, in.StudentID, in.ParentUserID); err != nil {
++		return nil, err
++	}
++	if in.SubjectID == uuid.Nil {
++		return nil, fmt.Errorf("%w: subject is required", domain.ErrInvalidInput)
++	}
++	if in.Timezone == "" {
++		in.Timezone = "Africa/Lagos"
++	}
++	if in.LocationMode == "" {
++		in.LocationMode = "ONLINE"
++	}
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++
++	req := &booking.PrivateTuitionRequest{
++		ParentUserID:     in.ParentUserID,
++		StudentProfileID: in.StudentID,
++		SubjectID:        in.SubjectID,
++		Goals:            strPtrOrNil(in.Goals),
++		PreferredDays:    strPtrOrNil(in.PreferredDays),
++		PreferredTime:    strPtrOrNil(in.PreferredTime),
++		Timezone:         in.Timezone,
++		LocationMode:     in.LocationMode,
++		Status:           booking.PrivatePending,
++	}
++	if err := uow.PrivateRequests().Create(ctx, req); err != nil {
++		return nil, err
++	}
++	_ = s.audit.LogStateChange(ctx, &in.ParentUserID, identity.AuditCreate, "private_tuition_request",
++		&req.ID, nil, map[string]any{
++			"student_id": in.StudentID, "subject_id": in.SubjectID,
++			"status": req.Status, "request_id": in.RequestID, "trace_id": in.TraceID,
++		}, in.RequestID, in.TraceID)
++	if err := uow.Commit(ctx); err != nil {
++		return nil, err
++	}
++	return req, nil
++}
++
++// MatchPrivateTuitionRequest — admin assigns a vetted tutor to a pending
++// request. This creates a PENDING_PAYMENT package and a PENDING order for the
++// parent, which they settle through the normal escrow payment flow. The
++// request moves to MATCHED and records the matched tutor.
++func (s *BookingService) MatchPrivateTuitionRequest(ctx context.Context, adminID, requestID, tutorID uuid.UUID, totalSessions, sessionDuration int) (*MatchPrivateRequestResult, error) {
++	if totalSessions < 1 {
++		return nil, fmt.Errorf("%w: total_sessions must be >= 1", domain.ErrInvalidInput)
++	}
++	if sessionDuration < 15 {
++		return nil, fmt.Errorf("%w: session_duration_minutes must be >= 15", domain.ErrInvalidInput)
++	}
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++
++	req, err := uow.PrivateRequests().GetByID(ctx, requestID)
++	if err != nil {
++		return nil, err
++	}
++	if req.Status != booking.PrivatePending && req.Status != booking.PrivateMatched {
++		return nil, fmt.Errorf("%w: request %s cannot be matched from status %s",
++			domain.ErrConflict, req.ID, req.Status)
++	}
++
++	// Load the published rate and confirm the tutor can teach the requested subject.
++	publishedRate, publishedCurrency, err := s.tutorSubject.SessionRate(ctx, tutorID)
++	if err != nil {
++		return nil, err
++	}
++	if publishedRate <= 0 {
++		return nil, fmt.Errorf("%w: matched tutor has no published session rate", domain.ErrInvalidInput)
++	}
++	if ok, err := s.tutorSubject.TutorCanTeach(ctx, tutorID, req.SubjectID); err != nil {
++		return nil, err
++	} else if !ok {
++		return nil, fmt.Errorf("%w: matched tutor cannot teach the requested subject", domain.ErrForbidden)
++	}
++	currency := publishedCurrency
++	if currency == "" {
++		currency = "NGN"
++	}
++
++	pkg := &booking.PrivatePackage{
++		RequestID:           req.ID,
++		TutorProfileID:      tutorID,
++		StudentProfileID:    req.StudentProfileID,
++		TotalSessions:       totalSessions,
++		SessionDurationMins: sessionDuration,
++		PricePerSession:     publishedRate,
++		TotalPrice:          publishedRate * float64(totalSessions),
++		Currency:            strings.ToUpper(currency),
++		Status:              booking.PrivatePackagePendingPayment,
++	}
++	if err := uow.PrivatePackages().Create(ctx, pkg); err != nil {
++		return nil, err
++	}
++
++	order := &payment.Order{
++		ParentUserID:   req.ParentUserID,
++		StudentID:      &req.StudentProfileID,
++		Status:         payment.OrderPending,
++		Subtotal:       pkg.TotalPrice,
++		DiscountAmount: 0,
++		TotalAmount:    pkg.TotalPrice,
++		Currency:       pkg.Currency,
++	}
++	if err := uow.Orders().Create(ctx, order); err != nil {
++		return nil, err
++	}
++	desc := fmt.Sprintf("Private tuition (matched): %d x %dmin sessions", pkg.TotalSessions, pkg.SessionDurationMins)
++	item := &payment.OrderItem{
++		OrderID:     order.ID,
++		ItemType:    "PRIVATE_PACKAGE",
++		ReferenceID: pkg.ID,
++		Description: &desc,
++		Quantity:    1,
++		UnitPrice:   pkg.TotalPrice,
++		TotalPrice:  pkg.TotalPrice,
++	}
++	if err := uow.Orders().CreateItem(ctx, item); err != nil {
++		return nil, err
++	}
++	if _, err := uow.Wallets().GetOrCreate(ctx, req.ParentUserID, order.Currency); err != nil {
++		return nil, err
++	}
++
++	if err := uow.PrivateRequests().SetMatchedTutor(ctx, req.ID, tutorID); err != nil {
++		return nil, err
++	}
++	if err := uow.PrivateRequests().UpdateStatus(ctx, req.ID, booking.PrivateMatched); err != nil {
++		return nil, err
++	}
++
++	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "private_tuition_request",
++		&req.ID, nil, map[string]any{
++			"matched_tutor_id": tutorID, "status": booking.PrivateMatched,
++			"package_id": pkg.ID, "order_id": order.ID, "total": order.TotalAmount,
++		}, nil, nil)
++
++	if err := uow.Commit(ctx); err != nil {
++		return nil, err
++	}
++	req.MatchedTutorID = &tutorID
++	req.Status = booking.PrivateMatched
++	return &MatchPrivateRequestResult{Request: req, Package: pkg, Order: order}, nil
++}
++
++// GetPrivateTuitionRequest — owner or admin view of one request.
++func (s *BookingService) GetPrivateTuitionRequest(ctx context.Context, actorUserID, requestID uuid.UUID, isAdmin bool) (*booking.PrivateTuitionRequest, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	req, err := uow.PrivateRequests().GetByID(ctx, requestID)
++	if err != nil {
++		return nil, err
++	}
++	if !isAdmin && req.ParentUserID != actorUserID {
++		return nil, domain.ErrForbidden
++	}
++	return req, nil
++}
++
++// ListMyPrivateTuitionRequests — a parent's own requests (owner only).
++func (s *BookingService) ListMyPrivateTuitionRequests(ctx context.Context, parentUserID uuid.UUID, limit int) ([]booking.PrivateTuitionRequest, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	return uow.PrivateRequests().ListByParent(ctx, parentUserID, limit)
++}
++
++// ListPrivateTuitionRequests — admin matching queue.
++func (s *BookingService) ListPrivateTuitionRequests(ctx context.Context, status string, page, pageSize int) ([]booking.PrivateTuitionRequest, int64, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, 0, err
++	}
++	defer uow.Rollback()
++	return uow.PrivateRequests().ListAll(ctx, status, page, pageSize)
++}
++
+ // GetOrder — order + items for the checkout status page.
+ func (s *BookingService) GetOrder(ctx context.Context, orderID uuid.UUID) (*payment.Order, []payment.OrderItem, error) {
+ 	uow, err := s.uows.Begin(ctx)
+diff --git a/internal/transport/http/booking_handler.go b/internal/transport/http/booking_handler.go
+index c5a1429..d2c8486 100644
+--- a/internal/transport/http/booking_handler.go
++++ b/internal/transport/http/booking_handler.go
+@@ -221,3 +221,148 @@ func requestIDString(r *http.Request) string {
+ }
+ 
+ var _ = toOrderDTO
++
++// ---------------------------------------------------------------------------
++// Private tuition: request → match → pay → escrow (managed matching journey)
++// ---------------------------------------------------------------------------
++
++type privateRequestBody struct {
++	StudentID     string `json:"student_id"`
++	SubjectID     string `json:"subject_id"`
++	Goals         string `json:"goals"`
++	PreferredDays string `json:"preferred_days"`
++	PreferredTime string `json:"preferred_time"`
++	Timezone      string `json:"timezone"`
++	LocationMode  string `json:"location_mode"`
++}
++
++// CreatePrivateRequest — POST /api/v1/private-tuition/requests (auth): a parent
++// asks to be matched to a tutor for a subject (no tutor chosen yet).
++func (h *BookingHandler) CreatePrivateRequest(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	var req privateRequestBody
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	studentID, err := uuid.Parse(req.StudentID)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("student_id must be a valid UUID", nil))
++		return
++	}
++	subjectID, err := uuid.Parse(req.SubjectID)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("subject_id must be a valid UUID", nil))
++		return
++	}
++	reqID := requestIDString(r)
++	res, err := h.svc.CreatePrivateTuitionRequest(r.Context(), service.CreatePrivateRequestInput{
++		ParentUserID:  actor.UserID,
++		StudentID:     studentID,
++		SubjectID:     subjectID,
++		Goals:         req.Goals,
++		PreferredDays: req.PreferredDays,
++		PreferredTime: req.PreferredTime,
++		Timezone:      req.Timezone,
++		LocationMode:  req.LocationMode,
++		RequestID:     &reqID,
++		TraceID:       &reqID,
++	})
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusCreated, res, nil)
++}
++
++// ListMyPrivateRequests — GET /api/v1/private-tuition/requests (auth).
++func (h *BookingHandler) ListMyPrivateRequests(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	res, err := h.svc.ListMyPrivateTuitionRequests(r.Context(), actor.UserID, 50)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, res, nil)
++}
++
++// GetPrivateRequest — GET /api/v1/private-tuition/requests/{id} (owner/admin).
++func (h *BookingHandler) GetPrivateRequest(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	requestID, err := uuid.Parse(r.PathValue("id"))
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("invalid request id", nil))
++		return
++	}
++	res, err := h.svc.GetPrivateTuitionRequest(r.Context(), actor.UserID, requestID, actor.IsAdmin)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, res, nil)
++}
++
++// ListPrivateRequests — GET /api/v1/admin/private-tuition/requests (admin queue).
++func (h *BookingHandler) ListPrivateRequests(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil || !actor.IsAdmin {
++		WriteAppError(w, pkg.Forbidden("admin access required"))
++		return
++	}
++	p := ParsePagination(r)
++	status := r.URL.Query().Get("status")
++	if status == "" {
++		status = p.Filters["status"]
++	}
++	res, total, err := h.svc.ListPrivateTuitionRequests(r.Context(), status, p.Page, p.PageSize)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, res, p.Meta(total))
++}
++
++// MatchPrivateRequest — POST /api/v1/admin/private-tuition/requests/{id}/match
++// (admin): assigns a vetted tutor, creating a payable package + escrow order.
++func (h *BookingHandler) MatchPrivateRequest(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil || !actor.IsAdmin {
++		WriteAppError(w, pkg.Forbidden("admin access required"))
++		return
++	}
++	requestID, err := uuid.Parse(r.PathValue("id"))
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("invalid request id", nil))
++		return
++	}
++	var body struct {
++		TutorProfileID         string `json:"tutor_profile_id"`
++		TotalSessions          int    `json:"total_sessions"`
++		SessionDurationMinutes int    `json:"session_duration_minutes"`
++	}
++	if err := DecodeJSON(r, &body); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	tutorID, err := uuid.Parse(body.TutorProfileID)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
++		return
++	}
++	res, err := h.svc.MatchPrivateTuitionRequest(r.Context(), actor.UserID, requestID, tutorID,
++		body.TotalSessions, body.SessionDurationMinutes)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusCreated, res, nil)
++}
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index 9ac4a00..837fc80 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -171,6 +171,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 
+ 	// Bookings + payments (Phase 3)
+ 	mux.HandleFunc("POST "+v1+"/bookings", handlers.Bookings.Create)
++	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
++	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
++	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
++	mux.HandleFunc("GET "+v1+"/admin/private-tuition/requests", handlers.Bookings.ListPrivateRequests)
++	mux.HandleFunc("POST "+v1+"/admin/private-tuition/requests/{id}/match", handlers.Bookings.MatchPrivateRequest)
+ 	mux.HandleFunc("POST "+v1+"/payments/initiate", handlers.Payments.Initiate)
+ 	mux.HandleFunc("POST "+v1+"/payments/webhooks/{provider}", handlers.Payments.Webhook)
+ 

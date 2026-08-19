@@ -238,6 +238,124 @@ func (r *PrivateTuitionRequestRepo) GetByID(ctx context.Context, id uuid.UUID) (
 	return &req, nil
 }
 
+// SetMatchedTutor records the tutor an admin matched to the request.
+func (r *PrivateTuitionRequestRepo) SetMatchedTutor(ctx context.Context, id, tutorProfileID uuid.UUID) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE private_tuition_requests SET matched_tutor_id=$1, updated_at=NOW() WHERE id=$2`, tutorProfileID, id)
+	if err != nil {
+		return fmt.Errorf("set matched tutor: %w", err)
+	}
+	return nil
+}
+
+// UpdateStatus advances a request's status.
+func (r *PrivateTuitionRequestRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status booking.PrivateRequestStatus) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE private_tuition_requests SET status=$1, updated_at=NOW() WHERE id=$2`, status, id)
+	if err != nil {
+		return fmt.Errorf("update private request status: %w", err)
+	}
+	return nil
+}
+
+const privateRequestColumns = `id, parent_user_id, student_profile_id, subject_id, curriculum_id, level_id,
+	goals, preferred_days, preferred_time_range, timezone, location_mode, location_id,
+	status, matched_tutor_id, created_at, updated_at`
+
+func scanPrivateRequest(row interface{ Scan(...any) error }) (*booking.PrivateTuitionRequest, error) {
+	var req booking.PrivateTuitionRequest
+	var curriculumID, levelID, locID, matchedTutor uuidNull
+	var goals, preferredDays, preferredTime sql.NullString
+	if err := row.Scan(&req.ID, &req.ParentUserID, &req.StudentProfileID, &req.SubjectID,
+		&curriculumID, &levelID, &goals, &preferredDays, &preferredTime, &req.Timezone,
+		&req.LocationMode, &locID, &req.Status, &matchedTutor, &req.CreatedAt, &req.UpdatedAt); err != nil {
+		return nil, err
+	}
+	if curriculumID.Valid {
+		req.CurriculumID = &curriculumID.UUID
+	}
+	if levelID.Valid {
+		req.LevelID = &levelID.UUID
+	}
+	if locID.Valid {
+		req.LocationID = &locID.UUID
+	}
+	if matchedTutor.Valid {
+		req.MatchedTutorID = &matchedTutor.UUID
+	}
+	if goals.Valid {
+		req.Goals = &goals.String
+	}
+	if preferredDays.Valid {
+		req.PreferredDays = &preferredDays.String
+	}
+	if preferredTime.Valid {
+		req.PreferredTime = &preferredTime.String
+	}
+	return &req, nil
+}
+
+// ListByParent returns a parent's own requests, newest first.
+func (r *PrivateTuitionRequestRepo) ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]booking.PrivateTuitionRequest, error) {
+	if limit < 1 || limit > 100 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx, `SELECT `+privateRequestColumns+`
+		FROM private_tuition_requests WHERE parent_user_id=$1 ORDER BY created_at DESC LIMIT $2`, parentUserID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list private requests by parent: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.PrivateTuitionRequest{}
+	for rows.Next() {
+		req, err := scanPrivateRequest(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *req)
+	}
+	return out, rows.Err()
+}
+
+// ListAll returns the admin matching queue, newest first.
+func (r *PrivateTuitionRequestRepo) ListAll(ctx context.Context, status string, page, pageSize int) ([]booking.PrivateTuitionRequest, int64, error) {
+	where := ""
+	args := []any{}
+	if status != "" {
+		where = " WHERE status = $1"
+		args = append(args, status)
+	}
+	var total int64
+	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM private_tuition_requests"+where, args...).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("count private requests: %w", err)
+	}
+	limit := pageSize
+	if limit < 1 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	offset := (page - 1) * limit
+	if offset < 0 {
+		offset = 0
+	}
+	rows, err := r.db.QueryContext(ctx, `SELECT `+privateRequestColumns+` FROM private_tuition_requests`+where+
+		` ORDER BY created_at DESC LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
+		append(args, limit, offset)...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list all private requests: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.PrivateTuitionRequest{}
+	for rows.Next() {
+		req, err := scanPrivateRequest(rows)
+		if err != nil {
+			return nil, 0, err
+		}
+		out = append(out, *req)
+	}
+	return out, total, rows.Err()
+}
+
 type PrivatePackageRepo struct{ db TxQuerier }
 
 func NewPrivatePackageRepo(db TxQuerier) *PrivatePackageRepo { return &PrivatePackageRepo{db: db} }

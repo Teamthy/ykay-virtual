@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
 import { Stepper } from "@/components/ui/stepper";
+import { listLearners } from "@/features/onboarding/api";
+import { listSubjects } from "@/features/subjects/api/list";
+import { createPrivateTuitionRequest } from "@/features/tuition/api";
 
 const FLOAT_INPUT =
   "peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 " +
@@ -63,6 +67,11 @@ export function PrivateTuitionWizard() {
   const [done, setDone] = useState(false);
   const { user } = useSession();
 
+  // For logged-in parents we create a real matching request (request →
+  // match → pay → escrow). We need their linked learner + a subject id.
+  const learners = useQuery({ queryKey: ["onboarding", "learners"], queryFn: listLearners, enabled: !!user, staleTime: 30_000 });
+  const subjects = useQuery({ queryKey: ["subjects", "catalogue"], queryFn: () => listSubjects(), staleTime: 300_000 });
+
   const set = (k: keyof FormState, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const canNext = () => {
@@ -79,6 +88,31 @@ export function PrivateTuitionWizard() {
   const submit = async () => {
     setSubmitting(true);
     try {
+      // Logged-in parents with a linked learner create a REAL request through
+      // the booking engine (managed matching → admin assigns a tutor → pay).
+      const myLearners = learners.data ?? [];
+      const subjectId = (subjects.data?.data ?? []).find(
+        (s) => s.name.toLowerCase() === form.subject.toLowerCase()
+      )?.id;
+
+      if (user && myLearners.length > 0 && subjectId) {
+        await createPrivateTuitionRequest({
+          student_id: myLearners[0].id,
+          subject_id: subjectId,
+          goals: form.goals,
+          preferred_days: form.days,
+          preferred_time: form.time,
+          timezone: form.timezone,
+          location_mode: "ONLINE",
+        });
+        setDone(true);
+        toast.success("Request received — matching in progress", {
+          description: "An advisor will match a vetted tutor, then you'll pay securely (escrow-protected).",
+        });
+        return;
+      }
+
+      // Otherwise fall back to a support ticket (anonymous / no linked learner).
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"}/support/tickets`,
         {

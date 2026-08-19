@@ -18,6 +18,7 @@ import {
   LifeBuoy,
   BarChart3,
   ClipboardCheck,
+  UserPlus,
 } from "lucide-react";
 
 export type AppNavItem = {
@@ -74,6 +75,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
       { href: "/admin/users", label: "Users", icon: Users },
       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
+      { href: "/admin/private-tuition", label: "Private tuition", icon: UserPlus },
       { href: "/admin/lessons", label: "Today's classes", icon: Users },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/admin/support", label: "Support", icon: LifeBuoy },

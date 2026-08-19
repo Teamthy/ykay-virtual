@@ -171,6 +171,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 
 	// Bookings + payments (Phase 3)
 	mux.HandleFunc("POST "+v1+"/bookings", handlers.Bookings.Create)
+	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
+	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
+	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
+	mux.HandleFunc("GET "+v1+"/admin/private-tuition/requests", handlers.Bookings.ListPrivateRequests)
+	mux.HandleFunc("POST "+v1+"/admin/private-tuition/requests/{id}/match", handlers.Bookings.MatchPrivateRequest)
 	mux.HandleFunc("POST "+v1+"/payments/initiate", handlers.Payments.Initiate)
 	mux.HandleFunc("POST "+v1+"/payments/webhooks/{provider}", handlers.Payments.Webhook)
 

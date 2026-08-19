@@ -221,3 +221,148 @@ func requestIDString(r *http.Request) string {
 }
 
 var _ = toOrderDTO
+
+// ---------------------------------------------------------------------------
+// Private tuition: request → match → pay → escrow (managed matching journey)
+// ---------------------------------------------------------------------------
+
+type privateRequestBody struct {
+	StudentID     string `json:"student_id"`
+	SubjectID     string `json:"subject_id"`
+	Goals         string `json:"goals"`
+	PreferredDays string `json:"preferred_days"`
+	PreferredTime string `json:"preferred_time"`
+	Timezone      string `json:"timezone"`
+	LocationMode  string `json:"location_mode"`
+}
+
+// CreatePrivateRequest — POST /api/v1/private-tuition/requests (auth): a parent
+// asks to be matched to a tutor for a subject (no tutor chosen yet).
+func (h *BookingHandler) CreatePrivateRequest(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	var req privateRequestBody
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	studentID, err := uuid.Parse(req.StudentID)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("student_id must be a valid UUID", nil))
+		return
+	}
+	subjectID, err := uuid.Parse(req.SubjectID)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("subject_id must be a valid UUID", nil))
+		return
+	}
+	reqID := requestIDString(r)
+	res, err := h.svc.CreatePrivateTuitionRequest(r.Context(), service.CreatePrivateRequestInput{
+		ParentUserID:  actor.UserID,
+		StudentID:     studentID,
+		SubjectID:     subjectID,
+		Goals:         req.Goals,
+		PreferredDays: req.PreferredDays,
+		PreferredTime: req.PreferredTime,
+		Timezone:      req.Timezone,
+		LocationMode:  req.LocationMode,
+		RequestID:     &reqID,
+		TraceID:       &reqID,
+	})
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, res, nil)
+}
+
+// ListMyPrivateRequests — GET /api/v1/private-tuition/requests (auth).
+func (h *BookingHandler) ListMyPrivateRequests(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	res, err := h.svc.ListMyPrivateTuitionRequests(r.Context(), actor.UserID, 50)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, res, nil)
+}
+
+// GetPrivateRequest — GET /api/v1/private-tuition/requests/{id} (owner/admin).
+func (h *BookingHandler) GetPrivateRequest(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	requestID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("invalid request id", nil))
+		return
+	}
+	res, err := h.svc.GetPrivateTuitionRequest(r.Context(), actor.UserID, requestID, actor.IsAdmin)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, res, nil)
+}
+
+// ListPrivateRequests — GET /api/v1/admin/private-tuition/requests (admin queue).
+func (h *BookingHandler) ListPrivateRequests(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil || !actor.IsAdmin {
+		WriteAppError(w, pkg.Forbidden("admin access required"))
+		return
+	}
+	p := ParsePagination(r)
+	status := r.URL.Query().Get("status")
+	if status == "" {
+		status = p.Filters["status"]
+	}
+	res, total, err := h.svc.ListPrivateTuitionRequests(r.Context(), status, p.Page, p.PageSize)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, res, p.Meta(total))
+}
+
+// MatchPrivateRequest — POST /api/v1/admin/private-tuition/requests/{id}/match
+// (admin): assigns a vetted tutor, creating a payable package + escrow order.
+func (h *BookingHandler) MatchPrivateRequest(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil || !actor.IsAdmin {
+		WriteAppError(w, pkg.Forbidden("admin access required"))
+		return
+	}
+	requestID, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("invalid request id", nil))
+		return
+	}
+	var body struct {
+		TutorProfileID         string `json:"tutor_profile_id"`
+		TotalSessions          int    `json:"total_sessions"`
+		SessionDurationMinutes int    `json:"session_duration_minutes"`
+	}
+	if err := DecodeJSON(r, &body); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	tutorID, err := uuid.Parse(body.TutorProfileID)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+		return
+	}
+	res, err := h.svc.MatchPrivateTuitionRequest(r.Context(), actor.UserID, requestID, tutorID,
+		body.TotalSessions, body.SessionDurationMinutes)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, res, nil)
+}

@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"sort"
 	"sync"
 	"time"
 
@@ -45,6 +46,75 @@ func (m *PrivateReqMemory) GetByID(_ context.Context, id uuid.UUID) (*booking.Pr
 		return &cp, nil
 	}
 	return nil, domain.ErrNotFound
+}
+
+func (m *PrivateReqMemory) SetMatchedTutor(_ context.Context, id, tutorProfileID uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	r, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	r.MatchedTutorID = &tutorProfileID
+	r.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+func (m *PrivateReqMemory) UpdateStatus(_ context.Context, id uuid.UUID, status booking.PrivateRequestStatus) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	r, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	r.Status = status
+	r.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+func (m *PrivateReqMemory) ListByParent(_ context.Context, parentUserID uuid.UUID, limit int) ([]booking.PrivateTuitionRequest, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []booking.PrivateTuitionRequest
+	for _, r := range m.rows {
+		if r.ParentUserID == parentUserID {
+			out = append(out, *r)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
+func (m *PrivateReqMemory) ListAll(_ context.Context, status string, page, pageSize int) ([]booking.PrivateTuitionRequest, int64, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []booking.PrivateTuitionRequest
+	for _, r := range m.rows {
+		if status == "" || string(r.Status) == status {
+			out = append(out, *r)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	total := int64(len(out))
+	limit := pageSize
+	if limit < 1 {
+		limit = 20
+	}
+	start := (page - 1) * limit
+	if start < 0 {
+		start = 0
+	}
+	if start > len(out) {
+		start = len(out)
+	}
+	end := start + limit
+	if end > len(out) {
+		end = len(out)
+	}
+	return out[start:end], total, nil
 }
 
 var _ booking.PrivateTuitionRequestRepository = (*PrivateReqMemory)(nil)

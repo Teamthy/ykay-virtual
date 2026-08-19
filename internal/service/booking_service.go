@@ -112,6 +112,29 @@ type BookingResult struct {
 	Replayed     bool       // true when idempotency key matched an existing order
 }
 
+// CreatePrivateRequestInput — the "request" leg of the managed-matching journey:
+// a parent asks to be matched to a tutor for a subject, without picking one yet.
+type CreatePrivateRequestInput struct {
+	ParentUserID  uuid.UUID
+	StudentID     uuid.UUID
+	SubjectID     uuid.UUID
+	Goals         string
+	PreferredDays string
+	PreferredTime string
+	Timezone      string
+	LocationMode  string
+	RequestID     *string
+	TraceID       *string
+}
+
+// MatchPrivateRequestResult — the "match" leg: an admin assigns a tutor, which
+// creates a payable package + order the parent then pays (escrow).
+type MatchPrivateRequestResult struct {
+	Request *booking.PrivateTuitionRequest
+	Package *booking.PrivatePackage
+	Order   *payment.Order
+}
+
 // CreateCohortBooking — transactional: order + order item + PENDING enrollment
 // + capacity increment (row locked), wallet ensured, audit written. A
 // duplicate idempotency_key returns the existing order untouched (replay).
@@ -342,6 +365,199 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
 	}
 	items, _ := uow.Orders().ListItems(ctx, order.ID)
 	return &BookingResult{Order: order, Items: items, PackageID: &pkg.ID}, nil
+}
+
+// CreatePrivateTuitionRequest — the request leg of managed matching. Unlike
+// CreatePrivateBooking it requires NO tutor and creates NO order: the parent
+// asks to be matched, and an admin assigns a vetted tutor later.
+func (s *BookingService) CreatePrivateTuitionRequest(ctx context.Context, in CreatePrivateRequestInput) (*booking.PrivateTuitionRequest, error) {
+	if err := s.authorizeEnrollment(ctx, in.StudentID, in.ParentUserID); err != nil {
+		return nil, err
+	}
+	if in.SubjectID == uuid.Nil {
+		return nil, fmt.Errorf("%w: subject is required", domain.ErrInvalidInput)
+	}
+	if in.Timezone == "" {
+		in.Timezone = "Africa/Lagos"
+	}
+	if in.LocationMode == "" {
+		in.LocationMode = "ONLINE"
+	}
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer uow.Rollback()
+
+	req := &booking.PrivateTuitionRequest{
+		ParentUserID:     in.ParentUserID,
+		StudentProfileID: in.StudentID,
+		SubjectID:        in.SubjectID,
+		Goals:            strPtrOrNil(in.Goals),
+		PreferredDays:    strPtrOrNil(in.PreferredDays),
+		PreferredTime:    strPtrOrNil(in.PreferredTime),
+		Timezone:         in.Timezone,
+		LocationMode:     in.LocationMode,
+		Status:           booking.PrivatePending,
+	}
+	if err := uow.PrivateRequests().Create(ctx, req); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &in.ParentUserID, identity.AuditCreate, "private_tuition_request",
+		&req.ID, nil, map[string]any{
+			"student_id": in.StudentID, "subject_id": in.SubjectID,
+			"status": req.Status, "request_id": in.RequestID, "trace_id": in.TraceID,
+		}, in.RequestID, in.TraceID)
+	if err := uow.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+// MatchPrivateTuitionRequest — admin assigns a vetted tutor to a pending
+// request. This creates a PENDING_PAYMENT package and a PENDING order for the
+// parent, which they settle through the normal escrow payment flow. The
+// request moves to MATCHED and records the matched tutor.
+func (s *BookingService) MatchPrivateTuitionRequest(ctx context.Context, adminID, requestID, tutorID uuid.UUID, totalSessions, sessionDuration int) (*MatchPrivateRequestResult, error) {
+	if totalSessions < 1 {
+		return nil, fmt.Errorf("%w: total_sessions must be >= 1", domain.ErrInvalidInput)
+	}
+	if sessionDuration < 15 {
+		return nil, fmt.Errorf("%w: session_duration_minutes must be >= 15", domain.ErrInvalidInput)
+	}
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer uow.Rollback()
+
+	req, err := uow.PrivateRequests().GetByID(ctx, requestID)
+	if err != nil {
+		return nil, err
+	}
+	if req.Status != booking.PrivatePending && req.Status != booking.PrivateMatched {
+		return nil, fmt.Errorf("%w: request %s cannot be matched from status %s",
+			domain.ErrConflict, req.ID, req.Status)
+	}
+
+	// Load the published rate and confirm the tutor can teach the requested subject.
+	publishedRate, publishedCurrency, err := s.tutorSubject.SessionRate(ctx, tutorID)
+	if err != nil {
+		return nil, err
+	}
+	if publishedRate <= 0 {
+		return nil, fmt.Errorf("%w: matched tutor has no published session rate", domain.ErrInvalidInput)
+	}
+	if ok, err := s.tutorSubject.TutorCanTeach(ctx, tutorID, req.SubjectID); err != nil {
+		return nil, err
+	} else if !ok {
+		return nil, fmt.Errorf("%w: matched tutor cannot teach the requested subject", domain.ErrForbidden)
+	}
+	currency := publishedCurrency
+	if currency == "" {
+		currency = "NGN"
+	}
+
+	pkg := &booking.PrivatePackage{
+		RequestID:           req.ID,
+		TutorProfileID:      tutorID,
+		StudentProfileID:    req.StudentProfileID,
+		TotalSessions:       totalSessions,
+		SessionDurationMins: sessionDuration,
+		PricePerSession:     publishedRate,
+		TotalPrice:          publishedRate * float64(totalSessions),
+		Currency:            strings.ToUpper(currency),
+		Status:              booking.PrivatePackagePendingPayment,
+	}
+	if err := uow.PrivatePackages().Create(ctx, pkg); err != nil {
+		return nil, err
+	}
+
+	order := &payment.Order{
+		ParentUserID:   req.ParentUserID,
+		StudentID:      &req.StudentProfileID,
+		Status:         payment.OrderPending,
+		Subtotal:       pkg.TotalPrice,
+		DiscountAmount: 0,
+		TotalAmount:    pkg.TotalPrice,
+		Currency:       pkg.Currency,
+	}
+	if err := uow.Orders().Create(ctx, order); err != nil {
+		return nil, err
+	}
+	desc := fmt.Sprintf("Private tuition (matched): %d x %dmin sessions", pkg.TotalSessions, pkg.SessionDurationMins)
+	item := &payment.OrderItem{
+		OrderID:     order.ID,
+		ItemType:    "PRIVATE_PACKAGE",
+		ReferenceID: pkg.ID,
+		Description: &desc,
+		Quantity:    1,
+		UnitPrice:   pkg.TotalPrice,
+		TotalPrice:  pkg.TotalPrice,
+	}
+	if err := uow.Orders().CreateItem(ctx, item); err != nil {
+		return nil, err
+	}
+	if _, err := uow.Wallets().GetOrCreate(ctx, req.ParentUserID, order.Currency); err != nil {
+		return nil, err
+	}
+
+	if err := uow.PrivateRequests().SetMatchedTutor(ctx, req.ID, tutorID); err != nil {
+		return nil, err
+	}
+	if err := uow.PrivateRequests().UpdateStatus(ctx, req.ID, booking.PrivateMatched); err != nil {
+		return nil, err
+	}
+
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "private_tuition_request",
+		&req.ID, nil, map[string]any{
+			"matched_tutor_id": tutorID, "status": booking.PrivateMatched,
+			"package_id": pkg.ID, "order_id": order.ID, "total": order.TotalAmount,
+		}, nil, nil)
+
+	if err := uow.Commit(ctx); err != nil {
+		return nil, err
+	}
+	req.MatchedTutorID = &tutorID
+	req.Status = booking.PrivateMatched
+	return &MatchPrivateRequestResult{Request: req, Package: pkg, Order: order}, nil
+}
+
+// GetPrivateTuitionRequest — owner or admin view of one request.
+func (s *BookingService) GetPrivateTuitionRequest(ctx context.Context, actorUserID, requestID uuid.UUID, isAdmin bool) (*booking.PrivateTuitionRequest, error) {
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer uow.Rollback()
+	req, err := uow.PrivateRequests().GetByID(ctx, requestID)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin && req.ParentUserID != actorUserID {
+		return nil, domain.ErrForbidden
+	}
+	return req, nil
+}
+
+// ListMyPrivateTuitionRequests — a parent's own requests (owner only).
+func (s *BookingService) ListMyPrivateTuitionRequests(ctx context.Context, parentUserID uuid.UUID, limit int) ([]booking.PrivateTuitionRequest, error) {
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer uow.Rollback()
+	return uow.PrivateRequests().ListByParent(ctx, parentUserID, limit)
+}
+
+// ListPrivateTuitionRequests — admin matching queue.
+func (s *BookingService) ListPrivateTuitionRequests(ctx context.Context, status string, page, pageSize int) ([]booking.PrivateTuitionRequest, int64, error) {
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer uow.Rollback()
+	return uow.PrivateRequests().ListAll(ctx, status, page, pageSize)
 }
 
 // GetOrder — order + items for the checkout status page.
