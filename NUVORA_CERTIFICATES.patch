@@ -1,0 +1,1258 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index 78a91ce..b18d56b 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -1004,6 +1004,46 @@ paths:
+         '202':
+           description: Message queued for WhatsApp delivery
+ 
++  /admin/cohorts/{cohortId}/certificates:
++    post:
++      tags: [admin]
++      summary: Issue completion certificates to a completed cohort's confirmed enrollments
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
++      responses:
++        '201': { description: Certificates issued (idempotent) }
++        '409': { description: Cohort is not COMPLETED }
++
++  /me/certificates:
++    get:
++      tags: [learning]
++      summary: List the caller's completion certificates (own + linked learners)
++      security: [{ sessionCookie: [] }]
++      responses:
++        '200': { description: Certificates }
++
++  /me/certificates/{id}:
++    get:
++      tags: [learning]
++      summary: Get one of the caller's certificates
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
++      responses:
++        '200': { description: Certificate }
++        '403': { description: Not owned by the caller }
++
++  /certificates/verify:
++    get:
++      tags: [public]
++      summary: Verify a certificate by its credential number
++      parameters:
++        - { name: credential, in: query, required: true, schema: { type: string, example: NUV-000123 } }
++      responses:
++        '200': { description: Valid certificate }
++        '404': { description: Not found }
++
+   /payments/initiate:
+     post:
+       tags: [payments]
+diff --git a/client/app/account/certificates/page.tsx b/client/app/account/certificates/page.tsx
+new file mode 100644
+index 0000000..d914b8c
+--- /dev/null
++++ b/client/app/account/certificates/page.tsx
+@@ -0,0 +1,69 @@
++"use client";
++
++import { useQuery } from "@tanstack/react-query";
++import { Award, ShieldCheck, GraduationCap } from "lucide-react";
++import { listMyCertificates } from "@/features/certificates/api";
++import { EmptyState } from "@/components/ui/empty-state";
++import { Skeleton } from "@/components/ui/skeleton";
++
++export default function CertificatesPage() {
++  const certs = useQuery({
++    queryKey: ["me", "certificates"],
++    queryFn: listMyCertificates,
++    staleTime: 30_000,
++  });
++
++  return (
++    <div className="space-y-6">
++      <div>
++        <h1 className="text-2xl font-extrabold text-brand-navy flex items-center gap-2">
++          <Award className="text-brand-gold" /> My certificates
++        </h1>
++        <p className="text-ink-500 text-sm mt-1">
++          Credentials you earn when you complete a cohort. Each has a unique, verifiable number.
++        </p>
++      </div>
++
++      {certs.isLoading ? (
++        <div className="grid gap-4 md:grid-cols-2">
++          {[0, 1].map((i) => (
++            <Skeleton key={i} className="h-40 rounded-2xl" />
++          ))}
++        </div>
++      ) : (certs.data ?? []).length === 0 ? (
++        <EmptyState
++          icon={<GraduationCap size={20} />}
++          title="No certificates yet"
++          description="Complete a cohort and your completion certificate will appear here."
++        />
++      ) : (
++        <div className="grid gap-4 md:grid-cols-2">
++          {(certs.data ?? []).map((c) => (
++            <div
++              key={c.id}
++              className="rounded-2xl border border-brand-gold/40 bg-gradient-to-br from-white to-brand-gold/5 p-6 shadow-soft"
++            >
++              <div className="flex items-start justify-between">
++                <span className="grid h-10 w-10 place-items-center rounded-full bg-brand-navy text-brand-gold">
++                  <Award size={18} />
++                </span>
++                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
++                  <ShieldCheck size={11} /> Verified
++                </span>
++              </div>
++              <h2 className="mt-3 font-display text-lg font-bold text-brand-navy">{c.title}</h2>
++              <p className="text-sm text-ink-600">
++                This certifies that <strong className="text-ink-800">{c.learner_name}</strong>{" "}
++                {c.programme_title ? <>completed <strong className="text-ink-800">{c.programme_title}</strong></> : "completed the programme"}
++              </p>
++              <p className="mt-3 text-xs text-ink-500">
++                Issued by {c.issued_by} · {new Date(c.issued_at).toLocaleDateString()}
++              </p>
++              <p className="mt-1 font-mono text-[11px] text-ink-400">#{c.credential_number}</p>
++            </div>
++          ))}
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/client/features/certificates/api.ts b/client/features/certificates/api.ts
+new file mode 100644
+index 0000000..6ec78e0
+--- /dev/null
++++ b/client/features/certificates/api.ts
+@@ -0,0 +1,36 @@
++import { apiFetch } from "@/lib/api";
++
++export type Certificate = {
++  id: string;
++  student_profile_id: string;
++  cohort_id?: string | null;
++  programme_id?: string | null;
++  learner_name: string;
++  title: string;
++  programme_title?: string | null;
++  credential_number: string;
++  issued_by: string;
++  issued_at: string;
++};
++
++/** The caller's completion certificates (own + linked learners). */
++export async function listMyCertificates(): Promise<Certificate[]> {
++  const res = await apiFetch<Certificate[]>("/me/certificates");
++  return res.data ?? [];
++}
++
++export type VerifiedCertificate = {
++  valid: boolean;
++  learner_name: string;
++  title: string;
++  programme_title?: string | null;
++  issued_by: string;
++  issued_at: string;
++  credential_number: string;
++};
++
++/** Public verification of a certificate by its credential number. */
++export async function verifyCertificate(credential: string): Promise<VerifiedCertificate> {
++  const res = await apiFetch<VerifiedCertificate>(`/certificates/verify?credential=${encodeURIComponent(credential)}`);
++  return res.data;
++}
+diff --git a/client/lib/app-nav.ts b/client/lib/app-nav.ts
+index 6def8dc..f1e3bb9 100644
+--- a/client/lib/app-nav.ts
++++ b/client/lib/app-nav.ts
+@@ -19,6 +19,7 @@ import {
+   BarChart3,
+   ClipboardCheck,
+   UserPlus,
++  Award,
+ } from "lucide-react";
+ 
+ export type AppNavItem = {
+@@ -39,6 +40,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
+     items: [
+       { href: "/dashboard", label: "Family dashboard", icon: LayoutDashboard, exact: true },
+       { href: "/lms", label: "Learning", icon: GraduationCap },
++      { href: "/account/certificates", label: "Certificates", icon: Award },
+       { href: "/messages", label: "Messages", icon: MessageSquare },
+       { href: "/notifications", label: "Notifications", icon: Bell },
+       { href: "/account", label: "Account", icon: Settings },
+@@ -50,6 +52,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
+     items: [
+       { href: "/student-dashboard", label: "My dashboard", icon: LayoutDashboard, exact: true },
+       { href: "/lms", label: "My learning", icon: BookOpen },
++      { href: "/account/certificates", label: "Certificates", icon: Award },
+       { href: "/messages", label: "Messages", icon: MessageSquare },
+       { href: "/notifications", label: "Notifications", icon: Bell },
+       { href: "/account", label: "Account", icon: Settings },
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index c95c1c3..890fea7 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -209,6 +209,23 @@ func main() {
+ 		}(),
+ 		notification.NewWhatsAppSender(),
+ 	)
++	// Learner completion certificates (virtual-school item).
++	certSvc := service.NewCertificateService(repos.UoWFactory).
++		WithStudentReader(func(ctx context.Context, id uuid.UUID) (string, error) {
++			p, err := repos.Students.FindByID(ctx, id)
++			if err != nil {
++				return "", err
++			}
++			return strings.TrimSpace(p.FirstName + " " + p.LastName), nil
++		}).
++		WithOwnership(
++			func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error) {
++				return repos.Students.FindByUserID(ctx, userID)
++			},
++			func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
++				return repos.Students.ListByParentUserID(ctx, parentUserID)
++			},
++		)
+ 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
+ 		ClientID:     cfg.GoogleClientID,
+ 		ClientSecret: cfg.GoogleClientSecret,
+@@ -344,13 +361,14 @@ func main() {
+ 	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
+ 
+ 	handlers := &httpapi.Handlers{
+-		Subjects:   httpapi.NewSubjectHandler(subjectSvc),
+-		Tutors:     httpapi.NewTutorHandler(tutorSvc),
+-		Programmes: httpapi.NewProgrammeHandler(programmeSvc),
+-		Cohorts:    httpapi.NewCohortHandler(cohortSvc),
+-		Bookings:   httpapi.NewBookingHandler(bookingSvc),
+-		Coupons:    httpapi.NewCouponHandler(couponSvc),
+-		Notifier:   httpapi.NewNotifierHandler(notifierSvc),
++		Subjects:     httpapi.NewSubjectHandler(subjectSvc),
++		Tutors:       httpapi.NewTutorHandler(tutorSvc),
++		Programmes:   httpapi.NewProgrammeHandler(programmeSvc),
++		Cohorts:      httpapi.NewCohortHandler(cohortSvc),
++		Bookings:     httpapi.NewBookingHandler(bookingSvc),
++		Coupons:      httpapi.NewCouponHandler(couponSvc),
++		Notifier:     httpapi.NewNotifierHandler(notifierSvc),
++		Certificates: httpapi.NewCertificateHandler(certSvc),
+ 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
+ 			payment.ProviderPaystack:    cfg.PaystackSecret,
+ 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
+diff --git a/internal/domain/certificate/entity.go b/internal/domain/certificate/entity.go
+new file mode 100644
+index 0000000..1dcd91a
+--- /dev/null
++++ b/internal/domain/certificate/entity.go
+@@ -0,0 +1,26 @@
++// Package certificate — learner completion certificates issued when a cohort
++// is completed (virtual-school item). A certificate is a durable, tamper-evident
++// credential: unique credential_number, learner + programme details, issuer,
++// and the cohort it was earned from.
++package certificate
++
++import (
++	"time"
++
++	"github.com/google/uuid"
++)
++
++// Certificate — one issued completion credential.
++type Certificate struct {
++	ID               uuid.UUID  `json:"id"`
++	StudentProfileID uuid.UUID  `json:"student_profile_id"`
++	CohortID         *uuid.UUID `json:"cohort_id,omitempty"`
++	ProgrammeID      *uuid.UUID `json:"programme_id,omitempty"`
++	LearnerName      string     `json:"learner_name"`
++	Title            string     `json:"title"`
++	ProgrammeTitle   *string    `json:"programme_title,omitempty"`
++	CredentialNumber string     `json:"credential_number"`
++	IssuedBy         string     `json:"issued_by"`
++	IssuedAt         time.Time  `json:"issued_at"`
++	CreatedAt        time.Time  `json:"created_at"`
++}
+diff --git a/internal/domain/certificate/repository.go b/internal/domain/certificate/repository.go
+new file mode 100644
+index 0000000..686881d
+--- /dev/null
++++ b/internal/domain/certificate/repository.go
+@@ -0,0 +1,21 @@
++package certificate
++
++import (
++	"context"
++
++	"github.com/google/uuid"
++)
++
++// CertificateRepository — storage for issued certificates.
++type CertificateRepository interface {
++	Create(ctx context.Context, c *Certificate) error
++	GetByID(ctx context.Context, id uuid.UUID) (*Certificate, error)
++	// GetByCredential returns a certificate by its public credential number
++	// (for verification).
++	GetByCredential(ctx context.Context, number string) (*Certificate, error)
++	// GetForStudentAndCohort returns an existing certificate for the learner +
++	// cohort (nil when none), so issuance is idempotent.
++	GetForStudentAndCohort(ctx context.Context, studentProfileID, cohortID uuid.UUID) (*Certificate, error)
++	// ListByStudent returns a learner's certificates, newest first.
++	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Certificate, error)
++}
+diff --git a/internal/repository/memory/certificate_memory.go b/internal/repository/memory/certificate_memory.go
+new file mode 100644
+index 0000000..7c4ff9d
+--- /dev/null
++++ b/internal/repository/memory/certificate_memory.go
+@@ -0,0 +1,93 @@
++package memory
++
++import (
++	"context"
++	"sort"
++	"sync"
++	"time"
++
++	"ykay-virtual/internal/domain"
++	"ykay-virtual/internal/domain/certificate"
++
++	"github.com/google/uuid"
++)
++
++// CertificateMemory — in-memory certificate store (tests / dev fallback).
++type CertificateMemory struct {
++	mu     sync.RWMutex
++	rows   map[uuid.UUID]*certificate.Certificate
++	byCred map[string]uuid.UUID
++}
++
++func NewCertificateMemory() *CertificateMemory {
++	return &CertificateMemory{rows: map[uuid.UUID]*certificate.Certificate{}, byCred: map[string]uuid.UUID{}}
++}
++
++func (m *CertificateMemory) Create(_ context.Context, c *certificate.Certificate) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	if c.ID == uuid.Nil {
++		c.ID = uuid.New()
++	}
++	c.CreatedAt = time.Now().UTC()
++	if c.IssuedAt.IsZero() {
++		c.IssuedAt = c.CreatedAt
++	}
++	m.rows[c.ID] = c
++	m.byCred[c.CredentialNumber] = c.ID
++	return nil
++}
++
++func (m *CertificateMemory) GetByID(_ context.Context, id uuid.UUID) (*certificate.Certificate, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	if c, ok := m.rows[id]; ok {
++		cp := *c
++		return &cp, nil
++	}
++	return nil, domain.ErrNotFound
++}
++
++func (m *CertificateMemory) GetByCredential(_ context.Context, number string) (*certificate.Certificate, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	id, ok := m.byCred[number]
++	if !ok {
++		return nil, domain.ErrNotFound
++	}
++	if c, ok := m.rows[id]; ok {
++		cp := *c
++		return &cp, nil
++	}
++	return nil, domain.ErrNotFound
++}
++
++func (m *CertificateMemory) GetForStudentAndCohort(_ context.Context, studentProfileID, cohortID uuid.UUID) (*certificate.Certificate, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	for _, c := range m.rows {
++		if c.StudentProfileID == studentProfileID && c.CohortID != nil && *c.CohortID == cohortID {
++			cp := *c
++			return &cp, nil
++		}
++	}
++	return nil, nil
++}
++
++func (m *CertificateMemory) ListByStudent(_ context.Context, studentProfileID uuid.UUID, limit int) ([]certificate.Certificate, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	out := []certificate.Certificate{}
++	for _, c := range m.rows {
++		if c.StudentProfileID == studentProfileID {
++			out = append(out, *c)
++		}
++	}
++	sort.Slice(out, func(i, j int) bool { return out[i].IssuedAt.After(out[j].IssuedAt) })
++	if limit > 0 && len(out) > limit {
++		out = out[:limit]
++	}
++	return out, nil
++}
++
++var _ certificate.CertificateRepository = (*CertificateMemory)(nil)
+diff --git a/internal/repository/memory/uow.go b/internal/repository/memory/uow.go
+index db705c0..049f8cf 100644
+--- a/internal/repository/memory/uow.go
++++ b/internal/repository/memory/uow.go
+@@ -5,6 +5,7 @@ import (
+ 
+ 	"ykay-virtual/internal/domain/academics"
+ 	"ykay-virtual/internal/domain/booking"
++	"ykay-virtual/internal/domain/certificate"
+ 	"ykay-virtual/internal/domain/identity"
+ 	"ykay-virtual/internal/domain/payment"
+ 	"ykay-virtual/internal/domain/tutor"
+@@ -16,21 +17,22 @@ import (
+ // Used by unit tests and the dev fallback (no Postgres available).
+ 
+ type MemoryUnitOfWork struct {
+-	orders      *OrderMemory
+-	payments    *PaymentMemory
+-	webhooks    *WebhookMemory
+-	escrow      *EscrowMemory
+-	payouts     *PayoutMemory
+-	wallets     *WalletMemory
+-	enrollments *EnrollmentMemory
+-	cohorts     *CohortMemory
+-	privateReq  *PrivateReqMemory
+-	privatePkg  *PrivatePackageMemory
+-	vetting     *VettingMemory
+-	tutorSubj   *VettingTutorSubjectMemory
+-	auditLogs   *AuditLogMemory
+-	lessonLinks *LessonMemory
+-	coupons     *CouponMemory
++	orders       *OrderMemory
++	payments     *PaymentMemory
++	webhooks     *WebhookMemory
++	escrow       *EscrowMemory
++	payouts      *PayoutMemory
++	wallets      *WalletMemory
++	enrollments  *EnrollmentMemory
++	cohorts      *CohortMemory
++	privateReq   *PrivateReqMemory
++	privatePkg   *PrivatePackageMemory
++	vetting      *VettingMemory
++	tutorSubj    *VettingTutorSubjectMemory
++	auditLogs    *AuditLogMemory
++	lessonLinks  *LessonMemory
++	coupons      *CouponMemory
++	certificates *CertificateMemory
+ }
+ 
+ func (u *MemoryUnitOfWork) LessonLinks() booking.LessonParticipantLinker    { return u.lessonLinks }
+@@ -50,6 +52,7 @@ func (u *MemoryUnitOfWork) Vetting() vetting.VettingRepository                {
+ func (u *MemoryUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository       { return u.tutorSubj }
+ func (u *MemoryUnitOfWork) AuditLogs() identity.AuditLogRepository            { return u.auditLogs }
+ func (u *MemoryUnitOfWork) Coupons() payment.CouponRepository                 { return u.coupons }
++func (u *MemoryUnitOfWork) Certificates() certificate.CertificateRepository   { return u.certificates }
+ 
+ func (u *MemoryUnitOfWork) Commit(_ context.Context) error { return nil }
+ func (u *MemoryUnitOfWork) Rollback()                      {}
+@@ -64,21 +67,22 @@ func NewMemoryUnitOfWorkFactory(store *MemoryStore) *MemoryUnitOfWorkFactory {
+ 
+ func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWork, error) {
+ 	return &MemoryUnitOfWork{
+-		orders:      f.store.Orders,
+-		payments:    f.store.Payments,
+-		webhooks:    f.store.Webhooks,
+-		escrow:      f.store.Escrow,
+-		payouts:     f.store.Payouts,
+-		wallets:     f.store.Wallets,
+-		enrollments: f.store.Enrollments,
+-		cohorts:     f.store.Cohorts,
+-		privateReq:  f.store.PrivateReqs,
+-		privatePkg:  f.store.PrivatePkgs,
+-		vetting:     f.store.Vetting,
+-		tutorSubj:   f.store.TutorSubj,
+-		auditLogs:   f.store.AuditLogs,
+-		lessonLinks: f.store.Lessons,
+-		coupons:     f.store.Coupons,
++		orders:       f.store.Orders,
++		payments:     f.store.Payments,
++		webhooks:     f.store.Webhooks,
++		escrow:       f.store.Escrow,
++		payouts:      f.store.Payouts,
++		wallets:      f.store.Wallets,
++		enrollments:  f.store.Enrollments,
++		cohorts:      f.store.Cohorts,
++		privateReq:   f.store.PrivateReqs,
++		privatePkg:   f.store.PrivatePkgs,
++		vetting:      f.store.Vetting,
++		tutorSubj:    f.store.TutorSubj,
++		auditLogs:    f.store.AuditLogs,
++		lessonLinks:  f.store.Lessons,
++		coupons:      f.store.Coupons,
++		certificates: f.store.Certificates,
+ 	}, nil
+ }
+ 
+@@ -98,6 +102,7 @@ type MemoryStore struct {
+ 	PrivateReqs    *PrivateReqMemory
+ 	PrivatePkgs    *PrivatePackageMemory
+ 	Coupons        *CouponMemory
++	Certificates   *CertificateMemory
+ 	Vetting        *VettingMemory
+ 	TutorSubj      *VettingTutorSubjectMemory
+ 	Availability   *AvailabilityMemory
+@@ -139,6 +144,7 @@ func NewMemoryStore() *MemoryStore {
+ 		PrivateReqs:  NewPrivateReqMemory(),
+ 		PrivatePkgs:  NewPrivatePackageMemory(),
+ 		Coupons:      NewCouponMemory(),
++		Certificates: NewCertificateMemory(),
+ 		Vetting:      NewVettingMemory(),
+ 		TutorSubj:    NewVettingTutorSubjectMemory(),
+ 		Availability: NewAvailabilityMemory(),
+diff --git a/internal/repository/postgres/certificate_repo.go b/internal/repository/postgres/certificate_repo.go
+new file mode 100644
+index 0000000..0c95624
+--- /dev/null
++++ b/internal/repository/postgres/certificate_repo.go
+@@ -0,0 +1,114 @@
++package postgres
++
++import (
++	"context"
++	"database/sql"
++	"errors"
++	"fmt"
++
++	"ykay-virtual/internal/domain"
++	"ykay-virtual/internal/domain/certificate"
++
++	"github.com/google/uuid"
++)
++
++type CertificateRepo struct{ db TxQuerier }
++
++func NewCertificateRepo(db TxQuerier) *CertificateRepo { return &CertificateRepo{db: db} }
++
++const certificateColumns = `id, student_profile_id, cohort_id, programme_id, learner_name, title,
++	programme_title, credential_number, issued_by, issued_at, created_at`
++
++func scanCertificate(row interface{ Scan(...any) error }) (*certificate.Certificate, error) {
++	var c certificate.Certificate
++	var cohortID, programmeID uuidNull
++	var programmeTitle sql.NullString
++	if err := row.Scan(&c.ID, &c.StudentProfileID, &cohortID, &programmeID, &c.LearnerName, &c.Title,
++		&programmeTitle, &c.CredentialNumber, &c.IssuedBy, &c.IssuedAt, &c.CreatedAt); err != nil {
++		return nil, err
++	}
++	if cohortID.Valid {
++		c.CohortID = &cohortID.UUID
++	}
++	if programmeID.Valid {
++		c.ProgrammeID = &programmeID.UUID
++	}
++	if programmeTitle.Valid {
++		c.ProgrammeTitle = &programmeTitle.String
++	}
++	return &c, nil
++}
++
++func (r *CertificateRepo) Create(ctx context.Context, c *certificate.Certificate) error {
++	err := r.db.QueryRowContext(ctx, `
++		INSERT INTO certificates (student_profile_id, cohort_id, programme_id, learner_name, title,
++			programme_title, credential_number, issued_by, issued_at)
++		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
++		RETURNING id, created_at`,
++		c.StudentProfileID, c.CohortID, c.ProgrammeID, c.LearnerName, c.Title,
++		c.ProgrammeTitle, c.CredentialNumber, c.IssuedBy, c.IssuedAt,
++	).Scan(&c.ID, &c.CreatedAt)
++	if err != nil {
++		if isUniqueViolation(err) {
++			return fmt.Errorf("%w: certificate already issued", domain.ErrAlreadyExists)
++		}
++		return fmt.Errorf("create certificate: %w", err)
++	}
++	return nil
++}
++
++func (r *CertificateRepo) GetByID(ctx context.Context, id uuid.UUID) (*certificate.Certificate, error) {
++	return r.get(ctx, "id = $1", id)
++}
++
++func (r *CertificateRepo) GetByCredential(ctx context.Context, number string) (*certificate.Certificate, error) {
++	return r.get(ctx, "credential_number = $1", number)
++}
++
++func (r *CertificateRepo) get(ctx context.Context, where string, arg any) (*certificate.Certificate, error) {
++	row := r.db.QueryRowContext(ctx, "SELECT "+certificateColumns+" FROM certificates WHERE "+where, arg)
++	c, err := scanCertificate(row)
++	if err != nil {
++		if errors.Is(err, sql.ErrNoRows) {
++			return nil, domain.ErrNotFound
++		}
++		return nil, err
++	}
++	return c, nil
++}
++
++func (r *CertificateRepo) GetForStudentAndCohort(ctx context.Context, studentProfileID, cohortID uuid.UUID) (*certificate.Certificate, error) {
++	row := r.db.QueryRowContext(ctx, `SELECT `+certificateColumns+
++		` FROM certificates WHERE student_profile_id=$1 AND cohort_id=$2`, studentProfileID, cohortID)
++	c, err := scanCertificate(row)
++	if err != nil {
++		if errors.Is(err, sql.ErrNoRows) {
++			return nil, nil
++		}
++		return nil, err
++	}
++	return c, nil
++}
++
++func (r *CertificateRepo) ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]certificate.Certificate, error) {
++	if limit < 1 || limit > 100 {
++		limit = 50
++	}
++	rows, err := r.db.QueryContext(ctx, `SELECT `+certificateColumns+
++		` FROM certificates WHERE student_profile_id=$1 ORDER BY issued_at DESC LIMIT $2`, studentProfileID, limit)
++	if err != nil {
++		return nil, fmt.Errorf("list certificates: %w", err)
++	}
++	defer rows.Close()
++	out := []certificate.Certificate{}
++	for rows.Next() {
++		c, err := scanCertificate(rows)
++		if err != nil {
++			return nil, err
++		}
++		out = append(out, *c)
++	}
++	return out, rows.Err()
++}
++
++var _ certificate.CertificateRepository = (*CertificateRepo)(nil)
+diff --git a/internal/repository/postgres/uow.go b/internal/repository/postgres/uow.go
+index 5a71d82..b79f3d0 100644
+--- a/internal/repository/postgres/uow.go
++++ b/internal/repository/postgres/uow.go
+@@ -6,6 +6,7 @@ import (
+ 	"fmt"
+ 
+ 	"ykay-virtual/internal/domain/booking"
++	"ykay-virtual/internal/domain/certificate"
+ 	"ykay-virtual/internal/domain/identity"
+ 	"ykay-virtual/internal/domain/payment"
+ 	"ykay-virtual/internal/domain/tutor"
+@@ -18,21 +19,22 @@ import (
+ type PgUnitOfWork struct {
+ 	tx *sql.Tx
+ 
+-	orders      *OrderRepo
+-	payments    *PaymentRepo
+-	webhooks    *PaymentWebhookRepo
+-	escrow      *EscrowHoldRepo
+-	payouts     *PayoutRepo
+-	wallets     *WalletRepo
+-	enrollments *CohortEnrollmentRepo
+-	cohorts     *CohortRepo
+-	privateReq  *PrivateTuitionRequestRepo
+-	privatePkg  *PrivatePackageRepo
+-	vetting     *VettingRepo
+-	tutorSubj   *TutorSubjectRepo
+-	auditLogs   *AuditLogRepo
+-	lessonLinks *LessonRepo
+-	coupons     *CouponRepo
++	orders       *OrderRepo
++	payments     *PaymentRepo
++	webhooks     *PaymentWebhookRepo
++	escrow       *EscrowHoldRepo
++	payouts      *PayoutRepo
++	wallets      *WalletRepo
++	enrollments  *CohortEnrollmentRepo
++	cohorts      *CohortRepo
++	privateReq   *PrivateTuitionRequestRepo
++	privatePkg   *PrivatePackageRepo
++	vetting      *VettingRepo
++	tutorSubj    *TutorSubjectRepo
++	auditLogs    *AuditLogRepo
++	lessonLinks  *LessonRepo
++	coupons      *CouponRepo
++	certificates *CertificateRepo
+ }
+ 
+ func (u *PgUnitOfWork) LessonLinks() booking.LessonParticipantLinker             { return u.lessonLinks }
+@@ -50,6 +52,7 @@ func (u *PgUnitOfWork) Vetting() vetting.VettingRepository
+ func (u *PgUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository              { return u.tutorSubj }
+ func (u *PgUnitOfWork) AuditLogs() identity.AuditLogRepository                   { return u.auditLogs }
+ func (u *PgUnitOfWork) Coupons() payment.CouponRepository                        { return u.coupons }
++func (u *PgUnitOfWork) Certificates() certificate.CertificateRepository          { return u.certificates }
+ 
+ func (u *PgUnitOfWork) Commit(ctx context.Context) error {
+ 	if err := u.tx.Commit(); err != nil {
+@@ -72,22 +75,23 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
+ 		return nil, fmt.Errorf("begin uow: %w", err)
+ 	}
+ 	return &PgUnitOfWork{
+-		tx:          tx,
+-		orders:      NewOrderRepo(tx),
+-		payments:    NewPaymentRepo(tx),
+-		webhooks:    NewPaymentWebhookRepo(tx),
+-		escrow:      NewEscrowHoldRepo(tx),
+-		payouts:     NewPayoutRepo(tx),
+-		wallets:     NewWalletRepo(tx),
+-		enrollments: NewCohortEnrollmentRepo(tx),
+-		cohorts:     NewCohortRepo(tx),
+-		privateReq:  NewPrivateTuitionRequestRepo(tx),
+-		privatePkg:  NewPrivatePackageRepo(tx),
+-		vetting:     NewVettingRepo(tx),
+-		tutorSubj:   NewTutorSubjectRepo(tx),
+-		auditLogs:   NewAuditLogRepo(tx),
+-		lessonLinks: NewLessonRepo(tx),
+-		coupons:     NewCouponRepo(tx),
++		tx:           tx,
++		orders:       NewOrderRepo(tx),
++		payments:     NewPaymentRepo(tx),
++		webhooks:     NewPaymentWebhookRepo(tx),
++		escrow:       NewEscrowHoldRepo(tx),
++		payouts:      NewPayoutRepo(tx),
++		wallets:      NewWalletRepo(tx),
++		enrollments:  NewCohortEnrollmentRepo(tx),
++		cohorts:      NewCohortRepo(tx),
++		privateReq:   NewPrivateTuitionRequestRepo(tx),
++		privatePkg:   NewPrivatePackageRepo(tx),
++		vetting:      NewVettingRepo(tx),
++		tutorSubj:    NewTutorSubjectRepo(tx),
++		auditLogs:    NewAuditLogRepo(tx),
++		lessonLinks:  NewLessonRepo(tx),
++		coupons:      NewCouponRepo(tx),
++		certificates: NewCertificateRepo(tx),
+ 	}, nil
+ }
+ 
+diff --git a/internal/repository/uow.go b/internal/repository/uow.go
+index 7d7486a..b217447 100644
+--- a/internal/repository/uow.go
++++ b/internal/repository/uow.go
+@@ -4,6 +4,7 @@ import (
+ 	"context"
+ 
+ 	"ykay-virtual/internal/domain/booking"
++	"ykay-virtual/internal/domain/certificate"
+ 	"ykay-virtual/internal/domain/identity"
+ 	"ykay-virtual/internal/domain/payment"
+ 	"ykay-virtual/internal/domain/tutor"
+@@ -26,6 +27,7 @@ type UnitOfWork interface {
+ 	Payouts() payment.PayoutRepository
+ 	Wallets() payment.WalletRepository
+ 	Coupons() payment.CouponRepository
++	Certificates() certificate.CertificateRepository
+ 	Enrollments() booking.CohortEnrollmentRepository
+ 	Cohorts() booking.CohortRepository
+ 	PrivateRequests() booking.PrivateTuitionRequestRepository
+diff --git a/internal/service/certificate_service.go b/internal/service/certificate_service.go
+new file mode 100644
+index 0000000..8478834
+--- /dev/null
++++ b/internal/service/certificate_service.go
+@@ -0,0 +1,254 @@
++package service
++
++import (
++	"context"
++	"crypto/rand"
++	"errors"
++	"fmt"
++	"math/big"
++	"time"
++
++	"ykay-virtual/internal/domain"
++	"ykay-virtual/internal/domain/booking"
++	"ykay-virtual/internal/domain/certificate"
++	"ykay-virtual/internal/domain/identity"
++	"ykay-virtual/internal/repository"
++
++	"github.com/google/uuid"
++)
++
++// CertificateService — issues and serves learner completion certificates.
++type CertificateService struct {
++	uows repository.UnitOfWorkFactory
++	// studentName resolves a student profile to a display name (optional).
++	studentName func(ctx context.Context, studentProfileID uuid.UUID) (string, error)
++	// programmeTitle resolves a programme id to its title (optional).
++	programmeTitle func(ctx context.Context, programmeID uuid.UUID) (string, error)
++	// studentByUserID returns the actor's own student profile, if any.
++	studentByUserID func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error)
++	// learnersForParent returns the learner profiles a parent user is linked to.
++	learnersForParent func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error)
++	now               func() time.Time
++}
++
++func NewCertificateService(uows repository.UnitOfWorkFactory) *CertificateService {
++	return &CertificateService{uows: uows, now: time.Now}
++}
++
++// WithStudentReader wires a student-name resolver.
++func (s *CertificateService) WithStudentReader(fn func(ctx context.Context, id uuid.UUID) (string, error)) *CertificateService {
++	s.studentName = fn
++	return s
++}
++
++// WithProgrammeReader wires a programme-title resolver.
++func (s *CertificateService) WithProgrammeReader(fn func(ctx context.Context, id uuid.UUID) (string, error)) *CertificateService {
++	s.programmeTitle = fn
++	return s
++}
++
++// WithOwnership wires the resolvers used to determine which student profiles
++// an actor may view certificates for (own profile + linked learners).
++func (s *CertificateService) WithOwnership(
++	studentByUserID func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error),
++	learnersForParent func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error),
++) *CertificateService {
++	s.studentByUserID = studentByUserID
++	s.learnersForParent = learnersForParent
++	return s
++}
++
++// Issuer is the party listed as issuing the credential.
++const Issuer = "NUVORA Academy"
++
++// IssueForCohort issues a certificate to every CONFIRMED enrollment of a
++// completed cohort (idempotent: an existing certificate for a learner+cohort
++// is skipped). Returns the certificates issued.
++func (s *CertificateService) IssueForCohort(ctx context.Context, cohortID uuid.UUID) ([]certificate.Certificate, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++
++	cohort, err := uow.Cohorts().GetByID(ctx, cohortID)
++	if err != nil {
++		return nil, err
++	}
++	if cohort.Status != booking.CohortCompleted {
++		return nil, fmt.Errorf("%w: certificates can only be issued for a COMPLETED cohort (current %s)",
++			domain.ErrConflict, cohort.Status)
++	}
++
++	enrollments, err := uow.Enrollments().ListByCohort(ctx, cohortID)
++	if err != nil {
++		return nil, err
++	}
++
++	var programmeTitle *string
++	if s.programmeTitle != nil && cohort.ProgrammeID != uuid.Nil {
++		if t, err := s.programmeTitle(ctx, cohort.ProgrammeID); err == nil && t != "" {
++			programmeTitle = &t
++		}
++	}
++
++	issued := []certificate.Certificate{}
++	now := s.now().UTC()
++	for _, e := range enrollments {
++		if e.Status != booking.EnrollmentConfirmed {
++			continue
++		}
++		existing, err := uow.Certificates().GetForStudentAndCohort(ctx, e.StudentProfileID, cohortID)
++		if err != nil {
++			return nil, err
++		}
++		if existing != nil {
++			continue // already issued
++		}
++		learnerName := "Learner"
++		if s.studentName != nil {
++			if n, err := s.studentName(ctx, e.StudentProfileID); err == nil && n != "" {
++				learnerName = n
++			}
++		}
++		num, err := newCredentialNumber(uow)
++		if err != nil {
++			return nil, err
++		}
++		c := &certificate.Certificate{
++			StudentProfileID: e.StudentProfileID,
++			CohortID:         &cohortID,
++			ProgrammeID:      &cohort.ProgrammeID,
++			LearnerName:      learnerName,
++			Title:            "Completion Certificate",
++			ProgrammeTitle:   programmeTitle,
++			CredentialNumber: num,
++			IssuedBy:         Issuer,
++			IssuedAt:         now,
++		}
++		if err := uow.Certificates().Create(ctx, c); err != nil {
++			// Unique (student, cohort) guard handles races across retries.
++			if errors.Is(err, domain.ErrAlreadyExists) {
++				continue
++			}
++			return nil, err
++		}
++		issued = append(issued, *c)
++	}
++
++	if err := uow.Commit(ctx); err != nil {
++		return nil, err
++	}
++	return issued, nil
++}
++
++// ListByStudent returns a learner's certificates.
++func (s *CertificateService) ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]certificate.Certificate, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	return uow.Certificates().ListByStudent(ctx, studentProfileID, limit)
++}
++
++// studentIDsForUser resolves the student profile ids an actor may view. It
++// includes the actor's own profile (when a learner) and any learner profiles
++// they are linked to as a parent.
++func (s *CertificateService) studentIDsForUser(ctx context.Context, actorUserID uuid.UUID) ([]uuid.UUID, error) {
++	seen := map[uuid.UUID]bool{}
++	var ids []uuid.UUID
++	add := func(id uuid.UUID) {
++		if id != uuid.Nil && !seen[id] {
++			seen[id] = true
++			ids = append(ids, id)
++		}
++	}
++	if s.studentByUserID != nil {
++		if p, err := s.studentByUserID(ctx, actorUserID); err == nil && p != nil {
++			add(p.ID)
++		}
++	}
++	if s.learnersForParent != nil {
++		if ps, err := s.learnersForParent(ctx, actorUserID); err == nil {
++			for _, p := range ps {
++				add(p.ID)
++			}
++		}
++	}
++	return ids, nil
++}
++
++// ListForUser returns the certificates the actor may view (own + linked).
++func (s *CertificateService) ListForUser(ctx context.Context, actorUserID uuid.UUID, limit int) ([]certificate.Certificate, error) {
++	ids, err := s.studentIDsForUser(ctx, actorUserID)
++	if err != nil {
++		return nil, err
++	}
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	var out []certificate.Certificate
++	for _, id := range ids {
++		certs, err := uow.Certificates().ListByStudent(ctx, id, limit)
++		if err != nil {
++			return nil, err
++		}
++		out = append(out, certs...)
++	}
++	return out, nil
++}
++
++// GetOwned returns one certificate only if the actor may view it.
++func (s *CertificateService) GetOwned(ctx context.Context, actorUserID, id uuid.UUID) (*certificate.Certificate, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	c, err := uow.Certificates().GetByID(ctx, id)
++	if err != nil {
++		return nil, err
++	}
++	ids, err := s.studentIDsForUser(ctx, actorUserID)
++	if err != nil {
++		return nil, err
++	}
++	for _, sid := range ids {
++		if sid == c.StudentProfileID {
++			return c, nil
++		}
++	}
++	return nil, domain.ErrForbidden
++}
++
++// GetByCredential verifies a certificate by its public credential number.
++func (s *CertificateService) GetByCredential(ctx context.Context, number string) (*certificate.Certificate, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	return uow.Certificates().GetByCredential(ctx, number)
++}
++
++// newCredentialNumber generates a unique, human-verifiable credential number.
++func newCredentialNumber(uow repository.UnitOfWork) (string, error) {
++	for i := 0; i < 5; i++ {
++		n, err := rand.Int(rand.Reader, big.NewInt(1_000_000))
++		if err != nil {
++			return "", err
++		}
++		num := fmt.Sprintf("NUV-%06d", n.Int64())
++		// Collision check (best-effort; the DB unique index enforces it).
++		if _, err := uow.Certificates().GetByCredential(context.Background(), num); err != nil {
++			if errors.Is(err, domain.ErrNotFound) {
++				return num, nil
++			}
++			return "", err
++		}
++	}
++	return "", fmt.Errorf("could not allocate a unique credential number")
++}
+diff --git a/internal/service/certificate_service_test.go b/internal/service/certificate_service_test.go
+new file mode 100644
+index 0000000..3fe501c
+--- /dev/null
++++ b/internal/service/certificate_service_test.go
+@@ -0,0 +1,74 @@
++package service
++
++import (
++	"context"
++	"testing"
++
++	"ykay-virtual/internal/domain/booking"
++	"ykay-virtual/internal/repository/memory"
++
++	"github.com/google/uuid"
++	"github.com/stretchr/testify/require"
++)
++
++// TestCertificate_IssueForCompletedCohort — issuing certificates to a
++// COMPLETED cohort's confirmed enrollments is idempotent.
++func TestCertificate_IssueForCompletedCohort(t *testing.T) {
++	store := memory.NewMemoryStore()
++	svc := NewCertificateService(memory.NewMemoryUnitOfWorkFactory(store))
++	svc.WithStudentReader(func(_ context.Context, id uuid.UUID) (string, error) {
++		return "Ada Lovelace", nil
++	})
++	ctx := context.Background()
++
++	cohortID := uuid.New()
++	programmeID := uuid.New()
++	// Completed cohort.
++	require.NoError(t, store.Cohorts.Create(ctx, &booking.Cohort{
++		ID: cohortID, ProgrammeID: programmeID, Title: "Maths Cohort", Status: booking.CohortCompleted,
++	}))
++	// Two confirmed enrollments + one pending (pending must NOT get a cert).
++	s1, s2, s3 := uuid.New(), uuid.New(), uuid.New()
++	enroll := func(s uuid.UUID, status booking.EnrollmentStatus) {
++		require.NoError(t, store.Enrollments.Create(ctx, &booking.CohortEnrollment{
++			CohortID: cohortID, StudentProfileID: s, Status: status,
++		}))
++	}
++	enroll(s1, booking.EnrollmentConfirmed)
++	enroll(s2, booking.EnrollmentConfirmed)
++	enroll(s3, booking.EnrollmentPending)
++
++	issued, err := svc.IssueForCohort(ctx, cohortID)
++	require.NoError(t, err)
++	require.Len(t, issued, 2, "only confirmed enrollments get certificates")
++
++	// Idempotent: re-issuing does not duplicate.
++	issued2, err := svc.IssueForCohort(ctx, cohortID)
++	require.NoError(t, err)
++	require.Len(t, issued2, 0)
++
++	// Each has a unique credential number.
++	require.NotEqual(t, issued[0].CredentialNumber, issued[1].CredentialNumber)
++	require.Equal(t, Issuer, issued[0].IssuedBy)
++
++	// Learner can list + verify.
++	list, err := svc.ListByStudent(ctx, s1, 10)
++	require.NoError(t, err)
++	require.Len(t, list, 1)
++	got, err := svc.GetByCredential(ctx, issued[0].CredentialNumber)
++	require.NoError(t, err)
++	require.Equal(t, "Ada Lovelace", got.LearnerName)
++}
++
++// TestCertificate_NonCompletedCohortRejected — cannot issue for a non-completed cohort.
++func TestCertificate_NonCompletedCohortRejected(t *testing.T) {
++	store := memory.NewMemoryStore()
++	svc := NewCertificateService(memory.NewMemoryUnitOfWorkFactory(store))
++	ctx := context.Background()
++	cohortID := uuid.New()
++	require.NoError(t, store.Cohorts.Create(ctx, &booking.Cohort{
++		ID: cohortID, Title: "Live", Status: booking.CohortPublished,
++	}))
++	_, err := svc.IssueForCohort(ctx, cohortID)
++	require.Error(t, err)
++}
+diff --git a/internal/transport/http/certificate_handler.go b/internal/transport/http/certificate_handler.go
+new file mode 100644
+index 0000000..9b68fc2
+--- /dev/null
++++ b/internal/transport/http/certificate_handler.go
+@@ -0,0 +1,101 @@
++package httpapi
++
++import (
++	"net/http"
++
++	"ykay-virtual/internal/service"
++	"ykay-virtual/pkg"
++
++	"github.com/google/uuid"
++)
++
++// CertificateHandler — issue + serve learner completion certificates.
++type CertificateHandler struct {
++	svc *service.CertificateService
++}
++
++func NewCertificateHandler(svc *service.CertificateService) *CertificateHandler {
++	return &CertificateHandler{svc: svc}
++}
++
++// IssueForCohort — POST /api/v1/admin/cohorts/{cohortId}/certificates (admin).
++// Issues a certificate to every confirmed enrollment of a completed cohort.
++func (h *CertificateHandler) IssueForCohort(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil || !actor.IsAdmin {
++		WriteAppError(w, pkg.Forbidden("admin access required"))
++		return
++	}
++	cohortID, err := uuid.Parse(r.PathValue("cohortId"))
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("invalid cohort id", nil))
++		return
++	}
++	issued, err := h.svc.IssueForCohort(r.Context(), cohortID)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusCreated, map[string]any{
++		"issued":       len(issued),
++		"certificates": issued,
++	}, nil)
++}
++
++// ListMine — GET /api/v1/me/certificates (owner). Lists the certificates the
++// actor may view (their own + linked learners').
++func (h *CertificateHandler) ListMine(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	certs, err := h.svc.ListForUser(r.Context(), actor.UserID, 100)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, certs, nil)
++}
++
++// GetMine — GET /api/v1/me/certificates/{id} (owner).
++func (h *CertificateHandler) GetMine(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	id, err := uuid.Parse(r.PathValue("id"))
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("invalid certificate id", nil))
++		return
++	}
++	c, err := h.svc.GetOwned(r.Context(), actor.UserID, id)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, c, nil)
++}
++
++// Verify — GET /api/v1/certificates/verify?credential=NUV-000123. Public
++// verification by credential number.
++func (h *CertificateHandler) Verify(w http.ResponseWriter, r *http.Request) {
++	num := r.URL.Query().Get("credential")
++	if num == "" {
++		WriteAppError(w, pkg.BadRequest("credential query param is required", nil))
++		return
++	}
++	c, err := h.svc.GetByCredential(r.Context(), num)
++	if err != nil {
++		WriteAppError(w, pkg.NotFound("certificate not found"))
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
++		"valid":             true,
++		"learner_name":      c.LearnerName,
++		"title":             c.Title,
++		"programme_title":   c.ProgrammeTitle,
++		"issued_by":         c.IssuedBy,
++		"issued_at":         c.IssuedAt,
++		"credential_number": c.CredentialNumber,
++	}, nil)
++}
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index 4e449b4..b2ac9b5 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -176,6 +176,10 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	mux.HandleFunc("GET "+v1+"/admin/coupons", handlers.Coupons.List)
+ 	mux.HandleFunc("POST "+v1+"/admin/coupons", handlers.Coupons.Create)
+ 	mux.HandleFunc("POST "+v1+"/admin/notifications/whatsapp", handlers.Notifier.SendWhatsApp)
++	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/certificates", handlers.Certificates.IssueForCohort)
++	mux.HandleFunc("GET "+v1+"/me/certificates", handlers.Certificates.ListMine)
++	mux.HandleFunc("GET "+v1+"/me/certificates/{id}", handlers.Certificates.GetMine)
++	mux.HandleFunc("GET "+v1+"/certificates/verify", handlers.Certificates.Verify)
+ 	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
+ 	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
+ 	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
+@@ -366,6 +370,7 @@ type Handlers struct {
+ 	Bookings        *BookingHandler
+ 	Coupons         *CouponHandler
+ 	Notifier        *NotifierHandler
++	Certificates    *CertificateHandler
+ 	Payments        *PaymentHandler
+ 	Vetting         *VettingHandler
+ 	AdminVetting    *AdminVettingHandler
+diff --git a/migrations/000047_certificates.down.sql b/migrations/000047_certificates.down.sql
+new file mode 100644
+index 0000000..2185b91
+--- /dev/null
++++ b/migrations/000047_certificates.down.sql
+@@ -0,0 +1,2 @@
++-- 000047_certificates.down.sql
++DROP TABLE IF EXISTS certificates;
+diff --git a/migrations/000047_certificates.up.sql b/migrations/000047_certificates.up.sql
+new file mode 100644
+index 0000000..3cd2425
+--- /dev/null
++++ b/migrations/000047_certificates.up.sql
+@@ -0,0 +1,20 @@
++-- 000047_certificates.up.sql — learner completion certificates
++CREATE TABLE IF NOT EXISTS certificates (
++    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
++    student_profile_id UUID NOT NULL REFERENCES student_profiles(id) ON DELETE CASCADE,
++    cohort_id UUID REFERENCES cohorts(id) ON DELETE CASCADE,
++    programme_id UUID REFERENCES programmes(id) ON DELETE SET NULL,
++    learner_name VARCHAR(255) NOT NULL,
++    title VARCHAR(255) NOT NULL,
++    programme_title VARCHAR(255),
++    credential_number VARCHAR(64) NOT NULL UNIQUE,
++    issued_by VARCHAR(255) NOT NULL DEFAULT 'NUVORA Academy',
++    issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
++    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
++);
++
++CREATE INDEX IF NOT EXISTS idx_certificates_student ON certificates(student_profile_id);
++CREATE INDEX IF NOT EXISTS idx_certificates_cohort ON certificates(cohort_id);
++CREATE UNIQUE INDEX IF NOT EXISTS idx_certificates_student_cohort
++    ON certificates(student_profile_id, cohort_id)
++    WHERE cohort_id IS NOT NULL;

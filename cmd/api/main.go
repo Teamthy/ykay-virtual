@@ -209,6 +209,23 @@ func main() {
 		}(),
 		notification.NewWhatsAppSender(),
 	)
+	// Learner completion certificates (virtual-school item).
+	certSvc := service.NewCertificateService(repos.UoWFactory).
+		WithStudentReader(func(ctx context.Context, id uuid.UUID) (string, error) {
+			p, err := repos.Students.FindByID(ctx, id)
+			if err != nil {
+				return "", err
+			}
+			return strings.TrimSpace(p.FirstName + " " + p.LastName), nil
+		}).
+		WithOwnership(
+			func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error) {
+				return repos.Students.FindByUserID(ctx, userID)
+			},
+			func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
+				return repos.Students.ListByParentUserID(ctx, parentUserID)
+			},
+		)
 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
@@ -344,13 +361,14 @@ func main() {
 	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
 
 	handlers := &httpapi.Handlers{
-		Subjects:   httpapi.NewSubjectHandler(subjectSvc),
-		Tutors:     httpapi.NewTutorHandler(tutorSvc),
-		Programmes: httpapi.NewProgrammeHandler(programmeSvc),
-		Cohorts:    httpapi.NewCohortHandler(cohortSvc),
-		Bookings:   httpapi.NewBookingHandler(bookingSvc),
-		Coupons:    httpapi.NewCouponHandler(couponSvc),
-		Notifier:   httpapi.NewNotifierHandler(notifierSvc),
+		Subjects:     httpapi.NewSubjectHandler(subjectSvc),
+		Tutors:       httpapi.NewTutorHandler(tutorSvc),
+		Programmes:   httpapi.NewProgrammeHandler(programmeSvc),
+		Cohorts:      httpapi.NewCohortHandler(cohortSvc),
+		Bookings:     httpapi.NewBookingHandler(bookingSvc),
+		Coupons:      httpapi.NewCouponHandler(couponSvc),
+		Notifier:     httpapi.NewNotifierHandler(notifierSvc),
+		Certificates: httpapi.NewCertificateHandler(certSvc),
 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
 			payment.ProviderPaystack:    cfg.PaystackSecret,
 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,

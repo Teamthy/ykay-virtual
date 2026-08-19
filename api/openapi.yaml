@@ -1004,6 +1004,46 @@ paths:
         '202':
           description: Message queued for WhatsApp delivery
 
+  /admin/cohorts/{cohortId}/certificates:
+    post:
+      tags: [admin]
+      summary: Issue completion certificates to a completed cohort's confirmed enrollments
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Certificates issued (idempotent) }
+        '409': { description: Cohort is not COMPLETED }
+
+  /me/certificates:
+    get:
+      tags: [learning]
+      summary: List the caller's completion certificates (own + linked learners)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Certificates }
+
+  /me/certificates/{id}:
+    get:
+      tags: [learning]
+      summary: Get one of the caller's certificates
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Certificate }
+        '403': { description: Not owned by the caller }
+
+  /certificates/verify:
+    get:
+      tags: [public]
+      summary: Verify a certificate by its credential number
+      parameters:
+        - { name: credential, in: query, required: true, schema: { type: string, example: NUV-000123 } }
+      responses:
+        '200': { description: Valid certificate }
+        '404': { description: Not found }
+
   /payments/initiate:
     post:
       tags: [payments]

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/tutor"
@@ -26,6 +27,7 @@ type UnitOfWork interface {
 	Payouts() payment.PayoutRepository
 	Wallets() payment.WalletRepository
 	Coupons() payment.CouponRepository
+	Certificates() certificate.CertificateRepository
 	Enrollments() booking.CohortEnrollmentRepository
 	Cohorts() booking.CohortRepository
 	PrivateRequests() booking.PrivateTuitionRequestRepository

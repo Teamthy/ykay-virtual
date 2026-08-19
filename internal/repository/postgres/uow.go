@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/tutor"
@@ -18,21 +19,22 @@ import (
 type PgUnitOfWork struct {
 	tx *sql.Tx
 
-	orders      *OrderRepo
-	payments    *PaymentRepo
-	webhooks    *PaymentWebhookRepo
-	escrow      *EscrowHoldRepo
-	payouts     *PayoutRepo
-	wallets     *WalletRepo
-	enrollments *CohortEnrollmentRepo
-	cohorts     *CohortRepo
-	privateReq  *PrivateTuitionRequestRepo
-	privatePkg  *PrivatePackageRepo
-	vetting     *VettingRepo
-	tutorSubj   *TutorSubjectRepo
-	auditLogs   *AuditLogRepo
-	lessonLinks *LessonRepo
-	coupons     *CouponRepo
+	orders       *OrderRepo
+	payments     *PaymentRepo
+	webhooks     *PaymentWebhookRepo
+	escrow       *EscrowHoldRepo
+	payouts      *PayoutRepo
+	wallets      *WalletRepo
+	enrollments  *CohortEnrollmentRepo
+	cohorts      *CohortRepo
+	privateReq   *PrivateTuitionRequestRepo
+	privatePkg   *PrivatePackageRepo
+	vetting      *VettingRepo
+	tutorSubj    *TutorSubjectRepo
+	auditLogs    *AuditLogRepo
+	lessonLinks  *LessonRepo
+	coupons      *CouponRepo
+	certificates *CertificateRepo
 }
 
 func (u *PgUnitOfWork) LessonLinks() booking.LessonParticipantLinker             { return u.lessonLinks }
@@ -50,6 +52,7 @@ func (u *PgUnitOfWork) Vetting() vetting.VettingRepository                      
 func (u *PgUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository              { return u.tutorSubj }
 func (u *PgUnitOfWork) AuditLogs() identity.AuditLogRepository                   { return u.auditLogs }
 func (u *PgUnitOfWork) Coupons() payment.CouponRepository                        { return u.coupons }
+func (u *PgUnitOfWork) Certificates() certificate.CertificateRepository          { return u.certificates }
 
 func (u *PgUnitOfWork) Commit(ctx context.Context) error {
 	if err := u.tx.Commit(); err != nil {
@@ -72,22 +75,23 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
 		return nil, fmt.Errorf("begin uow: %w", err)
 	}
 	return &PgUnitOfWork{
-		tx:          tx,
-		orders:      NewOrderRepo(tx),
-		payments:    NewPaymentRepo(tx),
-		webhooks:    NewPaymentWebhookRepo(tx),
-		escrow:      NewEscrowHoldRepo(tx),
-		payouts:     NewPayoutRepo(tx),
-		wallets:     NewWalletRepo(tx),
-		enrollments: NewCohortEnrollmentRepo(tx),
-		cohorts:     NewCohortRepo(tx),
-		privateReq:  NewPrivateTuitionRequestRepo(tx),
-		privatePkg:  NewPrivatePackageRepo(tx),
-		vetting:     NewVettingRepo(tx),
-		tutorSubj:   NewTutorSubjectRepo(tx),
-		auditLogs:   NewAuditLogRepo(tx),
-		lessonLinks: NewLessonRepo(tx),
-		coupons:     NewCouponRepo(tx),
+		tx:           tx,
+		orders:       NewOrderRepo(tx),
+		payments:     NewPaymentRepo(tx),
+		webhooks:     NewPaymentWebhookRepo(tx),
+		escrow:       NewEscrowHoldRepo(tx),
+		payouts:      NewPayoutRepo(tx),
+		wallets:      NewWalletRepo(tx),
+		enrollments:  NewCohortEnrollmentRepo(tx),
+		cohorts:      NewCohortRepo(tx),
+		privateReq:   NewPrivateTuitionRequestRepo(tx),
+		privatePkg:   NewPrivatePackageRepo(tx),
+		vetting:      NewVettingRepo(tx),
+		tutorSubj:    NewTutorSubjectRepo(tx),
+		auditLogs:    NewAuditLogRepo(tx),
+		lessonLinks:  NewLessonRepo(tx),
+		coupons:      NewCouponRepo(tx),
+		certificates: NewCertificateRepo(tx),
 	}, nil
 }
 

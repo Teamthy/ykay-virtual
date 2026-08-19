@@ -5,6 +5,7 @@ import (
 
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/tutor"
@@ -16,21 +17,22 @@ import (
 // Used by unit tests and the dev fallback (no Postgres available).
 
 type MemoryUnitOfWork struct {
-	orders      *OrderMemory
-	payments    *PaymentMemory
-	webhooks    *WebhookMemory
-	escrow      *EscrowMemory
-	payouts     *PayoutMemory
-	wallets     *WalletMemory
-	enrollments *EnrollmentMemory
-	cohorts     *CohortMemory
-	privateReq  *PrivateReqMemory
-	privatePkg  *PrivatePackageMemory
-	vetting     *VettingMemory
-	tutorSubj   *VettingTutorSubjectMemory
-	auditLogs   *AuditLogMemory
-	lessonLinks *LessonMemory
-	coupons     *CouponMemory
+	orders       *OrderMemory
+	payments     *PaymentMemory
+	webhooks     *WebhookMemory
+	escrow       *EscrowMemory
+	payouts      *PayoutMemory
+	wallets      *WalletMemory
+	enrollments  *EnrollmentMemory
+	cohorts      *CohortMemory
+	privateReq   *PrivateReqMemory
+	privatePkg   *PrivatePackageMemory
+	vetting      *VettingMemory
+	tutorSubj    *VettingTutorSubjectMemory
+	auditLogs    *AuditLogMemory
+	lessonLinks  *LessonMemory
+	coupons      *CouponMemory
+	certificates *CertificateMemory
 }
 
 func (u *MemoryUnitOfWork) LessonLinks() booking.LessonParticipantLinker    { return u.lessonLinks }
@@ -50,6 +52,7 @@ func (u *MemoryUnitOfWork) Vetting() vetting.VettingRepository                { 
 func (u *MemoryUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository       { return u.tutorSubj }
 func (u *MemoryUnitOfWork) AuditLogs() identity.AuditLogRepository            { return u.auditLogs }
 func (u *MemoryUnitOfWork) Coupons() payment.CouponRepository                 { return u.coupons }
+func (u *MemoryUnitOfWork) Certificates() certificate.CertificateRepository   { return u.certificates }
 
 func (u *MemoryUnitOfWork) Commit(_ context.Context) error { return nil }
 func (u *MemoryUnitOfWork) Rollback()                      {}
@@ -64,21 +67,22 @@ func NewMemoryUnitOfWorkFactory(store *MemoryStore) *MemoryUnitOfWorkFactory {
 
 func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWork, error) {
 	return &MemoryUnitOfWork{
-		orders:      f.store.Orders,
-		payments:    f.store.Payments,
-		webhooks:    f.store.Webhooks,
-		escrow:      f.store.Escrow,
-		payouts:     f.store.Payouts,
-		wallets:     f.store.Wallets,
-		enrollments: f.store.Enrollments,
-		cohorts:     f.store.Cohorts,
-		privateReq:  f.store.PrivateReqs,
-		privatePkg:  f.store.PrivatePkgs,
-		vetting:     f.store.Vetting,
-		tutorSubj:   f.store.TutorSubj,
-		auditLogs:   f.store.AuditLogs,
-		lessonLinks: f.store.Lessons,
-		coupons:     f.store.Coupons,
+		orders:       f.store.Orders,
+		payments:     f.store.Payments,
+		webhooks:     f.store.Webhooks,
+		escrow:       f.store.Escrow,
+		payouts:      f.store.Payouts,
+		wallets:      f.store.Wallets,
+		enrollments:  f.store.Enrollments,
+		cohorts:      f.store.Cohorts,
+		privateReq:   f.store.PrivateReqs,
+		privatePkg:   f.store.PrivatePkgs,
+		vetting:      f.store.Vetting,
+		tutorSubj:    f.store.TutorSubj,
+		auditLogs:    f.store.AuditLogs,
+		lessonLinks:  f.store.Lessons,
+		coupons:      f.store.Coupons,
+		certificates: f.store.Certificates,
 	}, nil
 }
 
@@ -98,6 +102,7 @@ type MemoryStore struct {
 	PrivateReqs    *PrivateReqMemory
 	PrivatePkgs    *PrivatePackageMemory
 	Coupons        *CouponMemory
+	Certificates   *CertificateMemory
 	Vetting        *VettingMemory
 	TutorSubj      *VettingTutorSubjectMemory
 	Availability   *AvailabilityMemory
@@ -139,6 +144,7 @@ func NewMemoryStore() *MemoryStore {
 		PrivateReqs:  NewPrivateReqMemory(),
 		PrivatePkgs:  NewPrivatePackageMemory(),
 		Coupons:      NewCouponMemory(),
+		Certificates: NewCertificateMemory(),
 		Vetting:      NewVettingMemory(),
 		TutorSubj:    NewVettingTutorSubjectMemory(),
 		Availability: NewAvailabilityMemory(),
