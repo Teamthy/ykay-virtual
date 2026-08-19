@@ -88,3 +88,49 @@ func TestLessonOverlapGuard(t *testing.T) {
 		t.Fatalf("excludeLessonID should ignore the existing lesson")
 	}
 }
+
+func TestLessonMemory_RecordedLibrary(t *testing.T) {
+	ctx := context.Background()
+	m := NewLessonMemory()
+	student := uuid.New()
+	cohort := uuid.New()
+	t0 := time.Date(2026, 9, 1, 10, 0, 0, 0, time.UTC)
+
+	rec := &booking.Lesson{CohortID: &cohort, TutorProfileID: uuid.New(), Title: "Recorded", StartAt: t0, EndAt: t0.Add(time.Hour), Status: booking.LessonCompleted}
+	v := "https://cdn.example.com/rec1.mp4"
+	rec.VideoURL = &v
+	m.Seed(rec, student)
+
+	plain := &booking.Lesson{CohortID: &cohort, TutorProfileID: uuid.New(), Title: "Live", StartAt: t0.Add(2 * time.Hour), EndAt: t0.Add(3 * time.Hour), Status: booking.LessonScheduled}
+	m.Seed(plain, student)
+
+	list, err := m.ListRecordedForStudent(ctx, student, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(list) != 1 {
+		t.Fatalf("expected only the recorded lesson, got %d", len(list))
+	}
+	if list[0].Title != "Recorded" {
+		t.Fatalf("wrong lesson returned: %s", list[0].Title)
+	}
+
+	// SetVideoURL on the plain lesson makes it appear too.
+	nv := "https://cdn.example.com/live.mp4"
+	if err := m.SetVideoURL(ctx, plain.ID, &nv); err != nil {
+		t.Fatal(err)
+	}
+	list, _ = m.ListRecordedForStudent(ctx, student, 10)
+	if len(list) != 2 {
+		t.Fatalf("expected 2 recorded after SetVideoURL, got %d", len(list))
+	}
+
+	// Clearing it removes it.
+	if err := m.SetVideoURL(ctx, plain.ID, nil); err != nil {
+		t.Fatal(err)
+	}
+	list, _ = m.ListRecordedForStudent(ctx, student, 10)
+	if len(list) != 1 {
+		t.Fatalf("expected 1 after clear, got %d", len(list))
+	}
+}

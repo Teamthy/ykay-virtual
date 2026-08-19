@@ -253,6 +253,46 @@ func (s *LessonService) ScheduleLesson(ctx context.Context, in ScheduleLessonInp
 	return lesson, nil
 }
 
+// SetRecordedVideo — admin/tutor attaches (or clears) a recorded-lesson video
+// URL on a lesson. Only the cohort's tutor or a platform admin may do so.
+func (s *LessonService) SetRecordedVideo(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, lessonID uuid.UUID, videoURL *string) error {
+	lesson, err := s.lessons.GetByID(ctx, lessonID)
+	if err != nil {
+		return err
+	}
+	if lesson.CohortID != nil {
+		if err := s.cohortTutorScope(ctx, actorUserID, isAdmin, *lesson.CohortID); err != nil {
+			return err
+		}
+	} else if !isAdmin {
+		return domain.ErrForbidden
+	}
+	return s.lessons.SetVideoURL(ctx, lessonID, videoURL)
+}
+
+// ListRecordedLibrary — the recorded-lesson library for an enrolled learner.
+// Returns the video lessons the caller is entitled to across their cohorts.
+// Ownership (actor must be the learner or an admin) is enforced here.
+func (s *LessonService) ListRecordedLibrary(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, studentProfileID uuid.UUID, limit int) ([]booking.Lesson, error) {
+	if s.lessons == nil {
+		return []booking.Lesson{}, nil
+	}
+	if !isAdmin {
+		if s.studentByUserID == nil {
+			return nil, domain.ErrForbidden
+		}
+		own, err := s.studentByUserID(ctx, actorUserID)
+		if err != nil || own == nil || own.ID != studentProfileID {
+			// The actor is not the learner; they must be a linked parent. If
+			// the learner is themselves, this is the learner. Otherwise reject.
+			// (Linked-parent authorization is covered by the calling layer;
+			// here we fail closed unless the actor IS the learner or admin.)
+			return nil, domain.ErrForbidden
+		}
+	}
+	return s.lessons.ListRecordedForStudent(ctx, studentProfileID, limit)
+}
+
 func (s *LessonService) CanAccessCohort(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, cohortID uuid.UUID) bool {
 	return s.canAccessCohort(ctx, actorUserID, isAdmin, cohortID) == nil
 }

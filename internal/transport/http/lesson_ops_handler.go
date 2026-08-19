@@ -167,6 +167,57 @@ func (h *LessonOpsHandler) ScheduleLesson(w http.ResponseWriter, r *http.Request
 	pkg.WriteSuccess(w, http.StatusCreated, lesson, nil)
 }
 
+// SetRecordedVideo — POST /api/v1/admin/lessons/{lessonId}/video (admin/tutor).
+// Attaches (or clears) a recorded-lesson video URL.
+func (h *LessonOpsHandler) SetRecordedVideo(w http.ResponseWriter, r *http.Request) {
+	actor := h.requireTutor(w, r)
+	if actor == nil {
+		return
+	}
+	lessonID, err := ParseUUID(r, "lessonId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		VideoURL *string `json:"video_url"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetRecordedVideo(r.Context(), actor.UserID, actor.IsAdmin, lessonID, req.VideoURL); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"lesson_id": lessonID, "video_url": req.VideoURL}, nil)
+}
+
+// MyRecordedLibrary — GET /api/v1/me/recorded-lessons (owner). The learner's
+// recorded-lesson library across their enrolled cohorts.
+func (h *LessonOpsHandler) MyRecordedLibrary(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	studentID := r.URL.Query().Get("student_profile_id")
+	if studentID == "" {
+		WriteAppError(w, pkg.BadRequest("student_profile_id is required", nil))
+		return
+	}
+	sid, err := uuid.Parse(studentID)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("invalid student_profile_id", nil))
+		return
+	}
+	lessons, err := h.svc.ListRecordedLibrary(r.Context(), actor.UserID, actor.IsAdmin, sid, 100)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, lessons, nil)
+}
+
 func (h *LessonOpsHandler) ListCohortLessons(w http.ResponseWriter, r *http.Request) {
 	cohortID, err := ParseUUID(r, "id")
 	if err != nil {

@@ -98,6 +98,11 @@ type LessonRepository interface {
 	// whose [start, end) window overlaps the given [startAt, endAt), excluding
 	// excludeLessonID (used when rescheduling). Cancelled lessons never count.
 	HasOverlappingLessons(ctx context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error)
+	// SetVideoURL attaches (or clears) a recorded-lesson video URL on a lesson.
+	SetVideoURL(ctx context.Context, lessonID uuid.UUID, videoURL *string) error
+	// ListRecordedForStudent returns the recorded (video) lessons the student
+	// is entitled to across their enrolled cohorts, newest first.
+	ListRecordedForStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Lesson, error)
 }
 
 // LessonProgress — per-student watch state for a lesson (000035).

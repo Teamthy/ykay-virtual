@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
 
 	"github.com/google/uuid"
@@ -99,3 +100,30 @@ func (m *LessonMemory) HasOverlappingLessons(_ context.Context, tutorProfileID u
 }
 
 var _ booking.LessonRepository = (*LessonMemory)(nil)
+
+func (m *LessonMemory) SetVideoURL(_ context.Context, lessonID uuid.UUID, videoURL *string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	l, ok := m.rows[lessonID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	l.VideoURL = videoURL
+	return nil
+}
+
+func (m *LessonMemory) ListRecordedForStudent(_ context.Context, studentProfileID uuid.UUID, limit int) ([]booking.Lesson, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []booking.Lesson
+	for _, id := range m.student[studentProfileID] {
+		if l, ok := m.rows[id]; ok && l.VideoURL != nil && *l.VideoURL != "" && l.Status != booking.LessonCancelled {
+			out = append(out, *l)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].StartAt.After(out[j].StartAt) })
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}

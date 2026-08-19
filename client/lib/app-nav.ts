@@ -20,6 +20,7 @@ import {
   ClipboardCheck,
   UserPlus,
   Award,
+  Play,
 } from "lucide-react";
 
 export type AppNavItem = {
@@ -41,6 +42,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
       { href: "/dashboard", label: "Family dashboard", icon: LayoutDashboard, exact: true },
       { href: "/lms", label: "Learning", icon: GraduationCap },
       { href: "/account/certificates", label: "Certificates", icon: Award },
+      { href: "/lms/recorded", label: "Recorded lessons", icon: Play },
       { href: "/messages", label: "Messages", icon: MessageSquare },
       { href: "/notifications", label: "Notifications", icon: Bell },
       { href: "/account", label: "Account", icon: Settings },
@@ -53,6 +55,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
       { href: "/student-dashboard", label: "My dashboard", icon: LayoutDashboard, exact: true },
       { href: "/lms", label: "My learning", icon: BookOpen },
       { href: "/account/certificates", label: "Certificates", icon: Award },
+      { href: "/lms/recorded", label: "Recorded lessons", icon: Play },
       { href: "/messages", label: "Messages", icon: MessageSquare },
       { href: "/notifications", label: "Notifications", icon: Bell },
       { href: "/account", label: "Account", icon: Settings },

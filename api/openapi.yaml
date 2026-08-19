@@ -2191,6 +2191,35 @@ paths:
         '409':
           description: Tutor already booked for an overlapping lesson (double-booking guard)
 
+  /admin/lessons/{lessonId}/video:
+    post:
+      tags: [admin]
+      summary: Attach or clear a recorded-lesson video URL
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                video_url: { type: string, nullable: true, description: "Set the recorded video URL, or null to clear" }
+      responses:
+        '200': { description: Video URL updated }
+
+  /me/recorded-lessons:
+    get:
+      tags: [learning]
+      summary: The learner's recorded-lesson library
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Recorded lessons }
+        '403': { description: Not the caller's learner }
+
   /admin/audit:
     get:
       tags: [admin]
