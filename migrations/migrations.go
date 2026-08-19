@@ -66,6 +66,37 @@ func Files() ([]File, error) {
 	return out, nil
 }
 
+// Validate checks a migration chain for the two conditions that have broken
+// real deployments:
+//
+//  1. Duplicate version numbers — two files numbered the same (e.g. two
+//     `000044_*.sql`). The loader silently lets one win, so the "losing"
+//     migration is never applied and the DB drifts from the repo.
+//  2. Git conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) — injected by a
+//     botched `git apply --3way`. Such SQL is invalid (or worse, runs the
+//     wrong branch) and must never reach a live database.
+//
+// Returns an error describing the first violation so migrate runs and
+// boot-time migration fail fast instead of silently corrupting the schema.
+func Validate(files []File) error {
+	upSeen := map[int]string{}
+	downSeen := map[int]string{}
+	for _, f := range files {
+		seen := downSeen
+		if f.Up {
+			seen = upSeen
+		}
+		if prev, dup := seen[f.Version]; dup {
+			return fmt.Errorf("migration chain: duplicate version %06d (%s and %s); rename one file to a unique number", f.Version, prev, f.Name)
+		}
+		seen[f.Version] = f.Name
+		if s := f.SQL; strings.Contains(s, "<<<<<<<") || strings.Contains(s, ">>>>>>>") || strings.Contains(s, "\n=======\n") {
+			return fmt.Errorf("migration %s: contains git conflict markers; resolve the merge before deploying", f.Name)
+		}
+	}
+	return nil
+}
+
 // EnsureTable creates the schema_migrations bookkeeping table
 // (identical shape to cmd/migrate).
 func EnsureTable(db *sql.DB) error {
@@ -108,6 +139,9 @@ func ApplyUp(db *sql.DB) (int, error) {
 	}
 	files, err := Files()
 	if err != nil {
+		return 0, err
+	}
+	if err := Validate(files); err != nil {
 		return 0, err
 	}
 	n := 0

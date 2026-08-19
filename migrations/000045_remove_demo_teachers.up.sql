@@ -1,4 +1,4 @@
--- 000044 — Remove DEMO / MARKETING tutor profiles, their demo programmes and
+-- 000045 — Remove DEMO / MARKETING tutor profiles, their demo programmes and
 -- demo cohorts, so ONLY real, admin-approved (verified) tutors are shown on
 -- the tutors page.
 --

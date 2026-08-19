@@ -1,0 +1,333 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 72c432a..a1f5edb 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -206,6 +206,47 @@ jobs:
+           BACKUP_RETENTION_DAYS=1 bash scripts/backup.sh
+           bash scripts/dr-drill.sh --deep
+ 
++  migrations:
++    # Migration safety gate (G7): duplicate-version numbers and git conflict
++    # markers can never silently break a deploy again. Static checks run
++    # first; then the FULL chain is applied to a fresh PostgreSQL so a
++    # phantom-table error (a migration referencing a table that doesn't
++    # exist) fails CI before it ever reaches production.
++    name: Migrations — duplicate/marker gate + live apply
++    runs-on: ubuntu-latest
++    services:
++      postgres:
++        image: postgres:16-alpine
++        env:
++          POSTGRES_USER: postgres
++          POSTGRES_PASSWORD: postgres
++          POSTGRES_DB: nuvora
++        ports:
++          - 5432:5432
++        options: >-
++          --health-cmd "pg_isready -U postgres"
++          --health-interval 5s
++          --health-timeout 5s
++          --health-retries 10
++    steps:
++      - uses: actions/checkout@v4
++      - uses: actions/setup-go@v5
++        with:
++          go-version: "1.22"
++          cache: true
++      - name: Install postgres client (psql)
++        run: sudo apt-get update && sudo apt-get install -y postgresql-client
++      - name: Run migration safety gate (static + live apply)
++        env:
++          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nuvora?sslmode=disable
++        run: bash scripts/check-migrations.sh
++      # Belt-and-braces: also verify the EMBEDDED chain (what the API's
++      # MIGRATE_ON_BOOT and the release image actually run) applies cleanly.
++      - name: Verify embedded chain applies cleanly (MIGRATE_ON_BOOT path)
++        env:
++          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nuvora?sslmode=disable
++        run: go run ./cmd/migrate --cmd=up
++
+   observability:
+     name: Metrics + alerts config validation (G3.3)
+     runs-on: ubuntu-latest
+diff --git a/cmd/migrate/main.go b/cmd/migrate/main.go
+index f6b1b90..1b8bfd4 100644
+--- a/cmd/migrate/main.go
++++ b/cmd/migrate/main.go
+@@ -56,6 +56,9 @@ func main() {
+ 		if err != nil {
+ 			logx.Fatal("embedded migrations", "error", err)
+ 		}
++		if err := migrations.Validate(files); err != nil {
++			logx.Fatal("embedded migration chain unsafe", "error", err)
++		}
+ 		seen := map[int]*migration{}
+ 		for _, f := range files {
+ 			m := seen[f.Version]
+@@ -77,7 +80,11 @@ func main() {
+ 		if err := migrations.EnsureTable(db); err != nil {
+ 			logx.Fatal("ensure schema_migrations", "error", err)
+ 		}
+-		all = listMigrationsFromDisk(*dir)
++		var err error
++		all, err = listMigrationsFromDisk(*dir)
++		if err != nil {
++			logx.Fatal("migration chain unsafe", "error", err)
++		}
+ 	}
+ 	sort.Slice(all, func(i, j int) bool { return all[i].version < all[j].version })
+ 
+@@ -101,12 +108,15 @@ type migration struct {
+ 	downSQL  string
+ }
+ 
+-func listMigrationsFromDisk(dir string) []migration {
++func listMigrationsFromDisk(dir string) ([]migration, error) {
+ 	entries, err := os.ReadDir(dir)
+ 	if err != nil {
+-		logx.Fatal("read migrations dir", "dir", dir, "error", err)
++		return nil, fmt.Errorf("read migrations dir %s: %w", dir, err)
+ 	}
+-	seen := map[int]migration{}
++	// Build the full file list first so duplicate versions and conflict
++	// markers are detected BEFORE the per-version map silently collapses
++	// them (a duplicate would otherwise be applied once and never re-checked).
++	var files []migrations.File
+ 	for _, e := range entries {
+ 		name := e.Name()
+ 		if !strings.HasSuffix(name, ".sql") {
+@@ -122,24 +132,41 @@ func listMigrationsFromDisk(dir string) []migration {
+ 		}
+ 		content, err := os.ReadFile(filepath.Join(dir, name))
+ 		if err != nil {
+-			logx.Fatal("read migration", "name", name, "error", err)
++			return nil, fmt.Errorf("read migration %s: %w", name, err)
++		}
++		files = append(files, migrations.File{
++			Name:    name,
++			Version: version,
++			SQL:     string(content),
++			Up:      strings.HasSuffix(name, ".up.sql"),
++		})
++	}
++	if err := migrations.Validate(files); err != nil {
++		return nil, err
++	}
++	sort.Slice(files, func(i, j int) bool {
++		if files[i].Version != files[j].Version {
++			return files[i].Version < files[j].Version
+ 		}
+-		m := seen[version]
+-		m.version = version
+-		switch {
+-		case strings.HasSuffix(name, ".up.sql"):
+-			m.upName, m.upSQL = name, string(content)
+-		case strings.HasSuffix(name, ".down.sql"):
+-			m.downName, m.downSQL = name, string(content)
++		return files[i].Up && !files[j].Up
++	})
++	seen := map[int]migration{}
++	for _, f := range files {
++		m := seen[f.Version]
++		m.version = f.Version
++		if f.Up {
++			m.upName, m.upSQL = f.Name, f.SQL
++		} else {
++			m.downName, m.downSQL = f.Name, f.SQL
+ 		}
+-		seen[version] = m
++		seen[f.Version] = m
+ 	}
+ 	out := make([]migration, 0, len(seen))
+ 	for _, m := range seen {
+ 		out = append(out, m)
+ 	}
+ 	sort.Slice(out, func(i, j int) bool { return out[i].version < out[j].version })
+-	return out
++	return out, nil
+ }
+ 
+ func appliedVersions(db *sql.DB) map[int]bool {
+diff --git a/migrations/migrations.go b/migrations/migrations.go
+index 0018565..d28f771 100644
+--- a/migrations/migrations.go
++++ b/migrations/migrations.go
+@@ -66,6 +66,37 @@ func Files() ([]File, error) {
+ 	return out, nil
+ }
+ 
++// Validate checks a migration chain for the two conditions that have broken
++// real deployments:
++//
++//  1. Duplicate version numbers — two files numbered the same (e.g. two
++//     `000044_*.sql`). The loader silently lets one win, so the "losing"
++//     migration is never applied and the DB drifts from the repo.
++//  2. Git conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) — injected by a
++//     botched `git apply --3way`. Such SQL is invalid (or worse, runs the
++//     wrong branch) and must never reach a live database.
++//
++// Returns an error describing the first violation so migrate runs and
++// boot-time migration fail fast instead of silently corrupting the schema.
++func Validate(files []File) error {
++	upSeen := map[int]string{}
++	downSeen := map[int]string{}
++	for _, f := range files {
++		seen := downSeen
++		if f.Up {
++			seen = upSeen
++		}
++		if prev, dup := seen[f.Version]; dup {
++			return fmt.Errorf("migration chain: duplicate version %06d (%s and %s); rename one file to a unique number", f.Version, prev, f.Name)
++		}
++		seen[f.Version] = f.Name
++		if s := f.SQL; strings.Contains(s, "<<<<<<<") || strings.Contains(s, ">>>>>>>") || strings.Contains(s, "\n=======\n") {
++			return fmt.Errorf("migration %s: contains git conflict markers; resolve the merge before deploying", f.Name)
++		}
++	}
++	return nil
++}
++
+ // EnsureTable creates the schema_migrations bookkeeping table
+ // (identical shape to cmd/migrate).
+ func EnsureTable(db *sql.DB) error {
+@@ -110,6 +141,9 @@ func ApplyUp(db *sql.DB) (int, error) {
+ 	if err != nil {
+ 		return 0, err
+ 	}
++	if err := Validate(files); err != nil {
++		return 0, err
++	}
+ 	n := 0
+ 	for _, f := range files {
+ 		if !f.Up || applied[f.Version] {
+diff --git a/migrations/migrations_test.go b/migrations/migrations_test.go
+new file mode 100644
+index 0000000..02c3610
+--- /dev/null
++++ b/migrations/migrations_test.go
+@@ -0,0 +1,51 @@
++package migrations
++
++import (
++	"strings"
++	"testing"
++)
++
++// TestChainStatic is the CI migration-safety gate (no DB required). It runs
++// as part of `go test ./...` and fails the build if the embedded chain has
++// duplicate version numbers or git conflict markers — the two conditions that
++// broke a live deploy (two files both numbered 000044, and `<<<<<<<`
++// conflict markers injected by `git apply --3way`).
++func TestChainStatic(t *testing.T) {
++	files, err := Files()
++	if err != nil {
++		t.Fatalf("Files(): %v", err)
++	}
++	if len(files) == 0 {
++		t.Fatal("no embedded migration files found")
++	}
++	if err := Validate(files); err != nil {
++		t.Fatalf("Validate(): %v", err)
++	}
++
++	// Each version must have an .up.sql; missing up would silently skip it.
++	ups := map[int]bool{}
++	downs := map[int]bool{}
++	for _, f := range files {
++		if f.Up {
++			ups[f.Version] = true
++		} else {
++			downs[f.Version] = true
++		}
++	}
++	for v := range ups {
++		if !downs[v] {
++			// Missing .down.sql disables that version's rollback but does not
++			// block an upgrade, so it is reported (not failed) here.
++			t.Logf("notice: version %06d has an .up.sql but no .down.sql", v)
++		}
++	}
++
++	// No file may contain conflict markers (defensive, Validate already checks).
++	for _, f := range files {
++		for _, marker := range []string{"<<<<<<<", ">>>>>>>"} {
++			if strings.Contains(f.SQL, marker) {
++				t.Errorf("%s contains %q", f.Name, marker)
++			}
++		}
++	}
++}
+diff --git a/scripts/check-migrations.sh b/scripts/check-migrations.sh
+new file mode 100644
+index 0000000..f832447
+--- /dev/null
++++ b/scripts/check-migrations.sh
+@@ -0,0 +1,68 @@
++#!/usr/bin/env bash
++#
++# Migration safety gate — prevents the two deploy-breaking failures this
++# project has already hit in production:
++#
++#   1. Duplicate version numbers  — two files numbered 0000xx. The runner
++#      silently lets one win, so the other never runs and the DB drifts.
++#   2. Conflict markers            — `<<<<<<<`/`=======`/`>>>>>>>` injected
++#      by a botched `git apply --3way`; such SQL is invalid or runs the
++#      wrong thing.
++#
++# A phantom-table error (a migration referencing a table that doesn't exist)
++# cannot be caught statically, so this script ALSO migrates the full chain
++# against a real PostgreSQL and fails if any statement errors.
++#
++# Usage:
++#   bash scripts/check-migrations.sh            # static checks only
++#   DATABASE_URL=postgres://... bash scripts/check-migrations.sh   # + live migrate
++#
++set -euo pipefail
++
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++cd "$ROOT"
++
++echo "==> [1/4] Static gate: duplicate versions + conflict markers"
++go test ./migrations/ -run 'TestChainStatic' -count=1
++
++echo "==> [2/4] Conflict-marker scan across all migration/seed SQL"
++VIOLATIONS=0
++while IFS= read -r -d '' f; do
++  if grep -Eq '^(<<<<<<<|>>>>>>>)|\n=======\n' "$f"; then
++    echo "  FAIL: $f contains git conflict markers" >&2
++    VIOLATIONS=1
++  fi
++done < <(find migrations scripts -name '*.sql' -type f -print0)
++if [ "$VIOLATIONS" -ne 0 ]; then
++  echo "==> migration safety check FAILED" >&2
++  exit 1
++fi
++
++echo "==> [3/4] Duplicate version scan (migrations dir)"
++DUPS="$(find migrations -name '*.sql' -type f \
++  | sed -E 's#.*/([0-9]+)_[^/]*$#\1#' \
++  | sort | uniq -c | awk '$1 > 2 {print $2}')"
++if [ -n "$DUPS" ]; then
++  echo "  FAIL: versions with more than one .up AND one .down file: $DUPS" >&2
++  echo "==> migration safety check FAILED" >&2
++  exit 1
++fi
++
++# Live migration check (only when a DATABASE_URL is provided, e.g. in CI).
++if [ -n "${DATABASE_URL:-}" ]; then
++  echo "==> [4/4] Live migrate of full chain against PostgreSQL"
++  go run ./cmd/migrate --cmd=up --dir=migrations
++  # Every version that has an .up.sql must now be recorded as applied.
++  TOTAL="$(find migrations -name '*.up.sql' -type f \
++    | sed -E 's#.*/([0-9]+)_[^/]*$#\1#' | sort -u | wc -l)"
++  APPLIED="$(psql "$DATABASE_URL" -Atc 'SELECT COUNT(*) FROM schema_migrations')"
++  echo "  applied=$APPLIED expected=$TOTAL"
++  if [ "$APPLIED" -ne "$TOTAL" ]; then
++    echo "  FAIL: schema_migrations count != number of .up.sql files" >&2
++    exit 1
++  fi
++else
++  echo "==> [4/4] Skipped live migrate (set DATABASE_URL to enable)"
++fi
++
++echo "==> migration safety check OK"

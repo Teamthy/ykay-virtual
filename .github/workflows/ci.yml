@@ -206,6 +206,47 @@ jobs:
           BACKUP_RETENTION_DAYS=1 bash scripts/backup.sh
           bash scripts/dr-drill.sh --deep
 
+  migrations:
+    # Migration safety gate (G7): duplicate-version numbers and git conflict
+    # markers can never silently break a deploy again. Static checks run
+    # first; then the FULL chain is applied to a fresh PostgreSQL so a
+    # phantom-table error (a migration referencing a table that doesn't
+    # exist) fails CI before it ever reaches production.
+    name: Migrations — duplicate/marker gate + live apply
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: nuvora
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+      - name: Install postgres client (psql)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Run migration safety gate (static + live apply)
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nuvora?sslmode=disable
+        run: bash scripts/check-migrations.sh
+      # Belt-and-braces: also verify the EMBEDDED chain (what the API's
+      # MIGRATE_ON_BOOT and the release image actually run) applies cleanly.
+      - name: Verify embedded chain applies cleanly (MIGRATE_ON_BOOT path)
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nuvora?sslmode=disable
+        run: go run ./cmd/migrate --cmd=up
+
   observability:
     name: Metrics + alerts config validation (G3.3)
     runs-on: ubuntu-latest

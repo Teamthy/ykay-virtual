@@ -1,0 +1,70 @@
+diff --git a/migrations/000044_remove_ielts_toefl_pte.down.sql b/migrations/000044_remove_ielts_toefl_pte.down.sql
+new file mode 100644
+index 0000000..adf8b0a
+--- /dev/null
++++ b/migrations/000044_remove_ielts_toefl_pte.down.sql
+@@ -0,0 +1,13 @@
++-- 000044 down — re-add IELTS, TOEFL and PTE catalogue rows.
++
++INSERT INTO exams (name, slug, description) VALUES
++('IELTS','ielts','International English Language Testing System'),
++('TOEFL','toefl','Test of English as Foreign Language'),
++('PTE','pte','Pearson Test of English')
++ON CONFLICT (slug) DO NOTHING;
++
++INSERT INTO subjects (name, slug, category) VALUES
++('IELTS Prep','ielts-prep','Exam Preparation'),
++('TOEFL Prep','toefl-prep','Exam Preparation'),
++('PTE Prep','pte-prep','Exam Preparation')
++ON CONFLICT (slug) DO NOTHING;
+diff --git a/migrations/000044_remove_ielts_toefl_pte.up.sql b/migrations/000044_remove_ielts_toefl_pte.up.sql
+new file mode 100644
+index 0000000..408fa2e
+--- /dev/null
++++ b/migrations/000044_remove_ielts_toefl_pte.up.sql
+@@ -0,0 +1,19 @@
++-- 000044 — Remove IELTS, TOEFL and PTE catalogue rows.
++--
++-- These are removed from product scope. GMAT, GRE, SAT and ACT remain.
++-- Only references real tables: programme_subjects, tutor_subjects,
++-- exams, subjects.
++
++-- Remove programme links.
++DELETE FROM programme_subjects
++WHERE subject_id IN (SELECT id FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep'));
++
++-- Remove tutor links.
++DELETE FROM tutor_subjects
++WHERE subject_id IN (SELECT id FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep'));
++
++-- Remove exam records.
++DELETE FROM exams WHERE slug IN ('ielts','toefl','pte');
++
++-- Remove subject records.
++DELETE FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep');
+diff --git a/migrations/000044_remove_demo_teachers.down.sql b/migrations/000045_remove_demo_teachers.down.sql
+similarity index 81%
+rename from migrations/000044_remove_demo_teachers.down.sql
+rename to migrations/000045_remove_demo_teachers.down.sql
+index d436995..c5a0191 100644
+--- a/migrations/000044_remove_demo_teachers.down.sql
++++ b/migrations/000045_remove_demo_teachers.down.sql
+@@ -1,4 +1,4 @@
+--- 000044 down — best-effort note.
++-- 000045 down — best-effort note.
+ -- Re-adding the demo/marketing tutor fixtures is intentional (they are not
+ -- production data). To restore marketing tutors, re-run migration 000041.
+ SELECT 1;
+diff --git a/migrations/000044_remove_demo_teachers.up.sql b/migrations/000045_remove_demo_teachers.up.sql
+similarity index 95%
+rename from migrations/000044_remove_demo_teachers.up.sql
+rename to migrations/000045_remove_demo_teachers.up.sql
+index 9a9c4e1..9dcca31 100644
+--- a/migrations/000044_remove_demo_teachers.up.sql
++++ b/migrations/000045_remove_demo_teachers.up.sql
+@@ -1,4 +1,4 @@
+--- 000044 — Remove DEMO / MARKETING tutor profiles, their demo programmes and
++-- 000045 — Remove DEMO / MARKETING tutor profiles, their demo programmes and
+ -- demo cohorts, so ONLY real, admin-approved (verified) tutors are shown on
+ -- the tutors page.
+ --

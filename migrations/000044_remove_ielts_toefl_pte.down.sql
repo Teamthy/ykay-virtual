@@ -1,5 +1,4 @@
 -- 000044 down — re-add IELTS, TOEFL and PTE catalogue rows.
--- (Down is best-effort; it only restores the seed catalogue rows.)
 
 INSERT INTO exams (name, slug, description) VALUES
 ('IELTS','ielts','International English Language Testing System'),

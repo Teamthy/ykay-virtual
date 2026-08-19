@@ -56,6 +56,9 @@ func main() {
 		if err != nil {
 			logx.Fatal("embedded migrations", "error", err)
 		}
+		if err := migrations.Validate(files); err != nil {
+			logx.Fatal("embedded migration chain unsafe", "error", err)
+		}
 		seen := map[int]*migration{}
 		for _, f := range files {
 			m := seen[f.Version]
@@ -77,7 +80,11 @@ func main() {
 		if err := migrations.EnsureTable(db); err != nil {
 			logx.Fatal("ensure schema_migrations", "error", err)
 		}
-		all = listMigrationsFromDisk(*dir)
+		var err error
+		all, err = listMigrationsFromDisk(*dir)
+		if err != nil {
+			logx.Fatal("migration chain unsafe", "error", err)
+		}
 	}
 	sort.Slice(all, func(i, j int) bool { return all[i].version < all[j].version })
 
@@ -101,12 +108,15 @@ type migration struct {
 	downSQL  string
 }
 
-func listMigrationsFromDisk(dir string) []migration {
+func listMigrationsFromDisk(dir string) ([]migration, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		logx.Fatal("read migrations dir", "dir", dir, "error", err)
+		return nil, fmt.Errorf("read migrations dir %s: %w", dir, err)
 	}
-	seen := map[int]migration{}
+	// Build the full file list first so duplicate versions and conflict
+	// markers are detected BEFORE the per-version map silently collapses
+	// them (a duplicate would otherwise be applied once and never re-checked).
+	var files []migrations.File
 	for _, e := range entries {
 		name := e.Name()
 		if !strings.HasSuffix(name, ".sql") {
@@ -122,24 +132,41 @@ func listMigrationsFromDisk(dir string) []migration {
 		}
 		content, err := os.ReadFile(filepath.Join(dir, name))
 		if err != nil {
-			logx.Fatal("read migration", "name", name, "error", err)
+			return nil, fmt.Errorf("read migration %s: %w", name, err)
 		}
-		m := seen[version]
-		m.version = version
-		switch {
-		case strings.HasSuffix(name, ".up.sql"):
-			m.upName, m.upSQL = name, string(content)
-		case strings.HasSuffix(name, ".down.sql"):
-			m.downName, m.downSQL = name, string(content)
+		files = append(files, migrations.File{
+			Name:    name,
+			Version: version,
+			SQL:     string(content),
+			Up:      strings.HasSuffix(name, ".up.sql"),
+		})
+	}
+	if err := migrations.Validate(files); err != nil {
+		return nil, err
+	}
+	sort.Slice(files, func(i, j int) bool {
+		if files[i].Version != files[j].Version {
+			return files[i].Version < files[j].Version
 		}
-		seen[version] = m
+		return files[i].Up && !files[j].Up
+	})
+	seen := map[int]migration{}
+	for _, f := range files {
+		m := seen[f.Version]
+		m.version = f.Version
+		if f.Up {
+			m.upName, m.upSQL = f.Name, f.SQL
+		} else {
+			m.downName, m.downSQL = f.Name, f.SQL
+		}
+		seen[f.Version] = m
 	}
 	out := make([]migration, 0, len(seen))
 	for _, m := range seen {
 		out = append(out, m)
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].version < out[j].version })
-	return out
+	return out, nil
 }
 
 func appliedVersions(db *sql.DB) map[int]bool {
