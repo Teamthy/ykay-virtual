@@ -123,7 +123,7 @@ export default function ContactPage() {
             <label className="block text-sm">
               <span className="font-medium">Subject</span>
               <input value={enquirySubject} onChange={(e) => setEnquirySubject(e.target.value)}
-                placeholder="e.g. Mathematics, IELTS…"
+                placeholder="e.g. Mathematics…"
                 className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
             </label>
           </div>

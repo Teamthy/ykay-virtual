@@ -17,7 +17,6 @@ const EXAMS = [
   { value: "neco", label: "NECO" },
   { value: "jamb", label: "JAMB / UTME" },
   { value: "a-level", label: "A-Level" },
-  { value: "ielts", label: "IELTS" },
 ];
 const LEVELS = [
   "year-7-9", "igcse", "a-level", "jss1-3", "sss1-3", "adult",

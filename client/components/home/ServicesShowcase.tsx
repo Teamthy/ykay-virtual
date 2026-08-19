@@ -29,7 +29,7 @@ const SERVICES = [
   {
     icon: <BookOpenCheck size={20} />,
     label: "Test Prep",
-    desc: "IELTS, GRE, GMAT, TEF and more",
+    desc: "GMAT, GRE, SAT, ACT and entrance exams",
     href: "/exam-prep",
     photo: "/hero/exam-prep.jpg",
   },

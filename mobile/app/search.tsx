@@ -23,7 +23,7 @@ import { isSaved, toggleSaved, type SavedTutor } from "@/src/lib/wishlist";
 // → popular. Horizontal-scrolling sections are used sparingly; cards
 // communicate the most important info (name, subject, rating) immediately.
 
-const FEATURED_QUERIES = ["Mathematics", "IELTS", "Python"] as const;
+const FEATURED_QUERIES = ["Mathematics", "Computer Science", "Python"] as const;
 
 export default function ExploreScreen() {
   const params = useLocalSearchParams<{ q?: string; subject?: string }>();
@@ -127,7 +127,7 @@ export default function ExploreScreen() {
             setQuery(t);
             void runSearch(t);
           }}
-          placeholder="Try “Mathematics”, “IELTS”, “Python”…"
+          placeholder="Try “Mathematics”, “Biology”, “Python”…"
           style={{ marginBottom: spacing.sm }}
           returnKeyType="search"
         />

@@ -9,7 +9,7 @@ export const revalidate = 300;
 export const metadata: Metadata = buildMetadata({
   title: "Programmes - Cohorts, Bootcamps & Exam Prep | NUVORA",
   description:
-    "Structured learning programmes: live cohort classes, holiday bootcamps and online classes for IGCSE, WAEC, NECO, JAMB, A-Level and IELTS - with escrow-protected enrollment.",
+    "Structured learning programmes: live cohort classes, holiday bootcamps and online classes for IGCSE, WAEC, NECO, JAMB, A-Level - with escrow-protected enrollment.",
   path: "/programmes",
 });
 

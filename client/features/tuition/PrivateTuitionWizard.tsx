@@ -33,7 +33,7 @@ const STEPS: string[] = [
 ] as const;
 
 const LEVELS = ["Year 7-9 (British)", "IGCSE (Year 10-11)", "A-Level (Year 12-13)", "JSS1-3 (Nigerian)", "SSS1-3 (Nigerian)", "Other"];
-const SUBJECTS = ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Computer Science", "Python Programming", "Economics", "IELTS / English exam", "Other"];
+const SUBJECTS = ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Computer Science", "Python Programming", "Economics", "Other"];
 const DAYS = ["Weekdays", "Weekends", "Both"];
 const TIMES = ["Morning (8am-12pm)", "Afternoon (12-4pm)", "Evening (4-8pm)", "Flexible"];
 

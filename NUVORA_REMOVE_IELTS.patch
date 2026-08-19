@@ -1,0 +1,589 @@
+diff --git a/client/app/(marketing)/blog/[slug]/page.tsx b/client/app/(marketing)/blog/[slug]/page.tsx
+index 3f41de4..7f43fc5 100644
+--- a/client/app/(marketing)/blog/[slug]/page.tsx
++++ b/client/app/(marketing)/blog/[slug]/page.tsx
+@@ -24,18 +24,18 @@ type BlogPostDTO = {
+ };
+ 
+ const fallback: Record<string, BlogPostDTO> = {
+-  "how-to-score-8-ielts": {
+-    id: "1",
+-    title: "How to Score 8.0 in IELTS: Techniques Our Tutors Use",
+-    slug: "how-to-score-8-ielts",
+-    excerpt: "IELTS is not your usual English exam - it's a technique exam.",
++  "jamb-2026-biology-topics": {
++    id: "2",
++    title: "JAMB 2026 Biology: Most-Predicted Topics",
++    slug: "jamb-2026-biology-topics",
++    excerpt: "Fifteen years of past questions analysed to find the highest-yield topics.",
+     content:
+-      "This guide covers the four IELTS bands and the techniques our tutors teach: question-pattern recognition for Reading, signpost words for Listening, the two-part answer structure for Writing, and fluency-building for Speaking. Combine these with weekly timed mocks and you can raise your band score within six weeks.",
+-    seo_title: "How to Score 8.0 in IELTS - Techniques & Patterns",
+-    seo_description: "IELTS preparation techniques: reading patterns, listening signposts, writing structure, speaking fluency.",
+-    published_at: "2026-08-01T00:00:00Z",
+-    subject_slugs: ["ielts-prep"],
+-    exam_slugs: ["IELTS"],
++      "A breakdown of the highest-yield Biology topics based on an analysis of past JAMB papers, with a structured revision plan.",
++    seo_title: "JAMB 2026 Biology: Most-Predicted Topics",
++    seo_description: "Highest-yield JAMB Biology topics and a structured revision plan.",
++    published_at: "2026-07-28T00:00:00Z",
++    subject_slugs: ["biology"],
++    exam_slugs: ["JAMB"],
+   },
+ };
+ 
+diff --git a/client/app/(marketing)/blog/page.tsx b/client/app/(marketing)/blog/page.tsx
+index 30fe215..e6bd9c5 100644
+--- a/client/app/(marketing)/blog/page.tsx
++++ b/client/app/(marketing)/blog/page.tsx
+@@ -9,7 +9,7 @@ export const revalidate = 300;
+ export const metadata: Metadata = buildMetadata({
+   title: "Blog - Study Guides, Exam Tips & Learning Insights | NUVORA",
+   description:
+-    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB, IELTS, A-Level and more - from the NUVORA academic team.",
++    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB and A-Level - from the NUVORA academic team.",
+   path: "/blog",
+ });
+ 
+@@ -25,15 +25,6 @@ type BlogPostDTO = {
+ 
+ // Fallback content when the API is unavailable (never fabricate claims).
+ const fallbackPosts: BlogPostDTO[] = [
+-  {
+-    id: "1",
+-    slug: "how-to-score-8-ielts",
+-    title: "How to Score 8.0 in IELTS: Techniques Our Tutors Use",
+-    excerpt: "IELTS is not English - it's a technique exam. Learn the patterns our tutors teach.",
+-    subject_slugs: ["ielts-prep"],
+-    exam_slugs: ["IELTS"],
+-    published_at: "2026-08-01",
+-  },
+   {
+     id: "2",
+     slug: "jamb-2026-biology-topics",
+diff --git a/client/app/(marketing)/contact/page.tsx b/client/app/(marketing)/contact/page.tsx
+index 81a51b0..dbc3bf0 100644
+--- a/client/app/(marketing)/contact/page.tsx
++++ b/client/app/(marketing)/contact/page.tsx
+@@ -123,7 +123,7 @@ export default function ContactPage() {
+             <label className="block text-sm">
+               <span className="font-medium">Subject</span>
+               <input value={enquirySubject} onChange={(e) => setEnquirySubject(e.target.value)}
+-                placeholder="e.g. Mathematics, IELTS…"
++                placeholder="e.g. Mathematics…"
+                 className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+             </label>
+           </div>
+diff --git a/client/app/(marketing)/corporate-training/page.tsx b/client/app/(marketing)/corporate-training/page.tsx
+index 196d152..e0a576c 100644
+--- a/client/app/(marketing)/corporate-training/page.tsx
++++ b/client/app/(marketing)/corporate-training/page.tsx
+@@ -8,7 +8,7 @@ export const revalidate = 3600;
+ export function generateMetadata(): Metadata {
+   return buildMetadata({
+     title: "Corporate Training - NUVORA | Workforce Upskilling & Digital Academy",
+-    description: "Corporate upskilling: Python, AI, Cybersecurity, Microsoft Office, IELTS for staff. What Tuteria corporate could be - structured, audited, with progress reports.",
++    description: "Corporate upskilling: Python, AI, Cybersecurity, Microsoft Office, for staff. What Tuteria corporate could be - structured, audited, with progress reports.",
+     path: "/corporate-training",
+   });
+ }
+@@ -29,7 +29,7 @@ export default function CorporatePage() {
+ 
+       <div className="mt-10 grid md:grid-cols-2 gap-6">
+         <div className="border rounded-2xl p-6"><h3 className="font-bold">Digital Academy for Teams</h3><p className="mt-2 text-sm">Computer Science, Python, AI, Cybersecurity - British curriculum expertise applied to workforce.</p></div>
+-        <div className="border rounded-2xl p-6"><h3 className="font-bold">Exam Prep as Benefit</h3><p className="mt-2 text-sm">IELTS, TOEFL, GMAT for staff relocating abroad - company-sponsored, tracked.</p></div>
++        <div className="border rounded-2xl p-6"><h3 className="font-bold">Exam Prep as Benefit</h3><p className="mt-2 text-sm">GMAT, GRE and SAT for staff - company-sponsored, tracked.</p></div>
+       </div>
+           <section className="mt-14 max-w-xl mx-auto">
+         <B2BLeadForm defaultType="CORPORATE" ctaLabel="Request corporate training" />
+diff --git a/client/app/(marketing)/gmat/page.tsx b/client/app/(marketing)/gmat/page.tsx
+index 5855453..99476c9 100644
+--- a/client/app/(marketing)/gmat/page.tsx
++++ b/client/app/(marketing)/gmat/page.tsx
+@@ -5,7 +5,7 @@ import { PageHero } from "@/components/layout/PageHero";
+ import { StepsToTutor } from "@/components/home/StepsToTutor";
+ import { GuaranteeBand } from "@/components/home/GuaranteeBand";
+ import { GmatLeadForm } from "@/features/programmes/components/GmatLeadForm";
+-import { Globe2, Briefcase, MonitorPlay, Check, ArrowRight } from "lucide-react";
++import { Target, Briefcase, MonitorPlay, Check, ArrowRight } from "lucide-react";
+ 
+ export const revalidate = 600;
+ 
+@@ -152,14 +152,14 @@ export default function GmatPage() {
+               }}
+             >
+               <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
+-                <Globe2 size={20} />
++                <Target size={20} />
+               </div>
+-              <h3 className="mt-4 font-bold text-white">Study abroad</h3>
++              <h3 className="mt-4 font-bold text-white">Clear study plan</h3>
+               <p className="mt-2 text-sm leading-relaxed text-white/80">
+-                Prep for graduate applications - we do not promise a specific school or score.
++                Start from a diagnostic, work to your target score and track weekly progress.
+               </p>
+               <Link href="/gmat" className="mt-4 inline-block text-sm font-bold text-brand-gold">
+-                Study-abroad prep →
++                Start a plan →
+               </Link>
+             </div>
+             <div
+diff --git a/client/app/(marketing)/ielts-toefl/page.tsx b/client/app/(marketing)/ielts-toefl/page.tsx
+deleted file mode 100644
+index 40a4509..0000000
+--- a/client/app/(marketing)/ielts-toefl/page.tsx
++++ /dev/null
+@@ -1,83 +0,0 @@
+-import type { Metadata } from "next";
+-import Link from "next/link";
+-import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
+-import { PageHero } from "@/components/layout/PageHero";
+-import { Check, ArrowRight } from "lucide-react";
+-
+-export const revalidate = 600;
+-
+-export const metadata: Metadata = buildMetadata({
+-  title: "IELTS & TOEFL Prep - Band 7+ / 100+ | NUVORA",
+-  description:
+-    "IELTS and TOEFL iBT preparation with vetted tutors: speaking drills, writing correction, listening practice and full mock tests.",
+-  path: "/ielts-toefl",
+-});
+-
+-const INCLUDES = [
+-  "Placement test + target band study plan",
+-  "Full IELTS/TOEFL mock tests with band scoring",
+-  "Speaking drills with feedback & writing correction",
+-  "Listening & reading techniques for speed",
+-  "Weekly progress reports to parents",
+-  "Flexible online or in-person sessions",
+-];
+-
+-const FAQS = [
+-  { question: "How long does IELTS/TOEFL prep take?", answer: "Most students prepare 6-12 weeks with 2-3 sessions per week, depending on their current band and target score." },
+-  { question: "Do you cover both IELTS and TOEFL?", answer: "Yes - we cover IELTS Academic and General Training as well as TOEFL iBT, including the current TOEFL format." },
+-  { question: "Can we start before booking a full package?", answer: "Yes, request a free placement test with a tutor and decide after." },
+-];
+-
+-export default function IeltsToeflPage() {
+-  return (
+-    <main>
+-      <script
+-        type="application/ld+json"
+-        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd({
+-          name: "NUVORA IELTS & TOEFL Preparation",
+-          description: "IELTS and TOEFL iBT preparation with vetted tutors - speaking drills, writing correction and full mock tests.",
+-          provider: "NUVORA",
+-          url: "https://nuvora.com/ielts-toefl",
+-        })) }}
+-      />
+-      <script
+-        type="application/ld+json"
+-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(FAQS)) }}
+-      />
+-      <PageHero
+-        eyebrow="Exam preparation"
+-        title="IELTS & TOEFL Prep - Band 7+ / 100+"
+-        subtitle="Reach your target band with a vetted tutor: speaking practice, writing correction and full mock tests for IELTS or TOEFL iBT."
+-      />
+-      <section className="mx-auto max-w-5xl px-6 py-14">
+-        <div className="grid gap-8 md:grid-cols-2">
+-          <div className="rounded-2xl border border-ink-100 bg-white p-6">
+-            <h2 className="text-lg font-bold text-brand-navy">What&apos;s included</h2>
+-            <ul className="mt-4 space-y-3">
+-              {INCLUDES.map((item) => (
+-                <li key={item} className="flex items-start gap-3 text-sm text-ink-700">
+-                  <Check size={16} className="mt-0.5 shrink-0 text-brand-gold-dark" />
+-                  {item}
+-                </li>
+-              ))}
+-            </ul>
+-            <Link href="/private-tuition?goal=ielts-toefl" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover">
+-              Request a tutor <ArrowRight size={15} />
+-            </Link>
+-          </div>
+-          <div className="rounded-2xl border border-ink-100 bg-white p-6">
+-            <h2 className="text-lg font-bold text-brand-navy">Common questions</h2>
+-            <div className="mt-4 space-y-4">
+-              {FAQS.map((f) => (
+-                <div key={f.question}>
+-                  <p className="text-sm font-semibold text-ink-800">{f.question}</p>
+-                  <p className="mt-1 text-sm leading-6 text-ink-600">{f.answer}</p>
+-                </div>
+-              ))}
+-            </div>
+-          </div>
+-        </div>
+-      </section>
+-    </main>
+-  );
+-}
+diff --git a/client/app/(marketing)/programmes/page.tsx b/client/app/(marketing)/programmes/page.tsx
+index 73b1b07..cbf0cd9 100644
+--- a/client/app/(marketing)/programmes/page.tsx
++++ b/client/app/(marketing)/programmes/page.tsx
+@@ -9,7 +9,7 @@ export const revalidate = 300;
+ export const metadata: Metadata = buildMetadata({
+   title: "Programmes - Cohorts, Bootcamps & Exam Prep | NUVORA",
+   description:
+-    "Structured learning programmes: live cohort classes, holiday bootcamps and online classes for IGCSE, WAEC, NECO, JAMB, A-Level and IELTS - with escrow-protected enrollment.",
++    "Structured learning programmes: live cohort classes, holiday bootcamps and online classes for IGCSE, WAEC, NECO, JAMB, A-Level - with escrow-protected enrollment.",
+   path: "/programmes",
+ });
+ 
+diff --git a/client/app/(marketing)/resources/page.tsx b/client/app/(marketing)/resources/page.tsx
+index bc6e342..25db699 100644
+--- a/client/app/(marketing)/resources/page.tsx
++++ b/client/app/(marketing)/resources/page.tsx
+@@ -11,7 +11,7 @@ export const metadata: Metadata = buildMetadata({
+ });
+ 
+ const HUBS = [
+-  { href: "/blog", icon: "📝", title: "Study guides & blog", desc: "Subject and exam-tagged guides: IGCSE, WAEC, NECO, JAMB, IELTS and more." },
++  { href: "/blog", icon: "📝", title: "Study guides & blog", desc: "Subject and exam-tagged guides: IGCSE, WAEC, NECO and JAMB." },
+   { href: "/exam-prep", icon: "🎯", title: "Exam preparation", desc: "How our revision cohorts, mocks and past-paper practice work." },
+   { href: "/digital-skills", icon: "💻", title: "Computing & digital skills", desc: "Computer Science, Python, AI and digital literacy pathways." },
+   { href: "/curricula/british", icon: "🇬🇧", title: "British curriculum guide", desc: "Year 7-9, IGCSE and A-Level: levels, subjects and assessment support." },
+diff --git a/client/app/(marketing)/study-abroad/page.tsx b/client/app/(marketing)/study-abroad/page.tsx
+deleted file mode 100644
+index eedd71f..0000000
+--- a/client/app/(marketing)/study-abroad/page.tsx
++++ /dev/null
+@@ -1,6 +0,0 @@
+-import { redirect } from "next/navigation";
+-
+-/** Route kept so old links do not 404. Study-abroad marketing was removed. */
+-export default function StudyAbroadRemoved() {
+-  redirect("/gmat");
+-}
+diff --git a/client/app/(marketing)/subjects/page.tsx b/client/app/(marketing)/subjects/page.tsx
+index e00bd24..f3df9f3 100644
+--- a/client/app/(marketing)/subjects/page.tsx
++++ b/client/app/(marketing)/subjects/page.tsx
+@@ -9,7 +9,7 @@ export const revalidate = 300;
+ export const metadata: Metadata = buildMetadata({
+   title: "All Subjects & Exam Prep - British & Nigerian Curricula | NUVORA",
+   description:
+-    "Browse every subject NUVORA teaches: Mathematics, English, Sciences, Digital skills, Languages, Music and exam preparation for WAEC, NECO, JAMB, IGCSE, A-Level, IELTS and more.",
++    "Browse every subject NUVORA teaches: Mathematics, English, Sciences, Digital skills, Languages, Music and exam preparation for WAEC, NECO, JAMB, IGCSE and A-Level.",
+   path: "/subjects",
+ });
+ 
+diff --git a/client/app/(marketing)/test-prep/page.tsx b/client/app/(marketing)/test-prep/page.tsx
+index 27ce070..a0a1512 100644
+--- a/client/app/(marketing)/test-prep/page.tsx
++++ b/client/app/(marketing)/test-prep/page.tsx
+@@ -8,16 +8,13 @@ import { GraduationCap, Languages, FileCheck } from "lucide-react";
+ export const revalidate = 600;
+ 
+ export const metadata: Metadata = buildMetadata({
+-  title: "Test Prep - IELTS, GMAT, GRE, TOEFL, SAT | NUVORA",
++  title: "Test Prep - GMAT, GRE, SAT | NUVORA",
+   description:
+-    "Structured prep for IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE with vetted tutors. Same login as the rest of NUVORA - works on mobile.",
++    "Structured prep for GMAT, GRE, SAT and ACT with vetted tutors. Same login as the rest of NUVORA - works on mobile.",
+   path: "/test-prep",
+ });
+ 
+ const TESTS = [
+-  { code: "IELTS", name: "International English Language Testing", href: "/ielts-toefl" },
+-  { code: "TOEFL", name: "Test of English as a Foreign Language", href: "/ielts-toefl" },
+-  { code: "PTE", name: "Pearson Test of English", href: "/ielts-toefl" },
+   { code: "GMAT", name: "Graduate Management Admission Test", href: "/gmat" },
+   { code: "GRE", name: "Graduate Record Examinations", href: "/gre" },
+   { code: "SAT", name: "Scholastic Assessment Test", href: "/sat" },
+@@ -36,7 +33,7 @@ export default function TestPrepPage() {
+       <PageHero
+         announcement="Same login on phone and desktop"
+         title="Get expert help to ace your exam"
+-        subtitle="IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE - structured sessions, mocks and weekly reports. Prep lives on nuvora.com, not a separate site."
++        subtitle="GMAT, GRE, SAT and ACT - structured sessions, mocks and weekly reports. Prep lives on nuvora.com, not a separate site."
+         ctas={[
+           { label: "Browse tests", href: "#tests", primary: true },
+           { label: "GMAT prep", href: "/gmat" },
+diff --git a/client/app/(marketing)/tutors/page.tsx b/client/app/(marketing)/tutors/page.tsx
+index 396ea94..02cb08c 100644
+--- a/client/app/(marketing)/tutors/page.tsx
++++ b/client/app/(marketing)/tutors/page.tsx
+@@ -28,7 +28,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
+   return buildMetadata({
+     title: "Find Private Tutors Online — Vetted & Verified | NUVORA",
+     description:
+-      "Search NUVORA's vetted private tutors for British & Nigerian curricula, WAEC, NECO, JAMB, IGCSE, A-Level and IELTS preparation. ID-verified, background-checked, escrow-protected.",
++      "Search NUVORA's vetted private tutors for British & Nigerian curricula, WAEC, NECO, JAMB, IGCSE and A-Level preparation. ID-verified, background-checked, escrow-protected.",
+     path: "/tutors",
+   });
+ }
+diff --git a/client/app/onboarding/page.tsx b/client/app/onboarding/page.tsx
+index 1efbc26..ecdd91a 100644
+--- a/client/app/onboarding/page.tsx
++++ b/client/app/onboarding/page.tsx
+@@ -398,7 +398,7 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
+         <div>
+           <span className="mb-1.5 block text-sm font-medium text-ink-800">What are you preparing for?</span>
+           <div className="flex flex-wrap gap-2">
+-            {["School exams", "SAT / ACT", "GMAT / GRE", "IELTS / TOEFL", "Study abroad", "University admission"].map(
++            {["School exams", "SAT / ACT", "GMAT / GRE", "University admission"].map(
+               (g) => {
+                 const on = state.student?.goals?.includes(g) ?? false;
+                 return (
+diff --git a/client/app/page.tsx b/client/app/page.tsx
+index 2d231d7..e678596 100644
+--- a/client/app/page.tsx
++++ b/client/app/page.tsx
+@@ -8,7 +8,6 @@ import { TestimonialSlider } from "@/components/home/TestimonialSlider";
+ import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
+ import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
+ import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
+-import { TravelAndCareBands } from "@/components/home/TravelAndCareBands";
+ import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
+ import { HomeFAQ } from "@/components/home/HomeFAQ";
+ 
+@@ -35,7 +34,6 @@ export default function HomePage() {
+       <Reveal delay={50}><UpcomingCohorts /></Reveal>
+       <Reveal delay={50}><ExamPrepGrid /></Reveal>
+       <Reveal delay={50}><TestimonialSlider /></Reveal>
+-      <Reveal delay={50}><TravelAndCareBands /></Reveal>
+       <Reveal delay={50}><HomeFAQ /></Reveal>
+       <Reveal delay={50}><DownloadAppCTA /></Reveal>
+       <Reveal delay={50}><BecomeTutorCTA /></Reveal>
+diff --git a/client/app/sitemap.ts b/client/app/sitemap.ts
+index b382373..86cb3a3 100644
+--- a/client/app/sitemap.ts
++++ b/client/app/sitemap.ts
+@@ -23,7 +23,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+     { url: `${SITE}/become-tutor`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+     { url: `${SITE}/blog`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+     { url: `${SITE}/sat`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+-    { url: `${SITE}/ielts-toefl`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+     { url: `${SITE}/gre`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+   ];
+ 
+diff --git a/client/components/home/ServicesShowcase.tsx b/client/components/home/ServicesShowcase.tsx
+index 48232e8..e533f39 100644
+--- a/client/components/home/ServicesShowcase.tsx
++++ b/client/components/home/ServicesShowcase.tsx
+@@ -29,7 +29,7 @@ const SERVICES = [
+   {
+     icon: <BookOpenCheck size={20} />,
+     label: "Test Prep",
+-    desc: "IELTS, GRE, GMAT, TEF and more",
++    desc: "GMAT, GRE, SAT, ACT and entrance exams",
+     href: "/exam-prep",
+     photo: "/hero/exam-prep.jpg",
+   },
+diff --git a/client/components/home/TravelAndCareBands.tsx b/client/components/home/TravelAndCareBands.tsx
+deleted file mode 100644
+index a7fb111..0000000
+--- a/client/components/home/TravelAndCareBands.tsx
++++ /dev/null
+@@ -1,44 +0,0 @@
+-import Link from "next/link";
+-import { Globe2, ArrowRight } from "lucide-react";
+-
+-// Study-abroad closing band (Tuteria reference: "Admissions & Travels").
+-// (The healthcare/HCA strip was removed in Batch 2.)
+-
+-export function TravelAndCareBands() {
+-  return (
+-    <section className="border-t border-ink-100 bg-white">
+-      <div className="mx-auto grid max-w-[1400px] items-center gap-10 px-6 py-16 md:px-10 lg:grid-cols-[1fr_1fr]">
+-        <div>
+-          <p className="inline-flex items-center gap-2 rounded-full bg-brand-blue-light px-4 py-1.5 text-xs font-bold text-brand-navy">
+-            <Globe2 size={13} /> Admissions &amp; Travels
+-          </p>
+-          <h2 className="mt-4 font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
+-            Live, work and study abroad
+-          </h2>
+-          <p className="mt-3 leading-relaxed text-ink-600">
+-            Test prep and application coaching for study in the US, UK, Canada and Australia -
+-            we do not publish an unverified university-count.
+-          </p>
+-          <Link
+-            href="/gmat"
+-            className="group mt-6 inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition-all hover:-translate-y-0.5 hover:bg-brand-gold-hover"
+-          >
+-            Start your journey
+-            <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+-          </Link>
+-        </div>
+-        <div className="overflow-hidden rounded-3xl bg-[#111111] p-8 text-white shadow-card">
+-          <p className="font-display text-3xl tracking-[0.02em] text-white">Study destinations</p>
+-          <p className="mt-1 text-white/80">US, UK, Canada &amp; Australia - shortlisting with your advisor</p>
+-          <div className="mt-6 flex flex-wrap gap-2">
+-            {["IELTS", "GRE", "GMAT", "TOEFL", "SAT"].map((t) => (
+-              <span key={t} className="rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold">
+-                {t}
+-              </span>
+-            ))}
+-          </div>
+-        </div>
+-      </div>
+-    </section>
+-  );
+-}
+diff --git a/client/components/layout/CategoryRail.tsx b/client/components/layout/CategoryRail.tsx
+index 4b9027b..06b36bf 100644
+--- a/client/components/layout/CategoryRail.tsx
++++ b/client/components/layout/CategoryRail.tsx
+@@ -6,8 +6,8 @@ import { Home, BookOpenCheck, MonitorPlay, GraduationCap, Globe2, Star, FileChec
+ import { cn } from "@/lib/utils";
+ 
+ // Category rail - reference-grade left navigation used on product pages
+-// (Home Tutoring · UTME 2026 · GMAT Prep · Healthcare · Entrance Exam ·
+-// Study Abroad · Tuteria Plus · Languages equivalent, mapped to NUVORA pages).
++// (Home Tutoring · UTME 2026 · GMAT Prep · Entrance Exam ·
++// Online Classes · Digital Skills · NUVORA Plus, mapped to NUVORA pages).
+ 
+ const CATEGORIES = [
+   { label: "Home Tutoring", href: "/hometutors", icon: <Home size={16} /> },
+diff --git a/client/components/layout/Header.tsx b/client/components/layout/Header.tsx
+index 629e0c7..049b210 100644
+--- a/client/components/layout/Header.tsx
++++ b/client/components/layout/Header.tsx
+@@ -41,7 +41,6 @@ const SERVICE_GROUPS = [
+     items: [
+       { label: "Online Classes", href: "/online-classes" },
+       { label: "Digital Skills", href: "/digital-skills" },
+-      { label: "Study Abroad", href: "/study-abroad" },
+     ],
+   },
+   {
+diff --git a/client/features/programmes/components/HeroSearch.tsx b/client/features/programmes/components/HeroSearch.tsx
+index 0374475..c71d363 100644
+--- a/client/features/programmes/components/HeroSearch.tsx
++++ b/client/features/programmes/components/HeroSearch.tsx
+@@ -17,7 +17,6 @@ const EXAMS = [
+   { value: "neco", label: "NECO" },
+   { value: "jamb", label: "JAMB / UTME" },
+   { value: "a-level", label: "A-Level" },
+-  { value: "ielts", label: "IELTS" },
+ ];
+ const LEVELS = [
+   "year-7-9", "igcse", "a-level", "jss1-3", "sss1-3", "adult",
+diff --git a/client/features/programmes/components/ProgrammesHub.tsx b/client/features/programmes/components/ProgrammesHub.tsx
+index 690cd33..0fce0be 100644
+--- a/client/features/programmes/components/ProgrammesHub.tsx
++++ b/client/features/programmes/components/ProgrammesHub.tsx
+@@ -16,7 +16,7 @@ const CURRICULA = [
+   { value: "british", label: "British Curriculum" },
+   { value: "nigerian", label: "Nigerian Curriculum" },
+ ];
+-const EXAMS = ["igcse", "waec", "neco", "jamb", "a-level", "ielts"];
++const EXAMS = ["igcse", "waec", "neco", "jamb", "a-level"];
+ const LEVELS = ["year-7-9", "igcse", "a-level", "jss1-3", "sss1-3"];
+ const FORMATS = ["COHORT", "PRIVATE", "BOOTCAMP", "HOLIDAY", "ONLINE_CLASS", "HYBRID"];
+ 
+@@ -66,7 +66,6 @@ export function ProgrammesHub() {
+     { id: "s6", title: "UTME 2026 Mastery", slug: "utme-2026", href: "/utme-2026", summary: "Live class, recordings and CBT-style mocks.", format: "ONLINE_CLASS", curriculum_name: "Nigerian", exam_name: "JAMB", currency: "NGN", is_featured: true, price_min: 35000 },
+     { id: "s7", title: "JSS Core Sciences", slug: "jss-sciences", href: "/curricula/nigerian", summary: "Basic science foundations for JSS1-3.", format: "COHORT", curriculum_name: "Nigerian", level_name: "JSS", currency: "NGN", is_featured: false },
+     { id: "s8", title: "Python Programming", slug: "python", href: "/digital-skills", summary: "First programs to small projects.", format: "BOOTCAMP", currency: "NGN", is_featured: false, price_min: 25000 },
+-    { id: "s9", title: "IELTS Academic", slug: "ielts", href: "/ielts-toefl", summary: "Speaking, writing, listening, reading.", format: "PRIVATE", currency: "NGN", is_featured: false },
+     { id: "s10", title: "GMAT Diagnostic Track", slug: "gmat", href: "/gmat", summary: "Plan from a diagnostic - no score promise.", format: "PRIVATE", currency: "NGN", is_featured: false },
+   ];
+ 
+diff --git a/client/features/tuition/PrivateTuitionWizard.tsx b/client/features/tuition/PrivateTuitionWizard.tsx
+index 913ecc2..440071c 100644
+--- a/client/features/tuition/PrivateTuitionWizard.tsx
++++ b/client/features/tuition/PrivateTuitionWizard.tsx
+@@ -33,7 +33,7 @@ const STEPS: string[] = [
+ ] as const;
+ 
+ const LEVELS = ["Year 7-9 (British)", "IGCSE (Year 10-11)", "A-Level (Year 12-13)", "JSS1-3 (Nigerian)", "SSS1-3 (Nigerian)", "Other"];
+-const SUBJECTS = ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Computer Science", "Python Programming", "Economics", "IELTS / English exam", "Other"];
++const SUBJECTS = ["Mathematics", "English Language", "Physics", "Chemistry", "Biology", "Computer Science", "Python Programming", "Economics", "Other"];
+ const DAYS = ["Weekdays", "Weekends", "Both"];
+ const TIMES = ["Morning (8am-12pm)", "Afternoon (12-4pm)", "Evening (4-8pm)", "Flexible"];
+ 
+diff --git a/client/lib/site-data.ts b/client/lib/site-data.ts
+index 72a8961..e8d225b 100644
+--- a/client/lib/site-data.ts
++++ b/client/lib/site-data.ts
+@@ -57,12 +57,9 @@ export const accordionItems = [
+ 
+ // Each exam card links to its fully built prep page (Batch 2).
+ export const examCards = [
+-  { title: "IELTS Prep", href: "/ielts-toefl" },
+   { title: "GMAT Classes", href: "/gmat" },
+   { title: "GRE Classes", href: "/gre" },
+   { title: "SATs Prep", href: "/sat" },
+-  { title: "TOEFL Prep", href: "/ielts-toefl" },
+-  { title: "PTE Prep", href: "/ielts-toefl" },
+   { title: "ACT Prep", href: "/sat" },
+ ];
+ 
+diff --git a/migrations/000044_remove_ielts_toefl_pte.down.sql b/migrations/000044_remove_ielts_toefl_pte.down.sql
+new file mode 100644
+index 0000000..ab2e565
+--- /dev/null
++++ b/migrations/000044_remove_ielts_toefl_pte.down.sql
+@@ -0,0 +1,14 @@
++-- 000044 down — re-add IELTS, TOEFL and PTE catalogue rows.
++-- (Down is best-effort; it only restores the seed catalogue rows.)
++
++INSERT INTO exams (name, slug, description) VALUES
++('IELTS','ielts','International English Language Testing System'),
++('TOEFL','toefl','Test of English as Foreign Language'),
++('PTE','pte','Pearson Test of English')
++ON CONFLICT (slug) DO NOTHING;
++
++INSERT INTO subjects (name, slug, category) VALUES
++('IELTS Prep','ielts-prep','Exam Preparation'),
++('TOEFL Prep','toefl-prep','Exam Preparation'),
++('PTE Prep','pte-prep','Exam Preparation')
++ON CONFLICT (slug) DO NOTHING;
+diff --git a/migrations/000044_remove_ielts_toefl_pte.up.sql b/migrations/000044_remove_ielts_toefl_pte.up.sql
+new file mode 100644
+index 0000000..3a3620a
+--- /dev/null
++++ b/migrations/000044_remove_ielts_toefl_pte.up.sql
+@@ -0,0 +1,28 @@
++-- 000044 — Remove IELTS, TOEFL and PTE (plus related catalogue rows).
++--
++-- These are removed from the product scope (no English-language exam prep,
++-- no travel / study-abroad offering). GMAT, GRE, SAT and ACT remain.
++--
++-- Deleting an exam/subject also removes its links in programme_subjects,
++-- cohort subjects, tutor subjects and vetting profiles. Guarded so a fresh
++-- or partially-seeded database is not affected if the rows never existed.
++
++-- Remove subject links first (FK-safe ordering).
++DELETE FROM programme_subjects
++WHERE subject_id IN (SELECT id FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep'));
++
++DELETE FROM subject_subject   -- if present (subject-to-subject links)
++WHERE subject_id IN (SELECT id FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep'))
++   OR related_subject_id IN (SELECT id FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep'));
++
++DELETE FROM tutor_subjects
++WHERE subject_id IN (SELECT id FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep'));
++
++-- Cohort programme_subjects handled above; remove cohort-subject links if a table exists.
++-- (cohorts reference programme_id, not subject_id directly.)
++
++-- Remove the exam records.
++DELETE FROM exams WHERE slug IN ('ielts','toefl','pte');
++
++-- Remove the subject records.
++DELETE FROM subjects WHERE slug IN ('ielts-prep','toefl-prep','pte-prep');
+diff --git a/mobile/app/search.tsx b/mobile/app/search.tsx
+index 8aa114d..c3f597b 100644
+--- a/mobile/app/search.tsx
++++ b/mobile/app/search.tsx
+@@ -23,7 +23,7 @@ import { isSaved, toggleSaved, type SavedTutor } from "@/src/lib/wishlist";
+ // → popular. Horizontal-scrolling sections are used sparingly; cards
+ // communicate the most important info (name, subject, rating) immediately.
+ 
+-const FEATURED_QUERIES = ["Mathematics", "IELTS", "Python"] as const;
++const FEATURED_QUERIES = ["Mathematics", "Computer Science", "Python"] as const;
+ 
+ export default function ExploreScreen() {
+   const params = useLocalSearchParams<{ q?: string; subject?: string }>();
+@@ -127,7 +127,7 @@ export default function ExploreScreen() {
+             setQuery(t);
+             void runSearch(t);
+           }}
+-          placeholder="Try “Mathematics”, “IELTS”, “Python”…"
++          placeholder="Try “Mathematics”, “Biology”, “Python”…"
+           style={{ marginBottom: spacing.sm }}
+           returnKeyType="search"
+         />

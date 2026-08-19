@@ -41,7 +41,6 @@ const SERVICE_GROUPS = [
     items: [
       { label: "Online Classes", href: "/online-classes" },
       { label: "Digital Skills", href: "/digital-skills" },
-      { label: "Study Abroad", href: "/study-abroad" },
     ],
   },
   {

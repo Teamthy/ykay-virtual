@@ -5,7 +5,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { StepsToTutor } from "@/components/home/StepsToTutor";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { GmatLeadForm } from "@/features/programmes/components/GmatLeadForm";
-import { Globe2, Briefcase, MonitorPlay, Check, ArrowRight } from "lucide-react";
+import { Target, Briefcase, MonitorPlay, Check, ArrowRight } from "lucide-react";
 
 export const revalidate = 600;
 
@@ -152,14 +152,14 @@ export default function GmatPage() {
               }}
             >
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
-                <Globe2 size={20} />
+                <Target size={20} />
               </div>
-              <h3 className="mt-4 font-bold text-white">Study abroad</h3>
+              <h3 className="mt-4 font-bold text-white">Clear study plan</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/80">
-                Prep for graduate applications - we do not promise a specific school or score.
+                Start from a diagnostic, work to your target score and track weekly progress.
               </p>
               <Link href="/gmat" className="mt-4 inline-block text-sm font-bold text-brand-gold">
-                Study-abroad prep →
+                Start a plan →
               </Link>
             </div>
             <div

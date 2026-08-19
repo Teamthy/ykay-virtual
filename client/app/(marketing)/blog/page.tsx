@@ -9,7 +9,7 @@ export const revalidate = 300;
 export const metadata: Metadata = buildMetadata({
   title: "Blog - Study Guides, Exam Tips & Learning Insights | NUVORA",
   description:
-    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB, IELTS, A-Level and more - from the NUVORA academic team.",
+    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB and A-Level - from the NUVORA academic team.",
   path: "/blog",
 });
 
@@ -25,15 +25,6 @@ type BlogPostDTO = {
 
 // Fallback content when the API is unavailable (never fabricate claims).
 const fallbackPosts: BlogPostDTO[] = [
-  {
-    id: "1",
-    slug: "how-to-score-8-ielts",
-    title: "How to Score 8.0 in IELTS: Techniques Our Tutors Use",
-    excerpt: "IELTS is not English - it's a technique exam. Learn the patterns our tutors teach.",
-    subject_slugs: ["ielts-prep"],
-    exam_slugs: ["IELTS"],
-    published_at: "2026-08-01",
-  },
   {
     id: "2",
     slug: "jamb-2026-biology-topics",

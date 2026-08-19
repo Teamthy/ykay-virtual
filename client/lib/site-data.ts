@@ -57,12 +57,9 @@ export const accordionItems = [
 
 // Each exam card links to its fully built prep page (Batch 2).
 export const examCards = [
-  { title: "IELTS Prep", href: "/ielts-toefl" },
   { title: "GMAT Classes", href: "/gmat" },
   { title: "GRE Classes", href: "/gre" },
   { title: "SATs Prep", href: "/sat" },
-  { title: "TOEFL Prep", href: "/ielts-toefl" },
-  { title: "PTE Prep", href: "/ielts-toefl" },
   { title: "ACT Prep", href: "/sat" },
 ];
 

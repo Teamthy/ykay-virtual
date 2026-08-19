@@ -8,16 +8,13 @@ import { GraduationCap, Languages, FileCheck } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Test Prep - IELTS, GMAT, GRE, TOEFL, SAT | NUVORA",
+  title: "Test Prep - GMAT, GRE, SAT | NUVORA",
   description:
-    "Structured prep for IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE with vetted tutors. Same login as the rest of NUVORA - works on mobile.",
+    "Structured prep for GMAT, GRE, SAT and ACT with vetted tutors. Same login as the rest of NUVORA - works on mobile.",
   path: "/test-prep",
 });
 
 const TESTS = [
-  { code: "IELTS", name: "International English Language Testing", href: "/ielts-toefl" },
-  { code: "TOEFL", name: "Test of English as a Foreign Language", href: "/ielts-toefl" },
-  { code: "PTE", name: "Pearson Test of English", href: "/ielts-toefl" },
   { code: "GMAT", name: "Graduate Management Admission Test", href: "/gmat" },
   { code: "GRE", name: "Graduate Record Examinations", href: "/gre" },
   { code: "SAT", name: "Scholastic Assessment Test", href: "/sat" },
@@ -36,7 +33,7 @@ export default function TestPrepPage() {
       <PageHero
         announcement="Same login on phone and desktop"
         title="Get expert help to ace your exam"
-        subtitle="IELTS, GMAT, GRE, SAT, ACT, TOEFL and PTE - structured sessions, mocks and weekly reports. Prep lives on nuvora.com, not a separate site."
+        subtitle="GMAT, GRE, SAT and ACT - structured sessions, mocks and weekly reports. Prep lives on nuvora.com, not a separate site."
         ctas={[
           { label: "Browse tests", href: "#tests", primary: true },
           { label: "GMAT prep", href: "/gmat" },

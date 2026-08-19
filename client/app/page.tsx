@@ -8,7 +8,6 @@ import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
 import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
-import { TravelAndCareBands } from "@/components/home/TravelAndCareBands";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 
@@ -35,7 +34,6 @@ export default function HomePage() {
       <Reveal delay={50}><UpcomingCohorts /></Reveal>
       <Reveal delay={50}><ExamPrepGrid /></Reveal>
       <Reveal delay={50}><TestimonialSlider /></Reveal>
-      <Reveal delay={50}><TravelAndCareBands /></Reveal>
       <Reveal delay={50}><HomeFAQ /></Reveal>
       <Reveal delay={50}><DownloadAppCTA /></Reveal>
       <Reveal delay={50}><BecomeTutorCTA /></Reveal>

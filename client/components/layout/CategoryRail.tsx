@@ -6,8 +6,8 @@ import { Home, BookOpenCheck, MonitorPlay, GraduationCap, Globe2, Star, FileChec
 import { cn } from "@/lib/utils";
 
 // Category rail - reference-grade left navigation used on product pages
-// (Home Tutoring · UTME 2026 · GMAT Prep · Healthcare · Entrance Exam ·
-// Study Abroad · Tuteria Plus · Languages equivalent, mapped to NUVORA pages).
+// (Home Tutoring · UTME 2026 · GMAT Prep · Entrance Exam ·
+// Online Classes · Digital Skills · NUVORA Plus, mapped to NUVORA pages).
 
 const CATEGORIES = [
   { label: "Home Tutoring", href: "/hometutors", icon: <Home size={16} /> },

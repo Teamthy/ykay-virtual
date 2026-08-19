@@ -24,18 +24,18 @@ type BlogPostDTO = {
 };
 
 const fallback: Record<string, BlogPostDTO> = {
-  "how-to-score-8-ielts": {
-    id: "1",
-    title: "How to Score 8.0 in IELTS: Techniques Our Tutors Use",
-    slug: "how-to-score-8-ielts",
-    excerpt: "IELTS is not your usual English exam - it's a technique exam.",
+  "jamb-2026-biology-topics": {
+    id: "2",
+    title: "JAMB 2026 Biology: Most-Predicted Topics",
+    slug: "jamb-2026-biology-topics",
+    excerpt: "Fifteen years of past questions analysed to find the highest-yield topics.",
     content:
-      "This guide covers the four IELTS bands and the techniques our tutors teach: question-pattern recognition for Reading, signpost words for Listening, the two-part answer structure for Writing, and fluency-building for Speaking. Combine these with weekly timed mocks and you can raise your band score within six weeks.",
-    seo_title: "How to Score 8.0 in IELTS - Techniques & Patterns",
-    seo_description: "IELTS preparation techniques: reading patterns, listening signposts, writing structure, speaking fluency.",
-    published_at: "2026-08-01T00:00:00Z",
-    subject_slugs: ["ielts-prep"],
-    exam_slugs: ["IELTS"],
+      "A breakdown of the highest-yield Biology topics based on an analysis of past JAMB papers, with a structured revision plan.",
+    seo_title: "JAMB 2026 Biology: Most-Predicted Topics",
+    seo_description: "Highest-yield JAMB Biology topics and a structured revision plan.",
+    published_at: "2026-07-28T00:00:00Z",
+    subject_slugs: ["biology"],
+    exam_slugs: ["JAMB"],
   },
 };
 

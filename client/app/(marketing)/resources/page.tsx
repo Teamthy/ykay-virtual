@@ -11,7 +11,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const HUBS = [
-  { href: "/blog", icon: "📝", title: "Study guides & blog", desc: "Subject and exam-tagged guides: IGCSE, WAEC, NECO, JAMB, IELTS and more." },
+  { href: "/blog", icon: "📝", title: "Study guides & blog", desc: "Subject and exam-tagged guides: IGCSE, WAEC, NECO and JAMB." },
   { href: "/exam-prep", icon: "🎯", title: "Exam preparation", desc: "How our revision cohorts, mocks and past-paper practice work." },
   { href: "/digital-skills", icon: "💻", title: "Computing & digital skills", desc: "Computer Science, Python, AI and digital literacy pathways." },
   { href: "/curricula/british", icon: "🇬🇧", title: "British curriculum guide", desc: "Year 7-9, IGCSE and A-Level: levels, subjects and assessment support." },

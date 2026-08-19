@@ -78,3 +78,6 @@ subjects.jpg
 test-prep.jpg
 
 utme.jpg
+.vercel
+.env*
+.patch

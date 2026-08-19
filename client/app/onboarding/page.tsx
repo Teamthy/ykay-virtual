@@ -398,7 +398,7 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
         <div>
           <span className="mb-1.5 block text-sm font-medium text-ink-800">What are you preparing for?</span>
           <div className="flex flex-wrap gap-2">
-            {["School exams", "SAT / ACT", "GMAT / GRE", "IELTS / TOEFL", "Study abroad", "University admission"].map(
+            {["School exams", "SAT / ACT", "GMAT / GRE", "University admission"].map(
               (g) => {
                 const on = state.student?.goals?.includes(g) ?? false;
                 return (

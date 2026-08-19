@@ -28,7 +28,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return buildMetadata({
     title: "Find Private Tutors Online — Vetted & Verified | NUVORA",
     description:
-      "Search NUVORA's vetted private tutors for British & Nigerian curricula, WAEC, NECO, JAMB, IGCSE, A-Level and IELTS preparation. ID-verified, background-checked, escrow-protected.",
+      "Search NUVORA's vetted private tutors for British & Nigerian curricula, WAEC, NECO, JAMB, IGCSE and A-Level preparation. ID-verified, background-checked, escrow-protected.",
     path: "/tutors",
   });
 }
