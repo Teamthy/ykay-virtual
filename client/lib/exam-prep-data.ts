@@ -400,6 +400,21 @@ export const EXAMS: ExamInfo[] = [
       "business-studies",
     ],
   },
+  {
+    slug: "sat",
+    code: "SAT",
+    name: "SAT",
+    fullName: "Scholastic Assessment Test",
+    level: "US college/university admission",
+    format: "Digital adaptive exam with Reading & Writing and Math sections; optional Essay not part of the current digital SAT.",
+    structure: [
+      "Two sections: Reading & Writing and Math.",
+      "Digital, adaptive, administered in two module sets per section.",
+      "Total time approximately 2 hours 14 minutes.",
+    ],
+    grading: "Scored 400-1600 (Reading & Writing 200-800, Math 200-800).",
+    subjects: ["english-language", "mathematics"],
+  },
 ];
 
 export function getSubject(slug: string): ExamSubject | undefined {

@@ -22,6 +22,7 @@ const EXAMS = [
   { code: "NECO", name: "National Examinations Council", desc: "Shared-syllabus preparation alongside WAEC where applicable.", href: "/curricula/nigerian", photo: "/hero/exam-prep.jpg" },
   { code: "JAMB", name: "UTME / Post-UTME", desc: "Topic-focused revision, question analysis and CBT mock tests.", href: "/utme-2026", photo: "/hero/utme.jpg" },
   { code: "A-Level", name: "Advanced Level", desc: "Subject-specialist tuition for university-bound learners.", href: "/curricula/british", photo: "/hero/programmes.jpg" },
+  { code: "SAT", name: "SAT", desc: "Digital SAT prep — Reading & Writing and Math sections with timed mocks.", href: "/sat", photo: "/hero/test-prep.jpg" },
 ];
 
 const METHOD = [
