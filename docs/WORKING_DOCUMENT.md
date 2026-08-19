@@ -84,10 +84,10 @@ Public routes: Home, About, Programmes, British Curriculum, Nigerian Curriculum,
 - **Admin creates cohort:** Admin → Programmes → Create cohort → subject/level/tutor → capacity → dates/times → fee → publish → enrolments → attendance/progress.
 
 ## 8. Public Website Pages & Wireframes
-(Full wireframes in original spec.) Key pages: Home, Programmes Hub, Programme/Subject Detail, British Curriculum Landing, Nigerian Curriculum Landing, **Exam Preparation** (IGCSE | WAEC | NECO | JAMB/UTME | A-Level | **SATs Prep**), Private Tuition, Find a Tutor, Tutor Profile, Become a Tutor, About/Academic Leadership, Pricing, Success Stories, Contact/Support, Authentication.
+(Full wireframes in original spec.) Key pages: Home, Programmes Hub, Programme/Subject Detail, British Curriculum Landing, Nigerian Curriculum Landing, **Exam Preparation** (**SATs Prep | NECO | UTME | WASSCE | British exams**), Private Tuition, Find a Tutor, Tutor Profile, Become a Tutor, About/Academic Leadership, Pricing, Success Stories, Contact/Support, Authentication.
 
 ### 8.6 Exam Preparation (updated)
-Exam cards: **IGCSE | WAEC | NECO | JAMB/UTME | A-Level | SATs Prep**
+Exam cards: **SATs Prep | NECO | UTME | WASSCE | British exams**
 - Upcoming revision cohorts
 - Mock / revision / past-paper methodology
 - Subject selection
@@ -160,7 +160,7 @@ AC-01…AC-12 (per original spec §25): end-to-end parent enrolment, tutor can't
 |---|---|
 | British Curriculum | Year 7–9, IGCSE Year 10–11, A Level |
 | Nigerian Curriculum | JSS1–3, SSS1–3 |
-| **Examinations** | **IGCSE, WAEC, NECO, JAMB/UTME, A-Level, SATs Prep** |
+| **Examinations** | **SATs Prep, NECO, UTME, WASSCE, British exams** |
 | Learning mode | Private tuition, small-group cohort, revision bootcamp, holiday programme |
 | Digital Academy | Computer Science, ICT, Python, AI, Cybersecurity, Microsoft Office/digital literacy |
 

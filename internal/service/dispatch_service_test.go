@@ -44,7 +44,7 @@ func TestDispatchHandlers(t *testing.T) {
 	sm := &captureSMS{}
 	uid := uuid.New()
 	phone := "2348012345678"
-	svc := NewDispatchService(em, sm, nil, &fakeUsers{byID: map[uuid.UUID]*identity.User{
+	svc := NewDispatchService(em, sm, nil, nil, &fakeUsers{byID: map[uuid.UUID]*identity.User{
 		uid: {ID: uid, Email: "parent@test.com", Phone: &phone},
 	}})
 	ctx := context.Background()
@@ -109,5 +109,42 @@ func TestAIGuardBudget(t *testing.T) {
 	}
 	if g.Used() != 100 {
 		t.Fatalf("used = %d, want 100", g.Used())
+	}
+}
+
+type captureWhatsApp struct{ sent []string }
+
+func (c *captureWhatsApp) Send(_ context.Context, to, message string) error {
+	c.sent = append(c.sent, to+"|"+message)
+	return nil
+}
+
+func TestDispatchWhatsApp(t *testing.T) {
+	em := &captureEmail{}
+	sm := &captureSMS{}
+	wa := &captureWhatsApp{}
+	uid := uuid.New()
+	phone := "2348012345678"
+	svc := NewDispatchService(em, sm, wa, nil, &fakeUsers{byID: map[uuid.UUID]*identity.User{
+		uid: {ID: uid, Email: "parent@test.com", Phone: &phone},
+	}})
+	ctx := context.Background()
+
+	// By explicit phone.
+	if err := svc.HandleSendWhatsApp(ctx, mustJob(t, map[string]string{"to": "2347000000000", "body": "Hello"})); err != nil {
+		t.Fatalf("whatsapp by phone: %v", err)
+	}
+	// Resolved from user_id.
+	if err := svc.HandleSendWhatsApp(ctx, mustJob(t, map[string]string{"user_id": uid.String(), "body": "By user"})); err != nil {
+		t.Fatalf("whatsapp by user: %v", err)
+	}
+	if len(wa.sent) != 2 {
+		t.Fatalf("expected 2 WhatsApp sends, got %d: %v", len(wa.sent), wa.sent)
+	}
+	if wa.sent[0] != "2347000000000|Hello" {
+		t.Fatalf("whatsapp payload wrong: %v", wa.sent[0])
+	}
+	if wa.sent[1] != "2348012345678|By user" {
+		t.Fatalf("whatsapp user-resolved payload wrong: %v", wa.sent[1])
 	}
 }

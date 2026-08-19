@@ -93,6 +93,7 @@ func main() {
 	dispatchSvc := service.NewDispatchService(
 		notification.NewEmailSender(),
 		notification.NewSMSSender(),
+		notification.NewWhatsAppSender(),
 		pushSvc,
 		r.users,
 	)
@@ -111,6 +112,9 @@ func main() {
 		})
 		queue.Register(worker.JobSendSMS, func(jctx context.Context, job worker.Job) error {
 			return dispatchSvc.HandleSendSMS(jctx, job.Payload)
+		})
+		queue.Register(worker.JobSendWhatsApp, func(jctx context.Context, job worker.Job) error {
+			return dispatchSvc.HandleSendWhatsApp(jctx, job.Payload)
 		})
 		queue.Register(worker.JobSendPush, func(jctx context.Context, job worker.Job) error {
 			return dispatchSvc.HandleSendPush(jctx, job.Payload)

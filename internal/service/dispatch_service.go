@@ -19,14 +19,37 @@ import (
 // Expo/console). Handlers are idempotent by contract: a redelivery at most
 // re-sends a message (at-least-once), never mutates business state.
 type DispatchService struct {
-	email notification.EmailSender
-	sms   notification.SMSSender
-	push  *PushService
-	users identity.UserRepository
+	email    notification.EmailSender
+	sms      notification.SMSSender
+	whatsapp notification.WhatsAppSender
+	push     *PushService
+	users    identity.UserRepository
 }
 
-func NewDispatchService(email notification.EmailSender, sms notification.SMSSender, push *PushService, users identity.UserRepository) *DispatchService {
-	return &DispatchService{email: email, sms: sms, push: push, users: users}
+func NewDispatchService(email notification.EmailSender, sms notification.SMSSender,
+	whatsapp notification.WhatsAppSender, push *PushService, users identity.UserRepository) *DispatchService {
+	return &DispatchService{email: email, sms: sms, whatsapp: whatsapp, push: push, users: users}
+}
+
+// HandleSendWhatsApp — send_whatsapp job handler (idempotent). Resolves the
+// recipient's phone from the user record when only a user_id is provided.
+func (s *DispatchService) HandleSendWhatsApp(ctx context.Context, raw json.RawMessage) error {
+	j, err := decodeDispatchJob(raw)
+	if err != nil {
+		return err
+	}
+	if j.To == "" && j.UserID != "" {
+		if u, err := s.users.FindByID(ctx, uuid.MustParse(j.UserID)); err == nil && u.Phone != nil {
+			j.To = *u.Phone
+		}
+	}
+	if j.To == "" || j.Body == "" {
+		return fmt.Errorf("send_whatsapp: missing to/body")
+	}
+	if s.whatsapp == nil {
+		return fmt.Errorf("send_whatsapp: WhatsApp sender not configured")
+	}
+	return s.whatsapp.Send(ctx, j.To, j.Body)
 }
 
 // DispatchJob payloads (kept flat for queue JSON compatibility).

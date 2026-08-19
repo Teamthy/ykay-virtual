@@ -984,6 +984,26 @@ paths:
       responses:
         '201': { description: Coupon created }
 
+  /admin/notifications/whatsapp:
+    post:
+      tags: [admin]
+      summary: Send a WhatsApp message to a user or phone number
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                user_id: { type: string, format: uuid }
+                phone: { type: string, description: International-format phone, e.g. 2348... }
+                body: { type: string }
+      responses:
+        '202':
+          description: Message queued for WhatsApp delivery
+
   /payments/initiate:
     post:
       tags: [payments]

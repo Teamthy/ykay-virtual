@@ -1,0 +1,508 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index 2d9449a..78a91ce 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -984,6 +984,26 @@ paths:
+       responses:
+         '201': { description: Coupon created }
+ 
++  /admin/notifications/whatsapp:
++    post:
++      tags: [admin]
++      summary: Send a WhatsApp message to a user or phone number
++      security: [{ sessionCookie: [] }]
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [body]
++              properties:
++                user_id: { type: string, format: uuid }
++                phone: { type: string, description: International-format phone, e.g. 2348... }
++                body: { type: string }
++      responses:
++        '202':
++          description: Message queued for WhatsApp delivery
++
+   /payments/initiate:
+     post:
+       tags: [payments]
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index c8fd926..c95c1c3 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -37,6 +37,7 @@ import (
+ 	"ykay-virtual/internal/logx"
+ 	"ykay-virtual/internal/meeting"
+ 	"ykay-virtual/internal/middleware"
++	"ykay-virtual/internal/notification"
+ 	payment_provider "ykay-virtual/internal/payment"
+ 	"ykay-virtual/internal/repository"
+ 	"ykay-virtual/internal/repository/memory"
+@@ -197,6 +198,17 @@ func main() {
+ 			authSvc.WithQueue(jobQueue)
+ 		}
+ 	}
++	// Outbound WhatsApp notifications (gap #4): enqueue to the worker when
++	// Redis is available, else direct-dispatch via the configured sender.
++	notifierSvc := service.NewNotifierService(
++		func() worker.Queue {
++			if q := setupJobQueue(cfg.RedisURL); q != nil {
++				return q
++			}
++			return nil
++		}(),
++		notification.NewWhatsAppSender(),
++	)
+ 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
+ 		ClientID:     cfg.GoogleClientID,
+ 		ClientSecret: cfg.GoogleClientSecret,
+@@ -338,6 +350,7 @@ func main() {
+ 		Cohorts:    httpapi.NewCohortHandler(cohortSvc),
+ 		Bookings:   httpapi.NewBookingHandler(bookingSvc),
+ 		Coupons:    httpapi.NewCouponHandler(couponSvc),
++		Notifier:   httpapi.NewNotifierHandler(notifierSvc),
+ 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
+ 			payment.ProviderPaystack:    cfg.PaystackSecret,
+ 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
+diff --git a/cmd/worker/main.go b/cmd/worker/main.go
+index 2425fb6..58a3dc6 100644
+--- a/cmd/worker/main.go
++++ b/cmd/worker/main.go
+@@ -93,6 +93,7 @@ func main() {
+ 	dispatchSvc := service.NewDispatchService(
+ 		notification.NewEmailSender(),
+ 		notification.NewSMSSender(),
++		notification.NewWhatsAppSender(),
+ 		pushSvc,
+ 		r.users,
+ 	)
+@@ -112,6 +113,9 @@ func main() {
+ 		queue.Register(worker.JobSendSMS, func(jctx context.Context, job worker.Job) error {
+ 			return dispatchSvc.HandleSendSMS(jctx, job.Payload)
+ 		})
++		queue.Register(worker.JobSendWhatsApp, func(jctx context.Context, job worker.Job) error {
++			return dispatchSvc.HandleSendWhatsApp(jctx, job.Payload)
++		})
+ 		queue.Register(worker.JobSendPush, func(jctx context.Context, job worker.Job) error {
+ 			return dispatchSvc.HandleSendPush(jctx, job.Payload)
+ 		})
+diff --git a/docs/WORKING_DOCUMENT.md b/docs/WORKING_DOCUMENT.md
+index 0be5843..1038d74 100644
+--- a/docs/WORKING_DOCUMENT.md
++++ b/docs/WORKING_DOCUMENT.md
+@@ -84,10 +84,10 @@ Public routes: Home, About, Programmes, British Curriculum, Nigerian Curriculum,
+ - **Admin creates cohort:** Admin → Programmes → Create cohort → subject/level/tutor → capacity → dates/times → fee → publish → enrolments → attendance/progress.
+ 
+ ## 8. Public Website Pages & Wireframes
+-(Full wireframes in original spec.) Key pages: Home, Programmes Hub, Programme/Subject Detail, British Curriculum Landing, Nigerian Curriculum Landing, **Exam Preparation** (IGCSE | WAEC | NECO | JAMB/UTME | A-Level | **SATs Prep**), Private Tuition, Find a Tutor, Tutor Profile, Become a Tutor, About/Academic Leadership, Pricing, Success Stories, Contact/Support, Authentication.
++(Full wireframes in original spec.) Key pages: Home, Programmes Hub, Programme/Subject Detail, British Curriculum Landing, Nigerian Curriculum Landing, **Exam Preparation** (**SATs Prep | NECO | UTME | WASSCE | British exams**), Private Tuition, Find a Tutor, Tutor Profile, Become a Tutor, About/Academic Leadership, Pricing, Success Stories, Contact/Support, Authentication.
+ 
+ ### 8.6 Exam Preparation (updated)
+-Exam cards: **IGCSE | WAEC | NECO | JAMB/UTME | A-Level | SATs Prep**
++Exam cards: **SATs Prep | NECO | UTME | WASSCE | British exams**
+ - Upcoming revision cohorts
+ - Mock / revision / past-paper methodology
+ - Subject selection
+@@ -160,7 +160,7 @@ AC-01…AC-12 (per original spec §25): end-to-end parent enrolment, tutor can't
+ |---|---|
+ | British Curriculum | Year 7–9, IGCSE Year 10–11, A Level |
+ | Nigerian Curriculum | JSS1–3, SSS1–3 |
+-| **Examinations** | **IGCSE, WAEC, NECO, JAMB/UTME, A-Level, SATs Prep** |
++| **Examinations** | **SATs Prep, NECO, UTME, WASSCE, British exams** |
+ | Learning mode | Private tuition, small-group cohort, revision bootcamp, holiday programme |
+ | Digital Academy | Computer Science, ICT, Python, AI, Cybersecurity, Microsoft Office/digital literacy |
+ 
+diff --git a/internal/notification/whatsapp.go b/internal/notification/whatsapp.go
+new file mode 100644
+index 0000000..ec9e890
+--- /dev/null
++++ b/internal/notification/whatsapp.go
+@@ -0,0 +1,115 @@
++// Package notification — WhatsApp delivery (gap #4).
++//
++// Reuses the Termii messaging API's "whatsapp" channel (WhatsApp on Termii is
++// available in Nigeria and many markets), so a single provider handles SMS and
++// WhatsApp. Implementations:
++//   - ConsoleWhatsAppSender  — logs messages to stdout (dev default)
++//   - TermiiWhatsAppSender   — Termii "whatsapp" channel; configured via
++//     TERMII_API_KEY + TERMII_WHATSAPP_SENDER (the numeric WhatsApp sender id
++//     provided by Termii). Falls back to TERMII_FROM / TERMII_SENDER_ID.
++package notification
++
++import (
++	"bytes"
++	"context"
++	"encoding/json"
++	"fmt"
++	"io"
++	"log/slog"
++	"net/http"
++	"os"
++	"strings"
++	"time"
++)
++
++// WhatsAppSender — outbound WhatsApp adapter.
++type WhatsAppSender interface {
++	Send(ctx context.Context, to, message string) error
++}
++
++// NewWhatsAppSender returns the Termii WhatsApp sender when configured,
++// otherwise the console sender (dev). WhatsApp requires a numeric sender id
++// (Termii-issued); TERMII_WHATSAPP_SENDER overrides the SMS sender id.
++func NewWhatsAppSender() WhatsAppSender {
++	key := os.Getenv("TERMII_API_KEY")
++	if key == "" {
++		return ConsoleWhatsAppSender{}
++	}
++	from := os.Getenv("TERMII_WHATSAPP_SENDER")
++	if from == "" {
++		from = os.Getenv("TERMII_FROM")
++	}
++	return &TermiiWhatsAppSender{
++		APIKey:  key,
++		From:    from,
++		BaseURL: "https://api.ng.termii.com",
++		HTTP:    &http.Client{Timeout: 10 * time.Second},
++	}
++}
++
++// ConsoleWhatsAppSender — dev: log the message (safe logging like SMS).
++type ConsoleWhatsAppSender struct{}
++
++func (ConsoleWhatsAppSender) Send(_ context.Context, to, message string) error {
++	if os.Getenv("ENVIRONMENT") == "production" {
++		slog.Warn("WhatsApp console sender used in production (provider not configured) — message NOT sent or logged", "to", to)
++		return nil
++	}
++	slog.Info("WhatsApp (console/dev)", "to", to, "body", truncate(message, 300))
++	return nil
++}
++
++// TermiiWhatsAppSender — Termii "whatsapp" channel.
++// Docs: https://developers.termii.com/whatsapp — POST /api/sms/send with
++// Channel "whatsapp" and the numeric WhatsApp sender id in "from".
++type TermiiWhatsAppSender struct {
++	APIKey  string
++	From    string // TERMII_WHATSAPP_SENDER (numeric WhatsApp sender id)
++	BaseURL string
++	HTTP    *http.Client
++}
++
++type termiiWhatsAppRequest struct {
++	To      string `json:"to"`
++	From    string `json:"from"`
++	SMS     string `json:"sms"`
++	Type    string `json:"type"`
++	Channel string `json:"channel"`
++	APIKey  string `json:"api_key"`
++}
++
++// Send delivers one WhatsApp message through the Termii API.
++func (t *TermiiWhatsAppSender) Send(ctx context.Context, to, message string) error {
++	reqBody, err := json.Marshal(termiiWhatsAppRequest{
++		To:      strings.TrimPrefix(to, "+"),
++		From:    t.From,
++		SMS:     message,
++		Type:    "plain",
++		Channel: "whatsapp",
++		APIKey:  t.APIKey,
++	})
++	if err != nil {
++		return fmt.Errorf("termii whatsapp: marshal request: %w", err)
++	}
++	req, err := http.NewRequestWithContext(ctx, http.MethodPost, t.BaseURL+"/api/sms/send", bytes.NewReader(reqBody))
++	if err != nil {
++		return fmt.Errorf("termii whatsapp: build request: %w", err)
++	}
++	req.Header.Set("Content-Type", "application/json")
++	resp, err := t.HTTP.Do(req)
++	if err != nil {
++		return fmt.Errorf("termii whatsapp: send: %w", err)
++	}
++	defer resp.Body.Close()
++	body, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
++
++	var out termiiSMSResponse
++	_ = json.Unmarshal(body, &out)
++	if resp.StatusCode < 200 || resp.StatusCode > 299 {
++		return fmt.Errorf("termii whatsapp: HTTP %d: %s", resp.StatusCode, truncate(string(body), 300))
++	}
++	if out.MessageID == "" && out.Status != "Success" {
++		return fmt.Errorf("termii whatsapp: rejected: %s", truncate(out.Message, 300))
++	}
++	return nil
++}
+diff --git a/internal/service/dispatch_service.go b/internal/service/dispatch_service.go
+index ebaaab3..fcfc91b 100644
+--- a/internal/service/dispatch_service.go
++++ b/internal/service/dispatch_service.go
+@@ -19,14 +19,37 @@ import (
+ // Expo/console). Handlers are idempotent by contract: a redelivery at most
+ // re-sends a message (at-least-once), never mutates business state.
+ type DispatchService struct {
+-	email notification.EmailSender
+-	sms   notification.SMSSender
+-	push  *PushService
+-	users identity.UserRepository
++	email    notification.EmailSender
++	sms      notification.SMSSender
++	whatsapp notification.WhatsAppSender
++	push     *PushService
++	users    identity.UserRepository
+ }
+ 
+-func NewDispatchService(email notification.EmailSender, sms notification.SMSSender, push *PushService, users identity.UserRepository) *DispatchService {
+-	return &DispatchService{email: email, sms: sms, push: push, users: users}
++func NewDispatchService(email notification.EmailSender, sms notification.SMSSender,
++	whatsapp notification.WhatsAppSender, push *PushService, users identity.UserRepository) *DispatchService {
++	return &DispatchService{email: email, sms: sms, whatsapp: whatsapp, push: push, users: users}
++}
++
++// HandleSendWhatsApp — send_whatsapp job handler (idempotent). Resolves the
++// recipient's phone from the user record when only a user_id is provided.
++func (s *DispatchService) HandleSendWhatsApp(ctx context.Context, raw json.RawMessage) error {
++	j, err := decodeDispatchJob(raw)
++	if err != nil {
++		return err
++	}
++	if j.To == "" && j.UserID != "" {
++		if u, err := s.users.FindByID(ctx, uuid.MustParse(j.UserID)); err == nil && u.Phone != nil {
++			j.To = *u.Phone
++		}
++	}
++	if j.To == "" || j.Body == "" {
++		return fmt.Errorf("send_whatsapp: missing to/body")
++	}
++	if s.whatsapp == nil {
++		return fmt.Errorf("send_whatsapp: WhatsApp sender not configured")
++	}
++	return s.whatsapp.Send(ctx, j.To, j.Body)
+ }
+ 
+ // DispatchJob payloads (kept flat for queue JSON compatibility).
+diff --git a/internal/service/dispatch_service_test.go b/internal/service/dispatch_service_test.go
+index d118ae8..aaf63d6 100644
+--- a/internal/service/dispatch_service_test.go
++++ b/internal/service/dispatch_service_test.go
+@@ -44,7 +44,7 @@ func TestDispatchHandlers(t *testing.T) {
+ 	sm := &captureSMS{}
+ 	uid := uuid.New()
+ 	phone := "2348012345678"
+-	svc := NewDispatchService(em, sm, nil, &fakeUsers{byID: map[uuid.UUID]*identity.User{
++	svc := NewDispatchService(em, sm, nil, nil, &fakeUsers{byID: map[uuid.UUID]*identity.User{
+ 		uid: {ID: uid, Email: "parent@test.com", Phone: &phone},
+ 	}})
+ 	ctx := context.Background()
+@@ -111,3 +111,40 @@ func TestAIGuardBudget(t *testing.T) {
+ 		t.Fatalf("used = %d, want 100", g.Used())
+ 	}
+ }
++
++type captureWhatsApp struct{ sent []string }
++
++func (c *captureWhatsApp) Send(_ context.Context, to, message string) error {
++	c.sent = append(c.sent, to+"|"+message)
++	return nil
++}
++
++func TestDispatchWhatsApp(t *testing.T) {
++	em := &captureEmail{}
++	sm := &captureSMS{}
++	wa := &captureWhatsApp{}
++	uid := uuid.New()
++	phone := "2348012345678"
++	svc := NewDispatchService(em, sm, wa, nil, &fakeUsers{byID: map[uuid.UUID]*identity.User{
++		uid: {ID: uid, Email: "parent@test.com", Phone: &phone},
++	}})
++	ctx := context.Background()
++
++	// By explicit phone.
++	if err := svc.HandleSendWhatsApp(ctx, mustJob(t, map[string]string{"to": "2347000000000", "body": "Hello"})); err != nil {
++		t.Fatalf("whatsapp by phone: %v", err)
++	}
++	// Resolved from user_id.
++	if err := svc.HandleSendWhatsApp(ctx, mustJob(t, map[string]string{"user_id": uid.String(), "body": "By user"})); err != nil {
++		t.Fatalf("whatsapp by user: %v", err)
++	}
++	if len(wa.sent) != 2 {
++		t.Fatalf("expected 2 WhatsApp sends, got %d: %v", len(wa.sent), wa.sent)
++	}
++	if wa.sent[0] != "2347000000000|Hello" {
++		t.Fatalf("whatsapp payload wrong: %v", wa.sent[0])
++	}
++	if wa.sent[1] != "2348012345678|By user" {
++		t.Fatalf("whatsapp user-resolved payload wrong: %v", wa.sent[1])
++	}
++}
+diff --git a/internal/service/notifier_service.go b/internal/service/notifier_service.go
+new file mode 100644
+index 0000000..82c8a3e
+--- /dev/null
++++ b/internal/service/notifier_service.go
+@@ -0,0 +1,64 @@
++package service
++
++import (
++	"context"
++	"encoding/json"
++	"fmt"
++
++	"github.com/google/uuid"
++
++	"ykay-virtual/internal/notification"
++	"ykay-virtual/internal/worker"
++)
++
++// NotifierService — outbound notification producer (gap #4).
++// When a durable queue is available it enqueues send_whatsapp jobs for the
++// worker; otherwise it dispatches directly through the injected WhatsApp
++// sender (dev fallback). Fails closed if neither is configured.
++type NotifierService struct {
++	queue    worker.Queue
++	whatsapp notification.WhatsAppSender
++}
++
++// NewNotifierService wires the queue + optional direct sender.
++func NewNotifierService(queue worker.Queue, whatsapp notification.WhatsAppSender) *NotifierService {
++	return &NotifierService{queue: queue, whatsapp: whatsapp}
++}
++
++// SendWhatsApp sends a WhatsApp message for a user. Recipient phone is
++// resolved at dispatch time from the user record (direct path) or by the
++// worker handler (queued path).
++func (s *NotifierService) SendWhatsApp(ctx context.Context, userID uuid.UUID, body string) error {
++	payload, err := json.Marshal(DispatchJob{UserID: userID.String(), Body: body})
++	if err != nil {
++		return err
++	}
++	return s.dispatch(ctx, payload)
++}
++
++// SendWhatsAppTo sends a WhatsApp message to an explicit phone number.
++func (s *NotifierService) SendWhatsAppTo(ctx context.Context, phone, body string) error {
++	payload, err := json.Marshal(DispatchJob{To: phone, Body: body})
++	if err != nil {
++		return err
++	}
++	return s.dispatch(ctx, payload)
++}
++
++func (s *NotifierService) dispatch(ctx context.Context, payload []byte) error {
++	if s.queue != nil {
++		_, err := s.queue.Enqueue(ctx, worker.JobSendWhatsApp, payload)
++		return err
++	}
++	if s.whatsapp == nil {
++		return fmt.Errorf("whatsapp: no queue or sender configured")
++	}
++	var j DispatchJob
++	if err := json.Unmarshal(payload, &j); err != nil {
++		return err
++	}
++	if j.To == "" {
++		return fmt.Errorf("whatsapp: recipient phone unknown (direct dispatch requires phone)")
++	}
++	return s.whatsapp.Send(ctx, j.To, j.Body)
++}
+diff --git a/internal/transport/http/notifier_handler.go b/internal/transport/http/notifier_handler.go
+new file mode 100644
+index 0000000..51d339b
+--- /dev/null
++++ b/internal/transport/http/notifier_handler.go
+@@ -0,0 +1,60 @@
++package httpapi
++
++import (
++	"net/http"
++
++	"ykay-virtual/internal/service"
++	"ykay-virtual/pkg"
++
++	"github.com/google/uuid"
++)
++
++// NotifierHandler — admin-triggered outbound notifications (WhatsApp, etc.).
++type NotifierHandler struct {
++	svc *service.NotifierService
++}
++
++func NewNotifierHandler(svc *service.NotifierService) *NotifierHandler {
++	return &NotifierHandler{svc: svc}
++}
++
++// SendWhatsApp — POST /api/v1/admin/notifications/whatsapp (admin). Sends a
++// WhatsApp message to a user (by user_id) or an explicit phone number.
++func (h *NotifierHandler) SendWhatsApp(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil || !actor.IsAdmin {
++		WriteAppError(w, pkg.Forbidden("admin access required"))
++		return
++	}
++	var req struct {
++		UserID string `json:"user_id"`
++		Phone  string `json:"phone"`
++		Body   string `json:"body"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	if req.Body == "" {
++		WriteAppError(w, pkg.BadRequest("body is required", nil))
++		return
++	}
++	if req.Phone != "" {
++		if err := h.svc.SendWhatsAppTo(r.Context(), req.Phone, req.Body); err != nil {
++			WriteAppError(w, err)
++			return
++		}
++		pkg.WriteSuccess(w, http.StatusAccepted, map[string]any{"queued": true, "channel": "whatsapp", "to": req.Phone}, nil)
++		return
++	}
++	uid, err := uuid.Parse(req.UserID)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("user_id must be a valid UUID (or provide phone)", nil))
++		return
++	}
++	if err := h.svc.SendWhatsApp(r.Context(), uid, req.Body); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusAccepted, map[string]any{"queued": true, "channel": "whatsapp", "user_id": uid}, nil)
++}
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index fce0e83..4e449b4 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -175,6 +175,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	mux.HandleFunc("POST "+v1+"/coupons/validate", handlers.Coupons.Validate)
+ 	mux.HandleFunc("GET "+v1+"/admin/coupons", handlers.Coupons.List)
+ 	mux.HandleFunc("POST "+v1+"/admin/coupons", handlers.Coupons.Create)
++	mux.HandleFunc("POST "+v1+"/admin/notifications/whatsapp", handlers.Notifier.SendWhatsApp)
+ 	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
+ 	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
+ 	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
+@@ -364,6 +365,7 @@ type Handlers struct {
+ 	Cohorts         *CohortHandler
+ 	Bookings        *BookingHandler
+ 	Coupons         *CouponHandler
++	Notifier        *NotifierHandler
+ 	Payments        *PaymentHandler
+ 	Vetting         *VettingHandler
+ 	AdminVetting    *AdminVettingHandler
+diff --git a/internal/worker/jobs.go b/internal/worker/jobs.go
+index 7ad47b5..170b9a5 100644
+--- a/internal/worker/jobs.go
++++ b/internal/worker/jobs.go
+@@ -12,6 +12,7 @@ type JobType string
+ const (
+ 	JobSendEmail               JobType = "send_email"
+ 	JobSendSMS                 JobType = "send_sms"
++	JobSendWhatsApp            JobType = "send_whatsapp"
+ 	JobSendPush                JobType = "send_push"
+ 	JobProcessPaymentWebhook   JobType = "process_payment_webhook_async"
+ 	JobGenerateLessonReminders JobType = "generate_lesson_reminders"

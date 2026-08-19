@@ -12,6 +12,7 @@ type JobType string
 const (
 	JobSendEmail               JobType = "send_email"
 	JobSendSMS                 JobType = "send_sms"
+	JobSendWhatsApp            JobType = "send_whatsapp"
 	JobSendPush                JobType = "send_push"
 	JobProcessPaymentWebhook   JobType = "process_payment_webhook_async"
 	JobGenerateLessonReminders JobType = "generate_lesson_reminders"

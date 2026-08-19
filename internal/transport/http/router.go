@@ -175,6 +175,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/coupons/validate", handlers.Coupons.Validate)
 	mux.HandleFunc("GET "+v1+"/admin/coupons", handlers.Coupons.List)
 	mux.HandleFunc("POST "+v1+"/admin/coupons", handlers.Coupons.Create)
+	mux.HandleFunc("POST "+v1+"/admin/notifications/whatsapp", handlers.Notifier.SendWhatsApp)
 	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
 	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
 	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
@@ -364,6 +365,7 @@ type Handlers struct {
 	Cohorts         *CohortHandler
 	Bookings        *BookingHandler
 	Coupons         *CouponHandler
+	Notifier        *NotifierHandler
 	Payments        *PaymentHandler
 	Vetting         *VettingHandler
 	AdminVetting    *AdminVettingHandler

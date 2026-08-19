@@ -37,6 +37,7 @@ import (
 	"ykay-virtual/internal/logx"
 	"ykay-virtual/internal/meeting"
 	"ykay-virtual/internal/middleware"
+	"ykay-virtual/internal/notification"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
 	"ykay-virtual/internal/repository/memory"
@@ -197,6 +198,17 @@ func main() {
 			authSvc.WithQueue(jobQueue)
 		}
 	}
+	// Outbound WhatsApp notifications (gap #4): enqueue to the worker when
+	// Redis is available, else direct-dispatch via the configured sender.
+	notifierSvc := service.NewNotifierService(
+		func() worker.Queue {
+			if q := setupJobQueue(cfg.RedisURL); q != nil {
+				return q
+			}
+			return nil
+		}(),
+		notification.NewWhatsAppSender(),
+	)
 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
@@ -338,6 +350,7 @@ func main() {
 		Cohorts:    httpapi.NewCohortHandler(cohortSvc),
 		Bookings:   httpapi.NewBookingHandler(bookingSvc),
 		Coupons:    httpapi.NewCouponHandler(couponSvc),
+		Notifier:   httpapi.NewNotifierHandler(notifierSvc),
 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
 			payment.ProviderPaystack:    cfg.PaystackSecret,
 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
