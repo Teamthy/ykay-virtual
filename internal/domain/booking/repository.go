@@ -83,6 +83,13 @@ type LessonRepository interface {
 	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Lesson, error)
 	ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Lesson, error)
 	ListByCohort(ctx context.Context, cohortID uuid.UUID, limit int) ([]Lesson, error)
+	// Create inserts a new scheduled lesson (double-booking guard applied by
+	// the service before calling this).
+	Create(ctx context.Context, l *Lesson) error
+	// HasOverlappingLessons reports whether the tutor already has a live lesson
+	// whose [start, end) window overlaps the given [startAt, endAt), excluding
+	// excludeLessonID (used when rescheduling). Cancelled lessons never count.
+	HasOverlappingLessons(ctx context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error)
 }
 
 // LessonProgress — per-student watch state for a lesson (000035).

@@ -1945,6 +1945,33 @@ paths:
       responses:
         '200': { description: Assigned }
 
+  /admin/lessons:
+    post:
+      tags: [admin]
+      summary: Schedule a live lesson (double-booking guard applied)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tutor_profile_id, title, start_at, end_at]
+              properties:
+                cohort_id: { type: string, format: uuid }
+                private_package_id: { type: string, format: uuid }
+                tutor_profile_id: { type: string, format: uuid }
+                title: { type: string }
+                description: { type: string }
+                start_at: { type: string, format: date-time }
+                end_at: { type: string, format: date-time }
+                timezone: { type: string, default: Africa/Lagos }
+                meeting_provider: { type: string, default: GOOGLE_MEET }
+      responses:
+        '201': { description: Lesson scheduled }
+        '409':
+          description: Tutor already booked for an overlapping lesson (double-booking guard)
+
   /admin/audit:
     get:
       tags: [admin]

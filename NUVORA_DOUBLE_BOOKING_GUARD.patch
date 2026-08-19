@@ -1,0 +1,433 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index df37638..141e5e0 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -1945,6 +1945,33 @@ paths:
+       responses:
+         '200': { description: Assigned }
+ 
++  /admin/lessons:
++    post:
++      tags: [admin]
++      summary: Schedule a live lesson (double-booking guard applied)
++      security: [{ sessionCookie: [] }]
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [tutor_profile_id, title, start_at, end_at]
++              properties:
++                cohort_id: { type: string, format: uuid }
++                private_package_id: { type: string, format: uuid }
++                tutor_profile_id: { type: string, format: uuid }
++                title: { type: string }
++                description: { type: string }
++                start_at: { type: string, format: date-time }
++                end_at: { type: string, format: date-time }
++                timezone: { type: string, default: Africa/Lagos }
++                meeting_provider: { type: string, default: GOOGLE_MEET }
++      responses:
++        '201': { description: Lesson scheduled }
++        '409':
++          description: Tutor already booked for an overlapping lesson (double-booking guard)
++
+   /admin/audit:
+     get:
+       tags: [admin]
+diff --git a/internal/domain/booking/repository.go b/internal/domain/booking/repository.go
+index 2941bfe..65c9511 100644
+--- a/internal/domain/booking/repository.go
++++ b/internal/domain/booking/repository.go
+@@ -83,6 +83,13 @@ type LessonRepository interface {
+ 	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Lesson, error)
+ 	ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Lesson, error)
+ 	ListByCohort(ctx context.Context, cohortID uuid.UUID, limit int) ([]Lesson, error)
++	// Create inserts a new scheduled lesson (double-booking guard applied by
++	// the service before calling this).
++	Create(ctx context.Context, l *Lesson) error
++	// HasOverlappingLessons reports whether the tutor already has a live lesson
++	// whose [start, end) window overlaps the given [startAt, endAt), excluding
++	// excludeLessonID (used when rescheduling). Cancelled lessons never count.
++	HasOverlappingLessons(ctx context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error)
+ }
+ 
+ // LessonProgress — per-student watch state for a lesson (000035).
+diff --git a/internal/repository/memory/lesson_memory.go b/internal/repository/memory/lesson_memory.go
+index 3fe2adf..b647a9c 100644
+--- a/internal/repository/memory/lesson_memory.go
++++ b/internal/repository/memory/lesson_memory.go
+@@ -4,6 +4,7 @@ import (
+ 	"context"
+ 	"sort"
+ 	"sync"
++	"time"
+ 
+ 	"ykay-virtual/internal/domain/booking"
+ 
+@@ -66,4 +67,35 @@ func (m *LessonMemory) ListByTutor(_ context.Context, tutorProfileID uuid.UUID,
+ 	return out, nil
+ }
+ 
++func (m *LessonMemory) Create(_ context.Context, l *booking.Lesson) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	if l.ID == uuid.Nil {
++		l.ID = uuid.New()
++	}
++	m.rows[l.ID] = l
++	return nil
++}
++
++func (m *LessonMemory) HasOverlappingLessons(_ context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	for _, l := range m.rows {
++		if l.TutorProfileID != tutorProfileID {
++			continue
++		}
++		if l.Status == booking.LessonCancelled {
++			continue
++		}
++		if excludeLessonID != nil && l.ID == *excludeLessonID {
++			continue
++		}
++		// overlap: existing.start < new.end AND existing.end > new.start
++		if l.StartAt.Before(endAt) && l.EndAt.After(startAt) {
++			return true, nil
++		}
++	}
++	return false, nil
++}
++
+ var _ booking.LessonRepository = (*LessonMemory)(nil)
+diff --git a/internal/repository/memory/lesson_memory_test.go b/internal/repository/memory/lesson_memory_test.go
+new file mode 100644
+index 0000000..3e8c847
+--- /dev/null
++++ b/internal/repository/memory/lesson_memory_test.go
+@@ -0,0 +1,90 @@
++package memory
++
++import (
++	"context"
++	"testing"
++	"time"
++
++	"ykay-virtual/internal/domain/booking"
++
++	"github.com/google/uuid"
++)
++
++// TestLessonOverlapGuard covers the FR-10 / AC-05 double-booking guard
++// semantics: overlapping windows conflict, exact-boundary touches do not,
++// cancelled lessons never block, and each tutor is independent.
++func TestLessonOverlapGuard(t *testing.T) {
++	ctx := context.Background()
++	m := NewLessonMemory()
++
++	tutorA := uuid.New()
++	tutorB := uuid.New()
++	cohort := uuid.New()
++	t0 := time.Date(2026, 9, 1, 10, 0, 0, 0, time.UTC)
++
++	// Existing lesson: 10:00–11:00 for tutorA.
++	existing := &booking.Lesson{
++		CohortID:       &cohort,
++		TutorProfileID: tutorA,
++		Title:          "Existing",
++		StartAt:        t0,
++		EndAt:          t0.Add(time.Hour),
++		Timezone:       "Africa/Lagos",
++		Status:         booking.LessonScheduled,
++	}
++	m.Seed(existing)
++
++	cases := []struct {
++		name  string
++		tutor uuid.UUID
++		start time.Time
++		end   time.Time
++		want  bool
++	}{
++		{"overlap inside", tutorA, t0.Add(15 * time.Minute), t0.Add(45 * time.Minute), true},
++		{"overlap straddles", tutorA, t0.Add(-30 * time.Minute), t0.Add(90 * time.Minute), true},
++		{"overlap start-touch-inside", tutorA, t0.Add(30 * time.Minute), t0.Add(2 * time.Hour), true},
++		{"exact same window", tutorA, t0, t0.Add(time.Hour), true},
++		{"back-to-back ok", tutorA, t0.Add(time.Hour), t0.Add(2 * time.Hour), false},
++		{"before ok", tutorA, t0.Add(-time.Hour), t0, false},
++		{"different tutor ok", tutorB, t0, t0.Add(time.Hour), false},
++	}
++	for _, tc := range cases {
++		t.Run(tc.name, func(t *testing.T) {
++			got, err := m.HasOverlappingLessons(ctx, tc.tutor, tc.start, tc.end, nil)
++			if err != nil {
++				t.Fatalf("unexpected error: %v", err)
++			}
++			if got != tc.want {
++				t.Fatalf("HasOverlappingLessons(%s, %s..%s) = %v, want %v", tc.tutor, tc.start, tc.end, got, tc.want)
++			}
++		})
++	}
++
++	// Cancelled lessons never block (reuse of a cancelled slot).
++	cancelled := &booking.Lesson{
++		CohortID:       &cohort,
++		TutorProfileID: tutorA,
++		Title:          "Cancelled",
++		StartAt:        t0.Add(2 * time.Hour),
++		EndAt:          t0.Add(3 * time.Hour),
++		Status:         booking.LessonCancelled,
++	}
++	m.Seed(cancelled)
++	got, err := m.HasOverlappingLessons(ctx, tutorA, t0.Add(2*time.Hour+time.Minute), t0.Add(2*time.Hour+30*time.Minute), nil)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if got {
++		t.Fatalf("cancelled lesson should not block its slot")
++	}
++
++	// excludeLessonID lets a reschedule ignore the lesson itself.
++	got, err = m.HasOverlappingLessons(ctx, tutorA, t0, t0.Add(time.Hour), &existing.ID)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if got {
++		t.Fatalf("excludeLessonID should ignore the existing lesson")
++	}
++}
+diff --git a/internal/repository/postgres/lesson_repo.go b/internal/repository/postgres/lesson_repo.go
+index 8448d74..7a707ba 100644
+--- a/internal/repository/postgres/lesson_repo.go
++++ b/internal/repository/postgres/lesson_repo.go
+@@ -119,3 +119,46 @@ func (r *LessonRepo) ListByTutor(ctx context.Context, tutorProfileID uuid.UUID,
+ }
+ 
+ var _ booking.LessonRepository = (*LessonRepo)(nil)
++
++// Create inserts a scheduled lesson. The double-booking guard is enforced in
++// the service; this simply writes the row (meeting_provider defaults to
++// GOOGLE_MEET when empty).
++func (r *LessonRepo) Create(ctx context.Context, l *booking.Lesson) error {
++	if l.MeetingProvider == "" {
++		l.MeetingProvider = "GOOGLE_MEET"
++	}
++	err := r.db.QueryRowContext(ctx, `
++		INSERT INTO lessons (cohort_id, private_package_id, tutor_profile_id, title, description,
++			start_at, end_at, timezone, meeting_url, meeting_provider, location_id, status, created_by)
++		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
++		RETURNING id, created_at, updated_at`,
++		l.CohortID, l.PrivatePackageID, l.TutorProfileID, l.Title, l.Description,
++		l.StartAt, l.EndAt, l.Timezone, l.MeetingURL, l.MeetingProvider, l.LocationID,
++		l.Status, l.CreatedBy,
++	).Scan(&l.ID, &l.CreatedAt, &l.UpdatedAt)
++	if err != nil {
++		return fmt.Errorf("create lesson: %w", err)
++	}
++	return nil
++}
++
++// HasOverlappingLessons — the double-booking guard (FR-10 / AC-05). Returns
++// true when the tutor already has a NON-cancelled live lesson whose window
++// overlaps [startAt, endAt). Uses the idx_lessons_tutor_time index. The
++// excludeLessonID lets a reschedule ignore the lesson being moved.
++func (r *LessonRepo) HasOverlappingLessons(ctx context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error) {
++	var exists bool
++	err := r.db.QueryRowContext(ctx, `
++		SELECT EXISTS(
++			SELECT 1 FROM lessons
++			WHERE tutor_profile_id = $1
++			  AND status <> 'CANCELLED'
++			  AND start_at < $3
++			  AND end_at > $2
++			  AND ($4::uuid IS NULL OR id <> $4)
++		)`, tutorProfileID, startAt, endAt, excludeLessonID).Scan(&exists)
++	if err != nil {
++		return false, fmt.Errorf("check overlapping lessons: %w", err)
++	}
++	return exists, nil
++}
+diff --git a/internal/service/lesson_service.go b/internal/service/lesson_service.go
+index 4b2a705..97686be 100644
+--- a/internal/service/lesson_service.go
++++ b/internal/service/lesson_service.go
+@@ -193,6 +193,66 @@ func (s *LessonService) canAccessCohort(ctx context.Context, actorUserID uuid.UU
+ // CanAccessCohort reports whether the actor may see a cohort's private
+ // schedule details (meeting/video URLs). Public callers still get the
+ // redacted schedule — this only upgrades them to the full view.
++// ScheduleLessonInput — fields to create a live lesson.
++type ScheduleLessonInput struct {
++	CohortID         *uuid.UUID
++	PrivatePackageID *uuid.UUID
++	TutorProfileID   uuid.UUID
++	Title            string
++	Description      *string
++	StartAt          time.Time
++	EndAt            time.Time
++	Timezone         string
++	MeetingProvider  string
++}
++
++// ScheduleLesson — creates a live lesson with the FR-10 / AC-05 double-booking
++// guard: a tutor can never be booked for two live lessons whose windows
++// overlap. Only non-cancelled lessons count, so cancelled slots can be reused.
++func (s *LessonService) ScheduleLesson(ctx context.Context, in ScheduleLessonInput) (*booking.Lesson, error) {
++	if in.CohortID == nil && in.PrivatePackageID == nil {
++		return nil, fmt.Errorf("%w: a lesson must belong to a cohort or a private package", domain.ErrInvalidInput)
++	}
++	if strings.TrimSpace(in.Title) == "" {
++		return nil, fmt.Errorf("%w: lesson title is required", domain.ErrInvalidInput)
++	}
++	if !in.EndAt.After(in.StartAt) {
++		return nil, fmt.Errorf("%w: end_at must be after start_at", domain.ErrInvalidInput)
++	}
++	if in.Timezone == "" {
++		in.Timezone = "Africa/Lagos"
++	}
++
++	// FR-10 / AC-05: reject double-booking before it can reach the calendar.
++	if s.lessons != nil {
++		conflict, err := s.lessons.HasOverlappingLessons(ctx, in.TutorProfileID, in.StartAt, in.EndAt, nil)
++		if err != nil {
++			return nil, err
++		}
++		if conflict {
++			return nil, fmt.Errorf("%w: tutor is already booked for an overlapping lesson at %s",
++				domain.ErrConflict, in.StartAt.Format(time.RFC3339))
++		}
++	}
++
++	lesson := &booking.Lesson{
++		CohortID:         in.CohortID,
++		PrivatePackageID: in.PrivatePackageID,
++		TutorProfileID:   in.TutorProfileID,
++		Title:            in.Title,
++		Description:      in.Description,
++		StartAt:          in.StartAt,
++		EndAt:            in.EndAt,
++		Timezone:         in.Timezone,
++		MeetingProvider:  in.MeetingProvider,
++		Status:           booking.LessonScheduled,
++	}
++	if err := s.lessons.Create(ctx, lesson); err != nil {
++		return nil, err
++	}
++	return lesson, nil
++}
++
+ func (s *LessonService) CanAccessCohort(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, cohortID uuid.UUID) bool {
+ 	return s.canAccessCohort(ctx, actorUserID, isAdmin, cohortID) == nil
+ }
+diff --git a/internal/transport/http/lesson_ops_handler.go b/internal/transport/http/lesson_ops_handler.go
+index b664cd7..62db7d2 100644
+--- a/internal/transport/http/lesson_ops_handler.go
++++ b/internal/transport/http/lesson_ops_handler.go
+@@ -79,6 +79,94 @@ func NewLessonOpsHandler(svc *service.LessonService) *LessonOpsHandler {
+ 	return &LessonOpsHandler{svc: svc}
+ }
+ 
++// requireAdminActor — scheduling/admin actions require a platform admin role.
++func (h *LessonOpsHandler) requireAdminActor(w http.ResponseWriter, r *http.Request) *middleware.Actor {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return nil
++	}
++	for _, role := range actor.Roles {
++		if role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" {
++			return actor
++		}
++	}
++	WriteAppError(w, pkg.Forbidden("admin access required"))
++	return nil
++}
++
++// ScheduleLesson — admin schedules a live lesson with the FR-10 / AC-05
++// double-booking guard (a tutor cannot be booked for two overlapping lessons).
++//
++//	POST /api/v1/admin/lessons
++func (h *LessonOpsHandler) ScheduleLesson(w http.ResponseWriter, r *http.Request) {
++	if h.requireAdminActor(w, r) == nil {
++		return
++	}
++	var req struct {
++		CohortID         string `json:"cohort_id"`
++		PrivatePackageID string `json:"private_package_id"`
++		TutorProfileID   string `json:"tutor_profile_id"`
++		Title            string `json:"title"`
++		Description      string `json:"description"`
++		StartAt          string `json:"start_at"`
++		EndAt            string `json:"end_at"`
++		Timezone         string `json:"timezone"`
++		MeetingProvider  string `json:"meeting_provider"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	tutorID, err := uuid.Parse(req.TutorProfileID)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
++		return
++	}
++	startAt, err := time.Parse(time.RFC3339, req.StartAt)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("start_at must be RFC3339 (e.g. 2026-09-01T15:00:00Z)", nil))
++		return
++	}
++	endAt, err := time.Parse(time.RFC3339, req.EndAt)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("end_at must be RFC3339 (e.g. 2026-09-01T16:00:00Z)", nil))
++		return
++	}
++	in := service.ScheduleLessonInput{
++		TutorProfileID:  tutorID,
++		Title:           req.Title,
++		StartAt:         startAt,
++		EndAt:           endAt,
++		Timezone:        req.Timezone,
++		MeetingProvider: req.MeetingProvider,
++	}
++	if req.Description != "" {
++		in.Description = &req.Description
++	}
++	if req.CohortID != "" {
++		id, err := uuid.Parse(req.CohortID)
++		if err != nil {
++			WriteAppError(w, pkg.BadRequest("cohort_id must be a valid UUID", nil))
++			return
++		}
++		in.CohortID = &id
++	}
++	if req.PrivatePackageID != "" {
++		id, err := uuid.Parse(req.PrivatePackageID)
++		if err != nil {
++			WriteAppError(w, pkg.BadRequest("private_package_id must be a valid UUID", nil))
++			return
++		}
++		in.PrivatePackageID = &id
++	}
++	lesson, err := h.svc.ScheduleLesson(r.Context(), in)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusCreated, lesson, nil)
++}
++
+ func (h *LessonOpsHandler) ListCohortLessons(w http.ResponseWriter, r *http.Request) {
+ 	cohortID, err := ParseUUID(r, "id")
+ 	if err != nil {
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index 587eb43..9ac4a00 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -161,6 +161,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.MarkAttendance)
+ 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.ListAttendance)
+ 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.AddNote)
++	mux.HandleFunc("POST "+v1+"/admin/lessons", handlers.LessonOps.ScheduleLesson)
+ 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.ListNotes)
+ 
+ 	// Meeting links (G4.2) — tutor opens/refreshes, participants join

@@ -79,6 +79,94 @@ func NewLessonOpsHandler(svc *service.LessonService) *LessonOpsHandler {
 	return &LessonOpsHandler{svc: svc}
 }
 
+// requireAdminActor — scheduling/admin actions require a platform admin role.
+func (h *LessonOpsHandler) requireAdminActor(w http.ResponseWriter, r *http.Request) *middleware.Actor {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return nil
+	}
+	for _, role := range actor.Roles {
+		if role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" {
+			return actor
+		}
+	}
+	WriteAppError(w, pkg.Forbidden("admin access required"))
+	return nil
+}
+
+// ScheduleLesson — admin schedules a live lesson with the FR-10 / AC-05
+// double-booking guard (a tutor cannot be booked for two overlapping lessons).
+//
+//	POST /api/v1/admin/lessons
+func (h *LessonOpsHandler) ScheduleLesson(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdminActor(w, r) == nil {
+		return
+	}
+	var req struct {
+		CohortID         string `json:"cohort_id"`
+		PrivatePackageID string `json:"private_package_id"`
+		TutorProfileID   string `json:"tutor_profile_id"`
+		Title            string `json:"title"`
+		Description      string `json:"description"`
+		StartAt          string `json:"start_at"`
+		EndAt            string `json:"end_at"`
+		Timezone         string `json:"timezone"`
+		MeetingProvider  string `json:"meeting_provider"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	tutorID, err := uuid.Parse(req.TutorProfileID)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+		return
+	}
+	startAt, err := time.Parse(time.RFC3339, req.StartAt)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("start_at must be RFC3339 (e.g. 2026-09-01T15:00:00Z)", nil))
+		return
+	}
+	endAt, err := time.Parse(time.RFC3339, req.EndAt)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("end_at must be RFC3339 (e.g. 2026-09-01T16:00:00Z)", nil))
+		return
+	}
+	in := service.ScheduleLessonInput{
+		TutorProfileID:  tutorID,
+		Title:           req.Title,
+		StartAt:         startAt,
+		EndAt:           endAt,
+		Timezone:        req.Timezone,
+		MeetingProvider: req.MeetingProvider,
+	}
+	if req.Description != "" {
+		in.Description = &req.Description
+	}
+	if req.CohortID != "" {
+		id, err := uuid.Parse(req.CohortID)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("cohort_id must be a valid UUID", nil))
+			return
+		}
+		in.CohortID = &id
+	}
+	if req.PrivatePackageID != "" {
+		id, err := uuid.Parse(req.PrivatePackageID)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("private_package_id must be a valid UUID", nil))
+			return
+		}
+		in.PrivatePackageID = &id
+	}
+	lesson, err := h.svc.ScheduleLesson(r.Context(), in)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, lesson, nil)
+}
+
 func (h *LessonOpsHandler) ListCohortLessons(w http.ResponseWriter, r *http.Request) {
 	cohortID, err := ParseUUID(r, "id")
 	if err != nil {

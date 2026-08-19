@@ -119,3 +119,46 @@ func (r *LessonRepo) ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, 
 }
 
 var _ booking.LessonRepository = (*LessonRepo)(nil)
+
+// Create inserts a scheduled lesson. The double-booking guard is enforced in
+// the service; this simply writes the row (meeting_provider defaults to
+// GOOGLE_MEET when empty).
+func (r *LessonRepo) Create(ctx context.Context, l *booking.Lesson) error {
+	if l.MeetingProvider == "" {
+		l.MeetingProvider = "GOOGLE_MEET"
+	}
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO lessons (cohort_id, private_package_id, tutor_profile_id, title, description,
+			start_at, end_at, timezone, meeting_url, meeting_provider, location_id, status, created_by)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+		RETURNING id, created_at, updated_at`,
+		l.CohortID, l.PrivatePackageID, l.TutorProfileID, l.Title, l.Description,
+		l.StartAt, l.EndAt, l.Timezone, l.MeetingURL, l.MeetingProvider, l.LocationID,
+		l.Status, l.CreatedBy,
+	).Scan(&l.ID, &l.CreatedAt, &l.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("create lesson: %w", err)
+	}
+	return nil
+}
+
+// HasOverlappingLessons — the double-booking guard (FR-10 / AC-05). Returns
+// true when the tutor already has a NON-cancelled live lesson whose window
+// overlaps [startAt, endAt). Uses the idx_lessons_tutor_time index. The
+// excludeLessonID lets a reschedule ignore the lesson being moved.
+func (r *LessonRepo) HasOverlappingLessons(ctx context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error) {
+	var exists bool
+	err := r.db.QueryRowContext(ctx, `
+		SELECT EXISTS(
+			SELECT 1 FROM lessons
+			WHERE tutor_profile_id = $1
+			  AND status <> 'CANCELLED'
+			  AND start_at < $3
+			  AND end_at > $2
+			  AND ($4::uuid IS NULL OR id <> $4)
+		)`, tutorProfileID, startAt, endAt, excludeLessonID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("check overlapping lessons: %w", err)
+	}
+	return exists, nil
+}

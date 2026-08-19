@@ -161,6 +161,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.MarkAttendance)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/attendance", handlers.LessonOps.ListAttendance)
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.AddNote)
+	mux.HandleFunc("POST "+v1+"/admin/lessons", handlers.LessonOps.ScheduleLesson)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.ListNotes)
 
 	// Meeting links (G4.2) — tutor opens/refreshes, participants join

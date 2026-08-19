@@ -193,6 +193,66 @@ func (s *LessonService) canAccessCohort(ctx context.Context, actorUserID uuid.UU
 // CanAccessCohort reports whether the actor may see a cohort's private
 // schedule details (meeting/video URLs). Public callers still get the
 // redacted schedule — this only upgrades them to the full view.
+// ScheduleLessonInput — fields to create a live lesson.
+type ScheduleLessonInput struct {
+	CohortID         *uuid.UUID
+	PrivatePackageID *uuid.UUID
+	TutorProfileID   uuid.UUID
+	Title            string
+	Description      *string
+	StartAt          time.Time
+	EndAt            time.Time
+	Timezone         string
+	MeetingProvider  string
+}
+
+// ScheduleLesson — creates a live lesson with the FR-10 / AC-05 double-booking
+// guard: a tutor can never be booked for two live lessons whose windows
+// overlap. Only non-cancelled lessons count, so cancelled slots can be reused.
+func (s *LessonService) ScheduleLesson(ctx context.Context, in ScheduleLessonInput) (*booking.Lesson, error) {
+	if in.CohortID == nil && in.PrivatePackageID == nil {
+		return nil, fmt.Errorf("%w: a lesson must belong to a cohort or a private package", domain.ErrInvalidInput)
+	}
+	if strings.TrimSpace(in.Title) == "" {
+		return nil, fmt.Errorf("%w: lesson title is required", domain.ErrInvalidInput)
+	}
+	if !in.EndAt.After(in.StartAt) {
+		return nil, fmt.Errorf("%w: end_at must be after start_at", domain.ErrInvalidInput)
+	}
+	if in.Timezone == "" {
+		in.Timezone = "Africa/Lagos"
+	}
+
+	// FR-10 / AC-05: reject double-booking before it can reach the calendar.
+	if s.lessons != nil {
+		conflict, err := s.lessons.HasOverlappingLessons(ctx, in.TutorProfileID, in.StartAt, in.EndAt, nil)
+		if err != nil {
+			return nil, err
+		}
+		if conflict {
+			return nil, fmt.Errorf("%w: tutor is already booked for an overlapping lesson at %s",
+				domain.ErrConflict, in.StartAt.Format(time.RFC3339))
+		}
+	}
+
+	lesson := &booking.Lesson{
+		CohortID:         in.CohortID,
+		PrivatePackageID: in.PrivatePackageID,
+		TutorProfileID:   in.TutorProfileID,
+		Title:            in.Title,
+		Description:      in.Description,
+		StartAt:          in.StartAt,
+		EndAt:            in.EndAt,
+		Timezone:         in.Timezone,
+		MeetingProvider:  in.MeetingProvider,
+		Status:           booking.LessonScheduled,
+	}
+	if err := s.lessons.Create(ctx, lesson); err != nil {
+		return nil, err
+	}
+	return lesson, nil
+}
+
 func (s *LessonService) CanAccessCohort(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, cohortID uuid.UUID) bool {
 	return s.canAccessCohort(ctx, actorUserID, isAdmin, cohortID) == nil
 }

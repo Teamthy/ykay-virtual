@@ -4,6 +4,7 @@ import (
 	"context"
 	"sort"
 	"sync"
+	"time"
 
 	"ykay-virtual/internal/domain/booking"
 
@@ -64,6 +65,37 @@ func (m *LessonMemory) ListByTutor(_ context.Context, tutorProfileID uuid.UUID, 
 		out = out[:limit]
 	}
 	return out, nil
+}
+
+func (m *LessonMemory) Create(_ context.Context, l *booking.Lesson) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if l.ID == uuid.Nil {
+		l.ID = uuid.New()
+	}
+	m.rows[l.ID] = l
+	return nil
+}
+
+func (m *LessonMemory) HasOverlappingLessons(_ context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, l := range m.rows {
+		if l.TutorProfileID != tutorProfileID {
+			continue
+		}
+		if l.Status == booking.LessonCancelled {
+			continue
+		}
+		if excludeLessonID != nil && l.ID == *excludeLessonID {
+			continue
+		}
+		// overlap: existing.start < new.end AND existing.end > new.start
+		if l.StartAt.Before(endAt) && l.EndAt.After(startAt) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 var _ booking.LessonRepository = (*LessonMemory)(nil)
