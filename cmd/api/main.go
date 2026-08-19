@@ -300,7 +300,8 @@ func main() {
 	chatHandler := httpapi.NewChatHandler(chatSvc)
 	accountSvc := service.NewAccountService(repos.Users, repos.Roles, repos.Sessions,
 		repos.Devices, repos.Students, repos.StudentLinks, repos.Chat, audit)
-	accountHandler := httpapi.NewAccountHandler(accountSvc).WithStorage(store)
+	accountHandler := httpapi.NewAccountHandler(accountSvc).WithStorage(store).
+		WithMalwareScanner(storage.NewDefaultMalwareScanner(getEnvDefault("CLAMAV_ADDR", "")))
 	deviceHandler := httpapi.NewDeviceHandler(pushSvc)
 
 	// --- Transport ---

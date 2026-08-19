@@ -13,6 +13,7 @@ const (
 	CodeForbidden       Code = "FORBIDDEN"
 	CodeNotFound        Code = "NOT_FOUND"
 	CodeConflict        Code = "CONFLICT"
+	CodeUnprocessable   Code = "UNPROCESSABLE_ENTITY"
 	CodeValidationError Code = "VALIDATION_ERROR"
 	CodeInternal        Code = "INTERNAL_ERROR"
 	CodePaymentRequired Code = "PAYMENT_REQUIRED"
@@ -60,6 +61,12 @@ func NotFound(msg string) *AppError {
 
 func Conflict(msg string) *AppError {
 	return &AppError{Code: CodeConflict, StatusCode: http.StatusConflict, Message: msg}
+}
+
+// Unprocessable — 422, used to reject content that failed a security gate
+// (e.g. upload malware scan) rather than a malformed request.
+func Unprocessable(msg string) *AppError {
+	return &AppError{Code: CodeUnprocessable, StatusCode: http.StatusUnprocessableEntity, Message: msg}
 }
 
 func Internal(err error) *AppError {

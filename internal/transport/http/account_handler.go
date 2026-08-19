@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -19,6 +20,50 @@ import (
 type AccountHandler struct {
 	svc     *service.AccountService
 	storage storage.Storage
+	malware storage.MalwareScanner
+}
+
+// WithMalwareScanner wires an upload malware scanner (gap #5). Defaults to the
+// always-on signature scanner when nil.
+func (h *AccountHandler) WithMalwareScanner(m storage.MalwareScanner) *AccountHandler {
+	h.malware = m
+	return h
+}
+
+// rejectIfMalware scans file bytes and, if anything is found, writes a 422 and
+// returns true so the caller stops before storing. Fails closed: a scan error
+// rejects the upload (never store unsanitized content).
+func (h *AccountHandler) rejectIfMalware(w http.ResponseWriter, r *http.Request, data []byte) bool {
+	if h.malware == nil {
+		h.malware = storage.NewDefaultMalwareScanner("")
+	}
+	res, err := h.malware.Scan(r.Context(), data)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("upload blocked: malware scanner unavailable: "+err.Error(), nil))
+		return true
+	}
+	if !res.Clean {
+		WriteAppError(w, pkg.Unprocessable("upload blocked: "+res.Threat))
+		return true
+	}
+	return false
+}
+
+// sniffImage — rejects files that claim to be an image but whose magic bytes
+// are not a real image (a classic renamed-executable / polyglot vector).
+func sniffImage(data []byte) bool {
+	if len(data) < 12 {
+		return false
+	}
+	switch {
+	case bytes.Equal(data[:2], []byte{0xff, 0xd8}): // JPEG
+		return true
+	case bytes.Equal(data[:8], []byte{0x89, 'P', 'N', 'G', 0x0d, 0x0a, 0x1a, 0x0a}): // PNG
+		return true
+	case bytes.Equal(data[:4], []byte{'R', 'I', 'F', 'F'}): // WebP (RIFF container)
+		return len(data) > 12 && bytes.Equal(data[8:12], []byte{'W', 'E', 'B', 'P'})
+	}
+	return false
 }
 
 // resourceExts maps accepted upload content types to file extensions (LMS
@@ -120,6 +165,14 @@ func (h *AccountHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, pkg.BadRequest("could not read avatar: "+err.Error(), nil))
 		return
 	}
+	// Gap #5: malware scan + image-magic verification before storing.
+	if h.rejectIfMalware(w, r, data) {
+		return
+	}
+	if !sniffImage(data) {
+		WriteAppError(w, pkg.Unprocessable("upload blocked: file is not a valid image"))
+		return
+	}
 	key := "avatars/" + userID.String() + ext
 	if err := h.storage.Upload(r.Context(), storage.BucketPublic, key, data, ct); err != nil {
 		WriteAppError(w, err)
@@ -165,6 +218,10 @@ func (h *AccountHandler) UploadResource(w http.ResponseWriter, r *http.Request) 
 	}
 	if len(data) == 0 {
 		WriteAppError(w, pkg.BadRequest("empty upload", nil))
+		return
+	}
+	// Gap #5: malware scan before the object is stored.
+	if h.rejectIfMalware(w, r, data) {
 		return
 	}
 	key := "uploads/" + userID.String() + "/" + uuid.NewString() + ext
