@@ -42,12 +42,12 @@ func grantRole(t *testing.T, env *authEnv, email, password, role string) {
 	require.NoError(t, env.store.Roles.AssignToUser(ctx, user.ID, adminRole.ID))
 }
 
-// TestAdminLogin_RequiresMFA — platform admins must confirm a second factor
+// TestAdminLogin_RequiresMFA — ACADEMIC_ADMIN must confirm a second factor
 // (emailed code) before a session is issued; regular users do not.
 func TestAdminLogin_RequiresMFA(t *testing.T) {
 	env, mail := newAuthEnvWithTokens(t)
 	ctx := context.Background()
-	grantRole(t, env, "admin@example.com", "password123", "SUPER_ADMIN")
+	grantRole(t, env, "admin@example.com", "password123", "ACADEMIC_ADMIN")
 
 	// Admin login: password correct, but NO session yet - MFA required.
 	res, err := env.svc.Login(ctx, "admin@example.com", "password123", "1.2.3.4", "test-agent")
@@ -109,4 +109,18 @@ func TestMFA_NotGrantedIfRoleRemoved(t *testing.T) {
 
 	_, err = env.svc.ConfirmMFA(ctx, "adm2@example.com", code, "", "t")
 	require.ErrorIs(t, err, domain.ErrForbidden)
+}
+
+// TestSuperAdmin_NoMFA — SUPER_ADMIN is exempt from MFA (product decision):
+// it logs in with a session immediately, like a non-admin.
+func TestSuperAdmin_NoMFA(t *testing.T) {
+	env, mail := newAuthEnvWithTokens(t)
+	ctx := context.Background()
+	grantRole(t, env, "root@example.com", "password123", "SUPER_ADMIN")
+
+	res, err := env.svc.Login(ctx, "root@example.com", "password123", "", "t")
+	require.NoError(t, err)
+	require.False(t, res.MFARequired)
+	require.NotEmpty(t, res.Token)
+	require.Len(t, mail.sent, 0, "no MFA email for SUPER_ADMIN")
 }

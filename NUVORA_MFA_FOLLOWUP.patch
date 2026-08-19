@@ -1,0 +1,111 @@
+diff --git a/internal/service/auth_magiclink.go b/internal/service/auth_magiclink.go
+index 36d94d2..69fd3a2 100644
+--- a/internal/service/auth_magiclink.go
++++ b/internal/service/auth_magiclink.go
+@@ -58,7 +58,7 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error
+ 		return err
+ 	}
+ 
+-	s.logDev("login code for %s: %s (expires in 10 minutes)", user.Email, code)
++	s.logOTP("login code for %s: %s (expires in 10 minutes)", user.Email, code)
+ 	if s.email != nil {
+ 		if err := s.sendEmail(ctx, user.Email, "Your NUVORA login code",
+ 			notification.BrandEmail(
+diff --git a/internal/service/auth_mfa_test.go b/internal/service/auth_mfa_test.go
+index 266876b..a45bed1 100644
+--- a/internal/service/auth_mfa_test.go
++++ b/internal/service/auth_mfa_test.go
+@@ -42,12 +42,12 @@ func grantRole(t *testing.T, env *authEnv, email, password, role string) {
+ 	require.NoError(t, env.store.Roles.AssignToUser(ctx, user.ID, adminRole.ID))
+ }
+ 
+-// TestAdminLogin_RequiresMFA — platform admins must confirm a second factor
++// TestAdminLogin_RequiresMFA — ACADEMIC_ADMIN must confirm a second factor
+ // (emailed code) before a session is issued; regular users do not.
+ func TestAdminLogin_RequiresMFA(t *testing.T) {
+ 	env, mail := newAuthEnvWithTokens(t)
+ 	ctx := context.Background()
+-	grantRole(t, env, "admin@example.com", "password123", "SUPER_ADMIN")
++	grantRole(t, env, "admin@example.com", "password123", "ACADEMIC_ADMIN")
+ 
+ 	// Admin login: password correct, but NO session yet - MFA required.
+ 	res, err := env.svc.Login(ctx, "admin@example.com", "password123", "1.2.3.4", "test-agent")
+@@ -110,3 +110,17 @@ func TestMFA_NotGrantedIfRoleRemoved(t *testing.T) {
+ 	_, err = env.svc.ConfirmMFA(ctx, "adm2@example.com", code, "", "t")
+ 	require.ErrorIs(t, err, domain.ErrForbidden)
+ }
++
++// TestSuperAdmin_NoMFA — SUPER_ADMIN is exempt from MFA (product decision):
++// it logs in with a session immediately, like a non-admin.
++func TestSuperAdmin_NoMFA(t *testing.T) {
++	env, mail := newAuthEnvWithTokens(t)
++	ctx := context.Background()
++	grantRole(t, env, "root@example.com", "password123", "SUPER_ADMIN")
++
++	res, err := env.svc.Login(ctx, "root@example.com", "password123", "", "t")
++	require.NoError(t, err)
++	require.False(t, res.MFARequired)
++	require.NotEmpty(t, res.Token)
++	require.Len(t, mail.sent, 0, "no MFA email for SUPER_ADMIN")
++}
+diff --git a/internal/service/auth_service.go b/internal/service/auth_service.go
+index 4771b96..576c459 100644
+--- a/internal/service/auth_service.go
++++ b/internal/service/auth_service.go
+@@ -360,18 +360,24 @@ type LoginResult struct {
+ 	MFARequired bool
+ }
+ 
+-// isPlatformAdmin — MFA is enforced for platform admins (YK-008 parity):
+-// SUPER_ADMIN and ACADEMIC_ADMIN require a second factor; INSTITUTION_ADMIN is
+-// scoped and not granted platform admin privileges.
+-func isPlatformAdmin(roles []string) bool {
++// requiresMFA — MFA is enforced for ACADEMIC_ADMIN accounts. SUPER_ADMIN is
++// exempt (per product decision), and INSTITUTION_ADMIN is scoped/non-platform.
++func requiresMFA(roles []string) bool {
+ 	for _, role := range roles {
+-		if role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" {
++		if role == "ACADEMIC_ADMIN" {
+ 			return true
+ 		}
+ 	}
+ 	return false
+ }
+ 
++// logOTP — always emits the OTP code to the server log (visible in Render logs
++// even in production) so an operator can recover the code if email delivery
++// fails. Codes remain single-use and short-lived regardless.
++func (s *AuthService) logOTP(format string, args ...any) {
++	slog.Info(fmt.Sprintf("🔑 "+format, args...))
++}
++
+ // Login — verifies credentials, creates a session, returns the raw token.
+ // For platform admins it defers the session and instead issues an emailed
+ // MFA code (challenge); the session is created only after ConfirmMFA.
+@@ -399,7 +405,7 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent
+ 
+ 	// Admin MFA: the second factor (emailed code) must be confirmed before a
+ 	// session is created. No cookie/token is returned yet.
+-	if isPlatformAdmin(roles) {
++	if requiresMFA(roles) {
+ 		if err := s.issueMFAChallenge(ctx, user); err != nil {
+ 			return nil, err
+ 		}
+@@ -459,7 +465,7 @@ func (s *AuthService) ConfirmMFA(ctx context.Context, email, code, ip, userAgent
+ 	}
+ 	// Re-verify the user is still a platform admin (defense in depth: a role
+ 	// change between challenge and confirm must not mint an admin session).
+-	if !isPlatformAdmin(roles) {
++	if !requiresMFA(roles) {
+ 		return nil, fmt.Errorf("%w: account no longer holds admin access", domain.ErrForbidden)
+ 	}
+ 	token, u, roles, err := s.startSession(ctx, user, ip, userAgent, "password+mfa")
+@@ -485,7 +491,7 @@ func (s *AuthService) issueMFAChallenge(ctx context.Context, user *identity.User
+ 	if err := s.tokens.Create(ctx, token); err != nil {
+ 		return err
+ 	}
+-	s.logDev("MFA code for admin %s: %s (expires in 10 minutes)", user.Email, code)
++	s.logOTP("MFA code for %s (admin): %s (expires in 10 minutes)", user.Email, code)
+ 	if s.email != nil {
+ 		if err := s.sendEmail(ctx, user.Email, "Your NUVORA admin verification code",
+ 			notification.BrandEmail(

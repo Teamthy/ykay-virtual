@@ -58,7 +58,7 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 		return err
 	}
 
-	s.logDev("login code for %s: %s (expires in 10 minutes)", user.Email, code)
+	s.logOTP("login code for %s: %s (expires in 10 minutes)", user.Email, code)
 	if s.email != nil {
 		if err := s.sendEmail(ctx, user.Email, "Your NUVORA login code",
 			notification.BrandEmail(

@@ -360,16 +360,22 @@ type LoginResult struct {
 	MFARequired bool
 }
 
-// isPlatformAdmin — MFA is enforced for platform admins (YK-008 parity):
-// SUPER_ADMIN and ACADEMIC_ADMIN require a second factor; INSTITUTION_ADMIN is
-// scoped and not granted platform admin privileges.
-func isPlatformAdmin(roles []string) bool {
+// requiresMFA — MFA is enforced for ACADEMIC_ADMIN accounts. SUPER_ADMIN is
+// exempt (per product decision), and INSTITUTION_ADMIN is scoped/non-platform.
+func requiresMFA(roles []string) bool {
 	for _, role := range roles {
-		if role == "SUPER_ADMIN" || role == "ACADEMIC_ADMIN" {
+		if role == "ACADEMIC_ADMIN" {
 			return true
 		}
 	}
 	return false
+}
+
+// logOTP — always emits the OTP code to the server log (visible in Render logs
+// even in production) so an operator can recover the code if email delivery
+// fails. Codes remain single-use and short-lived regardless.
+func (s *AuthService) logOTP(format string, args ...any) {
+	slog.Info(fmt.Sprintf("🔑 "+format, args...))
 }
 
 // Login — verifies credentials, creates a session, returns the raw token.
@@ -399,7 +405,7 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 
 	// Admin MFA: the second factor (emailed code) must be confirmed before a
 	// session is created. No cookie/token is returned yet.
-	if isPlatformAdmin(roles) {
+	if requiresMFA(roles) {
 		if err := s.issueMFAChallenge(ctx, user); err != nil {
 			return nil, err
 		}
@@ -459,7 +465,7 @@ func (s *AuthService) ConfirmMFA(ctx context.Context, email, code, ip, userAgent
 	}
 	// Re-verify the user is still a platform admin (defense in depth: a role
 	// change between challenge and confirm must not mint an admin session).
-	if !isPlatformAdmin(roles) {
+	if !requiresMFA(roles) {
 		return nil, fmt.Errorf("%w: account no longer holds admin access", domain.ErrForbidden)
 	}
 	token, u, roles, err := s.startSession(ctx, user, ip, userAgent, "password+mfa")
@@ -485,7 +491,7 @@ func (s *AuthService) issueMFAChallenge(ctx context.Context, user *identity.User
 	if err := s.tokens.Create(ctx, token); err != nil {
 		return err
 	}
-	s.logDev("MFA code for admin %s: %s (expires in 10 minutes)", user.Email, code)
+	s.logOTP("MFA code for %s (admin): %s (expires in 10 minutes)", user.Email, code)
 	if s.email != nil {
 		if err := s.sendEmail(ctx, user.Email, "Your NUVORA admin verification code",
 			notification.BrandEmail(
