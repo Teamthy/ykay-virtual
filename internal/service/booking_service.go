@@ -26,6 +26,13 @@ type BookingService struct {
 	students     booking.StudentProfileReader
 	tutorSubject booking.TutorProfileReader
 	audit        identity.AuditService
+	coupons      *CouponService
+}
+
+// WithCoupons wires the coupon engine so checkout can apply promotional codes.
+func (s *BookingService) WithCoupons(coupons *CouponService) *BookingService {
+	s.coupons = coupons
+	return s
 }
 
 func NewBookingService(uows repository.UnitOfWorkFactory, students booking.StudentProfileReader,
@@ -82,6 +89,7 @@ type CreateCohortBookingInput struct {
 	ParentUserID   uuid.UUID
 	StudentID      uuid.UUID
 	IdempotencyKey string
+	CouponCode     string
 	RequestID      *string
 	TraceID        *string
 }
@@ -97,6 +105,7 @@ type CreatePrivateBookingInput struct {
 	PricePerSession float64
 	Currency        string
 	IdempotencyKey  string
+	CouponCode      string
 	Goals           *string
 	PreferredDays   *string
 	PreferredTime   *string
@@ -173,13 +182,22 @@ func (s *BookingService) CreateCohortBooking(ctx context.Context, in CreateCohor
 		return nil, err
 	}
 
+	subtotal := cohort.Fee
+	var coupon *payment.Coupon
+	var discount float64
+	if in.CouponCode != "" && s.coupons != nil {
+		coupon, discount, err = s.coupons.ValidateWithRepo(ctx, uow.Coupons(), in.CouponCode, in.ParentUserID.String(), subtotal)
+		if err != nil {
+			return nil, err
+		}
+	}
 	order := &payment.Order{
 		ParentUserID:   in.ParentUserID,
 		StudentID:      &in.StudentID,
 		Status:         payment.OrderPending,
-		Subtotal:       cohort.Fee,
-		DiscountAmount: 0,
-		TotalAmount:    cohort.Fee,
+		Subtotal:       subtotal,
+		DiscountAmount: discount,
+		TotalAmount:    subtotal - discount,
 		Currency:       cohort.Currency,
 	}
 	if in.IdempotencyKey != "" {
@@ -187,6 +205,11 @@ func (s *BookingService) CreateCohortBooking(ctx context.Context, in CreateCohor
 	}
 	if err := uow.Orders().Create(ctx, order); err != nil {
 		return nil, err
+	}
+	if coupon != nil && discount > 0 {
+		if err := s.coupons.Record(ctx, uow.Coupons(), coupon.ID, in.ParentUserID, order.ID, discount); err != nil {
+			return nil, err
+		}
 	}
 
 	desc := "Cohort enrollment: " + cohort.Title
@@ -319,13 +342,22 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
 		return nil, err
 	}
 
+	subtotal := pkg.TotalPrice
+	var coupon *payment.Coupon
+	var discount float64
+	if in.CouponCode != "" && s.coupons != nil {
+		coupon, discount, err = s.coupons.ValidateWithRepo(ctx, uow.Coupons(), in.CouponCode, in.ParentUserID.String(), subtotal)
+		if err != nil {
+			return nil, err
+		}
+	}
 	order := &payment.Order{
 		ParentUserID:   in.ParentUserID,
 		StudentID:      &in.StudentID,
 		Status:         payment.OrderPending,
-		Subtotal:       pkg.TotalPrice,
-		DiscountAmount: 0,
-		TotalAmount:    pkg.TotalPrice,
+		Subtotal:       subtotal,
+		DiscountAmount: discount,
+		TotalAmount:    subtotal - discount,
 		Currency:       pkg.Currency,
 	}
 	if in.IdempotencyKey != "" {
@@ -333,6 +365,11 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
 	}
 	if err := uow.Orders().Create(ctx, order); err != nil {
 		return nil, err
+	}
+	if coupon != nil && discount > 0 {
+		if err := s.coupons.Record(ctx, uow.Coupons(), coupon.ID, in.ParentUserID, order.ID, discount); err != nil {
+			return nil, err
+		}
 	}
 
 	desc := fmt.Sprintf("Private tuition: %d x %dmin sessions", pkg.TotalSessions, pkg.SessionDurationMins)

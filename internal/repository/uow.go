@@ -25,6 +25,7 @@ type UnitOfWork interface {
 	Escrow() payment.EscrowHoldRepository
 	Payouts() payment.PayoutRepository
 	Wallets() payment.WalletRepository
+	Coupons() payment.CouponRepository
 	Enrollments() booking.CohortEnrollmentRepository
 	Cohorts() booking.CohortRepository
 	PrivateRequests() booking.PrivateTuitionRequestRepository

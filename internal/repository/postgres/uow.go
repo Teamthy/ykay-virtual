@@ -32,6 +32,7 @@ type PgUnitOfWork struct {
 	tutorSubj   *TutorSubjectRepo
 	auditLogs   *AuditLogRepo
 	lessonLinks *LessonRepo
+	coupons     *CouponRepo
 }
 
 func (u *PgUnitOfWork) LessonLinks() booking.LessonParticipantLinker             { return u.lessonLinks }
@@ -48,6 +49,7 @@ func (u *PgUnitOfWork) PrivatePackages() booking.PrivatePackageRepository       
 func (u *PgUnitOfWork) Vetting() vetting.VettingRepository                       { return u.vetting }
 func (u *PgUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository              { return u.tutorSubj }
 func (u *PgUnitOfWork) AuditLogs() identity.AuditLogRepository                   { return u.auditLogs }
+func (u *PgUnitOfWork) Coupons() payment.CouponRepository                        { return u.coupons }
 
 func (u *PgUnitOfWork) Commit(ctx context.Context) error {
 	if err := u.tx.Commit(); err != nil {
@@ -85,6 +87,7 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
 		tutorSubj:   NewTutorSubjectRepo(tx),
 		auditLogs:   NewAuditLogRepo(tx),
 		lessonLinks: NewLessonRepo(tx),
+		coupons:     NewCouponRepo(tx),
 	}, nil
 }
 

@@ -30,6 +30,7 @@ type MemoryUnitOfWork struct {
 	tutorSubj   *VettingTutorSubjectMemory
 	auditLogs   *AuditLogMemory
 	lessonLinks *LessonMemory
+	coupons     *CouponMemory
 }
 
 func (u *MemoryUnitOfWork) LessonLinks() booking.LessonParticipantLinker    { return u.lessonLinks }
@@ -48,6 +49,7 @@ func (u *MemoryUnitOfWork) PrivatePackages() booking.PrivatePackageRepository { 
 func (u *MemoryUnitOfWork) Vetting() vetting.VettingRepository                { return u.vetting }
 func (u *MemoryUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository       { return u.tutorSubj }
 func (u *MemoryUnitOfWork) AuditLogs() identity.AuditLogRepository            { return u.auditLogs }
+func (u *MemoryUnitOfWork) Coupons() payment.CouponRepository                 { return u.coupons }
 
 func (u *MemoryUnitOfWork) Commit(_ context.Context) error { return nil }
 func (u *MemoryUnitOfWork) Rollback()                      {}
@@ -76,6 +78,7 @@ func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWor
 		tutorSubj:   f.store.TutorSubj,
 		auditLogs:   f.store.AuditLogs,
 		lessonLinks: f.store.Lessons,
+		coupons:     f.store.Coupons,
 	}, nil
 }
 
@@ -94,6 +97,7 @@ type MemoryStore struct {
 	Cohorts        *CohortMemory
 	PrivateReqs    *PrivateReqMemory
 	PrivatePkgs    *PrivatePackageMemory
+	Coupons        *CouponMemory
 	Vetting        *VettingMemory
 	TutorSubj      *VettingTutorSubjectMemory
 	Availability   *AvailabilityMemory
@@ -134,6 +138,7 @@ func NewMemoryStore() *MemoryStore {
 		Cohorts:      NewCohortMemory(nil),
 		PrivateReqs:  NewPrivateReqMemory(),
 		PrivatePkgs:  NewPrivatePackageMemory(),
+		Coupons:      NewCouponMemory(),
 		Vetting:      NewVettingMemory(),
 		TutorSubj:    NewVettingTutorSubjectMemory(),
 		Availability: NewAvailabilityMemory(),

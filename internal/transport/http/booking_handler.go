@@ -31,6 +31,7 @@ type createBookingRequest struct {
 	PreferredDays   *string  `json:"preferred_days,omitempty"`
 	PreferredTime   *string  `json:"preferred_time_range,omitempty"`
 	IdempotencyKey  string   `json:"idempotency_key"`
+	CouponCode      string   `json:"coupon_code"`
 }
 
 type bookingResponse struct {
@@ -113,6 +114,7 @@ func (h *BookingHandler) Create(w http.ResponseWriter, r *http.Request) {
 			ParentUserID:   parentID,
 			StudentID:      studentID,
 			IdempotencyKey: req.IdempotencyKey,
+			CouponCode:     req.CouponCode,
 			RequestID:      &reqID,
 			TraceID:        &traceID,
 		})
@@ -167,6 +169,7 @@ func (h *BookingHandler) Create(w http.ResponseWriter, r *http.Request) {
 			PreferredDays:   req.PreferredDays,
 			PreferredTime:   req.PreferredTime,
 			IdempotencyKey:  req.IdempotencyKey,
+			CouponCode:      req.CouponCode,
 			RequestID:       &reqID,
 			TraceID:         &traceID,
 		})

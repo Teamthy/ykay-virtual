@@ -5,6 +5,7 @@ export type CreateCohortBookingParams = {
   cohort_id: string;
   student_id: string;
   idempotency_key: string;
+  coupon_code?: string;
 };
 
 /**
@@ -20,7 +21,26 @@ export async function createCohortBooking(params: CreateCohortBookingParams): Pr
       cohort_id: params.cohort_id,
       student_id: params.student_id,
       idempotency_key: params.idempotency_key,
+      coupon_code: params.coupon_code,
     }),
+  });
+  return res.data;
+}
+
+export type CouponValidation = {
+  code: string;
+  discount: number;
+  discount_type: string;
+  discount_value: number;
+  currency: string;
+  valid: boolean;
+};
+
+/** Validates a coupon code against a subtotal (no usage recorded). */
+export async function validateCoupon(code: string, subtotal: number): Promise<CouponValidation> {
+  const res = await apiFetch<CouponValidation>("/coupons/validate", {
+    method: "POST",
+    body: JSON.stringify({ code, subtotal }),
   });
   return res.data;
 }

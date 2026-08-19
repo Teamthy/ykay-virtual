@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, ShieldCheck, RefreshCcw } from "lucide-react";
 import { qk } from "@/lib/queryClient";
-import { createCohortBooking, initiatePayment } from "@/features/bookings/api/create";
+import { createCohortBooking, initiatePayment, validateCoupon, type CouponValidation } from "@/features/bookings/api/create";
 import { listLearners } from "@/features/onboarding/api";
 import { useSession } from "@/hooks/useSession";
 import { useQuery } from "@tanstack/react-query";
@@ -48,6 +48,10 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
   const [idempotencyKey] = useState(() =>
     typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `ck-${Date.now()}`
   );
+  const [couponCode, setCouponCode] = useState("");
+  const [couponResult, setCouponResult] = useState<CouponValidation | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponBusy, setCouponBusy] = useState(false);
 
   const createBooking = useMutation({
     mutationFn: createCohortBooking,
@@ -90,6 +94,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           cohort_id: cohort.id,
           student_id: value.student_id,
           idempotency_key: idempotencyKey,
+          coupon_code: couponResult?.code ?? undefined,
         });
         if (!booking.payment_required) {
           setStep({ name: "error", message: "This booking was already paid — please check your dashboard." });
@@ -115,6 +120,22 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
     },
   });
 
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponBusy(true);
+    setCouponError(null);
+    try {
+      const res = await validateCoupon(couponCode.trim(), cohort.fee);
+      setCouponResult(res);
+      toast.success(`Coupon applied: ${res.currency} ${res.discount.toLocaleString()} off`);
+    } catch (e) {
+      setCouponResult(null);
+      setCouponError(e instanceof Error ? e.message : "That coupon isn't valid for this order.");
+    } finally {
+      setCouponBusy(false);
+    }
+  };
   const seatsLeft = useMemo(
     () => Math.max(0, cohort.capacity - cohort.enrolled_count),
     [cohort.capacity, cohort.enrolled_count]
@@ -265,6 +286,43 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
             </fieldset>
           )}
         </form.Field>
+
+        {/* Coupon / discount (gap #6) */}
+        <div className="rounded-xl border border-ink-100 bg-surface-muted/50 p-3">
+          <label className="text-sm">
+            <span className="font-medium text-ink-700">Promo code (optional)</span>
+            <div className="mt-1 flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => {
+                  setCouponCode(e.target.value);
+                  setCouponResult(null);
+                  setCouponError(null);
+                }}
+                placeholder="e.g. SAVE10"
+                className="min-w-0 flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={couponBusy || !couponCode.trim()}
+                onClick={() => void applyCoupon()}
+              >
+                {couponBusy ? "Checking…" : "Apply"}
+              </Button>
+            </div>
+          </label>
+          {couponResult ? (
+            <p className="mt-1.5 text-xs font-semibold text-emerald-700">
+              {couponResult.code} applied — {couponResult.currency}{" "}
+              {(couponResult.discount ?? 0).toLocaleString()} off your total.
+            </p>
+          ) : couponError ? (
+            <p className="mt-1.5 text-xs text-red-600">{couponError}</p>
+          ) : null}
+        </div>
 
         {step.name === "error" ? (
           <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" role="alert">

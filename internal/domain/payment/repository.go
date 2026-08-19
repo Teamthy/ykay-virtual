@@ -78,3 +78,17 @@ type WalletRepository interface {
 	Credit(ctx context.Context, userID uuid.UUID, amount float64) error
 	Debit(ctx context.Context, userID uuid.UUID, amount float64) error
 }
+
+// CouponRepository — coupon/discount engine (gap #6).
+type CouponRepository interface {
+	Create(ctx context.Context, c *Coupon) error
+	GetByCode(ctx context.Context, code string) (*Coupon, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*Coupon, error)
+	List(ctx context.Context, page, pageSize int) ([]Coupon, int64, error)
+	Update(ctx context.Context, c *Coupon) error
+	IncrementUsage(ctx context.Context, id uuid.UUID, by int) error
+	// CountUserRedemptions returns how many times a user has used a coupon.
+	CountUserRedemptions(ctx context.Context, couponID, userID uuid.UUID) (int, error)
+	// RecordRedemption stores one redemption linked to an order.
+	RecordRedemption(ctx context.Context, couponID, userID, orderID uuid.UUID, discount float64) error
+}

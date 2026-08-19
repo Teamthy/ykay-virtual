@@ -66,6 +66,7 @@ type Repositories struct {
 	TutorSubjectChk    booking.TutorProfileReader
 	AuditRepo          identity.AuditLogRepository
 	Orders             payment.OrderRepository
+	Coupons            payment.CouponRepository
 	Payments           payment.PaymentRepository
 	Enrollments        booking.CohortEnrollmentRepository
 	Escrow             payment.EscrowHoldRepository
@@ -208,7 +209,8 @@ func main() {
 	sessionAuth := middleware.SessionAuth(sessionCache, "nuvora_session")
 
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
-	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit)
+	couponSvc := service.NewCouponService(repos.Coupons)
+	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit).WithCoupons(couponSvc)
 	vettingSvc := service.NewVettingService(repos.UoWFactory, store, audit,
 		service.SubjectReaderAdapter{Repo: repos.SubjectRepo},
 		service.SearchInvalidatorAdapter{Fn: func(ctx context.Context) error { return tutorSvc.InvalidateSearchCache(ctx) }})
@@ -335,6 +337,7 @@ func main() {
 		Programmes: httpapi.NewProgrammeHandler(programmeSvc),
 		Cohorts:    httpapi.NewCohortHandler(cohortSvc),
 		Bookings:   httpapi.NewBookingHandler(bookingSvc),
+		Coupons:    httpapi.NewCouponHandler(couponSvc),
 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
 			payment.ProviderPaystack:    cfg.PaystackSecret,
 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
@@ -493,6 +496,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			TutorRepo:          store.Tutors,
 			AuditRepo:          store.AuditLogs,
 			Orders:             store.Orders,
+			Coupons:            store.Coupons,
 			Payments:           store.Payments,
 			Enrollments:        store.Enrollments,
 			Escrow:             store.Escrow,
@@ -554,6 +558,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		TutorSubjectChk:    postgres.NewTutorSubjectCheckRepo(pg.DB()),
 		AuditRepo:          postgres.NewAuditLogRepo(pg.DB()),
 		Orders:             postgres.NewOrderRepo(pg.DB()),
+		Coupons:            postgres.NewCouponRepo(pg.DB()),
 		Payments:           postgres.NewPaymentRepo(pg.DB()),
 		Enrollments:        postgres.NewCohortEnrollmentRepo(pg.DB()),
 		Escrow:             postgres.NewEscrowHoldRepo(pg.DB()),
