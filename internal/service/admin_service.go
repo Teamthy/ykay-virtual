@@ -18,6 +18,7 @@ import (
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
+	"ykay-virtual/internal/domain/tutor"
 
 	"github.com/google/uuid"
 )
@@ -44,6 +45,7 @@ type AdminService struct {
 	users          identity.UserRepository
 	roles          identity.RoleRepository
 	auditLogs      identity.AuditLogRepository
+	tutors         tutor.TutorRepository
 	audit          identity.AuditService
 	now            func() time.Time
 }
@@ -206,6 +208,13 @@ func (s *AdminService) WithSupport(support content.SupportTicketRepository) *Adm
 func (s *AdminService) WithCohortAdmin(cohorts booking.CohortAdminRepository, lessons booking.LessonAdminRepository) *AdminService {
 	s.cohortAdmin = cohorts
 	s.lessonAdmin = lessons
+	return s
+}
+
+// WithTutors wires the tutor read model so admin can validate a tutor is
+// approved before assigning them to a cohort.
+func (s *AdminService) WithTutors(tutors tutor.TutorRepository) *AdminService {
+	s.tutors = tutors
 	return s
 }
 
@@ -671,6 +680,44 @@ func (s *AdminService) SetCohortStatusAdmin(ctx context.Context, adminID uuid.UU
 	}
 	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
 		&cohortID, nil, map[string]any{"status": status}, nil, nil)
+	return nil
+}
+
+// AssignTutorToCohortAdmin — assigns a tutor to teach a cohort. Only tutors
+// who are APPROVED (and thus visible/public) may be assigned; nil clears the
+// assignment so the cohort returns to "awaiting tutor". Audited.
+func (s *AdminService) AssignTutorToCohortAdmin(ctx context.Context, adminID, cohortID, tutorProfileID uuid.UUID) error {
+	if s.tutors != nil {
+		t, err := s.tutors.GetByID(ctx, tutorProfileID)
+		if err != nil {
+			return fmt.Errorf("%w: tutor profile not found", domain.ErrNotFound)
+		}
+		if t.Status != tutor.TutorStatusApproved {
+			return fmt.Errorf("%w: only approved tutors can be assigned to a cohort (current status %s)",
+				domain.ErrConflict, t.Status)
+		}
+	}
+	if s.cohortAdmin == nil {
+		return errors.New("cohort repository not configured")
+	}
+	if err := s.cohortAdmin.UpdateTutor(ctx, cohortID, &tutorProfileID); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
+		&cohortID, nil, map[string]any{"tutor_profile_id": tutorProfileID.String()}, nil, nil)
+	return nil
+}
+
+// ClearCohortTutorAdmin — unassigns a cohort's tutor (back to "awaiting tutor").
+func (s *AdminService) ClearCohortTutorAdmin(ctx context.Context, adminID, cohortID uuid.UUID) error {
+	if s.cohortAdmin == nil {
+		return errors.New("cohort repository not configured")
+	}
+	if err := s.cohortAdmin.UpdateTutor(ctx, cohortID, nil); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
+		&cohortID, nil, map[string]any{"tutor_profile_id": nil}, nil, nil)
 	return nil
 }
 

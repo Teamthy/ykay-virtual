@@ -513,6 +513,47 @@ func (h *AdminHandler) SetCohortStatus(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"status": req.Status}, nil)
 }
 
+// AssignCohortTutor — assign a tutor to teach a cohort, or clear the
+// assignment (omit tutor_profile_id / send empty string to unassign).
+//
+//	POST /api/v1/admin/cohorts/{cohortId}/tutor  { "tutor_profile_id": "..." }
+func (h *AdminHandler) AssignCohortTutor(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	cohortID, err := ParseUUID(r, "cohortId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		TutorProfileID string `json:"tutor_profile_id"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if req.TutorProfileID == "" {
+		if err := h.svc.ClearCohortTutorAdmin(r.Context(), *adminID, cohortID); err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		pkg.WriteSuccess(w, http.StatusOK, map[string]any{"cohort_id": cohortID, "tutor_profile_id": nil}, nil)
+		return
+	}
+	tutorID, err := uuid.Parse(req.TutorProfileID)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
+		return
+	}
+	if err := h.svc.AssignTutorToCohortAdmin(r.Context(), *adminID, cohortID, tutorID); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"cohort_id": cohortID, "tutor_profile_id": tutorID}, nil)
+}
+
 // LessonsToday — today's classes.
 func (h *AdminHandler) LessonsToday(w http.ResponseWriter, r *http.Request) {
 	if h.requireAdmin(w, r) == nil {

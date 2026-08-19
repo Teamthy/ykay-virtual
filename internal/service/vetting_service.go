@@ -398,6 +398,39 @@ func (s *VettingService) Approve(ctx context.Context, adminID, profileID uuid.UU
 	return nil
 }
 
+// SetPublic — admin toggles whether an APPROVED tutor is visible on the
+// public marketplace. This is the direct "fix is_public=true" action: a tutor
+// only appears in /tutors search when status=APPROVED AND is_public=true.
+// Only approved tutors can be shown; suspending hides them again.
+func (s *VettingService) SetPublic(ctx context.Context, adminID, profileID uuid.UUID, isPublic bool) error {
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer uow.Rollback()
+
+	profile, err := s.uowProfile(ctx, uow, profileID)
+	if err != nil {
+		return err
+	}
+	if profile.Status != tutor.TutorStatusApproved {
+		return fmt.Errorf("%w: only approved tutors can be shown publicly (current status %s)",
+			domain.ErrConflict, profile.Status)
+	}
+	if err := uow.Vetting().SetPublic(ctx, profileID, isPublic); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditVettingStatusChange, "tutor_profile",
+		&profileID, map[string]any{"is_public": !isPublic}, map[string]any{"is_public": isPublic}, nil, nil)
+	if err := uow.Commit(ctx); err != nil {
+		return err
+	}
+	if s.invalidator != nil {
+		_ = s.invalidator.InvalidateSearch(ctx)
+	}
+	return nil
+}
+
 // Reject — any review state → REJECTED (admin). Reason required.
 func (s *VettingService) Reject(ctx context.Context, adminID, profileID uuid.UUID, reason string) error {
 	if strings.TrimSpace(reason) == "" {

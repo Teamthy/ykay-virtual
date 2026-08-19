@@ -1,0 +1,612 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index 98866d5..df37638 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -187,6 +187,25 @@ paths:
+         '200': { description: OK }
+         '201': { description: Created }
+ 
++  /admin/vetting/profiles/{profileId}/public:
++    post:
++      tags: [admin]
++      summary: Toggle an approved tutor's public visibility (is_public)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: profileId, in: path, required: true, schema: { type: string, format: uuid } }
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [is_public]
++              properties:
++                is_public: { type: boolean, description: "true = show on the public marketplace" }
++      responses:
++        '200': { description: Updated }
++
+   /admin/vetting/profiles/{profileId}/verify:
+     post:
+       tags: []
+@@ -1907,6 +1926,25 @@ paths:
+       responses:
+         '200': { description: Updated }
+ 
++  /admin/cohorts/{cohortId}/tutor:
++    post:
++      tags: [admin]
++      summary: Assign a tutor to a cohort (or clear the assignment)
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [tutor_profile_id]
++              properties:
++                tutor_profile_id: { type: string, format: uuid, description: "Approved tutor profile id; empty to unassign" }
++      responses:
++        '200': { description: Assigned }
++
+   /admin/audit:
+     get:
+       tags: [admin]
+diff --git a/client/app/admin/cohorts/page.tsx b/client/app/admin/cohorts/page.tsx
+index b829e16..ff7f8c6 100644
+--- a/client/app/admin/cohorts/page.tsx
++++ b/client/app/admin/cohorts/page.tsx
+@@ -3,14 +3,18 @@
+ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+ import { useState } from "react";
+ import { toast } from "sonner";
+-import { createAdminCohort, listAdminCohorts, setAdminCohortStatus, type AdminCohort } from "@/features/admin/api";
++import {
++  createAdminCohort, listAdminCohorts, setAdminCohortStatus,
++  listApprovedTutors, assignAdminCohortTutor,
++  type AdminCohort, type AdminVettingProfile,
++} from "@/features/admin/api";
+ import { listProgrammes } from "@/features/programmes/api/list";
+ import { Button } from "@/components/ui/button";
+ import { DataTable, type Column } from "@/components/ui/data-table";
+ import { EmptyState } from "@/components/ui/empty-state";
+ import { Progress } from "@/components/ui/progress";
+ import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+-import { CalendarDays, Users } from "lucide-react";
++import { CalendarDays, Users, UserCheck } from "lucide-react";
+ 
+ // Admin cohort manager (working-doc §12) - NUVORA design system:
+ // DataTable + StatusBadge (text+icon+colour) + EmptyState + Progress capacity.
+@@ -21,6 +25,8 @@ export default function AdminCohortsPage() {
+   const [status, setStatus] = useState("");
+   const [page, setPage] = useState(1);
+   const [showCreate, setShowCreate] = useState(false);
++  // Per-row pending tutor selection, keyed by cohort id.
++  const [tutorDraft, setTutorDraft] = useState<Record<string, string>>({});
+   const qc = useQueryClient();
+ 
+   const cohorts = useQuery({
+@@ -29,6 +35,14 @@ export default function AdminCohortsPage() {
+     staleTime: 15_000,
+   });
+ 
++  // Approved tutors = the assignable pick-list (is_public can be toggled on
++  // the vetting page; assignment requires an approved tutor).
++  const approvedTutors = useQuery({
++    queryKey: ["admin", "tutors", "approved"],
++    queryFn: () => listApprovedTutors(),
++    staleTime: 30_000,
++  });
++
+   const setStatusMut = useMutation({
+     mutationFn: ({ id, s }: { id: string; s: string }) => setAdminCohortStatus(id, s),
+     onSuccess: (_d, { s }) => {
+@@ -38,8 +52,19 @@ export default function AdminCohortsPage() {
+     onError: () => toast.error("Could not update cohort"),
+   });
+ 
++  const assignTutorMut = useMutation({
++    mutationFn: ({ id, tutorId }: { id: string; tutorId: string }) => assignAdminCohortTutor(id, tutorId),
++    onSuccess: () => {
++      toast.success("Tutor assigned to cohort");
++      setTutorDraft({});
++      qc.invalidateQueries({ queryKey: ["admin", "cohorts"] });
++    },
++    onError: () => toast.error("Could not assign tutor (tutor must be approved)"),
++  });
++
+   const data = cohorts.data?.data ?? [];
+   const meta = cohorts.data?.meta;
++  const tutors: AdminVettingProfile[] = approvedTutors.data ?? [];
+ 
+   const columns: Column<AdminCohort>[] = [
+     {
+@@ -78,6 +103,48 @@ export default function AdminCohortsPage() {
+       header: "Status",
+       cell: (c) => <StatusBadge label={c.status} kind={statusKindFor(c.status)} />,
+     },
++    {
++      key: "tutor",
++      header: "Tutor",
++      cell: (c) => {
++        const currentId = c.tutor_profile_id ?? "";
++        const draftId = tutorDraft[c.id] ?? currentId;
++        const name = tutors.find((t) => t.id === draftId)?.display_name ?? "Unassigned";
++        const isAwaiting = !currentId;
++        return (
++          <div className="flex flex-col gap-1.5 w-56">
++            <span className="inline-flex items-center gap-1 text-[11px] font-semibold">
++              <UserCheck size={12} className={isAwaiting ? "text-amber-500" : "text-emerald-600"} />
++              {currentId ? name : "Awaiting tutor"}
++            </span>
++            <div className="flex gap-1.5">
++              <select
++                value={draftId}
++                onChange={(e) => setTutorDraft((m) => ({ ...m, [c.id]: e.target.value }))}
++                className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1.5 text-xs focus:outline-none"
++              >
++                <option value="">— none —</option>
++                {tutors.map((t) => (
++                  <option key={t.id} value={t.id}>{t.display_name}</option>
++                ))}
++              </select>
++              <Button
++                size="sm"
++                variant="outline"
++                className="px-2 text-[11px]"
++                disabled={draftId === currentId || assignTutorMut.isPending}
++                onClick={() => assignTutorMut.mutate({ id: c.id, tutorId: draftId })}
++              >
++                {draftId ? (currentId ? "Update" : "Assign") : "Clear"}
++              </Button>
++            </div>
++            {approvedTutors.isLoading && (
++              <span className="text-[10px] text-ink-400">Loading approved tutors…</span>
++            )}
++          </div>
++        );
++      },
++    },
+     {
+       key: "actions",
+       header: <span className="sr-only">Actions</span>,
+diff --git a/client/app/admin/vetting/page.tsx b/client/app/admin/vetting/page.tsx
+index 1aa59b6..9d86a77 100644
+--- a/client/app/admin/vetting/page.tsx
++++ b/client/app/admin/vetting/page.tsx
+@@ -15,6 +15,7 @@ import {
+   reviewDocument,
+   type AdminAction,
+ } from "@/features/vetting/api";
++import { setTutorPublic } from "@/features/admin/api";
+ import type { ProfileDetail, TutorProfile, TutorStatus } from "@/features/vetting/types";
+ 
+ const STATUSES: TutorStatus[] = ["SUBMITTED", "UNDER_REVIEW", "INTERVIEW", "VERIFICATION", "HOLD", "APPROVED", "REJECTED"];
+@@ -143,6 +144,16 @@ function Dossier({
+   const [rejectReason, setRejectReason] = useState("");
+   const [rejectError, setRejectError] = useState<string | null>(null);
+ 
++  const pubMut = useMutation({
++    mutationFn: async ({ id, isPublic }: { id: string; isPublic: boolean }) => {
++      await setTutorPublic(id, isPublic);
++    },
++    onSuccess: () => {
++      qc.invalidateQueries({ queryKey: ["admin", "vetting"] });
++      onChanged();
++    },
++  });
++
+   const reviewDoc = useMutation({
+     mutationFn: async ({ docId, approve, r }: { docId: string; approve: boolean; r?: string }) => {
+       await reviewDocument(docId, approve, r ?? "");
+@@ -306,6 +317,28 @@ function Dossier({
+           {busy ? <p className="text-xs text-ink-400">Working…</p> : null}
+         </section>
+       )}
++
++      {p.status === "APPROVED" && (
++        <section className="border-t pt-4">
++          <p className="text-xs text-ink-500 mb-2">
++            Marketplace visibility — a tutor only appears in public search when{" "}
++            <code className="text-[10px] bg-ink-100 px-1 rounded">is_public = true</code>.
++          </p>
++          <div className="flex items-center gap-2">
++            <span className="text-sm font-medium text-ink-700">
++              {p.is_public ? "Visible on the public marketplace" : "Hidden from the public marketplace"}
++            </span>
++            <Button
++              size="sm"
++              variant={p.is_public ? "outline" : "gold"}
++              disabled={pubMut.isPending}
++              onClick={() => pubMut.mutate({ id: p.id, isPublic: !p.is_public })}
++            >
++              {p.is_public ? "Hide" : "Make public (is_public = true)"}
++            </Button>
++          </div>
++        </section>
++      )}
+     </div>
+   );
+ }
+diff --git a/client/features/admin/api.ts b/client/features/admin/api.ts
+index 56602a7..c708323 100644
+--- a/client/features/admin/api.ts
++++ b/client/features/admin/api.ts
+@@ -211,6 +211,7 @@ export type AdminCohort = {
+   fee: number;
+   currency: string;
+   status: string;
++  tutor_profile_id?: string | null;
+ };
+ 
+ export async function listAdminCohorts(params: { status?: string; page?: number }): Promise<Envelope<AdminCohort[]>> {
+@@ -229,6 +230,32 @@ export async function setAdminCohortStatus(id: string, status: string): Promise<
+   await apiFetch(`/admin/cohorts/${id}/status`, { method: "POST", body: JSON.stringify({ status }) });
+ }
+ 
++// --- Cohort tutor assignment ----------------------------------------------
++
++export type AdminVettingProfile = {
++  id: string;
++  slug: string;
++  display_name: string;
++  status: string;
++  is_public?: boolean;
++};
++
++/** Approved tutors, used as the pick-list when assigning a tutor to a cohort. */
++export async function listApprovedTutors(pageSize = 200): Promise<AdminVettingProfile[]> {
++  const res = await apiFetch<AdminVettingProfile[]>(`/admin/vetting/queue?status=APPROVED&page_size=${pageSize}`);
++  return res.data ?? [];
++}
++
++/** Assign a tutor to teach a cohort. Pass "" to clear the assignment. */
++export async function assignAdminCohortTutor(cohortId: string, tutorProfileId: string): Promise<void> {
++  await apiFetch(`/admin/cohorts/${cohortId}/tutor`, { method: "POST", body: JSON.stringify({ tutor_profile_id: tutorProfileId }) });
++}
++
++/** Toggle an approved tutor's public marketplace visibility (is_public). */
++export async function setTutorPublic(profileId: string, isPublic: boolean): Promise<void> {
++  await apiFetch(`/admin/vetting/profiles/${profileId}/public`, { method: "POST", body: JSON.stringify({ is_public: isPublic }) });
++}
++
+ export type AdminLesson = {
+   id: string;
+   title: string;
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index 59e18b7..fa1e229 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -271,6 +271,7 @@ func main() {
+ 		repos.Referrals, repos.Reviews, audit).
+ 		WithSupport(repos.SupportTickets).
+ 		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin).
++		WithTutors(repos.TutorRepo).
+ 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
+ 		WithCatalogueCache(cacheBackend)
+ 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
+diff --git a/internal/domain/booking/repository.go b/internal/domain/booking/repository.go
+index 6a0553a..2941bfe 100644
+--- a/internal/domain/booking/repository.go
++++ b/internal/domain/booking/repository.go
+@@ -225,6 +225,9 @@ type CohortAdminRepository interface {
+ 	ListAll(ctx context.Context, params CohortListParams) ([]Cohort, int64, error)
+ 	Create(ctx context.Context, c *Cohort) error
+ 	UpdateStatus(ctx context.Context, id uuid.UUID, status CohortStatus) error
++	// UpdateTutor (re)assigns the tutor teaching a cohort. Passing nil clears
++	// the assignment (cohort is "awaiting tutor").
++	UpdateTutor(ctx context.Context, id uuid.UUID, tutorProfileID *uuid.UUID) error
+ }
+ 
+ // Lesson admin reads.
+diff --git a/internal/repository/memory/portal_memory.go b/internal/repository/memory/portal_memory.go
+index 67b223e..28f39ff 100644
+--- a/internal/repository/memory/portal_memory.go
++++ b/internal/repository/memory/portal_memory.go
+@@ -206,6 +206,19 @@ func (m *CohortMemory) UpdateStatus(_ context.Context, id uuid.UUID, status book
+ 	return nil
+ }
+ 
++// UpdateTutor (re)assigns or clears the tutor teaching a cohort.
++func (m *CohortMemory) UpdateTutor(_ context.Context, id uuid.UUID, tutorProfileID *uuid.UUID) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	c, ok := m.rows[id]
++	if !ok {
++		return domain.ErrNotFound
++	}
++	c.TutorProfileID = tutorProfileID
++	c.UpdatedAt = nowUTC()
++	return nil
++}
++
+ var _ booking.CohortAdminRepository = (*CohortMemory)(nil)
+ 
+ // --- Admin lessons (extends LessonMemory) ---
+diff --git a/internal/repository/postgres/payment_repo.go b/internal/repository/postgres/payment_repo.go
+index 2fed749..4979d0b 100644
+--- a/internal/repository/postgres/payment_repo.go
++++ b/internal/repository/postgres/payment_repo.go
+@@ -531,3 +531,19 @@ func isUniqueViolation(err error) bool {
+ 	}
+ 	return code == "23505"
+ }
++
++// isForeignKeyViolation — recognizes Postgres 23503 (foreign_key_violation)
++// across both pgx (Code()) and lib/pq (SQLState()) driver error shapes.
++func isForeignKeyViolation(err error) bool {
++	var code string
++	var pgErr interface{ Code() string }
++	if errors.As(err, &pgErr) {
++		code = pgErr.Code()
++	} else {
++		var sqlState interface{ SQLState() string }
++		if errors.As(err, &sqlState) {
++			code = sqlState.SQLState()
++		}
++	}
++	return code == "23503"
++}
+diff --git a/internal/repository/postgres/portal_repos.go b/internal/repository/postgres/portal_repos.go
+index 8d3177b..43c3eef 100644
+--- a/internal/repository/postgres/portal_repos.go
++++ b/internal/repository/postgres/portal_repos.go
+@@ -288,6 +288,21 @@ func (r *CohortRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status book
+ 	return nil
+ }
+ 
++// UpdateTutor (re)assigns the tutor teaching a cohort (admin action). nil
++// clears the assignment so the cohort is "awaiting tutor" again.
++func (r *CohortRepo) UpdateTutor(ctx context.Context, id uuid.UUID, tutorProfileID *uuid.UUID) error {
++	_, err := r.db.ExecContext(ctx,
++		`UPDATE cohorts SET tutor_profile_id = $1, updated_at = NOW() WHERE id = $2`,
++		tutorProfileID, id)
++	if err != nil {
++		if isForeignKeyViolation(err) {
++			return fmt.Errorf("%w: tutor_profile_id does not reference an existing tutor", domain.ErrInvalidInput)
++		}
++		return fmt.Errorf("update cohort tutor: %w", err)
++	}
++	return nil
++}
++
+ var _ booking.CohortAdminRepository = (*CohortRepo)(nil)
+ 
+ // --- Admin lessons ---
+diff --git a/internal/service/admin_service.go b/internal/service/admin_service.go
+index db96cce..da471b7 100644
+--- a/internal/service/admin_service.go
++++ b/internal/service/admin_service.go
+@@ -18,6 +18,7 @@ import (
+ 	"ykay-virtual/internal/domain/payment"
+ 	"ykay-virtual/internal/domain/referral"
+ 	"ykay-virtual/internal/domain/review"
++	"ykay-virtual/internal/domain/tutor"
+ 
+ 	"github.com/google/uuid"
+ )
+@@ -44,6 +45,7 @@ type AdminService struct {
+ 	users          identity.UserRepository
+ 	roles          identity.RoleRepository
+ 	auditLogs      identity.AuditLogRepository
++	tutors         tutor.TutorRepository
+ 	audit          identity.AuditService
+ 	now            func() time.Time
+ }
+@@ -209,6 +211,13 @@ func (s *AdminService) WithCohortAdmin(cohorts booking.CohortAdminRepository, le
+ 	return s
+ }
+ 
++// WithTutors wires the tutor read model so admin can validate a tutor is
++// approved before assigning them to a cohort.
++func (s *AdminService) WithTutors(tutors tutor.TutorRepository) *AdminService {
++	s.tutors = tutors
++	return s
++}
++
+ // WithContentSignoff wires the G5.3 catalogue sign-off surfaces:
+ // programme publish workflow + testimonial publication.
+ func (s *AdminService) WithContentSignoff(testimonials content.TestimonialRepository,
+@@ -674,6 +683,44 @@ func (s *AdminService) SetCohortStatusAdmin(ctx context.Context, adminID uuid.UU
+ 	return nil
+ }
+ 
++// AssignTutorToCohortAdmin — assigns a tutor to teach a cohort. Only tutors
++// who are APPROVED (and thus visible/public) may be assigned; nil clears the
++// assignment so the cohort returns to "awaiting tutor". Audited.
++func (s *AdminService) AssignTutorToCohortAdmin(ctx context.Context, adminID, cohortID, tutorProfileID uuid.UUID) error {
++	if s.tutors != nil {
++		t, err := s.tutors.GetByID(ctx, tutorProfileID)
++		if err != nil {
++			return fmt.Errorf("%w: tutor profile not found", domain.ErrNotFound)
++		}
++		if t.Status != tutor.TutorStatusApproved {
++			return fmt.Errorf("%w: only approved tutors can be assigned to a cohort (current status %s)",
++				domain.ErrConflict, t.Status)
++		}
++	}
++	if s.cohortAdmin == nil {
++		return errors.New("cohort repository not configured")
++	}
++	if err := s.cohortAdmin.UpdateTutor(ctx, cohortID, &tutorProfileID); err != nil {
++		return err
++	}
++	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
++		&cohortID, nil, map[string]any{"tutor_profile_id": tutorProfileID.String()}, nil, nil)
++	return nil
++}
++
++// ClearCohortTutorAdmin — unassigns a cohort's tutor (back to "awaiting tutor").
++func (s *AdminService) ClearCohortTutorAdmin(ctx context.Context, adminID, cohortID uuid.UUID) error {
++	if s.cohortAdmin == nil {
++		return errors.New("cohort repository not configured")
++	}
++	if err := s.cohortAdmin.UpdateTutor(ctx, cohortID, nil); err != nil {
++		return err
++	}
++	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
++		&cohortID, nil, map[string]any{"tutor_profile_id": nil}, nil, nil)
++	return nil
++}
++
+ // ListLessonsToday — today's classes (admin).
+ func (s *AdminService) ListLessonsToday(ctx context.Context) ([]booking.Lesson, error) {
+ 	if s.lessonAdmin == nil {
+diff --git a/internal/service/vetting_service.go b/internal/service/vetting_service.go
+index f9f99c4..73c5a04 100644
+--- a/internal/service/vetting_service.go
++++ b/internal/service/vetting_service.go
+@@ -398,6 +398,39 @@ func (s *VettingService) Approve(ctx context.Context, adminID, profileID uuid.UU
+ 	return nil
+ }
+ 
++// SetPublic — admin toggles whether an APPROVED tutor is visible on the
++// public marketplace. This is the direct "fix is_public=true" action: a tutor
++// only appears in /tutors search when status=APPROVED AND is_public=true.
++// Only approved tutors can be shown; suspending hides them again.
++func (s *VettingService) SetPublic(ctx context.Context, adminID, profileID uuid.UUID, isPublic bool) error {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return err
++	}
++	defer uow.Rollback()
++
++	profile, err := s.uowProfile(ctx, uow, profileID)
++	if err != nil {
++		return err
++	}
++	if profile.Status != tutor.TutorStatusApproved {
++		return fmt.Errorf("%w: only approved tutors can be shown publicly (current status %s)",
++			domain.ErrConflict, profile.Status)
++	}
++	if err := uow.Vetting().SetPublic(ctx, profileID, isPublic); err != nil {
++		return err
++	}
++	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditVettingStatusChange, "tutor_profile",
++		&profileID, map[string]any{"is_public": !isPublic}, map[string]any{"is_public": isPublic}, nil, nil)
++	if err := uow.Commit(ctx); err != nil {
++		return err
++	}
++	if s.invalidator != nil {
++		_ = s.invalidator.InvalidateSearch(ctx)
++	}
++	return nil
++}
++
+ // Reject — any review state → REJECTED (admin). Reason required.
+ func (s *VettingService) Reject(ctx context.Context, adminID, profileID uuid.UUID, reason string) error {
+ 	if strings.TrimSpace(reason) == "" {
+diff --git a/internal/transport/http/admin_handler.go b/internal/transport/http/admin_handler.go
+index 49ed180..1f50f2d 100644
+--- a/internal/transport/http/admin_handler.go
++++ b/internal/transport/http/admin_handler.go
+@@ -513,6 +513,47 @@ func (h *AdminHandler) SetCohortStatus(w http.ResponseWriter, r *http.Request) {
+ 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"status": req.Status}, nil)
+ }
+ 
++// AssignCohortTutor — assign a tutor to teach a cohort, or clear the
++// assignment (omit tutor_profile_id / send empty string to unassign).
++//
++//	POST /api/v1/admin/cohorts/{cohortId}/tutor  { "tutor_profile_id": "..." }
++func (h *AdminHandler) AssignCohortTutor(w http.ResponseWriter, r *http.Request) {
++	adminID := h.requireAdmin(w, r)
++	if adminID == nil {
++		return
++	}
++	cohortID, err := ParseUUID(r, "cohortId")
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	var req struct {
++		TutorProfileID string `json:"tutor_profile_id"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	if req.TutorProfileID == "" {
++		if err := h.svc.ClearCohortTutorAdmin(r.Context(), *adminID, cohortID); err != nil {
++			WriteAppError(w, err)
++			return
++		}
++		pkg.WriteSuccess(w, http.StatusOK, map[string]any{"cohort_id": cohortID, "tutor_profile_id": nil}, nil)
++		return
++	}
++	tutorID, err := uuid.Parse(req.TutorProfileID)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("tutor_profile_id must be a valid UUID", nil))
++		return
++	}
++	if err := h.svc.AssignTutorToCohortAdmin(r.Context(), *adminID, cohortID, tutorID); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"cohort_id": cohortID, "tutor_profile_id": tutorID}, nil)
++}
++
+ // LessonsToday — today's classes.
+ func (h *AdminHandler) LessonsToday(w http.ResponseWriter, r *http.Request) {
+ 	if h.requireAdmin(w, r) == nil {
+diff --git a/internal/transport/http/admin_vetting_handler.go b/internal/transport/http/admin_vetting_handler.go
+index ac6cf3c..a5e5534 100644
+--- a/internal/transport/http/admin_vetting_handler.go
++++ b/internal/transport/http/admin_vetting_handler.go
+@@ -93,6 +93,35 @@ func (h *AdminVettingHandler) ReviewDocument(w http.ResponseWriter, r *http.Requ
+ 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"reviewed": true}, nil)
+ }
+ 
++// SetPublic — toggle an APPROVED tutor's visibility on the public marketplace
++// (the direct "make is_public true" action). Only approved tutors can be shown.
++//
++//	POST /api/v1/admin/vetting/profiles/{profileId}/public  { "is_public": true }
++func (h *AdminVettingHandler) SetPublic(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil || !actor.IsAdmin {
++		WriteAppError(w, pkg.Forbidden("admin access required"))
++		return
++	}
++	profileID, err := uuid.Parse(r.PathValue("profileId"))
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("profile_id must be a valid UUID", nil))
++		return
++	}
++	var req struct {
++		IsPublic bool `json:"is_public"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	if err := h.svc.SetPublic(r.Context(), actor.UserID, profileID, req.IsPublic); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"profile_id": profileID, "is_public": req.IsPublic}, nil)
++}
++
+ type adminActionReq struct {
+ 	Reason string `json:"reason"`
+ }
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index 64b9006..587eb43 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -194,6 +194,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	mux.HandleFunc("POST "+v1+"/admin/vetting/profiles/{profileId}/reject", handlers.AdminVetting.action("reject"))
+ 	mux.HandleFunc("POST "+v1+"/admin/vetting/profiles/{profileId}/hold", handlers.AdminVetting.action("hold"))
+ 	mux.HandleFunc("POST "+v1+"/admin/vetting/profiles/{profileId}/suspend", handlers.AdminVetting.action("suspend"))
++	mux.HandleFunc("POST "+v1+"/admin/vetting/profiles/{profileId}/public", handlers.AdminVetting.SetPublic)
+ 	mux.HandleFunc("POST "+v1+"/admin/vetting/documents/{documentId}/review", handlers.AdminVetting.ReviewDocument)
+ 
+ 	// Messaging + notifications (Phase 5)
+@@ -282,6 +283,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	mux.HandleFunc("GET "+v1+"/admin/cohorts", handlers.Admin.ListCohorts)
+ 	mux.HandleFunc("POST "+v1+"/admin/cohorts", handlers.Admin.CreateCohort)
+ 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/status", handlers.Admin.SetCohortStatus)
++	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/tutor", handlers.Admin.AssignCohortTutor)
+ 	// G5.3 — catalogue sign-off: publish/unpublish programmes and
+ 	// testimonials without a code deployment (admin-only, audited).
+ 	mux.HandleFunc("POST "+v1+"/admin/programmes/{programmeId}/status", handlers.Admin.SetProgrammeStatus)

@@ -211,6 +211,7 @@ export type AdminCohort = {
   fee: number;
   currency: string;
   status: string;
+  tutor_profile_id?: string | null;
 };
 
 export async function listAdminCohorts(params: { status?: string; page?: number }): Promise<Envelope<AdminCohort[]>> {
@@ -227,6 +228,32 @@ export async function createAdminCohort(input: Record<string, unknown>): Promise
 
 export async function setAdminCohortStatus(id: string, status: string): Promise<void> {
   await apiFetch(`/admin/cohorts/${id}/status`, { method: "POST", body: JSON.stringify({ status }) });
+}
+
+// --- Cohort tutor assignment ----------------------------------------------
+
+export type AdminVettingProfile = {
+  id: string;
+  slug: string;
+  display_name: string;
+  status: string;
+  is_public?: boolean;
+};
+
+/** Approved tutors, used as the pick-list when assigning a tutor to a cohort. */
+export async function listApprovedTutors(pageSize = 200): Promise<AdminVettingProfile[]> {
+  const res = await apiFetch<AdminVettingProfile[]>(`/admin/vetting/queue?status=APPROVED&page_size=${pageSize}`);
+  return res.data ?? [];
+}
+
+/** Assign a tutor to teach a cohort. Pass "" to clear the assignment. */
+export async function assignAdminCohortTutor(cohortId: string, tutorProfileId: string): Promise<void> {
+  await apiFetch(`/admin/cohorts/${cohortId}/tutor`, { method: "POST", body: JSON.stringify({ tutor_profile_id: tutorProfileId }) });
+}
+
+/** Toggle an approved tutor's public marketplace visibility (is_public). */
+export async function setTutorPublic(profileId: string, isPublic: boolean): Promise<void> {
+  await apiFetch(`/admin/vetting/profiles/${profileId}/public`, { method: "POST", body: JSON.stringify({ is_public: isPublic }) });
 }
 
 export type AdminLesson = {

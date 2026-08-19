@@ -225,6 +225,9 @@ type CohortAdminRepository interface {
 	ListAll(ctx context.Context, params CohortListParams) ([]Cohort, int64, error)
 	Create(ctx context.Context, c *Cohort) error
 	UpdateStatus(ctx context.Context, id uuid.UUID, status CohortStatus) error
+	// UpdateTutor (re)assigns the tutor teaching a cohort. Passing nil clears
+	// the assignment (cohort is "awaiting tutor").
+	UpdateTutor(ctx context.Context, id uuid.UUID, tutorProfileID *uuid.UUID) error
 }
 
 // Lesson admin reads.

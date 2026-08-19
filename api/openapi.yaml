@@ -187,6 +187,25 @@ paths:
         '200': { description: OK }
         '201': { description: Created }
 
+  /admin/vetting/profiles/{profileId}/public:
+    post:
+      tags: [admin]
+      summary: Toggle an approved tutor's public visibility (is_public)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: profileId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [is_public]
+              properties:
+                is_public: { type: boolean, description: "true = show on the public marketplace" }
+      responses:
+        '200': { description: Updated }
+
   /admin/vetting/profiles/{profileId}/verify:
     post:
       tags: []
@@ -1906,6 +1925,25 @@ paths:
                 status: { type: string, enum: [DRAFT, PUBLISHED, FULL, ONGOING, COMPLETED, CANCELLED] }
       responses:
         '200': { description: Updated }
+
+  /admin/cohorts/{cohortId}/tutor:
+    post:
+      tags: [admin]
+      summary: Assign a tutor to a cohort (or clear the assignment)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tutor_profile_id]
+              properties:
+                tutor_profile_id: { type: string, format: uuid, description: "Approved tutor profile id; empty to unassign" }
+      responses:
+        '200': { description: Assigned }
 
   /admin/audit:
     get:

@@ -3,14 +3,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createAdminCohort, listAdminCohorts, setAdminCohortStatus, type AdminCohort } from "@/features/admin/api";
+import {
+  createAdminCohort, listAdminCohorts, setAdminCohortStatus,
+  listApprovedTutors, assignAdminCohortTutor,
+  type AdminCohort, type AdminVettingProfile,
+} from "@/features/admin/api";
 import { listProgrammes } from "@/features/programmes/api/list";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
-import { CalendarDays, Users } from "lucide-react";
+import { CalendarDays, Users, UserCheck } from "lucide-react";
 
 // Admin cohort manager (working-doc §12) - NUVORA design system:
 // DataTable + StatusBadge (text+icon+colour) + EmptyState + Progress capacity.
@@ -21,12 +25,22 @@ export default function AdminCohortsPage() {
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
+  // Per-row pending tutor selection, keyed by cohort id.
+  const [tutorDraft, setTutorDraft] = useState<Record<string, string>>({});
   const qc = useQueryClient();
 
   const cohorts = useQuery({
     queryKey: ["admin", "cohorts", status, page],
     queryFn: () => listAdminCohorts({ status: status || undefined, page }),
     staleTime: 15_000,
+  });
+
+  // Approved tutors = the assignable pick-list (is_public can be toggled on
+  // the vetting page; assignment requires an approved tutor).
+  const approvedTutors = useQuery({
+    queryKey: ["admin", "tutors", "approved"],
+    queryFn: () => listApprovedTutors(),
+    staleTime: 30_000,
   });
 
   const setStatusMut = useMutation({
@@ -38,8 +52,19 @@ export default function AdminCohortsPage() {
     onError: () => toast.error("Could not update cohort"),
   });
 
+  const assignTutorMut = useMutation({
+    mutationFn: ({ id, tutorId }: { id: string; tutorId: string }) => assignAdminCohortTutor(id, tutorId),
+    onSuccess: () => {
+      toast.success("Tutor assigned to cohort");
+      setTutorDraft({});
+      qc.invalidateQueries({ queryKey: ["admin", "cohorts"] });
+    },
+    onError: () => toast.error("Could not assign tutor (tutor must be approved)"),
+  });
+
   const data = cohorts.data?.data ?? [];
   const meta = cohorts.data?.meta;
+  const tutors: AdminVettingProfile[] = approvedTutors.data ?? [];
 
   const columns: Column<AdminCohort>[] = [
     {
@@ -77,6 +102,48 @@ export default function AdminCohortsPage() {
       key: "status",
       header: "Status",
       cell: (c) => <StatusBadge label={c.status} kind={statusKindFor(c.status)} />,
+    },
+    {
+      key: "tutor",
+      header: "Tutor",
+      cell: (c) => {
+        const currentId = c.tutor_profile_id ?? "";
+        const draftId = tutorDraft[c.id] ?? currentId;
+        const name = tutors.find((t) => t.id === draftId)?.display_name ?? "Unassigned";
+        const isAwaiting = !currentId;
+        return (
+          <div className="flex flex-col gap-1.5 w-56">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold">
+              <UserCheck size={12} className={isAwaiting ? "text-amber-500" : "text-emerald-600"} />
+              {currentId ? name : "Awaiting tutor"}
+            </span>
+            <div className="flex gap-1.5">
+              <select
+                value={draftId}
+                onChange={(e) => setTutorDraft((m) => ({ ...m, [c.id]: e.target.value }))}
+                className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1.5 text-xs focus:outline-none"
+              >
+                <option value="">— none —</option>
+                {tutors.map((t) => (
+                  <option key={t.id} value={t.id}>{t.display_name}</option>
+                ))}
+              </select>
+              <Button
+                size="sm"
+                variant="outline"
+                className="px-2 text-[11px]"
+                disabled={draftId === currentId || assignTutorMut.isPending}
+                onClick={() => assignTutorMut.mutate({ id: c.id, tutorId: draftId })}
+              >
+                {draftId ? (currentId ? "Update" : "Assign") : "Clear"}
+              </Button>
+            </div>
+            {approvedTutors.isLoading && (
+              <span className="text-[10px] text-ink-400">Loading approved tutors…</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "actions",

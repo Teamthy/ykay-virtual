@@ -288,6 +288,21 @@ func (r *CohortRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status book
 	return nil
 }
 
+// UpdateTutor (re)assigns the tutor teaching a cohort (admin action). nil
+// clears the assignment so the cohort is "awaiting tutor" again.
+func (r *CohortRepo) UpdateTutor(ctx context.Context, id uuid.UUID, tutorProfileID *uuid.UUID) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE cohorts SET tutor_profile_id = $1, updated_at = NOW() WHERE id = $2`,
+		tutorProfileID, id)
+	if err != nil {
+		if isForeignKeyViolation(err) {
+			return fmt.Errorf("%w: tutor_profile_id does not reference an existing tutor", domain.ErrInvalidInput)
+		}
+		return fmt.Errorf("update cohort tutor: %w", err)
+	}
+	return nil
+}
+
 var _ booking.CohortAdminRepository = (*CohortRepo)(nil)
 
 // --- Admin lessons ---

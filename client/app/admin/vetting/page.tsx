@@ -15,6 +15,7 @@ import {
   reviewDocument,
   type AdminAction,
 } from "@/features/vetting/api";
+import { setTutorPublic } from "@/features/admin/api";
 import type { ProfileDetail, TutorProfile, TutorStatus } from "@/features/vetting/types";
 
 const STATUSES: TutorStatus[] = ["SUBMITTED", "UNDER_REVIEW", "INTERVIEW", "VERIFICATION", "HOLD", "APPROVED", "REJECTED"];
@@ -142,6 +143,16 @@ function Dossier({
   const [rejecting, setRejecting] = useState<{ docId: string; name: string } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectError, setRejectError] = useState<string | null>(null);
+
+  const pubMut = useMutation({
+    mutationFn: async ({ id, isPublic }: { id: string; isPublic: boolean }) => {
+      await setTutorPublic(id, isPublic);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "vetting"] });
+      onChanged();
+    },
+  });
 
   const reviewDoc = useMutation({
     mutationFn: async ({ docId, approve, r }: { docId: string; approve: boolean; r?: string }) => {
@@ -304,6 +315,28 @@ function Dossier({
             </Button>
           </div>
           {busy ? <p className="text-xs text-ink-400">Working…</p> : null}
+        </section>
+      )}
+
+      {p.status === "APPROVED" && (
+        <section className="border-t pt-4">
+          <p className="text-xs text-ink-500 mb-2">
+            Marketplace visibility — a tutor only appears in public search when{" "}
+            <code className="text-[10px] bg-ink-100 px-1 rounded">is_public = true</code>.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-ink-700">
+              {p.is_public ? "Visible on the public marketplace" : "Hidden from the public marketplace"}
+            </span>
+            <Button
+              size="sm"
+              variant={p.is_public ? "outline" : "gold"}
+              disabled={pubMut.isPending}
+              onClick={() => pubMut.mutate({ id: p.id, isPublic: !p.is_public })}
+            >
+              {p.is_public ? "Hide" : "Make public (is_public = true)"}
+            </Button>
+          </div>
         </section>
       )}
     </div>

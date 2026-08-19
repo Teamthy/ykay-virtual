@@ -93,6 +93,35 @@ func (h *AdminVettingHandler) ReviewDocument(w http.ResponseWriter, r *http.Requ
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"reviewed": true}, nil)
 }
 
+// SetPublic — toggle an APPROVED tutor's visibility on the public marketplace
+// (the direct "make is_public true" action). Only approved tutors can be shown.
+//
+//	POST /api/v1/admin/vetting/profiles/{profileId}/public  { "is_public": true }
+func (h *AdminVettingHandler) SetPublic(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil || !actor.IsAdmin {
+		WriteAppError(w, pkg.Forbidden("admin access required"))
+		return
+	}
+	profileID, err := uuid.Parse(r.PathValue("profileId"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("profile_id must be a valid UUID", nil))
+		return
+	}
+	var req struct {
+		IsPublic bool `json:"is_public"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetPublic(r.Context(), actor.UserID, profileID, req.IsPublic); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"profile_id": profileID, "is_public": req.IsPublic}, nil)
+}
+
 type adminActionReq struct {
 	Reason string `json:"reason"`
 }

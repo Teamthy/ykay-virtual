@@ -531,3 +531,19 @@ func isUniqueViolation(err error) bool {
 	}
 	return code == "23505"
 }
+
+// isForeignKeyViolation — recognizes Postgres 23503 (foreign_key_violation)
+// across both pgx (Code()) and lib/pq (SQLState()) driver error shapes.
+func isForeignKeyViolation(err error) bool {
+	var code string
+	var pgErr interface{ Code() string }
+	if errors.As(err, &pgErr) {
+		code = pgErr.Code()
+	} else {
+		var sqlState interface{ SQLState() string }
+		if errors.As(err, &sqlState) {
+			code = sqlState.SQLState()
+		}
+	}
+	return code == "23503"
+}

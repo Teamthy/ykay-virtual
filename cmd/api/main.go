@@ -271,6 +271,7 @@ func main() {
 		repos.Referrals, repos.Reviews, audit).
 		WithSupport(repos.SupportTickets).
 		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin).
+		WithTutors(repos.TutorRepo).
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)

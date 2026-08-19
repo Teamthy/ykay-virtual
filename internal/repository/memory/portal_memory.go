@@ -206,6 +206,19 @@ func (m *CohortMemory) UpdateStatus(_ context.Context, id uuid.UUID, status book
 	return nil
 }
 
+// UpdateTutor (re)assigns or clears the tutor teaching a cohort.
+func (m *CohortMemory) UpdateTutor(_ context.Context, id uuid.UUID, tutorProfileID *uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	c, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	c.TutorProfileID = tutorProfileID
+	c.UpdatedAt = nowUTC()
+	return nil
+}
+
 var _ booking.CohortAdminRepository = (*CohortMemory)(nil)
 
 // --- Admin lessons (extends LessonMemory) ---
