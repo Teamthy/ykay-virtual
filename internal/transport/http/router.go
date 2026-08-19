@@ -182,6 +182,10 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/certificates", handlers.Certificates.ListMine)
 	mux.HandleFunc("GET "+v1+"/me/certificates/{id}", handlers.Certificates.GetMine)
 	mux.HandleFunc("GET "+v1+"/certificates/verify", handlers.Certificates.Verify)
+	mux.HandleFunc("POST "+v1+"/admissions/apply", handlers.Admissions.Apply)
+	mux.HandleFunc("GET "+v1+"/admissions/me", handlers.Admissions.ListMine)
+	mux.HandleFunc("GET "+v1+"/admin/admissions", handlers.Admissions.ListQueue)
+	mux.HandleFunc("POST "+v1+"/admin/admissions/{id}/status", handlers.Admissions.SetStatus)
 	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
 	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
 	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
@@ -373,6 +377,7 @@ type Handlers struct {
 	Coupons         *CouponHandler
 	Notifier        *NotifierHandler
 	Certificates    *CertificateHandler
+	Admissions      *AdmissionsHandler
 	Payments        *PaymentHandler
 	Vetting         *VettingHandler
 	AdminVetting    *AdminVettingHandler

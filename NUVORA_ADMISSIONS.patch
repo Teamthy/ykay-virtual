@@ -1,0 +1,1400 @@
+diff --git a/api/openapi.yaml b/api/openapi.yaml
+index 66a7946..ec0e8e1 100644
+--- a/api/openapi.yaml
++++ b/api/openapi.yaml
+@@ -1044,6 +1044,68 @@ paths:
+         '200': { description: Valid certificate }
+         '404': { description: Not found }
+ 
++  /admissions/apply:
++    post:
++      tags: [learning]
++      summary: Apply to enrol a learner (virtual-school admissions)
++      security: [{ sessionCookie: [] }]
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [student_profile_id]
++              properties:
++                student_profile_id: { type: string, format: uuid }
++                institution_id: { type: string, format: uuid }
++                programme_id: { type: string, format: uuid }
++                cohort_id: { type: string, format: uuid }
++                applicant_name: { type: string }
++                current_level: { type: string }
++                preferred_term: { type: string }
++                notes: { type: string }
++      responses:
++        '201': { description: Application created (PENDING) }
++        '403': { description: Not a linked learner }
++
++  /admissions/me:
++    get:
++      tags: [learning]
++      summary: The family's admissions applications
++      security: [{ sessionCookie: [] }]
++      responses:
++        '200': { description: Applications }
++
++  /admin/admissions:
++    get:
++      tags: [admin]
++      summary: Admin admissions queue
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: status, in: query, schema: { type: string } }
++      responses:
++        '200': { description: Applications }
++
++  /admin/admissions/{id}/status:
++    post:
++      tags: [admin]
++      summary: Review/offer/accept/reject an admissions application
++      security: [{ sessionCookie: [] }]
++      parameters:
++        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
++      requestBody:
++        required: true
++        content:
++          application/json:
++            schema:
++              type: object
++              required: [status]
++              properties:
++                status: { type: string, enum: [PENDING, REVIEWING, OFFERED, ACCEPTED, REJECTED, WITHDRAWN] }
++      responses:
++        '200': { description: Updated }
++
+   /payments/initiate:
+     post:
+       tags: [payments]
+diff --git a/client/app/account/admissions/page.tsx b/client/app/account/admissions/page.tsx
+new file mode 100644
+index 0000000..cfad561
+--- /dev/null
++++ b/client/app/account/admissions/page.tsx
+@@ -0,0 +1,156 @@
++"use client";
++
++import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
++import { useState } from "react";
++import { toast } from "sonner";
++import { ClipboardList, GraduationCap } from "lucide-react";
++import { applyAdmission, listMyAdmissions, type AdmissionStatus } from "@/features/admissions/api";
++import { listLearners } from "@/features/onboarding/api";
++import { Button } from "@/components/ui/button";
++import { EmptyState } from "@/components/ui/empty-state";
++import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
++import { Skeleton } from "@/components/ui/skeleton";
++
++const STATUS_LABEL: Record<AdmissionStatus, string> = {
++  PENDING: "Submitted",
++  REVIEWING: "Under review",
++  OFFERED: "Offer received",
++  ACCEPTED: "Accepted",
++  REJECTED: "Not offered",
++  WITHDRAWN: "Withdrawn",
++};
++
++export default function AdmissionsPage() {
++  const qc = useQueryClient();
++  const [showForm, setShowForm] = useState(false);
++  const apps = useQuery({ queryKey: ["me", "admissions"], queryFn: listMyAdmissions, staleTime: 15_000 });
++
++  return (
++    <div className="space-y-6">
++      <div className="flex items-center justify-between flex-wrap gap-3">
++        <div>
++          <h1 className="text-2xl font-extrabold text-brand-navy flex items-center gap-2">
++            <GraduationCap className="text-brand-gold" /> Admissions
++          </h1>
++          <p className="text-ink-500 text-sm mt-1">Apply to enrol a learner in a NUVORA school or programme.</p>
++        </div>
++        <Button variant="gold" onClick={() => setShowForm(!showForm)}>
++          {showForm ? "Close" : "+ New application"}
++        </Button>
++      </div>
++
++      {showForm && (
++        <ApplyForm
++          onDone={() => {
++            setShowForm(false);
++            qc.invalidateQueries({ queryKey: ["me", "admissions"] });
++          }}
++        />
++      )}
++
++      {apps.isLoading ? (
++        <Skeleton className="h-40 rounded-2xl" />
++      ) : (apps.data ?? []).length === 0 ? (
++        <EmptyState
++          icon={<ClipboardList size={20} />}
++          title="No applications yet"
++          description="Apply to a school or programme and track it here."
++        />
++      ) : (
++        <div className="grid gap-4 md:grid-cols-2">
++          {(apps.data ?? []).map((a) => (
++            <div key={a.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
++              <div className="flex items-start justify-between gap-3">
++                <div>
++                  <h3 className="font-bold text-brand-navy">{a.applicant_name || "Application"}</h3>
++                  <p className="text-xs text-ink-500 mt-0.5">
++                    {a.current_level || "—"} · {a.preferred_term || "Preferred term not set"}
++                  </p>
++                </div>
++                <StatusBadge label={STATUS_LABEL[a.status]} kind={statusKindFor(a.status)} />
++              </div>
++              {a.notes && <p className="mt-3 text-sm text-ink-600 line-clamp-2">{a.notes}</p>}
++              <p className="mt-3 text-[11px] text-ink-400">Submitted {new Date(a.created_at).toLocaleDateString()}</p>
++            </div>
++          ))}
++        </div>
++      )}
++    </div>
++  );
++}
++
++function ApplyForm({ onDone }: { onDone: () => void }) {
++  const learners = useQuery({ queryKey: ["onboarding", "learners"], queryFn: listLearners, staleTime: 30_000 });
++  const [form, setForm] = useState({ student_profile_id: "", applicant_name: "", current_level: "", preferred_term: "", notes: "" });
++  const [busy, setBusy] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++
++  const apply = useMutation({
++    mutationFn: () =>
++      applyAdmission({
++        student_profile_id: form.student_profile_id,
++        applicant_name: form.applicant_name || undefined,
++        current_level: form.current_level || undefined,
++        preferred_term: form.preferred_term || undefined,
++        notes: form.notes || undefined,
++      }),
++    onSuccess: () => {
++      toast.success("Application submitted — we'll review it shortly.");
++      onDone();
++    },
++    onError: (e) => setError(e instanceof Error ? e.message : "Could not submit application."),
++  });
++
++  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
++
++  return (
++    <div className="rounded-2xl border border-ink-100 bg-white p-6 space-y-4 shadow-soft">
++      <h2 className="font-bold text-brand-navy">New application</h2>
++      <div className="grid md:grid-cols-2 gap-4">
++        <label className="block text-sm">
++          <span className="font-medium text-ink-700">Learner *</span>
++          <select
++            value={form.student_profile_id}
++            onChange={(e) => set("student_profile_id", e.target.value)}
++            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
++          >
++            <option value="">Select a learner…</option>
++            {(learners.data ?? []).map((l) => (
++              <option key={l.id} value={l.id}>
++                {l.first_name} {l.last_name}
++              </option>
++            ))}
++          </select>
++        </label>
++        <label className="block text-sm">
++          <span className="font-medium text-ink-700">Applicant name</span>
++          <input value={form.applicant_name} onChange={(e) => set("applicant_name", e.target.value)}
++            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm" placeholder="Learner's full name" />
++        </label>
++        <label className="block text-sm">
++          <span className="font-medium text-ink-700">Current level</span>
++          <input value={form.current_level} onChange={(e) => set("current_level", e.target.value)}
++            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm" placeholder="e.g. Year 9" />
++        </label>
++        <label className="block text-sm">
++          <span className="font-medium text-ink-700">Preferred term</span>
++          <input value={form.preferred_term} onChange={(e) => set("preferred_term", e.target.value)}
++            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm" placeholder="e.g. Autumn 2026" />
++        </label>
++        <label className="block text-sm md:col-span-2">
++          <span className="font-medium text-ink-700">Notes</span>
++          <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3}
++            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm" placeholder="Anything the admissions team should know" />
++        </label>
++      </div>
++      {error && <p className="text-sm text-red-600">{error}</p>}
++      <div className="flex gap-3">
++        <Button variant="gold" disabled={busy || !form.student_profile_id || apply.isPending}
++          onClick={() => apply.mutate()}>
++          {apply.isPending ? "Submitting…" : "Submit application"}
++        </Button>
++        <Button variant="outline" onClick={onDone}>Cancel</Button>
++      </div>
++    </div>
++  );
++}
+diff --git a/client/app/admin/admissions/page.tsx b/client/app/admin/admissions/page.tsx
+new file mode 100644
+index 0000000..cc43871
+--- /dev/null
++++ b/client/app/admin/admissions/page.tsx
+@@ -0,0 +1,98 @@
++"use client";
++
++import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
++import { useState } from "react";
++import { toast } from "sonner";
++import { GraduationCap } from "lucide-react";
++import { listAdminAdmissions, setAdmissionStatus, type AdmissionStatus } from "@/features/admissions/api";
++import { Button } from "@/components/ui/button";
++import { EmptyState } from "@/components/ui/empty-state";
++import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
++
++const FILTERS: ("" | AdmissionStatus)[] = ["", "PENDING", "REVIEWING", "OFFERED", "ACCEPTED", "REJECTED"];
++
++export default function AdminAdmissionsPage() {
++  const qc = useQueryClient();
++  const [status, setStatus] = useState<"" | AdmissionStatus>("PENDING");
++
++  const queue = useQuery({
++    queryKey: ["admin", "admissions", status],
++    queryFn: () => listAdminAdmissions(status || undefined),
++    staleTime: 15_000,
++  });
++  const setStatusMut = useMutation({
++    mutationFn: ({ id, s }: { id: string; s: AdmissionStatus }) => setAdmissionStatus(id, s),
++    onSuccess: () => {
++      toast.success("Application updated");
++      qc.invalidateQueries({ queryKey: ["admin", "admissions"] });
++    },
++    onError: () => toast.error("Could not update application"),
++  });
++
++  const rows = queue.data?.data ?? [];
++
++  return (
++    <div className="space-y-6">
++      <div>
++        <h1 className="text-3xl font-extrabold text-brand-navy flex items-center gap-2">
++          <GraduationCap className="text-brand-gold" /> Admissions
++        </h1>
++        <p className="text-ink-500 text-sm mt-1">Review enrolment applications: offer, accept or reject.</p>
++      </div>
++
++      <div className="flex gap-2 flex-wrap">
++        {FILTERS.map((s) => (
++          <button
++            key={s || "ALL"}
++            onClick={() => setStatus(s)}
++            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
++              status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
++            }`}
++          >
++            {s || "All"}
++          </button>
++        ))}
++      </div>
++
++      {rows.length === 0 ? (
++        <EmptyState
++          icon={<GraduationCap size={20} />}
++          title="No applications in this view"
++          description="New admissions applications will appear here."
++        />
++      ) : (
++        <div className="grid gap-4 lg:grid-cols-2">
++          {rows.map((a) => (
++            <div key={a.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
++              <div className="flex items-start justify-between gap-3">
++                <div>
++                  <h3 className="font-bold text-brand-navy">{a.applicant_name || "Application"}</h3>
++                  <p className="text-xs text-ink-500 mt-0.5">
++                    {a.current_level || "—"} · {a.preferred_term || "—"}
++                  </p>
++                </div>
++                <StatusBadge label={a.status} kind={statusKindFor(a.status)} />
++              </div>
++              {a.notes && <p className="mt-3 text-sm text-ink-600 line-clamp-2">{a.notes}</p>}
++              <p className="mt-3 text-[11px] text-ink-400">Submitted {new Date(a.created_at).toLocaleDateString()}</p>
++
++              {(a.status === "PENDING" || a.status === "REVIEWING") && (
++                <div className="mt-4 flex flex-wrap gap-2 border-t border-ink-100 pt-4">
++                  <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: a.id, s: "REVIEWING" })}>Start review</Button>
++                  <Button size="sm" onClick={() => setStatusMut.mutate({ id: a.id, s: "OFFERED" })}>Offer place</Button>
++                  <Button size="sm" variant="default" onClick={() => setStatusMut.mutate({ id: a.id, s: "REJECTED" })}>Reject</Button>
++                </div>
++              )}
++              {a.status === "OFFERED" && (
++                <div className="mt-4 flex gap-2 border-t border-ink-100 pt-4">
++                  <Button size="sm" variant="gold" onClick={() => setStatusMut.mutate({ id: a.id, s: "ACCEPTED" })}>Accept</Button>
++                  <Button size="sm" variant="outline" onClick={() => setStatusMut.mutate({ id: a.id, s: "WITHDRAWN" })}>Withdraw</Button>
++                </div>
++              )}
++            </div>
++          ))}
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/client/features/admissions/api.ts b/client/features/admissions/api.ts
+new file mode 100644
+index 0000000..185c1a9
+--- /dev/null
++++ b/client/features/admissions/api.ts
+@@ -0,0 +1,60 @@
++import { apiFetch, Envelope } from "@/lib/api";
++
++export type AdmissionStatus =
++  | "PENDING" | "REVIEWING" | "OFFERED" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
++
++export type Application = {
++  id: string;
++  institution_id?: string | null;
++  programme_id?: string | null;
++  cohort_id?: string | null;
++  parent_user_id: string;
++  student_profile_id: string;
++  applicant_name: string;
++  current_level?: string | null;
++  preferred_term?: string | null;
++  notes?: string | null;
++  status: AdmissionStatus;
++  created_at: string;
++};
++
++export type ApplyInput = {
++  student_profile_id: string;
++  institution_id?: string;
++  programme_id?: string;
++  cohort_id?: string;
++  applicant_name?: string;
++  current_level?: string;
++  preferred_term?: string;
++  notes?: string;
++};
++
++/** Apply to enrol a learner (virtual-school admissions). */
++export async function applyAdmission(input: ApplyInput): Promise<Application> {
++  const res = await apiFetch<Application>("/admissions/apply", {
++    method: "POST",
++    body: JSON.stringify(input),
++  });
++  return res.data;
++}
++
++/** The family's admissions applications. */
++export async function listMyAdmissions(): Promise<Application[]> {
++  const res = await apiFetch<Application[]>("/admissions/me");
++  return res.data ?? [];
++}
++
++// --- Admin queue ---
++
++export async function listAdminAdmissions(status?: string): Promise<Envelope<Application[]>> {
++  const qs = status ? `?status=${status}` : "";
++  return apiFetch<Application[]>(`/admin/admissions${qs}`);
++}
++
++export async function setAdmissionStatus(id: string, status: AdmissionStatus): Promise<Application> {
++  const res = await apiFetch<Application>(`/admin/admissions/${id}/status`, {
++    method: "POST",
++    body: JSON.stringify({ status }),
++  });
++  return res.data;
++}
+diff --git a/client/lib/app-nav.ts b/client/lib/app-nav.ts
+index 92d9ee6..ed93a85 100644
+--- a/client/lib/app-nav.ts
++++ b/client/lib/app-nav.ts
+@@ -43,6 +43,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
+       { href: "/lms", label: "Learning", icon: GraduationCap },
+       { href: "/account/certificates", label: "Certificates", icon: Award },
+       { href: "/lms/recorded", label: "Recorded lessons", icon: Play },
++      { href: "/account/admissions", label: "Admissions", icon: GraduationCap },
+       { href: "/messages", label: "Messages", icon: MessageSquare },
+       { href: "/notifications", label: "Notifications", icon: Bell },
+       { href: "/account", label: "Account", icon: Settings },
+@@ -56,6 +57,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
+       { href: "/lms", label: "My learning", icon: BookOpen },
+       { href: "/account/certificates", label: "Certificates", icon: Award },
+       { href: "/lms/recorded", label: "Recorded lessons", icon: Play },
++      { href: "/account/admissions", label: "Admissions", icon: GraduationCap },
+       { href: "/messages", label: "Messages", icon: MessageSquare },
+       { href: "/notifications", label: "Notifications", icon: Bell },
+       { href: "/account", label: "Account", icon: Settings },
+@@ -81,6 +83,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
+       { href: "/admin/users", label: "Users", icon: Users },
+       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
+       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
++      { href: "/admin/admissions", label: "Admissions", icon: GraduationCap },
+       { href: "/admin/private-tuition", label: "Private tuition", icon: UserPlus },
+       { href: "/admin/lessons", label: "Today's classes", icon: Users },
+       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+diff --git a/cmd/api/main.go b/cmd/api/main.go
+index 890fea7..eefa6ee 100644
+--- a/cmd/api/main.go
++++ b/cmd/api/main.go
+@@ -22,6 +22,7 @@ import (
+ 	"ykay-virtual/internal/domain"
+ 	"ykay-virtual/internal/domain/academics"
+ 	"ykay-virtual/internal/domain/admin"
++	"ykay-virtual/internal/domain/admissions"
+ 	"ykay-virtual/internal/domain/booking"
+ 	"ykay-virtual/internal/domain/chat"
+ 	"ykay-virtual/internal/domain/content"
+@@ -68,6 +69,7 @@ type Repositories struct {
+ 	AuditRepo          identity.AuditLogRepository
+ 	Orders             payment.OrderRepository
+ 	Coupons            payment.CouponRepository
++	Admissions         admissions.Repository
+ 	Payments           payment.PaymentRepository
+ 	Enrollments        booking.CohortEnrollmentRepository
+ 	Escrow             payment.EscrowHoldRepository
+@@ -226,6 +228,11 @@ func main() {
+ 				return repos.Students.ListByParentUserID(ctx, parentUserID)
+ 			},
+ 		)
++	// Virtual-school admissions applications.
++	admissionsSvc := service.NewAdmissionsService(repos.UoWFactory).
++		WithOwnership(func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
++			return repos.Students.ListByParentUserID(ctx, parentUserID)
++		})
+ 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
+ 		ClientID:     cfg.GoogleClientID,
+ 		ClientSecret: cfg.GoogleClientSecret,
+@@ -369,6 +376,7 @@ func main() {
+ 		Coupons:      httpapi.NewCouponHandler(couponSvc),
+ 		Notifier:     httpapi.NewNotifierHandler(notifierSvc),
+ 		Certificates: httpapi.NewCertificateHandler(certSvc),
++		Admissions:   httpapi.NewAdmissionsHandler(admissionsSvc),
+ 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
+ 			payment.ProviderPaystack:    cfg.PaystackSecret,
+ 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
+@@ -528,6 +536,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
+ 			AuditRepo:          store.AuditLogs,
+ 			Orders:             store.Orders,
+ 			Coupons:            store.Coupons,
++			Admissions:         store.Admissions,
+ 			Payments:           store.Payments,
+ 			Enrollments:        store.Enrollments,
+ 			Escrow:             store.Escrow,
+@@ -590,6 +599,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
+ 		AuditRepo:          postgres.NewAuditLogRepo(pg.DB()),
+ 		Orders:             postgres.NewOrderRepo(pg.DB()),
+ 		Coupons:            postgres.NewCouponRepo(pg.DB()),
++		Admissions:         postgres.NewAdmissionsRepo(pg.DB()),
+ 		Payments:           postgres.NewPaymentRepo(pg.DB()),
+ 		Enrollments:        postgres.NewCohortEnrollmentRepo(pg.DB()),
+ 		Escrow:             postgres.NewEscrowHoldRepo(pg.DB()),
+diff --git a/internal/domain/admissions/entity.go b/internal/domain/admissions/entity.go
+new file mode 100644
+index 0000000..bd69fe8
+--- /dev/null
++++ b/internal/domain/admissions/entity.go
+@@ -0,0 +1,41 @@
++// Package admissions — virtual-school admissions applications. A parent/guardian
++// applies to enrol a learner into a school (or a specific programme/cohort);
++// admins review and offer/accept.
++package admissions
++
++import (
++	"time"
++
++	"github.com/google/uuid"
++)
++
++// Status — lifecycle of an admissions application.
++type Status string
++
++const (
++	StatusPending   Status = "PENDING"
++	StatusReviewing Status = "REVIEWING"
++	StatusOffered   Status = "OFFERED"
++	StatusAccepted  Status = "ACCEPTED"
++	StatusRejected  Status = "REJECTED"
++	StatusWithdrawn Status = "WITHDRAWN"
++)
++
++// Application — one admissions request.
++type Application struct {
++	ID               uuid.UUID  `json:"id"`
++	InstitutionID    *uuid.UUID `json:"institution_id,omitempty"`
++	ProgrammeID      *uuid.UUID `json:"programme_id,omitempty"`
++	CohortID         *uuid.UUID `json:"cohort_id,omitempty"`
++	ParentUserID     uuid.UUID  `json:"parent_user_id"`
++	StudentProfileID uuid.UUID  `json:"student_profile_id"`
++	ApplicantName    string     `json:"applicant_name"`
++	CurrentLevel     *string    `json:"current_level,omitempty"`
++	PreferredTerm    *string    `json:"preferred_term,omitempty"`
++	Notes            *string    `json:"notes,omitempty"`
++	Status           Status     `json:"status"`
++	ReviewedBy       *uuid.UUID `json:"reviewed_by,omitempty"`
++	ReviewedAt       *time.Time `json:"reviewed_at,omitempty"`
++	CreatedAt        time.Time  `json:"created_at"`
++	UpdatedAt        time.Time  `json:"updated_at"`
++}
+diff --git a/internal/domain/admissions/repository.go b/internal/domain/admissions/repository.go
+new file mode 100644
+index 0000000..932e798
+--- /dev/null
++++ b/internal/domain/admissions/repository.go
+@@ -0,0 +1,18 @@
++package admissions
++
++import (
++	"context"
++
++	"github.com/google/uuid"
++)
++
++// Repository — storage for admissions applications.
++type Repository interface {
++	Create(ctx context.Context, a *Application) error
++	GetByID(ctx context.Context, id uuid.UUID) (*Application, error)
++	UpdateStatus(ctx context.Context, id uuid.UUID, status Status, reviewedBy *uuid.UUID) error
++	// ListByParent returns a family's applications, newest first.
++	ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]Application, error)
++	// ListAll returns the admin admissions queue (filterable by status).
++	ListAll(ctx context.Context, status string, page, pageSize int) ([]Application, int64, error)
++}
+diff --git a/internal/repository/memory/admissions_memory.go b/internal/repository/memory/admissions_memory.go
+new file mode 100644
+index 0000000..219a9d0
+--- /dev/null
++++ b/internal/repository/memory/admissions_memory.go
+@@ -0,0 +1,113 @@
++package memory
++
++import (
++	"context"
++	"sort"
++	"sync"
++	"time"
++
++	"ykay-virtual/internal/domain"
++	"ykay-virtual/internal/domain/admissions"
++
++	"github.com/google/uuid"
++)
++
++// AdmissionsMemory — in-memory admissions store (tests / dev fallback).
++type AdmissionsMemory struct {
++	mu   sync.RWMutex
++	rows map[uuid.UUID]*admissions.Application
++}
++
++func NewAdmissionsMemory() *AdmissionsMemory {
++	return &AdmissionsMemory{rows: map[uuid.UUID]*admissions.Application{}}
++}
++
++func (m *AdmissionsMemory) Create(_ context.Context, a *admissions.Application) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	if a.ID == uuid.Nil {
++		a.ID = uuid.New()
++	}
++	now := time.Now().UTC()
++	a.CreatedAt = now
++	a.UpdatedAt = now
++	if a.Status == "" {
++		a.Status = admissions.StatusPending
++	}
++	m.rows[a.ID] = a
++	return nil
++}
++
++func (m *AdmissionsMemory) GetByID(_ context.Context, id uuid.UUID) (*admissions.Application, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	if a, ok := m.rows[id]; ok {
++		cp := *a
++		return &cp, nil
++	}
++	return nil, domain.ErrNotFound
++}
++
++func (m *AdmissionsMemory) UpdateStatus(_ context.Context, id uuid.UUID, status admissions.Status, reviewedBy *uuid.UUID) error {
++	m.mu.Lock()
++	defer m.mu.Unlock()
++	a, ok := m.rows[id]
++	if !ok {
++		return domain.ErrNotFound
++	}
++	a.Status = status
++	a.ReviewedBy = reviewedBy
++	a.UpdatedAt = time.Now().UTC()
++	if status == admissions.StatusOffered || status == admissions.StatusAccepted || status == admissions.StatusRejected {
++		t := a.UpdatedAt
++		a.ReviewedAt = &t
++	}
++	return nil
++}
++
++func (m *AdmissionsMemory) ListByParent(_ context.Context, parentUserID uuid.UUID, limit int) ([]admissions.Application, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	out := []admissions.Application{}
++	for _, a := range m.rows {
++		if a.ParentUserID == parentUserID {
++			out = append(out, *a)
++		}
++	}
++	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
++	if limit > 0 && len(out) > limit {
++		out = out[:limit]
++	}
++	return out, nil
++}
++
++func (m *AdmissionsMemory) ListAll(_ context.Context, status string, page, pageSize int) ([]admissions.Application, int64, error) {
++	m.mu.RLock()
++	defer m.mu.RUnlock()
++	out := []admissions.Application{}
++	for _, a := range m.rows {
++		if status == "" || string(a.Status) == status {
++			out = append(out, *a)
++		}
++	}
++	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
++	total := int64(len(out))
++	limit := pageSize
++	if limit < 1 {
++		limit = 20
++	}
++	start := (page - 1) * limit
++	if start < 0 {
++		start = 0
++	}
++	if start > len(out) {
++		start = len(out)
++	}
++	end := start + limit
++	if end > len(out) {
++		end = len(out)
++	}
++	return out[start:end], total, nil
++}
++
++var _ admissions.Repository = (*AdmissionsMemory)(nil)
+diff --git a/internal/repository/memory/uow.go b/internal/repository/memory/uow.go
+index 049f8cf..efa2c35 100644
+--- a/internal/repository/memory/uow.go
++++ b/internal/repository/memory/uow.go
+@@ -4,6 +4,7 @@ import (
+ 	"context"
+ 
+ 	"ykay-virtual/internal/domain/academics"
++	"ykay-virtual/internal/domain/admissions"
+ 	"ykay-virtual/internal/domain/booking"
+ 	"ykay-virtual/internal/domain/certificate"
+ 	"ykay-virtual/internal/domain/identity"
+@@ -33,6 +34,7 @@ type MemoryUnitOfWork struct {
+ 	lessonLinks  *LessonMemory
+ 	coupons      *CouponMemory
+ 	certificates *CertificateMemory
++	admissions   *AdmissionsMemory
+ }
+ 
+ func (u *MemoryUnitOfWork) LessonLinks() booking.LessonParticipantLinker    { return u.lessonLinks }
+@@ -53,6 +55,7 @@ func (u *MemoryUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository       {
+ func (u *MemoryUnitOfWork) AuditLogs() identity.AuditLogRepository            { return u.auditLogs }
+ func (u *MemoryUnitOfWork) Coupons() payment.CouponRepository                 { return u.coupons }
+ func (u *MemoryUnitOfWork) Certificates() certificate.CertificateRepository   { return u.certificates }
++func (u *MemoryUnitOfWork) Admissions() admissions.Repository                 { return u.admissions }
+ 
+ func (u *MemoryUnitOfWork) Commit(_ context.Context) error { return nil }
+ func (u *MemoryUnitOfWork) Rollback()                      {}
+@@ -83,6 +86,7 @@ func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWor
+ 		lessonLinks:  f.store.Lessons,
+ 		coupons:      f.store.Coupons,
+ 		certificates: f.store.Certificates,
++		admissions:   f.store.Admissions,
+ 	}, nil
+ }
+ 
+@@ -103,6 +107,7 @@ type MemoryStore struct {
+ 	PrivatePkgs    *PrivatePackageMemory
+ 	Coupons        *CouponMemory
+ 	Certificates   *CertificateMemory
++	Admissions     *AdmissionsMemory
+ 	Vetting        *VettingMemory
+ 	TutorSubj      *VettingTutorSubjectMemory
+ 	Availability   *AvailabilityMemory
+@@ -145,6 +150,7 @@ func NewMemoryStore() *MemoryStore {
+ 		PrivatePkgs:  NewPrivatePackageMemory(),
+ 		Coupons:      NewCouponMemory(),
+ 		Certificates: NewCertificateMemory(),
++		Admissions:   NewAdmissionsMemory(),
+ 		Vetting:      NewVettingMemory(),
+ 		TutorSubj:    NewVettingTutorSubjectMemory(),
+ 		Availability: NewAvailabilityMemory(),
+diff --git a/internal/repository/postgres/admissions_repo.go b/internal/repository/postgres/admissions_repo.go
+new file mode 100644
+index 0000000..c220f80
+--- /dev/null
++++ b/internal/repository/postgres/admissions_repo.go
+@@ -0,0 +1,160 @@
++package postgres
++
++import (
++	"context"
++	"database/sql"
++	"errors"
++	"fmt"
++
++	"ykay-virtual/internal/domain"
++	"ykay-virtual/internal/domain/admissions"
++
++	"github.com/google/uuid"
++)
++
++type AdmissionsRepo struct{ db TxQuerier }
++
++func NewAdmissionsRepo(db TxQuerier) *AdmissionsRepo { return &AdmissionsRepo{db: db} }
++
++const admissionsColumns = `id, institution_id, programme_id, cohort_id, parent_user_id,
++	student_profile_id, applicant_name, current_level, preferred_term, notes, status,
++	reviewed_by, reviewed_at, created_at, updated_at`
++
++func scanApplication(row interface{ Scan(...any) error }) (*admissions.Application, error) {
++	var a admissions.Application
++	var inst, prog, cohort, reviewedBy uuidNull
++	var level, term, notes sql.NullString
++	var reviewedAt sql.NullTime
++	if err := row.Scan(&a.ID, &inst, &prog, &cohort, &a.ParentUserID, &a.StudentProfileID,
++		&a.ApplicantName, &level, &term, &notes, &a.Status, &reviewedBy, &reviewedAt,
++		&a.CreatedAt, &a.UpdatedAt); err != nil {
++		return nil, err
++	}
++	if inst.Valid {
++		a.InstitutionID = &inst.UUID
++	}
++	if prog.Valid {
++		a.ProgrammeID = &prog.UUID
++	}
++	if cohort.Valid {
++		a.CohortID = &cohort.UUID
++	}
++	if reviewedBy.Valid {
++		a.ReviewedBy = &reviewedBy.UUID
++	}
++	if level.Valid {
++		a.CurrentLevel = &level.String
++	}
++	if term.Valid {
++		a.PreferredTerm = &term.String
++	}
++	if notes.Valid {
++		a.Notes = &notes.String
++	}
++	if reviewedAt.Valid {
++		a.ReviewedAt = &reviewedAt.Time
++	}
++	return &a, nil
++}
++
++func (r *AdmissionsRepo) Create(ctx context.Context, a *admissions.Application) error {
++	err := r.db.QueryRowContext(ctx, `
++		INSERT INTO admissions_applications (institution_id, programme_id, cohort_id, parent_user_id,
++			student_profile_id, applicant_name, current_level, preferred_term, notes, status)
++		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
++		RETURNING id, created_at, updated_at`,
++		a.InstitutionID, a.ProgrammeID, a.CohortID, a.ParentUserID, a.StudentProfileID,
++		a.ApplicantName, a.CurrentLevel, a.PreferredTerm, a.Notes, a.Status,
++	).Scan(&a.ID, &a.CreatedAt, &a.UpdatedAt)
++	if err != nil {
++		return fmt.Errorf("create admissions application: %w", err)
++	}
++	return nil
++}
++
++func (r *AdmissionsRepo) GetByID(ctx context.Context, id uuid.UUID) (*admissions.Application, error) {
++	row := r.db.QueryRowContext(ctx, "SELECT "+admissionsColumns+" FROM admissions_applications WHERE id=$1", id)
++	a, err := scanApplication(row)
++	if err != nil {
++		if errors.Is(err, sql.ErrNoRows) {
++			return nil, domain.ErrNotFound
++		}
++		return nil, err
++	}
++	return a, nil
++}
++
++func (r *AdmissionsRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status admissions.Status, reviewedBy *uuid.UUID) error {
++	_, err := r.db.ExecContext(ctx, `
++		UPDATE admissions_applications SET status=$1, reviewed_by=$2,
++			reviewed_at = CASE WHEN $1 IN ('OFFERED','ACCEPTED','REJECTED') THEN NOW() ELSE reviewed_at END,
++			updated_at=NOW()
++		WHERE id=$3`, status, reviewedBy, id)
++	if err != nil {
++		return fmt.Errorf("update admissions status: %w", err)
++	}
++	return nil
++}
++
++func (r *AdmissionsRepo) ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]admissions.Application, error) {
++	if limit < 1 || limit > 100 {
++		limit = 50
++	}
++	rows, err := r.db.QueryContext(ctx, `SELECT `+admissionsColumns+
++		` FROM admissions_applications WHERE parent_user_id=$1 ORDER BY created_at DESC LIMIT $2`, parentUserID, limit)
++	if err != nil {
++		return nil, fmt.Errorf("list admissions by parent: %w", err)
++	}
++	defer rows.Close()
++	out := []admissions.Application{}
++	for rows.Next() {
++		a, err := scanApplication(rows)
++		if err != nil {
++			return nil, err
++		}
++		out = append(out, *a)
++	}
++	return out, rows.Err()
++}
++
++func (r *AdmissionsRepo) ListAll(ctx context.Context, status string, page, pageSize int) ([]admissions.Application, int64, error) {
++	where := ""
++	args := []any{}
++	if status != "" {
++		where = " WHERE status=$1"
++		args = append(args, status)
++	}
++	var total int64
++	if err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM admissions_applications"+where, args...).Scan(&total); err != nil {
++		return nil, 0, fmt.Errorf("count admissions: %w", err)
++	}
++	limit := pageSize
++	if limit < 1 {
++		limit = 20
++	}
++	if limit > 100 {
++		limit = 100
++	}
++	offset := (page - 1) * limit
++	if offset < 0 {
++		offset = 0
++	}
++	rows, err := r.db.QueryContext(ctx, `SELECT `+admissionsColumns+` FROM admissions_applications`+where+
++		` ORDER BY created_at DESC LIMIT $`+fmt.Sprint(len(args)+1)+` OFFSET $`+fmt.Sprint(len(args)+2),
++		append(args, limit, offset)...)
++	if err != nil {
++		return nil, 0, fmt.Errorf("list all admissions: %w", err)
++	}
++	defer rows.Close()
++	out := []admissions.Application{}
++	for rows.Next() {
++		a, err := scanApplication(rows)
++		if err != nil {
++			return nil, 0, err
++		}
++		out = append(out, *a)
++	}
++	return out, total, rows.Err()
++}
++
++var _ admissions.Repository = (*AdmissionsRepo)(nil)
+diff --git a/internal/repository/postgres/uow.go b/internal/repository/postgres/uow.go
+index b79f3d0..d7c05db 100644
+--- a/internal/repository/postgres/uow.go
++++ b/internal/repository/postgres/uow.go
+@@ -5,6 +5,7 @@ import (
+ 	"database/sql"
+ 	"fmt"
+ 
++	"ykay-virtual/internal/domain/admissions"
+ 	"ykay-virtual/internal/domain/booking"
+ 	"ykay-virtual/internal/domain/certificate"
+ 	"ykay-virtual/internal/domain/identity"
+@@ -35,6 +36,7 @@ type PgUnitOfWork struct {
+ 	lessonLinks  *LessonRepo
+ 	coupons      *CouponRepo
+ 	certificates *CertificateRepo
++	admissions   *AdmissionsRepo
+ }
+ 
+ func (u *PgUnitOfWork) LessonLinks() booking.LessonParticipantLinker             { return u.lessonLinks }
+@@ -53,6 +55,7 @@ func (u *PgUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository
+ func (u *PgUnitOfWork) AuditLogs() identity.AuditLogRepository                   { return u.auditLogs }
+ func (u *PgUnitOfWork) Coupons() payment.CouponRepository                        { return u.coupons }
+ func (u *PgUnitOfWork) Certificates() certificate.CertificateRepository          { return u.certificates }
++func (u *PgUnitOfWork) Admissions() admissions.Repository                        { return u.admissions }
+ 
+ func (u *PgUnitOfWork) Commit(ctx context.Context) error {
+ 	if err := u.tx.Commit(); err != nil {
+@@ -92,6 +95,7 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
+ 		lessonLinks:  NewLessonRepo(tx),
+ 		coupons:      NewCouponRepo(tx),
+ 		certificates: NewCertificateRepo(tx),
++		admissions:   NewAdmissionsRepo(tx),
+ 	}, nil
+ }
+ 
+diff --git a/internal/repository/uow.go b/internal/repository/uow.go
+index b217447..3ce7eb3 100644
+--- a/internal/repository/uow.go
++++ b/internal/repository/uow.go
+@@ -3,6 +3,7 @@ package repository
+ import (
+ 	"context"
+ 
++	"ykay-virtual/internal/domain/admissions"
+ 	"ykay-virtual/internal/domain/booking"
+ 	"ykay-virtual/internal/domain/certificate"
+ 	"ykay-virtual/internal/domain/identity"
+@@ -28,6 +29,7 @@ type UnitOfWork interface {
+ 	Wallets() payment.WalletRepository
+ 	Coupons() payment.CouponRepository
+ 	Certificates() certificate.CertificateRepository
++	Admissions() admissions.Repository
+ 	Enrollments() booking.CohortEnrollmentRepository
+ 	Cohorts() booking.CohortRepository
+ 	PrivateRequests() booking.PrivateTuitionRequestRepository
+diff --git a/internal/service/admissions_service.go b/internal/service/admissions_service.go
+new file mode 100644
+index 0000000..e53f390
+--- /dev/null
++++ b/internal/service/admissions_service.go
+@@ -0,0 +1,147 @@
++package service
++
++import (
++	"context"
++	"fmt"
++
++	"ykay-virtual/internal/domain"
++	"ykay-virtual/internal/domain/admissions"
++	"ykay-virtual/internal/domain/identity"
++	"ykay-virtual/internal/repository"
++
++	"github.com/google/uuid"
++)
++
++// AdmissionsService — virtual-school admissions applications.
++type AdmissionsService struct {
++	uows repository.UnitOfWorkFactory
++	// learnersForParent resolves the learner profiles a parent is linked to
++	// (ownership gate).
++	learnersForParent func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error)
++}
++
++func NewAdmissionsService(uows repository.UnitOfWorkFactory) *AdmissionsService {
++	return &AdmissionsService{uows: uows}
++}
++
++// WithOwnership wires the resolver used to verify a parent owns a learner.
++func (s *AdmissionsService) WithOwnership(
++	learnersForParent func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error),
++) *AdmissionsService {
++	s.learnersForParent = learnersForParent
++	return s
++}
++
++// ApplicationInput — fields for a new application.
++type ApplicationInput struct {
++	InstitutionID    *uuid.UUID
++	ProgrammeID      *uuid.UUID
++	CohortID         *uuid.UUID
++	StudentProfileID uuid.UUID
++	ApplicantName    string
++	CurrentLevel     string
++	PreferredTerm    string
++	Notes            string
++}
++
++// Apply creates a PENDING admissions application on behalf of the parent.
++func (s *AdmissionsService) Apply(ctx context.Context, parentUserID uuid.UUID, in ApplicationInput) (*admissions.Application, error) {
++	if in.StudentProfileID == uuid.Nil {
++		return nil, fmt.Errorf("%w: learner is required", domain.ErrInvalidInput)
++	}
++	// Ownership: parent must be linked to the learner (unless the learner is
++	// the parent themselves — handled by the resolver returning it).
++	if s.learnersForParent != nil {
++		owned := false
++		if learners, err := s.learnersForParent(ctx, parentUserID); err == nil {
++			for _, l := range learners {
++				if l.ID == in.StudentProfileID {
++					owned = true
++					break
++				}
++			}
++		}
++		if !owned {
++			return nil, domain.ErrForbidden
++		}
++	}
++
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++
++	a := &admissions.Application{
++		InstitutionID:    in.InstitutionID,
++		ProgrammeID:      in.ProgrammeID,
++		CohortID:         in.CohortID,
++		ParentUserID:     parentUserID,
++		StudentProfileID: in.StudentProfileID,
++		ApplicantName:    in.ApplicantName,
++		CurrentLevel:     strPtrOrNil(in.CurrentLevel),
++		PreferredTerm:    strPtrOrNil(in.PreferredTerm),
++		Notes:            strPtrOrNil(in.Notes),
++		Status:           admissions.StatusPending,
++	}
++	if err := uow.Admissions().Create(ctx, a); err != nil {
++		return nil, err
++	}
++	if err := uow.Commit(ctx); err != nil {
++		return nil, err
++	}
++	return a, nil
++}
++
++// ListMine returns a family's applications.
++func (s *AdmissionsService) ListMine(ctx context.Context, parentUserID uuid.UUID) ([]admissions.Application, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	return uow.Admissions().ListByParent(ctx, parentUserID, 50)
++}
++
++// SetStatus advances an application (admin). Validation of transitions is
++// kept light; admins can review/offer/accept/reject.
++func (s *AdmissionsService) SetStatus(ctx context.Context, adminID, appID uuid.UUID, status admissions.Status) (*admissions.Application, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, err
++	}
++	defer uow.Rollback()
++	a, err := uow.Admissions().GetByID(ctx, appID)
++	if err != nil {
++		return nil, err
++	}
++	switch status {
++	case admissions.StatusPending, admissions.StatusReviewing, admissions.StatusOffered,
++		admissions.StatusAccepted, admissions.StatusRejected, admissions.StatusWithdrawn:
++	default:
++		return nil, fmt.Errorf("%w: invalid admissions status", domain.ErrInvalidInput)
++	}
++	// Once accepted or rejected, the application is final.
++	if a.Status == admissions.StatusAccepted || a.Status == admissions.StatusRejected {
++		return nil, fmt.Errorf("%w: application is already final", domain.ErrConflict)
++	}
++	if err := uow.Admissions().UpdateStatus(ctx, appID, status, &adminID); err != nil {
++		return nil, err
++	}
++	a.Status = status
++	a.ReviewedBy = &adminID
++	if err := uow.Commit(ctx); err != nil {
++		return nil, err
++	}
++	return a, nil
++}
++
++// ListQueue returns the admin admissions queue.
++func (s *AdmissionsService) ListQueue(ctx context.Context, status string, page, pageSize int) ([]admissions.Application, int64, error) {
++	uow, err := s.uows.Begin(ctx)
++	if err != nil {
++		return nil, 0, err
++	}
++	defer uow.Rollback()
++	return uow.Admissions().ListAll(ctx, status, page, pageSize)
++}
+diff --git a/internal/service/admissions_service_test.go b/internal/service/admissions_service_test.go
+new file mode 100644
+index 0000000..93cb9ae
+--- /dev/null
++++ b/internal/service/admissions_service_test.go
+@@ -0,0 +1,72 @@
++package service
++
++import (
++	"context"
++	"testing"
++
++	"ykay-virtual/internal/domain"
++	"ykay-virtual/internal/domain/admissions"
++	"ykay-virtual/internal/domain/identity"
++	"ykay-virtual/internal/repository/memory"
++
++	"github.com/google/uuid"
++	"github.com/stretchr/testify/require"
++)
++
++func newAdmissionsSvc() (*AdmissionsService, *memory.MemoryStore) {
++	store := memory.NewMemoryStore()
++	svc := NewAdmissionsService(memory.NewMemoryUnitOfWorkFactory(store))
++	svc.WithOwnership(func(_ context.Context, _ uuid.UUID) ([]identity.StudentProfile, error) {
++		return []identity.StudentProfile{{ID: linkedStudentID}}, nil
++	})
++	return svc, store
++}
++
++var linkedStudentID = uuid.New()
++
++func TestAdmissions_ApplyAndReview(t *testing.T) {
++	ctx := context.Background()
++	svc, _ := newAdmissionsSvc()
++	parent := uuid.New()
++
++	// Apply for the linked learner.
++	app, err := svc.Apply(ctx, parent, ApplicationInput{
++		StudentProfileID: linkedStudentID,
++		ApplicantName:    "Ada Lovelace",
++		CurrentLevel:     "Year 9",
++		PreferredTerm:    "Autumn 2026",
++	})
++	require.NoError(t, err)
++	require.Equal(t, admissions.StatusPending, app.Status)
++
++	// Owner sees it in their list.
++	mine, err := svc.ListMine(ctx, parent)
++	require.NoError(t, err)
++	require.Len(t, mine, 1)
++
++	// Admin moves it to OFFERED then ACCEPTED.
++	admin := uuid.New()
++	offered, err := svc.SetStatus(ctx, admin, app.ID, admissions.StatusOffered)
++	require.NoError(t, err)
++	require.Equal(t, admissions.StatusOffered, offered.Status)
++	accepted, err := svc.SetStatus(ctx, admin, app.ID, admissions.StatusAccepted)
++	require.NoError(t, err)
++	require.Equal(t, admissions.StatusAccepted, accepted.Status)
++
++	// Final: cannot be reopened.
++	_, err = svc.SetStatus(ctx, admin, app.ID, admissions.StatusWithdrawn)
++	require.Error(t, err)
++
++	// Admin queue reflects the status.
++	_, total, err := svc.ListQueue(ctx, "ACCEPTED", 1, 20)
++	require.NoError(t, err)
++	require.Equal(t, int64(1), total)
++}
++
++func TestAdmissions_NotOwnerForbidden(t *testing.T) {
++	ctx := context.Background()
++	svc, _ := newAdmissionsSvc()
++	// A learner the parent does not own (the resolver only links linkedStudentID).
++	_, err := svc.Apply(ctx, uuid.New(), ApplicationInput{StudentProfileID: uuid.New()})
++	require.ErrorIs(t, err, domain.ErrForbidden)
++}
+diff --git a/internal/transport/http/admissions_handler.go b/internal/transport/http/admissions_handler.go
+new file mode 100644
+index 0000000..73b3a27
+--- /dev/null
++++ b/internal/transport/http/admissions_handler.go
+@@ -0,0 +1,149 @@
++package httpapi
++
++import (
++	"net/http"
++
++	"ykay-virtual/internal/domain/admissions"
++	"ykay-virtual/internal/service"
++	"ykay-virtual/pkg"
++
++	"github.com/google/uuid"
++)
++
++// AdmissionsHandler — virtual-school admissions applications.
++type AdmissionsHandler struct {
++	svc *service.AdmissionsService
++}
++
++func NewAdmissionsHandler(svc *service.AdmissionsService) *AdmissionsHandler {
++	return &AdmissionsHandler{svc: svc}
++}
++
++// Apply — POST /api/v1/admissions/apply (parent/guardian).
++func (h *AdmissionsHandler) Apply(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	var req struct {
++		InstitutionID    string `json:"institution_id"`
++		ProgrammeID      string `json:"programme_id"`
++		CohortID         string `json:"cohort_id"`
++		StudentProfileID string `json:"student_profile_id"`
++		ApplicantName    string `json:"applicant_name"`
++		CurrentLevel     string `json:"current_level"`
++		PreferredTerm    string `json:"preferred_term"`
++		Notes            string `json:"notes"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	if req.StudentProfileID == "" {
++		WriteAppError(w, pkg.BadRequest("student_profile_id is required", nil))
++		return
++	}
++	sid, err := uuid.Parse(req.StudentProfileID)
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("invalid student_profile_id", nil))
++		return
++	}
++	in := service.ApplicationInput{
++		StudentProfileID: sid,
++		ApplicantName:    req.ApplicantName,
++		CurrentLevel:     req.CurrentLevel,
++		PreferredTerm:    req.PreferredTerm,
++		Notes:            req.Notes,
++	}
++	var perr error
++	if req.InstitutionID != "" {
++		if in.InstitutionID, perr = parseUUIDOpt(req.InstitutionID); perr != nil {
++			WriteAppError(w, pkg.BadRequest("invalid institution_id", nil))
++			return
++		}
++	}
++	if req.ProgrammeID != "" {
++		if in.ProgrammeID, perr = parseUUIDOpt(req.ProgrammeID); perr != nil {
++			WriteAppError(w, pkg.BadRequest("invalid programme_id", nil))
++			return
++		}
++	}
++	if req.CohortID != "" {
++		if in.CohortID, perr = parseUUIDOpt(req.CohortID); perr != nil {
++			WriteAppError(w, pkg.BadRequest("invalid cohort_id", nil))
++			return
++		}
++	}
++	app, err := h.svc.Apply(r.Context(), actor.UserID, in)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusCreated, app, nil)
++}
++
++// ListMine — GET /api/v1/admissions/me (parent).
++func (h *AdmissionsHandler) ListMine(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil {
++		return
++	}
++	apps, err := h.svc.ListMine(r.Context(), actor.UserID)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, apps, nil)
++}
++
++// ListQueue — GET /api/v1/admin/admissions (admin).
++func (h *AdmissionsHandler) ListQueue(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil || !actor.IsAdmin {
++		WriteAppError(w, pkg.Forbidden("admin access required"))
++		return
++	}
++	p := ParsePagination(r)
++	status := r.URL.Query().Get("status")
++	apps, total, err := h.svc.ListQueue(r.Context(), status, p.Page, p.PageSize)
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, apps, p.Meta(total))
++}
++
++// SetStatus — POST /api/v1/admin/admissions/{id}/status (admin).
++func (h *AdmissionsHandler) SetStatus(w http.ResponseWriter, r *http.Request) {
++	actor := requireActor(w, r)
++	if actor == nil || !actor.IsAdmin {
++		WriteAppError(w, pkg.Forbidden("admin access required"))
++		return
++	}
++	id, err := uuid.Parse(r.PathValue("id"))
++	if err != nil {
++		WriteAppError(w, pkg.BadRequest("invalid application id", nil))
++		return
++	}
++	var req struct {
++		Status string `json:"status"`
++	}
++	if err := DecodeJSON(r, &req); err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	app, err := h.svc.SetStatus(r.Context(), actor.UserID, id, admissions.Status(req.Status))
++	if err != nil {
++		WriteAppError(w, err)
++		return
++	}
++	pkg.WriteSuccess(w, http.StatusOK, app, nil)
++}
++
++func parseUUIDOpt(s string) (*uuid.UUID, error) {
++	u, err := uuid.Parse(s)
++	if err != nil {
++		return nil, err
++	}
++	return &u, nil
++}
+diff --git a/internal/transport/http/router.go b/internal/transport/http/router.go
+index acc365e..d757490 100644
+--- a/internal/transport/http/router.go
++++ b/internal/transport/http/router.go
+@@ -182,6 +182,10 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
+ 	mux.HandleFunc("GET "+v1+"/me/certificates", handlers.Certificates.ListMine)
+ 	mux.HandleFunc("GET "+v1+"/me/certificates/{id}", handlers.Certificates.GetMine)
+ 	mux.HandleFunc("GET "+v1+"/certificates/verify", handlers.Certificates.Verify)
++	mux.HandleFunc("POST "+v1+"/admissions/apply", handlers.Admissions.Apply)
++	mux.HandleFunc("GET "+v1+"/admissions/me", handlers.Admissions.ListMine)
++	mux.HandleFunc("GET "+v1+"/admin/admissions", handlers.Admissions.ListQueue)
++	mux.HandleFunc("POST "+v1+"/admin/admissions/{id}/status", handlers.Admissions.SetStatus)
+ 	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
+ 	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
+ 	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
+@@ -373,6 +377,7 @@ type Handlers struct {
+ 	Coupons         *CouponHandler
+ 	Notifier        *NotifierHandler
+ 	Certificates    *CertificateHandler
++	Admissions      *AdmissionsHandler
+ 	Payments        *PaymentHandler
+ 	Vetting         *VettingHandler
+ 	AdminVetting    *AdminVettingHandler
+diff --git a/migrations/000048_admissions.down.sql b/migrations/000048_admissions.down.sql
+new file mode 100644
+index 0000000..9138816
+--- /dev/null
++++ b/migrations/000048_admissions.down.sql
+@@ -0,0 +1,2 @@
++-- 000048_admissions.down.sql
++DROP TABLE IF EXISTS admissions_applications;
+diff --git a/migrations/000048_admissions.up.sql b/migrations/000048_admissions.up.sql
+new file mode 100644
+index 0000000..825f104
+--- /dev/null
++++ b/migrations/000048_admissions.up.sql
+@@ -0,0 +1,24 @@
++-- 000048_admissions.up.sql — virtual-school admissions applications
++CREATE TABLE IF NOT EXISTS admissions_applications (
++    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
++    institution_id UUID REFERENCES institutions(id) ON DELETE CASCADE,
++    programme_id UUID REFERENCES programmes(id) ON DELETE SET NULL,
++    cohort_id UUID REFERENCES cohorts(id) ON DELETE SET NULL,
++    parent_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
++    student_profile_id UUID NOT NULL REFERENCES student_profiles(id) ON DELETE CASCADE,
++    applicant_name VARCHAR(255) NOT NULL,
++    current_level VARCHAR(100),
++    preferred_term VARCHAR(100),
++    notes TEXT,
++    status VARCHAR(32) NOT NULL DEFAULT 'PENDING'
++        CHECK (status IN ('PENDING','REVIEWING','OFFERED','ACCEPTED','REJECTED','WITHDRAWN')),
++    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
++    reviewed_at TIMESTAMPTZ,
++    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
++    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
++);
++
++CREATE INDEX IF NOT EXISTS idx_admissions_institution ON admissions_applications(institution_id);
++CREATE INDEX IF NOT EXISTS idx_admissions_parent ON admissions_applications(parent_user_id);
++CREATE INDEX IF NOT EXISTS idx_admissions_student ON admissions_applications(student_profile_id);
++CREATE INDEX IF NOT EXISTS idx_admissions_status ON admissions_applications(status);

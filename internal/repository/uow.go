@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"ykay-virtual/internal/domain/admissions"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
@@ -28,6 +29,7 @@ type UnitOfWork interface {
 	Wallets() payment.WalletRepository
 	Coupons() payment.CouponRepository
 	Certificates() certificate.CertificateRepository
+	Admissions() admissions.Repository
 	Enrollments() booking.CohortEnrollmentRepository
 	Cohorts() booking.CohortRepository
 	PrivateRequests() booking.PrivateTuitionRequestRepository

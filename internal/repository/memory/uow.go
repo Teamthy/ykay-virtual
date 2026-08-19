@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ykay-virtual/internal/domain/academics"
+	"ykay-virtual/internal/domain/admissions"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
@@ -33,6 +34,7 @@ type MemoryUnitOfWork struct {
 	lessonLinks  *LessonMemory
 	coupons      *CouponMemory
 	certificates *CertificateMemory
+	admissions   *AdmissionsMemory
 }
 
 func (u *MemoryUnitOfWork) LessonLinks() booking.LessonParticipantLinker    { return u.lessonLinks }
@@ -53,6 +55,7 @@ func (u *MemoryUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository       { 
 func (u *MemoryUnitOfWork) AuditLogs() identity.AuditLogRepository            { return u.auditLogs }
 func (u *MemoryUnitOfWork) Coupons() payment.CouponRepository                 { return u.coupons }
 func (u *MemoryUnitOfWork) Certificates() certificate.CertificateRepository   { return u.certificates }
+func (u *MemoryUnitOfWork) Admissions() admissions.Repository                 { return u.admissions }
 
 func (u *MemoryUnitOfWork) Commit(_ context.Context) error { return nil }
 func (u *MemoryUnitOfWork) Rollback()                      {}
@@ -83,6 +86,7 @@ func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWor
 		lessonLinks:  f.store.Lessons,
 		coupons:      f.store.Coupons,
 		certificates: f.store.Certificates,
+		admissions:   f.store.Admissions,
 	}, nil
 }
 
@@ -103,6 +107,7 @@ type MemoryStore struct {
 	PrivatePkgs    *PrivatePackageMemory
 	Coupons        *CouponMemory
 	Certificates   *CertificateMemory
+	Admissions     *AdmissionsMemory
 	Vetting        *VettingMemory
 	TutorSubj      *VettingTutorSubjectMemory
 	Availability   *AvailabilityMemory
@@ -145,6 +150,7 @@ func NewMemoryStore() *MemoryStore {
 		PrivatePkgs:  NewPrivatePackageMemory(),
 		Coupons:      NewCouponMemory(),
 		Certificates: NewCertificateMemory(),
+		Admissions:   NewAdmissionsMemory(),
 		Vetting:      NewVettingMemory(),
 		TutorSubj:    NewVettingTutorSubjectMemory(),
 		Availability: NewAvailabilityMemory(),

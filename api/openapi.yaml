@@ -1044,6 +1044,68 @@ paths:
         '200': { description: Valid certificate }
         '404': { description: Not found }
 
+  /admissions/apply:
+    post:
+      tags: [learning]
+      summary: Apply to enrol a learner (virtual-school admissions)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [student_profile_id]
+              properties:
+                student_profile_id: { type: string, format: uuid }
+                institution_id: { type: string, format: uuid }
+                programme_id: { type: string, format: uuid }
+                cohort_id: { type: string, format: uuid }
+                applicant_name: { type: string }
+                current_level: { type: string }
+                preferred_term: { type: string }
+                notes: { type: string }
+      responses:
+        '201': { description: Application created (PENDING) }
+        '403': { description: Not a linked learner }
+
+  /admissions/me:
+    get:
+      tags: [learning]
+      summary: The family's admissions applications
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Applications }
+
+  /admin/admissions:
+    get:
+      tags: [admin]
+      summary: Admin admissions queue
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Applications }
+
+  /admin/admissions/{id}/status:
+    post:
+      tags: [admin]
+      summary: Review/offer/accept/reject an admissions application
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [PENDING, REVIEWING, OFFERED, ACCEPTED, REJECTED, WITHDRAWN] }
+      responses:
+        '200': { description: Updated }
+
   /payments/initiate:
     post:
       tags: [payments]

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"ykay-virtual/internal/domain/admissions"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
@@ -35,6 +36,7 @@ type PgUnitOfWork struct {
 	lessonLinks  *LessonRepo
 	coupons      *CouponRepo
 	certificates *CertificateRepo
+	admissions   *AdmissionsRepo
 }
 
 func (u *PgUnitOfWork) LessonLinks() booking.LessonParticipantLinker             { return u.lessonLinks }
@@ -53,6 +55,7 @@ func (u *PgUnitOfWork) TutorSubjects() tutor.TutorSubjectRepository             
 func (u *PgUnitOfWork) AuditLogs() identity.AuditLogRepository                   { return u.auditLogs }
 func (u *PgUnitOfWork) Coupons() payment.CouponRepository                        { return u.coupons }
 func (u *PgUnitOfWork) Certificates() certificate.CertificateRepository          { return u.certificates }
+func (u *PgUnitOfWork) Admissions() admissions.Repository                        { return u.admissions }
 
 func (u *PgUnitOfWork) Commit(ctx context.Context) error {
 	if err := u.tx.Commit(); err != nil {
@@ -92,6 +95,7 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
 		lessonLinks:  NewLessonRepo(tx),
 		coupons:      NewCouponRepo(tx),
 		certificates: NewCertificateRepo(tx),
+		admissions:   NewAdmissionsRepo(tx),
 	}, nil
 }
 
