@@ -12,6 +12,7 @@ import { listNotifications, markAllNotificationsRead, markNotificationRead } fro
 import { useSession } from "@/hooks/useSession";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
 
 
 export default function NotificationsPage() {
@@ -44,21 +45,17 @@ export default function NotificationsPage() {
   const unread = (notifs.data?.data ?? []).filter((n) => !n.is_read).length;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8 md:px-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-extrabold">Notifications</h1>
-          <p className="text-ink-500 text-sm mt-1">
-            {unread > 0 ? `${unread} unread` : "You're all caught up"}
-          </p>
-        </div>
-        {unread > 0 && (
+    <DashboardPage
+      title="Notifications"
+      subtitle={unread > 0 ? `${unread} unread` : "You're all caught up"}
+      actions={
+        unread > 0 ? (
           <Button variant="outline" size="sm" onClick={() => markAll.mutate()} disabled={markAll.isPending}>
             Mark all read
           </Button>
-        )}
-      </div>
-
+        ) : undefined
+      }
+    >
       {notifs.isLoading ? (
         <div className="space-y-3">
           <Skeleton className="h-16 w-full" />
@@ -103,6 +100,6 @@ export default function NotificationsPage() {
           ))}
         </ul>
       )}
-    </main>
+    </DashboardPage>
   );
 }

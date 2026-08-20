@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { MessageCenter } from "@/features/messaging/components/MessageCenter";
-
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
 
 export const metadata: Metadata = buildMetadata({
   title: "Messages",
@@ -12,15 +12,11 @@ export const metadata: Metadata = buildMetadata({
 
 export default function MessagesPage() {
   return (
-    <main className="px-4 py-8 md:px-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-extrabold">Messages</h1>
-        <p className="text-ink-500 text-sm mt-1">
-          Conversations are scoped to your bookings — tutors, parents and cohort members only.
-        </p>
-      </div>
+    <DashboardPage
+      title="Community"
+      subtitle="Conversations are scoped to your bookings — tutors, parents and cohort members only."
+    >
       <MessageCenter />
-    </main>
-
+    </DashboardPage>
   );
 }

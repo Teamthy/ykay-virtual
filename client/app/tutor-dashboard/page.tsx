@@ -19,7 +19,8 @@ import { getTutorEarnings } from "@/features/lms/api";
 import { BookOpen, MessageSquare, Bell, LifeBuoy, Settings, Wallet, CalendarDays, ClipboardCheck, Users, NotebookPen } from "lucide-react";
 import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
+import { DashHero } from "@/components/dashboard/DashHero";
 
 // Tutor portal — tabbed workspace: Overview (KPIs + status + today) ·
 // Lessons (upcoming, attendance, notes) · Availability · Earnings · Profile
@@ -147,22 +148,23 @@ export default function TutorDashboardPage() {
   ];
 
   return (
-    <main className="px-4 py-8 md:px-8">
+    <DashboardPage>
       <RoleGate page="/tutor-dashboard" />
-      <RecommendationsForYou />
-      <PageHeader
-        eyebrow="Tutor"
-        title="Home"
-        cover="/hero/how-it-works.jpg"
-        actions={
-          <Link
-            href="/lms/tutor"
-            className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
-          >
-            <BookOpen size={15} /> Teach
-          </Link>
+      <DashHero
+        icon={<BookOpen size={20} />}
+        kicker="Tutor workspace"
+        title={p ? `${p.display_name} · ${p.status.replace(/_/g, " ")}` : "Start your tutor application"}
+        body={
+          upcoming[0]
+            ? `Next class: ${upcoming[0].title}. Mark attendance, notes and earnings from here.`
+            : "Set availability, complete vetting, and your booked lessons will appear here."
         }
+        chipTitle={upcoming[0] ? new Date(upcoming[0].start_at).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "No class today"}
+        chipHint="Next lesson"
+        ctaHref="/lms/tutor"
+        ctaLabel="Open teaching"
       />
+      <RecommendationsForYou />
 
       <div className="mt-6">
         <DashboardTabs
@@ -448,6 +450,6 @@ export default function TutorDashboardPage() {
           </section>
         </div>
       )}
-    </main>
+    </DashboardPage>
   );
 }

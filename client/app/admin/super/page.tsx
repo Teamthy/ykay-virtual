@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAdminStats2 } from "@/features/admin/api";
 import { useSession } from "@/hooks/useSession";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { DashHero } from "@/components/dashboard/DashHero";
 import {
   ShieldCheck,
   Users,
@@ -78,7 +78,7 @@ export default function SuperAdminPage() {
   if (!superAdmin) {
     return (
       <div className="space-y-6">
-        <PageHeader eyebrow="Super admin" title="Restricted" cover="/hero/about.jpg" />
+        <DashHero icon={<Lock size={20} />} kicker="Super admin" title="Restricted" body="This control centre is SUPER_ADMIN only." chipTitle="Locked" chipHint="Access" />
         <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
           <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-brand-navy">
             <Lock size={26} />
@@ -134,7 +134,16 @@ export default function SuperAdminPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader eyebrow="Super admin" title="Platform control center" cover="/hero/about.jpg" />
+      <DashHero
+        icon={<ShieldCheck size={20} />}
+        kicker="Super admin"
+        title="Platform control centre"
+        body={`${s?.users?.toLocaleString() ?? "—"} users · ${s?.tutors_pending ?? 0} tutors pending · ${fmtNGN(s?.revenue_in_escrow)} in escrow.`}
+        chipTitle="Live"
+        chipHint="Control"
+        ctaHref="/admin/users"
+        ctaLabel="Manage users"
+      />
 
       {/* Platform KPI snapshot */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

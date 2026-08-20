@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getAdminStats2 } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RoleGate } from "@/components/dashboard/RoleGate";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { DashHero } from "@/components/dashboard/DashHero";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -15,6 +15,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   Gift,
+  LayoutDashboard,
   LifeBuoy,
   MessageSquare,
   Newspaper,
@@ -97,7 +98,16 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <RoleGate page="/admin" />
-      <PageHeader eyebrow="Admin" title="Overview" cover="/hero/checkout.jpg" />
+      <DashHero
+        icon={<LayoutDashboard size={20} />}
+        kicker="Operations"
+        title="Platform overview"
+        body={`${s?.active_users?.toLocaleString() ?? "—"} active learners · ${s?.tutors_pending ?? 0} tutors awaiting review · ${s?.support_open ?? 0} open tickets.`}
+        chipTitle={`${s?.lessons_today ?? 0} classes`}
+        chipHint="Today"
+        ctaHref="/admin/vetting"
+        ctaLabel="Review queue"
+      />
 
       {/* KPI row */}
       <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">

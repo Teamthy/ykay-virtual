@@ -32,7 +32,9 @@ import { createLearner, listLearners, type Learner } from "@/features/onboarding
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
+import { DashHero, SideCard } from "@/components/dashboard/DashHero";
+import { CircleHelp } from "lucide-react";
 
 // Parent portal — bookings-style family dashboard. Sidebar nav + sections:
 // Overview (KPIs + next lesson) · Bookings (status-filtered lessons) ·
@@ -158,46 +160,52 @@ export default function ParentDashboardPage() {
   const paidCount = (orders.data ?? []).filter((o) => o.status === "PAID").length;
 
   return (
-    <main className="px-4 py-8 md:px-8">
+    <DashboardPage>
         <div className="space-y-6">
-          <div className="flex flex-wrap gap-2">
+          <RoleGate page="/dashboard" />
+          <DashHero
+            icon={<Users size={20} />}
+            kicker="Family"
+            title={learnerId ? `${activeLearner?.first_name}'s learning home` : "Add a learner to get started"}
+            body={
+              nextLesson
+                ? `Next lesson: ${nextLesson.title}. Manage bookings, payments and progress from this dashboard.`
+                : "Book a tutor or join a cohort. Schedules, receipts and attendance will land here."
+            }
+            chipTitle={nextLesson ? new Date(nextLesson.start_at).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "No class yet"}
+            chipHint="Next lesson"
+            ctaHref={learnerId ? "/lms" : undefined}
+            ctaLabel={learnerId ? "Open LMS" : undefined}
+          />
+          <div className="flex flex-wrap items-center gap-2">
             {NAV.map((n) => (
               <button
                 key={n.key}
                 type="button"
                 onClick={() => setSection(n.key)}
                 className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  section === n.key ? "bg-brand-gold text-ink-900" : "bg-white text-ink-700 ring-1 ring-ink-200 hover:bg-ink-50"
+                  section === n.key ? "bg-deep text-white" : "bg-white text-ink-700 ring-1 ring-ink-200 hover:bg-ink-50"
                 }`}
               >
                 {n.icon}
                 {n.label}
               </button>
             ))}
+            <label className="ml-auto flex items-center gap-2 text-sm">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-ink-400">Learner</span>
+              <select
+                value={selectedLearner || activeLearner?.id || ""}
+                onChange={(e) => setSelectedLearner(e.target.value)}
+                className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-800"
+              >
+                {(learners.data ?? []).map((l) => (
+                  <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
+                ))}
+                {(learners.data ?? []).length === 0 && <option value="">Add a learner…</option>}
+              </select>
+            </label>
           </div>
-          <RoleGate page="/dashboard" />
           <RecommendationsForYou />
-
-          <PageHeader
-            eyebrow="Family"
-            title="Home"
-            cover="/hero/home-tutoring.jpg"
-            actions={
-              <label className="flex items-center gap-2 text-sm">
-                <span className="text-[10px] font-bold uppercase tracking-wide text-white/60">Learner</span>
-                <select
-                  value={selectedLearner || activeLearner?.id || ""}
-                  onChange={(e) => setSelectedLearner(e.target.value)}
-                  className="rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-brand-gold/40 [&>option]:text-ink-900"
-                >
-                  {(learners.data ?? []).map((l) => (
-                    <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
-                  ))}
-                  {(learners.data ?? []).length === 0 && <option value="">Add a learner…</option>}
-                </select>
-              </label>
-            }
-          />
 
           {!learnerId && (
             <div className="rounded-2xl border border-brand-blue/20 bg-brand-blue-light/60 p-6 text-sm">
@@ -228,6 +236,7 @@ export default function ParentDashboardPage() {
 
           {/* Section: Overview */}
           {section === "overview" && (
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
             <div className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Upcoming" value={upcoming.length} hint="lessons" icon={<CalendarDays size={18} />} />
@@ -337,6 +346,10 @@ export default function ParentDashboardPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
+                          <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
+                          {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
+                            <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blue-dark transition-colors">
+                         Name="flex items-center gap-3">
                           <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                           {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
                             <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blue-dark transition-colors">

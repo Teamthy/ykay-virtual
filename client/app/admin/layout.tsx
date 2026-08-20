@@ -27,7 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AppShell variant="admin">
-      <div className="px-4 py-8 md:px-8">{children}</div>
+      <div className="mx-auto w-full max-w-[1120px] px-4 py-6 md:px-8 md:py-8">{children}</div>
     </AppShell>
   );
 }

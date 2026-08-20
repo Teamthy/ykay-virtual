@@ -21,6 +21,7 @@ import {
 import { ReferralCard } from "@/features/referrals/ReferralCard";
 import { listLearners, type Learner } from "@/features/onboarding/api";
 import { Camera, UserPlus } from "lucide-react";
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
 
 // /account — settings hub (P0): profile, security, devices, preferences,
 // data export + deletion.
@@ -187,21 +188,8 @@ export default function AccountPage() {
   if (isLoading || !user) return <p className="py-24 text-center text-ink-400">Loading…</p>;
 
   return (
-    <main className="min-h-screen bg-[#FFF7E4] pb-16">
-      <header className="border-b border-ink-100 bg-white">
-        <div className="mx-auto max-w-5xl px-6 py-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/dashboard" className="hover:text-brand-gold-dark">Dashboard</Link> / Account
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">Account settings</h1>
-          <p className="mt-1 text-sm text-ink-500">
-            {user.email}
-            {user.first_name ? ` · ${user.first_name} ${user.last_name ?? ""}` : ""}
-          </p>
-        </div>
-      </header>
-
-      <div className="mx-auto mt-6 grid max-w-5xl gap-6 px-6 lg:grid-cols-[220px_1fr]">
+    <DashboardPage title="Settings" subtitle={`${user.email}${user.first_name ? ` · ${user.first_name}` : ""}`}>
+      <div className="grid gap-6 lg:grid-cols-[200px_1fr]">
         {/* Tabs */}
         <aside className="h-fit rounded-2xl border border-ink-100 bg-white p-3 shadow-sm">
           {tabs.map((t) => (
@@ -438,6 +426,6 @@ export default function AccountPage() {
           )}
         </div>
       </div>
-    </main>
+    </DashboardPage>
   );
 }
