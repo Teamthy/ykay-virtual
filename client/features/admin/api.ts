@@ -382,6 +382,53 @@ export type AuditLogRow = {
   created_at: string;
 };
 
+export type CohortJoinRequest = {
+  id: string;
+  cohort_id: string;
+  tutor_profile_id: string;
+  status: string;
+  note?: string | null;
+  created_at: string;
+  reviewed_at?: string | null;
+  cohort_title?: string;
+  tutor_name?: string;
+  programme_title?: string;
+};
+
+export async function listCohortJoins(status?: string): Promise<CohortJoinRequest[]> {
+  const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+  const res = await apiFetch<CohortJoinRequest[]>(`/admin/cohort-joins${qs}`);
+  return res.data ?? [];
+}
+
+export async function reviewCohortJoin(id: string, status: "APPROVED" | "REJECTED"): Promise<void> {
+  await apiFetch(`/admin/cohort-joins/${id}/review`, {
+    method: "POST",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export type ProgrammeRoster = {
+  programme: { id: string; title: string; slug: string; summary?: string; format: string; status: string };
+  cohorts: AdminCohort[];
+  students: {
+    cohort_id: string;
+    status: string;
+    id: string;
+    first_name: string;
+    last_name: string;
+    current_level?: string;
+  }[];
+  tutors: { id: string; display_name: string; slug: string; status: string; is_public: boolean }[];
+  student_count: number;
+  cohort_count: number;
+};
+
+export async function getProgrammeRoster(slug: string): Promise<ProgrammeRoster> {
+  const res = await apiFetch<ProgrammeRoster>(`/admin/programmes/${encodeURIComponent(slug)}/roster`);
+  return res.data;
+}
+
 export async function listAuditLogs(params: {
   action?: string;
   target_type?: string;

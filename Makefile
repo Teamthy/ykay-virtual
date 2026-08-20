@@ -48,6 +48,9 @@ fmt: ## Format Go code
 seed-users: ## Create local operator accounts with random passwords (prints once)
 	$(GO) run ./cmd/seedusers
 
+seed-lms: ## Seed local tutor LMS pack (video/material; run after seed-users)
+	$(GO) run ./cmd/seedlms
+
 smoke: ## Boot API with memory fallback and hit health + catalogue
 	@echo "Run: go run ./cmd/api  (then curl localhost:8080/health)"
 

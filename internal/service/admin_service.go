@@ -19,6 +19,7 @@ import (
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/domain/tutor"
+	"ykay-virtual/internal/domain/vetting"
 
 	"github.com/google/uuid"
 )
@@ -46,6 +47,7 @@ type AdminService struct {
 	roles          identity.RoleRepository
 	auditLogs      identity.AuditLogRepository
 	tutors         tutor.TutorRepository
+	vetting        vetting.VettingRepository
 	audit          identity.AuditService
 	now            func() time.Time
 }
@@ -215,6 +217,13 @@ func (s *AdminService) WithCohortAdmin(cohorts booking.CohortAdminRepository, le
 // approved before assigning them to a cohort.
 func (s *AdminService) WithTutors(tutors tutor.TutorRepository) *AdminService {
 	s.tutors = tutors
+	return s
+}
+
+// WithVetting wires GetProfileByUserID so a tutor session can request to join
+// a cohort without the client supplying a tutor_profile_id.
+func (s *AdminService) WithVetting(v vetting.VettingRepository) *AdminService {
+	s.vetting = v
 	return s
 }
 
@@ -736,6 +745,61 @@ func (s *AdminService) ListLessonsToday(ctx context.Context) ([]booking.Lesson, 
 }
 
 // ── Payments admin (phase 38) ──────────────────────────────────────────────
+
+func (s *AdminService) RequestCohortJoin(ctx context.Context, tutorProfileID, cohortID uuid.UUID, note *string) (*booking.CohortJoinRequest, error) {
+	if s.cohortAdmin == nil {
+		return nil, errors.New("cohort store unavailable")
+	}
+	return s.cohortAdmin.RequestJoin(ctx, cohortID, tutorProfileID, note)
+}
+
+// RequestCohortJoinForUser resolves the actor's tutor profile and opens (or
+// re-opens) a PENDING join request. Only APPROVED tutors may request.
+func (s *AdminService) RequestCohortJoinForUser(ctx context.Context, userID, cohortID uuid.UUID, note *string) (*booking.CohortJoinRequest, error) {
+	if s.vetting == nil {
+		return nil, errors.New("vetting store unavailable")
+	}
+	profile, err := s.vetting.GetProfileByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: tutor profile required — complete vetting first", domain.ErrNotFound)
+	}
+	if profile.Status != tutor.TutorStatusApproved {
+		return nil, fmt.Errorf("%w: only approved tutors can request to join a cohort (current status %s)",
+			domain.ErrForbidden, profile.Status)
+	}
+	return s.RequestCohortJoin(ctx, profile.ID, cohortID, note)
+}
+
+func (s *AdminService) ListCohortJoins(ctx context.Context, status string) ([]booking.CohortJoinRequest, error) {
+	if s.cohortAdmin == nil {
+		return []booking.CohortJoinRequest{}, nil
+	}
+	return s.cohortAdmin.ListJoinRequests(ctx, status)
+}
+
+func (s *AdminService) ReviewCohortJoin(ctx context.Context, adminID, requestID uuid.UUID, status string) (*booking.CohortJoinRequest, error) {
+	if status != "APPROVED" && status != "REJECTED" {
+		return nil, fmt.Errorf("%w: status must be APPROVED or REJECTED", domain.ErrInvalidInput)
+	}
+	if s.cohortAdmin == nil {
+		return nil, errors.New("cohort store unavailable")
+	}
+	jr, err := s.cohortAdmin.ReviewJoin(ctx, requestID, status, adminID)
+	if err != nil {
+		return nil, err
+	}
+	if status == "APPROVED" {
+		_ = s.cohortAdmin.UpdateTutor(ctx, jr.CohortID, &jr.TutorProfileID)
+	}
+	return jr, nil
+}
+
+func (s *AdminService) ProgrammeRoster(ctx context.Context, slug string) (map[string]any, error) {
+	if s.cohortAdmin == nil {
+		return nil, errors.New("cohort store unavailable")
+	}
+	return s.cohortAdmin.ProgrammeRoster(ctx, slug)
+}
 
 func (s *AdminService) GetOrderDetail(ctx context.Context, id uuid.UUID) (*payment.Order, []payment.OrderItem, error) {
 	if s.orders == nil {

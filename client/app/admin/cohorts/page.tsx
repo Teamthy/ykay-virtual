@@ -6,15 +6,17 @@ import { toast } from "sonner";
 import {
   createAdminCohort, listAdminCohorts, setAdminCohortStatus,
   listApprovedTutors, assignAdminCohortTutor,
+  listCohortJoins, reviewCohortJoin,
   type AdminCohort, type AdminVettingProfile,
 } from "@/features/admin/api";
+import Link from "next/link";
 import { listProgrammes } from "@/features/programmes/api/list";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
-import { CalendarDays, Users, UserCheck } from "lucide-react";
+import { CalendarDays, UserCheck } from "lucide-react";
 
 // Admin cohort manager (working-doc §12) - NUVORA design system:
 // DataTable + StatusBadge (text+icon+colour) + EmptyState + Progress capacity.
@@ -41,6 +43,22 @@ export default function AdminCohortsPage() {
     queryKey: ["admin", "tutors", "approved"],
     queryFn: () => listApprovedTutors(),
     staleTime: 30_000,
+  });
+
+  const joins = useQuery({
+    queryKey: ["admin", "cohort-joins", "PENDING"],
+    queryFn: () => listCohortJoins("PENDING"),
+    staleTime: 15_000,
+  });
+
+  const reviewJoinMut = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "APPROVED" | "REJECTED" }) => reviewCohortJoin(id, status),
+    onSuccess: (_d, { status }) => {
+      toast.success(status === "APPROVED" ? "Tutor assigned to cohort" : "Join request rejected");
+      qc.invalidateQueries({ queryKey: ["admin", "cohort-joins"] });
+      qc.invalidateQueries({ queryKey: ["admin", "cohorts"] });
+    },
+    onError: () => toast.error("Could not review join request"),
   });
 
   const setStatusMut = useMutation({
@@ -182,10 +200,40 @@ export default function AdminCohortsPage() {
           <h1 className="text-3xl font-extrabold text-brand-navy">Cohorts</h1>
           <p className="text-ink-500 text-sm mt-1">Create cohorts, assign tutors, manage capacity, publish.</p>
         </div>
-        <Button variant="gold" onClick={() => setShowCreate(!showCreate)}>{showCreate ? "Close" : "+ New cohort"}</Button>
+        <div className="flex gap-2">
+          <Link href="/admin/programmes" className="inline-flex items-center rounded-full border border-ink-200 px-4 py-2 text-sm font-semibold text-brand-navy hover:border-brand-gold">
+            Programme rosters
+          </Link>
+          <Button variant="gold" onClick={() => setShowCreate(!showCreate)}>{showCreate ? "Close" : "+ New cohort"}</Button>
+        </div>
       </div>
 
       {showCreate && <CreateCohortForm onDone={() => { setShowCreate(false); qc.invalidateQueries({ queryKey: ["admin", "cohorts"] }); }} />}
+
+      {(joins.data?.length ?? 0) > 0 && (
+        <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <h2 className="font-bold text-brand-navy">Tutor join requests</h2>
+          <p className="mt-1 text-xs text-ink-500">Approve assigns the tutor to that cohort. Reject leaves assignment unchanged.</p>
+          <ul className="mt-4 divide-y divide-ink-100">
+            {(joins.data ?? []).map((j) => (
+              <li key={j.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div>
+                  <p className="font-semibold text-ink-800">{j.tutor_name || j.tutor_profile_id}</p>
+                  <p className="text-xs text-ink-500">
+                    {j.cohort_title || j.cohort_id}
+                    {j.programme_title ? ` · ${j.programme_title}` : ""}
+                    {j.note ? ` — ${j.note}` : ""}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" disabled={reviewJoinMut.isPending} onClick={() => reviewJoinMut.mutate({ id: j.id, status: "APPROVED" })}>Approve</Button>
+                  <Button size="sm" variant="outline" disabled={reviewJoinMut.isPending} onClick={() => reviewJoinMut.mutate({ id: j.id, status: "REJECTED" })}>Reject</Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map((s) => (

@@ -19,6 +19,8 @@ import { getTutorEarnings } from "@/features/lms/api";
 import { BookOpen, MessageSquare, Bell, LifeBuoy, Settings, Wallet, CalendarDays, ClipboardCheck, Users, NotebookPen } from "lucide-react";
 import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
+import { listCohorts } from "@/features/cohorts/api/list";
+import { requestCohortJoin } from "@/features/cohorts/api/join";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { DashHero } from "@/components/dashboard/DashHero";
 
@@ -55,6 +57,7 @@ const STATUS_BADGE: Record<string, string> = {
 const TABS = [
   { key: "overview", label: "Overview" },
   { key: "lessons", label: "Lessons" },
+  { key: "cohorts", label: "Cohorts" },
   { key: "availability", label: "Availability" },
   { key: "earnings", label: "Earnings" },
   { key: "profile", label: "Profile" },
@@ -105,6 +108,22 @@ export default function TutorDashboardPage() {
     queryFn: () => getTutorEarnings(),
     enabled: !!user,
     staleTime: 30_000,
+  });
+
+  const publishedCohorts = useQuery({
+    queryKey: ["tutor", "cohorts", "join"],
+    queryFn: async () => {
+      const res = await listCohorts({ page: 1, page_size: 50 });
+      return res.data ?? [];
+    },
+    enabled: !!user && tab === "cohorts",
+    staleTime: 15_000,
+  });
+
+  const joinCohort = useMutation({
+    mutationFn: (id: string) => requestCohortJoin(id),
+    onSuccess: () => toast.success("Join request sent — admin will review"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not request join"),
   });
 
   const addSlot = useMutation({
@@ -327,6 +346,56 @@ export default function TutorDashboardPage() {
                       </div>
                     </li>
                   ))}
+              </ul>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* ── Cohorts ── */}
+      {tab === "cohorts" && (
+        <div className="mt-6 space-y-6">
+          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+            <h2 className="font-bold text-ink-800">Request to join a cohort</h2>
+            <p className="mt-1 text-sm text-ink-500">
+              Approved tutors can ask to teach a published cohort. An admin still assigns you after review.
+            </p>
+            {p && p.status !== "APPROVED" && (
+              <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Your application is {p.status.replace(/_/g, " ")}. Finish vetting and wait for approval before requesting a cohort.
+              </p>
+            )}
+            {publishedCohorts.isLoading ? (
+              <Skeleton className="mt-4 h-20 w-full" />
+            ) : (publishedCohorts.data?.length ?? 0) === 0 ? (
+              <EmptyState icon={<CalendarDays size={20} />} title="No published cohorts" description="Cohorts appear here once admin publishes them." />
+            ) : (
+              <ul className="mt-4 divide-y divide-ink-100">
+                {(publishedCohorts.data ?? []).map((c) => {
+                  const mine = p && c.tutor_profile_id === p.id;
+                  return (
+                    <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className="font-bold text-ink-800">{c.title}</p>
+                        <p className="text-xs text-ink-500">
+                          {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()} · {c.enrolled_count}/{c.capacity} enrolled
+                        </p>
+                      </div>
+                      {mine ? (
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Assigned to you</span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={!p || p.status !== "APPROVED" || joinCohort.isPending}
+                          onClick={() => joinCohort.mutate(c.id)}
+                        >
+                          Request to join
+                        </Button>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>

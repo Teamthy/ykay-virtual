@@ -814,3 +814,90 @@ func (h *AdminHandler) ListPayouts(w http.ResponseWriter, r *http.Request) {
 	}
 	pkg.WriteSuccess(w, http.StatusOK, list, nil)
 }
+
+// RequestCohortJoin — tutor asks to teach a cohort.
+//
+//	POST /api/v1/me/cohorts/{cohortId}/join  { "note": "..." }
+func (h *AdminHandler) RequestCohortJoin(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	if !hasSessionRole(actor.Roles, "TUTOR") {
+		WriteAppError(w, pkg.Forbidden("tutor access required"))
+		return
+	}
+	cohortID, err := ParseUUID(r, "cohortId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Note *string `json:"note"`
+	}
+	_ = DecodeJSON(r, &req)
+	jr, err := h.svc.RequestCohortJoinForUser(r.Context(), actor.UserID, cohortID, req.Note)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, jr, nil)
+}
+
+// ListCohortJoins — GET /admin/cohort-joins?status=
+func (h *AdminHandler) ListCohortJoins(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	list, err := h.svc.ListCohortJoins(r.Context(), r.URL.Query().Get("status"))
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+}
+
+// ReviewCohortJoin — POST /admin/cohort-joins/{id}/review {status}
+// APPROVED assigns the tutor to the cohort.
+func (h *AdminHandler) ReviewCohortJoin(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	id, err := ParseUUID(r, "id")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Status string `json:"status"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	jr, err := h.svc.ReviewCohortJoin(r.Context(), *adminID, id, req.Status)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, jr, nil)
+}
+
+// ProgrammeRoster — GET /admin/programmes/{slug}/roster
+func (h *AdminHandler) ProgrammeRoster(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	slug := r.PathValue("slug")
+	if slug == "" {
+		WriteAppError(w, pkg.BadRequest("slug is required", nil))
+		return
+	}
+	roster, err := h.svc.ProgrammeRoster(r.Context(), slug)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, roster, nil)
+}

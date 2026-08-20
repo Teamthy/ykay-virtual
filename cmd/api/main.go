@@ -316,6 +316,7 @@ func main() {
 		WithSupport(repos.SupportTickets).
 		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin).
 		WithTutors(repos.TutorRepo).
+		WithVetting(repos.Vetting).
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
@@ -330,6 +331,7 @@ func main() {
 	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit).WithUsers(repos.Users)
 	institutionSvc := service.NewInstitutionService(repos.Institutions, audit)
 	paymentSvc.WithReferrals(referralSvc)
+	paymentSvc.WithReceipts(repos.Users, notification.NewEmailSender(), cfg.SiteURL)
 	authSvc.WithReferrals(referralSvc)
 
 	// --- AI assistant (phase 33) ---
