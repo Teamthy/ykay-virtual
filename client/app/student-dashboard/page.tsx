@@ -1,28 +1,14 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { BookOpen, CheckCircle2, CircleHelp, Clock, Play, UserRound } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import {
-  listMyAssignments,
-  listMySubmissions,
-  submitAssignment,
-  getAttendanceSummary,
-} from "@/features/portal/api";
-import { StudentQuizzes } from "@/features/learning/StudentQuizzes";
+import { listMyAssignments, listMySubmissions, getAttendanceSummary } from "@/features/portal/api";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
-import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StatCard } from "@/components/ui/stat-card";
-import { LineChart, FileText, CheckCircle2, BookOpen, ClipboardList, GraduationCap } from "lucide-react";
-import Link from "next/link";
-
-// Student portal (working-doc §9): side nav, Today panel, progress,
-// assignments with submission, resources, announcements, support.
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Lesson = {
   id: string;
@@ -31,26 +17,47 @@ type Lesson = {
   end_at: string;
   timezone: string;
   meeting_url?: string;
+  video_url?: string;
   status: string;
+  cohort_id?: string;
 };
 
-type Cohort = {
-  id: string;
+function CheckRow({
+  done,
+  title,
+  hint,
+  href,
+}: {
+  done: boolean;
   title: string;
-  start_date: string;
-  end_date: string;
-  status: string;
-};
-
-const SECTIONS = ["Overview", "My Classes", "Calendar", "Assignments", "Quizzes", "Progress"] as const;
-type Section = (typeof SECTIONS)[number];
+  hint: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white px-4 py-3.5 transition-colors hover:border-brand-gold/50"
+    >
+      <span
+        className={`grid size-9 shrink-0 place-items-center rounded-full ${
+          done ? "bg-brand-gold text-ink-900" : "bg-ink-50 text-ink-400"
+        }`}
+      >
+        {done ? <CheckCircle2 size={18} /> : <span className="size-2.5 rounded-full bg-ink-300" />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-bold text-ink-900">{title}</span>
+        <span className="block text-xs text-ink-500">{hint}</span>
+      </span>
+      <span className={`text-xs font-bold ${done ? "text-brand-gold-dark" : "text-ink-400"}`}>
+        {done ? "Done" : "To do"}
+      </span>
+    </Link>
+  );
+}
 
 export default function StudentDashboardPage() {
-  const qc = useQueryClient();
-  // G1: the learner profile resolves from the session server-side.
   const { user } = useSession();
-  const [section, setSection] = useState<Section>("Overview");
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
 
   const lessons = useQuery({
     queryKey: ["student", "lessons"],
@@ -61,21 +68,18 @@ export default function StudentDashboardPage() {
     enabled: !!user,
     staleTime: 30_000,
   });
-
   const assignments = useQuery({
     queryKey: ["student", "assignments"],
     queryFn: () => listMyAssignments(),
     enabled: !!user,
     staleTime: 30_000,
   });
-
   const submissions = useQuery({
     queryKey: ["student", "submissions"],
     queryFn: () => listMySubmissions(),
     enabled: !!user,
     staleTime: 30_000,
   });
-
   const attendance = useQuery({
     queryKey: ["student", "attendance"],
     queryFn: () => getAttendanceSummary(),
@@ -83,271 +87,166 @@ export default function StudentDashboardPage() {
     staleTime: 30_000,
   });
 
-  const submit = useMutation({
-    mutationFn: ({ assignmentId, content }: { assignmentId: string; content: string }) =>
-      submitAssignment(undefined, assignmentId, content),
-    onSuccess: () => {
-      toast.success("Assignment submitted!");
-      qc.invalidateQueries({ queryKey: ["student", "assignments"] });
-      qc.invalidateQueries({ queryKey: ["student", "submissions"] });
-    },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not submit"),
-  });
-
-  const upcoming = (lessons.data ?? []).filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING");
-  const past = (lessons.data ?? []).filter((l) => l.status === "COMPLETED" || l.status === "NO_SHOW");
+  const upcoming = (lessons.data ?? [])
+    .filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING")
+    .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+  const next = upcoming[0];
   const submittedIds = new Set((submissions.data ?? []).map((s) => s.assignment_id));
+  const enrolled = (lessons.data ?? []).length > 0;
+  const profileDone = !!(user?.first_name && user?.last_name);
+  const checksDone = [profileDone, true, false, enrolled].filter(Boolean).length;
 
   return (
-    <main className="px-4 py-8 md:px-8">
+    <main className="px-4 py-6 md:px-8 md:py-8">
       <RoleGate page="/student-dashboard" />
-      <RecommendationsForYou />
-      <PageHeader eyebrow="Student" title="Home" cover="/hero/exam-prep.jpg" />
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {SECTIONS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setSection(s)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-              section === s ? "bg-brand-gold text-ink-900" : "bg-white text-ink-700 ring-1 ring-ink-200 hover:bg-ink-50"
-            }`}
-          >
-            {s}
-          </button>
-        ))}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="space-y-6">
+          <section className="relative overflow-hidden rounded-3xl bg-deep p-6 text-white shadow-card md:p-8">
+            <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-brand-gold/15" />
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-xl">
+                <div className="mb-4 grid size-11 place-items-center rounded-2xl bg-brand-gold text-ink-900">
+                  <BookOpen size={20} />
+                </div>
+                <h2 className="font-display text-2xl tracking-wide md:text-3xl">
+                  {enrolled ? "You're enrolled — class starts soon!" : "Find your next class"}
+                </h2>
+                <p className="mt-2 text-sm text-white/75">
+                  {next
+                    ? `Next up: ${next.title}. While you wait, get your profile ready and connect with your cohort.`
+                    : "Browse programmes and join a cohort. Your schedule and LMS will appear here."}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3 text-center">
+                <Clock size={18} className="mx-auto text-brand-gold" />
+                <p className="mt-1 text-sm font-bold">
+                  {next
+                    ? new Date(next.start_at).toLocaleString([], { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                    : "Starting soon"}
+                </p>
+                <p className="text-[11px] text-white/60">Class starts</p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/10 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 place-items-center rounded-full bg-white/15">
+                  <Play size={14} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">Watch your instructor&apos;s intro</p>
+                  <p className="text-xs text-white/60">A welcome message before the first class</p>
+                </div>
+              </div>
+              {next?.meeting_url || next?.video_url ? (
+                <a
+                  href={next.meeting_url || next.video_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-brand-gold"
+                >
+                  Watch
+                </a>
+              ) : (
+                <Link
+                  href="/lms"
+                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-brand-gold"
+                >
+                  Open LMS
+                </Link>
+              )}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-ink-900">Before class begins</h3>
+                <p className="text-sm text-ink-500">Get yourself set up and ready</p>
+              </div>
+              <span className="text-sm font-bold text-ink-400">{checksDone}/4</span>
+            </div>
+            <div className="space-y-2">
+              <CheckRow done={profileDone} title="Complete your profile" hint="Add your name and a photo" href="/account" />
+              <CheckRow done={true} title="Enable notifications" hint="So you never miss a class or assignment" href="/notifications" />
+              <CheckRow done={false} title="Join the community" hint="Connect with your cohort before class begins" href="/messages" />
+              <CheckRow done={enrolled} title="Open your first course" hint="Materials, live classes and quizzes in the LMS" href="/lms" />
+            </div>
+          </section>
+
+          {lessons.isLoading ? (
+            <Skeleton className="h-28 w-full rounded-3xl" />
+          ) : upcoming.length > 0 ? (
+            <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
+              <h3 className="font-bold text-ink-900">Upcoming classes</h3>
+              <ul className="mt-3 divide-y divide-ink-100">
+                {upcoming.slice(0, 4).map((l) => (
+                  <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <div>
+                      <p className="text-sm font-bold text-ink-800">{l.title}</p>
+                      <p className="text-xs text-ink-500">
+                        {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                      </p>
+                    </div>
+                    {l.meeting_url ? (
+                      <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white">
+                        Join class
+                      </a>
+                    ) : (
+                      <span className="text-xs text-ink-400">{l.status}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+
+        <aside className="space-y-4">
+          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
+            <div className="mb-3 grid size-10 place-items-center rounded-full bg-brand-gold-light text-deep">
+              <CircleHelp size={18} />
+            </div>
+            <h3 className="font-bold text-ink-900">Have a question?</h3>
+            <p className="mt-1 text-sm text-ink-500">Support is happy to help you get settled in before class begins.</p>
+            <Link href="/help" className="mt-3 inline-block text-sm font-bold text-brand-gold-dark hover:underline">
+              Contact support →
+            </Link>
+          </div>
+          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
+            <div className="mb-3 grid size-10 place-items-center rounded-full bg-peach text-deep">
+              <UserRound size={18} />
+            </div>
+            <h3 className="font-bold text-ink-900">New to the platform?</h3>
+            <p className="mt-1 text-sm text-ink-500">Watch how NUVORA lessons, assignments and live classes work.</p>
+            <Link href="/help" className="mt-3 inline-block text-sm font-bold text-deep hover:underline">
+              Watch guide →
+            </Link>
+          </div>
+          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Snapshot</p>
+            <dl className="mt-3 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-ink-500">Attendance</dt>
+                <dd className="font-bold text-ink-900">{attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-ink-500">Assignments</dt>
+                <dd className="font-bold text-ink-900">
+                  {submittedIds.size}/{assignments.data?.length ?? 0}
+                </dd>
+              </div>
+            </dl>
+            <Link href="/lms" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-deep py-2.5 text-sm font-bold text-white hover:bg-deep-light">
+              Continue learning
+            </Link>
+          </div>
+        </aside>
       </div>
 
-      <div className="mt-6">
-        <div>
-          {section === "Overview" && (
-            <div className="space-y-6">
-              {/* KPI snapshot */}
-              <div className="grid gap-4 sm:grid-cols-3">
-                <StatCard label="Attendance" value={attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"} hint={`${attendance.data?.present ?? 0} present of ${attendance.data?.total ?? 0}`} icon={<LineChart size={18} />} />
-                <StatCard label="Assignments" value={`${submittedIds.size}/${assignments.data?.length ?? 0}`} hint="submitted" icon={<FileText size={18} />} />
-                <StatCard label="Done" value={past.length} hint="lessons" icon={<CheckCircle2 size={18} />} />
-              </div>
-
-              {/* Quick learning actions */}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {[
-                  { href: "/lms", label: "My courses", icon: <BookOpen size={16} /> },
-                  { href: "/lms/courses", label: "Materials", icon: <FileText size={16} /> },
-                  { href: "/lms", label: "Assignments", icon: <ClipboardList size={16} /> },
-                  { href: "/lms", label: "Quizzes", icon: <GraduationCap size={16} /> },
-                ].map((a) => (
-                  <Link key={a.label} href={a.href} className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-brand-navy transition-all hover:border-brand-blue hover:shadow-lift">
-                    <span className="grid size-8 place-items-center rounded-lg bg-brand-blue-light text-brand-blue">{a.icon}</span>
-                    {a.label}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Today */}
-              <section className="rounded-2xl bg-brand-blue text-white p-6">
-                <h2 className="font-bold text-white">Today</h2>
-                {lessons.isLoading ? (
-                  <Skeleton className="h-12 w-full mt-3 bg-white/20" />
-                ) : upcoming.length === 0 ? (
-                  <p className="mt-3 text-sm text-white/80">No lessons scheduled for today.</p>
-                ) : (
-                  <ul className="mt-4 space-y-3">
-                    {upcoming.slice(0, 4).map((l) => (
-                      <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/10 px-5 py-3">
-                        <div>
-                          <div className="font-semibold">{l.title}</div>
-                          <div className="text-xs text-white/70">
-                            {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
-                          </div>
-                        </div>
-                        {l.meeting_url ? (
-                          <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-white text-brand-blue font-bold text-sm px-5 py-2.5">
-                            Join class
-                          </a>
-                        ) : (
-                          <span className="text-xs text-white/60">Link opens at lesson time</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-
-              {/* Recent tutor feedback / notes */}
-              <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-                <h2 className="font-bold">Recent</h2>
-                {past.length === 0 ? (
-                  <p className="mt-3 text-sm text-ink-500">No completed lessons yet.</p>
-                ) : (
-                  <ul className="mt-3 divide-y divide-ink-100">
-                    {past.slice(0, 5).map((l) => (
-                      <li key={l.id} className="py-3 flex justify-between items-center">
-                        <div>
-                          <div className="text-sm font-semibold">{l.title}</div>
-                          <div className="text-xs text-ink-500">{new Date(l.start_at).toLocaleDateString()}</div>
-                        </div>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-ink-100 text-ink-500">{l.status}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            </div>
-          )}
-
-          {section === "My Classes" && (
-            <section className="border rounded-2xl p-6">
-              <h2 className="font-bold text-lg">Classes</h2>
-              {lessons.isLoading ? (
-                <Skeleton className="h-20 w-full mt-3" />
-              ) : (lessons.data?.length ?? 0) === 0 ? (
-                <p className="mt-4 text-sm text-ink-500 border border-dashed border-ink-200 rounded-xl p-8 text-center">
-                  No lessons yet — join a cohort to get started.
-                </p>
-              ) : (
-                <ul className="mt-4 space-y-3">
-                  {(lessons.data ?? []).slice(0, 20).map((l) => (
-                    <li key={l.id} className="border rounded-xl p-4 flex items-center justify-between gap-3">
-                      <div>
-                        <div className="font-semibold text-sm">{l.title}</div>
-                        <div className="text-xs text-ink-500">
-                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
-                        </div>
-                      </div>
-                      {l.meeting_url ? (
-                        <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue text-white text-sm font-bold px-4 py-2">Join</a>
-                      ) : (
-                        <span className="text-xs text-ink-400">{l.status}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          )}
-
-          {section === "Calendar" && (
-            <section className="border rounded-2xl p-6">
-              <h2 className="font-bold text-lg">Calendar</h2>
-              {lessons.isLoading ? (
-                <Skeleton className="h-20 w-full mt-3" />
-              ) : (lessons.data?.length ?? 0) === 0 ? (
-                <p className="mt-4 text-sm text-ink-500">Nothing scheduled yet.</p>
-              ) : (
-                <div className="mt-4 space-y-4">
-                  {groupByDate(lessons.data ?? []).map(([date, items]) => (
-                    <div key={date}>
-                      <h3 className="text-sm font-bold text-brand-blue">{date}</h3>
-                      <ul className="mt-2 space-y-2">
-                        {items.map((l) => (
-                          <li key={l.id} className="border rounded-xl px-4 py-3 text-sm flex justify-between">
-                            <span className="font-semibold">{l.title}</span>
-                            <span className="text-xs text-ink-500">{new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          {section === "Assignments" && (
-            <section className="border rounded-2xl p-6">
-              <h2 className="font-bold text-lg">Assignments</h2>
-              {assignments.isLoading ? (
-                <Skeleton className="h-20 w-full mt-3" />
-              ) : (assignments.data?.length ?? 0) === 0 ? (
-                <p className="mt-4 text-sm text-ink-500">No assignments yet.</p>
-              ) : (
-                <ul className="mt-4 space-y-4">
-                  {assignments.data?.map((a) => {
-                    const done = submittedIds.has(a.id);
-                    return (
-                      <li key={a.id} className="border rounded-xl p-4">
-                        <div className="flex justify-between items-start gap-3">
-                          <div>
-                            <div className="font-semibold text-sm">{a.title}</div>
-                            {a.instructions && <p className="text-xs text-ink-500 mt-1">{a.instructions}</p>}
-                            <p className="text-[10px] text-ink-400 mt-1">
-                              {a.due_at ? `Due ${new Date(a.due_at).toLocaleDateString()}` : "No due date"}
-                              {a.max_score ? ` · max ${a.max_score} pts` : ""}
-                            </p>
-                          </div>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${done ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                            {done ? "Submitted" : "Pending"}
-                          </span>
-                        </div>
-                        {!done && (
-                          <div className="mt-3 flex gap-2">
-                            <textarea
-                              rows={2}
-                              value={drafts[a.id] ?? ""}
-                              onChange={(e) => setDrafts((d) => ({ ...d, [a.id]: e.target.value }))}
-                              placeholder="Write your answer…"
-                              className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
-                            />
-                            <Button size="sm" disabled={submit.isPending || !(drafts[a.id] ?? "").trim()}
-                              onClick={() => submit.mutate({ assignmentId: a.id, content: drafts[a.id] ?? "" })}>
-                              Submit
-                            </Button>
-                          </div>
-                        )}
-                        {done && submissions.data?.find((s) => s.assignment_id === a.id)?.feedback && (
-                          <p className="mt-2 text-xs text-green-700">Feedback: {submissions.data.find((s) => s.assignment_id === a.id)?.feedback}</p>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
-          )}
-
-          {section === "Quizzes" && (
-            <section className="border rounded-2xl p-6">
-              <StudentQuizzes />
-            </section>
-          )}
-
-          {section === "Progress" && (
-            <section className="border rounded-2xl p-6">
-              <h2 className="font-bold text-lg">Progress</h2>
-              {attendance.data ? (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm"><span className="text-ink-600">Attendance</span><span className="font-bold">{attendance.data.rate.toFixed(1)}%</span></div>
-                    <div className="mt-1 h-2 rounded-full bg-ink-100"><div className="h-2 rounded-full bg-brand-blue" style={{ width: `${attendance.data.rate}%` }} /></div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-sm">
-                    <div className="rounded-xl bg-green-50 p-3"><div className="text-xl font-extrabold text-green-700">{attendance.data.present}</div><div className="text-[10px] text-ink-500">Present</div></div>
-                    <div className="rounded-xl bg-red-50 p-3"><div className="text-xl font-extrabold text-red-700">{attendance.data.absent}</div><div className="text-[10px] text-ink-500">Absent</div></div>
-                    <div className="rounded-xl bg-amber-50 p-3"><div className="text-xl font-extrabold text-amber-700">{attendance.data.late}</div><div className="text-[10px] text-ink-500">Late</div></div>
-                    <div className="rounded-xl bg-ink-50 p-3"><div className="text-xl font-extrabold text-ink-600">{attendance.data.untracked}</div><div className="text-[10px] text-ink-500">Untracked</div></div>
-                  </div>
-                  <p className="text-xs text-ink-400">Attendance and assignment progress update after each lesson. Term reports arrive with the gradebook phase.</p>
-                </div>
-              ) : (
-                <Skeleton className="h-24 w-full mt-3" />
-              )}
-            </section>
-          )}
-        </div>
+      <div className="mt-8">
+        <RecommendationsForYou />
       </div>
     </main>
   );
-}
-
-function groupByDate(lessons: Lesson[]): [string, Lesson[]][] {
-  const map = new Map<string, Lesson[]>();
-  [...lessons]
-    .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
-    .forEach((l) => {
-      const key = new Date(l.start_at).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-      map.set(key, [...(map.get(key) ?? []), l]);
-    });
-  return [...map.entries()];
 }

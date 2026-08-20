@@ -9,12 +9,10 @@ import { cn } from "@/lib/utils";
 import { isAdmin } from "@/hooks/useDashboardRoute";
 import {
   getMyLessons,
-  getCohortLessons,
   getCohort,
   listMyAssignments,
   listMySubmissions,
   getAttendanceSummary,
-
 } from "@/features/lms/api";
 import { listAssessments, listProgressReports } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
@@ -105,33 +103,17 @@ export default function LmsHomePage() {
     .length;
 
   return (
-    <main className="pb-16">
-      {/* Header */}
-      <header className="border-b border-ink-100 bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
-            <Link href="/" className="hover:text-brand-gold-dark">NUVORA</Link> / My learning
-          </p>
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">My Learning</h1>
-              <p className="mt-1 text-sm text-ink-500">
-                {user ? `Signed in as ${user.email}` : "Student portal"} — courses, assignments, quizzes and progress.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Link href="/cohorts" className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-300">
-                Browse cohorts
-              </Link>
-              <Link href="/lms/tutor" className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover">
-                Tutor view
-              </Link>
-            </div>
-          </div>
+    <main className="px-4 py-6 md:px-8 md:py-8">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-ink-900">My courses</h2>
+          <p className="text-sm text-ink-500">Track live classes, assignments and course access from one place.</p>
         </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-6">
+        <Link href="/cohorts" className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-brand-gold">
+          Browse cohorts
+        </Link>
+      </div>
+      <div>
         <RoleGate page="/lms" />
         {/* Stats */}
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -148,36 +130,59 @@ export default function LmsHomePage() {
           ) : courses.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
               <GraduationCap size={28} className="text-brand-navy" />
-              <p className="mt-2 font-semibold text-ink-700">You're not enrolled in any course yet.</p>
+              <p className="mt-2 font-semibold text-ink-700">You&apos;re not enrolled in any course yet.</p>
               <p className="mt-1 text-sm text-ink-500">Explore programmes and join a cohort to get started.</p>
               <Link href="/programmes" className="mt-4 inline-flex rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover">
                 Browse programmes
               </Link>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
               {courses.map((c) => {
                 const meta = cohortMeta[c.cohortId] ?? { title: "My course", href: `/lms/courses/${c.cohortId}` };
                 const next = c.lessons[0];
+                const done = c.lessons.filter((l) => l.status === "COMPLETED").length;
+                const pct = c.lessons.length ? Math.round((done / c.lessons.length) * 100) : 0;
                 return (
-                  <Link
-                    key={c.cohortId}
-                    href={meta.href}
-                    className="group rounded-2xl border border-ink-100 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-bold text-brand-navy group-hover:text-brand-gold-dark">{meta.title}</h3>
-                      <span className="rounded-full bg-brand-gold-light px-2.5 py-1 text-xs font-bold text-brand-navy">
-                        {c.lessons.length} lessons
-                      </span>
+                  <article key={c.cohortId} className="overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-soft">
+                    <div className="flex items-center justify-between bg-brand-gold px-5 py-4 text-ink-900">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-900/70">Cohort</p>
+                        <h3 className="font-display text-xl tracking-wide">{meta.title}</h3>
+                      </div>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-bold">Active</span>
                     </div>
-                    {next && (
-                      <p className="mt-2 text-sm text-ink-500">
-                        Next: <span className="font-semibold text-ink-700">{next.title}</span>
-                      </p>
-                    )}
-                    <p className="mt-1 text-xs text-ink-500">Open course →</p>
-                  </Link>
+                    <div className="grid gap-4 p-5 md:grid-cols-[1fr_220px]">
+                      <div>
+                        {next && (
+                          <p className="text-sm text-ink-600">
+                            {next.title}
+                          </p>
+                        )}
+                        <p className="mt-3 text-xs font-bold uppercase tracking-wide text-ink-400">Progress</p>
+                        <div className="mt-1 flex items-center gap-3">
+                          <div className="h-2 flex-1 rounded-full bg-ink-100">
+                            <div className="h-2 rounded-full bg-deep" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-sm font-bold text-ink-800">{pct}%</span>
+                        </div>
+                        <p className="mt-1 text-xs text-ink-500">{done} of {c.lessons.length} lessons completed</p>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="rounded-2xl bg-ink-50 px-4 py-3 text-xs text-ink-500">
+                          Last visited
+                          <p className="font-bold text-ink-800">Open LMS to continue</p>
+                        </div>
+                        <div className="rounded-2xl bg-brand-gold-light px-4 py-3 text-xs text-deep">
+                          Next live class
+                          <p className="font-bold">{next ? new Date(next.start_at).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "Check schedule"}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <Link href={meta.href} className="flex h-12 items-center justify-center gap-2 bg-deep text-sm font-bold text-white hover:bg-deep-light">
+                      Continue learning
+                    </Link>
+                  </article>
                 );
               })}
             </div>

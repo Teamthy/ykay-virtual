@@ -19,7 +19,6 @@ import {
   BarChart3,
   ClipboardCheck,
   UserPlus,
-  Award,
   Play,
 } from "lucide-react";
 
@@ -34,56 +33,80 @@ export type AppNavItem = {
 
 export type AppShellVariant = "parent" | "student" | "tutor" | "admin";
 
-export const APP_NAV: Record<AppShellVariant, { title: string; home: string; items: AppNavItem[] }> = {
+export type AppNavSpec = {
+  title: string;
+  home: string;
+  subtitle: string;
+  chip: string;
+  main: AppNavItem[];
+  more: AppNavItem[];
+};
+
+export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
   parent: {
-    title: "Parent portal",
+    title: "Parent",
     home: "/dashboard",
-    items: [
-      { href: "/dashboard", label: "Family dashboard", icon: LayoutDashboard, exact: true },
-      { href: "/lms", label: "Learning", icon: GraduationCap },
-      { href: "/account/certificates", label: "Certificates", icon: Award },
-      { href: "/lms/recorded", label: "Recorded lessons", icon: Play },
-      { href: "/account/admissions", label: "Admissions", icon: GraduationCap },
-      { href: "/messages", label: "Messages", icon: MessageSquare },
+    subtitle: "Bookings, payments and your family's progress",
+    chip: "Family",
+    main: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { href: "/lms", label: "My courses", icon: BookOpen },
+      { href: "/lms/recorded", label: "LMS", icon: Play },
+      { href: "/messages", label: "Community", icon: MessageSquare },
+    ],
+    more: [
       { href: "/notifications", label: "Notifications", icon: Bell },
-      { href: "/account", label: "Account", icon: Settings },
+      { href: "/account", label: "Settings", icon: Settings },
+      { href: "/help", label: "Help Center", icon: LifeBuoy },
     ],
   },
   student: {
-    title: "Student portal",
+    title: "Student",
     home: "/student-dashboard",
-    items: [
-      { href: "/student-dashboard", label: "My dashboard", icon: LayoutDashboard, exact: true },
-      { href: "/lms", label: "My learning", icon: BookOpen },
-      { href: "/account/certificates", label: "Certificates", icon: Award },
-      { href: "/lms/recorded", label: "Recorded lessons", icon: Play },
-      { href: "/account/admissions", label: "Admissions", icon: GraduationCap },
-      { href: "/messages", label: "Messages", icon: MessageSquare },
+    subtitle: "Your lessons, assignments and progress",
+    chip: "Learner",
+    main: [
+      { href: "/student-dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { href: "/lms", label: "My courses", icon: BookOpen },
+      { href: "/lms/recorded", label: "LMS", icon: Play },
+      { href: "/messages", label: "Community", icon: MessageSquare },
+    ],
+    more: [
       { href: "/notifications", label: "Notifications", icon: Bell },
-      { href: "/account", label: "Account", icon: Settings },
+      { href: "/account", label: "Settings", icon: Settings },
+      { href: "/help", label: "Help Center", icon: LifeBuoy },
     ],
   },
   tutor: {
-    title: "Tutor workspace",
+    title: "Tutor",
     home: "/tutor-dashboard",
-    items: [
+    subtitle: "Teaching, roster and earnings",
+    chip: "Tutor",
+    main: [
       { href: "/tutor-dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/lms/tutor", label: "Teaching", icon: ClipboardCheck },
-      { href: "/messages", label: "Messages", icon: MessageSquare },
+      { href: "/messages", label: "Community", icon: MessageSquare },
+    ],
+    more: [
       { href: "/notifications", label: "Notifications", icon: Bell },
-      { href: "/account", label: "Account", icon: Settings },
+      { href: "/account", label: "Settings", icon: Settings },
+      { href: "/help", label: "Help Center", icon: LifeBuoy },
     ],
   },
   admin: {
-    title: "Admin console",
+    title: "Admin",
     home: "/admin",
-    items: [
-      { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+    subtitle: "Platform operations",
+    chip: "Console",
+    main: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/admin/super", label: "Super admin", icon: ShieldCheck, superAdminOnly: true },
       { href: "/admin/users", label: "Users", icon: Users },
       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
       { href: "/admin/admissions", label: "Admissions", icon: GraduationCap },
+    ],
+    more: [
       { href: "/admin/private-tuition", label: "Private tuition", icon: UserPlus },
       { href: "/admin/lessons", label: "Today's classes", icon: Users },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
@@ -93,6 +116,7 @@ export const APP_NAV: Record<AppShellVariant, { title: string; home: string; ite
       { href: "/admin/referrals", label: "Referrals", icon: Gift },
       { href: "/admin/reviews", label: "Reviews", icon: Star },
       { href: "/admin/payments", label: "Payments", icon: Wallet },
+      { href: "/account", label: "Settings", icon: Settings },
     ],
   },
 };
@@ -103,3 +127,4 @@ export function variantForRoles(roles: string[]): AppShellVariant {
   if (roles.includes("STUDENT")) return "student";
   return "parent";
 }
+
