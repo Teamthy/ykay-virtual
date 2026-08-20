@@ -143,6 +143,9 @@ assert_code "health" 200 "$(curl -s -o /dev/null -w '%{http_code}' "http://local
 
 c=$(req "$J_PARENT" POST /auth/register '{"email":"e2e-parent@test.com","password":"password123","roles":["PARENT"]}')
 assert_code "register parent" 201 "$c"
+c=$(req /dev/null POST /auth/login '{"email":"e2e-parent@test.com","password":"password123"}')
+assert_code "login parent before verify -> 403" 403 "$c"
+grep -q "verify your email" /tmp/e2e-body.json && ok "unverified login names the email gate" || fail "unverified login message: $(head -c 200 /tmp/e2e-body.json)"
 confirm_email "e2e-parent@test.com"
 
 c=$(req "$J_TUTOR" POST /auth/register '{"email":"e2e-tutor@test.com","password":"password123","roles":["TUTOR"]}')

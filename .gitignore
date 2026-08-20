@@ -39,6 +39,7 @@ mobile/ios/build/
 # Local audit patches — do not commit
 audit-round*.patch
 seed-quickstart.sql
+seed-local-users.once.txt
 
 about.jpg
 

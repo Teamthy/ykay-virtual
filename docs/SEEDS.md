@@ -1,5 +1,31 @@
 # NUVORA — Local fixture data (development only)
 
+## Local operator seed (Postgres)
+
+Creates **new** local users with **random passwords** (printed once, not in git).
+Does not use `admin@nuvora.com` / published hashes.
+
+```bash
+docker compose up -d postgres redis
+go run ./cmd/migrate --cmd=up
+go run ./cmd/seedusers
+```
+
+Accounts:
+
+| Email | Role |
+|---|---|
+| `local.super@nuvora.test` | SUPER_ADMIN (MFA on login) |
+| `local.academic@nuvora.test` | ACADEMIC_ADMIN (MFA on login) |
+| `local.parent@nuvora.test` | PARENT |
+| `local.tutor@nuvora.test` | TUTOR |
+| `local.student@nuvora.test` | STUDENT |
+
+Passwords are written to `seed-local-users.once.txt` (gitignored). Delete that file after you copy them.
+
+Self-registered users stay `PENDING_VERIFICATION` until they confirm the email link (e2e covers this).
+
+
 > **Never use these accounts in a shared environment.** Fixture data is now
 > disabled by default, including when the API uses its in-memory development
 > fallback. It exists only as a temporary local visual-development aid while

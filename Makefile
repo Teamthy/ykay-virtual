@@ -45,6 +45,9 @@ lint: ## Go vet + gofmt check
 fmt: ## Format Go code
 	gofmt -w internal cmd pkg
 
+seed-users: ## Create local operator accounts with random passwords (prints once)
+	$(GO) run ./cmd/seedusers
+
 smoke: ## Boot API with memory fallback and hit health + catalogue
 	@echo "Run: go run ./cmd/api  (then curl localhost:8080/health)"
 

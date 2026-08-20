@@ -41,6 +41,8 @@ async function readLoginCode(email: string): Promise<string> {
 async function readyAccount(ctx: APIRequestContext, email: string, roles: string[] = ["PARENT"]) {
   const reg = await ctx.post(`${API}/auth/register`, { data: { email, password: "password123", roles } });
   expect(reg.status(), `register ${email}: ${await reg.text()}`).toBe(201);
+  const blocked = await ctx.post(`${API}/auth/login`, { data: { email, password: "password123" } });
+  expect(blocked.status(), "password login before verify").toBe(403);
   const vr = await ctx.post(`${API}/auth/verify-email/request`, { data: { email } });
   expect(vr.status(), "verify request").toBe(200);
   const fs = await import("fs");
