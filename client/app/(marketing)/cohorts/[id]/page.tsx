@@ -8,6 +8,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { CalendarDays, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { LeadCapture } from "@/features/leads/LeadCapture";
 
 export const revalidate = 300;
 
@@ -149,6 +150,18 @@ export default async function CohortDetailPage(props: Props) {
           </div>
         </div>
       </div>
-    </main>
+          {/* Conversion follow-up: questions before enrolling → ops calls back */}
+      <div className="container-x pb-20">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-gold bg-brand-gold-light p-6">
+          <div>
+            <p className="font-display text-xl font-bold text-brand-navy">Not sure yet? Talk to us first.</p>
+            <p className="mt-1 max-w-md text-sm text-ink-600">
+              Leave your number and a NUVORA advisor will call you back to answer questions about this cohort — no pressure, no spam.
+            </p>
+          </div>
+          <LeadCapture source={`/cohorts/${cohort.id}`} />
+        </div>
+      </div>
+</main>
   );
 }

@@ -134,6 +134,7 @@ type MemoryStore struct {
 	Students       *StudentProfileMemory
 	StudentLinks   *ParentStudentLinkMemory
 	AuditLogs      *AuditLogMemory
+	Leads          *LeadMemory
 }
 
 func NewMemoryStore() *MemoryStore {
@@ -176,6 +177,7 @@ func NewMemoryStore() *MemoryStore {
 		Students:     students,
 		StudentLinks: NewParentStudentLinkMemory(students),
 		AuditLogs:    NewAuditLogMemory(),
+		Leads:        NewLeadMemory(),
 	}
 	store.StudentLinks = NewParentStudentLinkMemory(students)
 	store.Analytics = NewAnalyticsMemory(store) // reads live from the same store

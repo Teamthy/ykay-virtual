@@ -20,6 +20,7 @@ import {
   ClipboardCheck,
   UserPlus,
   Play,
+  PhoneCall,
 } from "lucide-react";
 
 export type AppNavItem = {
@@ -111,6 +112,7 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
       { href: "/admin/private-tuition", label: "Private tuition", icon: UserPlus },
       { href: "/admin/lessons", label: "Today's classes", icon: Users },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/admin/leads", label: "Leads", icon: PhoneCall },
       { href: "/admin/support", label: "Support", icon: LifeBuoy },
       { href: "/admin/blog", label: "Blog CMS", icon: Newspaper },
       { href: "/admin/institutions", label: "Institutions", icon: Building2 },

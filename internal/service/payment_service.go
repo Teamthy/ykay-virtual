@@ -47,6 +47,7 @@ type PaymentService struct {
 	mail           notification.EmailSender
 	siteURL        string
 	notifier       *NotifierService
+	leads          *LeadService
 }
 
 // SetRefundsEnabled controls whether refunds are allowed. Production must keep
@@ -93,6 +94,13 @@ func (s *PaymentService) WithWhatsApp(n *NotifierService) *PaymentService {
 	return s
 }
 
+// WithLeads wires the conversion funnel: when an order is settled, any open
+// enrollment-started lead for the payer flips to CONVERTED (best-effort).
+func (s *PaymentService) WithLeads(l *LeadService) *PaymentService {
+	s.leads = l
+	return s
+}
+
 func (s *PaymentService) emailReceipt(ctx context.Context, order *payment.Order) {
 	if s.mail == nil || s.users == nil || order == nil {
 		return
@@ -118,6 +126,20 @@ func (s *PaymentService) emailReceipt(ctx context.Context, order *payment.Order)
 	if err := s.mail.Send(ctx, user.Email, "Your NUVORA receipt — "+order.OrderNumber, body); err != nil {
 		slog.Error("receipt email failed", "order_id", order.ID, "error", err)
 	}
+}
+
+// markLeadConverted — closes the funnel: a settled payment flips any open
+// enrollment-started lead for the payer to CONVERTED. Best-effort — the
+// payment path must never fail because of funnel bookkeeping.
+func (s *PaymentService) markLeadConverted(ctx context.Context, userID, cohortID uuid.UUID) {
+	if s.leads == nil {
+		return
+	}
+	go func() {
+		lctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		s.leads.MarkConvertedForCohort(lctx, userID, cohortID)
+	}()
 }
 
 // whatsappConfirmation — best-effort WhatsApp messages after a payment is
@@ -405,7 +427,8 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 	}
 
 	// Confirm the cohort enrollment tied to this order.
-	if err := s.confirmEnrollment(ctx, uow, order.ID, now); err != nil {
+	cohortID, err := s.confirmEnrollment(ctx, uow, order.ID, now)
+	if err != nil {
 		return nil, err
 	}
 	// YK-004: a private-tuition package becomes ACTIVE only now, in the same
@@ -437,21 +460,24 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 	}
 	s.emailReceipt(ctx, order)
 	s.whatsappConfirmation(ctx, order)
+	if cohortID != uuid.Nil {
+		s.markLeadConverted(ctx, order.ParentUserID, cohortID)
+	}
 	return &WebhookResult{Processed: true, PaymentID: &paymentRow.ID}, nil
 }
 
 // confirmEnrollment flips the cohort enrollment linked to the order to
 // CONFIRMED once payment succeeds (private bookings have no enrollment row).
 func (s *PaymentService) confirmEnrollment(ctx context.Context, uow repository.UnitOfWork,
-	orderID uuid.UUID, now time.Time) error {
+	orderID uuid.UUID, now time.Time) (uuid.UUID, error) {
 
 	order, err := uow.Orders().GetByID(ctx, orderID)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	items, err := uow.Orders().ListItems(ctx, orderID)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	for _, it := range items {
 		if it.ItemType != "COHORT" {
@@ -462,22 +488,22 @@ func (s *PaymentService) confirmEnrollment(ctx context.Context, uow repository.U
 			if errors.Is(err, domain.ErrNotFound) {
 				continue
 			}
-			return err
+			return uuid.Nil, err
 		}
 		if enrollment.Status == booking.EnrollmentConfirmed {
-			return nil
+			return it.ReferenceID, nil
 		}
 		if err := uow.Enrollments().UpdateStatus(ctx, enrollment.ID, booking.EnrollmentConfirmed); err != nil {
-			return err
+			return uuid.Nil, err
 		}
 		// Enrolled students see their cohort immediately: link the learner to
 		// every upcoming lesson of the cohort (idempotent).
 		if _, err := uow.LessonLinks().LinkStudentToCohortLessons(ctx, it.ReferenceID, *order.StudentID, now); err != nil {
-			return err
+			return uuid.Nil, err
 		}
-		return nil
+		return it.ReferenceID, nil
 	}
-	return nil
+	return uuid.Nil, nil
 }
 
 // activatePrivatePackages — flips every PRIVATE_PACKAGE order item to ACTIVE
@@ -859,7 +885,8 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 			return nil, err
 		}
 	}
-	if err := s.confirmEnrollment(ctx, uow, order.ID, now); err != nil {
+	cohortID, err := s.confirmEnrollment(ctx, uow, order.ID, now)
+	if err != nil {
 		return nil, err
 	}
 	// YK-004: activate private packages in the same transaction as settlement.
@@ -878,6 +905,9 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 	}
 	s.emailReceipt(ctx, order)
 	s.whatsappConfirmation(ctx, order)
+	if cohortID != uuid.Nil {
+		s.markLeadConverted(ctx, order.ParentUserID, cohortID)
+	}
 	return p, nil
 }
 

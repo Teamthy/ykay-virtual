@@ -27,11 +27,19 @@ type BookingService struct {
 	tutorSubject booking.TutorProfileReader
 	audit        identity.AuditService
 	coupons      *CouponService
+	leads        *LeadService
 }
 
 // WithCoupons wires the coupon engine so checkout can apply promotional codes.
 func (s *BookingService) WithCoupons(coupons *CouponService) *BookingService {
 	s.coupons = coupons
+	return s
+}
+
+// WithLeads wires the conversion-follow-up funnel: a cohort booking that
+// stops before payment becomes a lead the ops team chases on WhatsApp.
+func (s *BookingService) WithLeads(l *LeadService) *BookingService {
+	s.leads = l
 	return s
 }
 
@@ -254,6 +262,18 @@ func (s *BookingService) CreateCohortBooking(ctx context.Context, in CreateCohor
 		return nil, err
 	}
 	items, _ := uow.Orders().ListItems(ctx, order.ID)
+
+	// Cart-abandon funnel: the order is PENDING — if the parent never pays,
+	// the ops team gets a WhatsApp lead to follow up. Fire-and-forget with
+	// its own context so it can't be killed by the HTTP request ending.
+	if s.leads != nil {
+		go func(userID, cohortID uuid.UUID, cohortTitle string) {
+			lctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel()
+			s.leads.CaptureEnrollmentStarted(lctx, userID, cohortID, cohortTitle, "cohort-enrollment")
+		}(in.ParentUserID, cohort.ID, cohort.Title)
+	}
+
 	return &BookingResult{Order: order, Items: items, EnrollmentID: &enrollment.ID}, nil
 }
 

@@ -28,6 +28,7 @@ import (
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
+	"ykay-virtual/internal/domain/leads"
 	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
@@ -105,6 +106,7 @@ type Repositories struct {
 	StudentLinks       identity.ParentStudentLinkRepository
 	Vetting            vetting.VettingRepository
 	Learning           learning.AssessmentRepository
+	Leads              leads.Repository
 	Grading            learning.GradingRepository
 	ProgressReports    learning.ProgressReportRepository
 	Analytics          learning.AnalyticsRepository
@@ -221,6 +223,10 @@ func main() {
 		}(),
 		notification.NewWhatsAppSender(),
 	)
+	// Conversion funnel: browsing-but-not-enrolling visitors become leads the
+	// ops team follows up on WhatsApp (public capture + enrollment-started +
+	// auto-CONVERTED on settlement).
+	leadsSvc := service.NewLeadService(repos.Leads, notifierSvc, repos.Users, audit)
 	// Learner completion certificates (virtual-school item).
 	certSvc := service.NewCertificateService(repos.UoWFactory).
 		WithStudentReader(func(ctx context.Context, id uuid.UUID) (string, error) {
@@ -256,7 +262,8 @@ func main() {
 
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
 	couponSvc := service.NewCouponService(repos.Coupons)
-	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit).WithCoupons(couponSvc)
+	bookingSvc := service.NewBookingService(repos.UoWFactory, repos.StudentLink, repos.TutorSubjectChk, audit).
+		WithCoupons(couponSvc).WithLeads(leadsSvc)
 	vettingSvc := service.NewVettingService(repos.UoWFactory, store, audit,
 		service.SubjectReaderAdapter{Repo: repos.SubjectRepo},
 		service.SearchInvalidatorAdapter{Fn: func(ctx context.Context) error { return tutorSvc.InvalidateSearchCache(ctx) }})
@@ -341,6 +348,7 @@ func main() {
 	paymentSvc.WithReferrals(referralSvc)
 	paymentSvc.WithReceipts(repos.Users, notification.NewEmailSender(), cfg.SiteURL)
 	paymentSvc.WithWhatsApp(notifierSvc)
+	paymentSvc.WithLeads(leadsSvc)
 	authSvc.WithReferrals(referralSvc)
 
 	// --- AI assistant (phase 33) ---
@@ -420,6 +428,7 @@ func main() {
 		Chat:           chatHandler,
 		Devices:        deviceHandler,
 		Account:        accountHandler,
+		Leads:          httpapi.NewLeadsHandler(leadsSvc),
 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
 		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
@@ -555,6 +564,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			SubjectRepo:        store.Subjects,
 			ProgrammeRepo:      store.Programmes,
 			CurriculaRepo:      store.Curricula,
+			Leads:              store.Leads,
 			TutorRepo:          store.Tutors,
 			AuditRepo:          store.AuditLogs,
 			Orders:             store.Orders,
@@ -617,6 +627,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		SubjectRepo:        postgres.NewSubjectRepo(pg.DB()),
 		ProgrammeRepo:      postgres.NewProgrammeRepo(pg.DB()),
 		CurriculaRepo:      postgres.NewCurriculumRepo(pg.DB()),
+		Leads:              postgres.NewLeadsRepo(pg.DB()),
 		CohortRepo:         postgres.NewCohortRepo(pg.DB()),
 		StudentLink:        postgres.NewStudentLinkRepo(pg.DB()),
 		TutorSubjectChk:    postgres.NewTutorSubjectCheckRepo(pg.DB()),

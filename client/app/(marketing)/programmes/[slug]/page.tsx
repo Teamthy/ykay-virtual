@@ -6,6 +6,7 @@ import { InnerHero } from "@/components/layout/InnerHero";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import Link from "next/link";
 import { ProgrammeDetailTabs } from "@/features/programmes/components/ProgrammeDetailTabs";
+import { LeadCapture } from "@/features/leads/LeadCapture";
 
 export const revalidate = 300;
 
@@ -123,6 +124,18 @@ export default async function ProgrammeDetailPage(props: Props) {
       <div className="mt-10">
         <ProgrammeDetailTabs programme={p} />
       </div>
-    </main>
+          {/* Conversion follow-up: browsing but not enrolling → ops calls back */}
+      <div className="container-x pb-20">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-gold bg-brand-gold-light p-6">
+          <div>
+            <p className="font-display text-xl font-bold text-brand-navy">Questions about this programme?</p>
+            <p className="mt-1 max-w-md text-sm text-ink-600">
+              Leave your details and our team will call you back to help you choose the right cohort or tutor.
+            </p>
+          </div>
+          <LeadCapture source={`/programmes/${p.slug}`} />
+        </div>
+      </div>
+</main>
   );
 }

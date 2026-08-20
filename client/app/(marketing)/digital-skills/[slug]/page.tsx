@@ -8,6 +8,7 @@ import {
 import { buildMetadata, courseJsonLd, faqJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DIGITAL_COURSES, getDigitalCourse, type DigitalCourse } from "@/features/digital-skills/courses";
+import { LeadCapture } from "@/features/leads/LeadCapture";
 
 export const revalidate = 3600;
 
@@ -222,6 +223,18 @@ export default async function DigitalCoursePage(props: Props) {
           </Link>
         </aside>
       </div>
-    </main>
+          {/* Conversion follow-up */}
+      <div className="container-x pb-20">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-gold bg-brand-gold-light p-6">
+          <div>
+            <p className="font-display text-xl font-bold text-brand-navy">Not sure this track is for you?</p>
+            <p className="mt-1 max-w-md text-sm text-ink-600">
+              Tell us your goals and we&apos;ll call you back with an honest recommendation — the right course, or none at all.
+            </p>
+          </div>
+          <LeadCapture source={`/digital-skills/${course.slug}`} />
+        </div>
+      </div>
+</main>
   );
 }

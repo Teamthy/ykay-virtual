@@ -124,6 +124,57 @@ paths:
       responses:
         '200': { description: Contact channels }
 
+  /leads:
+    post:
+      tags: [leads]
+      summary: Capture a lead (callback request / browse interest) — ops is pinged on WhatsApp
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, phone]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
+                source: { type: string, description: "page path or funnel name" }
+                intent: { type: string, enum: [CALLBACK_REQUEST, GENERAL_INTEREST] }
+                message: { type: string }
+                cohort_id: { type: string, format: uuid }
+                programme_id: { type: string, format: uuid }
+      responses:
+        '201': { description: Lead captured (or deduped) }
+
+  /admin/leads:
+    get:
+      tags: [admin]
+      summary: List leads (optional ?status=NEW|CONTACTED|CONVERTED|CLOSED)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Leads + per-status counts }
+
+  /admin/leads/{leadId}/status:
+    post:
+      tags: [admin]
+      summary: Advance a lead's follow-up status
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: leadId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [NEW, CONTACTED, CONVERTED, CLOSED] }
+      responses:
+        '200': { description: Updated lead }
+
   /curricula:
     get:
       tags: [academics]

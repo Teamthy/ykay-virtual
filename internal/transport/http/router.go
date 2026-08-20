@@ -144,6 +144,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/admin/chat/csat.csv", handlers.Chat.CSATExport)
 	mux.HandleFunc("GET "+v1+"/admin/chat/analytics/trends", handlers.Chat.ChatTrends)
 
+	// Leads (public capture + admin follow-up console)
+	mux.HandleFunc("POST "+v1+"/leads", authRate(handlers.Leads.Capture))
+	mux.HandleFunc("GET "+v1+"/admin/leads", handlers.Leads.List)
+	mux.HandleFunc("POST "+v1+"/admin/leads/{leadId}/status", handlers.Leads.UpdateStatus)
+
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/site/contact", handlers.Notifier.GetContactInfo)
 	mux.HandleFunc("GET "+v1+"/curricula", handlers.Curricula.List)
@@ -407,6 +412,7 @@ type Handlers struct {
 	Chat            *ChatHandler
 	Devices         *DeviceHandler
 	Account         *AccountHandler
+	Leads           *LeadsHandler
 	Onboarding      *OnboardingHandler
 	Portal          *PortalHandler
 	Learning        *LearningHandler
