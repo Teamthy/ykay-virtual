@@ -110,6 +110,17 @@ func DefaultCookieConfig(secure bool) CookieConfig {
 	return CookieConfig{Name: "nuvora_session", Secure: secure, MaxAge: int((30 * 24 * time.Hour).Seconds()), Path: "/"}
 }
 
+// CookieForRemember — persistent 30-day cookie when rememberMe is nil/true
+// (mobile + existing clients). When rememberMe is explicitly false the
+// cookie is a browser-session cookie (MaxAge 0): closing the browser signs
+// the user out. The httpOnly session token is unchanged either way.
+func CookieForRemember(cfg CookieConfig, rememberMe *bool) CookieConfig {
+	if rememberMe != nil && !*rememberMe {
+		cfg.MaxAge = 0
+	}
+	return cfg
+}
+
 // requestIsHTTPS reports whether THIS request arrived over HTTPS, either
 // because TLS terminated at the server or because a trusted proxy stamped
 // X-Forwarded-Proto: https (Render/Vercel/nginx do). This is what decides the

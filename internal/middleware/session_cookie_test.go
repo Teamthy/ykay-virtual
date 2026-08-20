@@ -35,3 +35,28 @@ func TestSetSessionCookie_SecureFollowsRequest(t *testing.T) {
 	SetSessionCookie(rr2, &http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"https"}}}, cfg, "tok")
 	assert.True(t, rr2.Result().Cookies()[0].Secure, "https request MUST set Secure")
 }
+
+func TestCookieForRemember(t *testing.T) {
+	base := DefaultCookieConfig(false)
+	assert.Greater(t, base.MaxAge, 0)
+
+	t.Run("omitted keeps persistent cookie", func(t *testing.T) {
+		got := CookieForRemember(base, nil)
+		assert.Equal(t, base.MaxAge, got.MaxAge)
+	})
+	t.Run("true keeps persistent cookie", func(t *testing.T) {
+		yes := true
+		got := CookieForRemember(base, &yes)
+		assert.Equal(t, base.MaxAge, got.MaxAge)
+	})
+	t.Run("false is a session cookie", func(t *testing.T) {
+		no := false
+		got := CookieForRemember(base, &no)
+		assert.Equal(t, 0, got.MaxAge)
+		rr := httptest.NewRecorder()
+		SetSessionCookie(rr, &http.Request{}, got, "tok")
+		c := rr.Result().Cookies()[0]
+		assert.Equal(t, 0, c.MaxAge)
+		assert.True(t, c.Expires.IsZero(), "session cookie must not set Expires")
+	})
+}

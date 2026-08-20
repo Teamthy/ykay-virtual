@@ -47,19 +47,19 @@ export type LoginResult =
  * Platform admins get `{ mfa_required: true, email, user }` — they must then
  * confirm the emailed code via `confirmMFA` before a session is issued.
  */
-export async function login(email: string, password: string): Promise<LoginResult> {
+export async function login(email: string, password: string, rememberMe = true): Promise<LoginResult> {
   const res = await apiFetch<LoginResult>("/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, remember_me: rememberMe }),
   });
   return res.data;
 }
 
 /** Confirm the emailed MFA code for an admin login (issues the session). */
-export async function confirmMFA(email: string, code: string): Promise<CurrentUser> {
+export async function confirmMFA(email: string, code: string, rememberMe = true): Promise<CurrentUser> {
   const res = await apiFetch<CurrentUser>("/auth/mfa/confirm", {
     method: "POST",
-    body: JSON.stringify({ email, code }),
+    body: JSON.stringify({ email, code, remember_me: rememberMe }),
   });
   return res.data;
 }

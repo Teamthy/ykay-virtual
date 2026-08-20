@@ -107,6 +107,14 @@ describe("no fixture UUIDs remain in client source", () => {
     expect(calls[0].url).not.toContain("student_profile_id");
   });
 
+  it("login sends remember_me", async () => {
+    const { login } = await import("@/features/auth/api");
+    await login("a@b.com", "password123", false);
+    const body = JSON.parse(String(calls[0].init?.body));
+    expect(body.remember_me).toBe(false);
+    expect(body.email).toBe("a@b.com");
+  });
+
   it("changePassword sends current_password", async () => {
     const { changePassword } = await import("@/features/auth/api");
     await changePassword("old-pass-1", "new-pass-2");

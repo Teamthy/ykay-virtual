@@ -15,6 +15,8 @@ import { login, confirmMFA, type CurrentUser } from "@/features/auth/api";
 import { useSession } from "@/hooks/useSession";
 import { safeNextPath, withNext } from "@/lib/safe-next";
 
+const REMEMBER_EMAIL_KEY = "nuvora-remember-email";
+
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Enter your password"),
@@ -25,6 +27,15 @@ function destinationFor(user: CurrentUser, next: string | null): string {
   if (user.status === "PENDING_VERIFICATION") return withNext("/verify-email?sent=1", next);
   if (!user.onboarded) return withNext("/onboarding/wizard", next);
   return safeNextPath(next) ?? homeForRoles(user.roles);
+}
+
+function persistRememberedEmail(remember: boolean, email: string) {
+  try {
+    if (remember && email) localStorage.setItem(REMEMBER_EMAIL_KEY, email);
+    else localStorage.removeItem(REMEMBER_EMAIL_KEY);
+  } catch {
+    /* private mode */
+  }
 }
 
 function friendlyError(raw: string): string {
@@ -44,6 +55,7 @@ function LoginInner() {
   const { user, isLoading } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   // Admin MFA: after a correct password, we hold the email and ask for the
   // code before a session is issued.
   const [mfaEmail, setMfaEmail] = useState<string | null>(null);
@@ -69,7 +81,8 @@ function LoginInner() {
       setError(null);
       try {
         const email = value.email.trim();
-        const result = await login(email, value.password);
+        persistRememberedEmail(rememberMe, email);
+        const result = await login(email, value.password, rememberMe);
         if (result.mfa_required) {
           // Admin MFA: hold the email, show the code screen. No session yet.
           setMfaEmail(result.email ?? email);
@@ -86,13 +99,28 @@ function LoginInner() {
     },
   });
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(REMEMBER_EMAIL_KEY);
+      if (saved) {
+        form.setFieldValue("email", saved);
+        setRememberMe(true);
+      }
+    } catch {
+      /* ignore */
+    }
+    // form instance is stable for the page lifetime
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const confirmMfaSubmit = async () => {
     if (!mfaEmail) return;
     setMfaSubmitting(true);
     setMfaError(null);
     try {
-      const user = await confirmMFA(mfaEmail, mfaCode);
+      persistRememberedEmail(rememberMe, mfaEmail);
+      const user = await confirmMFA(mfaEmail, mfaCode, rememberMe);
       qc.setQueryData(["session"], user);
       toast.success(`Welcome back, ${user.email.split("@")[0]}!`);
       router.push(destinationFor(user, next));
@@ -211,6 +239,16 @@ function LoginInner() {
               />
             )}
           </form.Field>
+
+          <label className="flex items-center gap-2 text-sm text-ink-700">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="size-4 accent-[#0A1F44]"
+            />
+            Remember me
+          </label>
 
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">

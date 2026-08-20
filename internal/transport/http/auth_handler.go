@@ -106,8 +106,9 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email      string `json:"email"`
+		Password   string `json:"password"`
+		RememberMe *bool  `json:"remember_me"`
 	}
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -129,7 +130,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}, nil)
 		return
 	}
-	middleware.SetSessionCookie(w, r, h.cfg, res.Token)
+	middleware.SetSessionCookie(w, r, middleware.CookieForRemember(h.cfg, req.RememberMe), res.Token)
 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(res.User, res.Roles), nil)
 }
 
@@ -137,8 +138,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // emailed second factor, then issues the session cookie.
 func (h *AuthHandler) ConfirmMFA(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Email string `json:"email"`
-		Code  string `json:"code"`
+		Email      string `json:"email"`
+		Code       string `json:"code"`
+		RememberMe *bool  `json:"remember_me"`
 	}
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -150,7 +152,7 @@ func (h *AuthHandler) ConfirmMFA(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	middleware.SetSessionCookie(w, r, h.cfg, res.Token)
+	middleware.SetSessionCookie(w, r, middleware.CookieForRemember(h.cfg, req.RememberMe), res.Token)
 	pkg.WriteSuccess(w, http.StatusOK, toUserResponse(res.User, res.Roles), nil)
 }
 
