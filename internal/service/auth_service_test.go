@@ -30,6 +30,17 @@ func newAuthEnv(t *testing.T) *authEnv {
 	return &authEnv{store: store, svc: svc}
 }
 
+func activateUser(t *testing.T, env *authEnv, email string) {
+	t.Helper()
+	ctx := context.Background()
+	user, err := env.store.Users.FindByEmail(ctx, email)
+	require.NoError(t, err)
+	now := env.svc.now().UTC()
+	user.Status = identity.UserStatusActive
+	user.EmailVerifiedAt = &now
+	require.NoError(t, env.store.Users.Update(ctx, user))
+}
+
 func TestRegister_Success_HashesPasswordAndAssignsRoles(t *testing.T) {
 	env := newAuthEnv(t)
 	ctx := context.Background()
@@ -81,6 +92,7 @@ func TestLogin_Success_ReturnsTokenAndRoles(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "tutor@example.com", Password: "password123", Roles: []string{"TUTOR"}})
 	require.NoError(t, err)
+	activateUser(t, env, "tutor@example.com")
 
 	res, err := env.svc.Login(ctx, "tutor@example.com", "password123", "127.0.0.1", "test-agent")
 	token := res.Token
@@ -109,6 +121,7 @@ func TestLogin_WrongPassword_Unauthorized(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "a@b.com")
 
 	_, err = env.svc.Login(ctx, "a@b.com", "wrong-password", "", "")
 	assert.ErrorIs(t, err, domain.ErrUnauthorized)
@@ -126,6 +139,7 @@ func TestMe_ValidSession(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "parent@example.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "parent@example.com")
 	res, err := env.svc.Login(ctx, "parent@example.com", "password123", "", "")
 	token := res.Token
 	require.NoError(t, err)
@@ -141,6 +155,7 @@ func TestMe_RevokedOrExpired_Unauthorized(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "a@b.com")
 	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
 	token := res.Token
 	require.NoError(t, err)
@@ -164,6 +179,7 @@ func TestLogout_Idempotent(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "a@b.com")
 	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
 	token := res.Token
 	require.NoError(t, err)
@@ -178,6 +194,7 @@ func TestRotateAllSessions_PrivilegeChange(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "a@b.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "a@b.com")
 	res, err := env.svc.Login(ctx, "a@b.com", "password123", "", "")
 	token := res.Token
 	user := res.User
@@ -252,6 +269,7 @@ func TestChangePassword_RotatesAllSessions(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "rot@example.com", Password: "password123", Roles: []string{"STUDENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "rot@example.com")
 
 	// Two existing sessions (e.g. two devices).
 	resA, err := env.svc.Login(ctx, "rot@example.com", "password123", "1.1.1.1", "devA")
@@ -264,7 +282,7 @@ func TestChangePassword_RotatesAllSessions(t *testing.T) {
 	// Change the password → all old sessions revoked, one fresh token issued.
 	u, err := env.store.Users.FindByEmail(ctx, "rot@example.com")
 	require.NoError(t, err)
-	newTok, err := env.svc.ChangePassword(ctx, u.ID, "brand-new-pass-1")
+	newTok, err := env.svc.ChangePassword(ctx, u.ID, "password123", "brand-new-pass-1")
 	require.NoError(t, err)
 	require.NotEmpty(t, newTok)
 
@@ -281,4 +299,13 @@ func TestChangePassword_RotatesAllSessions(t *testing.T) {
 	// Old password no longer authenticates; new password does.
 	_, err = env.svc.Login(ctx, "rot@example.com", "password123", "3.3.3.3", "devC")
 	require.ErrorIs(t, err, domain.ErrUnauthorized)
+}
+
+func TestLogin_PendingRequiresEmailVerification(t *testing.T) {
+	env := newAuthEnv(t)
+	ctx := context.Background()
+	_, err := env.svc.Register(ctx, RegisterInput{Email: "new@example.com", Password: "password123", Roles: []string{"PARENT"}})
+	require.NoError(t, err)
+	_, err = env.svc.Login(ctx, "new@example.com", "password123", "", "")
+	require.ErrorIs(t, err, domain.ErrForbidden)
 }

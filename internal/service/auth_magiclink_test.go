@@ -99,9 +99,9 @@ func TestAuth_OnboardingBackend(t *testing.T) {
 	// Step 2 — verify email with the 6-digit login code: on success the
 	// account is marked verified AND activated.
 	require.NoError(t, env.svc.RequestLoginCode(ctx, "ob@example.com"))
-	re := regexp.MustCompile(`font-family:monospace;\">([0-9]{6})</span>`)
-	m := re.FindStringSubmatch(mail.sent[0].body)
-	require.Len(t, m, 2)
+	body := mail.sent[len(mail.sent)-1].body
+	m := regexp.MustCompile(`>([0-9]{6})<`).FindStringSubmatch(body)
+	require.GreaterOrEqual(t, len(m), 2, "login code missing from latest email")
 	token, _, roles, err := env.svc.ConfirmLoginCode(ctx, "ob@example.com", m[1], "1.2.3.4", "test")
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
@@ -127,10 +127,10 @@ func TestAuth_OnboardingBackend(t *testing.T) {
 	require.Equal(t, "TUTOR", got[0].Name)
 
 	// Step 5 — set a real password, then log in with it.
-	newTok, err := env.svc.ChangePassword(ctx, u.ID, "my-new-password-1")
+	newTok, err := env.svc.ChangePassword(ctx, u.ID, "password123", "my-new-password-1")
 	require.NoError(t, err)
 	require.NotEmpty(t, newTok, "a fresh session token must be issued after a password change")
-	_, err = env.svc.ChangePassword(ctx, u.ID, "short")
+	_, err = env.svc.ChangePassword(ctx, u.ID, "my-new-password-1", "short")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 	res, err := env.svc.Login(ctx, "ob@example.com", "my-new-password-1", "1.2.3.4", "test")
 	user := res.User

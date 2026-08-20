@@ -578,6 +578,19 @@ func (s *PaymentService) RefundOrder(ctx context.Context, orderID uuid.UUID, act
 	if err != nil {
 		return err
 	}
+	if pays, perr := uow.Payments().GetByOrderID(ctx, orderID); perr == nil {
+		for i := range pays {
+			p := pays[i]
+			if p.Status != payment.PaymentSuccess || p.ProviderReference == nil {
+				continue
+			}
+			if provider, ok := s.providers[p.Provider]; ok {
+				if rerr := provider.Refund(*p.ProviderReference, p.Amount); rerr != nil {
+					return fmt.Errorf("gateway refund: %w", rerr)
+				}
+			}
+		}
+	}
 	if order.Status == payment.OrderRefunded {
 		return fmt.Errorf("%w: order already refunded", domain.ErrConflict)
 	}

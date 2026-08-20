@@ -52,12 +52,13 @@ func (s *OnboardingService) CreateLearner(ctx context.Context, in CreateLearnerI
 		in.Relationship = "PARENT"
 	}
 	learner := &identity.StudentProfile{
-		FirstName:    strings.TrimSpace(in.FirstName),
-		LastName:     strings.TrimSpace(in.LastName),
-		DateOfBirth:  in.DateOfBirth,
-		SchoolName:   in.SchoolName,
-		CurrentLevel: in.CurrentLevel,
-		Timezone:     "Africa/Lagos",
+		FirstName:       strings.TrimSpace(in.FirstName),
+		LastName:        strings.TrimSpace(in.LastName),
+		DateOfBirth:     in.DateOfBirth,
+		SchoolName:      in.SchoolName,
+		CurrentLevel:    in.CurrentLevel,
+		Timezone:        "Africa/Lagos",
+		GuardianConsent: true, // parent-created learners are consent-attested
 	}
 	if err := s.students.Create(ctx, learner); err != nil {
 		return nil, err

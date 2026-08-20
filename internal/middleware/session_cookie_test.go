@@ -10,12 +10,15 @@ import (
 )
 
 func TestRequestIsHTTPS(t *testing.T) {
+	t.Setenv("TRUST_PROXY", "true")
 	assert.True(t, requestIsHTTPS(&http.Request{TLS: &tls.ConnectionState{}}), "TLS => https")
 	assert.True(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"https"}}}))
 	assert.True(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"HTTPS"}}}))
 	assert.False(t, requestIsHTTPS(&http.Request{}), "no TLS, no XFP => http")
 	assert.False(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"http"}}}))
 	assert.False(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{""}}}))
+	t.Setenv("TRUST_PROXY", "")
+	assert.False(t, requestIsHTTPS(&http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"https"}}}), "untrusted XFP must be ignored")
 }
 
 // A-28: in production over plain HTTP (e.g. a locally-run API behind
@@ -27,6 +30,7 @@ func TestSetSessionCookie_SecureFollowsRequest(t *testing.T) {
 	SetSessionCookie(rr, &http.Request{}, cfg, "tok")
 	assert.False(t, rr.Result().Cookies()[0].Secure, "plain-HTTP request must NOT set Secure")
 
+	t.Setenv("TRUST_PROXY", "true")
 	rr2 := httptest.NewRecorder()
 	SetSessionCookie(rr2, &http.Request{Header: http.Header{"X-Forwarded-Proto": []string{"https"}}}, cfg, "tok")
 	assert.True(t, rr2.Result().Cookies()[0].Secure, "https request MUST set Secure")

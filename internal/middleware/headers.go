@@ -21,6 +21,7 @@ func SecurityHeaders(blockFrames bool) func(http.Handler) http.Handler {
 			if blockFrames {
 				h.Set("X-Frame-Options", "DENY")
 				h.Set("Content-Security-Policy", "frame-ancestors 'none'")
+				h.Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
 			}
 			next.ServeHTTP(w, r)
 		})

@@ -9,8 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/mail"
+	"os"
 	"strings"
 	"time"
+	"unicode"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -199,8 +202,8 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 	if !validEmail(email) {
 		return nil, fmt.Errorf("%w: a valid email is required", domain.ErrInvalidInput)
 	}
-	if len(in.Password) < 8 {
-		return nil, fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
+	if err := validatePassword(in.Password); err != nil {
+		return nil, err
 	}
 	// A-18: bcrypt only reads the first 72 bytes and Go's bcrypt rejects
 	// longer passwords with an opaque error that would surface as a 500.
@@ -256,6 +259,13 @@ func (s *AuthService) Register(ctx context.Context, in RegisterInput) (*identity
 	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditCreate, "user",
 		&user.ID, nil, map[string]any{"email": user.Email, "roles": in.Roles, "status": user.Status},
 		nil, nil)
+	if s.tokens != nil {
+		site := strings.TrimSpace(os.Getenv("SITE_URL"))
+		if site == "" {
+			site = "http://localhost:3000"
+		}
+		_ = s.RequestEmailVerification(ctx, email, site)
+	}
 	return user, nil
 }
 
@@ -308,16 +318,16 @@ func (s *AuthService) SetPrimaryRole(ctx context.Context, userID uuid.UUID, role
 // stolen/other device) are revoked immediately, so an attacker holding an old
 // session token can no longer act as the user. The returned raw token is the
 // replacement session the current client should adopt.
-func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, newPassword string) (string, error) {
-	if len(newPassword) < 8 {
-		return "", fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
-	}
-	if len(newPassword) > 72 {
-		return "", fmt.Errorf("%w: password must be at most 72 characters", domain.ErrInvalidInput)
+func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) (string, error) {
+	if err := validatePassword(newPassword); err != nil {
+		return "", err
 	}
 	user, err := s.users.FindByID(ctx, userID)
 	if err != nil {
 		return "", err
+	}
+	if strings.TrimSpace(currentPassword) == "" || bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(currentPassword)) != nil {
+		return "", fmt.Errorf("%w: current password is incorrect", domain.ErrUnauthorized)
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcryptCost)
 	if err != nil {
@@ -360,22 +370,25 @@ type LoginResult struct {
 	MFARequired bool
 }
 
-// requiresMFA — MFA is enforced for ACADEMIC_ADMIN accounts. SUPER_ADMIN is
-// exempt (per product decision), and INSTITUTION_ADMIN is scoped/non-platform.
+// requiresMFA — MFA is enforced for every platform-admin role. SUPER_ADMIN is
+// not exempt: the highest-privilege account is the one that most needs a
+// second factor. INSTITUTION_ADMIN is scoped/non-platform and is not included.
 func requiresMFA(roles []string) bool {
 	for _, role := range roles {
-		if role == "ACADEMIC_ADMIN" {
+		if role == "ACADEMIC_ADMIN" || role == "SUPER_ADMIN" {
 			return true
 		}
 	}
 	return false
 }
 
-// logOTP — always emits the OTP code to the server log (visible in Render logs
-// even in production) so an operator can recover the code if email delivery
-// fails. Codes remain single-use and short-lived regardless.
+// logOTP — development-only. Production logs must never contain one-time
+// codes (anyone with log access could complete MFA / magic-link login).
 func (s *AuthService) logOTP(format string, args ...any) {
-	slog.Info(fmt.Sprintf("🔑 "+format, args...))
+	if s.devLog == nil {
+		return
+	}
+	s.devLog(format, args...)
 }
 
 // Login — verifies credentials, creates a session, returns the raw token.
@@ -390,11 +403,17 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 		}
 		return nil, err
 	}
-	if !user.CanLogin() {
+	if user.Status == identity.UserStatusSuspended || user.Status == identity.UserStatusDeleted {
 		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
 		return nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
+	}
+	if user.Status == identity.UserStatusPending {
+		return nil, fmt.Errorf("%w: verify your email before signing in", domain.ErrForbidden)
+	}
+	if !user.CanLogin() {
+		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
 
 	roleList, _ := s.roles.RolesForUser(ctx, user.ID)
@@ -576,5 +595,31 @@ func HashToken(raw string) string {
 }
 
 func validEmail(email string) bool {
-	return strings.Contains(email, "@") && strings.Contains(email, ".")
+	addr, err := mail.ParseAddress(email)
+	if err != nil {
+		return false
+	}
+	return strings.Contains(addr.Address, ".")
+}
+
+func validatePassword(password string) error {
+	if len(password) < 8 {
+		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
+	}
+	if len(password) > 72 {
+		return fmt.Errorf("%w: password must be at most 72 characters", domain.ErrInvalidInput)
+	}
+	var hasLetter, hasDigit bool
+	for _, r := range password {
+		if unicode.IsLetter(r) {
+			hasLetter = true
+		}
+		if unicode.IsDigit(r) {
+			hasDigit = true
+		}
+	}
+	if !hasLetter || !hasDigit {
+		return fmt.Errorf("%w: password must contain a letter and a number", domain.ErrInvalidInput)
+	}
+	return nil
 }

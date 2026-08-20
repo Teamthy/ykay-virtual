@@ -258,7 +258,7 @@ func main() {
 	// YK-006 fail-closed: until a real, certified gateway refund flow exists,
 	// production must refuse refunds rather than silently credit the wallet and
 	// mark orders REFUNDED without refunding the gateway.
-	if cfg.IsProduction() {
+	if cfg.IsProduction() && cfg.PaystackSecret == "" && cfg.FlutterwaveSecret == "" {
 		paymentSvc.SetRefundsEnabled(false)
 	}
 

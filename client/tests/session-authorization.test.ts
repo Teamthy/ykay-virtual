@@ -107,6 +107,14 @@ describe("no fixture UUIDs remain in client source", () => {
     expect(calls[0].url).not.toContain("student_profile_id");
   });
 
+  it("changePassword sends current_password", async () => {
+    const { changePassword } = await import("@/features/auth/api");
+    await changePassword("old-pass-1", "new-pass-2");
+    const body = JSON.parse(String(calls[0].init?.body));
+    expect(body.current_password).toBe("old-pass-1");
+    expect(body.new_password).toBe("new-pass-2");
+  });
+
   it("apiFetch always attaches a trace id and credentials", async () => {
     const { apiFetch } = await import("@/lib/api");
     await apiFetch("/subjects");

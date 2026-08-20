@@ -111,6 +111,7 @@ func TestSecurityHeaders(t *testing.T) {
 		SecurityHeaders(true)(ok).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/", nil))
 		assert.Equal(t, "DENY", rec.Header().Get("X-Frame-Options"))
 		assert.Contains(t, rec.Header().Get("Content-Security-Policy"), "frame-ancestors 'none'")
+		assert.Contains(t, rec.Header().Get("Strict-Transport-Security"), "max-age=")
 	})
 }
 

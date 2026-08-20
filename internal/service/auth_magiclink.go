@@ -37,9 +37,12 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 		}
 		return err
 	}
-	if !user.CanLogin() {
-		return nil // suspended/not active: do not leak status either
+	if user.Status == identity.UserStatusSuspended || user.Status == identity.UserStatusDeleted {
+		return nil // do not leak status
 	}
+	// PENDING accounts may receive a login code: entering it proves email
+	// ownership and activates the account (ConfirmLoginCode). Password login
+	// remains blocked until ACTIVE.
 
 	code, err := generateLoginCode()
 	if err != nil {
@@ -85,7 +88,7 @@ func (s *AuthService) ConfirmLoginCode(ctx context.Context, email, code, ip, use
 	if err != nil {
 		return "", nil, nil, fmt.Errorf("%w: invalid login code", domain.ErrUnauthorized)
 	}
-	if !user.CanLogin() {
+	if user.Status == identity.UserStatusSuspended || user.Status == identity.UserStatusDeleted {
 		return "", nil, nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
 

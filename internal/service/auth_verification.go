@@ -155,8 +155,8 @@ func (s *AuthService) ResetPassword(ctx context.Context, rawToken, newPassword s
 	if s.tokens == nil {
 		return errors.New("token store unavailable")
 	}
-	if len(newPassword) < 8 {
-		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrInvalidInput)
+	if err := validatePassword(newPassword); err != nil {
+		return err
 	}
 	token, err := s.tokens.FindByHash(ctx, HashToken(rawToken))
 	if err != nil {

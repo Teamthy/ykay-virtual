@@ -739,6 +739,7 @@ function OnboardingInner() {
   // render/batch cycle, so the recovery effect below can never race them).
   const verifyingRef = useRef(false); // a verify request is in flight
   const verifiedRef = useRef(false);  // email verified in THIS mount
+  const generatedPwRef = useRef("");
 
   const save = (patch: Partial<ObState>) => {
     setState((prev) => {
@@ -901,9 +902,10 @@ function OnboardingInner() {
         go(user.status === "ACTIVE" ? 3 : 2);
         return;
       }
+      generatedPwRef.current = randomPassword();
       const created = await register({
         email: state.email.trim(),
-        password: randomPassword(),
+        password: generatedPwRef.current,
         roles: ["PARENT"],
         referral_code: state.ref,
       });
@@ -930,7 +932,7 @@ function OnboardingInner() {
     setSubmitting(true);
     setError(null);
     try {
-      await changePassword(pw);
+      await changePassword(generatedPwRef.current, pw);
       toast.success("Password set - you can now log in with it anytime.");
       go(6);
     } catch (err) {

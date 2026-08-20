@@ -50,18 +50,13 @@ const nextConfig = {
   // check and lint pass are skipped here deliberately.
   // Vercel production builds type-check. Constrained CI/sandbox hosts skip
   // the in-build pass because CI already ran `tsc --noEmit`.
-  typescript: { ignoreBuildErrors: !isVercel },
+  typescript: { ignoreBuildErrors: false },
   eslint: { ignoreDuringBuilds: !isVercel },
   images: {
-    // A-23: tutor avatars and uploaded content are served from the S3/CDN
-    // origin (and, soon, arbitrary tutor photo hosts). The previous list
-    // allowed ONLY images.unsplash.com, so any next/image pointing at a
-    // real avatar/upload would 400 at runtime. `**` permits any https host;
-    // if you later want to lock this down, replace it with your exact CDN
-    // hostname(s) (e.g. { hostname: "cdn.nuvora.com" }).
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "**" }
+      { protocol: "https", hostname: "*.amazonaws.com" },
+      { protocol: "https", hostname: "*.cloudfront.net" },
     ]
   },
   async redirects() {

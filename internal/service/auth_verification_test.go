@@ -65,7 +65,7 @@ func TestVerifyEmail_Flow(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, env.svc.RequestEmailVerification(ctx, "kid@example.com", "http://localhost:3000"))
-	require.Len(t, mail.sent, 1)
+	require.GreaterOrEqual(t, len(mail.sent), 1)
 	raw := mail.lastToken()
 	require.NotEmpty(t, raw)
 
@@ -107,6 +107,7 @@ func TestPasswordReset_Flow_RotatesSessions(t *testing.T) {
 	ctx := context.Background()
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "parent@example.com", Password: "old-password-1", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "parent@example.com")
 
 	// Active session before the reset.
 	res, err := env.svc.Login(ctx, "parent@example.com", "old-password-1", "", "")

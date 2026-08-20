@@ -34,26 +34,44 @@ export type ErrorEnvelope = {
 
 function getTraceId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
-  // RFC4122-ish fallback for very old runtimes (no external dependency).
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
+const DEFAULT_TIMEOUT_MS = 20000;
+
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Envelope<T>> {
   const traceId = getTraceId();
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Trace-ID": traceId,
-      "X-Request-ID": traceId,
-      ...(init?.headers || {}),
-    },
-    credentials: "include", // httpOnly session cookie flows on every request
-    cache: "no-store",
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      signal: init?.signal ?? controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Trace-ID": traceId,
+        "X-Request-ID": traceId,
+        ...(init?.headers || {}),
+      },
+      credentials: "include",
+      cache: "no-store",
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    if (e instanceof DOMException && e.name === "AbortError") {
+      throw new Error("Request timed out. Check your connection.");
+    }
+    throw e;
+  }
+  clearTimeout(timer);
+
+  if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/auth/")) {
+    window.location.assign("/login");
+  }
 
   if (!res.ok) {
     const errBody = (await res.json().catch(() => null)) as ErrorEnvelope | null;
@@ -64,11 +82,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Env
 }
 
 export async function apiFetchSSR<T>(path: string): Promise<Envelope<T>> {
-  // For SSR/SSG pages - no client uuid, use server side trace
   const traceId = `ssr-${Date.now()}`;
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { "X-Trace-ID": traceId, "X-Request-ID": traceId },
-    next: { revalidate: 300 }, // ISR 5min default for catalogue
+    next: { revalidate: 300 },
   });
   if (!res.ok) throw new Error(`SSR fetch failed ${res.status} ${path}`);
   return (await res.json()) as Envelope<T>;

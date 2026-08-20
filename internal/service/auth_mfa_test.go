@@ -40,6 +40,7 @@ func grantRole(t *testing.T, env *authEnv, email, password, role string) {
 	adminRole, err := env.store.Roles.FindByName(ctx, role)
 	require.NoError(t, err)
 	require.NoError(t, env.store.Roles.AssignToUser(ctx, user.ID, adminRole.ID))
+	activateUser(t, env, email)
 }
 
 // TestAdminLogin_RequiresMFA — ACADEMIC_ADMIN must confirm a second factor
@@ -48,13 +49,14 @@ func TestAdminLogin_RequiresMFA(t *testing.T) {
 	env, mail := newAuthEnvWithTokens(t)
 	ctx := context.Background()
 	grantRole(t, env, "admin@example.com", "password123", "ACADEMIC_ADMIN")
+	mail.sent = nil
 
 	// Admin login: password correct, but NO session yet - MFA required.
 	res, err := env.svc.Login(ctx, "admin@example.com", "password123", "1.2.3.4", "test-agent")
 	require.NoError(t, err)
 	require.True(t, res.MFARequired)
 	require.Empty(t, res.Token, "no session token before the second factor")
-	require.Len(t, mail.sent, 1)
+	require.GreaterOrEqual(t, len(mail.sent), 1)
 
 	code := mfaCodeFromBody(mail.sent[len(mail.sent)-1].body)
 	require.Len(t, code, 6, "an emailed 6-digit MFA code must be sent")
@@ -83,6 +85,8 @@ func TestNonAdminLogin_NoMFA(t *testing.T) {
 
 	_, err := env.svc.Register(ctx, RegisterInput{Email: "parent@example.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "parent@example.com")
+	mail.sent = nil
 
 	res, err := env.svc.Login(ctx, "parent@example.com", "password123", "", "test-agent")
 	require.NoError(t, err)
@@ -111,16 +115,22 @@ func TestMFA_NotGrantedIfRoleRemoved(t *testing.T) {
 	require.ErrorIs(t, err, domain.ErrForbidden)
 }
 
-// TestSuperAdmin_NoMFA — SUPER_ADMIN is exempt from MFA (product decision):
-// it logs in with a session immediately, like a non-admin.
-func TestSuperAdmin_NoMFA(t *testing.T) {
+// TestSuperAdmin_RequiresMFA — SUPER_ADMIN is the highest privilege account
+// and must confirm a second factor before a session is issued.
+func TestSuperAdmin_RequiresMFA(t *testing.T) {
 	env, mail := newAuthEnvWithTokens(t)
 	ctx := context.Background()
 	grantRole(t, env, "root@example.com", "password123", "SUPER_ADMIN")
+	mail.sent = nil
 
 	res, err := env.svc.Login(ctx, "root@example.com", "password123", "", "t")
 	require.NoError(t, err)
-	require.False(t, res.MFARequired)
-	require.NotEmpty(t, res.Token)
-	require.Len(t, mail.sent, 0, "no MFA email for SUPER_ADMIN")
+	require.True(t, res.MFARequired)
+	require.Empty(t, res.Token)
+	require.GreaterOrEqual(t, len(mail.sent), 1)
+	code := mfaCodeFromBody(mail.sent[len(mail.sent)-1].body)
+	require.Len(t, code, 6)
+	res2, err := env.svc.ConfirmMFA(ctx, "root@example.com", code, "", "t")
+	require.NoError(t, err)
+	require.NotEmpty(t, res2.Token)
 }

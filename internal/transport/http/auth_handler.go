@@ -32,9 +32,9 @@ func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string
 }
 
 // NewAuthHandlerWithCookieDomain — like NewAuthHandler but also sets the
-// session cookie's Domain. Pass the shared parent domain (e.g. ".vercel.app"
-// or "nuvora.com") when the web app and API are on different hosts, so the
-// browser sends nuvora_session to the web origin through the proxy.
+// session cookie's Domain. Pass the registrable custom domain (e.g.
+// "nuvora.com"). Never use ".vercel.app": it is on the public suffix list
+// and would be rejected or dangerously shared.
 func NewAuthHandlerWithCookieDomain(svc *service.AuthService, secureCookies bool, siteURL, cookieDomain string, google *service.GoogleAuthService) *AuthHandler {
 	return newAuthHandlerWithCookieDomain(svc, secureCookies, siteURL, cookieDomain, google)
 }
@@ -309,8 +309,7 @@ func (h *AuthHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"roles": roles}, nil)
 }
 
-// ChangePassword — POST /auth/me/password {new_password} — sets a new
-// password for the caller (onboarding "complete your profile" step).
+// ChangePassword — POST /auth/me/password {current_password, new_password}.
 func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	actor, ok := middleware.ActorFromContext(r.Context())
 	if !ok {
@@ -318,7 +317,8 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		NewPassword string `json:"new_password"`
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
 	}
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -327,7 +327,7 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	// YK-017: ChangePassword rotates all sessions and returns a fresh token
 	// for the current client, so every other/stolen session is revoked while
 	// this client stays signed in.
-	newToken, err := h.svc.ChangePassword(r.Context(), actor.UserID, req.NewPassword)
+	newToken, err := h.svc.ChangePassword(r.Context(), actor.UserID, req.CurrentPassword, req.NewPassword)
 	if err != nil {
 		WriteAppError(w, err)
 		return

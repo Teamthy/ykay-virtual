@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
@@ -188,6 +190,14 @@ func (g *GoogleAuthService) ExchangeCode(ctx context.Context, code, state, ip, u
 	if err != nil {
 		return "", nil, nil, err
 	}
+	if profile.VerifiedEmail && user.Status == identity.UserStatusPending {
+		now := g.auth.now().UTC()
+		user.EmailVerifiedAt = &now
+		user.Status = identity.UserStatusActive
+		if err := g.auth.users.Update(ctx, user); err != nil {
+			return "", nil, nil, err
+		}
+	}
 	if !user.CanLogin() {
 		return "", nil, nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
@@ -209,7 +219,11 @@ func (s *AuthService) createOAuthUser(ctx context.Context, email, name string) (
 	}
 	// Password hash: random unguessable (Google users sign in via OAuth only).
 	raw, _, _ := newSessionToken()
-	user.PasswordHash = raw
+	hash, herr := bcrypt.GenerateFromPassword([]byte(raw), bcryptCost)
+	if herr != nil {
+		return nil, herr
+	}
+	user.PasswordHash = string(hash)
 	if err := s.users.Create(ctx, user); err != nil {
 		return nil, err
 	}

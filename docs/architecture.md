@@ -1,4 +1,12 @@
-# YKAY Virtual School Architecture Proposal
+# NUVORA architecture
+
+Implemented as a Go modular monolith (`/api/v1`) + Next.js 15 App Router + Expo mobile, PostgreSQL source of truth, Redis for cache/queue/rate-limit. Payment provider: Paystack (primary) / Flutterwave. See `docs/SECURITY.md` for authz.
+
+The remainder of this file is the original Sprint 0 proposal (kept for history).
+
+---
+
+# YKAY Virtual School Architecture Proposal (historical)
 
 ## 1. Product analysis
 

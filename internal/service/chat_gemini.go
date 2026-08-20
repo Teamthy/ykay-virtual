@@ -143,11 +143,12 @@ func (g *GeminiProvider) Reply(ctx context.Context, history []chat.Message, grou
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		fmt.Sprintf(geminiEndpoint, g.model)+"?key="+g.apiKey, bytes.NewReader(raw))
+		fmt.Sprintf(geminiEndpoint, g.model), bytes.NewReader(raw))
 	if err != nil {
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-goog-api-key", g.apiKey)
 
 	resp, err := g.client.Do(req)
 	if err != nil {

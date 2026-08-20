@@ -148,10 +148,10 @@ export async function setPrimaryRole(role: string): Promise<string[]> {
   return res.data.roles;
 }
 
-export async function changePassword(newPassword: string): Promise<void> {
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
   await apiFetch("/auth/me/password", {
     method: "POST",
-    body: JSON.stringify({ new_password: newPassword }),
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
   });
 }
 

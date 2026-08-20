@@ -378,8 +378,6 @@ func (s *ChatService) AdminAnalytics(ctx context.Context) (ChatAnalytics, error)
 	a := ChatAnalytics{TotalThreads: len(threads)}
 	ratingSum := 0
 	for _, t := range threads {
-		msgs, _ := s.threads.ListMessages(ctx, t.ID)
-		a.TotalMessages += len(msgs)
 		switch t.Status {
 		case chat.ThreadEscalated:
 			a.EscalatedThreads++

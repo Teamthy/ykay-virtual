@@ -71,7 +71,7 @@ services:
       # IP (a school lab, an office) can sign in together without tripping the
       # limiter, while still throttling credential stuffing.
       - key: AUTH_RATE_LIMIT_PER_MINUTE
-        value: "240"
+        value: "20"
       # ── Migrations ─────────────────────────────────────────────────────
       # "true" on the FIRST deploy applies the embedded migration chain at
       # boot (fresh database). Set to "false" afterwards — concurrent boots

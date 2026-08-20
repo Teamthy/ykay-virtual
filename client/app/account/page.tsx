@@ -316,13 +316,14 @@ export default function AccountPage() {
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-brand-navy">Change password</h2>
               <div className="mt-4 max-w-md space-y-4">
+                <PasswordInput id="ac-current-pw" label="Current password" autoComplete="current-password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
                 <PasswordInput id="ac-pw" label="New password" autoComplete="new-password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
                 <PasswordInput id="ac-pw2" label="Confirm new password" autoComplete="new-password" value={newPw2} onChange={(e) => setNewPw2(e.target.value)} />
                 {newPw2 && newPw !== newPw2 && <p className="text-xs text-red-600">Passwords do not match.</p>}
                 <button
                   type="button"
-                  disabled={savePassword.isPending || !newPw || newPw.length < 8 || newPw !== newPw2}
-                  onClick={() => savePassword.mutate(newPw)}
+                  disabled={savePassword.isPending || !currentPw || !newPw || newPw.length < 8 || newPw !== newPw2}
+                  onClick={() => savePassword.mutate({ currentPw, pw: newPw })}
                   className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
                 >
                   {savePassword.isPending ? "Updating…" : "Update password"}

@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS progress_reports;
+DROP TABLE IF EXISTS support_tickets;
+DROP TABLE IF EXISTS faqs;
+DROP TABLE IF EXISTS testimonials;
+DROP TABLE IF EXISTS content_blocks;
+DROP TABLE IF EXISTS blog_post_exams;
+DROP TABLE IF EXISTS blog_post_subjects;
+DROP TABLE IF EXISTS blog_posts;
+DROP TYPE IF EXISTS content_block_type;
+DROP TYPE IF EXISTS content_status;

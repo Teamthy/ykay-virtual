@@ -107,15 +107,47 @@ req() { # req <jar> <method> <path> <body?>  → prints HTTP code
   fi
 }
 
+# Confirm the verification email sent at register (dev logs the link).
+confirm_email() {
+  local email="$1"
+  local tok
+  tok=$(grep -oE "verify-email\\?token=[^ \"&\\\\]+" /tmp/e2e-api.log 2>/dev/null | tail -1 | sed 's/.*token=//')
+  if [ -z "$tok" ]; then
+    fail "verify token for $email not in API log"
+    return
+  fi
+  c=$(req /dev/null POST /auth/verify-email/confirm "{\"token\":\"$tok\"}")
+  assert_code "verify email ($email)" 200 "$c"
+}
+
+# Complete admin MFA when login returns mfa_required.
+complete_admin_mfa() {
+  local jar="$1" email="$2"
+  local code
+  sleep 0.5
+  code=$(grep -oE "MFA code for ${email}[^:]*: [0-9]{6}" /tmp/e2e-api.log 2>/dev/null | grep -oE "[0-9]{6}$" | tail -1)
+  if [ -z "$code" ]; then
+    code=$(grep -oE "admin\\): [0-9]{6}" /tmp/e2e-api.log 2>/dev/null | grep -oE "[0-9]{6}$" | tail -1)
+  fi
+  if [ -z "$code" ]; then
+    fail "MFA code for $email not in API log"
+    return
+  fi
+  c=$(req "$jar" POST /auth/mfa/confirm "{\"email\":\"$email\",\"code\":\"$code\"}")
+  assert_code "admin MFA confirm ($email)" 200 "$c"
+}
+
 # ================================================================ 1. AUTH ====
 note "AUTH"
 assert_code "health" 200 "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${PORT}/health")"
 
 c=$(req "$J_PARENT" POST /auth/register '{"email":"e2e-parent@test.com","password":"password123","roles":["PARENT"]}')
 assert_code "register parent" 201 "$c"
+confirm_email "e2e-parent@test.com"
 
 c=$(req "$J_TUTOR" POST /auth/register '{"email":"e2e-tutor@test.com","password":"password123","roles":["TUTOR"]}')
 assert_code "register tutor" 201 "$c"
+confirm_email "e2e-tutor@test.com"
 
 # CF-1 security regression: self-service SUPER_ADMIN registration must be
 # rejected (previously an anonymous attacker could self-escalate).
@@ -133,6 +165,9 @@ assert_code "login tutor" 200 "$c"
 # SUPER_ADMIN). Self-registering an admin is deliberately impossible.
 c=$(req "$J_ADMIN" POST /auth/login "{\"email\":\"${E2E_ADMIN_EMAIL}\",\"password\":\"${E2E_ADMIN_PASSWORD}\"}")
 assert_code "login admin (${E2E_ADMIN_EMAIL})" 200 "$c"
+if grep -q '"mfa_required":true' /tmp/e2e-body.json 2>/dev/null; then
+  complete_admin_mfa "$J_ADMIN" "$E2E_ADMIN_EMAIL"
+fi
 
 c=$(req /dev/null POST /auth/login '{"email":"e2e-parent@test.com","password":"wrong-pass"}')
 assert_code "wrong password → 401" 401 "$c"
@@ -274,6 +309,7 @@ ok "assessment body never leaks questions (tutor view has $A1_LEAK question fiel
 
 c=$(req "$J_STUDENT" POST /auth/register '{"email":"e2e-student@test.com","password":"password123","roles":["STUDENT"]}')
 assert_code "register student" 201 "$c"
+confirm_email "e2e-student@test.com"
 c=$(req "$J_STUDENT" POST /auth/login '{"email":"e2e-student@test.com","password":"password123"}')
 assert_code "login student" 200 "$c"
 

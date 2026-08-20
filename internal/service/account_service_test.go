@@ -19,6 +19,7 @@ func TestAccountService_ProfileExportDelete(t *testing.T) {
 
 	user, err := env.svc.Register(ctx, RegisterInput{Email: "acct@example.com", Password: "password123", Roles: []string{"PARENT"}})
 	require.NoError(t, err)
+	activateUser(t, env, "acct@example.com")
 
 	// Update profile.
 	updated, err := svc.UpdateProfile(ctx, user.ID, UpdateProfileInput{

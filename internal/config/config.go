@@ -34,10 +34,8 @@ type Config struct {
 	SiteURL           string
 	AllowedOrigins    string
 	// CookieDomain — the session-cookie domain, if any. When the web app and
-	// API live on different hosts (e.g. Vercel frontend + Render API), set this
-	// to the shared parent domain (".vercel.app" or a custom domain like
-	// "nuvora.com") so the browser sends the nuvora_session cookie to the web
-	// origin through the proxy. Empty = host-only cookie (default).
+	// API live on different hosts, set this to the custom registrable domain
+	// ("nuvora.com"). Never ".vercel.app" (public suffix). Empty = host-only.
 	CookieDomain       string
 	GoogleClientID     string
 	GoogleClientSecret string

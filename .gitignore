@@ -31,6 +31,7 @@ metrics-textfile/
 # object storage (R2/S3/GitHub Releases) and set NEXT_PUBLIC_APK_URL.
 *.apk
 *.aab
+*.exe
 mobile/dist/
 mobile/android/app/build/
 mobile/ios/build/

@@ -453,6 +453,9 @@ func (s *SupportService) OpenTicketWithMeta(ctx context.Context, userID *uuid.UU
 	if strings.TrimSpace(message) == "" {
 		return nil, fmt.Errorf("%w: message is required", domain.ErrInvalidInput)
 	}
+	if len(message) > 8000 {
+		return nil, fmt.Errorf("%w: message is too long", domain.ErrInvalidInput)
+	}
 	if s.tickets == nil {
 		return nil, errors.New("support store unavailable")
 	}

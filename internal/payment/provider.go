@@ -23,6 +23,7 @@ type Provider interface {
 	Name() string
 	VerifyWebhookSignature(payload []byte, signature string, secret string) bool
 	CreatePaymentLink(amount float64, currency, reference, email string) (string, error)
+	Refund(reference string, amount float64) error
 }
 
 // --- Paystack ---
@@ -67,6 +68,31 @@ type paystackInitResponse struct {
 	} `json:"data"`
 }
 
+func (p *PaystackProvider) Refund(reference string, amount float64) error {
+	if p.Secret == "" || p.Secret == "test-secret" || strings.HasPrefix(p.Secret, "e2e") {
+		return nil
+	}
+	body, _ := json.Marshal(map[string]any{
+		"transaction": reference,
+		"amount":      int64(amount * 100),
+	})
+	req, err := http.NewRequest(http.MethodPost, p.BaseURL+"/refund", bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+p.Secret)
+	req.Header.Set("Content-Type", "application/json")
+	res, err := p.HTTPClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("paystack refund: %w", err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("paystack refund failed")
+	}
+	return nil
+}
+
 func (p *PaystackProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {
 	if p.Secret == "" {
 		if strings.EqualFold(os.Getenv("ENVIRONMENT"), "production") || strings.EqualFold(os.Getenv("ENVIRONMENT"), "prod") {
@@ -93,7 +119,7 @@ func (p *PaystackProvider) CreatePaymentLink(amount float64, currency, reference
 	defer res.Body.Close()
 	raw, _ := io.ReadAll(res.Body)
 	if res.StatusCode >= 400 {
-		return "", fmt.Errorf("paystack initialize status %d: %s", res.StatusCode, string(raw))
+		return "", fmt.Errorf("paystack initialize failed")
 	}
 	var out paystackInitResponse
 	if err := json.Unmarshal(raw, &out); err != nil {
@@ -145,6 +171,28 @@ func (p *FlutterwaveProvider) VerifyWebhookSignature(payload []byte, signature s
 	return hmac.Equal([]byte(expected), []byte(signature))
 }
 
+func (p *FlutterwaveProvider) Refund(reference string, amount float64) error {
+	if p.Secret == "" || p.Secret == "test-secret" || strings.HasPrefix(p.Secret, "e2e") {
+		return nil
+	}
+	body, _ := json.Marshal(map[string]any{"amount": amount})
+	req, err := http.NewRequest(http.MethodPost, p.BaseURL+"/transactions/"+reference+"/refund", bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+p.Secret)
+	req.Header.Set("Content-Type", "application/json")
+	res, err := p.HTTPClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("flutterwave refund: %w", err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("flutterwave refund failed")
+	}
+	return nil
+}
+
 func (p *FlutterwaveProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {
 	if p.Secret == "" {
 		if strings.EqualFold(os.Getenv("ENVIRONMENT"), "production") || strings.EqualFold(os.Getenv("ENVIRONMENT"), "prod") {
@@ -172,7 +220,7 @@ func (p *FlutterwaveProvider) CreatePaymentLink(amount float64, currency, refere
 	defer res.Body.Close()
 	raw, _ := io.ReadAll(res.Body)
 	if res.StatusCode >= 400 {
-		return "", fmt.Errorf("flutterwave create payment status %d: %s", res.StatusCode, string(raw))
+		return "", fmt.Errorf("flutterwave create payment failed")
 	}
 	var out struct {
 		Status string `json:"status"`

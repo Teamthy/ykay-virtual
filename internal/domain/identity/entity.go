@@ -139,5 +139,5 @@ func (u *User) IsActive() bool {
 }
 
 func (u *User) CanLogin() bool {
-	return u.Status == UserStatusActive || u.Status == UserStatusPending
+	return u.Status == UserStatusActive
 }
