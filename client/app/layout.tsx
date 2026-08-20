@@ -37,7 +37,10 @@ export const metadata: Metadata = {
   },
   // PWA (M1 hardening): installable on Android/iOS.
   manifest: "/manifest.json",
-  icons: [{ rel: "apple-touch-icon", url: "/icons/icon-192.png", sizes: "192x192" }],
+  icons: {
+    icon: [{ url: "/brand/mark.png", type: "image/png" }],
+    apple: [{ url: "/brand/mark.png", sizes: "512x512", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
