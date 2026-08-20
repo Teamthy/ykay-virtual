@@ -45,6 +45,10 @@ african-student.png
 
 APPLY*.ps1
 
+FIX*.ps1
+
+SEED*.ps1
+
 british.jpg
 
 checkout.jpg
@@ -80,4 +84,4 @@ test-prep.jpg
 utme.jpg
 .vercel
 .env*
-.patch
+*.patch
