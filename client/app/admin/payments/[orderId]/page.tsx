@@ -27,7 +27,7 @@ export default function AdminOrderDetailPage() {
     );
   }
 
-  const { order, items } = q.data;
+  const { order, items, payments, payer, student } = q.data;
   const when = new Date(order.created_at);
 
   return (
@@ -51,13 +51,42 @@ export default function AdminOrderDetailPage() {
         </div>
         <div>
           <dt className="text-[11px] font-bold uppercase text-ink-400">Payer</dt>
-          <dd className="text-sm font-semibold text-ink-800">{order.parent_user_id?.slice(0, 8) || "—"}</dd>
+          <dd className="text-sm font-semibold text-ink-800">{payer?.name || "—"}</dd>
+          {payer?.email && <dd className="text-xs text-ink-500">{payer.email}</dd>}
+          {payer?.phone && <dd className="text-xs text-ink-500">{payer.phone}</dd>}
         </div>
         <div>
           <dt className="text-[11px] font-bold uppercase text-ink-400">Learner</dt>
-          <dd className="text-sm font-semibold text-ink-800">{order.student_profile_id?.slice(0, 8) || "—"}</dd>
+          <dd className="text-sm font-semibold text-ink-800">{student?.name || "—"}</dd>
+          {student?.level && <dd className="text-xs text-ink-500">{student.level}</dd>}
+          {student?.school && <dd className="text-xs text-ink-500">{student.school}</dd>}
         </div>
       </dl>
+      <section className="rounded-2xl border border-ink-100 bg-white p-5">
+        <h2 className="font-bold text-ink-900">Payment history</h2>
+        {(payments ?? []).length === 0 ? (
+          <p className="mt-2 text-sm text-ink-500">No payment rows yet — the order is still PENDING.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-ink-50">
+            {(payments ?? []).map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+                <div>
+                  <p className="font-semibold text-ink-800">{p.provider.replace(/_/g, " ")}</p>
+                  <p className="text-xs text-ink-500">
+                    Ref: {p.provider_reference || "—"} ·{" "}
+                    {new Date(p.created_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                    {p.paid_at ? ` · paid ${new Date(p.paid_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-bold">{p.currency} {p.amount.toLocaleString()}</span>
+                  <StatusBadge label={p.status} kind={statusKindFor(p.status)} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
       <section className="rounded-2xl border border-ink-100 bg-white p-5">
         <h2 className="font-bold text-ink-900">What this payment was for</h2>
         <ul className="mt-3 divide-y divide-ink-50">

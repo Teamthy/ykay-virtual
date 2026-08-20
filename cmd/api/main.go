@@ -335,7 +335,9 @@ func main() {
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc).WithStorage(store)
-	adminSvc.WithPayments(repos.Orders, repos.Payouts)
+	adminSvc.WithPayments(repos.Orders, repos.Payouts).
+		WithPaymentRows(repos.Payments).
+		WithStudents(repos.Students)
 	adminSvc.WithUsers(repos.Users, repos.Roles)
 	adminSvc.WithAuditLogs(repos.AuditRepo)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,

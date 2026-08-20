@@ -298,13 +298,39 @@ export async function listAdminOrders(page = 1, pageSize = 25): Promise<{ orders
   return { orders: res.data ?? [], total: res.meta?.total_items ?? 0 };
 }
 
+export type OrderPayment = {
+  id: string;
+  provider: string;
+  provider_reference?: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  paid_at?: string | null;
+  created_at: string;
+};
+
+export type OrderParty = {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  level?: string;
+  school?: string;
+};
+
 export async function getAdminOrder(orderId: string): Promise<{
   order: Order & { parent_user_id?: string; student_profile_id?: string; updated_at?: string };
   items: Order["items"];
+  payments: OrderPayment[];
+  payer?: OrderParty | null;
+  student?: OrderParty | null;
 }> {
   const res = await apiFetch<{
     order: Order & { parent_user_id?: string; student_profile_id?: string; updated_at?: string };
     items: Order["items"];
+    payments: OrderPayment[];
+    payer?: OrderParty | null;
+    student?: OrderParty | null;
   }>(`/admin/orders/${orderId}`);
   return res.data;
 }
@@ -408,18 +434,36 @@ export async function reviewCohortJoin(id: string, status: "APPROVED" | "REJECTE
   });
 }
 
+export type RosterStudent = {
+  cohort_id: string;
+  status: string;
+  id: string;
+  first_name: string;
+  last_name: string;
+  current_level?: string;
+  school_name?: string;
+  email?: string;
+  phone?: string;
+  date_of_birth?: string;
+};
+
+export type RosterTutor = {
+  id: string;
+  display_name: string;
+  slug: string;
+  status: string;
+  is_public: boolean;
+  email?: string;
+  phone?: string;
+  years_experience?: number;
+  subjects?: string;
+};
+
 export type ProgrammeRoster = {
   programme: { id: string; title: string; slug: string; summary?: string; format: string; status: string };
   cohorts: AdminCohort[];
-  students: {
-    cohort_id: string;
-    status: string;
-    id: string;
-    first_name: string;
-    last_name: string;
-    current_level?: string;
-  }[];
-  tutors: { id: string; display_name: string; slug: string; status: string; is_public: boolean }[];
+  students: RosterStudent[];
+  tutors: RosterTutor[];
   student_count: number;
   cohort_count: number;
 };

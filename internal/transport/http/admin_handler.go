@@ -768,12 +768,12 @@ func (h *AdminHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	order, items, err := h.svc.GetOrderDetail(r.Context(), orderID)
+	view, err := h.svc.GetOrderDetailRich(r.Context(), orderID)
 	if err != nil {
 		WriteAppError(w, err)
 		return
 	}
-	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"order": order, "items": items}, nil)
+	pkg.WriteSuccess(w, http.StatusOK, view, nil)
 }
 
 // ListOrders — GET /admin/orders?page=&page_size=

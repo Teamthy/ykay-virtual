@@ -44,6 +44,8 @@ type AdminService struct {
 	catalogueCache cache.Cache
 	orders         payment.OrderRepository
 	payouts        payment.PayoutRepository
+	paymentRows    payment.PaymentRepository
+	students       identity.StudentProfileRepository
 	users          identity.UserRepository
 	roles          identity.RoleRepository
 	auditLogs      identity.AuditLogRepository
@@ -198,6 +200,20 @@ func NewAdminService(stats admin.StatsRepository, blog content.AdminBlogReposito
 func (s *AdminService) WithPayments(orders payment.OrderRepository, payouts payment.PayoutRepository) *AdminService {
 	s.orders = orders
 	s.payouts = payouts
+	return s
+}
+
+// WithPaymentRows wires per-order payment rows (provider, reference, status,
+// timestamps) for the order-detail console.
+func (s *AdminService) WithPaymentRows(payments payment.PaymentRepository) *AdminService {
+	s.paymentRows = payments
+	return s
+}
+
+// WithStudents wires student profiles so order detail can show WHO a payment
+// was for (learner name, level, school).
+func (s *AdminService) WithStudents(students identity.StudentProfileRepository) *AdminService {
+	s.students = students
 	return s
 }
 
@@ -916,6 +932,69 @@ func (s *AdminService) GetOrderDetail(ctx context.Context, id uuid.UUID) (*payme
 		items = []payment.OrderItem{}
 	}
 	return o, items, nil
+}
+
+// OrderDetailView — everything the admin payments console needs on one page:
+// the order, its line items, every payment row (provider, reference, status,
+// timestamps) and the people involved (payer identity + learner identity).
+type OrderDetailView struct {
+	Order    *payment.Order      `json:"order"`
+	Items    []payment.OrderItem `json:"items"`
+	Payments []payment.Payment   `json:"payments"`
+	Payer    *OrderPartyIdentity `json:"payer,omitempty"`
+	Student  *OrderPartyIdentity `json:"student,omitempty"`
+}
+
+// OrderPartyIdentity — human-readable identity attached to an order.
+type OrderPartyIdentity struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Email  string `json:"email,omitempty"`
+	Phone  string `json:"phone,omitempty"`
+	Level  string `json:"level,omitempty"`  // student: current_level
+	School string `json:"school,omitempty"` // student: school_name
+}
+
+// GetOrderDetailRich — order + items + payment rows + payer/learner identity.
+func (s *AdminService) GetOrderDetailRich(ctx context.Context, id uuid.UUID) (*OrderDetailView, error) {
+	o, items, err := s.GetOrderDetail(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	view := &OrderDetailView{Order: o, Items: items, Payments: []payment.Payment{}}
+	if s.paymentRows != nil {
+		if rows, err := s.paymentRows.GetByOrderID(ctx, id); err == nil {
+			view.Payments = rows
+		}
+	}
+	if s.users != nil {
+		if u, err := s.users.FindByID(ctx, o.ParentUserID); err == nil && u != nil {
+			view.Payer = &OrderPartyIdentity{
+				ID:    u.ID.String(),
+				Name:  strings.TrimSpace(u.FirstName + " " + u.LastName),
+				Email: u.Email,
+				Phone: strOrEmpty(u.Phone),
+			}
+		}
+	}
+	if s.students != nil && o.StudentID != nil {
+		if sp, err := s.students.FindByID(ctx, *o.StudentID); err == nil && sp != nil {
+			view.Student = &OrderPartyIdentity{
+				ID:     sp.ID.String(),
+				Name:   strings.TrimSpace(sp.FirstName + " " + sp.LastName),
+				Level:  strOrEmpty(sp.CurrentLevel),
+				School: strOrEmpty(sp.SchoolName),
+			}
+		}
+	}
+	return view, nil
+}
+
+func strOrEmpty(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return strings.TrimSpace(*p)
 }
 
 func (s *AdminService) ListOrders(ctx context.Context, limit, offset int) ([]payment.Order, int64, error) {

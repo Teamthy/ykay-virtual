@@ -61,8 +61,8 @@ func main() {
 			status, is_public, timezone, accepts_online, accepts_in_person, currency
 		)
 		SELECT $1::uuid, 'local-tutor', 'Local Tutor (fixture)',
-			'Demo LMS pack. Approve in Admin → Tutor vetting, then assign to the UTME LMS demo cohort.',
-			'Mathematics · UTME', 5, 'SUBMITTED', FALSE, 'Africa/Lagos', TRUE, TRUE, 'NGN'
+			'Vetted NUVORA tutor — fully functional LMS fixture (demo lesson, study material, assignments, homework notes).',
+			'Mathematics · UTME', 5, 'APPROVED', TRUE, 'Africa/Lagos', TRUE, TRUE, 'NGN'
 		WHERE NOT EXISTS (SELECT 1 FROM tutor_profiles WHERE user_id = $1::uuid)
 		RETURNING id::text`, userID).Scan(&tutorID)
 	if err == sql.ErrNoRows {
@@ -73,10 +73,34 @@ func main() {
 	}
 	_, _ = db.Exec(`
 		UPDATE tutor_profiles
-		SET bio = $2, headline = $3, updated_at = NOW()
+		SET bio = $2, headline = $3,
+			status = 'APPROVED', is_public = TRUE,
+			verified_at = COALESCE(verified_at, NOW()),
+			approved_at = COALESCE(approved_at, NOW()),
+			updated_at = NOW()
 		WHERE id = $1::uuid`, tutorID,
-		"Demo LMS pack. Approve in Admin → Tutor vetting, then assign to the UTME LMS demo cohort.",
+		"Vetted NUVORA tutor — fully functional LMS fixture (demo lesson, study material, assignments, homework notes).",
 		"Mathematics · UTME")
+
+	// Teaching scope: Mathematics (create the subject if the local DB lacks it).
+	var mathsSubjID string
+	_ = db.QueryRow(`SELECT id::text FROM subjects WHERE slug = 'mathematics'`).Scan(&mathsSubjID)
+	if mathsSubjID == "" {
+		err := db.QueryRow(`INSERT INTO subjects (name, slug, category) VALUES ('Mathematics','mathematics','Academic') ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id::text`).Scan(&mathsSubjID)
+		if err != nil {
+			log.Fatalf("subject: %v", err)
+		}
+	}
+	_, _ = db.Exec(`INSERT INTO tutor_subjects (tutor_profile_id, subject_id)
+		VALUES ($1::uuid, $2::uuid) ON CONFLICT DO NOTHING`, tutorID, mathsSubjID)
+
+	// Competency: passed assessment so the vetting console shows a verified tutor.
+	var compN int
+	_ = db.QueryRow(`SELECT COUNT(*) FROM competency_assessments WHERE tutor_profile_id = $1::uuid`, tutorID).Scan(&compN)
+	if compN == 0 {
+		_, _ = db.Exec(`INSERT INTO competency_assessments (tutor_profile_id, subject_id, score, max_score, passed, attempted_at, expires_at)
+			VALUES ($1::uuid, $2::uuid, 92, 100, TRUE, NOW(), NOW() + INTERVAL '12 months')`, tutorID, mathsSubjID)
+	}
 
 	var progID string
 	err = db.QueryRow(`
@@ -105,6 +129,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("cohort: %v", err)
 	}
+	_, _ = db.Exec(`UPDATE cohorts SET tutor_profile_id = $1::uuid, updated_at = NOW() WHERE id = $2::uuid`, tutorID, cohortID)
 
 	var lessonID string
 	err = db.QueryRow(`SELECT id::text FROM lessons WHERE cohort_id = $1::uuid AND title = $2`, cohortID, lessonTitle).Scan(&lessonID)
@@ -153,12 +178,28 @@ func main() {
 		}
 	}
 
+	// Lesson note + homework so the tutor LMS shows teaching content too.
+	var noteN int
+	_ = db.QueryRow(`SELECT COUNT(*) FROM lesson_notes WHERE lesson_id = $1::uuid`, lessonID).Scan(&noteN)
+	if noteN == 0 {
+		_, err = db.Exec(`
+			INSERT INTO lesson_notes (lesson_id, tutor_profile_id, content, homework, is_visible_to_parent)
+			VALUES ($1::uuid, $2::uuid, 'Demo class note — we covered linear equations and simplification. Watch the recorded lesson first, then try the worksheet.',
+				'Complete questions 1-10 of the Week 1 algebra worksheet and upload your working before the next live session.', TRUE)`,
+			lessonID, tutorID)
+		if err != nil {
+			log.Fatalf("lesson note: %v", err)
+		}
+	}
+
 	fmt.Println("NUVORA LMS pack seeded")
 	fmt.Println("database:", dsn)
 	fmt.Println("tutor:", tutorEmail, "profile:", tutorID)
 	fmt.Println("programme:", progSlug, "cohort:", cohortSlug, "code: NV-LMSDEMO")
 	fmt.Println("NEXT:")
-	fmt.Println("  1. Admin → Tutor vetting — approve local-tutor (then set public if you want marketplace listing)")
-	fmt.Println("  2. Admin → Cohorts — Assign the tutor, or approve their join request")
-	fmt.Println("  3. Restart the API if it was started before this seed")
+	fmt.Println("  1. Log in as local.tutor@nuvora.test — the tutor LMS is fully populated")
+	fmt.Println("     (demo recorded video lesson, study PDF, assignment, homework note).")
+	fmt.Println("  2. Admin → Tutor vetting shows the tutor as APPROVED (routed to admin).")
+	fmt.Println("  3. Admin → Programmes → utme-mastery-lms — roster shows the tutor + cohort.")
+	fmt.Println("  4. Restart the API if it was started before this seed")
 }

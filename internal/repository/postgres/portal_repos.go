@@ -431,8 +431,16 @@ func (r *CohortRepo) ProgrammeRoster(ctx context.Context, slug string) (map[stri
 	}
 
 	tutorRows, err := r.db.QueryContext(ctx, `
-		SELECT DISTINCT tp.id, tp.display_name, tp.slug, tp.status::text, tp.is_public
+		SELECT DISTINCT tp.id, tp.display_name, tp.slug, tp.status::text, tp.is_public,
+			COALESCE(u.email, ''), COALESCE(u.phone, ''),
+			COALESCE(tp.years_experience, 0),
+			COALESCE((
+				SELECT string_agg(s.name, ', ' ORDER BY s.name)
+				FROM tutor_subjects ts JOIN subjects s ON s.id = ts.subject_id
+				WHERE ts.tutor_profile_id = tp.id
+			), '')
 		FROM tutor_profiles tp
+		LEFT JOIN users u ON u.id = tp.user_id
 		JOIN cohorts c ON c.tutor_profile_id = tp.id
 		WHERE c.programme_id = $1
 		ORDER BY tp.display_name`, progID)
@@ -443,18 +451,33 @@ func (r *CohortRepo) ProgrammeRoster(ctx context.Context, slug string) (map[stri
 	tutors := []map[string]any{}
 	for tutorRows.Next() {
 		var (
-			id          uuid.UUID
-			displayName string
-			tslug       string
-			tstatus     string
-			isPublic    bool
+			id              uuid.UUID
+			displayName     string
+			tslug           string
+			tstatus         string
+			isPublic        bool
+			email, phone    string
+			yearsExperience int
+			subjects        string
 		)
-		if err := tutorRows.Scan(&id, &displayName, &tslug, &tstatus, &isPublic); err != nil {
+		if err := tutorRows.Scan(&id, &displayName, &tslug, &tstatus, &isPublic,
+			&email, &phone, &yearsExperience, &subjects); err != nil {
 			return nil, fmt.Errorf("roster: scan tutor: %w", err)
 		}
-		tutors = append(tutors, map[string]any{
-			"id": id, "display_name": displayName, "slug": tslug, "status": tstatus, "is_public": isPublic,
-		})
+		row := map[string]any{
+			"id": id, "display_name": displayName, "slug": tslug, "status": tstatus,
+			"is_public": isPublic, "years_experience": yearsExperience,
+		}
+		if email != "" {
+			row["email"] = email
+		}
+		if phone != "" {
+			row["phone"] = phone
+		}
+		if subjects != "" {
+			row["subjects"] = subjects
+		}
+		tutors = append(tutors, row)
 	}
 	if err := tutorRows.Err(); err != nil {
 		return nil, fmt.Errorf("roster: tutor scan: %w", err)
@@ -462,9 +485,12 @@ func (r *CohortRepo) ProgrammeRoster(ctx context.Context, slug string) (map[stri
 
 	studentRows, err := r.db.QueryContext(ctx, `
 		SELECT sp.id, ce.cohort_id, sp.first_name, sp.last_name,
-			COALESCE(sp.current_level, ''), ce.status::text
+			COALESCE(sp.current_level, ''), ce.status::text,
+			COALESCE(sp.school_name, ''), COALESCE(u.email, ''), COALESCE(u.phone, ''),
+			COALESCE(to_char(sp.date_of_birth, 'YYYY-MM-DD'), '')
 		FROM cohort_enrollments ce
 		JOIN student_profiles sp ON sp.id = ce.student_profile_id
+		LEFT JOIN users u ON u.id = sp.user_id
 		JOIN cohorts c ON c.id = ce.cohort_id
 		WHERE c.programme_id = $1
 		ORDER BY ce.enrolled_at DESC`, progID)
@@ -475,12 +501,15 @@ func (r *CohortRepo) ProgrammeRoster(ctx context.Context, slug string) (map[stri
 	students := []map[string]any{}
 	for studentRows.Next() {
 		var (
-			id, cohortID uuid.UUID
-			first, last  string
-			level        string
-			estatus      string
+			id, cohortID         uuid.UUID
+			first, last          string
+			level                string
+			estatus              string
+			school, email, phone string
+			dob                  string
 		)
-		if err := studentRows.Scan(&id, &cohortID, &first, &last, &level, &estatus); err != nil {
+		if err := studentRows.Scan(&id, &cohortID, &first, &last, &level, &estatus,
+			&school, &email, &phone, &dob); err != nil {
 			return nil, fmt.Errorf("roster: scan student: %w", err)
 		}
 		row := map[string]any{
@@ -489,6 +518,18 @@ func (r *CohortRepo) ProgrammeRoster(ctx context.Context, slug string) (map[stri
 		}
 		if level != "" {
 			row["current_level"] = level
+		}
+		if school != "" {
+			row["school_name"] = school
+		}
+		if email != "" {
+			row["email"] = email
+		}
+		if phone != "" {
+			row["phone"] = phone
+		}
+		if dob != "" {
+			row["date_of_birth"] = dob
 		}
 		students = append(students, row)
 	}

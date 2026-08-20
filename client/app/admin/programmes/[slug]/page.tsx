@@ -95,12 +95,28 @@ export default function AdminProgrammeRosterPage() {
         ) : (
           <ul className="mt-3 divide-y divide-ink-100">
             {(roster.tutors ?? []).map((t) => (
-              <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div>
-                  <p className="font-semibold text-ink-800">{t.display_name}</p>
-                  <p className="text-xs text-ink-500">{t.slug}{t.is_public ? " · public" : ""}</p>
+              <li key={t.id} className="py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-ink-800">{t.display_name}</p>
+                    <p className="text-xs text-ink-500">{t.slug}{t.is_public ? " · public" : ""}</p>
+                  </div>
+                  <StatusBadge label={t.status} kind={statusKindFor(t.status)} />
                 </div>
-                <StatusBadge label={t.status} kind={statusKindFor(t.status)} />
+                <dl className="mt-2 grid gap-1 text-xs text-ink-500 sm:grid-cols-3">
+                  {t.email && (
+                    <div><dt className="inline font-bold text-ink-400">Email: </dt><dd className="inline">{t.email}</dd></div>
+                  )}
+                  {t.phone && (
+                    <div><dt className="inline font-bold text-ink-400">Phone: </dt><dd className="inline">{t.phone}</dd></div>
+                  )}
+                  {typeof t.years_experience === "number" && (
+                    <div><dt className="inline font-bold text-ink-400">Experience: </dt><dd className="inline">{t.years_experience} years</dd></div>
+                  )}
+                  {t.subjects && (
+                    <div className="sm:col-span-3"><dt className="inline font-bold text-ink-400">Subjects: </dt><dd className="inline">{t.subjects}</dd></div>
+                  )}
+                </dl>
               </li>
             ))}
           </ul>
@@ -114,12 +130,28 @@ export default function AdminProgrammeRosterPage() {
         ) : (
           <ul className="mt-3 divide-y divide-ink-100">
             {(roster.students ?? []).map((s) => (
-              <li key={`${s.id}-${s.cohort_id}`} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div>
-                  <p className="font-semibold text-ink-800">{s.first_name} {s.last_name}</p>
-                  <p className="text-xs text-ink-500">{s.current_level || "—"}</p>
+              <li key={`${s.id}-${s.cohort_id}`} className="py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-ink-800">{s.first_name} {s.last_name}</p>
+                    <p className="text-xs text-ink-500">{s.current_level || "Level not set"}</p>
+                  </div>
+                  <StatusBadge label={s.status} kind={statusKindFor(s.status)} />
                 </div>
-                <StatusBadge label={s.status} kind={statusKindFor(s.status)} />
+                <dl className="mt-2 grid gap-1 text-xs text-ink-500 sm:grid-cols-3">
+                  {s.school_name && (
+                    <div><dt className="inline font-bold text-ink-400">School: </dt><dd className="inline">{s.school_name}</dd></div>
+                  )}
+                  {s.email && (
+                    <div><dt className="inline font-bold text-ink-400">Email: </dt><dd className="inline">{s.email}</dd></div>
+                  )}
+                  {s.phone && (
+                    <div><dt className="inline font-bold text-ink-400">Phone: </dt><dd className="inline">{s.phone}</dd></div>
+                  )}
+                  {s.date_of_birth && (
+                    <div><dt className="inline font-bold text-ink-400">DOB: </dt><dd className="inline">{s.date_of_birth}</dd></div>
+                  )}
+                </dl>
               </li>
             ))}
           </ul>
