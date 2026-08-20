@@ -121,14 +121,17 @@ export default function AccountPage() {
   });
 
   const savePassword = useMutation({
-    mutationFn: (pw: string) => changePassword(pw),
+    mutationFn: ({ currentPw, pw }: { currentPw: string; pw: string }) =>
+      changePassword(currentPw, pw),
     onSuccess: () => {
       toast.success("Password updated");
+      setCurrentPw("");
       setNewPw("");
       setNewPw2("");
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update password"),
   });
+  const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [newPw2, setNewPw2] = useState("");
 
