@@ -248,6 +248,6 @@ export default function StudentDashboardPage() {
       <div className="mt-8">
         <RecommendationsForYou />
       </div>
-    </main>
+    </DashboardPage>
   );
 }

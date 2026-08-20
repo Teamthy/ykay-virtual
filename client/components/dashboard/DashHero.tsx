@@ -53,21 +53,29 @@ export function SideCard({
   href,
   link,
   icon,
+  onClick,
 }: {
   title: string;
   body: string;
   href: string;
   link: string;
   icon: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
     <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
       <div className="mb-3 grid size-10 place-items-center rounded-full bg-brand-gold-light text-deep">{icon}</div>
       <h3 className="font-bold text-ink-900">{title}</h3>
       <p className="mt-1 text-sm text-ink-500">{body}</p>
-      <Link href={href} className="mt-3 inline-block text-sm font-bold text-brand-gold-dark hover:underline">
-        {link}
-      </Link>
+      {onClick ? (
+        <button type="button" onClick={onClick} className="mt-3 inline-block text-sm font-bold text-brand-gold-dark hover:underline">
+          {link}
+        </button>
+      ) : (
+        <Link href={href} className="mt-3 inline-block text-sm font-bold text-brand-gold-dark hover:underline">
+          {link}
+        </Link>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,6 +81,14 @@ export default function ParentDashboardPage() {
   const [addForm, setAddForm] = useState({ first_name: "", last_name: "", current_level: "", school_name: "" });
   const [section, setSection] = useState<(typeof NAV)[number]["key"]>("overview");
   const [tab, setTab] = useState<(typeof BOOKING_TABS)[number]>("All");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const s = new URLSearchParams(window.location.search).get("section");
+    if (s && NAV.some((n) => n.key === s)) {
+      setSection(s as (typeof NAV)[number]["key"]);
+    }
+  }, []);
   const [receipt, setReceipt] = useState<OrderReceipt | null>(null);
   const [receiptLoading, setReceiptLoading] = useState(false);
 
@@ -256,9 +264,19 @@ export default function ParentDashboardPage() {
                   { href: "/tutors", label: "Find a tutor", icon: <Users size={16} /> },
                   { href: "/private-tuition", label: "Request tuition", icon: <Wallet size={16} /> },
                   { href: "/cohorts", label: "Browse cohorts", icon: <CalendarDays size={16} /> },
-                  { href: "/dashboard?section=bookings", label: "My bookings", icon: <FileText size={16} /> },
+                  { href: "/dashboard?section=bookings", label: "My bookings", icon: <FileText size={16} />, section: "bookings" as const },
                 ].map((a) => (
-                  <Link key={a.label} href={a.href} className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-brand-navy transition-all hover:border-brand-blue hover:shadow-lift">
+                  <Link
+                    key={a.label}
+                    href={a.href}
+                    onClick={(e) => {
+                      if ("section" in a && a.section) {
+                        e.preventDefault();
+                        setSection(a.section);
+                      }
+                    }}
+                    className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-brand-navy transition-all hover:border-brand-blue hover:shadow-lift"
+                  >
                     <span className="grid size-8 place-items-center rounded-lg bg-brand-blue-light text-brand-blue">{a.icon}</span>
                     {a.label}
                   </Link>
@@ -299,6 +317,30 @@ export default function ParentDashboardPage() {
                   }
                 />
               )}
+            </div>
+            <aside className="space-y-4">
+              <SideCard
+                icon={<CircleHelp size={18} />}
+                title="Have a question?"
+                body="Support can help with bookings, payments and learner accounts."
+                href="/help"
+                link="Contact support →"
+              />
+              <SideCard
+                icon={<Users size={18} />}
+                title="Manage learners"
+                body="Add a child, switch profiles, or jump into their bookings."
+                href="/dashboard?section=learners"
+                link="Open learners →"
+              />
+              <SideCard
+                icon={<MessageSquareText size={18} />}
+                title="Messages"
+                body="Chat with tutors and support about your family's learning."
+                href="/messages"
+                link="Open inbox →"
+              />
+            </aside>
             </div>
           )}
 
@@ -346,10 +388,6 @@ export default function ParentDashboardPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
-                          {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
-                            <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blue-dark transition-colors">
-                         Name="flex items-center gap-3">
                           <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                           {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
                             <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blue-dark transition-colors">
@@ -605,6 +643,6 @@ export default function ParentDashboardPage() {
           </div>
         )}
       </Modal>
-    </main>
+    </DashboardPage>
   );
 }
