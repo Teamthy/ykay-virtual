@@ -662,6 +662,9 @@ func (s *AdminService) CreateCohortAdmin(ctx context.Context, adminID uuid.UUID,
 	if c.LocationMode == "" {
 		c.LocationMode = "ONLINE"
 	}
+	if strings.TrimSpace(c.Code) == "" {
+		c.Code = "NV-" + strings.ToUpper(strings.ReplaceAll(uuid.NewString()[:8], "-", ""))
+	}
 	c.CreatedBy = &adminID
 	if err := s.cohortAdmin.Create(ctx, c); err != nil {
 		return nil, err
@@ -733,6 +736,24 @@ func (s *AdminService) ListLessonsToday(ctx context.Context) ([]booking.Lesson, 
 }
 
 // ── Payments admin (phase 38) ──────────────────────────────────────────────
+
+func (s *AdminService) GetOrderDetail(ctx context.Context, id uuid.UUID) (*payment.Order, []payment.OrderItem, error) {
+	if s.orders == nil {
+		return nil, nil, errors.New("orders store unavailable")
+	}
+	o, err := s.orders.GetByID(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	items, err := s.orders.ListItems(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	if items == nil {
+		items = []payment.OrderItem{}
+	}
+	return o, items, nil
+}
 
 func (s *AdminService) ListOrders(ctx context.Context, limit, offset int) ([]payment.Order, int64, error) {
 	if s.orders == nil {

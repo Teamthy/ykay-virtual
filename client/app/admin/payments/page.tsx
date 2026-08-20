@@ -104,8 +104,10 @@ export default function AdminPaymentsPage() {
                   {(orders.data?.orders ?? []).map((o) => (
                     <tr key={o.id} className="border-b border-ink-50 last:border-0 hover:bg-[#FFF7E4]">
                       <td className="px-5 py-3">
-                        <p className="font-semibold text-ink-800">{o.order_number}</p>
-                        <p className="text-xs text-ink-400">{o.id.slice(0, 8)}…</p>
+                        <Link href={`/admin/payments/${o.id}`} className="font-semibold text-brand-navy hover:underline">
+                          {o.order_number}
+                        </Link>
+                        <p className="text-xs text-ink-400">{o.id.slice(0, 8)}… · open details</p>
                       </td>
                       <td className="px-3 py-3">
                         <StatusBadge label={o.status} kind={statusKindFor(o.status)} />

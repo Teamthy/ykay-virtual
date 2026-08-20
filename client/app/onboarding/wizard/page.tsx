@@ -12,7 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/useSession";
 import { markOnboarded } from "@/features/auth/api";
-import { createLearner } from "@/features/onboarding/api";
+import { createLearner, ensureOwnLearner } from "@/features/onboarding/api";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
 import { safeNextPath, withNext } from "@/lib/safe-next";
 import { Button } from "@/components/ui/button";
@@ -62,18 +62,24 @@ function WizardInner() {
   });
 
   const finish = async () => {
-    if (isParent && step === 1 && firstName.trim()) {
-      try {
+    try {
+      if (isParent && firstName.trim()) {
         await createLearner({
           first_name: firstName.trim(),
-          last_name: "",
-          date_of_birth: "2013-01-01",
+          last_name: user?.last_name || "Learner",
           current_level: level || undefined,
           relationship: "PARENT",
         });
-      } catch {
-        // learner creation is best-effort; the wizard must never trap the user
       }
+      if (isStudent) {
+        await ensureOwnLearner({
+          first_name: (user?.first_name || firstName || user?.email.split("@")[0] || "Learner").trim(),
+          last_name: (user?.last_name || "NUVORA").trim(),
+          current_level: level || undefined,
+        });
+      }
+    } catch {
+      // learner creation is best-effort; the wizard must never trap the user
     }
     setSaving(true);
     complete.mutate();

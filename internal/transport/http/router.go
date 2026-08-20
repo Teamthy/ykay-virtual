@@ -277,6 +277,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// Onboarding (Phase 10b)
 	mux.HandleFunc("POST "+v1+"/me/learners", handlers.Onboarding.CreateLearner)
 	mux.HandleFunc("GET "+v1+"/me/learners", handlers.Onboarding.ListLearners)
+	mux.HandleFunc("POST "+v1+"/me/learner-profile", handlers.Onboarding.EnsureOwnProfile)
 
 	// Growth: reviews, referrals, institutions (Phase 10)
 	mux.HandleFunc("POST "+v1+"/reviews", handlers.Growth.CreateReview)
@@ -312,6 +313,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/admin/lessons/today", handlers.Admin.LessonsToday)
 	mux.HandleFunc("POST "+v1+"/admin/orders/{orderId}/confirm-payment", handlers.Admin.ConfirmManualPayment)
 	mux.HandleFunc("GET "+v1+"/admin/orders", handlers.Admin.ListOrders)
+	mux.HandleFunc("GET "+v1+"/admin/orders/{orderId}", handlers.Admin.GetOrder)
 	mux.HandleFunc("POST "+v1+"/admin/orders/{orderId}/refund", handlers.Admin.RefundOrder)
 	mux.HandleFunc("GET "+v1+"/admin/payouts", handlers.Admin.ListPayouts)
 	mux.HandleFunc("GET "+v1+"/admin/blog", handlers.Admin.ListPosts)

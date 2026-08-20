@@ -212,6 +212,8 @@ export type AdminCohort = {
   currency: string;
   status: string;
   tutor_profile_id?: string | null;
+  code?: string;
+  banner_url?: string | null;
 };
 
 export async function listAdminCohorts(params: { status?: string; page?: number }): Promise<Envelope<AdminCohort[]>> {
@@ -294,6 +296,17 @@ export type AdminPayout = {
 export async function listAdminOrders(page = 1, pageSize = 25): Promise<{ orders: Order[]; total: number }> {
   const res = await apiFetch<Order[]>(`/admin/orders?page=${page}&page_size=${pageSize}`);
   return { orders: res.data ?? [], total: res.meta?.total_items ?? 0 };
+}
+
+export async function getAdminOrder(orderId: string): Promise<{
+  order: Order & { parent_user_id?: string; student_profile_id?: string; updated_at?: string };
+  items: Order["items"];
+}> {
+  const res = await apiFetch<{
+    order: Order & { parent_user_id?: string; student_profile_id?: string; updated_at?: string };
+    items: Order["items"];
+  }>(`/admin/orders/${orderId}`);
+  return res.data;
 }
 
 export async function refundOrder(orderId: string, reason: string): Promise<void> {

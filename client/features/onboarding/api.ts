@@ -29,3 +29,12 @@ export async function listLearners(): Promise<Learner[]> {
   const res = await apiFetch<Learner[]>("/me/learners");
   return res.data ?? [];
 }
+
+export async function ensureOwnLearner(input: {
+  first_name: string;
+  last_name: string;
+  current_level?: string;
+}): Promise<Learner> {
+  const res = await apiFetch<Learner>("/me/learner-profile", { method: "POST", body: JSON.stringify(input) });
+  return res.data;
+}

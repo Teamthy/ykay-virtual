@@ -24,10 +24,11 @@ func NewSessionContextHandler(students identity.StudentProfileRepository, vettin
 }
 
 type sessionLearner struct {
-	ID        string `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Timezone  string `json:"timezone"`
+	ID           string  `json:"id"`
+	FirstName    string  `json:"first_name"`
+	LastName     string  `json:"last_name"`
+	Timezone     string  `json:"timezone"`
+	CurrentLevel *string `json:"current_level,omitempty"`
 }
 
 type sessionTutor struct {
@@ -69,7 +70,7 @@ func (h *SessionContextHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if student != nil {
-			out.Student = &sessionLearner{ID: student.ID.String(), FirstName: student.FirstName, LastName: student.LastName, Timezone: student.Timezone}
+			out.Student = &sessionLearner{ID: student.ID.String(), FirstName: student.FirstName, LastName: student.LastName, Timezone: student.Timezone, CurrentLevel: student.CurrentLevel}
 		}
 	}
 	if hasSessionRole(actor.Roles, "TUTOR") {

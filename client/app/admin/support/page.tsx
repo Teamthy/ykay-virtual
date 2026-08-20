@@ -15,6 +15,7 @@ const FILTERS = ["", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 export default function AdminSupportPage() {
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
+  const [open, setOpen] = useState<SupportTicket | null>(null);
   const qc = useQueryClient();
 
   const tickets = useQuery({
@@ -40,10 +41,10 @@ export default function AdminSupportPage() {
       key: "subject",
       header: "Ticket",
       cell: (t) => (
-        <div>
-          <p className="font-semibold text-ink-800">{t.subject}</p>
+        <button type="button" onClick={() => setOpen(t)} className="text-left">
+          <p className="font-semibold text-brand-navy hover:underline">{t.subject}</p>
           <p className="text-[11px] text-ink-400">{t.email} · {new Date(t.created_at).toLocaleString()}</p>
-        </div>
+        </button>
       ),
     },
     {
@@ -102,6 +103,26 @@ export default function AdminSupportPage() {
           description: "New enquiries land here as they arrive from the contact and tuition-request forms.",
         }}
       />
+
+      {open && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setOpen(null)}>
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-400">{open.status}</p>
+            <h2 className="mt-1 text-xl font-bold text-ink-900">{open.subject}</h2>
+            <p className="mt-1 text-sm text-ink-500">{open.email} · {new Date(open.created_at).toLocaleString()}</p>
+            <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-ink-700">{open.message}</p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {open.status === "OPEN" && (
+                <Button size="sm" onClick={() => { setStatusMut.mutate({ id: open.id, s: "IN_PROGRESS" }); setOpen({ ...open, status: "IN_PROGRESS" }); }}>Start working</Button>
+              )}
+              {(open.status === "OPEN" || open.status === "IN_PROGRESS") && (
+                <Button size="sm" variant="outline" onClick={() => { setStatusMut.mutate({ id: open.id, s: "RESOLVED" }); setOpen({ ...open, status: "RESOLVED" }); }}>Mark resolved</Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => setOpen(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {meta && meta.total_pages > 1 && (
         <div className="flex justify-center gap-2">

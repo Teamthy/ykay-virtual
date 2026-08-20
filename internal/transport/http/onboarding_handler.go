@@ -62,6 +62,25 @@ func (h *OnboardingHandler) CreateLearner(w http.ResponseWriter, r *http.Request
 	pkg.WriteSuccess(w, http.StatusCreated, learner, nil)
 }
 
+func (h *OnboardingHandler) EnsureOwnProfile(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	var req struct {
+		FirstName    string  `json:"first_name"`
+		LastName     string  `json:"last_name"`
+		CurrentLevel *string `json:"current_level"`
+	}
+	_ = DecodeJSON(r, &req)
+	p, err := h.svc.EnsureOwnProfile(r.Context(), actor.UserID, req.FirstName, req.LastName, req.CurrentLevel)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, p, nil)
+}
+
 func (h *OnboardingHandler) ListLearners(w http.ResponseWriter, r *http.Request) {
 	actor := requireActor(w, r)
 	if actor == nil {

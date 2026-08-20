@@ -437,6 +437,8 @@ func (h *AdminHandler) CreateCohort(w http.ResponseWriter, r *http.Request) {
 		Fee                 float64 `json:"fee"`
 		Currency            string  `json:"currency"`
 		Status              string  `json:"status"`
+		BannerURL           *string `json:"banner_url"`
+		Code                string  `json:"code"`
 	}
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -480,6 +482,8 @@ func (h *AdminHandler) CreateCohort(w http.ResponseWriter, r *http.Request) {
 		Fee:            req.Fee,
 		Currency:       req.Currency,
 		Status:         booking.CohortStatus(req.Status),
+		BannerURL:      req.BannerURL,
+		Code:           req.Code,
 	})
 	if err != nil {
 		WriteAppError(w, err)
@@ -742,6 +746,24 @@ func (h *AdminHandler) ConfirmManualPayment(w http.ResponseWriter, r *http.Reque
 }
 
 // ── Payments operations (phase 38 P1) ──────────────────────────────────────
+
+// GetOrder — GET /admin/orders/{orderId}
+func (h *AdminHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	orderID, err := ParseUUID(r, "orderId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	order, items, err := h.svc.GetOrderDetail(r.Context(), orderID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"order": order, "items": items}, nil)
+}
 
 // ListOrders — GET /admin/orders?page=&page_size=
 func (h *AdminHandler) ListOrders(w http.ResponseWriter, r *http.Request) {

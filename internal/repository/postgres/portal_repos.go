@@ -260,12 +260,12 @@ func (r *CohortRepo) Create(ctx context.Context, c *booking.Cohort) error {
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO cohorts (programme_id, title, slug, tutor_profile_id, capacity, enrolled_count,
 			start_date, end_date, schedule_description, timezone, location_mode, location_id,
-			fee, currency, status, meeting_link_template, created_by)
-		VALUES ($1,$2,$3,$4,$5,0,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+			fee, currency, status, meeting_link_template, created_by, code, banner_url)
+		VALUES ($1,$2,$3,$4,$5,0,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
 		RETURNING id, created_at, updated_at`,
 		c.ProgrammeID, c.Title, c.Slug, c.TutorProfileID, c.Capacity,
 		c.StartDate, c.EndDate, c.ScheduleDesc, c.Timezone, c.LocationMode, c.LocationID,
-		c.Fee, c.Currency, c.Status, c.MeetingLinkTemplate, c.CreatedBy,
+		c.Fee, c.Currency, c.Status, c.MeetingLinkTemplate, c.CreatedBy, c.Code, c.BannerURL,
 	).Scan(&c.ID, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		if isUniqueViolation(err) {

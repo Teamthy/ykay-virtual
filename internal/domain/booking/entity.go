@@ -75,6 +75,8 @@ type Cohort struct {
 	Fee                 float64      `json:"fee"`
 	Currency            string       `json:"currency"`
 	Status              CohortStatus `json:"status"`
+	Code                string       `json:"code"`
+	BannerURL           *string      `json:"banner_url,omitempty"`
 	MeetingLinkTemplate *string      `json:"meeting_link_template,omitempty"`
 	CreatedBy           *uuid.UUID   `json:"created_by,omitempty"`
 	PublishedAt         *time.Time   `json:"published_at,omitempty"`

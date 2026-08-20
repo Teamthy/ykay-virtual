@@ -14,7 +14,7 @@ export default function MessagesPage() {
   return (
     <DashboardPage
       title="Community"
-      subtitle="Conversations are scoped to your bookings — tutors, parents and cohort members only."
+      subtitle="Parents, students and tutors share booking-scoped threads. Admins pick up escalations in Chat agent inbox and Support."
     >
       <MessageCenter />
     </DashboardPage>

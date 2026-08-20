@@ -160,6 +160,7 @@ export type SessionLearner = {
   first_name: string;
   last_name: string;
   timezone: string;
+  current_level?: string;
 };
 
 export type SessionTutorProfile = { id: string; status: string };

@@ -40,14 +40,14 @@ const ALL_TABS = ["Profile", "Learners", "Referrals", "Security", "Devices", "Pr
 type Tab = (typeof ALL_TABS)[number];
 
 function tabsForRoles(roles: string[]): readonly Tab[] {
-  if (roles.includes("PARENT")) return ALL_TABS;
+  if (roles.includes("PARENT") || roles.includes("STUDENT")) return ALL_TABS;
   return ["Profile", "Security", "Devices", "Preferences", "Data"];
 }
 
 export default function AccountPage() {
   const router = useRouter();
   const qc = useQueryClient();
-  const { user, isLoading } = useSession();
+  const { user, context, isLoading } = useSession();
   const tabs = tabsForRoles(user?.roles ?? []);
   const [tab, setTab] = useState<Tab>("Profile");
   const dashHome = homeForRoles(user?.roles ?? []);
@@ -293,9 +293,11 @@ export default function AccountPage() {
                   </li>
                 )}
               </ul>
-              <Link href="/dashboard" className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-brand-gold">
+              {user.roles.includes("PARENT") && (
+              <Link href="/dashboard?section=learners" className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-brand-gold">
                 <UserPlus size={15} /> Add a learner
               </Link>
+              )}
             </section>
           )}
 

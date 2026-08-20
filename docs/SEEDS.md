@@ -25,6 +25,29 @@ Passwords are written to `seed-local-users.once.txt` (gitignored). Delete that f
 
 Self-registered users stay `PENDING_VERIFICATION` until they confirm the email link (e2e covers this).
 
+### Named operators (your Gmail, not in git)
+
+Password is **only** from the environment. Never commit it.
+
+```bash
+# local Postgres
+export SEED_OPERATOR_PASSWORD='your-password-here'
+go run ./cmd/seedusers --ops-only \
+  --academic nuvorayk@gmail.com \
+  --super olusanyatimothy54@gmail.com
+```
+
+| Email | Role | After MFA |
+|---|---|---|
+| `nuvorayk@gmail.com` | ACADEMIC_ADMIN | `/admin` |
+| `olusanyatimothy54@gmail.com` | SUPER_ADMIN | `/admin` and `/admin/super` |
+
+Both roles require **MFA** after the password. Local/dev: code is in the API log. Hosted: the API must be able to email that address.
+
+The API must use the **same** `DATABASE_URL`. Vercel frontend alone cannot create these users.
+
+Production hosted DB (Render etc.): set `DATABASE_URL` to that database and add `--allow-prod`. Do not enable `SEED_DEMO_DATA`.
+
 
 > **Never use these accounts in a shared environment.** Fixture data is now
 > disabled by default, including when the API uses its in-memory development

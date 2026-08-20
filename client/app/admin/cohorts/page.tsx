@@ -70,7 +70,12 @@ export default function AdminCohortsPage() {
     {
       key: "title",
       header: "Title",
-      cell: (c) => <span className="font-semibold text-ink-800 line-clamp-1 max-w-[220px]">{c.title}</span>,
+      cell: (c) => (
+        <span className="font-semibold text-ink-800 line-clamp-1 max-w-[220px]">
+          {c.title}
+          {c.code && <span className="mt-0.5 block font-mono text-[10px] text-ink-400">{c.code}</span>}
+        </span>
+      ),
     },
     {
       key: "dates",
@@ -225,6 +230,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
     location_mode: "ONLINE",
     fee: "50000",
     currency: "NGN",
+    banner_url: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -257,6 +263,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         fee: Number(form.fee),
         currency: form.currency,
         status: "DRAFT",
+        banner_url: form.banner_url.trim() || undefined,
       });
       toast.success("Cohort created (DRAFT)");
       onDone();
@@ -304,6 +311,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         {field("fee", "Fee", "number")}
         {field("timezone", "Timezone")}
         {field("currency", "Currency")}
+        {field("banner_url", "Banner image URL")}
         <label className="block text-sm">
           <span className="font-medium text-ink-700">Location mode</span>
           <select value={form.location_mode} onChange={(e) => setForm({ ...form, location_mode: e.target.value })}

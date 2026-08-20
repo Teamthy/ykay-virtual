@@ -58,7 +58,8 @@ function CheckRow({
 }
 
 export default function StudentDashboardPage() {
-  const { user } = useSession();
+  const { user, context } = useSession();
+  const me = context?.student;
 
   const lessons = useQuery({
     queryKey: ["student", "lessons"],
@@ -111,11 +112,18 @@ export default function StudentDashboardPage() {
                   <BookOpen size={20} />
                 </div>
                 <h2 className="font-display text-2xl tracking-wide md:text-3xl">
-                  {enrolled ? "You're enrolled — class starts soon!" : "Find your next class"}
+                  {me
+                    ? enrolled
+                      ? `Welcome back, ${me.first_name}`
+                      : `Hi ${me.first_name} — find your next class`
+                    : enrolled
+                      ? "You're enrolled — class starts soon!"
+                      : "Find your next class"}
                 </h2>
                 <p className="mt-2 text-sm text-white/75">
+                  {me?.current_level ? `${me.current_level} · ` : ""}
                   {next
-                    ? `Next up: ${next.title}. While you wait, get your profile ready and connect with your cohort.`
+                    ? `Next up: ${next.title}.`
                     : "Browse programmes and join a cohort. Your schedule and LMS will appear here."}
                 </p>
               </div>
@@ -224,6 +232,16 @@ export default function StudentDashboardPage() {
               Watch guide →
             </Link>
           </div>
+          {me && (
+            <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
+              <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Your learner profile</p>
+              <p className="mt-2 font-bold text-ink-900">{me.first_name} {me.last_name}</p>
+              <p className="text-sm text-ink-500">{me.current_level || "Level from onboarding"}</p>
+              <Link href="/account" className="mt-3 inline-block text-sm font-bold text-brand-gold-dark hover:underline">
+                Edit in settings →
+              </Link>
+            </div>
+          )}
           <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
             <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Snapshot</p>
             <dl className="mt-3 space-y-2 text-sm">
@@ -240,6 +258,9 @@ export default function StudentDashboardPage() {
             </dl>
             <Link href="/lms" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-deep py-2.5 text-sm font-bold text-white hover:bg-deep-light">
               Continue learning
+            </Link>
+            <Link href="/account" className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-ink-200 py-2.5 text-sm font-bold text-ink-800">
+              Receipts &amp; settings
             </Link>
           </div>
         </aside>

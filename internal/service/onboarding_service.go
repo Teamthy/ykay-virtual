@@ -42,8 +42,11 @@ type CreateLearnerInput struct {
 // CreateLearner — parent adds a linked learner. Enforces the guardian
 // relationship (minors created/linked by parents — never self-register).
 func (s *OnboardingService) CreateLearner(ctx context.Context, in CreateLearnerInput) (*identity.StudentProfile, error) {
-	if strings.TrimSpace(in.FirstName) == "" || strings.TrimSpace(in.LastName) == "" {
-		return nil, fmt.Errorf("%w: learner first and last name are required", domain.ErrInvalidInput)
+	if strings.TrimSpace(in.FirstName) == "" {
+		return nil, fmt.Errorf("%w: learner first name is required", domain.ErrInvalidInput)
+	}
+	if strings.TrimSpace(in.LastName) == "" {
+		in.LastName = "Learner"
 	}
 	if s.students == nil || s.links == nil {
 		return nil, errors.New("learner store unavailable")
@@ -78,10 +81,58 @@ func (s *OnboardingService) CreateLearner(ctx context.Context, in CreateLearnerI
 	return learner, nil
 }
 
-// ListLearners — the parent's linked learners (object-level authz).
+// ListLearners — linked learners for a parent, plus the caller's own student
+// profile when they are a student (so settings/dashboard stay in sync).
 func (s *OnboardingService) ListLearners(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
 	if s.students == nil {
 		return []identity.StudentProfile{}, nil
 	}
-	return s.students.ListByParentUserID(ctx, parentUserID)
+	list, err := s.students.ListByParentUserID(ctx, parentUserID)
+	if err != nil {
+		return nil, err
+	}
+	own, err := s.students.FindByUserID(ctx, parentUserID)
+	if err == nil && own != nil {
+		found := false
+		for i := range list {
+			if list[i].ID == own.ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			list = append([]identity.StudentProfile{*own}, list...)
+		}
+	}
+	return list, nil
+}
+
+// EnsureOwnProfile — student onboarding creates/returns the profile attached
+// to the signed-in user (not a child the parent books for).
+func (s *OnboardingService) EnsureOwnProfile(ctx context.Context, userID uuid.UUID, firstName, lastName string, level *string) (*identity.StudentProfile, error) {
+	if s.students == nil {
+		return nil, errors.New("learner store unavailable")
+	}
+	if existing, err := s.students.FindByUserID(ctx, userID); err == nil && existing != nil {
+		return existing, nil
+	}
+	if strings.TrimSpace(firstName) == "" {
+		firstName = "Learner"
+	}
+	if strings.TrimSpace(lastName) == "" {
+		lastName = "NUVORA"
+	}
+	uid := userID
+	p := &identity.StudentProfile{
+		UserID:          &uid,
+		FirstName:       strings.TrimSpace(firstName),
+		LastName:        strings.TrimSpace(lastName),
+		CurrentLevel:    level,
+		Timezone:        "Africa/Lagos",
+		GuardianConsent: true,
+	}
+	if err := s.students.Create(ctx, p); err != nil {
+		return nil, err
+	}
+	return p, nil
 }
