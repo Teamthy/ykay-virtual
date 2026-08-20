@@ -474,15 +474,7 @@ func redactPII(s string) string {
 	return s
 }
 
-// cannedReply — graceful degradation when no AI provider is configured.
-func cannedReply(userText string) string {
-	switch {
-	case escalateRe.MatchString(userText):
-		return "I've flagged this for our team — a human agent will follow up on this conversation shortly."
-	default:
-		return "Thanks for your message! I'm currently in offline training mode, but your message has been saved and our support team will get back to you shortly."
-	}
-}
+// cannedReply lives in chat_kb.go — FAQ answers when Gemini is off.
 
 func round1(v float64) float64 {
 	return float64(int(v*10+0.5)) / 10

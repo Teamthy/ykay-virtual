@@ -23,7 +23,10 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     title: "Lessons & cohorts",
     blurb: "Schedules, joining live lessons, attendance and resources.",
     faqs: [
-      { q: "How do I join a live lesson?", a: "Open My Learning, choose your course, and open the lesson. The meeting link is available inside the join window before the session." },
+      { q: "How do I join a live lesson?", a: "Open My Learning (LMS), choose your course, and open the lesson. The meeting link is available inside the join window before the session." },
+      { q: "How do I access my course materials?", a: "Open LMS → My courses, then the cohort. Recordings, notes and resources sit on each lesson where the programme provides them." },
+      { q: "When is my next assignment due?", a: "Open LMS → your cohort. Assignments and quizzes list due dates there. Submit from the same screen." },
+      { q: "What's my current progress?", a: "Students: student dashboard and LMS (attendance, assignments, grades). Parents: family dashboard for attendance and weekly progress reports." },
       { q: "Are lessons recorded?", a: "Cohort sessions include recordings and resources where the programme provides them. Private tuition recordings follow your tutor's agreement." },
       { q: "Can I reschedule a private lesson?", a: "Yes - reschedule within your package window. Contact your tutor or support; the schedule update keeps your escrow and sessions intact." },
       { q: "How do I see my child's progress?", a: "The parent dashboard shows attendance, assignments, submissions and weekly progress reports with strengths, weaknesses and recommendations." },

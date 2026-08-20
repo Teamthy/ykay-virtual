@@ -328,10 +328,13 @@ func main() {
 
 	// --- AI assistant (phase 33) ---
 	chatSvc := service.NewChatService(repos.Chat, supportSvc, repos.Users)
+	chatSvc.WithContextBuilder(buildChatContext(programmeSvc, cohortSvc, tutorSvc))
 	if cfg.ChatbotEnabled && cfg.GeminiAPIKey != "" {
 		chatSvc.WithProvider(service.NewGeminiProvider(cfg.GeminiAPIKey, cfg.GeminiModel).
 			WithGuard(cfg.AIMaxTokensPerRequest, cfg.AIDailyBudgetTokens))
-		chatSvc.WithContextBuilder(buildChatContext(programmeSvc, cohortSvc, tutorSvc))
+		slog.Info("chat: Gemini provider enabled", "model", cfg.GeminiModel)
+	} else {
+		slog.Info("chat: knowledge-base replies (set GEMINI_API_KEY to enable Gemini)")
 	}
 	pushSvc := service.NewPushService(repos.Devices, service.NewExpoPushSender(cfg.ExpoAccessToken))
 	chatSvc.WithPusher(pushSvc)

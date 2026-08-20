@@ -35,10 +35,11 @@ func TestChatService_ThreadLifecycle(t *testing.T) {
 	require.Len(t, msgs, 1)
 	assert.Equal(t, chat.RoleAssistant, msgs[0].Role)
 
-	// Provider off → canned reply stored.
+	// Provider off → knowledge-base reply (never invents a price).
 	reply, status, err := svc.SendMessage(ctx, user.ID, thread.ID, "How much is the UTME cohort?")
 	require.NoError(t, err)
-	assert.Contains(t, reply, "support team")
+	assert.Contains(t, reply, "escrow")
+	assert.NotContains(t, reply, "offline training")
 	assert.Equal(t, chat.ThreadOpen, status)
 
 	// Provider on → AI reply used.
@@ -152,6 +153,12 @@ func TestChatService_Trends(t *testing.T) {
 	// 30 days capped at 90, negative defaults to 14.
 	require.Len(t, mustTrends(t, svc, 0), 14)
 	require.Len(t, mustTrends(t, svc, 30), 30)
+}
+
+func TestCannedReply_KnowledgeBase(t *testing.T) {
+	assert.Contains(t, cannedReply("How do I join a live lesson?"), "meeting link")
+	assert.Contains(t, cannedReply("I need a human please"), "human agent")
+	assert.NotContains(t, cannedReply("hello there"), "offline training")
 }
 
 func mustTrends(t *testing.T, svc *ChatService, days int) []TrendPoint {
