@@ -1150,7 +1150,27 @@ html.dark .bg-white,
 html.dark .bg-surface,
 html.dark .bg-surface-white,
 html.dark .bg-surface-subtle {
-  background-color: #0d1f16;
+  background-color: #164632;
+  color: #f4f7f5;
+}
+
+html.dark .text-deep,
+html.dark .text-deep-light,
+html.dark .text-deep-dark {
+  color: #d7efe3;
+}
+
+html.dark .bg-brand-gold .text-deep,
+html.dark .bg-brand-gold-light .text-deep,
+html.dark .bg-primary .text-deep,
+html.dark .bg-brand-gold,
+html.dark .bg-primary {
+  color: #013920;
+}
+
+html.dark .bg-brand-gold-light {
+  background-color: #dffff2;
+  color: #013920;
 }
 
 
@@ -1280,8 +1300,7 @@ html.dark .text-brand-blue-dark {
 }
 
 
-html.dark .bg-brand-blue-light,
-html.dark .bg-brand-gold-light {
+html.dark .bg-brand-blue-light {
   background-color: #173b2a;
   color: #f4f7f5;
 }

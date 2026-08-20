@@ -17,6 +17,7 @@ import {
 import { listAssessments, listProgressReports } from "@/features/learning/api";
 import { useSession } from "@/hooks/useSession";
 import { RoleGate } from "@/components/dashboard/RoleGate";
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { GraduationCap } from "lucide-react";
 
 // Student LMS hub — my courses, attendance, assignments, quizzes, reports.
@@ -103,7 +104,7 @@ export default function LmsHomePage() {
     .length;
 
   return (
-    <main className="px-4 py-6 md:px-8 md:py-8">
+    <DashboardPage>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold text-ink-900">My courses</h2>
@@ -257,6 +258,6 @@ export default function LmsHomePage() {
         </Section>
       </div>
 
-    </main>
+    </DashboardPage>
   );
 }

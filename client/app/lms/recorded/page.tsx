@@ -2,16 +2,26 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Play, Video, Clock } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { listRecordedLessons } from "@/features/lms/recorded";
 import { listLearners } from "@/features/onboarding/api";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
+import { useSession } from "@/hooks/useSession";
 
-// Recorded-lesson library: videos from the learner's enrolled cohorts.
 export default function RecordedLibraryPage() {
+  const { context } = useSession();
   const learners = useQuery({ queryKey: ["onboarding", "learners"], queryFn: listLearners, staleTime: 30_000 });
   const [studentId, setStudentId] = useState("");
+
+  useEffect(() => {
+    if (studentId) return;
+    const own = context?.student?.id;
+    const first = (learners.data ?? [])[0]?.id;
+    if (own) setStudentId(own);
+    else if (first) setStudentId(first);
+  }, [context, learners.data, studentId]);
 
   const lessons = useQuery({
     queryKey: ["me", "recorded", studentId],
@@ -21,39 +31,44 @@ export default function RecordedLibraryPage() {
   });
 
   const rows = lessons.data ?? [];
+  const pickerOptions = [
+    ...(context?.student ? [context.student] : []),
+    ...(learners.data ?? []).filter((l) => l.id !== context?.student?.id),
+  ];
 
   return (
-    <div className="space-y-6">
+    <DashboardPage className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-brand-navy flex items-center gap-2">
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-ink-900">
           <Video className="text-brand-gold" /> Recorded lessons
         </h1>
-        <p className="text-ink-500 text-sm mt-1">
-          Rewatch your recorded classes any time. Only lessons from cohorts you're enrolled in appear here.
+        <p className="mt-1 text-sm text-ink-500">
+          Rewatch your recorded classes any time. Only lessons from cohorts you&apos;re enrolled in appear here.
         </p>
       </div>
 
-      <label className="block max-w-sm text-sm">
-        <span className="font-medium text-ink-700">Learner</span>
-        <select
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30"
-        >
-          <option value="">Select a learner…</option>
-          {(learners.data ?? []).map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.first_name} {l.last_name}
-            </option>
-          ))}
-        </select>
-      </label>
+      {pickerOptions.length > 1 && (
+        <label className="block max-w-sm text-sm">
+          <span className="font-medium text-ink-700">Learner</span>
+          <select
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value)}
+            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30"
+          >
+            {pickerOptions.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.first_name} {l.last_name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {!studentId ? (
         <EmptyState
           icon={<Play size={20} />}
-          title="Pick a learner"
-          description="Choose a learner above to see their recorded lessons."
+          title="No learner on this account"
+          description="Recorded lessons show for your own student profile or a linked learner."
         />
       ) : lessons.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
@@ -73,7 +88,7 @@ export default function RecordedLibraryPage() {
             <div key={l.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-brand-navy">{l.title}</h3>
+                  <h3 className="font-bold text-ink-900">{l.title}</h3>
                   <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-500">
                     <Clock size={12} />
                     {new Date(l.start_at).toLocaleDateString()} · {l.timezone}
@@ -99,6 +114,6 @@ export default function RecordedLibraryPage() {
           ))}
         </div>
       )}
-    </div>
+    </DashboardPage>
   );
 }

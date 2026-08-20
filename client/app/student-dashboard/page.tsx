@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import { listMyAssignments, listMySubmissions, getAttendanceSummary } from "@/features/portal/api";
 import { RoleGate } from "@/components/dashboard/RoleGate";
+import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -97,7 +98,7 @@ export default function StudentDashboardPage() {
   const checksDone = [profileDone, true, false, enrolled].filter(Boolean).length;
 
   return (
-    <main className="px-4 py-6 md:px-8 md:py-8">
+    <DashboardPage>
       <RoleGate page="/student-dashboard" />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
