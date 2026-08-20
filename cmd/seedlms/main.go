@@ -1,11 +1,17 @@
 package main
 
-// Seed a local tutor LMS pack against the same Postgres as seedusers:
-// tutor profile for local.tutor@nuvora.test (SUBMITTED so Admin → Tutor vetting
-// can approve), a published demo programme/cohort, recorded lesson, study PDF,
-// and an assignment. Does not print or write passwords.
+// Seed a fully vetted tutor + LMS pack against the same Postgres as
+// seedusers. The tutor is created as an ACTIVE TUTOR account when missing
+// (password from --tutor-password or SEED_OPERATOR_PASSWORD — the same
+// password you use for the seeded admins), their vetting profile is APPROVED
+// and public with a passed competency assessment, and the LMS pack includes:
+// a recorded demo video lesson, a study-material PDF, an assignment, a
+// lesson note with homework, a weekly availability schedule and one enrolled
+// demo student so the tutor roster is populated end to end.
 //
-//	go run ./cmd/seedlms
+//	go run ./cmd/seedlms --tutor-email samaliu333@gmail.com
+//
+// (set SEED_OPERATOR_PASSWORD in the environment, or pass --tutor-password.)
 import (
 	"database/sql"
 	"flag"
@@ -15,24 +21,41 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
+
+	"ykay-virtual/internal/ops"
 )
 
 const (
-	tutorEmail = "local.tutor@nuvora.test"
-	progSlug   = "utme-mastery-lms"
-	cohortSlug = "utme-2026-lms-demo"
-	lessonTitle = "Algebra foundations (recorded)"
-	videoURL   = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-	pdfURL     = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+	defaultTutorEmail = "local.tutor@nuvora.test"
+	demoStudentEmail  = "local.student@nuvora.test"
+	progSlug          = "utme-mastery-lms"
+	cohortSlug        = "utme-2026-lms-demo"
+	lessonTitle       = "Algebra foundations (recorded)"
+	videoURL          = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+	pdfURL            = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
 )
 
 func main() {
 	allowProd := flag.Bool("allow-prod", false, "allow seeding when ENVIRONMENT=production")
+	tutorEmail := flag.String("tutor-email", defaultTutorEmail, "tutor account email (created if missing)")
+	tutorPassword := flag.String("tutor-password", "", "tutor login password (defaults to SEED_OPERATOR_PASSWORD / OPERATOR_PASSWORD)")
 	flag.Parse()
 
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 	if (env == "production" || env == "prod") && !*allowProd {
 		log.Fatal("refusing to seed LMS pack in production (pass --allow-prod if you really mean it)")
+	}
+
+	email := strings.ToLower(strings.TrimSpace(*tutorEmail))
+	if !strings.Contains(email, "@") {
+		log.Fatalf("--tutor-email must be a valid email, got %q", email)
+	}
+	password := strings.TrimSpace(*tutorPassword)
+	if password == "" {
+		password = strings.TrimSpace(os.Getenv("SEED_OPERATOR_PASSWORD"))
+	}
+	if password == "" {
+		password = strings.TrimSpace(os.Getenv("OPERATOR_PASSWORD"))
 	}
 
 	dsn := os.Getenv("DATABASE_URL")
@@ -48,19 +71,56 @@ func main() {
 		log.Fatalf("database: %v", err)
 	}
 
+	// ── Tutor account: create when missing, sync role (and password when one
+	// was supplied) when present.
 	var userID string
-	err = db.QueryRow(`SELECT id::text FROM users WHERE email = $1 AND deleted_at IS NULL`, tutorEmail).Scan(&userID)
-	if err != nil {
-		log.Fatalf("%s not found — run go run ./cmd/seedusers first: %v", tutorEmail, err)
+	err = db.QueryRow(`SELECT id::text FROM users WHERE email = $1 AND deleted_at IS NULL`, email).Scan(&userID)
+	if err == sql.ErrNoRows {
+		if password == "" {
+			log.Fatalf("%s does not exist — set SEED_OPERATOR_PASSWORD (the admin seed password) or pass --tutor-password so the account can be created", email)
+		}
+		if perr := ops.ValidatePassword(password); perr != nil {
+			log.Fatalf("tutor password invalid: %v", perr)
+		}
+		if perr := ops.UpsertUser(db, email, "TUTOR", password); perr != nil {
+			log.Fatalf("create tutor account: %v", perr)
+		}
+		if err = db.QueryRow(`SELECT id::text FROM users WHERE email = $1 AND deleted_at IS NULL`, email).Scan(&userID); err != nil {
+			log.Fatalf("read back tutor account: %v", err)
+		}
+		fmt.Println("tutor account created:", email, "(password = SEED_OPERATOR_PASSWORD/--tutor-password)")
+	} else if err != nil {
+		log.Fatalf("tutor account lookup: %v", err)
+	} else {
+		// Existing account: re-sync the password when one was supplied (keeps
+		// the tutor aligned with the admin seed password) and make sure the
+		// account is ACTIVE + verified + carries the TUTOR role.
+		if password != "" {
+			if perr := ops.ValidatePassword(password); perr != nil {
+				log.Fatalf("tutor password invalid: %v", perr)
+			}
+			if perr := ops.UpsertUser(db, email, "TUTOR", password); perr != nil {
+				log.Fatalf("sync tutor account: %v", perr)
+			}
+			fmt.Println("tutor account synced:", email, "(password = SEED_OPERATOR_PASSWORD/--tutor-password)")
+		} else {
+			_, _ = db.Exec(`
+				INSERT INTO user_roles (user_id, role_id)
+				SELECT $1::uuid, r.id FROM roles r WHERE r.name = 'TUTOR'
+				ON CONFLICT (user_id, role_id) DO NOTHING`, userID)
+			_, _ = db.Exec(`UPDATE users SET status = 'ACTIVE', email_verified_at = COALESCE(email_verified_at, NOW()), onboarded_at = COALESCE(onboarded_at, NOW()) WHERE id = $1::uuid`, userID)
+			fmt.Println("tutor account reused (existing password):", email)
+		}
 	}
 
+	// ── Vetted profile: APPROVED + public, on every run (idempotent).
 	var tutorID string
 	err = db.QueryRow(`
 		INSERT INTO tutor_profiles (
 			user_id, slug, display_name, bio, headline, years_experience,
 			status, is_public, timezone, accepts_online, accepts_in_person, currency
 		)
-		SELECT $1::uuid, 'local-tutor', 'Local Tutor (fixture)',
+		SELECT $1::uuid, 'vetted-tutor', 'Vetted NUVORA Tutor',
 			'Vetted NUVORA tutor — fully functional LMS fixture (demo lesson, study material, assignments, homework notes).',
 			'Mathematics · UTME', 5, 'APPROVED', TRUE, 'Africa/Lagos', TRUE, TRUE, 'NGN'
 		WHERE NOT EXISTS (SELECT 1 FROM tutor_profiles WHERE user_id = $1::uuid)
@@ -102,10 +162,22 @@ func main() {
 			VALUES ($1::uuid, $2::uuid, 92, 100, TRUE, NOW(), NOW() + INTERVAL '12 months')`, tutorID, mathsSubjID)
 	}
 
+	// Weekly availability so the tutor LMS calendar is populated.
+	for _, slot := range [][3]string{
+		{"2", "17:00", "19:00"}, // Tue
+		{"4", "17:00", "19:00"}, // Thu
+		{"6", "10:00", "12:00"}, // Sat
+	} {
+		_, _ = db.Exec(`INSERT INTO tutor_availabilities (tutor_profile_id, day_of_week, start_time, end_time, is_recurring)
+			VALUES ($1::uuid, $2, $3, $4, TRUE)
+			ON CONFLICT (tutor_profile_id, day_of_week, start_time, end_time) DO NOTHING`,
+			tutorID, slot[0], slot[1], slot[2])
+	}
+
 	var progID string
 	err = db.QueryRow(`
 		INSERT INTO programmes (title, slug, summary, format, status, currency, is_featured, published_at)
-		VALUES ('UTME Mastery (LMS demo)', $1, 'Seeded demo programme for the local tutor LMS pack.', 'COHORT', 'PUBLISHED', 'NGN', FALSE, NOW())
+		VALUES ('UTME Mastery (LMS demo)', $1, 'Seeded demo programme for the vetted tutor LMS pack.', 'COHORT', 'PUBLISHED', 'NGN', FALSE, NOW())
 		ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, status = 'PUBLISHED', published_at = COALESCE(programmes.published_at, NOW())
 		RETURNING id::text`, progSlug).Scan(&progID)
 	if err != nil {
@@ -130,6 +202,31 @@ func main() {
 		log.Fatalf("cohort: %v", err)
 	}
 	_, _ = db.Exec(`UPDATE cohorts SET tutor_profile_id = $1::uuid, updated_at = NOW() WHERE id = $2::uuid`, tutorID, cohortID)
+
+	// ── Demo student enrollment so the tutor roster has a learner.
+	var studentUserID string
+	err = db.QueryRow(`SELECT id::text FROM users WHERE email = $1 AND deleted_at IS NULL`, demoStudentEmail).Scan(&studentUserID)
+	if err == nil {
+		var spID string
+		_ = db.QueryRow(`SELECT id::text FROM student_profiles WHERE user_id = $1::uuid`, studentUserID).Scan(&spID)
+		if spID == "" {
+			err = db.QueryRow(`
+				INSERT INTO student_profiles (user_id, first_name, last_name, current_level, school_name, guardian_consent, timezone)
+				VALUES ($1::uuid, 'Demo', 'Student', 'SSS2', 'NUVORA Demo School', TRUE, 'Africa/Lagos')
+				RETURNING id::text`, studentUserID).Scan(&spID)
+			if err != nil {
+				log.Fatalf("demo student profile: %v", err)
+			}
+		}
+		_, _ = db.Exec(`
+			INSERT INTO cohort_enrollments (cohort_id, student_profile_id, parent_user_id, status)
+			VALUES ($1::uuid, $2::uuid, $3::uuid, 'CONFIRMED')
+			ON CONFLICT (cohort_id, student_profile_id) DO UPDATE SET status = 'CONFIRMED'`,
+			cohortID, spID, studentUserID)
+		_, _ = db.Exec(`UPDATE cohorts SET enrolled_count = (
+			SELECT COUNT(*) FROM cohort_enrollments WHERE cohort_id = $1::uuid AND status = 'CONFIRMED'
+		) WHERE id = $1::uuid`, cohortID)
+	}
 
 	var lessonID string
 	err = db.QueryRow(`SELECT id::text FROM lessons WHERE cohort_id = $1::uuid AND title = $2`, cohortID, lessonTitle).Scan(&lessonID)
@@ -192,14 +289,18 @@ func main() {
 		}
 	}
 
-	fmt.Println("NUVORA LMS pack seeded")
+	fmt.Println("NUVORA vetted-tutor LMS pack seeded")
 	fmt.Println("database:", dsn)
-	fmt.Println("tutor:", tutorEmail, "profile:", tutorID)
+	fmt.Println("tutor login:", email)
+	if password != "" {
+		fmt.Println("tutor password: (the value you passed via SEED_OPERATOR_PASSWORD / --tutor-password)")
+	}
+	fmt.Println("tutor profile:", tutorID, "(APPROVED · public · competency passed)")
 	fmt.Println("programme:", progSlug, "cohort:", cohortSlug, "code: NV-LMSDEMO")
+	fmt.Println("pack: demo recorded video · study PDF · assignment · homework note · weekly availability")
 	fmt.Println("NEXT:")
-	fmt.Println("  1. Log in as local.tutor@nuvora.test — the tutor LMS is fully populated")
-	fmt.Println("     (demo recorded video lesson, study PDF, assignment, homework note).")
+	fmt.Println("  1. Log in as", email, "— the tutor LMS is fully populated.")
 	fmt.Println("  2. Admin → Tutor vetting shows the tutor as APPROVED (routed to admin).")
-	fmt.Println("  3. Admin → Programmes → utme-mastery-lms — roster shows the tutor + cohort.")
+	fmt.Println("  3. Admin → Programmes → utme-mastery-lms — roster shows tutor + cohort + demo student.")
 	fmt.Println("  4. Restart the API if it was started before this seed")
 }
