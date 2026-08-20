@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useSession } from "@/hooks/useSession";
 import { markOnboarded } from "@/features/auth/api";
 import { createLearner, ensureOwnLearner } from "@/features/onboarding/api";
+import { CurriculumLevelSelect } from "@/features/onboarding/CurriculumLevelSelect";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
 import { safeNextPath, withNext } from "@/lib/safe-next";
 import { Button } from "@/components/ui/button";
@@ -90,7 +91,6 @@ function WizardInner() {
   }
 
   const roleLabel = isTutor ? "tutor" : isStudent ? "learner" : "parent";
-  const levels = ["Primary", "JSS1", "JSS2", "JSS3", "SSS1", "SSS2", "SSS3", "IGCSE", "A Level"];
 
   return (
     <main className="min-h-screen bg-surface flex items-center justify-center p-6">
@@ -135,19 +135,8 @@ function WizardInner() {
               placeholder="e.g. Kemi"
               className="mt-2 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
             />
-            <label className="mt-4 block text-xs font-bold uppercase tracking-wide text-ink-500">Current level</label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {levels.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLevel(l)}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                    level === l ? "bg-brand-gold text-ink-900" : "border border-ink-200 text-ink-600 hover:bg-ink-50"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
+            <div className="mt-4">
+              <CurriculumLevelSelect value={level} onChange={setLevel} />
             </div>
             <div className="mt-8 flex justify-between">
               <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
@@ -160,18 +149,8 @@ function WizardInner() {
           <section>
             <h2 className="font-display text-2xl text-brand-navy">What level are you at?</h2>
             <p className="mt-2 text-sm text-ink-600">Recommendations and quizzes tune to your level.</p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {levels.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLevel(l)}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                    level === l ? "bg-brand-gold text-ink-900" : "border border-ink-200 text-ink-600 hover:bg-ink-50"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
+            <div className="mt-6">
+              <CurriculumLevelSelect value={level} onChange={setLevel} />
             </div>
             <div className="mt-8 flex justify-between">
               <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>

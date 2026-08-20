@@ -172,3 +172,25 @@ type Lesson struct {
 func (l *Lesson) Overlaps(other Lesson) bool {
 	return l.TutorProfileID == other.TutorProfileID && l.StartAt.Before(other.EndAt) && other.StartAt.Before(l.EndAt)
 }
+
+// CohortJoinStatus — lifecycle of a tutor's request to teach a cohort
+// (migration 000051_cohort_ops).
+const (
+	CohortJoinPending  = "PENDING"
+	CohortJoinApproved = "APPROVED"
+	CohortJoinRejected = "REJECTED"
+)
+
+// CohortJoinRequest mirrors migration cohort_join_requests (000051). An
+// APPROVED tutor asks to teach a cohort; an admin reviews the request —
+// approving also assigns the tutor to the cohort.
+type CohortJoinRequest struct {
+	ID             uuid.UUID  `json:"id"`
+	CohortID       uuid.UUID  `json:"cohort_id"`
+	TutorProfileID uuid.UUID  `json:"tutor_profile_id"`
+	Status         string     `json:"status"`
+	Note           *string    `json:"note,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
+	ReviewedAt     *time.Time `json:"reviewed_at,omitempty"`
+	ReviewedBy     *uuid.UUID `json:"reviewed_by,omitempty"`
+}

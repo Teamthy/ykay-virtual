@@ -175,6 +175,12 @@ func (f *fakeProgrammeLifecycle) SetLifecycle(_ context.Context, l academics.Pro
 	return nil
 }
 
+func (f *fakeProgrammeLifecycle) CreateProgramme(_ context.Context, p *academics.Programme) error {
+	p.ID = uuid.New()
+	p.Status = academics.ProgrammeDraft
+	return nil
+}
+
 // noopAudit — audit sink for unit tests.
 type noopAudit struct{}
 

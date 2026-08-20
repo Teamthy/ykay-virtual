@@ -31,6 +31,8 @@ type User struct {
 	PhoneVerifiedAt *time.Time `json:"phone_verified_at,omitempty"`
 	LastLoginAt     *time.Time `json:"last_login_at,omitempty"`
 	OnboardedAt     *time.Time `json:"onboarded_at,omitempty"` // wizard complete (000031)
+	Bio             *string    `json:"bio,omitempty"`           // onboarding "about you" (000053)
+	PreferredLanguage *string  `json:"preferred_language,omitempty"` // onboarding language (000053)
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
 }

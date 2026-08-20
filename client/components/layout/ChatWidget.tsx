@@ -18,6 +18,7 @@ import { useSession } from "@/hooks/useSession";
 import { loginWithReturn } from "@/lib/safe-next";
 import { getHelpArticles, type HelpArticle } from "@/lib/help-data";
 import { answerFromKnowledge } from "@/lib/chat-kb";
+import { WhatsAppHomeCard } from "@/components/layout/WhatsAppButton";
 
 type Tab = "home" | "conversation" | "kb";
 type Bubble = { id: string; role: string; content: string };
@@ -245,6 +246,8 @@ export function ChatWidget() {
                   </span>
                   <ChevronRight size={16} className="text-ink-400" />
                 </button>
+
+                <WhatsAppHomeCard prefill="Hello NUVORA! I'd like to chat with your team on WhatsApp." />
 
                 <div className="overflow-hidden rounded-2xl bg-white shadow-soft">
                   <p className="px-4 pt-3 text-sm font-bold text-ink-900">Articles</p>

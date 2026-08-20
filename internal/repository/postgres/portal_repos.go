@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"ykay-virtual/internal/domain"
@@ -301,6 +302,211 @@ func (r *CohortRepo) UpdateTutor(ctx context.Context, id uuid.UUID, tutorProfile
 		return fmt.Errorf("update cohort tutor: %w", err)
 	}
 	return nil
+}
+
+// UpdateBanner stores (or clears) the cohort banner image URL.
+func (r *CohortRepo) UpdateBanner(ctx context.Context, id uuid.UUID, bannerURL string) error {
+	var val *string
+	if strings.TrimSpace(bannerURL) != "" {
+		b := strings.TrimSpace(bannerURL)
+		val = &b
+	}
+	if _, err := r.db.ExecContext(ctx,
+		`UPDATE cohorts SET banner_url = $1, updated_at = NOW() WHERE id = $2`, val, id); err != nil {
+		return fmt.Errorf("update cohort banner: %w", err)
+	}
+	return nil
+}
+
+// RequestJoin opens (or re-opens) a tutor's PENDING join request on a cohort.
+// Idempotent per (cohort, tutor): a re-request resets a previously reviewed
+// row back to PENDING with the new note.
+func (r *CohortRepo) RequestJoin(ctx context.Context, cohortID, tutorProfileID uuid.UUID, note *string) (*booking.CohortJoinRequest, error) {
+	var jr booking.CohortJoinRequest
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO cohort_join_requests (cohort_id, tutor_profile_id, status, note)
+		VALUES ($1, $2, 'PENDING', $3)
+		ON CONFLICT (cohort_id, tutor_profile_id)
+		DO UPDATE SET status = 'PENDING', note = EXCLUDED.note,
+			reviewed_at = NULL, reviewed_by = NULL, created_at = NOW()
+		RETURNING id, cohort_id, tutor_profile_id, status, note, created_at, reviewed_at, reviewed_by`,
+		cohortID, tutorProfileID, note,
+	).Scan(&jr.ID, &jr.CohortID, &jr.TutorProfileID, &jr.Status, &jr.Note, &jr.CreatedAt, &jr.ReviewedAt, &jr.ReviewedBy)
+	if err != nil {
+		if isForeignKeyViolation(err) {
+			return nil, fmt.Errorf("%w: cohort or tutor profile does not exist", domain.ErrInvalidInput)
+		}
+		return nil, fmt.Errorf("request cohort join: %w", err)
+	}
+	return &jr, nil
+}
+
+// ListJoinRequests lists join requests, newest first, optionally filtered by
+// status ("" returns all).
+func (r *CohortRepo) ListJoinRequests(ctx context.Context, status string) ([]booking.CohortJoinRequest, error) {
+	query := `
+		SELECT id, cohort_id, tutor_profile_id, status, note, created_at, reviewed_at, reviewed_by
+		FROM cohort_join_requests`
+	args := []any{}
+	if status != "" {
+		query += " WHERE status = $1"
+		args = append(args, status)
+	}
+	query += " ORDER BY created_at DESC"
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("list cohort join requests: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.CohortJoinRequest{}
+	for rows.Next() {
+		var jr booking.CohortJoinRequest
+		if err := rows.Scan(&jr.ID, &jr.CohortID, &jr.TutorProfileID, &jr.Status, &jr.Note,
+			&jr.CreatedAt, &jr.ReviewedAt, &jr.ReviewedBy); err != nil {
+			return nil, fmt.Errorf("scan cohort join request: %w", err)
+		}
+		out = append(out, jr)
+	}
+	return out, rows.Err()
+}
+
+// ReviewJoin stamps APPROVED/REJECTED plus the reviewer on a join request.
+func (r *CohortRepo) ReviewJoin(ctx context.Context, requestID uuid.UUID, status string, reviewedBy uuid.UUID) (*booking.CohortJoinRequest, error) {
+	var jr booking.CohortJoinRequest
+	err := r.db.QueryRowContext(ctx, `
+		UPDATE cohort_join_requests
+		SET status = $1, reviewed_at = NOW(), reviewed_by = $2
+		WHERE id = $3
+		RETURNING id, cohort_id, tutor_profile_id, status, note, created_at, reviewed_at, reviewed_by`,
+		status, reviewedBy, requestID,
+	).Scan(&jr.ID, &jr.CohortID, &jr.TutorProfileID, &jr.Status, &jr.Note, &jr.CreatedAt, &jr.ReviewedAt, &jr.ReviewedBy)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%w: join request not found", domain.ErrNotFound)
+		}
+		return nil, fmt.Errorf("review cohort join: %w", err)
+	}
+	return &jr, nil
+}
+
+// ProgrammeRoster aggregates programme + cohorts + tutors + students for the
+// admin programme console. Returns domain.ErrNotFound when the slug is unknown.
+func (r *CohortRepo) ProgrammeRoster(ctx context.Context, slug string) (map[string]any, error) {
+	var (
+		progID      uuid.UUID
+		title, pfmt string
+		summary     *string
+		pstatus     string
+	)
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id, title, COALESCE(summary, ''), format::text, status::text FROM programmes WHERE slug = $1`,
+		slug,
+	).Scan(&progID, &title, &summary, &pfmt, &pstatus)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%w: programme not found", domain.ErrNotFound)
+		}
+		return nil, fmt.Errorf("roster: programme lookup: %w", err)
+	}
+	if *summary == "" {
+		summary = nil
+	}
+
+	cohortRows, err := r.db.QueryContext(ctx,
+		"SELECT "+cohortColumns+" FROM cohorts WHERE programme_id = $1 ORDER BY created_at DESC", progID)
+	if err != nil {
+		return nil, fmt.Errorf("roster: list cohorts: %w", err)
+	}
+	defer cohortRows.Close()
+	cohorts := []booking.Cohort{}
+	for cohortRows.Next() {
+		c, err := scanCohort(cohortRows)
+		if err != nil {
+			return nil, err
+		}
+		cohorts = append(cohorts, *c)
+	}
+	if err := cohortRows.Err(); err != nil {
+		return nil, fmt.Errorf("roster: cohort scan: %w", err)
+	}
+
+	tutorRows, err := r.db.QueryContext(ctx, `
+		SELECT DISTINCT tp.id, tp.display_name, tp.slug, tp.status::text, tp.is_public
+		FROM tutor_profiles tp
+		JOIN cohorts c ON c.tutor_profile_id = tp.id
+		WHERE c.programme_id = $1
+		ORDER BY tp.display_name`, progID)
+	if err != nil {
+		return nil, fmt.Errorf("roster: list tutors: %w", err)
+	}
+	defer tutorRows.Close()
+	tutors := []map[string]any{}
+	for tutorRows.Next() {
+		var (
+			id          uuid.UUID
+			displayName string
+			tslug       string
+			tstatus     string
+			isPublic    bool
+		)
+		if err := tutorRows.Scan(&id, &displayName, &tslug, &tstatus, &isPublic); err != nil {
+			return nil, fmt.Errorf("roster: scan tutor: %w", err)
+		}
+		tutors = append(tutors, map[string]any{
+			"id": id, "display_name": displayName, "slug": tslug, "status": tstatus, "is_public": isPublic,
+		})
+	}
+	if err := tutorRows.Err(); err != nil {
+		return nil, fmt.Errorf("roster: tutor scan: %w", err)
+	}
+
+	studentRows, err := r.db.QueryContext(ctx, `
+		SELECT sp.id, ce.cohort_id, sp.first_name, sp.last_name,
+			COALESCE(sp.current_level, ''), ce.status::text
+		FROM cohort_enrollments ce
+		JOIN student_profiles sp ON sp.id = ce.student_profile_id
+		JOIN cohorts c ON c.id = ce.cohort_id
+		WHERE c.programme_id = $1
+		ORDER BY ce.enrolled_at DESC`, progID)
+	if err != nil {
+		return nil, fmt.Errorf("roster: list students: %w", err)
+	}
+	defer studentRows.Close()
+	students := []map[string]any{}
+	for studentRows.Next() {
+		var (
+			id, cohortID uuid.UUID
+			first, last  string
+			level        string
+			estatus      string
+		)
+		if err := studentRows.Scan(&id, &cohortID, &first, &last, &level, &estatus); err != nil {
+			return nil, fmt.Errorf("roster: scan student: %w", err)
+		}
+		row := map[string]any{
+			"id": id, "cohort_id": cohortID, "first_name": first, "last_name": last,
+			"status": estatus,
+		}
+		if level != "" {
+			row["current_level"] = level
+		}
+		students = append(students, row)
+	}
+	if err := studentRows.Err(); err != nil {
+		return nil, fmt.Errorf("roster: student scan: %w", err)
+	}
+
+	return map[string]any{
+		"programme": map[string]any{
+			"id": progID, "title": title, "slug": slug, "summary": summary,
+			"format": pfmt, "status": pstatus,
+		},
+		"cohorts":       cohorts,
+		"tutors":        tutors,
+		"students":      students,
+		"cohort_count":  len(cohorts),
+		"student_count": len(students),
+	}, nil
 }
 
 var _ booking.CohortAdminRepository = (*CohortRepo)(nil)

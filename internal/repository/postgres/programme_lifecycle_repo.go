@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -41,6 +42,25 @@ func (r *ProgrammeLifecycleRepo) GetLifecycle(ctx context.Context, id uuid.UUID)
 		l.ReviewDueAt = &reviewDueAt.Time
 	}
 	return &l, nil
+}
+
+// CreateProgramme inserts a new programme as DRAFT (admin console).
+func (r *ProgrammeLifecycleRepo) CreateProgramme(ctx context.Context, p *academics.Programme) error {
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO programmes (title, slug, summary, description, curriculum_id, level_id,
+			exam_id, format, status, price_min, price_max, currency, is_featured, created_by)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'DRAFT',$9,$10,$11,$12,$13)
+		RETURNING id, created_at, updated_at`,
+		p.Title, p.Slug, p.Summary, p.Description, p.CurriculumID, p.LevelID, p.ExamID,
+		p.Format, p.PriceMin, p.PriceMax, p.Currency, p.IsFeatured, p.CreatedBy,
+	).Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		if isUniqueViolation(err) {
+			return fmt.Errorf("%w: programme slug already exists", domain.ErrAlreadyExists)
+		}
+		return fmt.Errorf("create programme: %w", err)
+	}
+	return nil
 }
 
 func (r *ProgrammeLifecycleRepo) SetLifecycle(ctx context.Context, l academics.ProgrammeLifecycle) error {

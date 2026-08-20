@@ -29,6 +29,7 @@ import {
 import { unreadCount } from "@/features/messaging/api";
 import { listProgressReports } from "@/features/learning/api";
 import { createLearner, listLearners, type Learner } from "@/features/onboarding/api";
+import { CurriculumLevelSelect } from "@/features/onboarding/CurriculumLevelSelect";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
@@ -586,10 +587,12 @@ export default function ParentDashboardPage() {
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Last name *</span>
               <input required value={addForm.last_name} onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
             </label>
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Current level</span>
-              <input placeholder="e.g. Year 7, JSS2, SSS3" value={addForm.current_level} onChange={(e) => setAddForm({ ...addForm, current_level: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
-            </label>
+            <div className="sm:col-span-2">
+              <CurriculumLevelSelect
+                value={addForm.current_level}
+                onChange={(level) => setAddForm({ ...addForm, current_level: level })}
+              />
+            </div>
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">School (optional)</span>
               <input value={addForm.school_name} onChange={(e) => setAddForm({ ...addForm, school_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />

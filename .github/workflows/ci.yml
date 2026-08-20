@@ -29,6 +29,10 @@ jobs:
         run: |
           test -z "$(gofmt -l internal cmd pkg)" || (gofmt -l internal cmd pkg; exit 1)
           go vet ./...
+      - name: Vulnerability gate (govulncheck)
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
       - name: Test (root module — Redis integration included)
         env:
           REDIS_URL: redis://localhost:6379/0

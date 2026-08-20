@@ -47,7 +47,6 @@
       "policy": "sdkVersion"
     },
     "extra": {
-      "apiUrl": "https://ykay-virtual.onrender.com/api/v1",
       "projectId": "nuvora-prod",
       "eas": {
         "projectId": "9b9f036a-4492-4726-a6af-389b5e2d8d6b"

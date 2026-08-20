@@ -12,12 +12,30 @@ export type CurrentUser = {
   last_name?: string;
   avatar_url?: string | null;
   phone?: string | null;
+  bio?: string | null;
+  preferred_language?: string | null;
   status: string;
   timezone: string;
   roles: string[];
   onboarded: boolean;
   created_at: string;
 };
+
+/** Persist profile fields (settings page + onboarding sync). */
+export async function updateProfile(input: {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  timezone?: string;
+  bio?: string;
+  preferred_language?: string;
+}): Promise<CurrentUser> {
+  const res = await apiFetch<CurrentUser>("/auth/me/profile", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
 
 export async function markOnboarded(): Promise<void> {
   await apiFetch("/auth/me/onboarded", { method: "POST" });

@@ -4,6 +4,7 @@ import { Anton, DM_Sans, Poppins } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/layout/ChatWidget";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { SkipLink } from "@/components/layout/SkipLink";
@@ -94,6 +95,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
           </HomeOnly>
           <ChatWidget />
+          {/* WhatsApp live chat — floating button above the AI launcher;
+              hides itself when WHATSAPP_BUSINESS_NUMBER is not configured. */}
+          <div className="pointer-events-none fixed bottom-24 right-4 z-40 lg:right-6">
+            <WhatsAppButton className="pointer-events-auto block" />
+          </div>
           <ShellVisibility>
             {/* Consent + install banners are public-route chrome; on
                 dashboards they overlay form buttons (wizard "Finish"). */}

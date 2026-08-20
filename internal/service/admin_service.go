@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -435,12 +436,21 @@ func (s *AdminService) ListReviews(ctx context.Context, p review.ReviewListParam
 // --- Support tickets ---
 
 type SupportService struct {
-	tickets content.SupportTicketRepository
-	now     func() time.Time
+	tickets  content.SupportTicketRepository
+	notifier *NotifierService
+	now      func() time.Time
 }
 
 func NewSupportService(tickets content.SupportTicketRepository) *SupportService {
 	return &SupportService{tickets: tickets, now: time.Now}
+}
+
+// WithNotifier wires WhatsApp notification of new tickets to the platform's
+// registered admin number (best-effort; delivery failures never fail the
+// ticket itself).
+func (s *SupportService) WithNotifier(n *NotifierService) *SupportService {
+	s.notifier = n
+	return s
 }
 
 // OpenTicket — creates a support ticket (public + signed-in users).
@@ -508,6 +518,19 @@ func (s *SupportService) OpenTicketWithMeta(ctx context.Context, userID *uuid.UU
 	if err := s.tickets.Create(ctx, ticket); err != nil {
 		return nil, err
 	}
+	// WhatsApp the admin team when a new ticket lands (contact form, support
+	// page, chat escalation). Fire-and-forget: notification failure must never
+	// fail the ticket itself.
+	if s.notifier != nil {
+		go func(subject, email, category, severity, message string) {
+			nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			body := "From: " + email + "\nCategory: " + category + " / " + severity + "\n\n" + message
+			if err := s.notifier.NotifyAdmin(nctx, "NUVORA support: "+subject, body); err != nil {
+				slog.Error("whatsapp ticket notify failed", "subject", subject, "error", err)
+			}
+		}(ticket.Subject, ticket.Email, ticket.Category, ticket.Severity, ticket.Message)
+	}
 	return ticket, nil
 }
 
@@ -543,6 +566,73 @@ func (s *AdminService) ListSupportByCategory(ctx context.Context, category strin
 		return nil, 0, fmt.Errorf("%w: unknown ticket category %q", domain.ErrInvalidInput, category)
 	}
 	return s.support.ListByCategory(ctx, category, page, pageSize)
+}
+
+// CreateProgrammeInput — admin programme creation (console-driven pages).
+type CreateProgrammeInput struct {
+	Title        string
+	Slug         string // optional; derived from the title when empty
+	Summary      *string
+	Description  *string
+	Format       academics.ProgrammeFormat
+	CurriculumID *uuid.UUID
+	LevelID      *uuid.UUID
+	ExamID       *uuid.UUID
+	PriceMin     *float64
+	PriceMax     *float64
+	Currency     string
+	IsFeatured   bool
+}
+
+// CreateProgrammeAdmin — creates a DRAFT programme (admin console). The slug
+// is normalised from the title when not supplied; duplicates are rejected so
+// programme pages always have a stable URL.
+func (s *AdminService) CreateProgrammeAdmin(ctx context.Context, adminID uuid.UUID, in CreateProgrammeInput) (*academics.Programme, error) {
+	if s.programmes == nil {
+		return nil, errors.New("programme lifecycle store unavailable")
+	}
+	if strings.TrimSpace(in.Title) == "" || len(strings.TrimSpace(in.Title)) > 255 {
+		return nil, fmt.Errorf("%w: title is required (max 255 chars)", domain.ErrInvalidInput)
+	}
+	slug := strings.TrimSpace(in.Slug)
+	if slug == "" {
+		slug = slugify(in.Title)
+	}
+	if len(slug) < 2 || len(slug) > 255 {
+		return nil, fmt.Errorf("%w: slug must be 2-255 characters", domain.ErrInvalidInput)
+	}
+	if in.Format == "" {
+		in.Format = academics.FormatCohort
+	}
+	if in.Currency == "" {
+		in.Currency = "NGN"
+	}
+	if in.PriceMin != nil && in.PriceMax != nil && *in.PriceMax < *in.PriceMin {
+		return nil, fmt.Errorf("%w: price_max cannot be below price_min", domain.ErrInvalidInput)
+	}
+
+	p := &academics.Programme{
+		Title:        strings.TrimSpace(in.Title),
+		Slug:         slug,
+		Summary:      in.Summary,
+		Description:  in.Description,
+		CurriculumID: in.CurriculumID,
+		LevelID:      in.LevelID,
+		ExamID:       in.ExamID,
+		Format:       in.Format,
+		Status:       academics.ProgrammeDraft,
+		PriceMin:     in.PriceMin,
+		PriceMax:     in.PriceMax,
+		Currency:     in.Currency,
+		IsFeatured:   in.IsFeatured,
+		CreatedBy:    &adminID,
+	}
+	if err := s.programmes.CreateProgramme(ctx, p); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditCreate, "programme",
+		&p.ID, nil, map[string]any{"title": p.Title, "slug": p.Slug}, nil, nil)
+	return p, nil
 }
 
 // SetProgrammeStatusAdmin — publish/unpublish a programme without a code
@@ -721,6 +811,15 @@ func (s *AdminService) AssignTutorToCohortAdmin(ctx context.Context, adminID, co
 	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
 		&cohortID, nil, map[string]any{"tutor_profile_id": tutorProfileID.String()}, nil, nil)
 	return nil
+}
+
+// SetCohortBanner stores the cohort banner image URL. Callers (the admin
+// upload endpoint) always pass a server-side uploaded JPEG/PNG object URL.
+func (s *AdminService) SetCohortBanner(ctx context.Context, cohortID uuid.UUID, bannerURL string) error {
+	if s.cohortAdmin == nil {
+		return errors.New("cohort repository not configured")
+	}
+	return s.cohortAdmin.UpdateBanner(ctx, cohortID, bannerURL)
 }
 
 // ClearCohortTutorAdmin — unassigns a cohort's tutor (back to "awaiting tutor").

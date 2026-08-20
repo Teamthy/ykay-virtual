@@ -102,6 +102,57 @@ func (m *SubjectMemory) GetBySlug(_ context.Context, slug string) (*academics.Su
 
 var _ academics.SubjectRepository = (*SubjectMemory)(nil)
 
+// --- Curricula + levels ---
+
+type CurriculumMemory struct {
+	mu     sync.RWMutex
+	rows   map[uuid.UUID]academics.Curriculum
+	levels map[uuid.UUID][]academics.Level
+}
+
+func NewCurriculumMemory() *CurriculumMemory {
+	return &CurriculumMemory{
+		rows:   map[uuid.UUID]academics.Curriculum{},
+		levels: map[uuid.UUID][]academics.Level{},
+	}
+}
+
+// SeedCurriculum adds a curriculum; SeedLevel appends one of its levels.
+func (m *CurriculumMemory) SeedCurriculum(c academics.Curriculum) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.rows[c.ID] = c
+}
+
+func (m *CurriculumMemory) SeedLevel(l academics.Level) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.levels[l.CurriculumID] = append(m.levels[l.CurriculumID], l)
+}
+
+func (m *CurriculumMemory) ListActive(_ context.Context) ([]academics.Curriculum, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []academics.Curriculum{}
+	for _, c := range m.rows {
+		if c.IsActive {
+			out = append(out, c)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+	return out, nil
+}
+
+func (m *CurriculumMemory) ListLevelsByCurriculum(_ context.Context, curriculumID uuid.UUID) ([]academics.Level, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := append([]academics.Level{}, m.levels[curriculumID]...)
+	sort.Slice(out, func(i, j int) bool { return out[i].SortOrder < out[j].SortOrder })
+	return out, nil
+}
+
+var _ academics.CurriculumRepository = (*CurriculumMemory)(nil)
+
 // --- Programmes ---
 
 type ProgrammeMemory struct {
@@ -283,15 +334,39 @@ func contains(hay []string, needle string) bool {
 // --- Cohorts + enrollments ---
 
 type CohortMemory struct {
-	mu   sync.RWMutex
-	rows map[uuid.UUID]*booking.Cohort
+	mu         sync.RWMutex
+	rows       map[uuid.UUID]*booking.Cohort
+	joins      map[uuid.UUID]*booking.CohortJoinRequest
+	programmes *ProgrammeMemory // optional hook for ProgrammeRoster (dev)
+	tutorLook  func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error)
 }
 
 func NewCohortMemory(seed []*booking.Cohort) *CohortMemory {
-	m := &CohortMemory{rows: map[uuid.UUID]*booking.Cohort{}}
+	m := &CohortMemory{
+		rows:  map[uuid.UUID]*booking.Cohort{},
+		joins: map[uuid.UUID]*booking.CohortJoinRequest{},
+	}
 	for _, c := range seed {
 		m.rows[c.ID] = c
 	}
+	return m
+}
+
+// WithProgrammes attaches the programme catalogue so ProgrammeRoster can
+// resolve programme slugs in dev mode.
+func (m *CohortMemory) WithProgrammes(pm *ProgrammeMemory) *CohortMemory {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.programmes = pm
+	return m
+}
+
+// WithTutorLookup attaches a tutor profile resolver so ProgrammeRoster can
+// list the tutors teaching a programme's cohorts in dev/tests.
+func (m *CohortMemory) WithTutorLookup(look func(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error)) *CohortMemory {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.tutorLook = look
 	return m
 }
 

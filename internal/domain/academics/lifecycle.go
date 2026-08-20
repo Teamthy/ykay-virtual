@@ -17,8 +17,12 @@ type ProgrammeLifecycle struct {
 	ReviewDueAt *time.Time      `json:"review_due_at,omitempty"`
 }
 
-// ProgrammeLifecycleRepository — admin publish/unpublish with review cadence.
+// ProgrammeLifecycleRepository — admin programme operations: create (DRAFT)
+// + publish/unpublish with review cadence.
 type ProgrammeLifecycleRepository interface {
 	GetLifecycle(ctx context.Context, id uuid.UUID) (*ProgrammeLifecycle, error)
 	SetLifecycle(ctx context.Context, l ProgrammeLifecycle) error
+	// CreateProgramme inserts a new programme (always DRAFT; slug uniqueness
+	// is enforced by the store). Fills ID/CreatedAt/UpdatedAt.
+	CreateProgramme(ctx context.Context, p *Programme) error
 }

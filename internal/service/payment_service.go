@@ -46,6 +46,7 @@ type PaymentService struct {
 	users          identity.UserRepository
 	mail           notification.EmailSender
 	siteURL        string
+	notifier       *NotifierService
 }
 
 // SetRefundsEnabled controls whether refunds are allowed. Production must keep
@@ -84,6 +85,14 @@ func (s *PaymentService) WithReceipts(users identity.UserRepository, mail notifi
 	return s
 }
 
+// WithWhatsApp wires best-effort WhatsApp confirmations (to the payer when
+// their phone is on file, and to the admin number for money movement). A
+// notification failure never fails the HTTP confirm.
+func (s *PaymentService) WithWhatsApp(n *NotifierService) *PaymentService {
+	s.notifier = n
+	return s
+}
+
 func (s *PaymentService) emailReceipt(ctx context.Context, order *payment.Order) {
 	if s.mail == nil || s.users == nil || order == nil {
 		return
@@ -108,6 +117,41 @@ func (s *PaymentService) emailReceipt(ctx context.Context, order *payment.Order)
 	)
 	if err := s.mail.Send(ctx, user.Email, "Your NUVORA receipt — "+order.OrderNumber, body); err != nil {
 		slog.Error("receipt email failed", "order_id", order.ID, "error", err)
+	}
+}
+
+// whatsappConfirmation — best-effort WhatsApp messages after a payment is
+// confirmed: a thank-you to the payer (when their phone is on file) and a
+// money-movement alert to the admin number. Never fails the confirm path.
+func (s *PaymentService) whatsappConfirmation(ctx context.Context, order *payment.Order) {
+	if s.notifier == nil || order == nil {
+		return
+	}
+	amount := fmt.Sprintf("%.2f %s", order.TotalAmount, order.Currency)
+
+	// Payer confirmation.
+	if s.users != nil {
+		if user, err := s.users.FindByID(ctx, order.ParentUserID); err == nil && user != nil {
+			userID := user.ID
+			msg := "🎉 NUVORA: your payment is confirmed!\nOrder " + order.OrderNumber +
+				"\nAmount: " + amount +
+				"\nYour enrollment is now active — see your dashboard for classes."
+			if err := s.notifier.NotifyUser(ctx, user.Phone, &userID, msg); err != nil {
+				slog.Error("whatsapp payment confirm failed", "order_id", order.ID, "error", err)
+			}
+		}
+	}
+
+	// Admin alert.
+	if WhatsAppAdminNumber() != "" {
+		adminMsg := "💰 NUVORA: payment received\nOrder " + order.OrderNumber + "\nAmount: " + amount
+		go func() {
+			nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := s.notifier.NotifyAdmin(nctx, "Payment received — "+order.OrderNumber, adminMsg); err != nil {
+				slog.Error("whatsapp admin payment alert failed", "order_id", order.ID, "error", err)
+			}
+		}()
 	}
 }
 
@@ -392,6 +436,7 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 		return nil, err
 	}
 	s.emailReceipt(ctx, order)
+	s.whatsappConfirmation(ctx, order)
 	return &WebhookResult{Processed: true, PaymentID: &paymentRow.ID}, nil
 }
 
@@ -832,6 +877,7 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 		return nil, err
 	}
 	s.emailReceipt(ctx, order)
+	s.whatsappConfirmation(ctx, order)
 	return p, nil
 }
 

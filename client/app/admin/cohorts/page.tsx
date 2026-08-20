@@ -278,8 +278,9 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
     location_mode: "ONLINE",
     fee: "50000",
     currency: "NGN",
-    banner_url: "",
   });
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -292,6 +293,26 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
   });
   const programmes = programmesQ.data?.data ?? [];
 
+  // Cohort images are real JPEG/PNG file uploads — never a pasted URL.
+  const pickBanner = (file: File | null) => {
+    setError(null);
+    if (!file) {
+      setBannerFile(null);
+      setBannerPreview(null);
+      return;
+    }
+    if (file.type !== "image/jpeg" && file.type !== "image/png") {
+      setError("Banner image must be a JPEG or PNG file");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Banner image must be under 10 MB");
+      return;
+    }
+    setBannerFile(file);
+    setBannerPreview(URL.createObjectURL(file));
+  };
+
   const submit = async () => {
     if (!form.programme_id.trim() || !form.title.trim() || !form.start_date || !form.end_date) {
       setError("Programme, title, start and end dates are required");
@@ -300,7 +321,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      await createAdminCohort({
+      const created = await createAdminCohort({
         programme_id: form.programme_id,
         title: form.title,
         capacity: Number(form.capacity),
@@ -311,8 +332,20 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         fee: Number(form.fee),
         currency: form.currency,
         status: "DRAFT",
-        banner_url: form.banner_url.trim() || undefined,
       });
+      // Upload the banner image (raw JPEG/PNG body) once the cohort exists.
+      if (bannerFile && created?.id) {
+        const res = await fetch(`/api/v1/admin/cohorts/${created.id}/banner`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": bannerFile.type },
+          body: bannerFile,
+        });
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          throw new Error(errBody?.error?.message || "Banner upload failed — cohort was created without an image");
+        }
+      }
       toast.success("Cohort created (DRAFT)");
       onDone();
     } catch (e) {
@@ -359,7 +392,21 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         {field("fee", "Fee", "number")}
         {field("timezone", "Timezone")}
         {field("currency", "Currency")}
-        {field("banner_url", "Banner image URL")}
+        <label className="block text-sm">
+          <span className="font-medium text-ink-700">Banner image (JPEG/PNG file)</span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={(e) => pickBanner(e.target.files?.[0] ?? null)}
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-brand-gold file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+          />
+          {bannerPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={bannerPreview} alt="Banner preview" className="mt-2 h-20 w-full rounded-lg object-cover ring-1 ring-ink-200" />
+          ) : (
+            <span className="mt-1 block text-xs text-ink-400">Optional — upload a JPEG or PNG image (never a URL).</span>
+          )}
+        </label>
         <label className="block text-sm">
           <span className="font-medium text-ink-700">Location mode</span>
           <select value={form.location_mode} onChange={(e) => setForm({ ...form, location_mode: e.target.value })}

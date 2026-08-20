@@ -1,87 +1,78 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
+import { buildMetadata, courseJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
-import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
-import Link from "next/link";
+import { DigitalSkillsGrid } from "@/features/digital-skills/components/DigitalSkillsGrid";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Computing & Digital Skills — CS, Python, AI, Cybersecurity | NUVORA",
+  title: "Digital Skills Academy — CS, Python, AI, Cybersecurity & Office | NUVORA",
   description:
-    "Computer Science, ICT, Python, AI, Cybersecurity and Microsoft Office — cohorts and private tuition.",
+    "The NUVORA Digital Skills Academy: Computer Science, ICT & digital literacy, Python, AI & machine learning, cybersecurity and Microsoft Office — live cohorts and private tuition with vetted tutors.",
   path: "/digital-skills",
 });
 
-const TRACKS = [
-  { title: "Computer Science", desc: "IGCSE/SSS Computer Science with programming and theory.", href: "/programmes", photo: "/hero/digital.jpg" },
-  { title: "ICT & Digital Literacy", desc: "Practical computing for school and the workplace.", href: "/programmes", photo: "/hero/subjects.jpg" },
-  { title: "Python Programming", desc: "From first programs to real projects.", href: "/programmes", photo: "/hero/test-prep.jpg" },
-  { title: "Artificial Intelligence", desc: "Concepts, tools and responsible AI use for students.", href: "/programmes", photo: "/hero/programmes.jpg" },
-  { title: "Cybersecurity", desc: "Safe online habits and security fundamentals.", href: "/programmes", photo: "/hero/how-it-works.jpg" },
-  { title: "Microsoft Office", desc: "Word, Excel, PowerPoint and certification prep.", href: "/programmes", photo: "/hero/checkout.jpg" },
-];
-
 export default function DigitalSkillsPage() {
+  const course = courseJsonLd({
+    name: "NUVORA Digital Skills Academy",
+    description:
+      "Computer Science, ICT & digital literacy, Python, AI & machine learning, cybersecurity and Microsoft Office — live cohorts with vetted tutors.",
+    provider: "NUVORA",
+    url: "https://nuvora.com/digital-skills",
+  });
   const breadcrumb = breadcrumbJsonLd([
     { name: "Home", item: "https://nuvora.com/" },
     { name: "Digital Skills", item: "https://nuvora.com/digital-skills" },
   ]);
-  const course = courseJsonLd({
-    name: "Computing & Digital Skills Academy",
-    description: "Computer Science, ICT, Python, AI, Cybersecurity and Microsoft Office.",
-    provider: "NUVORA",
-    url: "https://nuvora.com/digital-skills",
-  });
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+
       <PageHero
         cover="/hero/digital.jpg"
         eyebrow="The digital academy"
-        title="Computing & Digital Skills"
-        subtitle="Computer Science, programming, AI and digital safety — taught as structured cohorts or one-to-one."
+        title="Digital Skills Academy"
+        subtitle="Six structured tracks — from your first spreadsheet to shipping an AI project. Live cohorts, vetted tutors, certificates on completion."
         crumbs={[{ name: "Home", href: "/" }, { name: "Digital Skills" }]}
-        image={{ src: "/hero/test-prep.jpg", alt: "Student learning to code" }}
         ctas={[
-          { label: "Browse programmes", href: "/programmes", primary: true },
+          { label: "Explore the courses", href: "#courses", primary: true },
           { label: "Book a coding tutor", href: "/private-tuition" },
         ]}
       />
 
-      <div className="container-x pt-14 pb-16">
-        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {TRACKS.map((t) => (
-            <Link
-              key={t.title}
-              href={t.href}
-              className="overflow-hidden rounded-2xl border border-ink-100 bg-cover bg-center p-6 text-white shadow-card transition hover:-translate-y-0.5"
-              style={{
-                backgroundImage:
-                  "linear-gradient(165deg, rgba(6,15,38,0.9), rgba(1,57,32,0.7)), url(/hero/test-prep.jpg)",
-              }}
-            >
-              <h2 className="font-bold text-white">{t.title}</h2>
-              <p className="mt-2 text-sm text-white/80">{t.desc}</p>
-              <span className="mt-4 inline-block text-sm font-semibold text-brand-gold">Explore →</span>
-            </Link>
+      {/* ── Dashboard-style stats strip ─────────────────────────────────── */}
+      <div className="container-x -mt-8 pb-4">
+        <div className="grid gap-4 sm:grid-cols-4">
+          {[
+            { k: "6", label: "Career-ready tracks" },
+            { k: "500+", label: "Learners taught" },
+            { k: "1:12", label: "Max tutor:student ratio" },
+            { k: "100%", label: "Project-based learning" },
+          ].map((s) => (
+            <div key={s.label} className="rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-soft">
+              <p className="font-display text-3xl text-brand-navy">{s.k}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-500">{s.label}</p>
+            </div>
           ))}
-        </section>
+        </div>
+      </div>
 
-        <section className="mt-14 rounded-3xl bg-[#12121e] p-8 text-white md:grid md:grid-cols-2 md:items-center md:gap-8 md:p-12">
+      {/* ── Course dashboard ────────────────────────────────────────────── */}
+      <div className="container-x pb-20 pt-8" id="courses">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold text-white">Competition coaching</h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/75">
-              Optional coaching for coding contests — mock rounds and strategy. Ask us what we currently run.
+            <p className="tag-handwritten">Pick a track</p>
+            <h2 className="mt-1 font-display text-3xl text-brand-navy">Your course dashboard</h2>
+            <p className="mt-2 max-w-xl text-sm text-ink-600">
+              Every track has its own page with the full curriculum, outcomes and pricing.
+              Start anywhere — each one ends with a project you can show.
             </p>
           </div>
-          <div className="mt-6 md:mt-0 md:text-right">
-            <Link href="/contact" className="inline-flex rounded-xl bg-brand-gold px-6 py-3.5 text-sm font-bold text-ink-800">
-              Ask about competition coaching
-            </Link>
-          </div>
-        </section>
-        <CohortStrip />
+          <a href="/private-tuition" className="btn-secondary text-sm">
+            Prefer 1-on-1? Book a tutor
+          </a>
+        </div>
+        <DigitalSkillsGrid />
       </div>
     </main>
   );

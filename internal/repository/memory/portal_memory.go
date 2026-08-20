@@ -2,7 +2,9 @@ package memory
 
 import (
 	"context"
+	"fmt"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -217,6 +219,136 @@ func (m *CohortMemory) UpdateTutor(_ context.Context, id uuid.UUID, tutorProfile
 	c.TutorProfileID = tutorProfileID
 	c.UpdatedAt = nowUTC()
 	return nil
+}
+
+// UpdateBanner stores (or clears) the cohort banner image URL.
+func (m *CohortMemory) UpdateBanner(_ context.Context, id uuid.UUID, bannerURL string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	c, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	b := strings.TrimSpace(bannerURL)
+	if b == "" {
+		c.BannerURL = nil
+	} else {
+		c.BannerURL = &b
+	}
+	c.UpdatedAt = nowUTC()
+	return nil
+}
+
+// RequestJoin opens (or re-opens) a tutor's PENDING join request on a cohort.
+func (m *CohortMemory) RequestJoin(_ context.Context, cohortID, tutorProfileID uuid.UUID, note *string) (*booking.CohortJoinRequest, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.rows[cohortID]; !ok {
+		return nil, domain.ErrNotFound
+	}
+	for _, jr := range m.joins {
+		if jr.CohortID == cohortID && jr.TutorProfileID == tutorProfileID {
+			jr.Status = booking.CohortJoinPending
+			jr.Note = note
+			jr.ReviewedAt = nil
+			jr.ReviewedBy = nil
+			jr.CreatedAt = nowUTC()
+			return jr, nil
+		}
+	}
+	jr := &booking.CohortJoinRequest{
+		ID:             uuid.New(),
+		CohortID:       cohortID,
+		TutorProfileID: tutorProfileID,
+		Status:         booking.CohortJoinPending,
+		Note:           note,
+		CreatedAt:      nowUTC(),
+	}
+	m.joins[jr.ID] = jr
+	return jr, nil
+}
+
+// ListJoinRequests lists join requests, newest first, optionally filtered.
+func (m *CohortMemory) ListJoinRequests(_ context.Context, status string) ([]booking.CohortJoinRequest, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []booking.CohortJoinRequest{}
+	for _, jr := range m.joins {
+		if status != "" && jr.Status != status {
+			continue
+		}
+		out = append(out, *jr)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	return out, nil
+}
+
+// ReviewJoin stamps APPROVED/REJECTED plus reviewer on a join request.
+func (m *CohortMemory) ReviewJoin(_ context.Context, requestID uuid.UUID, status string, reviewedBy uuid.UUID) (*booking.CohortJoinRequest, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	jr, ok := m.joins[requestID]
+	if !ok {
+		return nil, domain.ErrNotFound
+	}
+	jr.Status = status
+	now := nowUTC()
+	jr.ReviewedAt = &now
+	jr.ReviewedBy = &reviewedBy
+	return jr, nil
+}
+
+// ProgrammeRoster aggregates programme + cohorts (+ empty tutor/student lists
+// in dev mode, which only seeds cohorts).
+func (m *CohortMemory) ProgrammeRoster(ctx context.Context, slug string) (map[string]any, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if m.programmes == nil {
+		return nil, fmt.Errorf("%w: programme not found", domain.ErrNotFound)
+	}
+	p, err := m.programmes.GetBySlug(ctx, slug)
+	if err != nil || p == nil {
+		return nil, fmt.Errorf("%w: programme not found", domain.ErrNotFound)
+	}
+	cohorts := []booking.Cohort{}
+	for _, c := range m.rows {
+		if c.ProgrammeID == p.ID {
+			cohorts = append(cohorts, *c)
+		}
+	}
+	sort.Slice(cohorts, func(i, j int) bool { return cohorts[i].CreatedAt.After(cohorts[j].CreatedAt) })
+
+	// Tutors teaching this programme's cohorts (deduped by profile id).
+	tutors := []map[string]any{}
+	seen := map[uuid.UUID]bool{}
+	if m.tutorLook != nil {
+		for _, c := range cohorts {
+			if c.TutorProfileID == nil || seen[*c.TutorProfileID] {
+				continue
+			}
+			tp, err := m.tutorLook(ctx, *c.TutorProfileID)
+			if err != nil || tp == nil {
+				continue
+			}
+			seen[*c.TutorProfileID] = true
+			tutors = append(tutors, map[string]any{
+				"id": tp.ID, "display_name": tp.DisplayName, "slug": tp.Slug,
+				"status": tp.Status, "is_public": tp.IsPublic,
+			})
+		}
+	}
+
+	return map[string]any{
+		"programme": map[string]any{
+			"id": p.ID, "title": p.Title, "slug": p.Slug, "summary": p.Summary,
+			"format": p.Format, "status": p.Status,
+		},
+		"cohorts":       cohorts,
+		"tutors":        tutors,
+		"students":      []map[string]any{},
+		"cohort_count":  len(cohorts),
+		"student_count": 0,
+	}, nil
 }
 
 var _ booking.CohortAdminRepository = (*CohortMemory)(nil)

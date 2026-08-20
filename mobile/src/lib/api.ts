@@ -9,14 +9,14 @@ import { Platform } from "react-native";
 //
 // Environment resolution (launch-safe):
 //   1. process.env.EXPO_PUBLIC_API_URL (injected at build time by EAS/Expo) —
-//      the recommended way to point each build at the right backend.
-//   2. Constants.expoConfig.extra.apiUrl (set in app.json / app.config).
-//   3. localhost fallback for local dev.
-// Never commit a production URL as the hard default.
+//      the ONLY production path; set it in your EAS build profile.
+//   2. localhost fallback for local dev.
+// Never commit a production URL as a hard default — a build without
+// EXPO_PUBLIC_API_URL targets localhost and fails fast, it never silently
+// ships traffic at the wrong backend.
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
-  Constants.expoConfig?.extra?.apiUrl ||
   "http://localhost:8080/api/v1";
 
 const TOKEN_KEY = "nuvora_session_token";

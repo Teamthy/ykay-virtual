@@ -88,12 +88,16 @@ export default function AccountPage() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [timezone, setTimezone] = useState("Africa/Lagos");
+  const [bio, setBio] = useState("");
+  const [preferredLanguage, setPreferredLanguage] = useState("");
   useEffect(() => {
     if (user) {
       setFirstName(user.first_name ?? "");
       setLastName(user.last_name ?? "");
       setPhone(user.phone ?? "");
       setTimezone(user.timezone || "Africa/Lagos");
+      setBio(user.bio ?? "");
+      setPreferredLanguage(user.preferred_language ?? "");
     }
   }, [user]);
 
@@ -112,7 +116,14 @@ export default function AccountPage() {
     mutationFn: () =>
       apiFetch<Profile>("/auth/me/profile", {
         method: "PUT",
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, phone, timezone }),
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          timezone,
+          bio: bio.trim(),
+          preferred_language: preferredLanguage,
+        }),
       }),
     onSuccess: (res) => {
       qc.setQueryData(["session"], (old: unknown) => ({ ...(old as object), ...res.data }));
@@ -225,7 +236,7 @@ export default function AccountPage() {
                     <Camera size={15} />
                     <input
                       type="file"
-                      accept="image/jpeg,image/png,image/webp"
+                      accept="image/jpeg,image/png"
                       className="hidden"
                       disabled={uploadingAvatar}
                       onChange={(e) => {
@@ -238,7 +249,7 @@ export default function AccountPage() {
                 </div>
                 <div className="text-sm text-ink-500">
                   <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploading…" : "Profile photo"}</p>
-                  <p>JPEG, PNG or WebP · up to 10 MB</p>
+                  <p>JPEG or PNG · up to 10 MB</p>
                 </div>
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -261,6 +272,27 @@ export default function AccountPage() {
                       <option key={tz} value={tz}>{tz}</option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label htmlFor="ac-lang" className="mb-1.5 block text-sm font-medium text-ink-800">Preferred language</label>
+                  <select id="ac-lang" className={INPUT_CLS} value={preferredLanguage} onChange={(e) => setPreferredLanguage(e.target.value)}>
+                    <option value="">Not set</option>
+                    {["English", "French", "Yoruba", "Igbo", "Hausa", "Pidgin"].map((l) => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="ac-bio" className="mb-1.5 block text-sm font-medium text-ink-800">About you</label>
+                  <textarea
+                    id="ac-bio"
+                    rows={3}
+                    maxLength={2000}
+                    placeholder="A short introduction helps tutors and families get to know you…"
+                    className={cn(INPUT_CLS, "h-auto resize-y")}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                  />
                 </div>
               </div>
               <button

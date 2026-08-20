@@ -84,6 +84,7 @@ type Programme struct {
 	SeoTitle       *string         `json:"seo_title,omitempty"`
 	SeoDescription *string         `json:"seo_description,omitempty"`
 	CoverImageKey  *string         `json:"cover_image_key,omitempty"`
+	CreatedBy      *uuid.UUID      `json:"created_by,omitempty"`
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 }
@@ -139,4 +140,21 @@ type ProgrammeDetail struct {
 	NextStart      *string  `json:"next_start,omitempty"` // ISO date of next published cohort
 	Subjects       []string `json:"subjects"`             // subject names
 	SubjectSlugs   []string `json:"subject_slugs"`
+}
+
+// CurriculumWithLevels — a curriculum with its ordered levels, used by the
+// learner "current level" dropdowns (Nigerian + British curricula).
+type CurriculumWithLevels struct {
+	Curriculum
+	Levels []Level `json:"levels"`
+}
+
+// CurriculumRepository — read side for curricula + their levels (migration
+// 000005 table, levels seeded by 000052). Implementations:
+// internal/repository/postgres, internal/repository/memory.
+type CurriculumRepository interface {
+	// ListActive returns active curricula ordered by name.
+	ListActive(ctx context.Context) ([]Curriculum, error)
+	// ListLevelsByCurriculum returns one curriculum's levels in display order.
+	ListLevelsByCurriculum(ctx context.Context, curriculumID uuid.UUID) ([]Level, error)
 }

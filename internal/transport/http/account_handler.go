@@ -20,6 +20,12 @@ import (
 type AccountHandler struct {
 	svc     *service.AccountService
 	storage storage.Storage
+	uploadGuard
+}
+
+// uploadGuard — shared upload safety for any handler that stores raw bodies:
+// malware signature scan (gap #5) + image magic-byte verification.
+type uploadGuard struct {
 	malware storage.MalwareScanner
 }
 
@@ -33,7 +39,7 @@ func (h *AccountHandler) WithMalwareScanner(m storage.MalwareScanner) *AccountHa
 // rejectIfMalware scans file bytes and, if anything is found, writes a 422 and
 // returns true so the caller stops before storing. Fails closed: a scan error
 // rejects the upload (never store unsanitized content).
-func (h *AccountHandler) rejectIfMalware(w http.ResponseWriter, r *http.Request, data []byte) bool {
+func (h *uploadGuard) rejectIfMalware(w http.ResponseWriter, r *http.Request, data []byte) bool {
 	if h.malware == nil {
 		h.malware = storage.NewDefaultMalwareScanner("")
 	}
@@ -49,21 +55,20 @@ func (h *AccountHandler) rejectIfMalware(w http.ResponseWriter, r *http.Request,
 	return false
 }
 
-// sniffImage — rejects files that claim to be an image but whose magic bytes
-// are not a real image (a classic renamed-executable / polyglot vector).
-func sniffImage(data []byte) bool {
+// sniffImageType returns the real image content type from magic bytes ("" when
+// the data is not a JPEG/PNG image) — the header is never trusted, so a
+// renamed executable or polyglot is rejected outright.
+func sniffImageType(data []byte) string {
 	if len(data) < 12 {
-		return false
+		return ""
 	}
 	switch {
 	case bytes.Equal(data[:2], []byte{0xff, 0xd8}): // JPEG
-		return true
+		return "image/jpeg"
 	case bytes.Equal(data[:8], []byte{0x89, 'P', 'N', 'G', 0x0d, 0x0a, 0x1a, 0x0a}): // PNG
-		return true
-	case bytes.Equal(data[:4], []byte{'R', 'I', 'F', 'F'}): // WebP (RIFF container)
-		return len(data) > 12 && bytes.Equal(data[8:12], []byte{'W', 'E', 'B', 'P'})
+		return "image/png"
 	}
-	return false
+	return ""
 }
 
 // resourceExts maps accepted upload content types to file extensions (LMS
@@ -97,11 +102,11 @@ func (h *AccountHandler) WithStorage(st storage.Storage) *AccountHandler {
 	return h
 }
 
-// avatarExts maps accepted content types to file extensions.
+// avatarExts maps accepted content types to file extensions. Profile photos
+// are JPEG/PNG only (product requirement) — never a pasted URL.
 var avatarExts = map[string]string{
 	"image/jpeg": ".jpg",
 	"image/png":  ".png",
-	"image/webp": ".webp",
 }
 
 func (h *AccountHandler) requireUser(w http.ResponseWriter, r *http.Request) (*uuid.UUID, bool) {
@@ -133,6 +138,7 @@ func (h *AccountHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		"id": user.ID.String(), "email": user.Email,
 		"first_name": user.FirstName, "last_name": user.LastName,
 		"phone": user.Phone, "timezone": user.Timezone,
+		"bio": user.Bio, "preferred_language": user.PreferredLanguage,
 		"status": string(user.Status),
 	}, nil)
 }
@@ -150,15 +156,6 @@ func (h *AccountHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, pkg.Conflict("avatar storage is not configured"))
 		return
 	}
-	ct := strings.ToLower(strings.TrimSpace(r.Header.Get("Content-Type")))
-	if ct == "" {
-		ct = "image/jpeg"
-	}
-	ext, ok := avatarExts[ct]
-	if !ok {
-		WriteAppError(w, pkg.BadRequest("avatar must be JPEG, PNG or WebP", nil))
-		return
-	}
 	r.Body = http.MaxBytesReader(w, r.Body, 11<<20) // 11 MiB hard cap (guard allows 10)
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -169,8 +166,12 @@ func (h *AccountHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	if h.rejectIfMalware(w, r, data) {
 		return
 	}
-	if !sniffImage(data) {
-		WriteAppError(w, pkg.Unprocessable("upload blocked: file is not a valid image"))
+	// The sniffed content type is authoritative: profile photos must be a real
+	// JPEG or PNG file (never a URL, never a renamed executable).
+	ct := sniffImageType(data)
+	ext, ok := avatarExts[ct]
+	if !ok {
+		WriteAppError(w, pkg.BadRequest("avatar must be a JPEG or PNG image (upload the file, not a URL)", nil))
 		return
 	}
 	key := "avatars/" + userID.String() + ext

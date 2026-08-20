@@ -13,6 +13,7 @@ import { useSession } from "@/hooks/useSession";
 import { useQueryClient } from "@tanstack/react-query";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
 import { createLearner } from "@/features/onboarding/api";
+import { CurriculumLevelSelect } from "@/features/onboarding/CurriculumLevelSelect";
 import { safeNextPath } from "@/lib/safe-next";
 import { clearOnboardingDraft, ONBOARDING_STORAGE_KEY } from "@/lib/onboarding";
 import {
@@ -22,6 +23,7 @@ import {
   setPrimaryRole,
   changePassword,
   markOnboarded,
+  updateProfile,
 } from "@/features/auth/api";
 
 // ── Stateful 7-step onboarding (phase 30) - hardened (phase 32) ───────────
@@ -375,17 +377,10 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
             </div>
             <div>
               <span className="mb-1.5 block text-sm font-medium text-ink-800">Learner&apos;s level</span>
-              <div className="flex flex-wrap gap-2">
-                {["Primary", "Secondary", "Undergraduate", "Professional"].map((l) => (
-                  <Chip
-                    key={l}
-                    selected={state.parent?.childLevel === l}
-                    onClick={() => save({ parent: { ...state.parent, childLevel: l } })}
-                  >
-                    {l}
-                  </Chip>
-                ))}
-              </div>
+              <CurriculumLevelSelect
+                value={state.parent?.childLevel ?? ""}
+                onChange={(level) => save({ parent: { ...state.parent, childLevel: level } })}
+              />
             </div>
           </>
         )}
@@ -423,13 +418,10 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
         </div>
         <div>
           <span className="mb-1.5 block text-sm font-medium text-ink-800">Your level</span>
-          <div className="flex flex-wrap gap-2">
-            {["Primary", "Secondary", "Undergraduate", "Professional"].map((l) => (
-              <Chip key={l} selected={state.student?.level === l} onClick={() => save({ student: { ...state.student, level: l } })}>
-                {l}
-              </Chip>
-            ))}
-          </div>
+          <CurriculumLevelSelect
+            value={state.student?.level ?? ""}
+            onChange={(level) => save({ student: { ...state.student, level } })}
+          />
         </div>
         <ContinueBtn onClick={onNext} label="Continue" />
       </div>
@@ -1056,6 +1048,17 @@ function OnboardingInner() {
                   relationship: "PARENT",
                 }).catch(() => undefined);
               }
+              // Sync everything collected during signup/onboarding to the
+              // account, so the dashboard + settings reflect it exactly:
+              // full name (step 1), phone (step 5), bio + language (step 6).
+              const nameParts = (state.name ?? "").trim().split(/\s+/);
+              await updateProfile({
+                first_name: nameParts[0] ?? "",
+                last_name: nameParts.slice(1).join(" ") || "",
+                phone: state.phone ?? "",
+                bio: state.bio?.trim() || undefined,
+                preferred_language: state.language ?? undefined,
+              }).catch(() => undefined);
               await markOnboarded();
               void qc.invalidateQueries({ queryKey: ["session"] });
             } catch {

@@ -45,11 +45,13 @@ func NewAccountService(
 
 // UpdateProfileInput — editable profile fields.
 type UpdateProfileInput struct {
-	FirstName string  `json:"first_name"`
-	LastName  string  `json:"last_name"`
-	Phone     string  `json:"phone"`
-	Timezone  string  `json:"timezone"`
-	AvatarURL *string `json:"avatar_url,omitempty"`
+	FirstName         string  `json:"first_name"`
+	LastName          string  `json:"last_name"`
+	Phone             string  `json:"phone"`
+	Timezone          string  `json:"timezone"`
+	AvatarURL         *string `json:"avatar_url,omitempty"`
+	Bio               *string `json:"bio,omitempty"`
+	PreferredLanguage *string `json:"preferred_language,omitempty"`
 }
 
 // UpdateProfile — validates + persists the editable profile.
@@ -78,6 +80,30 @@ func (s *AccountService) UpdateProfile(ctx context.Context, userID uuid.UUID, in
 			return nil, fmt.Errorf("%w: avatar_url must be an https URL", domain.ErrInvalidInput)
 		} else {
 			user.AvatarURL = &av
+		}
+	}
+	// Onboarding-synced extras (000053): bio + preferred language flow from
+	// the signup wizard into the dashboard and settings surfaces.
+	if in.Bio != nil {
+		b := strings.TrimSpace(*in.Bio)
+		if len(b) > 2000 {
+			return nil, fmt.Errorf("%w: bio must be 2000 characters or fewer", domain.ErrInvalidInput)
+		}
+		if b == "" {
+			user.Bio = nil
+		} else {
+			user.Bio = &b
+		}
+	}
+	if in.PreferredLanguage != nil {
+		l := strings.TrimSpace(*in.PreferredLanguage)
+		if len(l) > 40 {
+			return nil, fmt.Errorf("%w: preferred_language must be 40 characters or fewer", domain.ErrInvalidInput)
+		}
+		if l == "" {
+			user.PreferredLanguage = nil
+		} else {
+			user.PreferredLanguage = &l
 		}
 	}
 	if err := s.users.Update(ctx, user); err != nil {

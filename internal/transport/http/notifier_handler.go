@@ -18,6 +18,21 @@ func NewNotifierHandler(svc *service.NotifierService) *NotifierHandler {
 	return &NotifierHandler{svc: svc}
 }
 
+// GetContactInfo — GET /api/v1/site/contact (public). Exposes the WhatsApp
+// business number for live-chat links on the site. Empty number when the
+// channel is not configured; the widget hides itself in that case.
+func (h *NotifierHandler) GetContactInfo(w http.ResponseWriter, r *http.Request) {
+	number := service.WhatsAppBusinessNumber()
+	link := ""
+	if number != "" {
+		link = "https://wa.me/" + number
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"whatsapp_number": number,
+		"whatsapp_link":   link,
+	}, nil)
+}
+
 // SendWhatsApp — POST /api/v1/admin/notifications/whatsapp (admin). Sends a
 // WhatsApp message to a user (by user_id) or an explicit phone number.
 func (h *NotifierHandler) SendWhatsApp(w http.ResponseWriter, r *http.Request) {

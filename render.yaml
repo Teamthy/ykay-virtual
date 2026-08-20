@@ -96,6 +96,10 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false # e.g. NUVORA <no-reply@yourdomain.com>
+      # Recommended: Resend REST API (no SMTP relay needed) — one key from
+      # resend.com. When set, it takes precedence over SMTP.
+      - key: RESEND_API_KEY
+        sync: false
       # Named operators — set in the dashboard (never commit the password).
       # On boot the API upserts these as ACTIVE + verified. MFA still required.
       - key: OPERATOR_ACADEMIC_EMAIL
@@ -106,6 +110,10 @@ services:
         sync: false
       # ── SMS (Termii) ───────────────────────────────────────────────────
       - key: TERMII_API_KEY
+        sync: false
+      - key: TERMII_WHATSAPP_SENDER
+        sync: false
+      - key: WHATSAPP_BUSINESS_NUMBER
         sync: false
       - key: TERMII_SENDER_ID
         value: Nuvora
@@ -166,7 +174,13 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: TERMII_API_KEY
+        sync: false
+      - key: TERMII_WHATSAPP_SENDER
+        sync: false
+      - key: WHATSAPP_BUSINESS_NUMBER
         sync: false
       - key: EXPO_ACCESS_TOKEN
         sync: false

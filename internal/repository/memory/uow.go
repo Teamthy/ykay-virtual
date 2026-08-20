@@ -120,6 +120,7 @@ type MemoryStore struct {
 	Tutors         *TutorMemory
 	Subjects       *SubjectMemory
 	Programmes     *ProgrammeMemory
+	Curricula      *CurriculumMemory
 	Blogs          *BlogMemory
 	Redirects      *RedirectMemory
 	Testimonials   *TestimonialMemory
@@ -162,6 +163,7 @@ func NewMemoryStore() *MemoryStore {
 		Tutors:       NewTutorMemory(nil),
 		Subjects:     NewSubjectMemory(nil),
 		Programmes:   NewProgrammeMemory(nil),
+		Curricula:    NewCurriculumMemory(),
 		Blogs:        NewBlogMemory(),
 		Redirects:    NewRedirectMemory(),
 		Testimonials: NewTestimonialMemory(),

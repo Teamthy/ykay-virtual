@@ -21,15 +21,15 @@ type UserRepo struct{ db TxQuerier }
 func NewUserRepo(db TxQuerier) *UserRepo { return &UserRepo{db: db} }
 
 const userColumns = `id, email, first_name, last_name, phone, avatar_url, password_hash, status, timezone,
-	email_verified_at, phone_verified_at, last_login_at, onboarded_at, created_at, updated_at`
+	email_verified_at, phone_verified_at, last_login_at, onboarded_at, bio, preferred_language, created_at, updated_at`
 
 func scanUser(row interface{ Scan(...any) error }) (*identity.User, error) {
 	var u identity.User
-	var phone, firstName, lastName, avatarURL sql.NullString
+	var phone, firstName, lastName, avatarURL, bio, preferredLanguage sql.NullString
 	var emailVerifiedAt, phoneVerifiedAt, lastLoginAt, onboardedAt sql.NullTime
 	if err := row.Scan(&u.ID, &u.Email, &firstName, &lastName, &phone, &avatarURL, &u.PasswordHash,
 		&u.Status, &u.Timezone, &emailVerifiedAt, &phoneVerifiedAt, &lastLoginAt, &onboardedAt,
-		&u.CreatedAt, &u.UpdatedAt); err != nil {
+		&bio, &preferredLanguage, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
 	}
 	if firstName.Valid {
@@ -55,6 +55,12 @@ func scanUser(row interface{ Scan(...any) error }) (*identity.User, error) {
 	}
 	if onboardedAt.Valid {
 		u.OnboardedAt = &onboardedAt.Time
+	}
+	if bio.Valid {
+		u.Bio = &bio.String
+	}
+	if preferredLanguage.Valid {
+		u.PreferredLanguage = &preferredLanguage.String
 	}
 	return &u, nil
 }
@@ -111,10 +117,11 @@ func (r *UserRepo) FindByID(ctx context.Context, id uuid.UUID) (*identity.User, 
 func (r *UserRepo) Update(ctx context.Context, u *identity.User) error {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE users SET email=$1, first_name=$2, last_name=$3, phone=$4, avatar_url=$5, password_hash=$6,
-			status=$7, timezone=$8, email_verified_at=$9, phone_verified_at=$10, updated_at=NOW()
-		WHERE id=$11`,
+			status=$7, timezone=$8, email_verified_at=$9, phone_verified_at=$10,
+			bio=$11, preferred_language=$12, updated_at=NOW()
+		WHERE id=$13`,
 		u.Email, u.FirstName, u.LastName, u.Phone, u.AvatarURL, u.PasswordHash, u.Status, u.Timezone,
-		u.EmailVerifiedAt, u.PhoneVerifiedAt, u.ID)
+		u.EmailVerifiedAt, u.PhoneVerifiedAt, u.Bio, u.PreferredLanguage, u.ID)
 	if err != nil {
 		return fmt.Errorf("update user: %w", err)
 	}

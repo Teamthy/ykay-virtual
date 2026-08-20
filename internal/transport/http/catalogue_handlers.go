@@ -255,3 +255,22 @@ func writeJSONData(w http.ResponseWriter, status int, v any) {
 }
 
 var _ = json.Marshal
+
+// --- Curricula ---
+
+type CurriculaHandler struct{ svc *service.CurriculumService }
+
+func NewCurriculaHandler(svc *service.CurriculumService) *CurriculaHandler {
+	return &CurriculaHandler{svc: svc}
+}
+
+// List — GET /api/v1/curricula (public, cached): active curricula with their
+// ordered levels for the learner "current level" dropdowns.
+func (h *CurriculaHandler) List(w http.ResponseWriter, r *http.Request) {
+	list, err := h.svc.ListWithLevels(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+}

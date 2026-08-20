@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/academics"
@@ -33,6 +34,26 @@ func (m *ProgrammeLifecycleMemory) GetLifecycle(_ context.Context, id uuid.UUID)
 	}
 	l.Status = p.Status
 	return &l, nil
+}
+
+// CreateProgramme inserts a new programme as DRAFT (admin console).
+func (m *ProgrammeLifecycleMemory) CreateProgramme(_ context.Context, p *academics.Programme) error {
+	m.pm.mu.Lock()
+	defer m.pm.mu.Unlock()
+	for _, existing := range m.pm.rows {
+		if existing.Slug == p.Slug {
+			return domain.ErrAlreadyExists
+		}
+	}
+	if p.ID == uuid.Nil {
+		p.ID = uuid.New()
+	}
+	p.Status = academics.ProgrammeDraft
+	now := time.Now().UTC()
+	p.CreatedAt = now
+	p.UpdatedAt = now
+	m.pm.rows[p.ID] = *p
+	return nil
 }
 
 func (m *ProgrammeLifecycleMemory) SetLifecycle(_ context.Context, l academics.ProgrammeLifecycle) error {

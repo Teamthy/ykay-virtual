@@ -251,6 +251,24 @@ type CohortAdminRepository interface {
 	// UpdateTutor (re)assigns the tutor teaching a cohort. Passing nil clears
 	// the assignment (cohort is "awaiting tutor").
 	UpdateTutor(ctx context.Context, id uuid.UUID, tutorProfileID *uuid.UUID) error
+	// UpdateBanner stores (or clears, with "") the cohort banner image URL —
+	// always a server-side uploaded JPEG/PNG object, never a client-pasted
+	// remote URL.
+	UpdateBanner(ctx context.Context, id uuid.UUID, bannerURL string) error
+	// RequestJoin opens (or re-opens, when one already exists) a tutor's
+	// PENDING join request on a cohort. Idempotent per (cohort, tutor) —
+	// a re-request resets a previously reviewed row back to PENDING.
+	RequestJoin(ctx context.Context, cohortID, tutorProfileID uuid.UUID, note *string) (*CohortJoinRequest, error)
+	// ListJoinRequests lists join requests, newest first, optionally filtered
+	// by status ("" returns all).
+	ListJoinRequests(ctx context.Context, status string) ([]CohortJoinRequest, error)
+	// ReviewJoin stamps APPROVED/REJECTED plus reviewer on a join request and
+	// returns the updated row.
+	ReviewJoin(ctx context.Context, requestID uuid.UUID, status string, reviewedBy uuid.UUID) (*CohortJoinRequest, error)
+	// ProgrammeRoster aggregates the delivery picture for one programme slug:
+	// programme, its cohorts, the tutors attached to them, and the students
+	// enrolled. Returned as a JSON-ready map (admin console contract).
+	ProgrammeRoster(ctx context.Context, slug string) (map[string]any, error)
 }
 
 // Lesson admin reads.

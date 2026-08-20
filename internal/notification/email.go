@@ -1,12 +1,17 @@
 package notification
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
+	"net/http"
 	"net/smtp"
 	"os"
 	"strings"
+	"time"
 )
 
 // EmailSender — outbound email adapter (AGENTS.md internal/notification).
@@ -18,6 +23,11 @@ type EmailSender interface {
 }
 
 func NewEmailSender() EmailSender {
+	if os.Getenv("EMAIL_PROVIDER") == "resend" || (os.Getenv("SMTP_HOST") == "" && os.Getenv("RESEND_API_KEY") != "") {
+		if key := os.Getenv("RESEND_API_KEY"); key != "" {
+			return NewResendEmailSender(key, os.Getenv("EMAIL_FROM"))
+		}
+	}
 	if os.Getenv("SMTP_HOST") != "" {
 		return NewSMTPEmailSender(
 			os.Getenv("SMTP_HOST"),
@@ -80,6 +90,77 @@ func (s *SMTPEmailSender) Send(_ context.Context, to, subject, htmlBody string) 
 	}
 	slog.Info("smtp sent", "to", to, "subject", subject)
 	return nil
+}
+
+// ResendEmailSender — production: Resend REST API (https://resend.com).
+// Chosen because it is one API key and one HTTPS POST — no SMTP relay
+// allowlisting — so transactional email (login codes, receipts) works on
+// Render/Vercel without any infra changes. Configure via RESEND_API_KEY
+// (EMAIL_FROM defaults to the Resend-verified domain sender).
+type ResendEmailSender struct {
+	apiKey   string
+	from     string
+	endpoint string
+	client   *http.Client
+}
+
+func NewResendEmailSender(apiKey, from string) *ResendEmailSender {
+	return &ResendEmailSender{
+		apiKey:   apiKey,
+		from:     from,
+		endpoint: "https://api.resend.com/emails",
+		client:   &http.Client{Timeout: 15 * time.Second},
+	}
+}
+
+func (s *ResendEmailSender) Send(ctx context.Context, to, subject, htmlBody string) error {
+	if strings.TrimSpace(to) == "" || !strings.Contains(to, "@") {
+		return fmt.Errorf("resend: invalid recipient")
+	}
+	_, addr := parseFrom(s.from)
+	payload := map[string]any{
+		"from":    s.from,
+		"to":      []string{to},
+		"subject": subject,
+		"html":    htmlBody,
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.endpoint, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+s.apiKey)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := s.client.Do(req)
+	if err != nil {
+		slog.Error("resend request failed", "to", to, "subject", subject, "error", err)
+		return fmt.Errorf("resend request: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		var detail []byte
+		if resp.Body != nil {
+			detail, _ = io.ReadAll(io.LimitReader(resp.Body, 2048))
+		}
+		slog.Error("resend rejected email", "to", to, "subject", subject,
+			"status", resp.StatusCode, "detail", strings.TrimSpace(string(detail)))
+		return fmt.Errorf("resend rejected email (status %d): %s", resp.StatusCode, strings.TrimSpace(string(detail)))
+	}
+	slog.Info("resend sent", "to", to, "subject", subject, "from", addr)
+	return nil
+}
+
+// EmailDeliveryConfigured reports whether a real provider (SMTP or Resend)
+// is configured. Production boots call this to warn loudly when
+// transactional email will silently fail.
+func EmailDeliveryConfigured() bool {
+	if os.Getenv("RESEND_API_KEY") != "" {
+		return true
+	}
+	return os.Getenv("SMTP_HOST") != ""
 }
 
 // parseFrom accepts "you@domain" or "NUVORA <you@domain>" without double-wrapping.

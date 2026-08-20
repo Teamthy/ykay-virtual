@@ -118,10 +118,15 @@ func (s *AuthService) sendEmail(ctx context.Context, to, subject, htmlBody strin
 		return fmt.Errorf("email sender not configured")
 	}
 	if err := s.email.Send(ctx, to, subject, htmlBody); err != nil {
-		if s.queue != nil {
+		// Only queue for retry when a real provider is configured and the
+		// failure is likely transient (provider hiccup). When NO provider is
+		// configured, the console sender fails in production and the queued
+		// copy would fail identically in the worker — surface the error to
+		// the caller instead of pretending the email was sent.
+		if s.queue != nil && notification.EmailDeliveryConfigured() {
 			payload := map[string]string{"to": to, "subject": subject, "body": htmlBody}
 			if _, qerr := s.queue.Enqueue(ctx, worker.JobSendEmail, payload); qerr == nil {
-				slog.Warn("smtp failed — queued email for retry", "to", to, "subject", subject, "error", err)
+				slog.Warn("email provider failed — queued email for retry", "to", to, "subject", subject, "error", err)
 				return nil
 			}
 		}

@@ -1,10 +1,12 @@
 package httpapi
 
 import (
+	"io"
 	"net/http"
 	"strconv"
 	"time"
 
+	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
@@ -12,6 +14,7 @@ import (
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/service"
+	"ykay-virtual/internal/storage"
 	"ykay-virtual/pkg"
 
 	"github.com/google/uuid"
@@ -32,6 +35,8 @@ import (
 type AdminHandler struct {
 	svc      *service.AdminService
 	payments *service.PaymentService
+	storage  storage.Storage
+	uploadGuard
 }
 
 func NewAdminHandler(svc *service.AdminService) *AdminHandler { return &AdminHandler{svc: svc} }
@@ -39,6 +44,12 @@ func NewAdminHandler(svc *service.AdminService) *AdminHandler { return &AdminHan
 // WithPayments wires the payment service (manual payment confirmation).
 func (h *AdminHandler) WithPayments(p *service.PaymentService) *AdminHandler {
 	h.payments = p
+	return h
+}
+
+// WithStorage wires the object store used for cohort banner uploads.
+func (h *AdminHandler) WithStorage(s storage.Storage) *AdminHandler {
+	h.storage = s
 	return h
 }
 
@@ -900,4 +911,95 @@ func (h *AdminHandler) ProgrammeRoster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, roster, nil)
+}
+
+// UploadCohortBanner — POST /admin/cohorts/{cohortId}/banner (raw JPEG/PNG
+// body). Uploads the image to the public bucket and stores its URL on the
+// cohort. Rejects anything that is not a real JPEG/PNG file (never a pasted
+// URL, never a renamed executable).
+func (h *AdminHandler) UploadCohortBanner(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	if h.storage == nil {
+		WriteAppError(w, pkg.Conflict("object storage is not configured"))
+		return
+	}
+	cohortID, err := ParseUUID(r, "cohortId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, 11<<20) // 11 MiB hard cap
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("could not read banner image: "+err.Error(), nil))
+		return
+	}
+	if len(data) == 0 {
+		WriteAppError(w, pkg.BadRequest("empty banner upload", nil))
+		return
+	}
+	if h.rejectIfMalware(w, r, data) {
+		return
+	}
+	ct := sniffImageType(data)
+	if ct == "" {
+		WriteAppError(w, pkg.BadRequest("banner must be a JPEG or PNG image (upload the file, not a URL)", nil))
+		return
+	}
+	ext := ".jpg"
+	if ct == "image/png" {
+		ext = ".png"
+	}
+	key := "cohorts/" + cohortID.String() + ext
+	if err := h.storage.Upload(r.Context(), storage.BucketPublic, key, data, ct); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	url := h.storage.GetPublicURL(storage.BucketPublic, key)
+	if err := h.svc.SetCohortBanner(r.Context(), cohortID, url); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"banner_url": url, "content_type": ct, "size": len(data)}, nil)
+}
+
+// CreateProgramme — POST /admin/programmes (admin). Creates a DRAFT programme
+// so its public page (/programmes/{slug}) exists; publish via
+// /admin/programmes/{id}/status when ready.
+func (h *AdminHandler) CreateProgramme(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	var req struct {
+		Title      string   `json:"title"`
+		Slug       string   `json:"slug"`
+		Summary    *string  `json:"summary"`
+		Format     string   `json:"format"`
+		PriceMin   *float64 `json:"price_min"`
+		PriceMax   *float64 `json:"price_max"`
+		Currency   string   `json:"currency"`
+		IsFeatured bool     `json:"is_featured"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	created, err := h.svc.CreateProgrammeAdmin(r.Context(), *adminID, service.CreateProgrammeInput{
+		Title:      req.Title,
+		Slug:       req.Slug,
+		Summary:    req.Summary,
+		Format:     academics.ProgrammeFormat(req.Format),
+		PriceMin:   req.PriceMin,
+		PriceMax:   req.PriceMax,
+		Currency:   req.Currency,
+		IsFeatured: req.IsFeatured,
+	})
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, created, nil)
 }

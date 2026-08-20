@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"ykay-virtual/internal/middleware"
@@ -84,10 +85,10 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 		_ = json.NewEncoder(w).Encode(map[string]any{"status": "ready"})
 	})
 
-	// Metrics scrape endpoint (G3.3). Fail-closed: when METRICS_TOKEN is set
-	// the endpoint requires Authorization: Bearer <token>; empty = open
-	// (dev). The route is excluded from its own instrumentation.
-	mux.Handle("GET /metrics", telemetry.DefaultMetrics().HandlerWithToken(os.Getenv("METRICS_TOKEN")))
+	// Metrics scrape endpoint (G3.3). Always token-gated: production requires
+	// METRICS_TOKEN (config.Validate); non-production falls back to a
+	// documented dev token so the endpoint is never open.
+	mux.Handle("GET /metrics", telemetry.DefaultMetrics().HandlerWithToken(metricsToken()))
 
 	v1 := "/api/v1"
 
@@ -144,6 +145,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/admin/chat/analytics/trends", handlers.Chat.ChatTrends)
 
 	// Catalogue (public, cached 60-300s)
+	mux.HandleFunc("GET "+v1+"/site/contact", handlers.Notifier.GetContactInfo)
+	mux.HandleFunc("GET "+v1+"/curricula", handlers.Curricula.List)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)
 	mux.HandleFunc("GET "+v1+"/subjects/{slug}", handlers.Subjects.GetBySlug)
 	mux.HandleFunc("GET "+v1+"/tutors/search", handlers.Tutors.Search)
@@ -306,10 +309,12 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/cohorts", handlers.Admin.CreateCohort)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/status", handlers.Admin.SetCohortStatus)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/tutor", handlers.Admin.AssignCohortTutor)
+	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/banner", handlers.Admin.UploadCohortBanner)
 	mux.HandleFunc("POST "+v1+"/me/cohorts/{cohortId}/join", handlers.Admin.RequestCohortJoin)
 	mux.HandleFunc("GET "+v1+"/admin/cohort-joins", handlers.Admin.ListCohortJoins)
 	mux.HandleFunc("POST "+v1+"/admin/cohort-joins/{id}/review", handlers.Admin.ReviewCohortJoin)
 	mux.HandleFunc("GET "+v1+"/admin/programmes/{slug}/roster", handlers.Admin.ProgrammeRoster)
+	mux.HandleFunc("POST "+v1+"/admin/programmes", handlers.Admin.CreateProgramme)
 	// G5.3 — catalogue sign-off: publish/unpublish programmes and
 	// testimonials without a code deployment (admin-only, audited).
 	mux.HandleFunc("POST "+v1+"/admin/programmes/{programmeId}/status", handlers.Admin.SetProgrammeStatus)
@@ -376,6 +381,7 @@ func (rt *Router) Handler() http.Handler {
 // Handlers — dependency container so the router stays declarative.
 type Handlers struct {
 	Subjects        *SubjectHandler
+	Curricula       *CurriculaHandler
 	Tutors          *TutorHandler
 	Programmes      *ProgrammeHandler
 	Cohorts         *CohortHandler
@@ -437,4 +443,17 @@ func envInt(key string, def int) int {
 		}
 	}
 	return def
+}
+
+// metricsToken — the bearer token guarding GET /metrics. Production always
+// sets METRICS_TOKEN (config.Validate fails otherwise); dev/staging fall back
+// to a documented default so the scrape endpoint is never open.
+func metricsToken() string {
+	if t := os.Getenv("METRICS_TOKEN"); strings.TrimSpace(t) != "" {
+		return t
+	}
+	if os.Getenv("ENVIRONMENT") == "production" {
+		return "" // unreachable: config.Validate already failed on boot
+	}
+	return "nuvora-dev-metrics"
 }

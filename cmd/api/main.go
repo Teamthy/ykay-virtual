@@ -64,6 +64,7 @@ type Repositories struct {
 	TutorRepo          tutor.TutorRepository
 	SubjectRepo        academics.SubjectRepository
 	ProgrammeRepo      academics.ProgrammeRepository
+	CurriculaRepo      academics.CurriculumRepository
 	CohortRepo         booking.CohortRepository
 	StudentLink        booking.StudentProfileReader
 	TutorSubjectChk    booking.TutorProfileReader
@@ -131,6 +132,9 @@ func main() {
 	logx.Setup(cfg.Environment)
 	if err := cfg.Validate(); err != nil {
 		logx.Fatal("config invalid", "error", err)
+	}
+	if !notification.EmailDeliveryConfigured() {
+		slog.Error("EMAIL DELIVERY NOT CONFIGURED — login codes, verification links, receipts and admin MFA emails will NOT reach users. Set RESEND_API_KEY (recommended) or SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM.")
 	}
 	ctx := context.Background()
 	shutdownTracer := telemetry.InitTracer(ctx, cfg.OtelEndpoint)
@@ -263,12 +267,16 @@ func main() {
 	paymentSvc := service.NewPaymentService(repos.UoWFactory, providers, audit, repos.EscrowRead)
 	// YK-006 fail-closed: until a real, certified gateway refund flow exists,
 	// production must refuse refunds rather than silently credit the wallet and
-	// mark orders REFUNDED without refunding the gateway.
-	if cfg.IsProduction() && cfg.PaystackSecret == "" && cfg.FlutterwaveSecret == "" {
+	// mark orders REFUNDED without refunding the gateway. Disabled in
+	// production REGARDLESS of which payment secrets are present — refund
+	// capability is a certification question, not a configuration one.
+	if cfg.IsProduction() {
 		paymentSvc.SetRefundsEnabled(false)
+		slog.Warn("refunds DISABLED (production, gateway refund flow not certified — YK-006)")
 	}
 
 	subjectSvc := service.NewSubjectService(repos.SubjectRepo, cacheBackend)
+	curriculumSvc := service.NewCurriculumService(repos.CurriculaRepo, cacheBackend)
 	programmeSvc := service.NewProgrammeService(repos.ProgrammeRepo, cacheBackend)
 	cohortSvc := service.NewCohortService(repos.CohortRepo, cacheBackend)
 
@@ -319,23 +327,25 @@ func main() {
 		WithVetting(repos.Vetting).
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
-	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc)
+	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc).WithStorage(store)
 	adminSvc.WithPayments(repos.Orders, repos.Payouts)
 	adminSvc.WithUsers(repos.Users, repos.Roles)
 	adminSvc.WithAuditLogs(repos.AuditRepo)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
 		repos.Assignments, audit).WithNotifications(messagingSvc)
 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)
-	supportSvc := service.NewSupportService(repos.SupportTickets)
+	supportSvc := service.NewSupportService(repos.SupportTickets).WithNotifier(notifierSvc)
 	reviewSvc := service.NewReviewService(repos.Reviews, repos.TutorRepo, audit)
 	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit).WithUsers(repos.Users)
 	institutionSvc := service.NewInstitutionService(repos.Institutions, audit)
 	paymentSvc.WithReferrals(referralSvc)
 	paymentSvc.WithReceipts(repos.Users, notification.NewEmailSender(), cfg.SiteURL)
+	paymentSvc.WithWhatsApp(notifierSvc)
 	authSvc.WithReferrals(referralSvc)
 
 	// --- AI assistant (phase 33) ---
 	chatSvc := service.NewChatService(repos.Chat, supportSvc, repos.Users)
+	chatSvc.WithNotifier(notifierSvc)
 	chatSvc.WithContextBuilder(buildChatContext(programmeSvc, cohortSvc, tutorSvc))
 	if cfg.ChatbotEnabled && cfg.GeminiAPIKey != "" {
 		chatSvc.WithProvider(service.NewGeminiProvider(cfg.GeminiAPIKey, cfg.GeminiModel).
@@ -380,6 +390,7 @@ func main() {
 
 	handlers := &httpapi.Handlers{
 		Subjects:     httpapi.NewSubjectHandler(subjectSvc),
+		Curricula:    httpapi.NewCurriculaHandler(curriculumSvc),
 		Tutors:       httpapi.NewTutorHandler(tutorSvc),
 		Programmes:   httpapi.NewProgrammeHandler(programmeSvc),
 		Cohorts:      httpapi.NewCohortHandler(cohortSvc),
@@ -543,6 +554,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			CohortRepo:         store.Cohorts,
 			SubjectRepo:        store.Subjects,
 			ProgrammeRepo:      store.Programmes,
+			CurriculaRepo:      store.Curricula,
 			TutorRepo:          store.Tutors,
 			AuditRepo:          store.AuditLogs,
 			Orders:             store.Orders,
@@ -604,6 +616,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		TutorRepo:          postgres.NewTutorRepo(pg.DB()),
 		SubjectRepo:        postgres.NewSubjectRepo(pg.DB()),
 		ProgrammeRepo:      postgres.NewProgrammeRepo(pg.DB()),
+		CurriculaRepo:      postgres.NewCurriculumRepo(pg.DB()),
 		CohortRepo:         postgres.NewCohortRepo(pg.DB()),
 		StudentLink:        postgres.NewStudentLinkRepo(pg.DB()),
 		TutorSubjectChk:    postgres.NewTutorSubjectCheckRepo(pg.DB()),
@@ -757,6 +770,41 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 	store.Subjects.Seed(academics.Subject{ID: mathsID, Name: "Mathematics", Slug: "mathematics", Category: "Core", IsActive: true, CreatedAt: now})
 	store.Subjects.Seed(academics.Subject{ID: engID, Name: "English", Slug: "english", Category: "Core", IsActive: true, CreatedAt: now})
 	store.Subjects.Seed(academics.Subject{ID: physID, Name: "Physics", Slug: "physics", Category: "Sciences", IsActive: true, CreatedAt: now})
+
+	// Curricula + levels (mirrors migration 000052) so learner "current
+	// level" dropdowns work in dev mode.
+	nigID := uuid.MustParse("00000000-0000-0000-0000-00000000b001")
+	britID := uuid.MustParse("00000000-0000-0000-0000-00000000b002")
+	store.Curricula.SeedCurriculum(academics.Curriculum{ID: nigID, Name: "Nigerian Curriculum", Slug: "nigerian", IsActive: true, CreatedAt: now})
+	store.Curricula.SeedCurriculum(academics.Curriculum{ID: britID, Name: "British Curriculum", Slug: "british", IsActive: true, CreatedAt: now})
+	nigerianLevels := []struct {
+		name string
+		slug string
+		ord  int
+	}{
+		{"Primary 1", "primary-1", 10}, {"Primary 2", "primary-2", 11}, {"Primary 3", "primary-3", 12},
+		{"Primary 4", "primary-4", 13}, {"Primary 5", "primary-5", 14}, {"Primary 6", "primary-6", 15},
+		{"JSS1", "jss1", 20}, {"JSS2", "jss2", 21}, {"JSS3", "jss3", 22},
+		{"SSS1", "sss1", 30}, {"SSS2", "sss2", 31}, {"SSS3", "sss3", 32},
+	}
+	for _, l := range nigerianLevels {
+		store.Curricula.SeedLevel(academics.Level{ID: uuid.New(), CurriculumID: nigID, Name: l.name, Slug: l.slug, SortOrder: l.ord})
+	}
+	britishLevels := []struct {
+		name string
+		slug string
+		ord  int
+	}{
+		{"Reception", "reception", 5},
+		{"Year 1", "year-1", 11}, {"Year 2", "year-2", 12}, {"Year 3", "year-3", 13},
+		{"Year 4", "year-4", 14}, {"Year 5", "year-5", 15}, {"Year 6", "year-6", 16},
+		{"Year 7", "year-7", 17}, {"Year 8", "year-8", 18}, {"Year 9", "year-9", 19},
+		{"Year 10", "year-10", 20}, {"Year 11", "year-11", 21},
+		{"Year 12", "year-12", 30}, {"Year 13", "year-13", 31},
+	}
+	for _, l := range britishLevels {
+		store.Curricula.SeedLevel(academics.Level{ID: uuid.New(), CurriculumID: britID, Name: l.name, Slug: l.slug, SortOrder: l.ord})
+	}
 
 	p1 := uuid.MustParse("00000000-0000-0000-0000-00000000d001")
 	p2 := uuid.MustParse("00000000-0000-0000-0000-00000000d002")

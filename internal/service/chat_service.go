@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 	"time"
@@ -52,6 +53,7 @@ type ChatService struct {
 	provider   ChatProvider
 	contextFor ChatContextBuilder
 	pusher     *PushService
+	notifier   *NotifierService
 	now        func() time.Time
 }
 
@@ -62,6 +64,13 @@ func NewChatService(threads chat.ThreadRepository, support *SupportService, user
 		users:   users,
 		now:     time.Now,
 	}
+}
+
+// WithNotifier wires WhatsApp notification when a chat escalates to a human
+// (best-effort; failures never fail the escalation itself).
+func (s *ChatService) WithNotifier(n *NotifierService) *ChatService {
+	s.notifier = n
+	return s
 }
 
 // WithProvider wires the AI provider (nil-safe: unconfigured → canned reply).
@@ -212,6 +221,20 @@ func (s *ChatService) EscalateToHuman(ctx context.Context, userID, threadID uuid
 	email := ""
 	if u, err := s.users.FindByID(ctx, userID); err == nil {
 		email = u.Email
+	}
+	if s.notifier != nil && WhatsAppAdminNumber() != "" {
+		noteText := strings.TrimSpace(note)
+		if noteText == "" {
+			noteText = "(no note)"
+		}
+		adminBody := "From: " + email + "\nThread: " + thread.Title + "\nUser note: " + noteText
+		go func(subject, adminBody string) {
+			nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := s.notifier.NotifyAdmin(nctx, "NUVORA chat escalated", adminBody); err != nil {
+				slog.Error("whatsapp escalation notify failed", "thread", thread.ID, "error", err)
+			}
+		}("Chat escalated: "+thread.Title, adminBody)
 	}
 	if s.support != nil {
 		_, err = s.support.OpenTicket(ctx, &userID, email, "Chat escalated: "+thread.Title, body)

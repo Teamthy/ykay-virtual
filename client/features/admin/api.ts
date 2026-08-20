@@ -441,3 +441,33 @@ export async function listAuditLogs(params: {
   const res = await apiFetch<AuditLogRow[]>(`/admin/audit?${qs}`);
   return res.data ?? [];
 }
+
+export type Programme = {
+  id: string;
+  title: string;
+  slug: string;
+  summary?: string | null;
+  format: string;
+  status: string;
+  currency?: string;
+  price_min?: number | null;
+  price_max?: number | null;
+  is_featured?: boolean;
+};
+
+export async function createAdminProgramme(input: {
+  title: string;
+  slug?: string;
+  summary?: string;
+  format?: string;
+  currency?: string;
+  price_min?: number;
+  price_max?: number;
+  is_featured?: boolean;
+}): Promise<Programme> {
+  const res = await apiFetch<Programme>("/admin/programmes", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}

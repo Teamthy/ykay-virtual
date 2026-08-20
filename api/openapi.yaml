@@ -116,6 +116,33 @@ paths:
       responses:
         '200': { description: OK }
 
+  /site/contact:
+    get:
+      tags: [meta]
+      summary: Public contact channels (WhatsApp business number + wa.me link)
+      security: []
+      responses:
+        '200': { description: Contact channels }
+
+  /curricula:
+    get:
+      tags: [academics]
+      summary: Active curricula with their ordered levels (learner "current level" dropdowns)
+      security: []
+      responses:
+        '200': { description: Curricula with levels }
+
+  /admin/orders/{orderId}:
+    get:
+      tags: [admin]
+      summary: Order detail with line items (admin payments console)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Order detail }
+        '404': { description: Unknown order }
+
   /admin/orders/{orderId}/refund:
     post:
       tags: []
@@ -1569,6 +1596,30 @@ paths:
         '200': { description: Publication state updated }
         '403': { description: No consent on file, or not an admin }
 
+  /admin/programmes:
+    post:
+      tags: [admin]
+      summary: Create a programme page (DRAFT; publish via the status endpoint)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+                slug: { type: string }
+                summary: { type: string }
+                format: { type: string, enum: [COHORT, PRIVATE, BOOTCAMP, HOLIDAY, ONLINE_CLASS, HYBRID] }
+                price_min: { type: number }
+                price_max: { type: number }
+                currency: { type: string }
+                is_featured: { type: boolean }
+      responses:
+        '201': { description: Programme created (DRAFT) }
+
   /admin/programmes/{programmeId}/status:
     post:
       tags: [admin]
@@ -1999,6 +2050,33 @@ paths:
       responses:
         '200': { description: Learners }
 
+  /me/learner-profile:
+    post:
+      tags: [identity]
+      summary: Ensure the actor's own learner profile exists (onboarding sync; idempotent)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '201': { description: Learner profile ensured }
+
+  /me/cohorts/{cohortId}/join:
+    post:
+      tags: [cohorts]
+      summary: Tutor asks to teach a cohort (APPROVED tutors only; PENDING join request)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note: { type: string }
+      responses:
+        '201': { description: Join request opened }
+        '403': { description: Not a tutor, or tutor not approved }
+        '404': { description: Unknown cohort }
+
   /me/availability:
     get:
       tags: [portals]
@@ -2225,6 +2303,63 @@ paths:
                 tutor_profile_id: { type: string, format: uuid, description: "Approved tutor profile id; empty to unassign" }
       responses:
         '200': { description: Assigned }
+
+  /admin/cohorts/{cohortId}/banner:
+    post:
+      tags: [admin]
+      summary: Upload a cohort banner image (raw JPEG/PNG body; URL-only input is rejected)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          image/jpeg:
+            schema: { type: string, format: binary }
+          image/png:
+            schema: { type: string, format: binary }
+      responses:
+        '200': { description: Banner stored }
+        '400': { description: Not a valid JPEG/PNG image }
+        '404': { description: Unknown cohort }
+
+  /admin/cohort-joins:
+    get:
+      tags: [admin]
+      summary: Tutor join requests for cohorts, newest first (optional ?status=PENDING)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Join requests }
+
+  /admin/cohort-joins/{requestId}/review:
+    post:
+      tags: [admin]
+      summary: Approve or reject a tutor cohort join request (APPROVED also assigns the tutor)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [APPROVED, REJECTED] }
+      responses:
+        '200': { description: Reviewed }
+        '404': { description: Unknown join request }
+
+  /admin/programmes/{slug}/roster:
+    get:
+      tags: [admin]
+      summary: Programme roster — cohorts, tutors and enrolled students for one programme
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Roster (programme, cohorts, tutors, students, counts) }
+        '404': { description: Unknown programme slug }
 
   /admin/lessons:
     post:
