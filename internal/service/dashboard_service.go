@@ -57,17 +57,22 @@ func (s *DashboardService) ParentOrdersView(ctx context.Context, parentUserID uu
 	if err != nil {
 		return nil, 0, err
 	}
+	ids := make([]uuid.UUID, 0, len(orders))
+	for _, o := range orders {
+		ids = append(ids, o.ID)
+	}
+	itemsByOrder, ierr := s.orders.ListItemsByOrderIDs(ctx, ids)
+	if ierr != nil {
+		return nil, 0, ierr
+	}
 	out := make([]ParentOrderView, 0, len(orders))
 	for _, o := range orders {
 		view := ParentOrderView{Order: o}
-		items, ierr := s.orders.ListItems(ctx, o.ID)
-		if ierr == nil {
-			for _, it := range items {
-				if it.ItemType == "COHORT" {
-					id := it.ReferenceID.String()
-					view.CheckoutCohortID = &id
-					break
-				}
+		for _, it := range itemsByOrder[o.ID] {
+			if it.ItemType == "COHORT" {
+				id := it.ReferenceID.String()
+				view.CheckoutCohortID = &id
+				break
 			}
 		}
 		out = append(out, view)

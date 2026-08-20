@@ -150,6 +150,29 @@ func (r *AttendanceRepo) ListByLesson(ctx context.Context, lessonID uuid.UUID) (
 	return out, rows.Err()
 }
 
+func (r *AttendanceRepo) ListByStudent(ctx context.Context, studentProfileID uuid.UUID) ([]booking.Attendance, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, lesson_id, student_profile_id, status, marked_by, note, marked_at
+		FROM attendance WHERE student_profile_id = $1 ORDER BY marked_at`, studentProfileID)
+	if err != nil {
+		return nil, fmt.Errorf("list attendance by student: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.Attendance{}
+	for rows.Next() {
+		var a booking.Attendance
+		var note sql.NullString
+		if err := rows.Scan(&a.ID, &a.LessonID, &a.StudentProfileID, &a.Status, &a.MarkedBy, &note, &a.MarkedAt); err != nil {
+			return nil, err
+		}
+		if note.Valid {
+			a.Note = &note.String
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
 var _ booking.AttendanceRepository = (*AttendanceRepo)(nil)
 
 // --- Lesson notes ---

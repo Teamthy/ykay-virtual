@@ -141,6 +141,18 @@ func (m *AttendanceMemory) ListByLesson(_ context.Context, lessonID uuid.UUID) (
 	return out, nil
 }
 
+func (m *AttendanceMemory) ListByStudent(_ context.Context, studentProfileID uuid.UUID) ([]booking.Attendance, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []booking.Attendance{}
+	for _, a := range m.rows {
+		if a.StudentProfileID == studentProfileID {
+			out = append(out, *a)
+		}
+	}
+	return out, nil
+}
+
 var _ booking.AttendanceRepository = (*AttendanceMemory)(nil)
 
 // --- Lesson notes ---

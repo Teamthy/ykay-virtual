@@ -10,6 +10,7 @@ import (
 	"ykay-virtual/internal/domain/payment"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type OrderRepo struct{ db TxQuerier }
@@ -76,6 +77,19 @@ func (r *OrderRepo) CreateItem(ctx context.Context, item *payment.OrderItem) err
 	return nil
 }
 
+func scanOrderItem(row interface{ Scan(...any) error }) (*payment.OrderItem, error) {
+	var it payment.OrderItem
+	var desc sql.NullString
+	if err := row.Scan(&it.ID, &it.OrderID, &it.ItemType, &it.ReferenceID, &desc,
+		&it.Quantity, &it.UnitPrice, &it.TotalPrice, &it.CreatedAt); err != nil {
+		return nil, err
+	}
+	if desc.Valid {
+		it.Description = &desc.String
+	}
+	return &it, nil
+}
+
 func (r *OrderRepo) ListItems(ctx context.Context, orderID uuid.UUID) ([]payment.OrderItem, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id, order_id, item_type, reference_id, description, quantity, unit_price, total_price, created_at
@@ -86,16 +100,33 @@ func (r *OrderRepo) ListItems(ctx context.Context, orderID uuid.UUID) ([]payment
 	defer rows.Close()
 	out := []payment.OrderItem{}
 	for rows.Next() {
-		var it payment.OrderItem
-		var desc sql.NullString
-		if err := rows.Scan(&it.ID, &it.OrderID, &it.ItemType, &it.ReferenceID, &desc,
-			&it.Quantity, &it.UnitPrice, &it.TotalPrice, &it.CreatedAt); err != nil {
+		it, err := scanOrderItem(rows)
+		if err != nil {
 			return nil, err
 		}
-		if desc.Valid {
-			it.Description = &desc.String
+		out = append(out, *it)
+	}
+	return out, rows.Err()
+}
+
+func (r *OrderRepo) ListItemsByOrderIDs(ctx context.Context, orderIDs []uuid.UUID) (map[uuid.UUID][]payment.OrderItem, error) {
+	out := map[uuid.UUID][]payment.OrderItem{}
+	if len(orderIDs) == 0 {
+		return out, nil
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, order_id, item_type, reference_id, description, quantity, unit_price, total_price, created_at
+		FROM order_items WHERE order_id = ANY($1::uuid[]) ORDER BY created_at`, pq.Array(orderIDs))
+	if err != nil {
+		return nil, fmt.Errorf("list order items by ids: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		it, err := scanOrderItem(rows)
+		if err != nil {
+			return nil, err
 		}
-		out = append(out, it)
+		out[it.OrderID] = append(out[it.OrderID], *it)
 	}
 	return out, rows.Err()
 }

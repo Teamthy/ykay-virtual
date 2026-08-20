@@ -18,4 +18,7 @@ type CertificateRepository interface {
 	GetForStudentAndCohort(ctx context.Context, studentProfileID, cohortID uuid.UUID) (*Certificate, error)
 	// ListByStudent returns a learner's certificates, newest first.
 	ListByStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Certificate, error)
+	// ListByStudents batch-loads certificates for many learners (parent
+	// portal — no N+1). `limit` is applied per student.
+	ListByStudents(ctx context.Context, studentProfileIDs []uuid.UUID, limit int) ([]Certificate, error)
 }

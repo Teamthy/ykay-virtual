@@ -513,6 +513,22 @@ func (m *OrderMemory) ListItems(_ context.Context, orderID uuid.UUID) ([]payment
 	return out, nil
 }
 
+func (m *OrderMemory) ListItemsByOrderIDs(_ context.Context, orderIDs []uuid.UUID) (map[uuid.UUID][]payment.OrderItem, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := map[uuid.UUID][]payment.OrderItem{}
+	for _, id := range orderIDs {
+		items := m.items[id]
+		if len(items) == 0 {
+			continue
+		}
+		cp := make([]payment.OrderItem, len(items))
+		copy(cp, items)
+		out[id] = cp
+	}
+	return out, nil
+}
+
 func (m *OrderMemory) ListAll(_ context.Context, limit, offset int) ([]payment.Order, int64, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

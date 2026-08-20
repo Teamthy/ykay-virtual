@@ -190,15 +190,7 @@ func (s *CertificateService) ListForUser(ctx context.Context, actorUserID uuid.U
 		return nil, err
 	}
 	defer uow.Rollback()
-	var out []certificate.Certificate
-	for _, id := range ids {
-		certs, err := uow.Certificates().ListByStudent(ctx, id, limit)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, certs...)
-	}
-	return out, nil
+	return uow.Certificates().ListByStudents(ctx, ids, limit)
 }
 
 // GetOwned returns one certificate only if the actor may view it.

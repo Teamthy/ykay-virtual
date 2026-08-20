@@ -90,4 +90,29 @@ func (m *CertificateMemory) ListByStudent(_ context.Context, studentProfileID uu
 	return out, nil
 }
 
+func (m *CertificateMemory) ListByStudents(_ context.Context, studentProfileIDs []uuid.UUID, limit int) ([]certificate.Certificate, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	want := map[uuid.UUID]bool{}
+	for _, id := range studentProfileIDs {
+		want[id] = true
+	}
+	byStudent := map[uuid.UUID][]certificate.Certificate{}
+	for _, c := range m.rows {
+		if want[c.StudentProfileID] {
+			byStudent[c.StudentProfileID] = append(byStudent[c.StudentProfileID], *c)
+		}
+	}
+	out := []certificate.Certificate{}
+	for _, list := range byStudent {
+		sort.Slice(list, func(i, j int) bool { return list[i].IssuedAt.After(list[j].IssuedAt) })
+		if limit > 0 && len(list) > limit {
+			list = list[:limit]
+		}
+		out = append(out, list...)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].IssuedAt.After(out[j].IssuedAt) })
+	return out, nil
+}
+
 var _ certificate.CertificateRepository = (*CertificateMemory)(nil)

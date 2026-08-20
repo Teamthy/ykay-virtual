@@ -142,6 +142,9 @@ type CohortListParams struct {
 type AttendanceRepository interface {
 	Upsert(ctx context.Context, lessonID, studentProfileID uuid.UUID, status string, markedBy uuid.UUID, note *string) error
 	ListByLesson(ctx context.Context, lessonID uuid.UUID) ([]Attendance, error)
+	// ListByStudent returns every attendance row for one learner (portal
+	// summary — one query, not one per lesson).
+	ListByStudent(ctx context.Context, studentProfileID uuid.UUID) ([]Attendance, error)
 }
 
 // Attendance mirrors migration attendance.

@@ -21,6 +21,9 @@ type OrderRepository interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status OrderStatus) error
 	Update(ctx context.Context, o *Order) error
 	ListItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
+	// ListItemsByOrderIDs batch-loads items for many orders in one query
+	// (parent dashboard — no N+1). Empty ids returns an empty map.
+	ListItemsByOrderIDs(ctx context.Context, orderIDs []uuid.UUID) (map[uuid.UUID][]OrderItem, error)
 	ListByParentUserID(ctx context.Context, parentUserID uuid.UUID, limit, offset int) ([]Order, int64, error)
 	// ListAll — admin payments view (phase 38).
 	ListAll(ctx context.Context, limit, offset int) ([]Order, int64, error)

@@ -10,6 +10,7 @@ import (
 	"ykay-virtual/internal/domain/certificate"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type CertificateRepo struct{ db TxQuerier }
@@ -98,6 +99,40 @@ func (r *CertificateRepo) ListByStudent(ctx context.Context, studentProfileID uu
 		` FROM certificates WHERE student_profile_id=$1 ORDER BY issued_at DESC LIMIT $2`, studentProfileID, limit)
 	if err != nil {
 		return nil, fmt.Errorf("list certificates: %w", err)
+	}
+	defer rows.Close()
+	out := []certificate.Certificate{}
+	for rows.Next() {
+		c, err := scanCertificate(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *c)
+	}
+	return out, rows.Err()
+}
+
+func (r *CertificateRepo) ListByStudents(ctx context.Context, studentProfileIDs []uuid.UUID, limit int) ([]certificate.Certificate, error) {
+	if len(studentProfileIDs) == 0 {
+		return []certificate.Certificate{}, nil
+	}
+	if limit < 1 || limit > 100 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, student_profile_id, cohort_id, programme_id, learner_name, title,
+			programme_title, credential_number, issued_by, issued_at, created_at
+		FROM (
+			SELECT id, student_profile_id, cohort_id, programme_id, learner_name, title,
+				programme_title, credential_number, issued_by, issued_at, created_at,
+				ROW_NUMBER() OVER (PARTITION BY student_profile_id ORDER BY issued_at DESC) AS rn
+			FROM certificates
+			WHERE student_profile_id = ANY($1::uuid[])
+		) ranked
+		WHERE rn <= $2
+		ORDER BY issued_at DESC`, pq.Array(studentProfileIDs), limit)
+	if err != nil {
+		return nil, fmt.Errorf("list certificates by students: %w", err)
 	}
 	defer rows.Close()
 	out := []certificate.Certificate{}

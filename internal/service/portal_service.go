@@ -194,30 +194,23 @@ func (s *PortalService) AttendanceSummary(ctx context.Context, studentProfileID 
 	}
 	out.Total = len(lessons)
 	if s.attendance != nil {
-		for _, l := range lessons {
-			rows, err := s.attendance.ListByLesson(ctx, l.ID)
-			if err != nil {
-				continue
-			}
-			for _, a := range rows {
-				if a.StudentProfileID != studentProfileID {
-					continue
-				}
-				out.Untracked--
-				switch a.Status {
-				case "PRESENT":
-					out.Present++
-				case "ABSENT":
-					out.Absent++
-				case "LATE":
-					out.Late++
-				case "EXCUSED":
-					out.Excused++
-				}
+		rows, err := s.attendance.ListByStudent(ctx, studentProfileID)
+		if err != nil {
+			return nil, err
+		}
+		for _, a := range rows {
+			switch a.Status {
+			case "PRESENT":
+				out.Present++
+			case "ABSENT":
+				out.Absent++
+			case "LATE":
+				out.Late++
+			case "EXCUSED":
+				out.Excused++
 			}
 		}
 	}
-	// memory ListByStudent returns the student's lessons; compute untracked.
 	out.Untracked = out.Total - (out.Present + out.Absent + out.Late + out.Excused)
 	tracked := out.Present + out.Late + out.Absent + out.Excused
 	if tracked > 0 {
