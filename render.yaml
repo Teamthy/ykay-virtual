@@ -96,6 +96,14 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false # e.g. NUVORA <no-reply@yourdomain.com>
+      # Named operators — set in the dashboard (never commit the password).
+      # On boot the API upserts these as ACTIVE + verified. MFA still required.
+      - key: OPERATOR_ACADEMIC_EMAIL
+        sync: false
+      - key: OPERATOR_SUPER_EMAIL
+        sync: false
+      - key: OPERATOR_PASSWORD
+        sync: false
       # ── SMS (Termii) ───────────────────────────────────────────────────
       - key: TERMII_API_KEY
         sync: false

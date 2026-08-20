@@ -39,6 +39,7 @@ import (
 	"ykay-virtual/internal/meeting"
 	"ykay-virtual/internal/middleware"
 	"ykay-virtual/internal/notification"
+	"ykay-virtual/internal/ops"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
 	"ykay-virtual/internal/repository/memory"
@@ -179,6 +180,11 @@ func main() {
 			slog.Info("migrations applied", "count", n)
 		} else {
 			slog.Info("migrations: schema already up to date")
+		}
+	}
+	if repos.DB != nil {
+		if err := ops.BootstrapOperators(repos.DB); err != nil {
+			logx.Fatal("operator bootstrap failed", "error", err)
 		}
 	}
 
