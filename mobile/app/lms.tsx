@@ -1,8 +1,9 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { TabLayout } from "@/src/components/TabLayout";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
@@ -13,14 +14,16 @@ import { ErrorState } from "@/src/components/ui/ErrorState";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { useTheme } from "@/src/lib/theme-context";
-import { radius, spacing, type } from "@/src/lib/theme";
-import { apiFetch, getMyLessonProgress, type LessonProgress } from "@/src/lib/api";
+import { fonts, radius, spacing, type } from "@/src/lib/theme";
+import { apiFetch, getMyLessonProgress, listMyAttempts, listTutorExams, type LessonProgress, type PracticeAttemptItem } from "@/src/lib/api";
+import { formatLessonTime, getTutorLessons, type TutorLesson } from "@/src/lib/tutor";
 
-// NUVORA LMS hub — a premium "my courses" home, role-aware:
-//   - STUDENT: aggregates /me/lessons into course cards (schedule + progress).
-//   - TUTOR: shows the cohorts they teach via /me/tutor-lessons.
-//   - Other roles: an intentional empty state with a CTA (never a dead end).
-// Watched-video progress is blended from /me/learning/progress (000035).
+// LMS hub — the learning command center (docs/MOBILE_DASHBOARD_DIRECTION.md):
+//   learner: overall progress hero (dominant) → metrics → quick actions →
+//            recent attempts → course cards
+//   tutor:   teaching overview hero (cohorts dominant) → metrics → quick
+//            actions → cohort cards
+//   other:   intentional empty state with a CTA (never a dead end).
 
 type Lesson = {
   id: string;
@@ -42,6 +45,14 @@ function courseIcon(index: number) {
   return PROGRAMME_ICONS[index % PROGRAMME_ICONS.length];
 }
 
+function fmtDay(t: string): string {
+  return new Date(t).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+}
+
+function fmtTime(t: string): string {
+  return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function Lms() {
   const { colors } = useTheme();
   const [role, setRole] = useState<string | null>(null);
@@ -49,6 +60,9 @@ export default function Lms() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [watched, setWatched] = useState<Record<string, LessonProgress>>({});
+  const [attempts, setAttempts] = useState<PracticeAttemptItem[]>([]);
+  const [exams, setExams] = useState(0);
+  const [tutorLessons, setTutorLessons] = useState<TutorLesson[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,20 +80,60 @@ export default function Lms() {
       }
 
       // Role-aware lessons: tutors read their teaching schedule, learners
-      // their enrolled lessons (the student-only endpoint used to 403 for
-      // tutors — that's what "can't load your courses" was).
-      const lessonsRes = await apiFetch<Lesson[]>(isTutor ? "/me/tutor-lessons" : "/me/lessons");
-      const lessons = lessonsRes.data ?? [];
+      // their enrolled lessons.
+      if (isTutor) {
+        const [ls, ex] = await Promise.all([
+          getTutorLessons().catch(() => [] as TutorLesson[]),
+          listTutorExams().catch(() => []),
+        ]);
+        setTutorLessons(ls);
+        setExams(ex.length);
+        // Group by cohort for the course cards.
+        const map = new Map<string, TutorLesson[]>();
+        for (const l of ls) {
+          const cid = l.cohort_id ?? "independent";
+          map.set(cid, [...(map.get(cid) ?? []), l]);
+        }
+        const group = [...map.entries()].map(([cohortId, ls]) => ({
+          cohortId,
+          title: "",
+          lessons: ls.map((l) => ({ id: l.id, cohort_id: l.cohort_id ?? undefined, title: l.title, start_at: l.start_at, timezone: l.timezone, status: "SCHEDULED", video_url: l.video_url ?? undefined, meeting_url: l.meeting_url ?? undefined })),
+        }));
+        const titles = await Promise.allSettled(
+          group.map((g) =>
+            g.cohortId === "independent"
+              ? Promise.resolve("Independent lessons")
+              : apiFetch<Cohort>(`/cohorts/${g.cohortId}`).then((r) => r.data)
+          )
+        );
+        group.forEach((g, i) => {
+          const t = titles[i];
+          if (t.status === "fulfilled" && typeof t.value !== "string" && t.value?.title) {
+            g.title = t.value.title;
+          } else {
+            g.title = g.cohortId === "independent" ? "Independent lessons" : "Cohort course";
+          }
+        });
+        setCourses(group);
+        return;
+      }
 
-      // Group lessons by cohort, preserving schedule order.
+      // learner
+      const [lessonsRes, prog, at] = await Promise.all([
+        apiFetch<Lesson[]>("/me/lessons"),
+        getMyLessonProgress().catch(() => [] as LessonProgress[]),
+        listMyAttempts().catch(() => [] as PracticeAttemptItem[]),
+      ]);
+      const lessons = lessonsRes.data ?? [];
+      setWatched(Object.fromEntries(prog.map((p) => [p.lesson_id, p])));
+      setAttempts(at);
+
       const map = new Map<string, Lesson[]>();
       for (const l of lessons) {
         const cid = l.cohort_id ?? "independent";
         map.set(cid, [...(map.get(cid) ?? []), l]);
       }
       const group = [...map.entries()].map(([cohortId, l]) => ({ cohortId, title: "", lessons: l }));
-
-      // Best-effort course titles from the public cohort endpoint.
       const titles = await Promise.allSettled(
         group.map((g) =>
           g.cohortId === "independent"
@@ -95,13 +149,7 @@ export default function Lms() {
           g.title = g.cohortId === "independent" ? "Independent lessons" : "Cohort course";
         }
       });
-
       setCourses(group);
-
-      if (isStudent) {
-        const prog = await getMyLessonProgress().catch(() => [] as LessonProgress[]);
-        setWatched(Object.fromEntries(prog.map((p) => [p.lesson_id, p])));
-      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load your courses");
     } finally {
@@ -111,10 +159,31 @@ export default function Lms() {
 
   useFocusEffect(useCallback(() => void load(), [load]));
 
+  // ---- derived ----
   const totalLessons = useMemo(() => courses.reduce((n, c) => n + c.lessons.length, 0), [courses]);
   const watchedCount = useMemo(
     () => courses.flatMap((c) => c.lessons).filter((l) => watched[l.id]?.watched).length,
     [courses, watched]
+  );
+  const watchedPct = totalLessons > 0 ? Math.round((watchedCount / totalLessons) * 100) : 0;
+  const upcoming = useMemo(
+    () =>
+      courses
+        .flatMap((c) => c.lessons)
+        .filter((l) => new Date(l.start_at).getTime() >= Date.now())
+        .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()),
+    [courses]
+  );
+  const next = upcoming[0];
+  const submitted = attempts.filter((a) => a.submitted_at);
+  const avgScore = submitted.length > 0 ? Math.round(submitted.reduce((n, a) => n + (a.score ?? 0), 0) / submitted.length) : null;
+  const isTutor = role === "TUTOR";
+  const weekLessons = useMemo(
+    () => tutorLessons.filter((l) => {
+      const t = new Date(l.start_at).getTime();
+      return t >= Date.now() && t < Date.now() + 7 * 24 * 3600 * 1000;
+    }).length,
+    [tutorLessons]
   );
 
   return (
@@ -124,13 +193,13 @@ export default function Lms() {
           eyebrow="LEARNING"
           title="My Courses"
           subtitle={
-            role === "TUTOR"
+            isTutor
               ? "The cohorts you teach — live classes and on-demand lessons."
               : "Your programmes, live classes and on-demand lessons — all in one place."
           }
         />
 
-        {/* Summary hero */}
+        {/* B. Primary card — one dominant fact per role */}
         <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
           <LinearGradient
             colors={[colors.navy, colors.navyDark]}
@@ -138,48 +207,162 @@ export default function Lms() {
             end={{ x: 1, y: 1 }}
             style={styles.hero}
           >
-            <AppText variant="label" style={styles.heroEyebrow}>
-              {role === "TUTOR" ? "TEACHING OVERVIEW" : "COURSE OVERVIEW"}
-            </AppText>
-            <View style={styles.heroRow}>
-              <View style={styles.heroStat}>
-                <AppText variant="h2" style={styles.heroNum}>
+            {isTutor ? (
+              <>
+                <AppText variant="label" style={styles.heroEyebrow}>
+                  TEACHING OVERVIEW
+                </AppText>
+                <AppText variant="display" style={styles.heroAmount}>
                   {courses.length}
                 </AppText>
-                <AppText style={styles.heroCap}>{role === "TUTOR" ? "Cohorts" : "Courses"}</AppText>
-              </View>
-              <View style={styles.heroDivider} />
-              <View style={styles.heroStat}>
-                <AppText variant="h2" style={styles.heroNum}>
-                  {totalLessons}
+                <View style={styles.heroSubRow}>
+                  <AppText style={styles.heroCap}>cohort{courses.length === 1 ? "" : "s"} · {totalLessons} lessons this term</AppText>
+                </View>
+                <View style={styles.heroActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push("/tutor/exams/new" as never)}
+                    style={[styles.heroCta, { backgroundColor: colors.green }]}
+                  >
+                    <AppText style={{ color: colors.ink[950], fontFamily: fonts.bodyBold, fontWeight: "700" }}>Create exam</AppText>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push("/tutor/schedule" as never)}
+                    style={[styles.heroGhost, { borderColor: "rgba(255,255,255,0.28)" }]}
+                  >
+                    <AppText style={{ color: colors.white }}>View schedule</AppText>
+                  </Pressable>
+                </View>
+              </>
+            ) : (
+              <>
+                <AppText variant="label" style={styles.heroEyebrow}>
+                  OVERALL PROGRESS
                 </AppText>
-                <AppText style={styles.heroCap}>Lessons</AppText>
-              </View>
-              <View style={styles.heroDivider} />
-              <View style={styles.heroStat}>
-                <AppText variant="h2" style={styles.heroNum}>
-                  {watchedCount}
+                <AppText variant="display" style={styles.heroAmount}>
+                  {totalLessons > 0 ? `${watchedPct}%` : "—"}
                 </AppText>
-                <AppText style={styles.heroCap}>Watched</AppText>
-              </View>
-            </View>
-            <AppText style={styles.heroHint}>
-              {role === "TUTOR"
-                ? "Track every cohort from one hub"
-                : watchedCount > 0
-                  ? `${Math.round((watchedCount / Math.max(totalLessons, 1)) * 100)}% of your lessons completed`
-                  : "Progress syncs here as you watch lessons"}
-            </AppText>
+                {totalLessons > 0 ? (
+                  <>
+                    <View style={styles.heroProgressTrack}>
+                      <View style={[styles.heroProgressFill, { backgroundColor: colors.green, width: `${Math.max(watchedPct, 4)}%` }]} />
+                    </View>
+                    <View style={styles.heroSubRow}>
+                      <AppText style={styles.heroCap}>
+                        {watchedCount} of {totalLessons} lessons watched
+                      </AppText>
+                      {next && (
+                        <>
+                          <View style={styles.heroDot} />
+                          <View style={[styles.heroChip, { backgroundColor: next.meeting_url ? "rgba(112,242,80,0.18)" : "rgba(255,255,255,0.12)" }]}>
+                            <AppText style={[styles.heroChipText, { color: next.meeting_url ? colors.green : colors.white }]}>
+                              NEXT: {fmtDay(next.start_at)} · {fmtTime(next.start_at)}
+                            </AppText>
+                          </View>
+                        </>
+                      )}
+                    </View>
+                  </>
+                ) : (
+                  <View style={styles.heroSubRow}>
+                    <AppText style={styles.heroCap}>Enrol on a programme and your progress starts here.</AppText>
+                  </View>
+                )}
+                <View style={styles.heroActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push((next ? "/lms" : "/subjects") as never)}
+                    style={[styles.heroCta, { backgroundColor: colors.green }]}
+                  >
+                    <AppText style={{ color: colors.ink[950], fontFamily: fonts.bodyBold, fontWeight: "700" }}>
+                      {next ? "View courses" : "Browse programmes"}
+                    </AppText>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push("/practice" as never)}
+                    style={[styles.heroGhost, { borderColor: "rgba(255,255,255,0.28)" }]}
+                  >
+                    <AppText style={{ color: colors.white }}>Practice exam</AppText>
+                  </Pressable>
+                </View>
+              </>
+            )}
           </LinearGradient>
         </Animated.View>
 
-        {/* Body */}
+        {/* C. Key metrics */}
+        {role !== "OTHER" && (
+          <Animated.View entering={FadeInUp.delay(140).springify().damping(16)} style={styles.metricGrid}>
+            {(isTutor
+              ? [
+                  { label: "THIS WEEK", value: String(weekLessons), href: "/tutor/schedule" },
+                  { label: "LESSONS", value: String(totalLessons), href: "/lms" },
+                  { label: "EXAMS", value: String(exams), href: "/tutor/exams" },
+                  { label: "COHORTS", value: String(courses.length), href: "/lms" },
+                ]
+              : [
+                  { label: "COURSES", value: String(courses.length), href: "/lms" },
+                  { label: "LESSONS", value: String(totalLessons), href: "/lms" },
+                  { label: "WATCHED", value: `${watchedPct}%`, href: "/lms" },
+                  { label: "PRACTICE AVG", value: avgScore === null ? "—" : `${avgScore}%`, href: "/practice" },
+                ]
+            ).map((m) => (
+              <Card key={m.label} onPress={() => router.push(m.href as never)} padded style={styles.metricCard}>
+                <AppText variant="caption" style={{ color: colors.ink[400], letterSpacing: 0.8 }}>
+                  {m.label}
+                </AppText>
+                <AppText variant="h2" style={{ color: colors.deep, marginTop: 4 }} numberOfLines={1} adjustsFontSizeToFit>
+                  {m.value}
+                </AppText>
+              </Card>
+            ))}
+          </Animated.View>
+        )}
+
+        {/* D. Quick actions */}
+        {role !== "OTHER" && (
+          <Animated.View entering={FadeInUp.delay(180).springify().damping(16)}>
+            <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
+              QUICK ACTIONS
+            </AppText>
+            {isTutor ? (
+              <Button label="Create exam" full onPress={() => router.push("/tutor/exams/new" as never)} />
+            ) : (
+              <Button label="Take a practice exam" full onPress={() => router.push("/practice" as never)} />
+            )}
+            <View style={styles.tiles}>
+              {(isTutor
+                ? [
+                    { href: "/tutor/schedule", label: "Schedule", icon: "calendar-outline" },
+                    { href: "/tutor/messages", label: "Messages", icon: "chatbubbles-outline" },
+                    { href: "/tutor/earnings", label: "Earnings", icon: "wallet-outline" },
+                    { href: "/tutor/exams", label: "Exams", icon: "document-text-outline" },
+                  ]
+                : [
+                    { href: "/quizzes", label: "Quizzes", icon: "create-outline" },
+                    { href: "/progress", label: "Progress", icon: "stats-chart-outline" },
+                    { href: "/messages", label: "Messages", icon: "mail-outline" },
+                    { href: "/search", label: "Find a tutor", icon: "search-outline" },
+                  ]
+              ).map((t) => (
+                <Card key={t.href} onPress={() => router.push(t.href as never)} padded style={styles.tileCard}>
+                  <Ionicons name={t.icon as keyof typeof Ionicons.glyphMap} size={22} color={colors.deep} />
+                  <AppText variant="label" style={{ marginTop: spacing.xs, color: colors.ink[700], textAlign: "center" }}>
+                    {t.label}
+                  </AppText>
+                </Card>
+              ))}
+            </View>
+          </Animated.View>
+        )}
+
+        {/* Body: loading / error / empty / courses */}
         {loading ? (
-          <Animated.View entering={FadeInUp.delay(120)}>
+          <Animated.View entering={FadeInUp.delay(120)} style={{ marginTop: spacing.lg }}>
             {[0, 1, 2].map((i) => (
-              <View key={i} style={styles.skeleton}>
-                <Skeleton height={96} />
-              </View>
+              <Skeleton key={i} height={96} style={{ marginBottom: spacing.md }} />
             ))}
           </Animated.View>
         ) : error ? (
@@ -188,7 +371,7 @@ export default function Lms() {
           </Animated.View>
         ) : courses.length === 0 ? (
           <Animated.View entering={FadeInUp.delay(120).springify().damping(16)} style={styles.stateCard}>
-            {role === "TUTOR" ? (
+            {isTutor ? (
               <EmptyState
                 icon="book-outline"
                 title="No cohorts assigned yet"
@@ -217,69 +400,104 @@ export default function Lms() {
             )}
           </Animated.View>
         ) : (
-          <View style={styles.list}>
-            {courses.map((c, i) => {
-              const next = c.lessons.find((l) => !watched[l.id]?.watched) ?? c.lessons[0];
-              const done = c.lessons.filter((l) => watched[l.id]?.watched).length;
-              const pct = Math.round((done / Math.max(c.lessons.length, 1)) * 100);
-              return (
-                <Animated.View key={c.cohortId} entering={FadeInUp.delay(120 + i * 70).springify().damping(16)}>
-                  <Card
-                    onPress={() =>
-                      router.push({ pathname: "/lms/[cohortId]", params: { cohortId: c.cohortId } })
-                    }
-                    style={styles.courseCard}
-                  >
-                    <View style={styles.courseTop}>
-                      <View style={[styles.iconTile, { backgroundColor: colors.greenLight }]}>
-                        <AppText style={{ fontSize: 24 }}>{courseIcon(i)}</AppText>
+          <>
+            {/* E. Recent attempts (learner) */}
+            {!isTutor && submitted.length > 0 && (
+              <Animated.View entering={FadeInUp.delay(200).springify().damping(16)}>
+                <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
+                  RECENT ATTEMPTS
+                </AppText>
+                <View style={styles.activity}>
+                  {submitted.slice(0, 2).map((a) => (
+                    <Card key={a.attempt_id} onPress={() => router.push("/practice" as never)} style={styles.activityRow}>
+                      <View style={[styles.activityIcon, { backgroundColor: a.passed ? colors.greenLight : colors.ink[100] }]}>
+                        <Ionicons name="timer-outline" size={16} color={a.passed ? colors.greenDark : colors.danger} />
                       </View>
-                      <View style={{ flex: 1, marginLeft: 14 }}>
-                        <AppText variant="h3">{c.title}</AppText>
-                        <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
-                          {c.lessons.length} lesson{c.lessons.length === 1 ? "" : "s"}
+                      <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                        <AppText variant="heading" numberOfLines={1}>
+                          {a.exam_title}
+                        </AppText>
+                        <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
+                          {a.exam_subject} · {a.submitted_at ? fmtDay(a.submitted_at) : ""}
                         </AppText>
                       </View>
-                      <View style={[styles.pill, { backgroundColor: colors.greenLight }]}>
-                        <AppText variant="caption" style={{ color: colors.greenDark, fontWeight: "800" }}>
-                          {pct}%
+                      <View style={[styles.chip, { backgroundColor: a.passed ? colors.greenLight : colors.ink[100] }]}>
+                        <AppText variant="caption" style={{ color: a.passed ? colors.greenDark : colors.danger, fontWeight: "800" }}>
+                          {a.score}% {a.passed ? "PASS" : "FAIL"}
                         </AppText>
                       </View>
-                    </View>
+                    </Card>
+                  ))}
+                </View>
+              </Animated.View>
+            )}
 
-                    {done > 0 && (
-                      <View style={[styles.progressTrack, { backgroundColor: colors.ink[100] }]}>
-                        <View style={[styles.progressFill, { backgroundColor: colors.greenDark, width: `${Math.max(pct, 4)}%` }]} />
-                      </View>
-                    )}
-
-                    {next && (
-                      <View style={styles.nextBlock}>
-                        <View style={[styles.nextDot, { backgroundColor: colors.greenDark }]} />
-                        <View style={{ flex: 1 }}>
-                          <AppText variant="label" style={{ fontSize: 11 }}>
-                            {done === c.lessons.length ? "COMPLETED · LAST LESSON" : "UP NEXT"}
-                          </AppText>
-                          <AppText variant="bodySm" style={{ color: colors.ink[800], marginTop: 2 }}>
-                            {next.title}
-                          </AppText>
-                          <AppText variant="caption" style={{ marginTop: 2 }}>
-                            {new Date(next.start_at).toLocaleDateString()} ·{" "}
-                            {new Date(next.start_at).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                            {next.video_url ? " · on-demand 🎬" : next.meeting_url ? " · live 🟢" : ""}
-                          </AppText>
+            {/* F. Course cards */}
+            <Animated.View entering={FadeInUp.delay(220).springify().damping(16)}>
+              <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
+                {isTutor ? "MY COHORTS" : "MY COURSES"}
+              </AppText>
+              <View style={styles.list}>
+                {courses.map((c, i) => {
+                  const nextL = c.lessons.find((l) => !watched[l.id]?.watched) ?? c.lessons[0];
+                  const done = c.lessons.filter((l) => watched[l.id]?.watched).length;
+                  const pct = Math.round((done / Math.max(c.lessons.length, 1)) * 100);
+                  return (
+                    <Animated.View key={c.cohortId} entering={FadeInUp.delay(120 + i * 70).springify().damping(16)}>
+                      <Card
+                        onPress={() =>
+                          router.push({ pathname: "/lms/[cohortId]", params: { cohortId: c.cohortId } })
+                        }
+                        style={styles.courseCard}
+                      >
+                        <View style={styles.courseTop}>
+                          <View style={[styles.iconTile, { backgroundColor: colors.greenLight }]}>
+                            <AppText style={{ fontSize: 24 }}>{courseIcon(i)}</AppText>
+                          </View>
+                          <View style={{ flex: 1, marginLeft: 14 }}>
+                            <AppText variant="h3">{c.title}</AppText>
+                            <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
+                              {c.lessons.length} lesson{c.lessons.length === 1 ? "" : "s"}
+                            </AppText>
+                          </View>
+                          <View style={[styles.pill, { backgroundColor: colors.greenLight }]}>
+                            <AppText variant="caption" style={{ color: colors.greenDark, fontWeight: "800" }}>
+                              {isTutor ? "ACTIVE" : `${pct}%`}
+                            </AppText>
+                          </View>
                         </View>
-                        <AppText style={{ fontSize: 18, color: colors.goldDark }}>›</AppText>
-                      </View>
-                    )}
-                  </Card>
-                </Animated.View>
-              );
-            })}
-          </View>
+
+                        {!isTutor && done > 0 && (
+                          <View style={[styles.progressTrack, { backgroundColor: colors.ink[100] }]}>
+                            <View style={[styles.progressFill, { backgroundColor: colors.greenDark, width: `${Math.max(pct, 4)}%` }]} />
+                          </View>
+                        )}
+
+                        {nextL && (
+                          <View style={styles.nextBlock}>
+                            <View style={[styles.nextDot, { backgroundColor: colors.greenDark }]} />
+                            <View style={{ flex: 1 }}>
+                              <AppText variant="label" style={{ fontSize: 11 }}>
+                                {!isTutor && done === c.lessons.length ? "COMPLETED · LAST LESSON" : isTutor ? "NEXT CLASS" : "UP NEXT"}
+                              </AppText>
+                              <AppText variant="bodySm" style={{ color: colors.ink[800], marginTop: 2 }}>
+                                {nextL.title}
+                              </AppText>
+                              <AppText variant="caption" style={{ marginTop: 2 }}>
+                                {fmtDay(nextL.start_at)} · {fmtTime(nextL.start_at)}
+                                {nextL.video_url ? " · on-demand 🎬" : nextL.meeting_url ? " · live 🟢" : ""}
+                              </AppText>
+                            </View>
+                            <AppText style={{ fontSize: 18, color: colors.goldDark }}>›</AppText>
+                          </View>
+                        )}
+                      </Card>
+                    </Animated.View>
+                  );
+                })}
+              </View>
+            </Animated.View>
+          </>
         )}
       </Screen>
     </TabLayout>
@@ -291,18 +509,56 @@ const styles = StyleSheet.create({
   hero: {
     borderRadius: radius.lg,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: spacing.lg,
   },
-  heroEyebrow: { color: "#70F250", letterSpacing: 1.2, fontSize: type.caption },
-  heroRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  heroStat: { flex: 1, alignItems: "flex-start" },
-  heroDivider: { width: 1, height: 34, backgroundColor: "rgba(255,255,255,0.18)" },
-  heroNum: { color: "#FFFFFF", fontSize: 26 },
-  heroCap: { color: "rgba(255,255,255,0.72)", fontSize: type.caption, marginTop: 2 },
-  heroHint: { color: "rgba(255,255,255,0.6)", fontSize: type.caption, marginTop: 14 },
-  skeleton: { marginBottom: 14 },
+  heroEyebrow: { color: "#70F250", letterSpacing: 1.4, fontSize: type.caption },
+  heroAmount: { color: "#FFFFFF", fontSize: 40, marginTop: spacing.xs },
+  heroSubRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.sm, flexWrap: "wrap" },
+  heroCap: { color: "rgba(255,255,255,0.72)", fontSize: type.bodySm },
+  heroDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.4)" },
+  heroChip: { paddingHorizontal: spacing.xs, paddingVertical: 3, borderRadius: radius.pill },
+  heroChipText: { fontSize: type.caption, fontWeight: "800", letterSpacing: 0.6 },
+  heroProgressTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.16)",
+    marginTop: spacing.md,
+    overflow: "hidden",
+  },
+  heroProgressFill: { height: "100%", borderRadius: 3 },
+  heroActions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
+  heroCta: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    alignItems: "center",
+  },
+  heroGhost: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.lg },
+  metricCard: { flexGrow: 1, flexBasis: "46%", maxWidth: "48.5%" },
+  section: { letterSpacing: 1.1, fontSize: type.caption, marginTop: spacing.sm, marginBottom: spacing.sm },
+  tiles: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.sm },
+  tileCard: { flexGrow: 1, flexBasis: "22%", alignItems: "center", paddingVertical: spacing.md },
   stateCard: { marginTop: 4 },
   emptyActions: { gap: spacing.sm, marginTop: 4 },
+  activity: { gap: spacing.sm },
+  activityRow: { flexDirection: "row", alignItems: "center", marginBottom: 0 },
+  activityIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  chip: { paddingHorizontal: spacing.xs, paddingVertical: 3, borderRadius: radius.pill },
   list: { gap: 14 },
   courseCard: { marginBottom: 0 },
   courseTop: { flexDirection: "row", alignItems: "center" },

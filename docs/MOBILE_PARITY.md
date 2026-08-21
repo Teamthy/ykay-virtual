@@ -22,7 +22,7 @@
 | Register / onboarding (parent, student, tutor, institution) | ✅ | ✅ 4-step compact | DONE |
 | Login (password, login-code, Google) | ✅ | ✅ password + code | DONE |
 | Admin MFA email code | ✅ | ⚠️ friendly redirect to web | DONE (documented) |
-| Home dashboard (greeting, metrics, quick actions, recommendations, activity) | ✅ | ✅ role-aware | DONE |
+| Home dashboard — command center (header → primary card → metrics → quick actions → activity → tools) | ✅ | ✅ role-aware rebuild per docs/MOBILE_DASHBOARD_DIRECTION.md | DONE |
 | **Unified dashboard shell** (one layout for all roles) | ✅ AppShell | ✅ TabLayout + TabBar on Home/LMS/Tutor/Account/Search | DONE |
 | Learner LMS (courses, lessons, videos, assignments, quizzes) | ✅ | ✅ role-aware LMS hub + course screens | DONE |
 | Tutor workspace (earnings, schedule, lessons, messages, availability, profile) | ✅ | ✅ tutor/* screens + exams console | DONE |
