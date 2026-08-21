@@ -424,6 +424,17 @@ func NewEnrollmentMemory() *EnrollmentMemory {
 }
 
 // Count returns confirmed enrollments — dev-mode analytics funnel.
+// All returns a snapshot of every enrollment (dev parity for the exam hub).
+func (m *EnrollmentMemory) All(_ context.Context) []*booking.CohortEnrollment {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := make([]*booking.CohortEnrollment, 0, len(m.rows))
+	for _, e := range m.rows {
+		out = append(out, e)
+	}
+	return out
+}
+
 func (m *EnrollmentMemory) Count() int64 {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

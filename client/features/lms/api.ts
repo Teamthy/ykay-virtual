@@ -250,6 +250,7 @@ export type QuizQuestionInput = { question: string; options: string[]; correct_i
 export type QuizInput = {
   tutor_profile_id?: string;
   cohort_id: string;
+  subject_id?: string;
   title: string;
   instructions?: string;
   pass_threshold: number;

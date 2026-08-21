@@ -28,6 +28,9 @@ import {
   createProgressReport,
   type GradedSubmission,
 } from "@/features/learning/api";
+import { listMySubjects } from "@/features/vetting/api";
+import { useSubjectNames, subjectName } from "@/features/learning/useSubjectNames";
+import { useSession } from "@/hooks/useSession";
 
 // Tutor cohort console - attendance, submissions grading, quiz list and
 // progress-report creation for one cohort.
@@ -36,6 +39,17 @@ export default function LmsTutorCohortPage() {
   const params = useParams<{ cohortId: string }>();
   const cohortId = params.cohortId;
   const qc = useQueryClient();
+  const { context } = useSession();
+  const profileId = context?.tutor_profile?.id ?? "";
+  const { map: subjectMap } = useSubjectNames();
+
+  // The tutor's onboarded subjects — an exam can only be based on these.
+  const mySubjects = useQuery({
+    queryKey: ["vetting", "subjects", profileId],
+    queryFn: () => listMySubjects(profileId),
+    enabled: !!profileId,
+    staleTime: 60_000,
+  });
 
   const [selectedLessonId, setSelectedLessonId] = useState<string>("");
   const [attendance, setAttendance] = useState<Record<string, string>>({});
@@ -46,6 +60,7 @@ export default function LmsTutorCohortPage() {
 
   // Authoring forms (LMS beyond MVP)
   const [quizDraft, setQuizDraft] = useState({
+    subject_id: "",
     title: "",
     instructions: "",
     pass_threshold: "70",
@@ -71,6 +86,7 @@ export default function LmsTutorCohortPage() {
     mutationFn: () =>
       createAssessment({
         cohort_id: cohortId,
+        subject_id: quizDraft.subject_id || undefined,
         title: quizDraft.title,
         instructions: quizDraft.instructions || undefined,
         pass_threshold: Number(quizDraft.pass_threshold) || 70,
@@ -81,7 +97,7 @@ export default function LmsTutorCohortPage() {
     onSuccess: () => {
       toast.success("Quiz published");
       setShowQuizBuilder(false);
-      setQuizDraft({ title: "", instructions: "", pass_threshold: "70", questions: [{ question: "", options: ["", "", "", ""], correct_index: 0 }] });
+      setQuizDraft({ subject_id: "", title: "", instructions: "", pass_threshold: "70", questions: [{ question: "", options: ["", "", "", ""], correct_index: 0 }] });
       qc.invalidateQueries({ queryKey: ["lms", "quizzes"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not create quiz"),
@@ -352,6 +368,23 @@ export default function LmsTutorCohortPage() {
           {showQuizBuilder && (
             <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
               <p className="text-sm font-bold text-ink-700">New quiz</p>
+              <label className="block">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-ink-500">Subject (from your teaching scope)</span>
+                <select
+                  aria-label="Quiz subject"
+                  className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                  value={quizDraft.subject_id}
+                  onChange={(e) => setQuizDraft((d) => ({ ...d, subject_id: e.target.value }))}
+                >
+                  <option value="">{(mySubjects.data ?? []).length === 1 ? "Auto (your only subject)" : "Select your subject…"}</option>
+                  {(mySubjects.data ?? []).map((sub) => (
+                    <option key={sub.subject_id} value={sub.subject_id}>{sub.name}</option>
+                  ))}
+                </select>
+                <span className="mt-0.5 block text-[11px] text-ink-400">
+                  Exams are always based on a subject you were vetted to teach.
+                </span>
+              </label>
               <div className="grid gap-3 md:grid-cols-3">
                 <input type="text" aria-label="Quiz title" placeholder="Quiz title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
                 <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
@@ -484,10 +517,16 @@ export default function LmsTutorCohortPage() {
             <h2 className="font-display text-lg font-bold text-brand-navy">Quizzes in this cohort</h2>
             <div className="mt-3 space-y-2">
               {(quizzes.data ?? []).map((q) => (
+
                 <div key={q.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3">
                   <div>
                     <p className="text-sm font-semibold text-ink-800">{q.title}</p>
-                    <p className="text-xs text-ink-400">Pass {q.pass_threshold}%  |  {q.status}</p>
+                    <p className="text-xs text-ink-400">
+                      <span className="rounded-full bg-brand-blue-light px-2 py-0.5 text-[10px] font-bold text-brand-blue">
+                        {subjectName(subjectMap, q.subject_id)}
+                      </span>{" "}
+                      Pass {q.pass_threshold}% · {q.status}
+                    </p>
                   </div>
                   <span className="rounded-full bg-brand-gold-light px-2.5 py-1 text-xs font-bold text-brand-navy">Auto-graded</span>
                 </div>

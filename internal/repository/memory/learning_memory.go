@@ -23,6 +23,7 @@ type LearningMemory struct {
 	byStudent   map[string]*learning.LearnerAttempt // assessment|student
 	reports     []learning.ProgressReport
 	submissions map[uuid.UUID][]learning.GradedSubmission // assignmentID → rows
+	cohortsForStudent func(ctx context.Context, studentProfileID uuid.UUID) ([]uuid.UUID, error)
 }
 
 func NewLearningMemory() *LearningMemory {
@@ -65,6 +66,62 @@ func (m *LearningMemory) GetAssessment(_ context.Context, id uuid.UUID) (*learni
 		return &cp, nil
 	}
 	return nil, domain.ErrNotFound
+}
+
+// WithEnrollmentLister wires the enrollment store so ListForStudent can
+// resolve a learner's confirmed cohorts (dev/tests parity).
+func (m *LearningMemory) WithEnrollmentLister(l func(ctx context.Context, studentProfileID uuid.UUID) ([]uuid.UUID, error)) *LearningMemory {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.cohortsForStudent = l
+	return m
+}
+
+func (m *LearningMemory) ListAssessmentsByTutor(_ context.Context, tutorProfileID uuid.UUID, limit int) ([]learning.LearnerAssessment, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []learning.LearnerAssessment{}
+	for _, a := range m.assessments {
+		if a.TutorProfileID == tutorProfileID {
+			out = append(out, *a)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	if limit > 0 && limit < len(out) {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
+func (m *LearningMemory) ListForStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]learning.LearnerAssessment, error) {
+	m.mu.RLock()
+	hook := m.cohortsForStudent
+	m.mu.RUnlock()
+	cohortIDs := map[uuid.UUID]bool{}
+	if hook != nil {
+		if ids, err := hook(ctx, studentProfileID); err == nil {
+			for _, id := range ids {
+				cohortIDs[id] = true
+			}
+		}
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []learning.LearnerAssessment{}
+	for _, a := range m.assessments {
+		if a.CohortID == nil || !cohortIDs[*a.CohortID] {
+			continue
+		}
+		if a.Status != learning.AssessmentPublished {
+			continue
+		}
+		out = append(out, *a)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	if limit > 0 && limit < len(out) {
+		out = out[:limit]
+	}
+	return out, nil
 }
 
 func (m *LearningMemory) ListByCohort(_ context.Context, cohortID uuid.UUID, status string, limit int) ([]learning.LearnerAssessment, error) {

@@ -25,10 +25,10 @@ func NewAssessmentRepo(db TxQuerier) *AssessmentRepo { return &AssessmentRepo{db
 func (r *AssessmentRepo) CreateAssessment(ctx context.Context, a *learning.LearnerAssessment) error {
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO learner_assessments (cohort_id, lesson_id, tutor_profile_id, title, instructions,
-			pass_threshold, due_at, status, created_by)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id, created_at, updated_at`,
+			pass_threshold, due_at, status, created_by, subject_id)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, created_at, updated_at`,
 		a.CohortID, a.LessonID, a.TutorProfileID, a.Title, a.Instructions,
-		a.PassThreshold, a.DueAt, a.Status, a.CreatedBy,
+		a.PassThreshold, a.DueAt, a.Status, a.CreatedBy, a.SubjectID,
 	).Scan(&a.ID, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("create assessment: %w", err)
@@ -53,15 +53,15 @@ func (r *AssessmentRepo) AddQuestion(ctx context.Context, q *learning.Assessment
 }
 
 const assessmentColumns = `id, cohort_id, lesson_id, tutor_profile_id, title, instructions,
-	pass_threshold, due_at, status, created_by, created_at, updated_at`
+	pass_threshold, due_at, status, created_by, subject_id, created_at, updated_at`
 
 func scanAssessment(row interface{ Scan(...any) error }) (*learning.LearnerAssessment, error) {
 	var a learning.LearnerAssessment
-	var cohortID, lessonID, createdBy uuidNull
+	var cohortID, lessonID, createdBy, subjectID uuidNull
 	var instructions sql.NullString
 	var dueAt sql.NullTime
 	if err := row.Scan(&a.ID, &cohortID, &lessonID, &a.TutorProfileID, &a.Title, &instructions,
-		&a.PassThreshold, &dueAt, &a.Status, &createdBy, &a.CreatedAt, &a.UpdatedAt); err != nil {
+		&a.PassThreshold, &dueAt, &a.Status, &createdBy, &subjectID, &a.CreatedAt, &a.UpdatedAt); err != nil {
 		return nil, err
 	}
 	if cohortID.Valid {
@@ -72,6 +72,9 @@ func scanAssessment(row interface{ Scan(...any) error }) (*learning.LearnerAsses
 	}
 	if createdBy.Valid {
 		a.CreatedBy = &createdBy.UUID
+	}
+	if subjectID.Valid {
+		a.SubjectID = &subjectID.UUID
 	}
 	if instructions.Valid {
 		a.Instructions = &instructions.String
@@ -110,6 +113,56 @@ func (r *AssessmentRepo) ListByCohort(ctx context.Context, cohortID uuid.UUID, s
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("list assessments: %w", err)
+	}
+	defer rows.Close()
+	out := []learning.LearnerAssessment{}
+	for rows.Next() {
+		a, err := scanAssessment(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *a)
+	}
+	return out, rows.Err()
+}
+
+// ListAssessmentsByTutor — assessments authored by one tutor (their exam catalogue).
+func (r *AssessmentRepo) ListAssessmentsByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]learning.LearnerAssessment, error) {
+	if limit < 1 || limit > 100 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx,
+		"SELECT "+assessmentColumns+" FROM learner_assessments WHERE tutor_profile_id = $1 ORDER BY created_at DESC LIMIT $2",
+		tutorProfileID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list assessments by tutor: %w", err)
+	}
+	defer rows.Close()
+	out := []learning.LearnerAssessment{}
+	for rows.Next() {
+		a, err := scanAssessment(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *a)
+	}
+	return out, rows.Err()
+}
+
+// ListForStudent — published assessments across the cohorts a student is
+// CONFIRMED in (the learner's exam hub).
+func (r *AssessmentRepo) ListForStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]learning.LearnerAssessment, error) {
+	if limit < 1 || limit > 100 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT `+assessmentColumns+`
+		FROM learner_assessments a
+		JOIN cohort_enrollments ce ON ce.cohort_id = a.cohort_id
+		WHERE ce.student_profile_id = $1 AND ce.status = 'CONFIRMED' AND a.status = 'PUBLISHED'
+		ORDER BY a.created_at DESC LIMIT $2`, studentProfileID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list assessments for student: %w", err)
 	}
 	defer rows.Close()
 	out := []learning.LearnerAssessment{}

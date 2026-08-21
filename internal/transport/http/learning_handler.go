@@ -66,6 +66,7 @@ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Reques
 	var req struct {
 		TutorProfileID string                            `json:"tutor_profile_id"`
 		CohortID       string                            `json:"cohort_id"`
+		SubjectID      string                            `json:"subject_id"`
 		Title          string                            `json:"title"`
 		Instructions   *string                           `json:"instructions"`
 		PassThreshold  float64                           `json:"pass_threshold"`
@@ -99,10 +100,20 @@ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Reques
 		}
 		dueAt = &t
 	}
+	var subjectID *uuid.UUID
+	if req.SubjectID != "" {
+		id, err := uuid.Parse(req.SubjectID)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("subject_id must be a valid UUID", nil))
+			return
+		}
+		subjectID = &id
+	}
 	a, err := h.svc.CreateAssessment(r.Context(), service.CreateAssessmentInput{
 		AuthorUserID:   actor.UserID,
 		TutorProfileID: tutorID,
 		CohortID:       cohortID,
+		SubjectID:      subjectID,
 		Title:          req.Title,
 		Instructions:   req.Instructions,
 		PassThreshold:  req.PassThreshold,
@@ -116,18 +127,61 @@ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Reques
 	pkg.WriteSuccess(w, http.StatusCreated, a, nil)
 }
 
+// ListAssessments — GET /learning/assessments
+//   - ?cohort_id=…   → that cohort's published exams (course page)
+//   - no cohort_id   → role-aware: tutors get their authored catalogue,
+//     students/parents get every published exam across their confirmed
+//     cohorts (the exam hub). Admins must pass cohort_id.
 func (h *LearningHandler) ListAssessments(w http.ResponseWriter, r *http.Request) {
-	cohortID, err := uuid.Parse(r.URL.Query().Get("cohort_id"))
-	if err != nil {
-		WriteAppError(w, pkg.BadRequest("cohort_id query param is required", nil))
+	raw := r.URL.Query().Get("cohort_id")
+	if raw != "" {
+		cohortID, err := uuid.Parse(raw)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("cohort_id must be a valid UUID", nil))
+			return
+		}
+		list, err := h.svc.ListAssessmentsByCohort(r.Context(), cohortID)
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		pkg.WriteSuccess(w, http.StatusOK, list, nil)
 		return
 	}
-	list, err := h.svc.ListAssessmentsByCohort(r.Context(), cohortID)
-	if err != nil {
-		WriteAppError(w, err)
+
+	actor := requireActor(w, r)
+	if actor == nil {
 		return
 	}
-	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+	if hasSessionRole(actor.Roles, "TUTOR") {
+		tutorID, err := h.authz.ResolveTutor(r.Context(), actor, "")
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		list, err := h.svc.ListAssessmentsByTutor(r.Context(), tutorID)
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		pkg.WriteSuccess(w, http.StatusOK, list, nil)
+		return
+	}
+	if hasSessionRole(actor.Roles, "STUDENT") || hasSessionRole(actor.Roles, "PARENT") {
+		studentID, err := h.authz.ResolveStudent(r.Context(), actor, r.URL.Query().Get("student_profile_id"))
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		list, err := h.svc.ListAssessmentsForStudent(r.Context(), studentID)
+		if err != nil {
+			WriteAppError(w, err)
+			return
+		}
+		pkg.WriteSuccess(w, http.StatusOK, list, nil)
+		return
+	}
+	WriteAppError(w, pkg.BadRequest("cohort_id query param is required for admins", nil))
 }
 
 func (h *LearningHandler) StartAssessment(w http.ResponseWriter, r *http.Request) {

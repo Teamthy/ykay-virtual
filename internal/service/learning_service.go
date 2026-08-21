@@ -11,6 +11,7 @@ import (
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/learning"
+	"ykay-virtual/internal/domain/tutor"
 
 	"github.com/google/uuid"
 )
@@ -33,7 +34,17 @@ type LearningService struct {
 	assignments booking.AssignmentRepository
 	notify      *MessagingService
 	audit       identity.AuditService
+	cohorts     booking.CohortRepository
+	tutorSubj   tutor.TutorSubjectRepository
 	now         func() time.Time
+}
+
+// WithScope wires the subject-scope enforcement: every tutor-authored exam is
+// validated against the tutor's onboarded subjects and the cohort ownership.
+func (s *LearningService) WithScope(cohorts booking.CohortRepository, tutorSubj tutor.TutorSubjectRepository) *LearningService {
+	s.cohorts = cohorts
+	s.tutorSubj = tutorSubj
+	return s
 }
 
 func NewLearningService(assessments learning.AssessmentRepository,
@@ -58,11 +69,14 @@ type CreateAssessmentInput struct {
 	TutorProfileID uuid.UUID
 	CohortID       *uuid.UUID
 	LessonID       *uuid.UUID
-	Title          string
-	Instructions   *string
-	PassThreshold  float64
-	DueAt          *time.Time
-	Questions      []AssessmentQuestionInput
+	// SubjectID — the exam's subject. Must be one of the tutor's onboarded
+	// subjects; single-subject tutors get it defaulted automatically.
+	SubjectID     *uuid.UUID
+	Title         string
+	Instructions  *string
+	PassThreshold float64
+	DueAt         *time.Time
+	Questions     []AssessmentQuestionInput
 }
 
 type AssessmentQuestionInput struct {
@@ -94,9 +108,51 @@ func (s *LearningService) CreateAssessment(ctx context.Context, in CreateAssessm
 		return nil, errors.New("assessment store unavailable")
 	}
 
+	// Subject scope (policy: a tutor's tests reflect the subjects they were
+	// vetted to teach). Enforced whenever the scope stores are wired.
+	if s.tutorSubj != nil {
+		onboarded, err := s.tutorSubj.ListByTutor(ctx, in.TutorProfileID)
+		if err != nil {
+			return nil, err
+		}
+		switch {
+		case len(onboarded) == 0:
+			return nil, fmt.Errorf("%w: you need at least one onboarded subject before creating exams", domain.ErrForbidden)
+		case in.SubjectID != nil:
+			allowed := false
+			for _, sub := range onboarded {
+				if sub.SubjectID == *in.SubjectID {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				return nil, fmt.Errorf("%w: this exam's subject is not in your teaching scope — pick one of your onboarded subjects", domain.ErrForbidden)
+			}
+		case len(onboarded) == 1:
+			single := onboarded[0].SubjectID
+			in.SubjectID = &single // single-subject tutor: default to it
+		default:
+			return nil, fmt.Errorf("%w: choose the subject this exam covers (you teach %d subjects)", domain.ErrInvalidInput, len(onboarded))
+		}
+	}
+
+	// Cohort ownership: only the cohort's assigned tutor (or an admin acting
+	// for them) may author exams on it.
+	if in.CohortID != nil && s.cohorts != nil {
+		cohort, err := s.cohorts.GetByID(ctx, *in.CohortID)
+		if err != nil {
+			return nil, err
+		}
+		if cohort.TutorProfileID == nil || *cohort.TutorProfileID != in.TutorProfileID {
+			return nil, fmt.Errorf("%w: only the cohort's assigned tutor can create exams for it", domain.ErrForbidden)
+		}
+	}
+
 	a := &learning.LearnerAssessment{
 		CohortID:       in.CohortID,
 		LessonID:       in.LessonID,
+		SubjectID:      in.SubjectID,
 		TutorProfileID: in.TutorProfileID,
 		Title:          strings.TrimSpace(in.Title),
 		Instructions:   in.Instructions,
@@ -130,6 +186,23 @@ func (s *LearningService) ListAssessmentsByCohort(ctx context.Context, cohortID 
 		return []learning.LearnerAssessment{}, nil
 	}
 	return s.assessments.ListByCohort(ctx, cohortID, "", 50)
+}
+
+// ListAssessmentsByTutor — the tutor's authored exam catalogue.
+func (s *LearningService) ListAssessmentsByTutor(ctx context.Context, tutorProfileID uuid.UUID) ([]learning.LearnerAssessment, error) {
+	if s.assessments == nil {
+		return []learning.LearnerAssessment{}, nil
+	}
+	return s.assessments.ListAssessmentsByTutor(ctx, tutorProfileID, 100)
+}
+
+// ListAssessmentsForStudent — the learner's exam hub: published exams across
+// their confirmed cohorts.
+func (s *LearningService) ListAssessmentsForStudent(ctx context.Context, studentProfileID uuid.UUID) ([]learning.LearnerAssessment, error) {
+	if s.assessments == nil {
+		return []learning.LearnerAssessment{}, nil
+	}
+	return s.assessments.ListForStudent(ctx, studentProfileID, 100)
 }
 
 // --- Taking an assessment (student) ---

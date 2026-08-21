@@ -358,7 +358,8 @@ func main() {
 	adminSvc.WithUsers(repos.Users, repos.Roles)
 	adminSvc.WithAuditLogs(repos.AuditRepo)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
-		repos.Assignments, audit).WithNotifications(messagingSvc)
+		repos.Assignments, audit).WithNotifications(messagingSvc).
+		WithScope(repos.CohortRepo, repos.TutorSubjects)
 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)
 	supportSvc := service.NewSupportService(repos.SupportTickets).WithNotifier(notifierSvc)
 	reviewSvc := service.NewReviewService(repos.Reviews, repos.TutorRepo, audit)
@@ -565,6 +566,17 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		slog.Warn("postgres unavailable — using in-memory store (dev mode)")
 		store := memory.NewMemoryStore()
 		store.Roles.Seed() // mirror migration 000001 role inserts
+		// Exam-hub parity: the memory learning store resolves a learner's
+		// confirmed cohorts through the enrollment store.
+		store.Learning.WithEnrollmentLister(func(ctx context.Context, studentProfileID uuid.UUID) ([]uuid.UUID, error) {
+			out := []uuid.UUID{}
+			for _, e := range store.Enrollments.All(ctx) {
+				if e.StudentProfileID == studentProfileID && e.Status == booking.EnrollmentConfirmed {
+					out = append(out, e.CohortID)
+				}
+			}
+			return out, nil
+		})
 		// Fixture data is opt-in. It is useful for local visual development but
 		// never represents launch data and must not be present by default.
 		if cfg.SeedDemoData {

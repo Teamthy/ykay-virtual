@@ -2860,44 +2860,46 @@ paths:
         '201': { description: Institution created }
 
   /learning/assessments:
+    get:
+      tags: [learning]
+      summary: List assessments — ?cohort_id= scopes to a cohort; without it, tutors get their authored exams and students their enrolled-cohort exams
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohort_id, in: query, required: false, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Assessments }
     post:
       tags: [learning]
-      summary: Create an assessment (tutor)
+      summary: Tutor creates an auto-graded exam (subject must be within the tutor's onboarded teaching scope; only the cohort's tutor can author on it)
       security: [{ sessionCookie: [] }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAssessmentRequest'
+              type: object
+              required: [title, questions]
+              properties:
+                tutor_profile_id: { type: string, format: uuid }
+                cohort_id: { type: string, format: uuid }
+                subject_id: { type: string, format: uuid, description: "one of the tutor's onboarded subjects (auto-defaulted for single-subject tutors)" }
+                title: { type: string }
+                instructions: { type: string }
+                pass_threshold: { type: number }
+                due_at: { type: string, format: date-time }
+                questions:
+                  type: array
+                  items:
+                    type: object
+                    required: [question, options, correct_index]
+                    properties:
+                      question: { type: string }
+                      options: { type: array, items: { type: string } }
+                      correct_index: { type: integer }
+                      explanation: { type: string }
       responses:
-        '201':
-          description: Assessment created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data: { $ref: '#/components/schemas/LearnerAssessment' }
-        '400': { description: Invalid input }
-        '401': { description: Unauthenticated }
-    get:
-      tags: [learning]
-      summary: List assessments (student)
-      security: [{ sessionCookie: [] }]
-      parameters:
-        - { name: cohort_id, in: query, schema: { type: string, format: uuid } }
-      responses:
-        '200':
-          description: Published assessments
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items: { $ref: '#/components/schemas/LearnerAssessment' }
+        '201': { description: Exam published }
+        '403': { description: Subject outside teaching scope, or not the cohort's tutor }
   /learning/assessments/{id}/start:
     post:
       tags: [learning]

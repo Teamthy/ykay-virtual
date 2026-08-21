@@ -15,6 +15,7 @@ import {
   getAttendanceSummary,
 } from "@/features/lms/api";
 import { listAssessments, listProgressReports } from "@/features/learning/api";
+import { useSubjectNames, subjectName } from "@/features/learning/useSubjectNames";
 import { useSession } from "@/hooks/useSession";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
@@ -69,6 +70,7 @@ export default function LmsHomePage() {
   const assignments = useQuery({ queryKey: ["lms", "assignments"], queryFn: () => listMyAssignments(), enabled: ready });
   const submissions = useQuery({ queryKey: ["lms", "submissions"], queryFn: () => listMySubmissions(), enabled: ready });
   const quizzes = useQuery({ queryKey: ["lms", "quizzes"], queryFn: () => listAssessments(), enabled: ready });
+  const { map: subjectMap } = useSubjectNames();
   const reports = useQuery({ queryKey: ["lms", "reports"], queryFn: () => listProgressReports(), enabled: ready });
 
   const [cohortMeta, setCohortMeta] = React.useState<Record<string, { title: string; href: string }>>({});
@@ -227,6 +229,42 @@ export default function LmsHomePage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </Section>
+
+        {/* Exams & quizzes */}
+        <Section
+          title="Exams & quizzes"
+          action={<Link href="/lms" className="text-sm font-semibold text-brand-gold-dark hover:underline">Open a course →</Link>}
+        >
+          {(quizzes.data ?? []).length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center">
+              <p className="text-sm text-ink-500">No exams yet — your tutor will publish them in your course.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(quizzes.data ?? []).map((q) => (
+                <Link
+                  key={q.id}
+                  href={q.cohort_id ? `/lms/courses/${q.cohort_id}` : "/lms"}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white px-5 py-4 shadow-sm transition-colors hover:border-brand-gold/50"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-ink-800">{q.title}</p>
+                    <p className="mt-0.5 text-xs text-ink-500">
+                      <span className="rounded-full bg-brand-blue-light px-2 py-0.5 text-[10px] font-bold text-brand-blue">
+                        {subjectName(subjectMap, q.subject_id)}
+                      </span>{" "}
+                      Pass {q.pass_threshold}%
+                      {q.due_at ? ` · due ${new Date(q.due_at).toLocaleDateString()}` : ""}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900">
+                    Take exam
+                  </span>
+                </Link>
+              ))}
             </div>
           )}
         </Section>

@@ -11,6 +11,7 @@ export type AssessmentQuestionView = {
 export type LearnerAssessment = {
   id: string;
   cohort_id?: string;
+  subject_id?: string;
   lesson_id?: string;
   tutor_profile_id: string;
   title: string;

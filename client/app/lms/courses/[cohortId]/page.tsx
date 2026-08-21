@@ -27,6 +27,7 @@ import {
   type CohortLesson,
 } from "@/features/lms/api";
 import { listProgressReports } from "@/features/learning/api";
+import { useSubjectNames, subjectName } from "@/features/learning/useSubjectNames";
 
 // Student course page - lessons, resources, assignments, auto-graded quiz,
 // notes and progress reports for one cohort.
@@ -57,6 +58,7 @@ export default function LmsCoursePage() {
   const resources = useQuery({ queryKey: ["lms", "resources", cohortId], queryFn: () => getCohortResources(cohortId) });
   const assignments = useQuery({ queryKey: ["lms", "assignments", cohortId], queryFn: () => getCohortAssignments(cohortId) });
   const quizzes = useQuery({ queryKey: ["lms", "quizzes", cohortId], queryFn: () => listAssessments(cohortId) });
+  const { map: subjectMap } = useSubjectNames();
   const reports = useQuery({ queryKey: ["lms", "reports", cohortId], queryFn: () => listProgressReports() });
   const notes = useQuery({
     queryKey: ["lms", "notes", cohortId],
@@ -413,6 +415,9 @@ export default function LmsCoursePage() {
                       <div>
                         <p className="font-semibold text-ink-800">{q.title}</p>
                         <p className="mt-0.5 text-xs text-ink-500">
+                          <span className="rounded-full bg-brand-blue-light px-2 py-0.5 text-[10px] font-bold text-brand-blue">
+                            {subjectName(subjectMap, q.subject_id)}
+                          </span>{" "}
                           {q.instructions ?? "Auto-graded quiz"}
                           {q.due_at ? ` · Due ${new Date(q.due_at).toLocaleDateString()}` : ""} · Pass {q.pass_threshold}%
                         </p>

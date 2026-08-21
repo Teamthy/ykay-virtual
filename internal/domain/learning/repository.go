@@ -23,6 +23,9 @@ const (
 type LearnerAssessment struct {
 	ID             uuid.UUID        `json:"id"`
 	CohortID       *uuid.UUID       `json:"cohort_id,omitempty"`
+	// SubjectID — the assessment's subject: always one of the tutor's
+	// onboarded teaching subjects (000057).
+	SubjectID      *uuid.UUID       `json:"subject_id,omitempty"`
 	LessonID       *uuid.UUID       `json:"lesson_id,omitempty"`
 	TutorProfileID uuid.UUID        `json:"tutor_profile_id"`
 	Title          string           `json:"title"`
@@ -90,6 +93,12 @@ type AssessmentRepository interface {
 	AddQuestion(ctx context.Context, q *AssessmentQuestion) error
 	GetAssessment(ctx context.Context, id uuid.UUID) (*LearnerAssessment, error)
 	ListByCohort(ctx context.Context, cohortID uuid.UUID, status string, limit int) ([]LearnerAssessment, error)
+	// ListAssessmentsByTutor — assessments authored by one tutor (their exam
+	// catalogue).
+	ListAssessmentsByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]LearnerAssessment, error)
+	// ListForStudent — published assessments across the cohorts a student is
+	// CONFIRMED in (the learner's exam hub).
+	ListForStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]LearnerAssessment, error)
 	GetQuestions(ctx context.Context, assessmentID uuid.UUID) ([]AssessmentQuestion, error)
 	SetStatus(ctx context.Context, id uuid.UUID, status AssessmentStatus) error
 
