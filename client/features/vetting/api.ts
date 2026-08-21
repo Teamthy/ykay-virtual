@@ -141,3 +141,13 @@ export async function reviewDocument(
     body: JSON.stringify({ approve, reason }),
   });
 }
+
+export async function updateBankDetails(
+  profileId: string,
+  input: { bank_name: string; account_number: string; account_name: string }
+): Promise<void> {
+  await apiFetch(`/tutors/me/vetting/profiles/${profileId}/bank`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}

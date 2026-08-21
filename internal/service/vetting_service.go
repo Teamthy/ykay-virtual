@@ -802,3 +802,62 @@ func (a SearchInvalidatorAdapter) InvalidateSearch(ctx context.Context) error {
 	}
 	return a.Fn(ctx)
 }
+
+// UpdateBankDetails — the tutor sets (or clears) their payout destination.
+// Owner-only; account number must be digits (9-12); all three fields must be
+// set together (or all empty to clear). Audited.
+func (s *VettingService) UpdateBankDetails(ctx context.Context, actorUserID, profileID uuid.UUID, bankName, accountNumber, accountName string) error {
+	if s.uows == nil {
+		return errors.New("vetting store unavailable")
+	}
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer uow.Rollback()
+
+	profile, err := uow.Vetting().GetProfileByID(ctx, profileID)
+	if err != nil {
+		return err
+	}
+	if profile.UserID != actorUserID {
+		return fmt.Errorf("%w: only the tutor can update their bank details", domain.ErrForbidden)
+	}
+
+	bankName = strings.TrimSpace(bankName)
+	accountNumber = strings.TrimSpace(accountNumber)
+	accountName = strings.TrimSpace(accountName)
+	allEmpty := bankName == "" && accountNumber == "" && accountName == ""
+	if !allEmpty {
+		if bankName == "" || accountNumber == "" || accountName == "" {
+			return fmt.Errorf("%w: bank name, account number and account name must all be provided (or all empty to clear)", domain.ErrInvalidInput)
+		}
+		if len(bankName) > 120 {
+			return fmt.Errorf("%w: bank name must be 120 characters or fewer", domain.ErrInvalidInput)
+		}
+		if len(accountName) > 160 || len(accountName) < 3 {
+			return fmt.Errorf("%w: account name must be 3-160 characters", domain.ErrInvalidInput)
+		}
+		digits := 0
+		for _, r := range accountNumber {
+			if r < '0' || r > '9' {
+				return fmt.Errorf("%w: account number must contain digits only", domain.ErrInvalidInput)
+			}
+			digits++
+		}
+		if digits < 9 || digits > 12 {
+			return fmt.Errorf("%w: account number must be 9-12 digits", domain.ErrInvalidInput)
+		}
+	}
+
+	var bn, an, acn *string
+	if !allEmpty {
+		bn, an, acn = &bankName, &accountNumber, &accountName
+	}
+	if err := uow.Vetting().UpdateBankDetails(ctx, profileID, bn, an, acn); err != nil {
+		return err
+	}
+	_ = s.audit.LogStateChange(ctx, &actorUserID, identity.AuditUpdate, "tutor_profile",
+		&profileID, nil, map[string]any{"bank_details_updated": !allEmpty}, nil, nil)
+	return uow.Commit(ctx)
+}

@@ -24,8 +24,8 @@ func NewVettingRepo(db TxQuerier) *VettingRepo { return &VettingRepo{db: db} }
 // --- Tutor profile reads/writes ---
 
 func (r *VettingRepo) GetProfileByID(ctx context.Context, profileID uuid.UUID) (*tutor.TutorProfile, error) {
-	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+" FROM tutor_profiles t WHERE t.id = $1", profileID)
-	t, err := scanTutor(row)
+	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+tutorBankColumns+" FROM tutor_profiles t WHERE t.id = $1", profileID)
+	t, err := scanTutorWithBank(row)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
@@ -36,8 +36,8 @@ func (r *VettingRepo) GetProfileByID(ctx context.Context, profileID uuid.UUID) (
 }
 
 func (r *VettingRepo) GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*tutor.TutorProfile, error) {
-	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+" FROM tutor_profiles t WHERE t.user_id = $1", userID)
-	t, err := scanTutor(row)
+	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+tutorBankColumns+" FROM tutor_profiles t WHERE t.user_id = $1", userID)
+	t, err := scanTutorWithBank(row)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
@@ -67,6 +67,21 @@ func (r *VettingRepo) CreateProfile(ctx context.Context, p *tutor.TutorProfile) 
 		return fmt.Errorf("reload tutor profile: %w", err)
 	}
 	*p = *created
+	return nil
+}
+
+// UpdateBankDetails stores (or clears) the tutor's payout destination.
+func (r *VettingRepo) UpdateBankDetails(ctx context.Context, profileID uuid.UUID, bankName, accountNumber, accountName *string) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE tutor_profiles
+		SET bank_name = $2, account_number = $3, account_name = $4, updated_at = NOW()
+		WHERE id = $1`, profileID, bankName, accountNumber, accountName)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
 	return nil
 }
 

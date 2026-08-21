@@ -245,3 +245,31 @@ func (h *VettingHandler) SubmitAssessment(w http.ResponseWriter, r *http.Request
 	}
 	pkg.WriteSuccess(w, http.StatusOK, res, nil)
 }
+
+// UpdateBankDetails — POST /tutors/me/vetting/profiles/{profileId}/bank
+// (owner). Sets or clears the tutor's payout destination.
+func (h *VettingHandler) UpdateBankDetails(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	profileID, err := uuid.Parse(r.PathValue("profileId"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("profile_id must be a valid UUID", nil))
+		return
+	}
+	var req struct {
+		BankName      string `json:"bank_name"`
+		AccountNumber string `json:"account_number"`
+		AccountName   string `json:"account_name"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.UpdateBankDetails(r.Context(), actor.UserID, profileID, req.BankName, req.AccountNumber, req.AccountName); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"saved": true}, nil)
+}

@@ -13,6 +13,9 @@ import (
 
 type CohortRepository interface {
 	ListPublished(ctx context.Context, params CohortListParams) ([]Cohort, int64, error)
+	// ListByTutor — the cohorts a tutor is assigned to (tutor LMS + messaging
+	// contacts), newest first.
+	ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Cohort, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*Cohort, error)
 	// GetByIDForUpdate locks the row (SELECT ... FOR UPDATE) so concurrent
 	// enrollments cannot oversubscribe a cohort (SLO: no overbooking).
@@ -33,6 +36,8 @@ type CohortEnrollmentRepository interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status EnrollmentStatus) error
 	// ListByCohort — roster for the tutor console (LMS).
 	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]CohortEnrollment, error)
+	// ListByParent — the parent's confirmed enrollments (messaging contacts).
+	ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]CohortEnrollment, error)
 }
 
 type PrivateTuitionRequestRepository interface {

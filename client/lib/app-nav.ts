@@ -21,6 +21,7 @@ import {
   UserPlus,
   Play,
   PhoneCall,
+  Banknote,
 } from "lucide-react";
 
 export type AppNavItem = {
@@ -119,6 +120,7 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
       { href: "/admin/referrals", label: "Referrals", icon: Gift },
       { href: "/admin/reviews", label: "Reviews", icon: Star },
       { href: "/admin/payments", label: "Payments", icon: Wallet },
+      { href: "/admin/payouts", label: "Payouts", icon: Banknote },
       { href: "/account", label: "Settings", icon: Settings },
     ],
   },

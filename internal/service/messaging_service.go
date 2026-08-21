@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/messaging"
+	"ykay-virtual/internal/domain/tutor"
 
 	"github.com/google/uuid"
 )
@@ -29,6 +32,10 @@ type MessagingService struct {
 	packages      booking.PrivatePackageRepository
 	cohorts       booking.CohortRepository
 	studentNames  displayNameReader
+	vettingReader vettingRepoReader
+	enrollments   booking.CohortEnrollmentRepository
+	students      identity.StudentProfileRepository
+	users         identity.UserRepository
 }
 
 // displayNameReader resolves user display names for notification bodies.
@@ -281,4 +288,199 @@ func (s *MessagingService) Notify(ctx context.Context, userID uuid.UUID, notifTy
 		Body:   body,
 		Data:   dataJSON,
 	})
+}
+
+// ── Conversation contacts + scoped conversation start ─────────────────────
+
+// ContactRow — someone the actor can start a conversation with (enrolled
+// learner for tutors; tutor for parents/students).
+type ContactRow struct {
+	UserID      uuid.UUID  `json:"user_id"`
+	Name        string     `json:"name"`
+	Role        string     `json:"role"` // TUTOR | PARENT | STUDENT
+	CohortID    *uuid.UUID `json:"cohort_id,omitempty"`
+	CohortTitle *string    `json:"cohort_title,omitempty"`
+}
+
+// WithContactDeps wires the read models needed to resolve contacts and to
+// authorise cohort conversations.
+func (s *MessagingService) WithContactDeps(
+	vetting vettingRepoReader,
+	enrollments booking.CohortEnrollmentRepository,
+	students identity.StudentProfileRepository,
+	users identity.UserRepository,
+) *MessagingService {
+	s.vettingReader = vetting
+	s.enrollments = enrollments
+	s.students = students
+	s.users = users
+	return s
+}
+
+type vettingRepoReader interface {
+	GetProfileByUserID(ctx context.Context, userID uuid.UUID) (*tutor.TutorProfile, error)
+	GetProfileByID(ctx context.Context, profileID uuid.UUID) (*tutor.TutorProfile, error)
+}
+
+// Contacts — who the actor can message:
+//   - TUTOR: learners (parents + self-enrolled students) confirmed in their
+//     cohorts.
+//   - PARENT/STUDENT: the tutor of each cohort they are confirmed in.
+func (s *MessagingService) Contacts(ctx context.Context, actorUserID uuid.UUID) ([]ContactRow, error) {
+	out := []ContactRow{}
+	if s.vettingReader == nil || s.enrollments == nil || s.cohorts == nil {
+		return out, nil
+	}
+
+	// Tutor view.
+	if profile, err := s.vettingReader.GetProfileByUserID(ctx, actorUserID); err == nil && profile != nil {
+		cohorts, err := s.cohorts.ListByTutor(ctx, profile.ID, 50)
+		if err != nil {
+			return nil, err
+		}
+		seen := map[uuid.UUID]bool{}
+		for _, c := range cohorts {
+			enrolls, err := s.enrollments.ListByCohort(ctx, c.ID)
+			if err != nil {
+				return nil, err
+			}
+			for _, e := range enrolls {
+				if e.Status != booking.EnrollmentConfirmed {
+					continue
+				}
+				for _, uid := range s.enrollmentActorUsers(ctx, e) {
+					if uid == uuid.Nil || uid == actorUserID || seen[uid] {
+						continue
+					}
+					seen[uid] = true
+					name, role := s.contactIdentity(ctx, uid, e.StudentProfileID, "PARENT")
+					out = append(out, ContactRow{
+						UserID: uid, Name: name, Role: role,
+						CohortID: &c.ID, CohortTitle: &c.Title,
+					})
+				}
+			}
+		}
+		return out, nil
+	}
+
+	// Parent/student view: tutor of every confirmed enrollment.
+	enrolls, err := s.enrollments.ListByParent(ctx, actorUserID, 50)
+	if err != nil {
+		return nil, err
+	}
+	seen := map[uuid.UUID]bool{}
+	for _, e := range enrolls {
+		if e.Status != booking.EnrollmentConfirmed {
+			continue
+		}
+		c, err := s.cohorts.GetByID(ctx, e.CohortID)
+		if err != nil || c.TutorProfileID == nil {
+			continue
+		}
+		tp, err := s.vettingReader.GetProfileByID(ctx, *c.TutorProfileID)
+		if err != nil || tp == nil || tp.UserID == actorUserID || seen[tp.UserID] {
+			continue
+		}
+		seen[tp.UserID] = true
+		out = append(out, ContactRow{
+			UserID: tp.UserID, Name: tp.DisplayName, Role: "TUTOR",
+			CohortID: &c.ID, CohortTitle: &c.Title,
+		})
+	}
+	return out, nil
+}
+
+// StartCohortConversation — opens (or returns) the cohort Q&A conversation,
+// deriving participants server-side (tutor + confirmed learners' actors).
+// Only the cohort's tutor or a confirmed participant may start it.
+func (s *MessagingService) StartCohortConversation(ctx context.Context, actorUserID, cohortID uuid.UUID) (*messaging.Conversation, error) {
+	if s.cohorts == nil || s.enrollments == nil || s.vettingReader == nil {
+		return nil, errors.New("messaging scopes not configured")
+	}
+	if existing, err := s.conversations.GetByBooking(ctx, messaging.TypeCohort, cohortID); err == nil {
+		return existing, nil
+	} else if !errors.Is(err, domain.ErrNotFound) {
+		return nil, err
+	}
+
+	cohort, err := s.cohorts.GetByID(ctx, cohortID)
+	if err != nil {
+		return nil, err
+	}
+	enrolls, err := s.enrollments.ListByCohort(ctx, cohortID)
+	if err != nil {
+		return nil, err
+	}
+
+	authorized := false
+	participants := map[uuid.UUID]bool{}
+	if cohort.TutorProfileID != nil {
+		if tp, terr := s.vettingReader.GetProfileByID(ctx, *cohort.TutorProfileID); terr == nil && tp != nil {
+			participants[tp.UserID] = true
+			if tp.UserID == actorUserID {
+				authorized = true
+			}
+		}
+	}
+	for _, e := range enrolls {
+		if e.Status != booking.EnrollmentConfirmed {
+			continue
+		}
+		for _, uid := range s.enrollmentActorUsers(ctx, e) {
+			if uid == uuid.Nil {
+				continue
+			}
+			participants[uid] = true
+			if uid == actorUserID {
+				authorized = true
+			}
+		}
+	}
+	if !authorized {
+		return nil, fmt.Errorf("%w: only the cohort tutor or a confirmed participant can start this conversation", domain.ErrForbidden)
+	}
+
+	userIDs := make([]uuid.UUID, 0, len(participants))
+	for uid := range participants {
+		userIDs = append(userIDs, uid)
+	}
+	return s.CreateCohortConversation(ctx, cohortID, userIDs, actorUserID)
+}
+
+// enrollmentActorUsers — the user accounts that may chat about an enrollment:
+// the parent and (when the learner has their own account) the learner.
+func (s *MessagingService) enrollmentActorUsers(ctx context.Context, e booking.CohortEnrollment) []uuid.UUID {
+	ids := []uuid.UUID{e.ParentUserID}
+	if s.students != nil {
+		if sp, err := s.students.FindByID(ctx, e.StudentProfileID); err == nil && sp != nil && sp.UserID != nil && *sp.UserID != uuid.Nil && *sp.UserID != e.ParentUserID {
+			ids = append(ids, *sp.UserID)
+		}
+	}
+	return ids
+}
+
+// contactIdentity — display name + role for a contact row.
+func (s *MessagingService) contactIdentity(ctx context.Context, userID, studentProfileID uuid.UUID, fallbackRole string) (string, string) {
+	name, role := "", fallbackRole
+	if s.users != nil {
+		if u, err := s.users.FindByID(ctx, userID); err == nil && u != nil {
+			name = strings.TrimSpace(u.FirstName + " " + u.LastName)
+			if name == "" {
+				name = u.Email
+			}
+		}
+	}
+	// A self-enrolled learner chatting with the tutor shows the learner's
+	// profile identity.
+	if role == "PARENT" && s.students != nil && studentProfileID != uuid.Nil {
+		if sp, err := s.students.FindByID(ctx, studentProfileID); err == nil && sp != nil && sp.UserID != nil && *sp.UserID == userID {
+			name = strings.TrimSpace(sp.FirstName + " " + sp.LastName)
+			role = "STUDENT"
+		}
+	}
+	if name == "" {
+		name = "Participant"
+	}
+	return name, role
 }

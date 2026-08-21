@@ -1,7 +1,10 @@
 package httpapi
 
 import (
+	"context"
+	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -36,6 +39,7 @@ type AdminHandler struct {
 	svc      *service.AdminService
 	payments *service.PaymentService
 	storage  storage.Storage
+	notifier *service.NotifierService
 	uploadGuard
 }
 
@@ -50,6 +54,12 @@ func (h *AdminHandler) WithPayments(p *service.PaymentService) *AdminHandler {
 // WithStorage wires the object store used for cohort banner uploads.
 func (h *AdminHandler) WithStorage(s storage.Storage) *AdminHandler {
 	h.storage = s
+	return h
+}
+
+// WithNotifier wires WhatsApp notification (payout confirmations to tutors).
+func (h *AdminHandler) WithNotifier(n *service.NotifierService) *AdminHandler {
+	h.notifier = n
 	return h
 }
 
@@ -812,18 +822,65 @@ func (h *AdminHandler) RefundOrder(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"refunded": true}, nil)
 }
 
-// ListPayouts — GET /admin/payouts?status=
+// ListPayouts — GET /admin/payouts?status= (enriched with tutor bank details).
 func (h *AdminHandler) ListPayouts(w http.ResponseWriter, r *http.Request) {
 	if h.requireAdmin(w, r) == nil {
 		return
 	}
 	status := r.URL.Query().Get("status")
-	list, err := h.svc.ListPayouts(r.Context(), status)
+	rows, err := h.svc.PayoutQueue(r.Context(), status)
 	if err != nil {
 		WriteAppError(w, err)
 		return
 	}
-	pkg.WriteSuccess(w, http.StatusOK, list, nil)
+	pkg.WriteSuccess(w, http.StatusOK, rows, nil)
+}
+
+// ConfirmPayoutPaid — POST /admin/payouts/{payoutId}/paid {provider_reference}
+// (admin). Records the external bank transfer and notifies the tutor.
+func (h *AdminHandler) ConfirmPayoutPaid(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	payoutID, err := ParseUUID(r, "payoutId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		ProviderReference string `json:"provider_reference"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if h.payments == nil || h.payments.PayoutSvc == nil {
+		WriteAppError(w, pkg.Conflict("payout service not configured"))
+		return
+	}
+	p, err := h.payments.PayoutSvc.ConfirmBankPayout(r.Context(), *adminID, payoutID, req.ProviderReference)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	// WhatsApp the tutor that their money is on the way.
+	if h.notifier != nil && p != nil {
+		name, phone, _, cerr := h.svc.PayoutTutorContact(r.Context(), payoutID)
+		if cerr == nil && phone != "" {
+			msg := "💸 NUVORA: your payout of " + fmt.Sprintf("%.2f", p.Amount) + " " + p.Currency +
+				" has been sent to your bank account."
+			_ = name
+			go func(phone, msg string) {
+				nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				if err := h.notifier.SendWhatsAppTo(nctx, phone, msg); err != nil {
+					slog.Error("whatsapp payout notify failed", "payout", payoutID, "error", err)
+				}
+			}(phone, msg)
+		}
+	}
+	pkg.WriteSuccess(w, http.StatusOK, p, nil)
 }
 
 // RequestCohortJoin — tutor asks to teach a cohort.

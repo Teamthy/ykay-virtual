@@ -1024,3 +1024,90 @@ func (s *AdminService) ListPayouts(ctx context.Context, status string) ([]paymen
 	}
 	return list, nil
 }
+
+// ── Payout queue (bank transfers) ─────────────────────────────────────────
+
+// AdminPayoutRow — one payout joined with the tutor's identity + bank
+// details so the admin can execute the transfer and confirm it.
+type AdminPayoutRow struct {
+	Payout            payment.Payout `json:"payout"`
+	TutorProfileID    uuid.UUID      `json:"tutor_profile_id"`
+	TutorDisplayName  string         `json:"tutor_display_name"`
+	TutorEmail        string         `json:"tutor_email,omitempty"`
+	TutorPhone        string         `json:"tutor_phone,omitempty"`
+	BankName          string         `json:"bank_name,omitempty"`
+	AccountNumber     string         `json:"account_number,omitempty"`
+	AccountName       string         `json:"account_name,omitempty"`
+	BankDetailsMissing bool          `json:"bank_details_missing"`
+}
+
+// PayoutQueue — payouts joined with tutor identity + bank details. status ""
+// returns all, newest first.
+func (s *AdminService) PayoutQueue(ctx context.Context, status string) ([]AdminPayoutRow, error) {
+	if s.payouts == nil {
+		return []AdminPayoutRow{}, nil
+	}
+	list, err := s.payouts.ListByStatus(ctx, payment.PayoutStatus(status), 200)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]AdminPayoutRow, 0, len(list))
+	for _, p := range list {
+		row := AdminPayoutRow{Payout: p, TutorProfileID: p.TutorProfileID}
+		if s.tutors != nil {
+			if tp, terr := s.tutors.GetByID(ctx, p.TutorProfileID); terr == nil && tp != nil {
+				row.TutorDisplayName = tp.DisplayName
+				if tp.BankName != nil {
+					row.BankName = *tp.BankName
+				}
+				if tp.AccountNumber != nil {
+					row.AccountNumber = *tp.AccountNumber
+				}
+				if tp.AccountName != nil {
+					row.AccountName = *tp.AccountName
+				}
+				row.BankDetailsMissing = row.BankName == "" || row.AccountNumber == "" || row.AccountName == ""
+				if s.users != nil {
+					if u, uerr := s.users.FindByID(ctx, tp.UserID); uerr == nil && u != nil {
+						row.TutorEmail = u.Email
+						row.TutorPhone = strOrEmpty(u.Phone)
+					}
+				}
+			}
+		}
+		out = append(out, row)
+	}
+	return out, nil
+}
+
+// PayoutTutorContact — resolves who a payout belongs to, for notification.
+func (s *AdminService) PayoutTutorContact(ctx context.Context, payoutID uuid.UUID) (displayName, phone, email string, err error) {
+	if s.payouts == nil {
+		return "", "", "", errors.New("payout store unavailable")
+	}
+	list, err := s.payouts.ListByStatus(ctx, "", 500)
+	if err != nil {
+		return "", "", "", err
+	}
+	for _, p := range list {
+		if p.ID != payoutID {
+			continue
+		}
+		if s.tutors == nil {
+			return "", "", "", nil
+		}
+		tp, terr := s.tutors.GetByID(ctx, p.TutorProfileID)
+		if terr != nil || tp == nil {
+			return "", "", "", nil
+		}
+		displayName = tp.DisplayName
+		if s.users != nil {
+			if u, uerr := s.users.FindByID(ctx, tp.UserID); uerr == nil && u != nil {
+				email = u.Email
+				phone = strOrEmpty(u.Phone)
+			}
+		}
+		return displayName, phone, email, nil
+	}
+	return "", "", "", fmt.Errorf("%w: payout not found", domain.ErrNotFound)
+}

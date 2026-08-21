@@ -87,7 +87,7 @@ func main() {
 	// PENDING rather than silently pretending money moved.
 	if cfg.IsProduction() {
 		paymentSvc.PayoutSvc.SetFailClosed(true)
-		slog.Warn("worker: tutor payouts DISABLED (production, no certified provider) — payouts will stay PENDING")
+		slog.Warn("worker: automatic payout processing DISABLED (production, no certified provider) — payouts stay PENDING until an admin confirms the bank transfer from Admin → Payouts")
 	}
 	vettingSvc := service.NewVettingService(r.uowFactory, storage.NewLocalStorage(), audit, nil, nil)
 

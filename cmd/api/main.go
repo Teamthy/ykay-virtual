@@ -290,7 +290,8 @@ func main() {
 	// --- Messaging + dashboards ---
 	messagingSvc := service.NewMessagingService(
 		repos.Conversations, repos.Messages, repos.Notifications,
-		repos.PrivatePackages, repos.Cohorts, nil)
+		repos.PrivatePackages, repos.Cohorts, nil).
+		WithContactDeps(repos.Vetting, repos.Enrollments, repos.Students, repos.Users)
 	dashboardSvc := service.NewDashboardService(
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
@@ -334,7 +335,7 @@ func main() {
 		WithVetting(repos.Vetting).
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
-	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc).WithStorage(store)
+	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc).WithStorage(store).WithNotifier(notifierSvc)
 	adminSvc.WithPayments(repos.Orders, repos.Payouts).
 		WithPaymentRows(repos.Payments).
 		WithStudents(repos.Students)

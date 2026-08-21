@@ -94,3 +94,24 @@ export async function markNotificationRead(id: string): Promise<void> {
 export async function markAllNotificationsRead(): Promise<void> {
   await apiFetch("/me/notifications/read-all", { method: "POST" });
 }
+
+export type ConversationContact = {
+  user_id: string;
+  name: string;
+  role: "TUTOR" | "PARENT" | "STUDENT";
+  cohort_id?: string;
+  cohort_title?: string;
+};
+
+export async function listConversationContacts(): Promise<ConversationContact[]> {
+  const res = await apiFetch<ConversationContact[]>("/me/conversation-contacts");
+  return res.data ?? [];
+}
+
+export async function startCohortConversation(cohortId: string): Promise<Conversation> {
+  const res = await apiFetch<Conversation>("/me/conversations", {
+    method: "POST",
+    body: JSON.stringify({ type: "COHORT", cohort_id: cohortId }),
+  });
+  return res.data;
+}

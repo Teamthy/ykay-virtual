@@ -77,6 +77,11 @@ type TutorProfile struct {
 	LocationID       *uuid.UUID  `json:"location_id,omitempty"`
 	AcceptsOnline    bool        `json:"accepts_online"`
 	AcceptsInPerson  bool        `json:"accepts_in_person"`
+	// Bank details — the tutor's payout destination (000055). Owner/admin
+	// surfaces only; public search results never carry these.
+	BankName        *string     `json:"bank_name,omitempty"`
+	AccountNumber   *string     `json:"account_number,omitempty"`
+	AccountName     *string     `json:"account_name,omitempty"`
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`
 }

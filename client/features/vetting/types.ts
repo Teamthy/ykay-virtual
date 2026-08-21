@@ -23,6 +23,9 @@ export type TutorProfile = {
   accepts_in_person: boolean;
   verified_at?: string;
   approved_at?: string;
+  bank_name?: string | null;
+  account_number?: string | null;
+  account_name?: string | null;
 };
 
 export type TutorSubjectEntry = {

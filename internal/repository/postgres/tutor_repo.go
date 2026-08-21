@@ -62,6 +62,47 @@ func scanTutorResult(row interface{ Scan(...any) error }) (*tutor.TutorSearchRes
 	return &res, nil
 }
 
+// tutorBankColumns — payout destination columns (000055), appended for
+// owner/admin views. NEVER part of the public search projection.
+const tutorBankColumns = `, t.bank_name, t.account_number, t.account_name`
+
+// scanTutorWithBank scans a profile row INCLUDING bank details (owner/admin
+// surfaces only). Same projection as scanTutor plus the three bank columns.
+func scanTutorWithBank(row interface{ Scan(...any) error }) (*tutor.TutorProfile, error) {
+	var t tutor.TutorProfile
+	var headline, bio, label, bankName, accountNumber, accountName sql.NullString
+	var verifiedAt sql.NullTime
+	if err := row.Scan(
+		&t.ID, &t.UserID, &t.Slug, &t.DisplayName, &headline, &bio,
+		&t.YearsExperience, &t.HourlyRateMin, &t.HourlyRateMax, &t.Currency,
+		&t.Status, &t.IsPublic, &t.RatingAvg, &t.RatingCount, &t.TotalHoursTaught, &t.TotalStudents,
+		&t.RankingScore, &t.Timezone, &t.LocationID, &t.AcceptsOnline, &t.AcceptsInPerson,
+		&verifiedAt, &t.CreatedAt, &t.UpdatedAt, &label,
+		&bankName, &accountNumber, &accountName,
+	); err != nil {
+		return nil, err
+	}
+	if headline.Valid {
+		t.Headline = &headline.String
+	}
+	if bio.Valid {
+		t.Bio = &bio.String
+	}
+	if verifiedAt.Valid {
+		t.VerifiedAt = &verifiedAt.Time
+	}
+	if bankName.Valid {
+		t.BankName = &bankName.String
+	}
+	if accountNumber.Valid {
+		t.AccountNumber = &accountNumber.String
+	}
+	if accountName.Valid {
+		t.AccountName = &accountName.String
+	}
+	return &t, nil
+}
+
 // scanTutor scans a plain profile row. tutorColumns includes the derived
 // location_label column, so the 25th destination is scanned and dropped.
 func scanTutor(row interface{ Scan(...any) error }) (*tutor.TutorProfile, error) {
@@ -241,8 +282,8 @@ func (r *TutorRepo) GetBySlug(ctx context.Context, slug string) (*tutor.TutorPro
 }
 
 func (r *TutorRepo) GetByID(ctx context.Context, id uuid.UUID) (*tutor.TutorProfile, error) {
-	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+" FROM tutor_profiles t WHERE t.id = $1", id)
-	t, err := scanTutor(row)
+	row := r.db.QueryRowContext(ctx, "SELECT "+tutorColumns+tutorBankColumns+" FROM tutor_profiles t WHERE t.id = $1", id)
+	t, err := scanTutorWithBank(row)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound

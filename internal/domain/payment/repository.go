@@ -65,6 +65,7 @@ type EscrowHoldRepository interface {
 
 type PayoutRepository interface {
 	Create(ctx context.Context, p *Payout) error
+	GetByID(ctx context.Context, id uuid.UUID) (*Payout, error)
 	GetByEscrowHoldID(ctx context.Context, escrowHoldID uuid.UUID) (*Payout, error)
 	ListByStatus(ctx context.Context, status PayoutStatus, limit int) ([]Payout, error)
 	ListByTutorProfileID(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Payout, error)

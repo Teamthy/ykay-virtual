@@ -113,6 +113,20 @@ func (m *VettingMemory) CreateProfile(_ context.Context, p *tutor.TutorProfile) 
 	return nil
 }
 
+// UpdateBankDetails stores (or clears) the tutor's payout destination.
+func (m *VettingMemory) UpdateBankDetails(_ context.Context, profileID uuid.UUID, bankName, accountNumber, accountName *string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	p, ok := m.profiles[profileID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	p.BankName = bankName
+	p.AccountNumber = accountNumber
+	p.AccountName = accountName
+	return nil
+}
+
 func (m *VettingMemory) SetPublic(_ context.Context, profileID uuid.UUID, isPublic bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

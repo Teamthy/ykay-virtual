@@ -21,6 +21,9 @@ type VettingRepository interface {
 	CreateProfile(ctx context.Context, p *tutor.TutorProfile) error
 	UpdateStatus(ctx context.Context, profileID uuid.UUID, status string) error
 	SetPublic(ctx context.Context, profileID uuid.UUID, isPublic bool) error
+	// UpdateBankDetails stores (or clears, with all-nil) the tutor's payout
+	// destination — a bank account the tutor owns.
+	UpdateBankDetails(ctx context.Context, profileID uuid.UUID, bankName, accountNumber, accountName *string) error
 	MarkApproved(ctx context.Context, profileID, approvedBy uuid.UUID, rankingScore float64) error
 	SetRankingScore(ctx context.Context, profileID uuid.UUID, score float64) error
 	ListByStatus(ctx context.Context, status string, limit, offset int) ([]tutor.TutorProfile, int64, error)

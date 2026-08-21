@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"ykay-virtual/internal/domain"
@@ -120,3 +121,45 @@ func (s *PayoutService) GetPayoutByEscrow(ctx context.Context, escrowHoldID uuid
 }
 
 var _ = domain.ErrNotFound
+
+// ConfirmBankPayout — admin attestation that the bank transfer was executed
+// externally (bank app / provider dashboard) for a PENDING payout. Records
+// the external reference and marks the payout PAID. This is NOT the mock
+// provider path: an admin confirms a real transfer they performed, so it is
+// allowed even where auto-processing is fail-closed — every confirmation is
+// audited against the acting admin.
+func (s *PayoutService) ConfirmBankPayout(ctx context.Context, adminID, payoutID uuid.UUID, providerReference string) (*payment.Payout, error) {
+	providerReference = strings.TrimSpace(providerReference)
+	if providerReference == "" || len(providerReference) > 255 {
+		return nil, fmt.Errorf("%w: provider reference is required (the bank/provider transaction id)", domain.ErrInvalidInput)
+	}
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer uow.Rollback()
+
+	p, err := uow.Payouts().GetByID(ctx, payoutID)
+	if err != nil {
+		return nil, err
+	}
+	if p.Status != payment.PayoutPending {
+		return nil, fmt.Errorf("%w: payout %s is %s (only PENDING payouts can be confirmed)", domain.ErrConflict, p.ID, p.Status)
+	}
+	now := s.clock().UTC()
+	if err := uow.Payouts().UpdateStatus(ctx, payoutID, payment.PayoutPaid, &providerReference, &now); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditPayout, "payout",
+		&payoutID, map[string]any{"status": payment.PayoutPending}, map[string]any{
+			"status": payment.PayoutPaid, "amount": p.Amount, "currency": p.Currency,
+			"provider_reference": providerReference, "manual_confirmation": true,
+		}, nil, nil)
+	if err := uow.Commit(ctx); err != nil {
+		return nil, err
+	}
+	p.Status = payment.PayoutPaid
+	p.ProviderReference = &providerReference
+	p.ProcessedAt = &now
+	return p, nil
+}

@@ -4,7 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listConversations, listMessages, markConversationRead, sendMessage } from "@/features/messaging/api";
+import {
+  listConversations,
+  listMessages,
+  markConversationRead,
+  sendMessage,
+  listConversationContacts,
+  startCohortConversation,
+  type ConversationContact,
+} from "@/features/messaging/api";
 import type { Conversation, Message } from "@/features/messaging/api";
 import { useSession } from "@/hooks/useSession";
 
@@ -13,8 +21,11 @@ import { useSession } from "@/hooks/useSession";
 export function MessageCenter() {
   const { user } = useSession();
   const currentUserId = user?.id ?? "";
+  const isTutor = (user?.roles ?? []).includes("TUTOR");
   const [selected, setSelected] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [contacts, setContacts] = useState<ConversationContact[] | null>(null);
+  const [contactBusy, setContactBusy] = useState<string | null>(null);
   const listEndRef = useRef<HTMLDivElement>(null);
 
   const conversations = useQuery({
@@ -82,6 +93,31 @@ export function MessageCenter() {
     if (draft.trim() && selected) send.mutate(draft.trim());
   };
 
+  const openContacts = async () => {
+    setContacts([]);
+    try {
+      const list = await listConversationContacts();
+      setContacts(list);
+    } catch {
+      setContacts([]);
+    }
+  };
+
+  const startWith = async (c: ConversationContact) => {
+    if (!c.cohort_id) return;
+    setContactBusy(c.user_id);
+    try {
+      const conv = await startCohortConversation(c.cohort_id);
+      setSelected(conv.id);
+      setContacts(null);
+      void qc.invalidateQueries({ queryKey: ["conversations"] });
+    } catch {
+      /* surfaced via empty contacts */
+    } finally {
+      setContactBusy(null);
+    }
+  };
+
   return (
     <div className="grid lg:grid-cols-[340px_1fr] border rounded-2xl overflow-hidden h-[70vh]">
       {/* Conversation list */}
@@ -96,7 +132,49 @@ export function MessageCenter() {
             <Skeleton className="h-14 w-full" />
           </div>
         ) : conversationList.length === 0 ? (
-          <p className="p-6 text-sm text-ink-500">No conversations yet. Book a tutor to start one.</p>
+          <div className="space-y-3 p-4">
+            <p className="text-sm text-ink-500">
+              {isTutor
+                ? "No conversations yet — they start when a learner enrols in your cohort, or you message one below."
+                : "No conversations yet. Message your tutor to start one — they appear as soon as you're enrolled."}
+            </p>
+            <button
+              type="button"
+              onClick={() => void openContacts()}
+              className="w-full rounded-xl border border-brand-gold bg-brand-gold-light px-4 py-2.5 text-sm font-bold text-brand-gold-dark hover:bg-brand-gold hover:text-ink-900"
+            >
+              {isTutor ? "Message your learners" : "Message your tutor"}
+            </button>
+            {contacts !== null && (
+              <div className="space-y-2">
+                {contacts.length === 0 ? (
+                  <p className="text-xs text-ink-400">
+                    {isTutor
+                      ? "No confirmed learners in your cohorts yet."
+                      : "No tutor on your enrolments yet — book a class first."}
+                  </p>
+                ) : (
+                  contacts.map((c) => (
+                    <button
+                      key={`${c.user_id}-${c.cohort_id}`}
+                      type="button"
+                      disabled={contactBusy === c.user_id}
+                      onClick={() => void startWith(c)}
+                      className="flex w-full items-center justify-between gap-2 rounded-xl border border-ink-100 bg-white px-3 py-2.5 text-left text-sm hover:border-ink-200 disabled:opacity-50"
+                    >
+                      <span>
+                        <span className="block font-semibold text-ink-800">{c.name}</span>
+                        <span className="block text-[11px] text-ink-400">
+                          {c.role.toLowerCase()} · {c.cohort_title ?? "class"}
+                        </span>
+                      </span>
+                      <span className="text-xs font-bold text-brand-gold-dark">Start →</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         ) : (
           <ul>
             {conversationList.map((c) => (

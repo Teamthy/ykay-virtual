@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
@@ -14,7 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
-import { getMyProfile } from "@/features/vetting/api";
+import { getMyProfile, updateBankDetails } from "@/features/vetting/api";
 import { getTutorEarnings } from "@/features/lms/api";
 import { BookOpen, MessageSquare, Bell, LifeBuoy, Settings, Wallet, CalendarDays, ClipboardCheck, Users, NotebookPen } from "lucide-react";
 import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
@@ -68,6 +68,9 @@ export default function TutorDashboardPage() {
   const { user } = useSession();
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("overview");
   const [newSlot, setNewSlot] = useState({ day_of_week: 1, start_time: "16:00", end_time: "17:00" });
+  const [bankForm, setBankForm] = useState({ bank_name: "", account_number: "", account_name: "" });
+  const [bankSaving, setBankSaving] = useState(false);
+  const [bankError, setBankError] = useState<string | null>(null);
 
   const profile = useQuery({
     queryKey: ["vetting", "me", user?.id],
@@ -150,6 +153,37 @@ export default function TutorDashboardPage() {
   });
 
   const p = profile.data;
+
+  // Prefill bank form from the loaded profile (000055 fields).
+  useEffect(() => {
+    if (p) {
+      setBankForm({
+        bank_name: p.bank_name ?? "",
+        account_number: p.account_number ?? "",
+        account_name: p.account_name ?? "",
+      });
+    }
+  }, [p?.bank_name, p?.account_number, p?.account_name]);
+
+  const saveBank = async () => {
+    if (!p) return;
+    setBankSaving(true);
+    setBankError(null);
+    try {
+      await updateBankDetails(p.id, {
+        bank_name: bankForm.bank_name.trim(),
+        account_number: bankForm.account_number.trim(),
+        account_name: bankForm.account_name.trim(),
+      });
+      toast.success("Bank details saved — payouts will go to this account");
+      await qc.invalidateQueries({ queryKey: ["tutor", "profile"] });
+    } catch (e) {
+      setBankError(e instanceof Error ? e.message : "Could not save bank details");
+    } finally {
+      setBankSaving(false);
+    }
+  };
+
   const today = (lessons.data ?? []).filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING");
   const recent = (lessons.data ?? []).filter((l) => l.status === "COMPLETED" || l.status === "NO_SHOW");
   const upcoming = today
@@ -468,6 +502,29 @@ export default function TutorDashboardPage() {
               <div className="text-[10px] font-semibold text-ink-600">Paid out</div>
             </div>
           </div>
+          <div className="mt-5 rounded-xl border border-ink-100 bg-surface-muted p-4">
+            <p className="text-sm font-bold text-ink-700">Payout destination (bank account)</p>
+            <p className="mt-0.5 text-xs text-ink-500">Earnings are transferred to this account. Ask the admin team to confirm each transfer.</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Bank name</span>
+                <input value={bankForm.bank_name} onChange={(e) => setBankForm({ ...bankForm, bank_name: e.target.value })} placeholder="e.g. GTBank" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Account number</span>
+                <input value={bankForm.account_number} onChange={(e) => setBankForm({ ...bankForm, account_number: e.target.value.replace(/[^0-9]/g, "") })} placeholder="0123456789" maxLength={12} inputMode="numeric" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Account name</span>
+                <input value={bankForm.account_name} onChange={(e) => setBankForm({ ...bankForm, account_name: e.target.value })} placeholder="e.g. Adaeze Okonkwo" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm" />
+              </label>
+            </div>
+            {bankError && <p className="mt-2 text-xs text-red-600">{bankError}</p>}
+            <button type="button" onClick={() => void saveBank()} disabled={bankSaving} className="mt-3 rounded-full bg-brand-navy px-5 py-2 text-xs font-bold text-white hover:bg-brand-navy/90 disabled:opacity-50">
+              {bankSaving ? "Saving…" : "Save bank details"}
+            </button>
+          </div>
+
           <div className="mt-4">
             <p className="text-sm font-bold text-ink-700">Recent payouts</p>
             {(earnings.data?.payouts ?? []).length === 0 ? (

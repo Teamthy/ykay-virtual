@@ -326,6 +326,34 @@ func (r *PayoutRepo) Create(ctx context.Context, p *payment.Payout) error {
 	return nil
 }
 
+// GetByID returns one payout row (admin confirm flow).
+func (r *PayoutRepo) GetByID(ctx context.Context, id uuid.UUID) (*payment.Payout, error) {
+	var p payment.Payout
+	var provider, providerRef sql.NullString
+	var processedAt sql.NullTime
+	err := r.db.QueryRowContext(ctx, `
+		SELECT id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at
+		FROM payouts WHERE id = $1`, id).
+		Scan(&p.ID, &p.TutorProfileID, &p.EscrowHoldID, &p.Amount, &p.Currency, &p.Status,
+			&provider, &providerRef, &processedAt, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	if provider.Valid {
+		p.Provider = &provider.String
+	}
+	if providerRef.Valid {
+		p.ProviderReference = &providerRef.String
+	}
+	if processedAt.Valid {
+		p.ProcessedAt = &processedAt.Time
+	}
+	return &p, nil
+}
+
 func (r *PayoutRepo) GetByEscrowHoldID(ctx context.Context, escrowHoldID uuid.UUID) (*payment.Payout, error) {
 	var p payment.Payout
 	var provider, providerRef sql.NullString

@@ -203,6 +203,26 @@ paths:
         '200': { description: OK }
         '201': { description: Created }
 
+  /admin/payouts/{payoutId}/paid:
+    post:
+      tags: [admin]
+      summary: Confirm a bank-transfer payout was executed externally (records the reference, notifies the tutor)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: payoutId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [provider_reference]
+              properties:
+                provider_reference: { type: string, description: "Bank/provider transaction id" }
+      responses:
+        '200': { description: Payout marked PAID }
+        '409': { description: Payout not PENDING }
+
   /admin/payouts:
     get:
       tags: []
@@ -1431,6 +1451,14 @@ paths:
       responses:
         '200': { description: Reviewed }
 
+  /me/conversation-contacts:
+    get:
+      tags: [messaging]
+      summary: People the actor can start a conversation with (tutor sees learners; parent/student sees tutors)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Contact rows }
+
   /me/conversations:
     get:
       tags: [messaging]
@@ -2108,6 +2136,26 @@ paths:
       security: [{ sessionCookie: [] }]
       responses:
         '201': { description: Learner profile ensured }
+
+  /tutors/me/vetting/profiles/{profileId}/bank:
+    post:
+      tags: [vetting]
+      summary: Set or clear the tutor's bank payout destination (owner only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: profileId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bank_name: { type: string }
+                account_number: { type: string, description: "9-12 digits" }
+                account_name: { type: string }
+      responses:
+        '200': { description: Bank details saved }
 
   /me/cohorts/{cohortId}/join:
     post:

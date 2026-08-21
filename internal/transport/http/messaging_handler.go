@@ -84,7 +84,9 @@ func (h *MessagingHandler) CreateConversation(w http.ResponseWriter, r *http.Req
 			WriteAppError(w, pkg.BadRequest("cohort_id must be a valid UUID", nil))
 			return
 		}
-		conv, err = h.svc.CreateCohortConversation(r.Context(), cohortID, userIDs, actor.UserID)
+		// Server derives participants + authorises (tutor or confirmed
+		// participant) — client-supplied ids are ignored for cohorts.
+		conv, err = h.svc.StartCohortConversation(r.Context(), actor.UserID, cohortID)
 	default:
 		WriteAppError(w, pkg.BadRequest("type must be BOOKING or COHORT", nil))
 		return
@@ -234,4 +236,19 @@ func (h *MessagingHandler) MarkAllRead(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"read_all": true}, nil)
+}
+
+// Contacts — GET /me/conversation-contacts. Tutors see the learners enrolled
+// in their cohorts; parents/students see the tutors of their enrollments.
+func (h *MessagingHandler) Contacts(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	list, err := h.svc.Contacts(r.Context(), actor.UserID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, list, nil)
 }

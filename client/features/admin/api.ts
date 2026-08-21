@@ -515,3 +515,39 @@ export async function createAdminProgramme(input: {
   });
   return res.data;
 }
+
+// --- Payout queue (bank transfers) ----------------------------------------
+
+export type AdminPayoutRow = {
+  payout: {
+    id: string;
+    tutor_profile_id: string;
+    escrow_hold_id: string;
+    amount: number;
+    currency: string;
+    status: string;
+    provider_reference?: string | null;
+    processed_at?: string | null;
+    created_at: string;
+  };
+  tutor_profile_id: string;
+  tutor_display_name: string;
+  tutor_email?: string;
+  tutor_phone?: string;
+  bank_name?: string;
+  account_number?: string;
+  account_name?: string;
+  bank_details_missing?: boolean;
+};
+
+export async function listAdminPayoutRows(status?: string): Promise<AdminPayoutRow[]> {
+  const res = await apiFetch<AdminPayoutRow[]>(`/admin/payouts${status ? `?status=${status}` : ""}`);
+  return res.data ?? [];
+}
+
+export async function confirmPayoutPaid(payoutId: string, providerReference: string): Promise<void> {
+  await apiFetch(`/admin/payouts/${payoutId}/paid`, {
+    method: "POST",
+    body: JSON.stringify({ provider_reference: providerReference }),
+  });
+}

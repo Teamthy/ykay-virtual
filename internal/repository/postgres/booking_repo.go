@@ -63,6 +63,30 @@ func (r *CohortRepo) GetByID(ctx context.Context, id uuid.UUID) (*booking.Cohort
 	return r.get(ctx, id, "")
 }
 
+// ListByTutor — the cohorts a tutor is assigned to, newest first.
+func (r *CohortRepo) ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]booking.Cohort, error) {
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT `+cohortColumns+` FROM cohorts
+		WHERE tutor_profile_id = $1
+		ORDER BY created_at DESC LIMIT $2`, tutorProfileID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list cohorts by tutor: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.Cohort{}
+	for rows.Next() {
+		c, err := scanCohort(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *c)
+	}
+	return out, rows.Err()
+}
+
 func (r *CohortRepo) GetByIDForUpdate(ctx context.Context, id uuid.UUID) (*booking.Cohort, error) {
 	return r.get(ctx, id, " FOR UPDATE")
 }
@@ -152,6 +176,30 @@ func (r *CohortEnrollmentRepo) ListByCohort(ctx context.Context, cohortID uuid.U
 		}
 		_ = cancelledAt
 		out = append(out, e)
+	}
+	return out, rows.Err()
+}
+
+// ListByParent — the parent's enrollments, newest first (messaging contacts).
+func (r *CohortEnrollmentRepo) ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]booking.CohortEnrollment, error) {
+	if limit < 1 || limit > 200 {
+		limit = 50
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT `+enrollmentColumns+` FROM cohort_enrollments
+		WHERE parent_user_id = $1
+		ORDER BY created_at DESC LIMIT $2`, parentUserID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list enrollments by parent: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.CohortEnrollment{}
+	for rows.Next() {
+		e, err := scanEnrollment(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *e)
 	}
 	return out, rows.Err()
 }
