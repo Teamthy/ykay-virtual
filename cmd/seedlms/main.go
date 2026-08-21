@@ -39,6 +39,7 @@ func main() {
 	allowProd := flag.Bool("allow-prod", false, "allow seeding when ENVIRONMENT=production")
 	tutorEmail := flag.String("tutor-email", defaultTutorEmail, "tutor account email (created if missing)")
 	tutorPassword := flag.String("tutor-password", "", "tutor login password (defaults to SEED_OPERATOR_PASSWORD / OPERATOR_PASSWORD)")
+	testCohort := flag.Bool("test-cohort", false, "also seed a published N1,000 payment-test cohort (for Paystack in/out testing)")
 	flag.Parse()
 
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
@@ -289,6 +290,10 @@ func main() {
 		}
 	}
 
+	if *testCohort {
+		seedPaymentTestCohort(db, tutorID)
+	}
+
 	fmt.Println("NUVORA vetted-tutor LMS pack seeded")
 	fmt.Println("database:", dsn)
 	fmt.Println("tutor login:", email)
@@ -303,4 +308,65 @@ func main() {
 	fmt.Println("  2. Admin → Tutor vetting shows the tutor as APPROVED (routed to admin).")
 	fmt.Println("  3. Admin → Programmes → utme-mastery-lms — roster shows tutor + cohort + demo student.")
 	fmt.Println("  4. Restart the API if it was started before this seed")
+}
+
+// seedPaymentTestCohort — creates the published ₦1,000 payment-test cohort
+// attached to the seeded tutor. Purpose: exercise the full money loop
+// (Paystack checkout → escrow hold → lesson delivered → payout to tutor)
+// with a real 1,000-naira transaction. Idempotent (slug upsert).
+func seedPaymentTestCohort(db *sql.DB, tutorID string) {
+	const (
+		testProgSlug   = "payment-test"
+		testCohortSlug = "payment-test-n1000"
+	)
+	var progID string
+	err := db.QueryRow(`
+		INSERT INTO programmes (title, slug, summary, format, status, currency, is_featured, published_at)
+		VALUES ('Payment test (N1,000)', $1, 'Published test cohort for Paystack in/out verification.', 'COHORT', 'PUBLISHED', 'NGN', FALSE, NOW())
+		ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, status = 'PUBLISHED', published_at = COALESCE(programmes.published_at, NOW())
+		RETURNING id::text`, testProgSlug).Scan(&progID)
+	if err != nil {
+		log.Fatalf("payment-test programme: %v", err)
+	}
+
+	var cohortID string
+	err = db.QueryRow(`
+		INSERT INTO cohorts (
+			programme_id, title, slug, capacity, start_date, end_date, timezone,
+			location_mode, fee, currency, status, code, schedule_description, published_at
+		)
+		VALUES (
+			$1::uuid, 'Payment test cohort — N1,000', $2, 50,
+			CURRENT_DATE + 1, CURRENT_DATE + 90, 'Africa/Lagos',
+			'ONLINE', 1000, 'NGN', 'PUBLISHED', 'NV-PAYTEST',
+			'Test cohort — enrol, pay N1,000, deliver the lesson, release the payout.', NOW()
+		)
+		ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, status = 'PUBLISHED', fee = 1000
+		RETURNING id::text`, progID, testCohortSlug).Scan(&cohortID)
+	if err != nil {
+		log.Fatalf("payment-test cohort: %v", err)
+	}
+	_, _ = db.Exec(`UPDATE cohorts SET tutor_profile_id = $1::uuid, updated_at = NOW() WHERE id = $2::uuid`, tutorID, cohortID)
+
+	// One live lesson so the cohort page and the "mark delivered" flow work.
+	var lessonID string
+	err = db.QueryRow(`SELECT id::text FROM lessons WHERE cohort_id = $1::uuid AND title = $2`, cohortID, "Payment test lesson").Scan(&lessonID)
+	if err == sql.ErrNoRows {
+		_, err = db.Exec(`
+			INSERT INTO lessons (cohort_id, tutor_profile_id, title, description, start_at, end_at, timezone, status, meeting_provider)
+			VALUES ($1::uuid, $2::uuid, 'Payment test lesson',
+				'Enrol, pay N1,000 via Paystack, attend (or mark attended), then release the payout to the tutor.',
+				CURRENT_DATE + 2 + TIME '18:00', CURRENT_DATE + 2 + TIME '19:00', 'Africa/Lagos', 'SCHEDULED', 'google_meet')`,
+			cohortID, tutorID)
+		if err != nil {
+			log.Fatalf("payment-test lesson: %v", err)
+		}
+	}
+
+	fmt.Println("PAYMENT TEST COHORT SEEDED")
+	fmt.Println("  programme:", testProgSlug)
+	fmt.Println("  cohort:   ", testCohortSlug, "code: NV-PAYTEST · fee: N1,000 · PUBLISHED")
+	fmt.Println("  lesson:   'Payment test lesson' in 2 days")
+	fmt.Println("  MONEY LOOP: enrol as any parent/learner → Paystack checkout (N1,000) →")
+	fmt.Println("              escrow hold → lesson delivered → payout to", tutorID)
 }
