@@ -7,10 +7,16 @@ import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors, layout } from "@/src/lib/theme";
+import { BrandLogo } from "@/src/components/BrandLogo";
+import { useTheme } from "@/src/lib/theme-context";
+import { layout } from "@/src/lib/theme";
 import { apiFetch, setToken, registerDevice } from "@/src/lib/api";
 
+type LoginUser = { id: string; email: string; roles: string[] };
+type LoginResponse = { token?: string; mfa_required?: boolean; user: LoginUser };
+
 export default function Login() {
+  const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -23,11 +29,20 @@ export default function Login() {
     setBusy(true);
     void Haptics.selectionAsync().catch(() => {});
     try {
-      const res = await apiFetch<{ token: string; user: { id: string; email: string; roles: string[] } }>(
+      const res = await apiFetch<LoginResponse>(
         "/auth/login/mobile",
         { method: "POST", body: JSON.stringify({ email, password }) }
       );
-      await setToken(res.data.token);
+      if (res.data.mfa_required) {
+        // Admin accounts (ACADEMIC_ADMIN / SUPER_ADMIN) require an emailed
+        // second factor that the mobile app does not handle yet.
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+        return Alert.alert(
+          "Check your email",
+          "This admin account requires an emailed verification code, which the mobile app doesn't handle yet. Finish the admin login on the web — or sign in here with a learner, parent or tutor account."
+        );
+      }
+      await setToken(res.data.token as string);
       await registerDevice();
       router.replace(res.data.user.roles.includes("STUDENT") ? "/lms" : "/home");
     } catch (e) {
@@ -41,7 +56,10 @@ export default function Login() {
   return (
     <Screen scroll={false} padded>
       <View style={styles.content}>
-        <Animated.View entering={FadeInUp.delay(80).springify().damping(16)}>
+        <Animated.View entering={FadeInUp.delay(40).springify().damping(16)}>
+          <BrandLogo stacked size={52} />
+        </Animated.View>
+        <Animated.View entering={FadeInUp.delay(80).springify().damping(16)} style={styles.headingWrap}>
           <AppText variant="h1">Welcome back</AppText>
           <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 6, marginBottom: 28 }}>
             Log in to continue your learning.
@@ -91,4 +109,5 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   content: { flex: 1, justifyContent: "center", maxWidth: layout.contentMaxWidth, width: "100%", alignSelf: "center" },
+  headingWrap: { marginTop: 28 },
 });

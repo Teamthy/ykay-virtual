@@ -35,7 +35,7 @@ export default function HelpScreen() {
       ))}
 
       <Card padded style={{ backgroundColor: colors.navy, marginTop: 6 }}>
-        <Ionicons name="help-buoy-outline" size={26} color={colors.gold} />
+        <Ionicons name="help-buoy-outline" size={26} color={colors.deep} />
         <AppText variant="h2" style={{ color: colors.white, marginTop: 8 }}>Still need help?</AppText>
         <AppText variant="bodySm" style={{ color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
           Our support team usually replies within one working day.

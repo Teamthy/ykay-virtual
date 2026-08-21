@@ -1,7 +1,8 @@
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppText } from "./AppText";
-import { colors, radius, spacing } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { radius, spacing } from "@/src/lib/theme";
 
 // Empty state — a friendly placeholder for when there is no content yet.
 // Always includes an icon, an explanation, and an optional CTA.
@@ -14,16 +15,17 @@ type Props = {
 };
 
 export function EmptyState({ icon = "sparkles-outline", title, description, action }: Props) {
+  const { colors } = useTheme();
   return (
     <View style={styles.root}>
-      <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={28} color={colors.green} />
+      <View style={[styles.iconWrap, { backgroundColor: colors.greenLight }]}>
+        <Ionicons name={icon} size={28} color={colors.deep} />
       </View>
       <AppText variant="h3" style={{ textAlign: "center", marginTop: spacing.sm }}>
         {title}
       </AppText>
       {description ? (
-        <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: spacing.xs, lineHeight: 19 }}>
+        <AppText variant="bodySm" style={{ textAlign: "center", marginTop: spacing.xs, lineHeight: 19 }}>
           {description}
         </AppText>
       ) : null}
@@ -42,7 +44,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: radius.xl,
-    backgroundColor: colors.greenLight,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -1,27 +1,67 @@
 import { useEffect, useRef } from "react";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts, Anton_400Regular } from "@expo-google-fonts/anton";
+import {
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_700Bold,
+} from "@expo-google-fonts/dm-sans";
+// Type-only import: `expo-notifications` is loaded lazily below (never inside
+// Expo Go, where the bare import logs a scary "removed from Expo Go" error).
+import type * as Notifications from "expo-notifications";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { colors } from "@/src/lib/theme";
+import { ThemeProvider, useTheme } from "@/src/lib/theme-context";
+import { colors, fonts } from "@/src/lib/theme";
 import { setUnauthorizedHandler } from "@/src/lib/api";
 import { parseTarget, openNotification } from "@/src/lib/deeplink";
 import { UpdateBanner } from "@/src/components/UpdateBanner";
 import { View } from "react-native";
 
+// Keep the native splash visible until the brand fonts (Anton + DM Sans) are
+// ready, so the first frame never flashes with fallback system type.
+void SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// Expo Go (SDK 53+) no longer supports remote push notifications — running in
+// it is a PREVIEW mode. Skip every notification side-effect there so the app
+// stays clean; a development build (expo-dev-client) gets full push.
+const IS_EXPO_GO = Constants.appOwnership === "expo";
+
 // Configure push notifications: show a banner/alert while the app is open.
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+// Loaded lazily: in Expo Go the mere import of expo-notifications logs a
+// fatal-looking ERROR (SDK 53+ removed remote push there), so it is never
+// loaded in preview mode. A development build gets full push.
+if (!IS_EXPO_GO) {
+  void import("expo-notifications").then(({ setNotificationHandler }) => {
+    setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
+  });
+}
 
 export default function RootLayout() {
   const router = useRouter();
   const responseListener = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener> | null>(null);
+
+  const [fontsLoaded] = useFonts({
+    Anton_400Regular,
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      void SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded]);
 
   // When any API call returns 401 (expired/revoked session), route the app to
   // the login screen. The apiFetch client clears the stale token first.
@@ -35,9 +75,12 @@ export default function RootLayout() {
   // Deep-linking: when the app is opened by tapping a push notification, route
   // to the related screen (message thread, course, receipt, etc.).
   useEffect(() => {
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data;
-      openNotification(parseTarget(data));
+    if (IS_EXPO_GO) return; // push never fires in Expo Go
+    void import("expo-notifications").then((Notifications) => {
+      responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+        const data = response.notification.request.content.data;
+        openNotification(parseTarget(data));
+      });
     });
     return () => {
       responseListener.current?.remove();
@@ -45,9 +88,29 @@ export default function RootLayout() {
     };
   }, []);
 
+  // Every hook above must stay unconditional (Rules of Hooks): the early
+  // return below only switches the rendered tree while fonts load.
+  if (!fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: colors.deep }} />;
+  }
+
   return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <ThemedApp />
+      </SafeAreaProvider>
+    </ThemeProvider>
+  );
+}
+
+// ThemedApp — the themed shell: adaptive status bar + branded stack headers.
+function ThemedApp() {
+  const router = useRouter();
+  const { colors, isDark } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
       {/* OTA update banner: checks on mount and prompts the user to restart
           and apply a new bundle (published via `eas update`). */}
       <UpdateBanner />
@@ -55,7 +118,7 @@ export default function RootLayout() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.navy },
           headerTintColor: colors.white,
-          headerTitleStyle: { fontWeight: "700" },
+          headerTitleStyle: { fontFamily: fonts.display, fontWeight: "400", fontSize: 19 },
           contentStyle: { backgroundColor: colors.cream },
         }}
       >
@@ -95,6 +158,12 @@ export default function RootLayout() {
         <Stack.Screen name="tutor/messages/[conversationId]" options={{ title: "Conversation" }} />
         <Stack.Screen name="tutor/profile" options={{ title: "Tutor profile" }} />
         <Stack.Screen name="tutor/availability" options={{ title: "Availability" }} />
+        {/* Practice exams (CBT) — student hub/player + tutor authoring console */}
+        <Stack.Screen name="practice" options={{ title: "Practice exams" }} />
+        <Stack.Screen name="practice/[examId]" options={{ title: "Practice", headerBackVisible: true }} />
+        <Stack.Screen name="tutor/exams" options={{ title: "My exams" }} />
+        <Stack.Screen name="tutor/exams/new" options={{ title: "New exam" }} />
+        <Stack.Screen name="tutor/exams/[examId]" options={{ title: "Exam results" }} />
         <Stack.Screen name="forgot-password" options={{ title: "Forgot password" }} />
         <Stack.Screen name="reset-password" options={{ title: "Reset password" }} />
         <Stack.Screen name="verify-email" options={{ title: "Verify email" }} />
@@ -119,6 +188,6 @@ export default function RootLayout() {
         <Stack.Screen name="devices" options={{ title: "Devices" }} />
         <Stack.Screen name="learning-progress" options={{ title: "Lesson progress" }} />
       </Stack>
-    </SafeAreaProvider>
+    </>
   );
 }

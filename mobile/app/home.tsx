@@ -6,8 +6,10 @@ import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
 import { TabLayout } from "@/src/components/TabLayout";
-import { colors } from "@/src/lib/theme";
-import { apiFetch } from "@/src/lib/api";
+import { Button } from "@/src/components/ui/Button";
+import { useTheme } from "@/src/lib/theme-context";
+import { colors as lightColors } from "@/src/lib/theme";
+import { apiFetch, getToken } from "@/src/lib/api";
 import { Ionicons } from "@expo/vector-icons";
 
 type Me = { id: string; email: string; roles: string[]; first_name?: string };
@@ -15,6 +17,7 @@ type Unread = { unread: number };
 
 const internal = [
   { href: "/lms", title: "My Learning", desc: "Lessons, resources, assignments", icon: "book-outline" },
+  { href: "/practice", title: "Practice exams", desc: "Timed CBT tests — JAMB style", icon: "timer-outline" },
   { href: "/quizzes", title: "Quizzes", desc: "Auto-graded assessments", icon: "create-outline" },
   { href: "/progress", title: "Progress", desc: "Attendance + tutor reports", icon: "stats-chart-outline" },
   { href: "/subjects", title: "Subjects", desc: "Browse the full catalogue", icon: "library-outline" },
@@ -29,11 +32,19 @@ const internal = [
 ] as const;
 
 export default function Home() {
+  const { colors } = useTheme();
   const [me, setMe] = useState<Me | null>(null);
   const [unread, setUnread] = useState(0);
 
   const load = useCallback(async () => {
     try {
+      // No session token → skip the auth endpoints entirely (Expo Go preview
+      // and logged-out browsing); show the signed-out greeting instead.
+      const token = await getToken();
+      if (!token) {
+        setMe(null);
+        return;
+      }
       const m = await apiFetch<Me>("/auth/me").catch(() => ({ data: null }));
       setMe(m.data);
       const u = await apiFetch<Unread>("/me/notifications/unread-count").catch(() => ({ data: { unread: 0 } }));
@@ -45,16 +56,22 @@ export default function Home() {
 
   useFocusEffect(useCallback(() => void load(), [load]));
 
+  const signedOut = !me;
   const greeting = me?.first_name?.trim() || "there";
 
   return (
     <TabLayout>
     <Screen scroll>
       <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
-        <AppText variant="h1">Welcome back, {greeting}</AppText>
+        <AppText variant="h1">{signedOut ? "Welcome to NUVORA" : `Welcome back, ${greeting}`}</AppText>
         <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 4, marginBottom: 22 }}>
-          What would you like to do today?
+          {signedOut ? "Log in to see your classes, payments and progress." : "What would you like to do today?"}
         </AppText>
+        {signedOut && (
+          <Card style={{ marginBottom: 20 }}>
+            <Button label="Log in" full onPress={() => router.push("/login" as never)} />
+          </Card>
+        )}
       </Animated.View>
 
       {me?.roles?.includes("TUTOR") && (
@@ -63,7 +80,7 @@ export default function Home() {
           <View style={{ flex: 1, marginLeft: 12 }}>
             <AppText variant="h3">Tutor workspace</AppText>
             <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
-              Earnings, schedule, lessons and messages
+              Earnings, schedule, lessons, messages & exams
             </AppText>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.goldDark} />
@@ -120,7 +137,7 @@ const styles = StyleSheet.create({
     minWidth: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.gold,
+    backgroundColor: lightColors.gold,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 6,

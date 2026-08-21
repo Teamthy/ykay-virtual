@@ -2859,6 +2859,123 @@ paths:
       responses:
         '201': { description: Institution created }
 
+  # ---- Practice exams (CBT: tutor-authored papers, timed student attempts) ----
+  /tutor/exams:
+    get:
+      tags: [learning]
+      summary: Tutor lists their authored practice exams (newest first)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Practice exams }
+    post:
+      tags: [learning]
+      summary: Tutor creates a practice exam with questions (one correct option each)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, title, duration_minutes, passing_score, questions]
+              properties:
+                subject: { type: string }
+                title: { type: string }
+                description: { type: string }
+                duration_minutes: { type: integer }
+                passing_score: { type: integer }
+                cohort_id: { type: string, format: uuid }
+                questions:
+                  type: array
+                  items:
+                    type: object
+                    required: [text, options, correct_index]
+                    properties:
+                      text: { type: string }
+                      options: { type: array, items: { type: string } }
+                      correct_index: { type: integer }
+                      explanation: { type: string }
+      responses:
+        '201': { description: Created exam }
+  /tutor/exams/{id}:
+    get:
+      tags: [learning]
+      summary: Tutor gets one authored exam incl. correct answers
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Practice exam }
+    put:
+      tags: [learning]
+      summary: Tutor replaces an exam (questions replaced wholesale)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Updated exam }
+    delete:
+      tags: [learning]
+      summary: Tutor deletes an exam and its attempts
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Deleted }
+  /tutor/exams/{id}/attempts:
+    get:
+      tags: [learning]
+      summary: Tutor lists attempt results for one exam
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Attempt results }
+  /learning/exams:
+    get:
+      tags: [learning]
+      summary: Student lists active practice exams available to them (open + enrolled-cohort papers)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Practice exams }
+  /learning/exams/{id}:
+    get:
+      tags: [learning]
+      summary: Student gets the paper WITHOUT correct answers (question text + options only)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Paper }
+  /learning/exams/{id}/attempts:
+    post:
+      tags: [learning]
+      summary: Student starts a timed attempt (expires after duration_minutes)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '201': { description: Attempt started }
+  /learning/exams/attempts:
+    get:
+      tags: [learning]
+      summary: Student's attempt history (newest first)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Attempt history }
+  /learning/exams/attempts/{attemptId}:
+    get:
+      tags: [learning]
+      summary: Marked paper review — per-question correct answers + explanations
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Review }
+  /learning/exams/attempts/{attemptId}/submit:
+    post:
+      tags: [learning]
+      summary: Student submits answers (auto-scored; expired attempts auto-submit on the deadline)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: object
+                  additionalProperties: { type: integer }
+      responses:
+        '200': { description: Score + pass/fail }
   /learning/assessments:
     get:
       tags: [learning]

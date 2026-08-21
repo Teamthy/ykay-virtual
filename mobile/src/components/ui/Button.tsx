@@ -1,10 +1,11 @@
 import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, Text, ActivityIndicator, type ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
-import { colors, radius, type, shadow } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { fonts, radius, type, shadow } from "@/src/lib/theme";
 
 // Premium button — spring scale on press, haptic tap, optional loading,
-// variants (primary gold, secondary, ghost, dark).
+// variants (primary lime, secondary, ghost, dark).
 
 type Variant = "primary" | "secondary" | "ghost" | "dark";
 
@@ -31,6 +32,7 @@ export function Button({
   icon,
   style,
 }: Props) {
+  const { colors } = useTheme();
   const scale = useSharedValue(1);
 
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
@@ -48,7 +50,7 @@ export function Button({
     variant === "primary"
       ? colors.gold
       : variant === "secondary"
-      ? colors.white
+      ? colors.surface
       : variant === "dark"
       ? colors.navy
       : "transparent";
@@ -108,5 +110,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
   },
   full: { width: "100%" },
-  label: { fontSize: type.body, fontWeight: "700", letterSpacing: 0.2 },
+  label: { fontFamily: fonts.display, fontWeight: "400", fontSize: type.body, letterSpacing: 0.5 },
 });

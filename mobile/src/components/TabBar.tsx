@@ -4,11 +4,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, type } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { fonts, layout, type } from "@/src/lib/theme";
 
 // Premium bottom tab bar — active pill indicator, spring scale + haptic on
-// press, safe-area aware. Tabs route within the authenticated Stack.
-// Includes a visually emphasized center "Explore" primary action.
+// press, safe-area aware, dark-mode aware. Tabs route within the
+// authenticated Stack. Includes a visually emphasized center "Explore"
+// primary action. The tab row is capped at contentMaxWidth and centred so
+// tablets keep the phone-scale navigation model.
 
 const TABS = [
   { key: "home", href: "/home", label: "Home", icon: "home", iconOutline: "home-outline" },
@@ -39,6 +42,7 @@ function TabItem({
   iconOutline: IconName;
   active: boolean;
 }) {
+  const { colors } = useTheme();
   const scale = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
@@ -55,10 +59,10 @@ function TabItem({
       accessibilityState={{ selected: active }}
       accessibilityLabel={label}
     >
-      <View style={[styles.iconWrap, active && styles.iconWrapActive]}>
+      <View style={[styles.iconWrap, active && { backgroundColor: colors.greenLight }]}>
         <Ionicons name={(active ? icon : iconOutline) as IconName} size={19} color={active ? colors.navy : colors.ink[400]} />
       </View>
-      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
+      <Text style={[styles.label, styles.labelColor, { color: active ? colors.navy : colors.ink[400] }]}>{label}</Text>
     </AnimatedPressable>
   );
 }
@@ -66,65 +70,71 @@ function TabItem({
 export function TabBar() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.bar, { paddingBottom: insets.bottom + 8 }]}>
-      {TABS.map((t) => {
-        const active = pathname === t.href || pathname.startsWith(t.href + "/");
-        return (
-          <TabItem
-            key={t.key}
-            href={t.href}
-            label={t.label}
-            icon={t.icon as IconName}
-            iconOutline={t.iconOutline as IconName}
-            active={active}
-          />
-        );
-      })}
+    <View style={[styles.bar, { backgroundColor: colors.surface, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
+      <View style={styles.row}>
+        {TABS.map((t) => {
+          const active = pathname === t.href || pathname.startsWith(t.href + "/");
+          return (
+            <TabItem
+              key={t.key}
+              href={t.href}
+              label={t.label}
+              icon={t.icon as IconName}
+              iconOutline={t.iconOutline as IconName}
+              active={active}
+            />
+          );
+        })}
 
-      {/* Primary action — visually emphasized (filled circle) */}
-      <View style={styles.primarySlot}>
-        <Pressable
-          onPress={() => {
-            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-            router.push(PRIMARY_ACTION.href as never);
-          }}
-          style={styles.primaryAction}
-          accessibilityRole="button"
-          accessibilityLabel={PRIMARY_ACTION.label}
-        >
-          <Ionicons name={PRIMARY_ACTION.icon as IconName} size={22} color={colors.white} />
-        </Pressable>
-        <Text style={styles.primaryLabel}>{PRIMARY_ACTION.label}</Text>
+        {/* Primary action — visually emphasized (deep circle, lime glyph) */}
+        <View style={styles.primarySlot}>
+          <Pressable
+            onPress={() => {
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+              router.push(PRIMARY_ACTION.href as never);
+            }}
+            style={[styles.primaryAction, { backgroundColor: colors.deep, borderColor: colors.bg }]}
+            accessibilityRole="button"
+            accessibilityLabel={PRIMARY_ACTION.label}
+          >
+            <Ionicons name={PRIMARY_ACTION.icon as IconName} size={22} color={colors.green} />
+          </Pressable>
+          <Text style={[styles.primaryLabel, { color: colors.deep }]}>{PRIMARY_ACTION.label}</Text>
+        </View>
+
+        {SECONDARY.map((t) => {
+          const active = pathname === t.href || pathname.startsWith(t.href + "/");
+          return (
+            <TabItem
+              key={t.key}
+              href={t.href}
+              label={t.label}
+              icon={t.icon as IconName}
+              iconOutline={t.iconOutline as IconName}
+              active={active}
+            />
+          );
+        })}
       </View>
-
-      {SECONDARY.map((t) => {
-        const active = pathname === t.href || pathname.startsWith(t.href + "/");
-        return (
-          <TabItem
-            key={t.key}
-            href={t.href}
-            label={t.label}
-            icon={t.icon as IconName}
-            iconOutline={t.iconOutline as IconName}
-            active={active}
-          />
-        );
-      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   bar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.surface,
     paddingHorizontal: 10,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    maxWidth: layout.contentMaxWidth,
+    width: "100%",
+    alignSelf: "center",
   },
   tab: { flex: 1, alignItems: "center", gap: 3 },
   iconWrap: {
@@ -134,20 +144,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  iconWrapActive: { backgroundColor: colors.greenLight },
-  label: { fontSize: type.caption, fontWeight: "600", color: colors.ink[400] },
-  labelActive: { color: colors.navy, fontWeight: "800" },
+  label: { fontFamily: fonts.bodyMedium, fontSize: type.caption, fontWeight: "500" },
+  labelColor: {},
   primarySlot: { flex: 1, alignItems: "center", gap: 3 },
   primaryAction: {
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: colors.green,
     alignItems: "center",
     justifyContent: "center",
     marginTop: -18,
     borderWidth: 3,
-    borderColor: colors.bg,
   },
-  primaryLabel: { fontSize: type.caption, fontWeight: "700", color: colors.greenDark },
+  primaryLabel: { fontFamily: fonts.bodyBold, fontSize: type.caption, fontWeight: "700" },
 });

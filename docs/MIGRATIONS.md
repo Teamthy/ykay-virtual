@@ -42,7 +42,7 @@ applied migrations; that breaks environments.
 
 ## Adding a migration
 
-1. Pick the next free number (currently `000052` is the latest).
+1. Pick the next free number (currently `000059` is the latest).
 2. Write `up` (idempotent where possible: `IF NOT EXISTS`, `ON CONFLICT DO
    NOTHING`) and a `down` that removes exactly what `up` added.
 3. Run `go test ./migrations/` — the static gate verifies the chain.

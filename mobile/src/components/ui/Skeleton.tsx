@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, type ViewStyle } from "react-native";
-import { colors, radius } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { radius } from "@/src/lib/theme";
 
 // Skeleton loader — shimmer/pulse placeholder that preserves layout. Use it
 // instead of spinners so the UI doesn't jump when content loads.
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function Skeleton({ width = "100%", height = 16, radius: r = radius.sm, style }: Props) {
+  const { colors } = useTheme();
   const opacity = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export function Skeleton({ width = "100%", height = 16, radius: r = radius.sm, s
     <Animated.View
       style={[
         styles.base,
-        { width, height, borderRadius: r, opacity },
+        { width, height, borderRadius: r, opacity, backgroundColor: colors.ink[200] },
         style,
       ]}
       accessibilityLabel="Loading"
@@ -52,5 +54,5 @@ export function CardSkeleton({ rows = 3 }: { rows?: number }) {
 }
 
 const styles = StyleSheet.create({
-  base: { backgroundColor: colors.ink[100] },
+  base: {},
 });

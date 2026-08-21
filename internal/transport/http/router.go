@@ -151,6 +151,20 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/email/test", handlers.Admin.SendTestEmail)
 	mux.HandleFunc("POST "+v1+"/admin/leads/{leadId}/status", handlers.Leads.UpdateStatus)
 
+	// Practice exams (CBT): tutors author papers, students sit timed attempts.
+	mux.HandleFunc("POST "+v1+"/tutor/exams", handlers.PracticeExams.TutorCreate)
+	mux.HandleFunc("GET "+v1+"/tutor/exams", handlers.PracticeExams.TutorList)
+	mux.HandleFunc("GET "+v1+"/tutor/exams/{id}", handlers.PracticeExams.TutorGet)
+	mux.HandleFunc("PUT "+v1+"/tutor/exams/{id}", handlers.PracticeExams.TutorUpdate)
+	mux.HandleFunc("DELETE "+v1+"/tutor/exams/{id}", handlers.PracticeExams.TutorDelete)
+	mux.HandleFunc("GET "+v1+"/tutor/exams/{id}/attempts", handlers.PracticeExams.TutorAttempts)
+	mux.HandleFunc("GET "+v1+"/learning/exams", handlers.PracticeExams.StudentList)
+	mux.HandleFunc("GET "+v1+"/learning/exams/{id}", handlers.PracticeExams.StudentGet)
+	mux.HandleFunc("POST "+v1+"/learning/exams/{id}/attempts", handlers.PracticeExams.StartAttempt)
+	mux.HandleFunc("POST "+v1+"/learning/exams/attempts/{attemptId}/submit", handlers.PracticeExams.SubmitAttempt)
+	mux.HandleFunc("GET "+v1+"/learning/exams/attempts", handlers.PracticeExams.StudentAttempts)
+	mux.HandleFunc("GET "+v1+"/learning/exams/attempts/{attemptId}", handlers.PracticeExams.AttemptReview)
+
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/site/contact", handlers.Notifier.GetContactInfo)
 	mux.HandleFunc("GET "+v1+"/curricula", handlers.Curricula.List)
@@ -422,6 +436,7 @@ type Handlers struct {
 	Devices         *DeviceHandler
 	Account         *AccountHandler
 	Leads           *LeadsHandler
+	PracticeExams   *PracticeExamHandler
 	Onboarding      *OnboardingHandler
 	Portal          *PortalHandler
 	Learning        *LearningHandler

@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Screen } from "@/src/components/ui/Screen";
@@ -10,7 +10,8 @@ import { AppText } from "@/src/components/ui/AppText";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing } from "@/src/lib/theme";
+import { useTheme, type ThemeMode } from "@/src/lib/theme-context";
+import { radius, spacing, type ThemeColors } from "@/src/lib/theme";
 import { apiFetch, setToken } from "@/src/lib/api";
 import { currentAppVersion } from "@/src/lib/updates";
 
@@ -60,6 +61,8 @@ const GROUPS: { title: string; items: MenuItem[] }[] = [
 ];
 
 export default function Account() {
+  const { colors, mode, setMode } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [me, setMe] = useState<Me | null>(null);
   const [learners, setLearners] = useState<Learner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,6 +180,45 @@ export default function Account() {
           ))
         )}
 
+        {/* Appearance — light / dark / system */}
+        <AppText variant="label" style={styles.sectionTitle}>
+          APPEARANCE
+        </AppText>
+        <Card style={styles.groupCard}>
+          <View style={styles.menuRow}>
+            <View style={[styles.menuIcon, { backgroundColor: colors.greenLight }]}>
+              <Ionicons name={mode === "dark" ? "moon-outline" : mode === "light" ? "sunny-outline" : "phone-portrait-outline"} size={18} color={colors.deep} />
+            </View>
+            <View style={{ flex: 1, marginLeft: spacing.sm }}>
+              <AppText variant="heading">Theme</AppText>
+              <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
+                Dark, light or follow your device
+              </AppText>
+            </View>
+          </View>
+          <View style={styles.themeRow}>
+            {(["light", "dark", "system"] as ThemeMode[]).map((m) => (
+              <View
+                key={m}
+                accessibilityRole="button"
+                accessibilityLabel={`Theme ${m}`}
+                onTouchEnd={() => setMode(m)}
+                style={[
+                  styles.themeChip,
+                  { borderColor: mode === m ? colors.greenDark : colors.border, backgroundColor: mode === m ? colors.greenLight : "transparent" },
+                ]}
+              >
+                <AppText
+                  variant="label"
+                  style={{ color: mode === m ? colors.deep : colors.ink[500], textTransform: "capitalize" }}
+                >
+                  {m}
+                </AppText>
+              </View>
+            ))}
+          </View>
+        </Card>
+
         {/* Grouped settings */}
         {GROUPS.map((group) => (
           <View key={group.title}>
@@ -192,7 +234,7 @@ export default function Account() {
                     onTouchEnd={() => router.push(item.href as never)}
                   >
                     <View style={styles.menuIcon}>
-                      <Ionicons name={item.icon} size={18} color={colors.green} />
+                      <Ionicons name={item.icon} size={18} color={colors.deep} />
                     </View>
                     <View style={{ flex: 1, marginLeft: spacing.sm }}>
                       <AppText variant="heading">{item.label}</AppText>
@@ -220,7 +262,8 @@ export default function Account() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -238,7 +281,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { fontSize: 26, fontWeight: "800", color: colors.white },
+  avatarText: { fontSize: 26, fontWeight: "800", color: colors.ink[950] },
   roleRow: { flexDirection: "row", gap: 6, marginTop: spacing.xs, flexWrap: "wrap" },
   rolePill: { backgroundColor: colors.greenLight, borderRadius: radius.pill, paddingHorizontal: spacing.xs, paddingVertical: 2 },
   roleText: { color: colors.greenDark, fontWeight: "700" },
@@ -264,4 +307,13 @@ const styles = StyleSheet.create({
   },
   divider: { height: 1, backgroundColor: colors.border, marginLeft: 36 + spacing.sm },
   logout: { marginTop: spacing.lg, marginBottom: spacing.xxl },
+  themeRow: { flexDirection: "row", gap: spacing.sm, paddingBottom: spacing.md },
+  themeChip: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    alignItems: "center",
+  },
 });

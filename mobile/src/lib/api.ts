@@ -1,6 +1,5 @@
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
-import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 // NUVORA mobile API client — talks to the same /api/v1 backend as the web
@@ -66,6 +65,10 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = DEFA
 export async function registerDevice(): Promise<void> {
   try {
     if (!Constants.isDevice) return; // push tokens are device-only
+    // Expo Go (SDK 53+) removed remote push — skip entirely in preview mode.
+    if (Constants.appOwnership === "expo") return;
+    // Lazy import: in Expo Go the bare import alone logs a scary ERROR.
+    const Notifications = await import("expo-notifications");
     const perms = await Notifications.requestPermissionsAsync();
     if (!perms.granted) return;
     const token = await Notifications.getExpoPushTokenAsync({ projectId: Constants.expoConfig?.extra?.projectId });
@@ -101,10 +104,13 @@ export async function apiFetch<T>(
     try {
       const res = await fetchWithTimeout(`${API_BASE}${path}`, { ...init, headers });
       if (res.status === 401) {
-        // Invalid/expired session — clear it and notify the app.
-        fireUnauthorized();
+        // Only treat 401 as "your session died" when we actually attached a
+        // token. Public screens sometimes call protected endpoints while
+        // signed out (e.g. LMS before login) — that 401 must NOT clear a
+        // session or bounce the user to /login.
+        if (token) fireUnauthorized();
         const err = (await res.json().catch(() => null)) as ErrorEnvelope | null;
-        throw new Error(err?.error?.message || "Session expired. Please log in again.");
+        throw new Error(err?.error?.message || (token ? "Session expired. Please log in again." : "Authentication required"));
       }
       if (!res.ok) {
         const err = (await res.json().catch(() => null)) as ErrorEnvelope | null;
@@ -162,5 +168,148 @@ export async function getLessonProgress(
 
 export async function getMyLessonProgress(): Promise<LessonProgress[]> {
   const res = await apiFetch<LessonProgress[]>("/me/learning/progress");
+  return res.data ?? [];
+}
+
+// --- Practice exams (CBT) --------------------------------------------------
+// Tutor-authored papers with timed student attempts (backend 000059).
+// Tutors create/list papers; students sit attempts and review marked papers.
+
+export type PracticeExamSummary = {
+  id: string;
+  subject: string;
+  title: string;
+  description: string;
+  duration_minutes: number;
+  passing_score: number;
+  cohort_id?: string;
+  status: string;
+  question_count: number;
+  created_at: string;
+};
+
+export type PracticePaperQuestion = { id: string; position: number; text: string; options: string[] };
+
+export type PracticePaper = {
+  id: string;
+  subject: string;
+  title: string;
+  description: string;
+  duration_minutes: number;
+  passing_score: number;
+  question_count: number;
+  questions: PracticePaperQuestion[];
+};
+
+export type PracticeAttemptItem = {
+  attempt_id: string;
+  exam_id: string;
+  exam_title: string;
+  exam_subject: string;
+  score?: number | null;
+  passed?: boolean | null;
+  total: number;
+  started_at: string;
+  expires_at: string;
+  submitted_at?: string | null;
+};
+
+export type AttemptReview = {
+  attempt_id: string;
+  exam_id: string;
+  exam_title: string;
+  exam_subject: string;
+  passing_score: number;
+  score: number;
+  passed: boolean;
+  correct: number;
+  total: number;
+  expired: boolean;
+  submitted_at: string;
+  questions: {
+    id: string;
+    position: number;
+    text: string;
+    options: string[];
+    chosen_index?: number | null;
+    correct_index: number;
+    explanation: string;
+  }[];
+};
+
+export type PracticeExamInput = {
+  subject: string;
+  title: string;
+  description?: string;
+  duration_minutes: number;
+  passing_score: number;
+  questions: { text: string; options: string[]; correct_index: number; explanation?: string }[];
+};
+
+export async function listPracticeExams(): Promise<PracticeExamSummary[]> {
+  const res = await apiFetch<PracticeExamSummary[]>("/learning/exams");
+  return res.data ?? [];
+}
+
+export async function getPracticePaper(id: string): Promise<PracticePaper> {
+  const res = await apiFetch<PracticePaper>(`/learning/exams/${id}`);
+  return res.data;
+}
+
+export async function startPracticeAttempt(examId: string): Promise<{ attempt_id: string; started_at: string; expires_at: string }> {
+  const res = await apiFetch<{ attempt_id: string; started_at: string; expires_at: string }>(
+    `/learning/exams/${examId}/attempts`,
+    { method: "POST" }
+  );
+  return res.data;
+}
+
+export async function submitPracticeAttempt(
+  attemptId: string,
+  answers: Record<string, number>
+): Promise<{ attempt_id: string; score: number; passed: boolean; correct: number; total: number; expired: boolean; submitted_at: string }> {
+  const res = await apiFetch<{
+    attempt_id: string; score: number; passed: boolean; correct: number; total: number; expired: boolean; submitted_at: string;
+  }>(`/learning/exams/attempts/${attemptId}/submit`, {
+    method: "POST",
+    body: JSON.stringify({ answers }),
+  });
+  return res.data;
+}
+
+export async function listMyAttempts(): Promise<PracticeAttemptItem[]> {
+  const res = await apiFetch<PracticeAttemptItem[]>("/learning/exams/attempts");
+  return res.data ?? [];
+}
+
+export async function getAttemptReview(attemptId: string): Promise<AttemptReview> {
+  const res = await apiFetch<AttemptReview>(`/learning/exams/attempts/${attemptId}`);
+  return res.data;
+}
+
+export async function listTutorExams(): Promise<PracticeExamSummary[]> {
+  const res = await apiFetch<PracticeExamSummary[]>("/tutor/exams");
+  return res.data ?? [];
+}
+
+export async function createTutorExam(input: PracticeExamInput): Promise<PracticeExamSummary> {
+  const res = await apiFetch<PracticeExamSummary>("/tutor/exams", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
+export async function getTutorExam(id: string): Promise<PracticeExamSummary> {
+  const res = await apiFetch<PracticeExamSummary>(`/tutor/exams/${id}`);
+  return res.data;
+}
+
+export async function deleteTutorExam(id: string): Promise<void> {
+  await apiFetch<{ deleted: boolean }>(`/tutor/exams/${id}`, { method: "DELETE" });
+}
+
+export async function listExamAttempts(examId: string): Promise<PracticeAttemptItem[]> {
+  const res = await apiFetch<PracticeAttemptItem[]>(`/tutor/exams/${examId}/attempts`);
   return res.data ?? [];
 }

@@ -74,7 +74,7 @@ export default function CohortDetailScreen() {
             <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>ENROLLED</AppText>
           </View>
           <View style={styles.stat}>
-            <AppText variant="h2" style={{ color: seatsLeft > 0 ? colors.success : colors.danger }}>{seatsLeft}</AppText>
+            <AppText variant="h2" style={{ color: seatsLeft > 0 ? colors.deep : colors.danger }}>{seatsLeft}</AppText>
             <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>SEATS LEFT</AppText>
           </View>
         </View>
@@ -108,7 +108,7 @@ export default function CohortDetailScreen() {
 
       <Card padded style={{ marginTop: 12 }}>
         <AppText variant="h3">Fee</AppText>
-        <AppText variant="h2" style={{ color: colors.success, marginTop: 6 }}>{formatNaira(cohort.fee)}</AppText>
+        <AppText variant="h2" style={{ color: colors.deep, marginTop: 6 }}>{formatNaira(cohort.fee)}</AppText>
         <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
           {cohort.currency} · escrow-protected until lessons are delivered
         </AppText>

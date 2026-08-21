@@ -2,7 +2,8 @@ import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppText } from "./AppText";
 import { Button } from "./Button";
-import { colors, radius, spacing } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { radius, spacing } from "@/src/lib/theme";
 
 // Confirmation state — restrained success feedback (per the UI spec: "use
 // restrained celebration. Avoid excessive confetti or animation."). Shows a
@@ -17,16 +18,17 @@ type Props = {
 };
 
 export function SuccessState({ title, message, icon = "checkmark", actionLabel, onAction }: Props) {
+  const { colors } = useTheme();
   return (
     <View style={styles.root}>
-      <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={32} color={colors.white} />
+      <View style={[styles.iconWrap, { backgroundColor: colors.green }]}>
+        <Ionicons name={icon} size={32} color={colors.ink[950]} />
       </View>
       <AppText variant="h3" style={{ textAlign: "center", marginTop: spacing.md }}>
         {title}
       </AppText>
       {message ? (
-        <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: spacing.xs, lineHeight: 19 }}>
+        <AppText variant="bodySm" style={{ textAlign: "center", marginTop: spacing.xs, lineHeight: 19 }}>
           {message}
         </AppText>
       ) : null}
@@ -49,7 +51,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: radius.xl,
-    backgroundColor: colors.green,
     alignItems: "center",
     justifyContent: "center",
   },

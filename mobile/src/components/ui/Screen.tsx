@@ -1,11 +1,13 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RefreshControl, ScrollView, StyleSheet, View, type ViewStyle, type StyleProp } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors, layout } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { layout } from "@/src/lib/theme";
 
-// Premium screen wrapper — consistent padding, optional gradient/background,
-// scroll behaviour, and pull-to-refresh. Every screen composes this so chrome
-// stays uniform.
+// Premium screen wrapper — consistent padding, theme-aware background,
+// optional gradient, scroll behaviour, and pull-to-refresh. Content is capped
+// at contentMaxWidth and centred so the app stays balanced on tablets and
+// large phones. Every screen composes this so chrome stays uniform.
 
 type Props = {
   children: React.ReactNode;
@@ -30,12 +32,14 @@ export function Screen({
   onRefresh,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
 
   const body = (
     <View
       style={[
         styles.inner,
         padded && { paddingHorizontal: layout.pagePadding },
+        { maxWidth: layout.contentMaxWidth, width: "100%", alignSelf: "center" },
         style as StyleProp<ViewStyle>,
       ]}
     >
@@ -47,6 +51,7 @@ export function Screen({
     <ScrollView
       contentContainerStyle={[
         styles.scrollContent,
+        { paddingBottom: insets.bottom + 24 },
         contentContainerStyle as StyleProp<ViewStyle>,
       ]}
       showsVerticalScrollIndicator={false}
@@ -56,8 +61,9 @@ export function Screen({
           <RefreshControl
             refreshing={!!refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.green}
-            colors={[colors.green]}
+            tintColor={colors.greenDark}
+            colors={[colors.greenDark]}
+            progressBackgroundColor={isDark ? colors.surface : undefined}
           />
         ) : undefined
       }
@@ -76,7 +82,13 @@ export function Screen({
     );
   }
   return (
-    <View style={[styles.root, styles.plain, { paddingTop: insets.top }, style as StyleProp<ViewStyle>]}>
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: colors.bg, paddingTop: insets.top, paddingBottom: insets.bottom },
+        style as StyleProp<ViewStyle>,
+      ]}
+    >
       {wrapped}
     </View>
   );
@@ -84,7 +96,6 @@ export function Screen({
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  plain: { backgroundColor: colors.bg },
   inner: { flexGrow: 1, paddingBottom: 32 },
   scrollContent: { flexGrow: 1 },
 });

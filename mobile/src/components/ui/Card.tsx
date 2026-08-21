@@ -1,9 +1,12 @@
 import { Pressable, StyleSheet, View, type ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { colors, radius, shadow } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { radius, shadow } from "@/src/lib/theme";
 
 // Premium surface card — soft shadow, rounded, optional press feedback.
+// Theme-aware: dark mode uses a dark surface + hairline border instead of a
+// shadow (the elevation hierarchy flips to borders on dark surfaces).
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -15,6 +18,7 @@ type Props = {
 };
 
 export function Card({ children, onPress, padded = true, style }: Props) {
+  const { colors, isDark } = useTheme();
   const scale = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
@@ -35,8 +39,9 @@ export function Card({ children, onPress, padded = true, style }: Props) {
       onPressOut={onPress ? () => (scale.value = withSpring(1)) : undefined}
       style={[
         styles.base,
+        { backgroundColor: colors.surface, borderColor: isDark ? colors.border : "transparent" },
         padded && styles.padded,
-        shadow.md,
+        isDark ? styles.darkBorder : shadow.md,
         onPress && anim,
         style,
       ]}
@@ -48,8 +53,8 @@ export function Card({ children, onPress, padded = true, style }: Props) {
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: colors.white,
     borderRadius: radius.lg,
   },
   padded: { padding: 18 },
+  darkBorder: { borderWidth: 1 },
 });

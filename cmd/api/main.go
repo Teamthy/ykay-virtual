@@ -32,6 +32,7 @@ import (
 	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/practice"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/domain/tutor"
@@ -108,6 +109,7 @@ type Repositories struct {
 	TutorSubjects      tutor.TutorSubjectRepository
 	Learning           learning.AssessmentRepository
 	Leads              leads.Repository
+	Exams              practice.Repository
 	Grading            learning.GradingRepository
 	ProgressReports    learning.ProgressReportRepository
 	Analytics          learning.AnalyticsRepository
@@ -230,6 +232,8 @@ func main() {
 	// ops team follows up on WhatsApp (public capture + enrollment-started +
 	// auto-CONVERTED on settlement).
 	leadsSvc := service.NewLeadService(repos.Leads, notifierSvc, repos.Users, audit)
+	// CBT practice exams: tutor-authored papers + timed student attempts.
+	examSvc := service.NewPracticeExamService(repos.Exams, repos.Enrollments)
 	// Learner completion certificates (virtual-school item).
 	certSvc := service.NewCertificateService(repos.UoWFactory).
 		WithStudentReader(func(ctx context.Context, id uuid.UUID) (string, error) {
@@ -449,6 +453,7 @@ func main() {
 		Devices:        deviceHandler,
 		Account:        accountHandler,
 		Leads:          httpapi.NewLeadsHandler(leadsSvc),
+		PracticeExams:  httpapi.NewPracticeExamHandler(examSvc, profileAuthz),
 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
 		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
@@ -596,6 +601,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			ProgrammeRepo:      store.Programmes,
 			CurriculaRepo:      store.Curricula,
 			Leads:              store.Leads,
+			Exams:              memory.NewPracticeExamMemory(),
 			TutorRepo:          store.Tutors,
 			AuditRepo:          store.AuditLogs,
 			Orders:             store.Orders,
@@ -660,6 +666,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		ProgrammeRepo:      postgres.NewProgrammeRepo(pg.DB()),
 		CurriculaRepo:      postgres.NewCurriculumRepo(pg.DB()),
 		Leads:              postgres.NewLeadsRepo(pg.DB()),
+		Exams:              postgres.NewPracticeExamRepo(pg.DB()),
 		CohortRepo:         postgres.NewCohortRepo(pg.DB()),
 		StudentLink:        postgres.NewStudentLinkRepo(pg.DB()),
 		TutorSubjectChk:    postgres.NewTutorSubjectCheckRepo(pg.DB()),

@@ -11,12 +11,13 @@
 ### 1.1 Color
 | Token | Web | Mobile | Role |
 |---|---|---|---|
-| `primary` | `#70F250` | `#16A34A` | Actions, emphasis, active states |
-| `primary-dark` | `#4CCB31` | `#15803D` | Pressed, text-on-light accents |
-| `primary-light` | `#DFFFF2` | `#DCFCE7` | Selected tints, badge backgrounds |
-| `deep / navy` | `#013920` | `#0F2E1E` | Headings, dark surfaces |
+| `primary` | `#70F250` | `#70F250` | Actions, emphasis, active states |
+| `primary-hover` | `#5FE63F` | `#5FE63F` | Hover / pressed |
+| `primary-dark` | `#4CCB31` | `#4CCB31` | Pressed, text-on-light accents |
+| `primary-light` | `#DFFFF2` | `#DFFFF2` | Selected tints, badge backgrounds |
+| `deep / navy` | `#013920` | `#013920` | Headings, dark surfaces |
 | `surface` | `#FFFFFF` | `#FFFFFF` | Cards |
-| `background` | `#FFF7E4` | `#FAFAF7` | App background (light neutral) |
+| `background` | `#FFF7E4` | `#F8F7F2` | App background (light neutral) |
 | `ink` | `900→50` scale | `900→50` scale | Text hierarchy (black → muted) |
 | `success / error / warning / info` | semantic pairs | semantic pairs | Status communication (never colour alone) |
 
@@ -35,7 +36,7 @@ Heavy shadows, gradients and glassmorphism are **forbidden** unless they carry m
 
 ### 1.4 Typography
 - Web: **Anton** (display, weight 400 only) + **DM Sans** (body) — never bold Anton.
-- Mobile: system stack with the shared `type` scale (`display 34/28/24/21/18`, `title 18`, `body 15`, `label 12`, `caption 11`), line-height `tight 1.15 / normal 1.4 / relaxed 1.6`.
+- Mobile: **Anton** (display/headings via `fonts.display`) + **DM Sans** (body via `fonts.body`) loaded through `@expo-google-fonts`, same `type` scale (`display 34/28/24/21/18`, `title 18`, `body 15`, `label 12`, `caption 11`) and line-heights. Anton is weight 400 only.
 - Oversized typography is banned; `display` sizes use `clamp()` on web.
 
 ### 1.5 Spacing

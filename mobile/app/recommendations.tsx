@@ -1,9 +1,11 @@
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors, radius } from "@/src/lib/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, radius, spacing } from "@/src/lib/theme";
 import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
-import { apiFetch } from "@/src/lib/api";
+import { Button } from "@/src/components/ui/Button";
+import { apiFetch, getToken } from "@/src/lib/api";
 
 // Recommendations — "NUVORA on the go" suggestions feed: cohorts, programmes
 // and tutors ranked against the session's learner profile (server-side).
@@ -17,15 +19,29 @@ export default function Recommendations() {
   const [recs, setRecs] = useState<Recs | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [signedOut, setSignedOut] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setSignedOut(false);
     try {
+      // No session token → never call the auth endpoints; show the signed-out
+      // state instead of flashing an "authentication required" error.
+      const token = await getToken();
+      if (!token) {
+        setSignedOut(true);
+        return;
+      }
       const res = await apiFetch<Recs>("/me/recommendations");
       setRecs(res.data ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load recommendations");
+      const msg = e instanceof Error ? e.message : "Could not load recommendations";
+      if (/authentication|session|unauthorized/i.test(msg)) {
+        setSignedOut(true);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -40,6 +56,15 @@ export default function Recommendations() {
 
       {loading ? (
         <LoaderScreen label="Finding recommendations" />
+      ) : signedOut ? (
+        <View style={styles.signedOut}>
+          <Ionicons name="sparkles-outline" size={44} color={colors.deep} />
+          <Text style={styles.signedOutTitle}>Recommendations made for you</Text>
+          <Text style={styles.signedOutBody}>
+            Log in and we&apos;ll tailor cohorts, programmes and tutors to your learner profile.
+          </Text>
+          <Button label="Log in" full onPress={() => router.push("/login" as never)} />
+        </View>
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : (
@@ -94,6 +119,26 @@ export default function Recommendations() {
 }
 
 const styles = StyleSheet.create({
+  signedOut: {
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.huge,
+    paddingHorizontal: spacing.xl,
+  },
+  signedOutTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.navy,
+    textAlign: "center",
+  },
+  signedOutBody: {
+    fontSize: 14,
+    color: colors.ink[500],
+    textAlign: "center",
+    lineHeight: 21,
+    marginBottom: spacing.sm,
+  },
+
   root: { flex: 1, backgroundColor: colors.cream },
   content: { padding: 24, paddingBottom: 48 },
   title: { fontSize: 24, fontWeight: "800", color: colors.navy },

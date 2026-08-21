@@ -1,8 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
@@ -84,8 +83,8 @@ export default function WizardWelcome() {
       <WizardStepper step={0} labels={["Welcome", midLabel(role), "Goals"]} />
 
       <Animated.View entering={FadeInUp.delay(80).springify().damping(16)}>
-        <View style={styles.badge}>
-          <Ionicons name="sparkles-outline" size={26} color={colors.ink[900]} />
+        <View style={styles.imageWrap}>
+          <Image source={require("@/assets/images/wizard/learn.jpg")} style={styles.image} resizeMode="cover" />
         </View>
         <AppText variant="h1" style={{ marginTop: 16 }}>
           Welcome{me?.first_name?.trim() ? `, ${me.first_name.trim()}` : ""}
@@ -105,12 +104,14 @@ export default function WizardWelcome() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.cream },
-  badge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.gold,
-    alignItems: "center",
-    justifyContent: "center",
+  imageWrap: {
+    width: 180,
+    height: 180,
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
+  image: { width: "100%", height: "100%" },
 });
