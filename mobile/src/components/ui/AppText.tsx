@@ -26,5 +26,7 @@ type Props = TextProps & { variant?: Variant };
 
 export function AppText({ variant = "body", style, ...rest }: Props) {
   const { colors } = useTheme();
-  return <Text style={[variantsFor(colors)[variant], style]} {...rest} />;
+  // Dynamic-type aware: OS font scaling is respected up to 1.4x so layouts
+  // stay intact at the largest accessibility sizes.
+  return <Text maxFontSizeMultiplier={1.4} style={[variantsFor(colors)[variant], style]} {...rest} />;
 }

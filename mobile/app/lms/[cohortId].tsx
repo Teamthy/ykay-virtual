@@ -223,7 +223,18 @@ export default function CourseDetail() {
 
       <Section title={`Resources · ${resources.length}`}>
         {resources.map((r) => (
-          <Card key={r.id} style={styles.row} padded>
+          <Card
+            key={r.id}
+            style={styles.row}
+            padded
+            onPress={
+              r.file_url
+                ? () => {
+                    void Linking.openURL(r.file_url as string).catch(() => {});
+                  }
+                : undefined
+            }
+          >
             <AppText style={{ fontSize: 18 }}>📄</AppText>
             <View style={{ flex: 1, marginLeft: 12 }}>
               <AppText variant="h3">{r.title}</AppText>
@@ -232,10 +243,15 @@ export default function CourseDetail() {
                   {r.description}
                 </AppText>
               ) : null}
+              {r.file_url ? (
+                <AppText variant="caption" style={{ color: colors.greenDark, marginTop: 4, fontWeight: "700" }}>
+                  OPEN MATERIAL ↗
+                </AppText>
+              ) : null}
             </View>
           </Card>
         ))}
-        {resources.length === 0 && <Empty>No resources yet.</Empty>}
+        {resources.length === 0 && <Empty>No resources yet — your tutor's links (Google Drive, PDFs, slides) appear here.</Empty>}
       </Section>
 
       <Section title={`Assignments · ${assignments.length}`}>

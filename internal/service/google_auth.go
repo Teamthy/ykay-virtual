@@ -77,6 +77,13 @@ func (g *GoogleAuthService) stateKey(state string) string {
 
 // BuildAuthURL returns the consent URL + the state nonce to echo back.
 func (g *GoogleAuthService) BuildAuthURL(ctx context.Context) (string, string, error) {
+	return g.BuildAuthURLFor(ctx, g.cfg.RedirectURL)
+}
+
+// BuildAuthURLFor is BuildAuthURL with an explicit redirect_uri — the mobile
+// flow points it at the API's own callback so the WebView can capture the
+// code and post the session token back into the app.
+func (g *GoogleAuthService) BuildAuthURLFor(ctx context.Context, redirectURL string) (string, string, error) {
 	if !g.Enabled() {
 		return "", "", fmt.Errorf("%w: google auth is not configured", domain.ErrConflict)
 	}
@@ -105,7 +112,7 @@ func (g *GoogleAuthService) BuildAuthURL(ctx context.Context) (string, string, e
 	}
 	q := url.Values{}
 	q.Set("client_id", g.cfg.ClientID)
-	q.Set("redirect_uri", g.cfg.RedirectURL)
+	q.Set("redirect_uri", redirectURL)
 	q.Set("response_type", "code")
 	q.Set("scope", googleScope)
 	q.Set("state", state)
@@ -116,6 +123,12 @@ func (g *GoogleAuthService) BuildAuthURL(ctx context.Context) (string, string, e
 // ExchangeCode — trades the auth code for a token, fetches the profile and
 // signs the user in (creates an account on first Google login).
 func (g *GoogleAuthService) ExchangeCode(ctx context.Context, code, state, ip, userAgent string) (string, *identity.User, []string, error) {
+	return g.ExchangeCodeWithRedirect(ctx, code, state, g.cfg.RedirectURL, ip, userAgent)
+}
+
+// ExchangeCodeWithRedirect is ExchangeCode with an explicit redirect_uri
+// (the mobile callback exchanges against the mobile redirect).
+func (g *GoogleAuthService) ExchangeCodeWithRedirect(ctx context.Context, code, state, redirectURL, ip, userAgent string) (string, *identity.User, []string, error) {
 	if !g.Enabled() {
 		return "", nil, nil, fmt.Errorf("%w: google auth is not configured", domain.ErrConflict)
 	}
@@ -138,7 +151,7 @@ func (g *GoogleAuthService) ExchangeCode(ctx context.Context, code, state, ip, u
 	form.Set("code", code)
 	form.Set("client_id", g.cfg.ClientID)
 	form.Set("client_secret", g.cfg.ClientSecret)
-	form.Set("redirect_uri", g.cfg.RedirectURL)
+	form.Set("redirect_uri", redirectURL)
 	form.Set("grant_type", "authorization_code")
 	res, err := g.http.PostForm(googleTokenURL, form)
 	if err != nil {

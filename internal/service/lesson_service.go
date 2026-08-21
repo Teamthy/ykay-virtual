@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
-
 	"time"
 
 	"ykay-virtual/internal/domain"
@@ -322,6 +322,43 @@ func (s *LessonService) CreateAssignment(ctx context.Context, actorUserID uuid.U
 	return a, nil
 }
 
+// NormalizeResourceURL validates a resource link and rewrites known
+// third-party URLs into student-friendly forms:
+//   - Google Drive share links → /preview (embeddable, opens in-app/browser)
+//   - only http(s) URLs are accepted (never javascript: or file: schemes)
+func NormalizeResourceURL(raw string) (string, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return "", nil
+	}
+	u, err := url.Parse(trimmed)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+		return "", fmt.Errorf("%w: resource link must be a full https URL", domain.ErrInvalidInput)
+	}
+	host := strings.ToLower(u.Host)
+	// drive.google.com/file/d/<id>/... → /preview
+	if (host == "drive.google.com" || host == "docs.google.com") &&
+		strings.HasPrefix(u.Path, "/file/d/") {
+		parts := strings.Split(strings.Trim(u.Path, "/"), "/")
+		if len(parts) >= 3 {
+			fileID := parts[2]
+			// Google Drive file ids are 20-60 chars of [A-Za-z0-9_-].
+			ok := len(fileID) >= 20 && len(fileID) <= 60
+			for _, c := range fileID {
+				if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-' || c == '_') {
+					ok = false
+					break
+				}
+			}
+			if !ok {
+				return "", fmt.Errorf("%w: invalid Google Drive file id", domain.ErrInvalidInput)
+			}
+			return "https://drive.google.com/file/d/" + fileID + "/preview", nil
+		}
+	}
+	return trimmed, nil
+}
+
 // CreateResource — adds a resource (material link) to a cohort.
 func (s *LessonService) CreateResource(ctx context.Context, actorUserID uuid.UUID, isAdmin bool,
 	cohortID uuid.UUID, title string, description, fileURL *string) (*booking.Resource, error) {
@@ -334,9 +371,19 @@ func (s *LessonService) CreateResource(ctx context.Context, actorUserID uuid.UUI
 	if s.resources == nil {
 		return nil, domain.ErrNotFound
 	}
+	// Normalize the material link (Google Drive share URLs → preview URLs;
+	// reject non-https schemes) so learners open it directly.
+	var normalized *string
+	if fileURL != nil {
+		n, err := NormalizeResourceURL(*fileURL)
+		if err != nil {
+			return nil, err
+		}
+		normalized = &n
+	}
 	r := &booking.Resource{
 		ID: uuid.New(), CohortID: &cohortID, Title: strings.TrimSpace(title),
-		Description: description, FileURL: fileURL, IsPublic: true,
+		Description: description, FileURL: normalized, IsPublic: true,
 		CreatedAt: time.Now().UTC(),
 	}
 	if err := s.resources.Create(ctx, r); err != nil {

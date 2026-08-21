@@ -54,17 +54,22 @@
 - Push notification registration (dev builds) + deep links from notifications.
 - SecureStore bearer-token session (vs web httpOnly cookies).
 
-## Roadmap (next parity batches)
+## Roadmap
 
-1. **Google sign-in on mobile** — webview OAuth flow.
-2. **Dynamic-type scaling** — respect OS font scale for body text.
-3. **Tutor bank-list picker** — resolve account name from the bank code
-   (currently manual entry; backend contract identical).
+Nothing blocking. Nice-to-haves: EAS build for iOS (requires an Apple
+account, $99/yr), push notifications on a dev build (Expo Go can't receive
+push), and a web admin console on tablet layouts.
 
-Closed this batch: **bank details on mobile** (DONE — `tutor/bank` screen,
-POST /tutors/me/vetting/profiles/{id}/bank), **admin read-only overview**
-(DONE — `/admin` console), **parent learner switcher** (DONE — pin a child;
-lessons/progress/LMS/attendance all filter via `student_profile_id`).
+Closed (2026-08-21): bank details on mobile + **bank-list picker with
+Paystack account-name resolution**, admin read-only overview, parent learner
+switcher, **Google sign-in on mobile** (WebView OAuth via
+/auth/google/callback-mobile), **dynamic-type scaling** (OS font scale,
+capped 1.4×), **Google Drive material links** (normalised server-side,
+one-tap open in the course player), **OTA updates via EAS Update + CI**
+(.github/workflows/mobile-release.yml — users never re-download for JS
+changes), and the **infrastructure plan** (docs/INFRASTRUCTURE_PLAN.md:
+Oracle Always Free + Cloudflare + GitHub Releases/R2 APK hosting, ₦6–8k
+total for the domain).
 
 ## Dark-mode coverage
 

@@ -107,8 +107,9 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/password-reset/confirm", authRate(handlers.Auth.ConfirmPasswordReset))
 	mux.HandleFunc("POST "+v1+"/auth/login-code/request", authRate(handlers.Auth.RequestLoginCode))
 	mux.HandleFunc("POST "+v1+"/auth/login-code/confirm", authRate(handlers.Auth.ConfirmLoginCode))
-	mux.HandleFunc("GET "+v1+"/auth/google/url", handlers.Auth.GoogleAuthURL)
+	mux.HandleFunc("GET "+v1+"/auth/google/url", handlers.Auth.GoogleMobileURL)
 	mux.HandleFunc("GET "+v1+"/auth/google/callback", handlers.Auth.GoogleCallback)
+	mux.HandleFunc("GET "+v1+"/auth/google/callback-mobile", authRate(handlers.Auth.GoogleMobileCallback))
 	mux.HandleFunc("POST "+v1+"/auth/google/exchange", authRate(handlers.Auth.GoogleExchange))
 	mux.HandleFunc("POST "+v1+"/auth/login/mobile", authRate(handlers.Auth.MobileLogin))
 	mux.HandleFunc("POST "+v1+"/auth/login-code/mobile/confirm", authRate(handlers.Auth.MobileLoginCodeConfirm))
@@ -221,6 +222,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// Tutor vetting (Phase 4)
 	mux.HandleFunc("POST "+v1+"/tutors/me/vetting/profile", handlers.Vetting.CreateProfile)
 	mux.HandleFunc("GET "+v1+"/tutors/me/vetting/profile", handlers.Vetting.GetMyProfile)
+	mux.HandleFunc("GET "+v1+"/tutors/banks", handlers.Banks.List)
+	mux.HandleFunc("POST "+v1+"/tutors/banks/resolve", handlers.Banks.Resolve)
 	mux.HandleFunc("POST "+v1+"/tutors/me/vetting/profiles/{profileId}/subjects", handlers.Vetting.AddSubject)
 	mux.HandleFunc("GET "+v1+"/tutors/me/vetting/profiles/{profileId}/subjects", handlers.Vetting.ListMySubjects)
 	mux.HandleFunc("POST "+v1+"/tutors/me/vetting/profiles/{profileId}/submit", handlers.Vetting.Submit)
@@ -437,6 +440,7 @@ type Handlers struct {
 	Account         *AccountHandler
 	Leads           *LeadsHandler
 	PracticeExams   *PracticeExamHandler
+	Banks           *BankHandler
 	Onboarding      *OnboardingHandler
 	Portal          *PortalHandler
 	Learning        *LearningHandler

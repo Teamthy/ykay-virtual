@@ -2860,6 +2860,39 @@ paths:
         '201': { description: Institution created }
 
   # ---- Practice exams (CBT: tutor-authored papers, timed student attempts) ----
+  /auth/google/callback-mobile:
+    get:
+      tags: [auth]
+      summary: Mobile OAuth callback - exchanges the code and renders a page that posts the session token into the app WebView
+      parameters:
+        - { name: code, in: query, required: true, schema: { type: string } }
+        - { name: state, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: HTML page with the token }
+  /tutors/banks:
+    get:
+      tags: [tutors]
+      summary: List Nigerian banks for payout details
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Bank list }
+  /tutors/banks/resolve:
+    post:
+      tags: [tutors]
+      summary: Resolve a bank account holder name via Paystack
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [account_number, bank_code]
+              properties:
+                account_number: { type: string }
+                bank_code: { type: string }
+      responses:
+        '200': { description: Account name }
   /tutor/exams:
     get:
       tags: [learning]

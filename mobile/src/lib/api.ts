@@ -362,3 +362,33 @@ export async function sendAdminTestEmail(): Promise<{ sent: boolean; to: string;
   const res = await apiFetch<{ sent: boolean; to: string; provider: string }>("/admin/email/test", { method: "POST" });
   return res.data;
 }
+
+// --- Google sign-in (mobile OAuth) -----------------------------------------
+// The backend builds a consent URL whose redirect lands on the API's own
+// callback-mobile page; that page posts the session token into the app's
+// WebView. Requires the API callback registered in Google Console.
+
+export async function getGoogleAuthURL(): Promise<string> {
+  const res = await apiFetch<{ url: string; state: string }>("/auth/google/url?mobile=1");
+  return res.data.url;
+}
+
+// --- Banks (tutor payout details) ------------------------------------------
+
+export type Bank = { name: string; code: string };
+
+export async function listBanks(): Promise<Bank[]> {
+  const res = await apiFetch<Bank[]>("/tutors/banks");
+  return res.data ?? [];
+}
+
+export async function resolveBankAccount(
+  accountNumber: string,
+  bankCode: string
+): Promise<string> {
+  const res = await apiFetch<{ account_name: string }>("/tutors/banks/resolve", {
+    method: "POST",
+    body: JSON.stringify({ account_number: accountNumber, bank_code: bankCode }),
+  });
+  return res.data.account_name;
+}

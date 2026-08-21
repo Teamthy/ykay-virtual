@@ -454,6 +454,7 @@ func main() {
 		Account:        accountHandler,
 		Leads:          httpapi.NewLeadsHandler(leadsSvc),
 		PracticeExams:  httpapi.NewPracticeExamHandler(examSvc, profileAuthz),
+		Banks:          httpapi.NewBankHandler(payment_provider.NewBankResolver(cfg.PaystackSecret)),
 		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
 		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),

@@ -1,0 +1,71 @@
+name: Mobile release (OTA + APK)
+
+# Ships mobile updates without re-downloads:
+#   - Every push to main that touches mobile/** publishes an OTA update via
+#     EAS Update (the app's UpdateBanner applies it on next launch).
+#   - A manual workflow_dispatch builds a fresh APK (only needed when native
+#     dependencies change — OTA covers everything else).
+# Requires a repo secret EXPO_TOKEN (create one at https://expo.dev/settings/access-tokens).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+  workflow_dispatch:
+    inputs:
+      build_apk:
+        description: "Build a new APK (needed only when native deps change)"
+        type: boolean
+        default: false
+
+jobs:
+  ota:
+    name: Publish OTA update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: mobile
+      - run: npx tsc --noEmit
+        working-directory: mobile
+      - run: npm run test
+        working-directory: mobile
+      - name: Publish EAS Update
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx eas-cli@latest update \
+            --branch preview \
+            --message "${{ github.sha }} — ${{ github.event.head_commit.message }}" \
+            --non-interactive
+
+  apk:
+    name: Build APK (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.build_apk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: mobile
+      - name: Build preview APK (EAS)
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx eas-cli@latest build \
+            --platform android \
+            --profile preview \
+            --non-interactive \
+            --no-wait
