@@ -131,14 +131,17 @@ safe-area insets on every edge.
 ## 7a. Rollout status (2026-08-21)
 
 Applied: Home, My Learning, Tutor hub, Practice hub (segmented), exam player
-+ results, Account (grouped, themed). These are the surfaces where users ask
-"what matters right now" — the command-center pattern lives there.
++ results, Account (grouped, themed), My lessons (week-view hero,
+role-aware), Progress (attendance analytics hero + metrics grid),
+Notifications (priority inbox: unread hero, unread-first, mark-all),
+Messages (unread summary card, unread-first). Every dashboard owns exactly
+ONE dominant fact and every number is live backend data.
 
-Not yet command-center-ized (deliberate): catalogue/marketing pages
-(subjects, tutors, exam prep, programmes, cohorts) are browse flows, not
-dashboards — they follow the same tokens/typography but keep a browse
-composition. Roadmap: Notifications (priority feed), Messages (unread
-summary card), Progress (learning analytics hero), My lessons (week view).
+Not command-center-ized (deliberate): catalogue/marketing pages (subjects,
+tutors, exam prep, programmes, cohorts) are browse flows, not dashboards —
+they follow the same tokens/typography but keep a browse composition.
+Detail pages (lesson notes, learning progress, receipts, devices) inherit
+the themed kit and keep list/detail composition.
 
 ## 8. Quality bar
 

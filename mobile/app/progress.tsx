@@ -1,25 +1,25 @@
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+import { Pressable, StyleSheet, View } from "react-native";
+import Animated, { FadeInDown, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors, radius } from "@/src/lib/theme";
+import { EmptyState } from "@/src/components/ui/EmptyState";
+import { ErrorState } from "@/src/components/ui/ErrorState";
+import { Skeleton } from "@/src/components/ui/Skeleton";
+import { useTheme } from "@/src/lib/theme-context";
+import { fonts, radius, spacing, type } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
-import { Ionicons } from "@expo/vector-icons";
 
-// Progress — premium attendance gauge + tutor progress reports, all
-// session-resolved. The attendance shape matches the backend
-// /me/attendance-summary payload (total/present/absent/late/excused/rate).
+// Progress — the learning-analytics command center: attendance rate is the
+// dominant fact (gradient hero + animated fill), key attendance metrics in a
+// 2-up grid, then tutor progress reports. The attendance shape matches the
+// backend /me/attendance-summary payload (total/present/absent/late/excused/rate).
 
 type AttendanceSummary = {
   total: number;
@@ -40,7 +40,7 @@ type Report = {
   overall_rating?: number | null;
 };
 
-function Gauge({ rate }: { rate: number }) {
+function Gauge({ rate, fill }: { rate: number; fill: string }) {
   const pct = Math.min(100, Math.round(rate * 100));
   const w = useSharedValue(0);
   useEffect(() => {
@@ -49,12 +49,13 @@ function Gauge({ rate }: { rate: number }) {
   const anim = useAnimatedStyle(() => ({ width: `${w.value}%` }));
   return (
     <View style={styles.gaugeTrack}>
-      <Animated.View style={[styles.gaugeFill, anim]} />
+      <Animated.View style={[styles.gaugeFill, anim, { backgroundColor: fill }]} />
     </View>
   );
 }
 
 export default function Progress() {
+  const { colors } = useTheme();
   const [summary, setSummary] = useState<AttendanceSummary | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +81,28 @@ export default function Progress() {
   useFocusEffect(useCallback(() => void load(), [load]));
 
   const rate = summary?.rate ?? 0;
+  const ratePct = Math.round(rate * 100);
+
+  if (loading) {
+    return (
+      <Screen scroll>
+        <Skeleton height={180} />
+        <View style={styles.metricGrid}>
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} height={76} style={{ flex: 1 }} />
+          ))}
+        </View>
+        <Skeleton height={110} style={{ marginTop: spacing.xl }} />
+      </Screen>
+    );
+  }
+  if (error) {
+    return (
+      <Screen scroll>
+        <ErrorState title="Couldn't load progress" message={error} onRetry={() => void load()} />
+      </Screen>
+    );
+  }
 
   return (
     <Screen scroll>
@@ -89,117 +112,149 @@ export default function Progress() {
         subtitle="Attendance and tutor reports, all in one view."
       />
 
-      {loading ? (
-        <Animated.View entering={FadeInUp.delay(80)}>
-          <View style={styles.skeletonCard} />
-          <View style={styles.skeletonCard} />
+      {/* B. Primary card — attendance is the dominant fact */}
+      {summary && (
+        <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+          <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+            <AppText variant="label" style={styles.heroEyebrow}>
+              ATTENDANCE
+            </AppText>
+            <AppText variant="display" style={styles.heroAmount}>
+              {ratePct}%
+            </AppText>
+            <Gauge rate={rate} fill={colors.green} />
+            <AppText style={styles.heroCap}>
+              {summary.present} of {summary.total} lessons attended
+            </AppText>
+            <View style={styles.heroActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push("/my-lessons" as never)}
+                style={[styles.heroCta, { backgroundColor: colors.green }]}
+              >
+                <AppText style={{ color: colors.ink[950], fontFamily: fonts.bodyBold, fontWeight: "700" }}>View lessons</AppText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push("/practice" as never)}
+                style={[styles.heroGhost, { borderColor: "rgba(255,255,255,0.28)" }]}
+              >
+                <AppText style={{ color: colors.white }}>Practice exam</AppText>
+              </Pressable>
+            </View>
+          </LinearGradient>
         </Animated.View>
-      ) : error ? (
-        <Animated.View entering={FadeInUp.delay(80)} style={styles.stateCard}>
-          <Ionicons name="alert-circle-outline" size={30} color={colors.danger} />
-          <AppText variant="h3" style={{ marginTop: 8 }}>
-            Couldn't load progress
-          </AppText>
-          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 4 }}>
-            {error}
-          </AppText>
-          <Button label="Try again" variant="dark" style={{ marginTop: 16, alignSelf: "center" }} onPress={() => void load()} />
-        </Animated.View>
-      ) : (
-        <>
-          {summary && (
-            <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
-              <View style={styles.gaugeCard}>
-                <AppText style={styles.gaugeValue}>{Math.round(rate * 100)}%</AppText>
-                <AppText variant="label" style={{ color: colors.ink[500] }}>
-                  ATTENDANCE
-                </AppText>
-                <Gauge rate={rate} />
-                <AppText variant="caption" style={{ color: colors.ink[500], marginTop: 10 }}>
-                  {summary.present}/{summary.total} present · {summary.late} late · {summary.absent} absent
-                </AppText>
-              </View>
-            </Animated.View>
-          )}
+      )}
 
-          <AppText variant="label" style={styles.sectionTitle}>
-            TUTOR REPORTS
-          </AppText>
-          {reports.length === 0 ? (
-            <View style={styles.stateCard}>
-              <Ionicons name="document-text-outline" size={32} color={colors.ink[300]} />
-              <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 8, lineHeight: 19 }}>
-                No progress reports yet — your tutor writes them after lessons.
+      {/* C. Key metrics */}
+      {summary && (
+        <Animated.View entering={FadeInUp.delay(140).springify().damping(16)} style={styles.metricGrid}>
+          {[
+            { label: "PRESENT", value: String(summary.present), color: colors.greenDark },
+            { label: "LATE", value: String(summary.late), color: colors.warning },
+            { label: "ABSENT", value: String(summary.absent), color: colors.danger },
+            { label: "EXCUSED", value: String(summary.excused), color: colors.deepLight },
+          ].map((m) => (
+            <Card key={m.label} padded style={styles.metricCard}>
+              <AppText variant="caption" style={{ color: colors.ink[400], letterSpacing: 0.8 }}>
+                {m.label}
               </AppText>
-            </View>
-          ) : (
-            <View style={styles.list}>
-              {reports.map((r, i) => (
-                <Animated.View key={r.id} entering={FadeInUp.delay(100 + i * 60).springify().damping(18)}>
-                  <Card style={styles.reportCard}>
-                    <View style={styles.reportHeader}>
-                      <AppText variant="h3" style={{ flex: 1 }}>
-                        {r.period_start.slice(0, 10)} → {r.period_end.slice(0, 10)}
-                      </AppText>
-                      <View style={styles.ratingBadge}>
-                        <AppText variant="caption" style={styles.ratingText}>
-                          {r.overall_rating != null ? "★".repeat(Math.max(1, Math.min(5, r.overall_rating))) : "—"}
-                        </AppText>
-                      </View>
-                    </View>
-                    {r.strengths ? (
-                      <AppText variant="bodySm" style={styles.reportLine}>
-                        <Ionicons name="fitness-outline" size={13} color={colors.success} /> {r.strengths}
-                      </AppText>
-                    ) : null}
-                    {r.weaknesses ? (
-                      <AppText variant="bodySm" style={styles.reportLine}>
-                        <Ionicons name="flag-outline" size={13} color={colors.warning} /> {r.weaknesses}
-                      </AppText>
-                    ) : null}
-                    {r.recommendations ? (
-                      <AppText variant="bodySm" style={styles.reportLine}>
-                        <Ionicons name="compass-outline" size={13} color={colors.navy} /> {r.recommendations}
-                      </AppText>
-                    ) : null}
-                  </Card>
-                </Animated.View>
-              ))}
-            </View>
-          )}
-        </>
+              <AppText variant="h2" style={{ color: m.color, marginTop: 4 }}>
+                {m.value}
+              </AppText>
+            </Card>
+          ))}
+        </Animated.View>
+      )}
+
+      {/* Reports */}
+      <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
+        TUTOR REPORTS
+      </AppText>
+      {reports.length === 0 ? (
+        <EmptyState
+          icon="document-text-outline"
+          title="No progress reports yet"
+          description="Your tutor writes these after lessons — strengths, focus areas and recommendations land here."
+        />
+      ) : (
+        <View style={styles.list}>
+          {reports.map((r, i) => (
+            <Animated.View key={r.id} entering={FadeInUp.delay(100 + i * 60).springify().damping(18)}>
+              <Card style={styles.reportCard}>
+                <View style={styles.reportHeader}>
+                  <AppText variant="h3" style={{ flex: 1 }}>
+                    {r.period_start.slice(0, 10)} → {r.period_end.slice(0, 10)}
+                  </AppText>
+                  <View style={[styles.ratingBadge, { backgroundColor: colors.greenLight }]}>
+                    <AppText variant="caption" style={{ color: colors.greenDark, fontWeight: "800" }}>
+                      {r.overall_rating != null ? "★".repeat(Math.max(1, Math.min(5, r.overall_rating))) : "—"}
+                    </AppText>
+                  </View>
+                </View>
+                {r.strengths ? (
+                  <AppText variant="bodySm" style={{ color: colors.ink[600], marginTop: 6, lineHeight: 18 }}>
+                    <Ionicons name="fitness-outline" size={13} color={colors.greenDark} /> {r.strengths}
+                  </AppText>
+                ) : null}
+                {r.weaknesses ? (
+                  <AppText variant="bodySm" style={{ color: colors.ink[600], marginTop: 6, lineHeight: 18 }}>
+                    <Ionicons name="flag-outline" size={13} color={colors.warning} /> {r.weaknesses}
+                  </AppText>
+                ) : null}
+                {r.recommendations ? (
+                  <AppText variant="bodySm" style={{ color: colors.ink[600], marginTop: 6, lineHeight: 18 }}>
+                    <Ionicons name="compass-outline" size={13} color={colors.deep} /> {r.recommendations}
+                  </AppText>
+                ) : null}
+              </Card>
+            </Animated.View>
+          ))}
+        </View>
       )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  skeletonCard: { height: 120, borderRadius: radius.lg, backgroundColor: colors.ink[100], marginBottom: 14 },
-  stateCard: {
-    backgroundColor: colors.white,
+  hero: {
     borderRadius: radius.lg,
-    padding: 24,
-    alignItems: "center",
-    shadowColor: colors.navy,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    padding: 20,
+    marginBottom: spacing.lg,
   },
-  gaugeCard: {
-    backgroundColor: colors.navy,
-    borderRadius: radius.lg,
-    padding: 24,
+  heroEyebrow: { color: "#70F250", letterSpacing: 1.4, fontSize: type.caption },
+  heroAmount: { color: "#FFFFFF", fontSize: 40, marginTop: spacing.xs },
+  gaugeTrack: {
+    alignSelf: "stretch",
+    height: 10,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: radius.pill,
+    marginTop: spacing.md,
+    overflow: "hidden",
+  },
+  gaugeFill: { height: "100%", borderRadius: radius.pill },
+  heroCap: { color: "rgba(255,255,255,0.72)", fontSize: type.bodySm, marginTop: spacing.sm },
+  heroActions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
+  heroCta: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
     alignItems: "center",
   },
-  gaugeValue: { fontSize: 46, fontWeight: "800", color: colors.white },
-  gaugeTrack: { alignSelf: "stretch", height: 10, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: radius.pill, marginTop: 14, overflow: "hidden" },
-  gaugeFill: { height: "100%", backgroundColor: colors.gold, borderRadius: radius.pill },
-  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
+  heroGhost: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.lg },
+  metricCard: { flexGrow: 1, flexBasis: "46%", maxWidth: "48.5%" },
+  sectionTitle: { letterSpacing: 1.1, fontSize: type.caption, marginTop: spacing.sm, marginBottom: spacing.sm },
   list: { gap: 12 },
   reportCard: { padding: 18 },
   reportHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-  ratingBadge: { backgroundColor: colors.goldLight, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
-  ratingText: { color: colors.goldDark, fontWeight: "800" },
-  reportLine: { color: colors.ink[600], marginTop: 6, lineHeight: 18 },
+  ratingBadge: { borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
 });
