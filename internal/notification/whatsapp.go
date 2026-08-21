@@ -27,24 +27,101 @@ type WhatsAppSender interface {
 	Send(ctx context.Context, to, message string) error
 }
 
-// NewWhatsAppSender returns the Termii WhatsApp sender when configured,
-// otherwise the console sender (dev). WhatsApp requires a numeric sender id
-// (Termii-issued); TERMII_WHATSAPP_SENDER overrides the SMS sender id.
+// NewWhatsAppSender picks the active provider (first match):
+//  1. Meta WhatsApp Cloud API — WHATSAPP_CLOUD_TOKEN + WHATSAPP_CLOUD_PHONE_ID
+//     (Meta's own free tier: 1,000 free service conversations/month, no
+//     prepaid bundle — the budget-friendly path).
+//  2. Termii WhatsApp — TERMII_API_KEY + TERMII_WHATSAPP_SENDER (requires
+//     Termii's prepaid WhatsApp bundle).
+//  3. Console sender (dev; warns and no-ops in production).
 func NewWhatsAppSender() WhatsAppSender {
+	if token := os.Getenv("WHATSAPP_CLOUD_TOKEN"); token != "" {
+		if phoneID := os.Getenv("WHATSAPP_CLOUD_PHONE_ID"); phoneID != "" {
+			version := os.Getenv("WHATSAPP_CLOUD_API_VERSION")
+			if version == "" {
+				version = "v21.0"
+			}
+			return &WhatsAppCloudSender{
+				Token:   token,
+				PhoneID: phoneID,
+				BaseURL: "https://graph.facebook.com/" + version,
+				HTTP:    &http.Client{Timeout: 10 * time.Second},
+			}
+		}
+	}
 	key := os.Getenv("TERMII_API_KEY")
-	if key == "" {
-		return ConsoleWhatsAppSender{}
-	}
 	from := os.Getenv("TERMII_WHATSAPP_SENDER")
-	if from == "" {
-		from = os.Getenv("TERMII_FROM")
+	if key != "" && from != "" {
+		return &TermiiWhatsAppSender{
+			APIKey:  key,
+			From:    from,
+			BaseURL: "https://api.ng.termii.com",
+			HTTP:    &http.Client{Timeout: 10 * time.Second},
+		}
 	}
-	return &TermiiWhatsAppSender{
-		APIKey:  key,
-		From:    from,
-		BaseURL: "https://api.ng.termii.com",
-		HTTP:    &http.Client{Timeout: 10 * time.Second},
+	return ConsoleWhatsAppSender{}
+}
+
+// WhatsAppProviderActive reports which provider will deliver WhatsApp
+// messages: "meta-cloud", "termii" or "none" (mirrors EmailProviderActive
+// so boot logs show the messaging stack in one glance).
+func WhatsAppProviderActive() string {
+	if os.Getenv("WHATSAPP_CLOUD_TOKEN") != "" && os.Getenv("WHATSAPP_CLOUD_PHONE_ID") != "" {
+		return "meta-cloud"
 	}
+	if os.Getenv("TERMII_API_KEY") != "" && os.Getenv("TERMII_WHATSAPP_SENDER") != "" {
+		return "termii"
+	}
+	return "none"
+}
+
+// WhatsAppCloudSender — Meta WhatsApp Cloud API (free tier). Sends a text
+// message to a phone number through the business phone number id.
+type WhatsAppCloudSender struct {
+	Token   string
+	PhoneID string
+	BaseURL string
+	HTTP    *http.Client
+}
+
+type whatsAppCloudRequest struct {
+	MessagingProduct string                   `json:"messaging_product"`
+	To               string                   `json:"to"`
+	Type             string                   `json:"type"`
+	Text             whatsAppCloudRequestBody `json:"text"`
+}
+
+type whatsAppCloudRequestBody struct {
+	Body string `json:"body"`
+}
+
+// Send delivers one WhatsApp text message through Meta's Cloud API.
+func (w *WhatsAppCloudSender) Send(ctx context.Context, to, message string) error {
+	reqBody, err := json.Marshal(whatsAppCloudRequest{
+		MessagingProduct: "whatsapp",
+		To:               strings.TrimPrefix(to, "+"),
+		Type:             "text",
+		Text:             whatsAppCloudRequestBody{Body: message},
+	})
+	if err != nil {
+		return fmt.Errorf("whatsapp cloud: marshal request: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, w.BaseURL+"/"+w.PhoneID+"/messages", bytes.NewReader(reqBody))
+	if err != nil {
+		return fmt.Errorf("whatsapp cloud: build request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+w.Token)
+	resp, err := w.HTTP.Do(req)
+	if err != nil {
+		return fmt.Errorf("whatsapp cloud: send: %w", err)
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return fmt.Errorf("whatsapp cloud: HTTP %d: %s", resp.StatusCode, truncate(string(body), 300))
+	}
+	return nil
 }
 
 // ConsoleWhatsAppSender — dev: log the message (safe logging like SMS).

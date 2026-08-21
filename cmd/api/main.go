@@ -142,6 +142,7 @@ func main() {
 		slog.Error("EMAIL DELIVERY NOT CONFIGURED — login codes, verification links, receipts and admin MFA emails will NOT reach users. Set RESEND_API_KEY (recommended) or SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM.")
 	} else {
 		slog.Info("email provider active", "provider", notification.EmailProviderActive())
+		slog.Info("whatsapp provider active", "provider", notification.WhatsAppProviderActive())
 	}
 	ctx := context.Background()
 	shutdownTracer := telemetry.InitTracer(ctx, cfg.OtelEndpoint)

@@ -52,24 +52,32 @@ a **PUBLISHED "Payment test cohort — N1,000"** (code `NV-PAYTEST`, fee
 5. Tutor Earnings → Released → admin pays out → Paystack transfer lands in
    the tutor's bank account. Loop verified end-to-end.
 
-## 2. Termii (WhatsApp + SMS)
+## 2. WhatsApp + SMS (free path — skip Termii's $50 bundle)
 
-1. Sign up at termii.com → get **API key** and confirm your Sender ID
-   (SMS) under the dashboard.
-2. **WhatsApp sender**: Termii Dashboard → WhatsApp → set up the WhatsApp
-   Business channel (this is the only WhatsApp-specific step; Termii gives
-   you a numeric sender id).
-3. Render env:
-   - `TERMII_API_KEY` = your key
-   - `TERMII_SENDER_ID` = your SMS sender id (e.g. `Nuvora`)
-   - `TERMII_WHATSAPP_SENDER` = the numeric WhatsApp sender id from Termii
-   - `WHATSAPP_BUSINESS_NUMBER` = the business WhatsApp number shown to users
-   - `WHATSAPP_ADMIN_NUMBER` = YOUR number in international format, digits
-     only (e.g. `2348012345678`) — ops notifications (new lead, ticket,
-     payment) land here.
-4. Verify: trigger a lead on the website (or a support ticket) → your
-   WhatsApp admin number receives the notification; the chat widget's
-   WhatsApp handoff uses the business number.
+**You do NOT need to pay Termii's ~$50 WhatsApp bundle.** That fee is
+Termii's prepaid top-up for the WhatsApp channel; Meta charges the same
+conversations directly, and Meta's own Cloud API gives you **1,000 free
+service conversations/month**.
+
+1. **SMS (Termii, pay-per-message)**: sign up at termii.com → API key →
+   Sender ID. Render: `TERMII_API_KEY`, `TERMII_SENDER_ID`, `TERMII_FROM`.
+2. **WhatsApp (Meta Cloud API, free)**: business.facebook.com → create a
+   business → WhatsApp Manager → connect your number → developers.facebook.com
+   → My Apps → WhatsApp → **API Setup** → copy the **Permanent token** and
+   the **Phone number ID**. Render:
+   - `WHATSAPP_CLOUD_TOKEN` = the token
+   - `WHATSAPP_CLOUD_PHONE_ID` = the phone number id
+   (boot log shows `whatsapp provider active: meta-cloud`.)
+3. **Numbers** (both paths):
+   - `WHATSAPP_BUSINESS_NUMBER` = the number advertised on the site — the
+     wa.me chat button needs ONLY this, no API at all (free).
+   - `WHATSAPP_ADMIN_NUMBER` = YOUR number, digits only — ops alerts (new
+     lead, ticket, payment) land here.
+4. Verify: trigger a lead or support ticket → your number receives the
+   notification; the chat widget opens wa.me with the business number.
+5. If you later outgrow the free tier, either pay Meta per-conversation
+   (cheap) or switch to Termii by setting `TERMII_WHATSAPP_SENDER` — the
+   code picks the provider automatically (meta-cloud → termii → none).
 
 ## 3. Resend (email)
 
