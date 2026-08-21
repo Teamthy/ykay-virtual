@@ -134,8 +134,8 @@
 
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
 
@@ -1399,4 +1399,29 @@ html.dark .text-red-700 {
     padding-right: 20px;
   }
 
+}
+
+/* ============================================================
+   LOADER RING (LoaderScreen)
+   ============================================================ */
+
+.loader-ring {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  border: 3px solid var(--color-primary-light);
+  border-top-color: var(--color-primary-dark);
+  animation: loader-spin 0.8s linear infinite;
+}
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-ring {
+    animation-duration: 1.8s;
+  }
 }

@@ -1,7 +1,8 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { colors, radius } from "@/src/lib/theme";
+import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
 import { apiFetch } from "@/src/lib/api";
 
 // Recommendations — "NUVORA on the go" suggestions feed: cohorts, programmes
@@ -38,7 +39,7 @@ export default function Recommendations() {
       {recs?.basis ? <Text style={styles.sub}>{recs.basis}</Text> : null}
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 48 }} color={colors.gold} size="large" />
+        <LoaderScreen label="Finding recommendations" />
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
       ) : (

@@ -1,9 +1,10 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/src/components/ui/AppText";
 import { OnboardingCarousel } from "@/src/components/OnboardingCarousel";
+import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
 import { colors, spacing } from "@/src/lib/theme";
 import { apiFetch, getToken } from "@/src/lib/api";
 
@@ -50,11 +51,7 @@ export default function Welcome() {
   }, []);
 
   if (checking) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.green} size="large" />
-      </View>
-    );
+    return <LoaderScreen label="Preparing NUVORA" />;
   }
 
   return (

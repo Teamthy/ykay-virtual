@@ -1,12 +1,13 @@
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { colors, radius, shadow } from "@/src/lib/theme";
+import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
 import { apiFetch } from "@/src/lib/api";
 
 // Quiz player — premium attempt flow: start → single-attempt questions →
@@ -63,14 +64,7 @@ export default function QuizPlayer() {
   };
 
   if (phase.kind === "loading" || phase.kind === "submitting") {
-    return (
-      <Screen scroll={false} style={styles.center}>
-        <ActivityIndicator color={colors.gold} size="large" />
-        <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 14 }}>
-          {phase.kind === "submitting" ? "Grading your answers…" : "Preparing your quiz…"}
-        </AppText>
-      </Screen>
-    );
+    return <LoaderScreen label={phase.kind === "submitting" ? "Grading your answers…" : "Preparing your quiz…"} />;
   }
 
   if (phase.kind === "error") {

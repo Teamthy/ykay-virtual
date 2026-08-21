@@ -1,12 +1,13 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { WizardStepper } from "@/src/components/WizardStepper";
+import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
 import { colors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { getDraft, setDraft } from "@/src/lib/wizard-draft";
@@ -75,11 +76,7 @@ export default function WizardWelcome() {
   const role = roleFor(me?.roles ?? []);
 
   if (!loaded) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.gold} size="large" />
-      </View>
-    );
+    return <LoaderScreen label="Loading your setup" />;
   }
 
   return (
