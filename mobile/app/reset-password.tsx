@@ -6,11 +6,11 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
-import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { BrandLogo } from "@/src/components/BrandLogo";
 import { confirmPasswordReset } from "@/src/lib/account";
 
 // Reset password — confirm the emailed token and set a new password.
+// Branded, dark-mode aware.
 
 export default function ResetPasswordScreen() {
   const params = useLocalSearchParams<{ token?: string }>();
@@ -51,40 +51,36 @@ export default function ResetPasswordScreen() {
       />
 
       <Card padded>
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
+          <BrandLogo stacked size={44} />
+        </View>
         <AppInput
           label="Reset token"
-          placeholder="Paste the code from the email"
-          autoCapitalize="none"
+          placeholder="Paste the token or link"
           value={token}
           onChangeText={setToken}
+          autoCapitalize="none"
           editable={!busy}
         />
         <AppInput
           label="New password"
           placeholder="At least 8 characters"
           secureTextEntry
-          autoComplete="new-password"
           value={password}
           onChangeText={setPassword}
           editable={!busy}
         />
         <AppInput
           label="Confirm new password"
-          placeholder="Re-enter your password"
+          placeholder="Repeat your password"
           secureTextEntry
-          autoComplete="new-password"
           value={confirm}
           onChangeText={setConfirm}
           editable={!busy}
           onSubmitEditing={() => void submit()}
         />
-        <View style={{ height: 8 }} />
-        <Button label="Reset password" loading={busy} full onPress={() => void submit()} />
+        <Button label={busy ? "Resetting…" : "Set new password"} full loading={busy} onPress={() => void submit()} />
       </Card>
-
-      <AppText variant="caption" style={{ color: colors.ink[400], textAlign: "center", marginTop: 16 }}>
-        Passwords are hashed and never stored in plain text.
-      </AppText>
     </Screen>
   );
 }

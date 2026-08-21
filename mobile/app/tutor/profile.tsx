@@ -6,13 +6,14 @@ import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { formatNaira, getTutorProfile, type TutorProfile } from "@/src/lib/tutor";
 
 // Tutor profile — vetting status, subjects, rates and teaching stats, read
 // from the same profile as the web become-a-tutor flow.
 
 export default function TutorProfileScreen() {
+  const { colors } = useTheme();
   const [profile, setProfile] = useState<TutorProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +67,7 @@ export default function TutorProfileScreen() {
         </View>
       </Card>
 
-      <AppText variant="label" style={styles.sectionTitle}>
+      <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
         AT A GLANCE
       </AppText>
       <View style={styles.statRow}>
@@ -88,7 +89,7 @@ export default function TutorProfileScreen() {
         </Card>
       </View>
 
-      <AppText variant="label" style={styles.sectionTitle}>
+      <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
         RATE
       </AppText>
       <Card padded>
@@ -103,7 +104,7 @@ export default function TutorProfileScreen() {
         </AppText>
       </Card>
 
-      <AppText variant="label" style={styles.sectionTitle}>
+      <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
         SUBJECTS
       </AppText>
       <Card padded>
@@ -114,7 +115,7 @@ export default function TutorProfileScreen() {
         ) : (
           <View style={styles.chips}>
             {(profile?.subjects ?? []).map((s) => (
-              <View key={s.name} style={styles.chip}>
+              <View key={s.name} style={[styles.chip, { backgroundColor: colors.greenLight }]}>
                 <AppText variant="caption" style={{ color: colors.navy, fontWeight: "700" }}>
                   {s.name}
                 </AppText>
@@ -130,12 +131,11 @@ export default function TutorProfileScreen() {
 const styles = StyleSheet.create({
   statusCard: {},
   statusRow: { flexDirection: "row", alignItems: "center" },
-  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
+  sectionTitle: { letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
   statRow: { flexDirection: "row", gap: 10 },
   statCard: { flex: 1 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
-    backgroundColor: colors.goldLight,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,

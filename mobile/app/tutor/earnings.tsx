@@ -1,17 +1,25 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { EmptyState } from "@/src/components/ui/EmptyState";
+import { Skeleton } from "@/src/components/ui/Skeleton";
+import { useTheme } from "@/src/lib/theme-context";
+import { radius, spacing, type } from "@/src/lib/theme";
 import { formatNaira, getTutorEarnings, type TutorEarnings } from "@/src/lib/tutor";
 
-// Tutor earnings — live escrow holds + payouts, the same data as the web
-// tutor dashboard. Money stays fail-closed: nothing here initiates payouts.
+// Tutor earnings — the money command center: AVAILABLE BALANCE is the dominant
+// fact (released escrow you can withdraw), held/paid-out as supporting stats,
+// then the escrow holds and payouts ledger. Money stays fail-closed: nothing
+// here initiates payouts. Dark-mode aware.
 
 export default function TutorEarningsScreen() {
+  const { colors } = useTheme();
   const [data, setData] = useState<TutorEarnings | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,6 +38,20 @@ export default function TutorEarningsScreen() {
   const holds = data?.escrow_holds ?? [];
   const payouts = data?.payouts ?? [];
 
+  if (loading) {
+    return (
+      <Screen scroll>
+        <Skeleton height={150} />
+        <View style={styles.totals}>
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} height={76} style={{ flex: 1 }} />
+          ))}
+        </View>
+        <Skeleton height={72} style={{ marginTop: spacing.xl }} />
+      </Screen>
+    );
+  }
+
   return (
     <Screen scroll>
       <ScreenHeader
@@ -38,32 +60,50 @@ export default function TutorEarningsScreen() {
         subtitle="Payments are held in escrow and released only after lessons are delivered."
       />
 
-      <View style={styles.totals}>
+      {/* B. Primary card — available balance is the dominant fact */}
+      <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+        <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <AppText variant="label" style={styles.heroEyebrow}>
+            AVAILABLE BALANCE
+          </AppText>
+          <AppText variant="display" style={styles.heroAmount}>
+            {formatNaira(data?.released_total ?? 0)}
+          </AppText>
+          <View style={styles.heroSubRow}>
+            <AppText style={styles.heroCap}>Held {formatNaira(data?.held_total ?? 0)}</AppText>
+            <View style={styles.heroDot} />
+            <AppText style={styles.heroCap}>Paid out {formatNaira(data?.paid_total ?? 0)}</AppText>
+          </View>
+        </LinearGradient>
+      </Animated.View>
+
+      {/* C. Key metrics */}
+      <Animated.View entering={FadeInUp.delay(140).springify().damping(16)} style={styles.totals}>
         {[
-          { label: "Held (escrow)", value: data?.held_total, color: colors.warning },
-          { label: "Released", value: data?.released_total, color: colors.navy },
-          { label: "Paid out", value: data?.paid_total, color: colors.success },
+          { label: "HELD (ESCROW)", value: data?.held_total, color: colors.warning },
+          { label: "RELEASED", value: data?.released_total, color: colors.greenDark },
+          { label: "PAID OUT", value: data?.paid_total, color: colors.deepLight },
         ].map((t) => (
           <Card key={t.label} padded style={styles.totalCard}>
             <AppText variant="caption" style={{ color: colors.ink[400] }}>
-              {t.label.toUpperCase()}
+              {t.label}
             </AppText>
             <AppText variant="h2" style={{ color: t.color, marginTop: 4 }} numberOfLines={1} adjustsFontSizeToFit>
-              {loading ? "—" : formatNaira(t.value ?? 0)}
+              {formatNaira(t.value ?? 0)}
             </AppText>
           </Card>
         ))}
-      </View>
+      </Animated.View>
 
-      <AppText variant="label" style={styles.sectionTitle}>
+      <AppText variant="label" style={{ color: colors.ink[500], letterSpacing: 1.1, fontSize: type.caption, marginTop: spacing.xl, marginBottom: spacing.sm }}>
         ESCROW HOLDS
       </AppText>
       {holds.length === 0 ? (
-        <Card padded>
-          <AppText variant="bodySm" style={styles.emptyText}>
-            No escrow holds yet. When a learner pays, the fee is held here until lessons are delivered.
-          </AppText>
-        </Card>
+        <EmptyState
+          icon="lock-closed-outline"
+          title="No escrow holds yet"
+          description="When a learner pays, the fee is held here until lessons are delivered."
+        />
       ) : (
         holds.map((h) => (
           <Card key={h.id} padded style={styles.row}>
@@ -73,22 +113,24 @@ export default function TutorEarningsScreen() {
                 {h.status} · held {new Date(h.held_at).toLocaleDateString("en-NG")}
               </AppText>
             </View>
-            <AppText variant="label" style={{ color: h.released_at ? colors.success : colors.warning }}>
-              {h.released_at ? "RELEASED" : "PENDING"}
-            </AppText>
+            <View style={[styles.chip, { backgroundColor: h.released_at ? colors.greenLight : colors.ink[100] }]}>
+              <AppText variant="caption" style={{ color: h.released_at ? colors.greenDark : colors.warning, fontWeight: "800" }}>
+                {h.released_at ? "RELEASED" : "PENDING"}
+              </AppText>
+            </View>
           </Card>
         ))
       )}
 
-      <AppText variant="label" style={styles.sectionTitle}>
+      <AppText variant="label" style={{ color: colors.ink[500], letterSpacing: 1.1, fontSize: type.caption, marginTop: spacing.xl, marginBottom: spacing.sm }}>
         PAYOUTS
       </AppText>
       {payouts.length === 0 ? (
-        <Card padded>
-          <AppText variant="bodySm" style={styles.emptyText}>
-            No payouts yet — they appear after lessons are confirmed delivered.
-          </AppText>
-        </Card>
+        <EmptyState
+          icon="wallet-outline"
+          title="No payouts yet"
+          description="They appear after lessons are confirmed delivered and the escrow releases."
+        />
       ) : (
         payouts.map((p) => (
           <Card key={p.id} padded style={styles.row}>
@@ -106,9 +148,18 @@ export default function TutorEarningsScreen() {
 }
 
 const styles = StyleSheet.create({
-  totals: { gap: 10 },
-  totalCard: {},
-  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
+  hero: {
+    borderRadius: radius.lg,
+    padding: 20,
+    marginBottom: spacing.lg,
+  },
+  heroEyebrow: { color: "#70F250", letterSpacing: 1.4, fontSize: type.caption },
+  heroAmount: { color: "#FFFFFF", fontSize: 40, marginTop: spacing.xs },
+  heroSubRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.sm, flexWrap: "wrap" },
+  heroCap: { color: "rgba(255,255,255,0.72)", fontSize: type.bodySm },
+  heroDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.4)" },
+  totals: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.sm },
+  totalCard: { flexGrow: 1, flexBasis: "46%", maxWidth: "48.5%" },
   row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  emptyText: { color: colors.ink[500], textAlign: "center" },
+  chip: { paddingHorizontal: spacing.xs, paddingVertical: 3, borderRadius: radius.pill },
 });

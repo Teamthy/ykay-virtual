@@ -8,7 +8,7 @@ import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { WizardStepper } from "@/src/components/WizardStepper";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { apiFetch } from "@/src/lib/api";
 import { clearDraft, getDraft, GOALS } from "@/src/lib/wizard-draft";
 
@@ -22,6 +22,7 @@ function midLabel(role: string): string {
 }
 
 export default function WizardGoals() {
+  const { colors } = useTheme();
   const [role, setRole] = useState<string | null>(null);
   const [firstName, setFirstName] = useState("");
   const [level, setLevel] = useState("");
@@ -101,10 +102,10 @@ export default function WizardGoals() {
               key={g.id}
               onPress={() => toggleGoal(g.id)}
               padded
-              style={active ? { ...styles.goal, borderColor: colors.gold, backgroundColor: colors.goldLight } : styles.goal}
+              style={active ? { ...styles.goal, borderColor: colors.greenDark, backgroundColor: colors.greenLight } : styles.goal}
             >
-              <Ionicons name={g.icon as keyof typeof Ionicons.glyphMap} size={20} color={active ? colors.ink[900] : colors.ink[500]} />
-              <AppText variant="body" style={{ color: active ? colors.ink[900] : colors.ink[600], fontWeight: "600", marginLeft: 12, flex: 1 }}>
+              <Ionicons name={g.icon as keyof typeof Ionicons.glyphMap} size={20} color={active ? colors.ink[950] : colors.ink[500]} />
+              <AppText variant="body" style={{ color: active ? colors.ink[950] : colors.ink[600], fontWeight: "600", marginLeft: 12, flex: 1 }}>
                 {g.label}
               </AppText>
               <Ionicons name={active ? "checkmark-circle" : "ellipse-outline"} size={20} color={active ? colors.goldDark : colors.ink[300]} />

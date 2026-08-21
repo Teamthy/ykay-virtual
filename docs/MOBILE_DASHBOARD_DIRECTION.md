@@ -134,8 +134,12 @@ Applied: Home, My Learning, Tutor hub, Practice hub (segmented), exam player
 + results, Account (grouped, themed), My lessons (week-view hero,
 role-aware), Progress (attendance analytics hero + metrics grid),
 Notifications (priority inbox: unread hero, unread-first, mark-all),
-Messages (unread summary card, unread-first). Every dashboard owns exactly
-ONE dominant fact and every number is live backend data.
+Messages (unread summary card, unread-first), tutor sub-pages (Schedule
+week-view hero, Earnings balance hero, Lessons, Messages inbox,
+Availability, Profile — all themed), auth pages (login, forgot, reset,
+verify — branded with the web mark + SuccessState confirmations) and
+onboarding/wizard (branded, themed, singular pages). Every dashboard owns
+exactly ONE dominant fact and every number is live backend data.
 
 Not command-center-ized (deliberate): catalogue/marketing pages (subjects,
 tutors, exam prep, programmes, cohorts) are browse flows, not dashboards —

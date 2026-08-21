@@ -7,7 +7,7 @@ import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { WizardStepper } from "@/src/components/WizardStepper";
 import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { apiFetch } from "@/src/lib/api";
 import { getDraft, setDraft } from "@/src/lib/wizard-draft";
 
@@ -38,6 +38,7 @@ function midLabel(role: string): string {
 }
 
 export default function WizardWelcome() {
+  const { colors } = useTheme();
   const [me, setMe] = useState<Me | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -103,15 +104,13 @@ export default function WizardWelcome() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.cream },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
   imageWrap: {
     width: 180,
     height: 180,
     borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   image: { width: "100%", height: "100%" },
 });

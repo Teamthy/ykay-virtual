@@ -1,19 +1,21 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Alert, View } from "react-native";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { BrandLogo } from "@/src/components/BrandLogo";
+import { useTheme } from "@/src/lib/theme-context";
 import { confirmVerification, resendVerification } from "@/src/lib/account";
 
 // Verify email — confirm the verification token, or request a new one.
+// Branded, dark-mode aware.
 
 export default function VerifyEmailScreen() {
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{ token?: string }>();
   const [token, setToken] = useState(typeof params.token === "string" ? params.token : "");
   const [email, setEmail] = useState("");
@@ -57,10 +59,13 @@ export default function VerifyEmailScreen() {
       <ScreenHeader
         eyebrow="Account verification"
         title="Verify your email"
-        subtitle="Confirm the 6-digit code we emailed you to activate your account."
+        subtitle="Confirm the code we emailed you to activate your account."
       />
 
       <Card padded>
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
+          <BrandLogo stacked size={44} />
+        </View>
         <AppInput
           label="Verification code"
           placeholder="Enter the code from your email"
@@ -98,5 +103,3 @@ export default function VerifyEmailScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({});

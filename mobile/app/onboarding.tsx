@@ -6,7 +6,9 @@ import { AppText } from "@/src/components/ui/AppText";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { Button } from "@/src/components/ui/Button";
 import { Screen } from "@/src/components/ui/Screen";
-import { colors, radius, spacing } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { radius, spacing } from "@/src/lib/theme";
+import { BrandLogo } from "@/src/components/BrandLogo";
 import { apiFetch, setToken, registerDevice } from "@/src/lib/api";
 
 // Onboarding — mirrors the web 7-step flow in a compact 4-screen version:
@@ -22,6 +24,7 @@ const ROLES = [
 ] as const;
 
 export default function Onboarding() {
+  const { colors } = useTheme();
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -87,7 +90,10 @@ export default function Onboarding() {
   return (
     <Screen scroll>
       <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <AppText variant="caption" style={styles.step}>
+        <View style={{ alignItems: "center", marginBottom: spacing.md }}>
+          <BrandLogo stacked size={44} />
+        </View>
+        <AppText variant="caption" style={[styles.step, { color: colors.greenDark }]}>
           Step {step} of 4
         </AppText>
         <AppText variant="h1" style={styles.title}>
@@ -127,10 +133,13 @@ export default function Onboarding() {
               return (
                 <View
                   key={r.value}
-                  style={[styles.roleCard, active && styles.roleCardActive]}
+                  style={[
+                    styles.roleCard,
+                    { borderColor: active ? colors.greenDark : colors.border, backgroundColor: active ? colors.greenLight : colors.surface },
+                  ]}
                 >
                   <Pressable onPress={() => setRole(r.value)} style={styles.roleInner} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={r.label}>
-                    <View style={[styles.roleIconWrap, active && styles.roleIconWrapActive]}>
+                    <View style={[styles.roleIconWrap, { backgroundColor: active ? colors.surface : colors.ink[50] }]}>
                       <Ionicons name={r.icon} size={20} color={active ? colors.greenDark : colors.ink[600]} />
                     </View>
                     <AppText variant="heading" style={{ flex: 1 }}>
@@ -147,8 +156,8 @@ export default function Onboarding() {
 
         {step === 4 && (
           <View style={styles.form}>
-            <View style={styles.successIcon}>
-              <Ionicons name="checkmark" size={40} color={colors.white} />
+            <View style={[styles.successIcon, { backgroundColor: colors.green }]}>
+              <Ionicons name="checkmark" size={40} color={colors.ink[950]} />
             </View>
             <AppText variant="bodySm" style={styles.hint}>
               {name.split(" ")[0]}, your account is ready. Explore programmes, cohorts and tutors.
@@ -164,19 +173,16 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { paddingTop: spacing.xxl, paddingBottom: spacing.xxl },
-  step: { color: colors.greenDark, letterSpacing: 2, textTransform: "uppercase", marginBottom: spacing.xs },
+  step: { letterSpacing: 2, textTransform: "uppercase", marginBottom: spacing.xs },
   title: { marginBottom: spacing.xl },
   form: { gap: spacing.sm },
-  hint: { color: colors.ink[600], lineHeight: 19 },
+  hint: { lineHeight: 19 },
   codeInput: { fontSize: 22, letterSpacing: 8, textAlign: "center", fontVariant: ["tabular-nums"] },
   roleCard: {
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: radius.lg,
-    backgroundColor: colors.surface,
     overflow: "hidden",
   },
-  roleCardActive: { borderColor: colors.green, backgroundColor: colors.greenLight },
   roleInner: {
     flexDirection: "row",
     alignItems: "center",
@@ -188,17 +194,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.md,
-    backgroundColor: colors.ink[50],
     alignItems: "center",
     justifyContent: "center",
   },
-  roleIconWrapActive: { backgroundColor: colors.surface },
   successIcon: {
     alignSelf: "center",
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.green,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.md,

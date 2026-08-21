@@ -8,7 +8,7 @@ import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import {
   addAvailability,
   DAY_NAMES,
@@ -21,6 +21,7 @@ import {
 // windows; add and remove them here.
 
 export default function TutorAvailabilityScreen() {
+  const { colors } = useTheme();
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [day, setDay] = useState(1); // Monday
   const [start, setStart] = useState("09:00");
@@ -84,9 +85,9 @@ export default function TutorAvailabilityScreen() {
                 key={name}
                 onPress={() => setDay(idx)}
                 padded
-                style={active ? { ...styles.dayChip, backgroundColor: colors.gold } : styles.dayChip}
+                style={active ? { ...styles.dayChip, backgroundColor: colors.green } : styles.dayChip}
               >
-                <AppText variant="caption" style={{ color: active ? colors.ink[900] : colors.ink[600], fontWeight: "700" }}>
+                <AppText variant="caption" style={{ color: active ? colors.ink[950] : colors.ink[600], fontWeight: "700" }}>
                   {name.slice(0, 3)}
                 </AppText>
               </Card>
@@ -106,7 +107,7 @@ export default function TutorAvailabilityScreen() {
         <Button label="Add window" loading={busy} full onPress={() => void add()} />
       </Card>
 
-      <AppText variant="label" style={styles.sectionTitle}>
+      <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
         CURRENT WINDOWS
       </AppText>
       {grouped.length === 0 ? (
@@ -118,7 +119,7 @@ export default function TutorAvailabilityScreen() {
       ) : (
         grouped.map((g) => (
           <View key={g.name} style={styles.dayBlock}>
-            <AppText variant="label" style={styles.dayLabel}>
+            <AppText variant="label" style={[styles.dayLabel, { color: colors.ink[500] }]}>
               {g.name.toUpperCase()}
             </AppText>
             {g.slots.map((s) => (
@@ -146,8 +147,8 @@ const styles = StyleSheet.create({
   dayRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
   dayChip: { paddingVertical: 8, paddingHorizontal: 10 },
   timeRow: { flexDirection: "row", gap: 10 },
-  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
+  sectionTitle: { letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
   dayBlock: { marginBottom: 8 },
-  dayLabel: { color: colors.ink[500], letterSpacing: 1, fontSize: 11, marginBottom: 6, marginTop: 8 },
+  dayLabel: { letterSpacing: 1, fontSize: 11, marginBottom: 6, marginTop: 8 },
   slotRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
 });

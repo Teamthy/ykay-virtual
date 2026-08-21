@@ -8,7 +8,7 @@ import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
 import { WizardStepper } from "@/src/components/WizardStepper";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { getDraft, setDraft, LEVELS, TUTOR_SUBJECTS } from "@/src/lib/wizard-draft";
 
 // Wizard step 2 — profile: parent adds their first learner; students pick a
@@ -21,6 +21,7 @@ function midLabel(role: string): string {
 }
 
 export default function WizardProfile() {
+  const { colors } = useTheme();
   const [role, setRole] = useState<string | null>(null);
   const [firstName, setFirstName] = useState("");
   const [level, setLevel] = useState("");
@@ -93,9 +94,9 @@ export default function WizardProfile() {
               key={opt}
               onPress={() => setLevel(opt)}
               padded
-              style={level === opt ? { ...styles.pill, backgroundColor: colors.gold } : styles.pill}
+              style={level === opt ? { ...styles.pill, backgroundColor: colors.green } : styles.pill}
             >
-              <AppText variant="caption" style={{ color: level === opt ? colors.ink[900] : colors.ink[600], fontWeight: "700" }}>
+              <AppText variant="caption" style={{ color: level === opt ? colors.ink[950] : colors.ink[600], fontWeight: "700" }}>
                 {opt}
               </AppText>
             </Card>
@@ -121,7 +122,7 @@ export default function WizardProfile() {
 }
 
 const styles = StyleSheet.create({
-  fieldLabel: { color: colors.goldDark, letterSpacing: 1, fontSize: 12, marginTop: 18, marginBottom: 8 },
+  fieldLabel: { letterSpacing: 1, fontSize: 12, marginTop: 18, marginBottom: 8 },
   pills: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   pill: { paddingVertical: 9, paddingHorizontal: 14 },
   rowBtns: { flexDirection: "row", alignItems: "center", marginTop: 24, gap: 8 },
