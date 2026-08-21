@@ -328,6 +328,7 @@ func main() {
 	contentSvc := service.NewContentService(
 		repos.Blog, repos.Redirects, repos.TutorRepo, repos.ProgrammeRepo, cacheBackend).
 		WithTestimonials(repos.Testimonials)
+	lmsStarterSvc := service.NewLMSStarterService(repos.Lessons, repos.Resources, repos.Assignments, repos.LessonNotes)
 	adminSvc := service.NewAdminService(repos.Stats, repos.AdminBlog, repos.Institutions,
 		repos.Referrals, repos.Reviews, audit).
 		WithSupport(repos.SupportTickets).
@@ -349,7 +350,8 @@ func main() {
 	adminSvc.WithPayments(repos.Orders, repos.Payouts).
 		WithPaymentRows(repos.Payments).
 		WithStudents(repos.Students).
-		WithTutorConsole(repos.SubjectRepo, repos.TutorSubjects)
+		WithTutorConsole(repos.SubjectRepo, repos.TutorSubjects).
+		WithLMSStarter(lmsStarterSvc.EnsureCohortPack)
 	adminSvc.WithUsers(repos.Users, repos.Roles)
 	adminSvc.WithAuditLogs(repos.AuditRepo)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,

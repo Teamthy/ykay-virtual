@@ -3,6 +3,7 @@ package httpapi
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
@@ -29,11 +30,27 @@ type sessionLearner struct {
 	LastName     string  `json:"last_name"`
 	Timezone     string  `json:"timezone"`
 	CurrentLevel *string `json:"current_level,omitempty"`
+	// IsMinor — the learner is under 15: their account is parent-guided
+	// (booking and payment are managed by the linked parent).
+	IsMinor bool `json:"is_minor"`
 }
 
 type sessionTutor struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
+}
+
+// isMinorSession — under 15 (product policy: parent-guided accounts).
+func isMinorSession(dob *time.Time) bool {
+	if dob == nil {
+		return false
+	}
+	now := time.Now()
+	age := now.Year() - dob.Year()
+	if now.YearDay() < dob.YearDay() {
+		age--
+	}
+	return age < 15
 }
 
 func (h *SessionContextHandler) Get(w http.ResponseWriter, r *http.Request) {

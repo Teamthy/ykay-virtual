@@ -109,7 +109,7 @@ func (s *OnboardingService) ListLearners(ctx context.Context, parentUserID uuid.
 
 // EnsureOwnProfile — student onboarding creates/returns the profile attached
 // to the signed-in user (not a child the parent books for).
-func (s *OnboardingService) EnsureOwnProfile(ctx context.Context, userID uuid.UUID, firstName, lastName string, level *string) (*identity.StudentProfile, error) {
+func (s *OnboardingService) EnsureOwnProfile(ctx context.Context, userID uuid.UUID, firstName, lastName string, level *string, dob *time.Time) (*identity.StudentProfile, error) {
 	if s.students == nil {
 		return nil, errors.New("learner store unavailable")
 	}
@@ -127,6 +127,7 @@ func (s *OnboardingService) EnsureOwnProfile(ctx context.Context, userID uuid.UU
 		UserID:          &uid,
 		FirstName:       strings.TrimSpace(firstName),
 		LastName:        strings.TrimSpace(lastName),
+		DateOfBirth:     dob,
 		CurrentLevel:    level,
 		Timezone:        "Africa/Lagos",
 		GuardianConsent: true,

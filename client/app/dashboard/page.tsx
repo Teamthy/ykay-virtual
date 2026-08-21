@@ -79,7 +79,7 @@ export default function ParentDashboardPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [addSubmitting, setAddSubmitting] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
-  const [addForm, setAddForm] = useState({ first_name: "", last_name: "", current_level: "", school_name: "" });
+  const [addForm, setAddForm] = useState({ first_name: "", last_name: "", date_of_birth: "", current_level: "", school_name: "" });
   const [section, setSection] = useState<(typeof NAV)[number]["key"]>("overview");
   const [tab, setTab] = useState<(typeof BOOKING_TABS)[number]>("All");
 
@@ -563,13 +563,14 @@ export default function ParentDashboardPage() {
               await createLearner({
                 first_name: addForm.first_name.trim(),
                 last_name: addForm.last_name.trim(),
+                date_of_birth: addForm.date_of_birth || undefined,
                 current_level: addForm.current_level.trim() || undefined,
                 school_name: addForm.school_name.trim() || undefined,
                 relationship: "PARENT",
               });
               await qc.invalidateQueries({ queryKey: ["onboarding", "learners"] });
               await qc.invalidateQueries({ queryKey: ["session", "context"] });
-              setAddForm({ first_name: "", last_name: "", current_level: "", school_name: "" });
+              setAddForm({ first_name: "", last_name: "", date_of_birth: "", current_level: "", school_name: "" });
               setAddOpen(false);
             } catch (err) {
               setAddError(err instanceof Error ? err.message : "Could not add learner");
@@ -586,6 +587,16 @@ export default function ParentDashboardPage() {
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Last name *</span>
               <input required value={addForm.last_name} onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Date of birth</span>
+              <input
+                type="date"
+                max={new Date().toISOString().split("T")[0]}
+                value={addForm.date_of_birth}
+                onChange={(e) => setAddForm({ ...addForm, date_of_birth: e.target.value })}
+                className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+              />
             </label>
             <div className="sm:col-span-2">
               <CurriculumLevelSelect

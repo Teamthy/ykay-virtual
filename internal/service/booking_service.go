@@ -52,7 +52,7 @@ func NewBookingService(uows repository.UnitOfWorkFactory, students booking.Stude
 // for cohort and private bookings (Phase 3):
 //   - a PARENT may book for a linked learner (guardian involved);
 //   - a STUDENT may book for THEMSELVES (self-enrollment), unless the learner
-//     is a minor (<17) with no linked parent/guardian — minors must have
+//     is a minor (<15) with no linked parent/guardian — minors must have
 //     parental involvement before enrolling or paying.
 //
 // A nil reader preserves the legacy dev-mode behaviour (allow).
@@ -72,13 +72,14 @@ func (s *BookingService) authorizeEnrollment(ctx context.Context, studentID, act
 	case acc.SelfOwned && acc.HasLinkedParent:
 		return nil // minor with a linked guardian
 	case acc.SelfOwned:
-		return fmt.Errorf("%w: learner is under 17 and needs a linked parent or guardian to enrol", domain.ErrForbidden)
+		return fmt.Errorf("%w: learner is under 15 — a parent or guardian must manage this account and enrol for them", domain.ErrForbidden)
 	default:
 		return domain.ErrForbidden
 	}
 }
 
-// isMinorAt reports whether a known date of birth makes the learner under 17.
+// isMinorAt reports whether a known date of birth makes the learner under 15
+// (product policy: under-15s are minors and must be parent-guided).
 // A missing date of birth is treated as not-a-minor (adult self-service);
 // parents enrolling a child through the linked-parent path are never blocked.
 func isMinorAt(dob *time.Time, now time.Time) bool {
@@ -89,7 +90,7 @@ func isMinorAt(dob *time.Time, now time.Time) bool {
 	if now.YearDay() < dob.YearDay() {
 		age--
 	}
-	return age < 17
+	return age < 15
 }
 
 type CreateCohortBookingInput struct {

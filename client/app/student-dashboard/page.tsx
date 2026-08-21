@@ -102,6 +102,24 @@ export default function StudentDashboardPage() {
     <DashboardPage>
       <RoleGate page="/student-dashboard" />
 
+      {me?.is_minor && (
+        <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-gold bg-brand-gold-light px-5 py-4">
+          <div className="flex items-start gap-3">
+            <span className="text-xl" aria-hidden="true">🛡️</span>
+            <div>
+              <p className="font-bold text-brand-navy">Parent-guided account</p>
+              <p className="text-sm text-ink-600">
+                You&apos;re under 15, so a parent or guardian manages bookings and payments for you.
+                Your lessons, assignments and progress all work right here.
+              </p>
+            </div>
+          </div>
+          <Link href="/account" className="text-sm font-bold text-brand-gold-dark hover:underline">
+            View settings
+          </Link>
+        </section>
+      )}
+
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-6">
           <section className="relative overflow-hidden rounded-3xl bg-deep p-6 text-white shadow-card md:p-8">
@@ -112,7 +130,9 @@ export default function StudentDashboardPage() {
                   <BookOpen size={20} />
                 </div>
                 <h2 className="font-display text-2xl tracking-wide md:text-3xl">
-                  {me
+                  {me?.is_minor && !enrolled
+                    ? `Hi ${me?.first_name ?? "there"} — your parent manages your classes`
+                    : me
                     ? enrolled
                       ? `Welcome back, ${me.first_name}`
                       : `Hi ${me.first_name} — find your next class`

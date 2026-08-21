@@ -52,6 +52,16 @@ function WizardInner() {
     if (user.onboarded) router.replace(next ?? homeForRoles(user.roles));
   }, [user, isLoading, router, next]);
 
+  const [dob, setDob] = useState("");
+  const isMinor = (() => {
+    if (!dob) return false;
+    const bd = new Date(dob);
+    const now = new Date();
+    let age = now.getFullYear() - bd.getFullYear();
+    if (now.getMonth() < bd.getMonth() || (now.getMonth() === bd.getMonth() && now.getDate() < bd.getDate())) age--;
+    return age < 15;
+  })();
+
   const complete = useMutation({
     mutationFn: markOnboarded,
     onSuccess: () => {
@@ -77,6 +87,7 @@ function WizardInner() {
           first_name: (user?.first_name || firstName || user?.email.split("@")[0] || "Learner").trim(),
           last_name: (user?.last_name || "NUVORA").trim(),
           current_level: level || undefined,
+          date_of_birth: dob || undefined,
         });
       }
     } catch {
@@ -152,6 +163,21 @@ function WizardInner() {
             <div className="mt-6">
               <CurriculumLevelSelect value={level} onChange={setLevel} />
             </div>
+            <label className="mt-4 block text-xs font-bold uppercase tracking-wide text-ink-500">
+              Date of birth
+            </label>
+            <input
+              type="date"
+              value={dob}
+              max={new Date().toISOString().split("T")[0]}
+              onChange={(e) => setDob(e.target.value)}
+              className="mt-2 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+            />
+            {dob && isMinor && (
+              <p className="mt-2 rounded-xl bg-brand-gold-light px-4 py-3 text-xs font-semibold text-brand-navy">
+                🛡️ You&apos;re under 15, so this will be a <strong>parent-guided account</strong> — a parent or guardian manages bookings and payments for you. Everything you see here still works.
+              </p>
+            )}
             <div className="mt-8 flex justify-between">
               <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
               <Button onClick={() => setStep(2)}>Continue</Button>

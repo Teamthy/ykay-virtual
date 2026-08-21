@@ -179,6 +179,7 @@ export type SessionLearner = {
   last_name: string;
   timezone: string;
   current_level?: string;
+  is_minor: boolean;
 };
 
 export type SessionTutorProfile = { id: string; status: string };

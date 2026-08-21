@@ -54,6 +54,7 @@ type AdminService struct {
 	transfers      payment_provider.TransferProvider
 	subjects       academics.SubjectRepository
 	tutorSubjects  tutor.TutorSubjectRepository
+	lmsStarter     func(ctx context.Context, cohortID, tutorProfileID uuid.UUID, cohortTitle string) error
 	users          identity.UserRepository
 	roles          identity.RoleRepository
 	auditLogs      identity.AuditLogRepository
@@ -832,9 +833,35 @@ func (s *AdminService) AssignTutorToCohortAdmin(ctx context.Context, adminID, co
 	if err := s.cohortAdmin.UpdateTutor(ctx, cohortID, &tutorProfileID); err != nil {
 		return err
 	}
+	s.ensureLMSStarterPack(ctx, cohortID, tutorProfileID)
 	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort",
 		&cohortID, nil, map[string]any{"tutor_profile_id": tutorProfileID.String()}, nil, nil)
 	return nil
+}
+
+// ensureLMSStarterPack — every tutor attached to a cohort gets a fully
+// functional LMS out of the box (idempotent; fire-and-forget so a starter
+// failure never blocks the assignment itself).
+func (s *AdminService) ensureLMSStarterPack(ctx context.Context, cohortID, tutorProfileID uuid.UUID) {
+	if s.lmsStarter == nil {
+		return
+	}
+	title := ""
+	if c, _, err := s.cohortAdmin.ListAll(ctx, booking.CohortListParams{PageSize: 200}); err == nil {
+		for _, row := range c {
+			if row.ID == cohortID {
+				title = row.Title
+				break
+			}
+		}
+	}
+	go func() {
+		nctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := s.lmsStarter(nctx, cohortID, tutorProfileID, title); err != nil {
+			slog.Error("lms starter pack failed", "cohort_id", cohortID, "tutor_profile_id", tutorProfileID, "error", err)
+		}
+	}()
 }
 
 // SetCohortBanner stores the cohort banner image URL. Callers (the admin
@@ -913,6 +940,7 @@ func (s *AdminService) ReviewCohortJoin(ctx context.Context, adminID, requestID 
 	}
 	if status == "APPROVED" {
 		_ = s.cohortAdmin.UpdateTutor(ctx, jr.CohortID, &jr.TutorProfileID)
+		s.ensureLMSStarterPack(ctx, jr.CohortID, jr.TutorProfileID)
 	}
 	return jr, nil
 }
@@ -1267,6 +1295,14 @@ func (s *AdminService) CompletePaystackTransfer(ctx context.Context, adminID, pa
 
 // ── Admin tutor console ───────────────────────────────────────────────────
 
+// WithLMSStarter wires the automatic LMS starter pack: every cohort a tutor
+// is attached to gets a recorded demo lesson, study resource, assignment and
+// homework note (idempotent).
+func (s *AdminService) WithLMSStarter(fn func(ctx context.Context, cohortID, tutorProfileID uuid.UUID, cohortTitle string) error) *AdminService {
+	s.lmsStarter = fn
+	return s
+}
+
 // WithTutorConsole wires the subject catalogue + teaching-scope repo so the
 // admin console can create and edit tutor profiles end to end.
 func (s *AdminService) WithTutorConsole(subjects academics.SubjectRepository, tutorSubjects tutor.TutorSubjectRepository) *AdminService {
@@ -1363,8 +1399,8 @@ func (s *AdminService) UpsertTutorAdmin(ctx context.Context, adminID uuid.UUID, 
 			return nil, err
 		}
 		profile = &tutor.TutorProfile{
-			UserID: user.ID,
-			Slug:   fmt.Sprintf("%s-%s", slugify(in.DisplayName), uuid.NewString()[:4]),
+			UserID:      user.ID,
+			Slug:        fmt.Sprintf("%s-%s", slugify(in.DisplayName), uuid.NewString()[:4]),
 			DisplayName: in.DisplayName, YearsExperience: in.YearsExperience,
 			Currency: "NGN", Timezone: "Africa/Lagos",
 			AcceptsOnline: true, AcceptsInPerson: true,

@@ -68,12 +68,13 @@ func (h *OnboardingHandler) EnsureOwnProfile(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	var req struct {
-		FirstName    string  `json:"first_name"`
-		LastName     string  `json:"last_name"`
-		CurrentLevel *string `json:"current_level"`
+		FirstName    string     `json:"first_name"`
+		LastName     string     `json:"last_name"`
+		CurrentLevel *string    `json:"current_level"`
+		DateOfBirth  *time.Time `json:"date_of_birth"`
 	}
 	_ = DecodeJSON(r, &req)
-	p, err := h.svc.EnsureOwnProfile(r.Context(), actor.UserID, req.FirstName, req.LastName, req.CurrentLevel)
+	p, err := h.svc.EnsureOwnProfile(r.Context(), actor.UserID, req.FirstName, req.LastName, req.CurrentLevel, req.DateOfBirth)
 	if err != nil {
 		WriteAppError(w, err)
 		return

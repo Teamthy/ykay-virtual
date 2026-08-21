@@ -48,7 +48,7 @@ type ObState = {
   userId?: string;
   verified: boolean;
   role?: "PARENT" | "STUDENT" | "TUTOR" | "INSTITUTION";
-  parent?: { forWhom?: string; childName?: string; childLevel?: string };
+  parent?: { forWhom?: string; childName?: string; childLevel?: string; childDOB?: string };
   student?: { goals?: string[]; level?: string };
   tutor?: { subjects?: string[]; levels?: string[] };
   institution?: { kind?: string; city?: string };
@@ -381,6 +381,22 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
                 value={state.parent?.childLevel ?? ""}
                 onChange={(level) => save({ parent: { ...state.parent, childLevel: level } })}
               />
+              <div className="mt-3">
+                <label htmlFor="ob-child-dob" className="mb-1.5 block text-sm font-medium text-ink-800">
+                  Learner&apos;s date of birth
+                </label>
+                <input
+                  id="ob-child-dob"
+                  type="date"
+                  max={new Date().toISOString().split("T")[0]}
+                  className={INPUT_CLS}
+                  value={state.parent?.childDOB ?? ""}
+                  onChange={(e) => save({ parent: { ...state.parent, childDOB: e.target.value } })}
+                />
+                <p className="mt-1 text-xs text-ink-400">
+                  Under 15? Their account stays parent-guided — you manage bookings and payments.
+                </p>
+              </div>
             </div>
           </>
         )}
@@ -1044,6 +1060,7 @@ function OnboardingInner() {
                 await createLearner({
                   first_name: parts[0] ?? child,
                   last_name: parts.slice(1).join(" ") || "",
+                  date_of_birth: state.parent?.childDOB || undefined,
                   current_level: state.parent?.childLevel,
                   relationship: "PARENT",
                 }).catch(() => undefined);
