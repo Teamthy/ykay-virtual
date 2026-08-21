@@ -2,7 +2,6 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
@@ -60,25 +59,11 @@ export default function TutorEarningsScreen() {
         subtitle="Payments are held in escrow and released only after lessons are delivered."
       />
 
-      {/* B. Primary card — available balance is the dominant fact */}
-      <Animated.View entering={FadeIn.delay(80).duration(240)}>
-        <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-          <AppText variant="label" style={styles.heroEyebrow}>
-            AVAILABLE BALANCE
-          </AppText>
-          <AppText variant="display" style={styles.heroAmount}>
-            {formatNaira(data?.released_total ?? 0)}
-          </AppText>
-          <View style={styles.heroSubRow}>
-            <AppText style={styles.heroCap}>Held {formatNaira(data?.held_total ?? 0)}</AppText>
-            <View style={styles.heroDot} />
-            <AppText style={styles.heroCap}>Paid out {formatNaira(data?.paid_total ?? 0)}</AppText>
-          </View>
-        </LinearGradient>
-      </Animated.View>
-
-      {/* C. Key metrics */}
-      <Animated.View entering={FadeIn.delay(140).duration(240)} style={styles.totals}>
+      {/* Escrow status — three equal cards, no dominant money figure */}
+      <AppText variant="label" style={{ color: colors.ink[500], letterSpacing: 1.1, fontSize: type.caption, marginBottom: spacing.sm }}>
+        ESCROW STATUS
+      </AppText>
+      <Animated.View entering={FadeIn.delay(80).duration(240)} style={styles.totals}>
         {[
           { label: "HELD (ESCROW)", value: data?.held_total, color: colors.warning },
           { label: "RELEASED", value: data?.released_total, color: colors.greenDark },
@@ -148,16 +133,6 @@ export default function TutorEarningsScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    borderRadius: radius.lg,
-    padding: 20,
-    marginBottom: spacing.lg,
-  },
-  heroEyebrow: { color: "#70F250", letterSpacing: 1.4, fontSize: type.caption },
-  heroAmount: { color: "#FFFFFF", fontSize: 40, marginTop: spacing.xs },
-  heroSubRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.sm, flexWrap: "wrap" },
-  heroCap: { color: "rgba(255,255,255,0.72)", fontSize: type.bodySm },
-  heroDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.4)" },
   totals: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.sm },
   totalCard: { flexGrow: 1, flexBasis: "46%", maxWidth: "48.5%" },
   row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },

@@ -109,19 +109,21 @@ export default function AdminConsole() {
         subtitle="Platform health at a glance. Mutations run on the web console."
       />
 
-      {/* B. Primary card — revenue in escrow is the dominant fact */}
+      {/* B. Primary card — today's classes is the dominant fact */}
       <Animated.View entering={FadeIn.delay(60).duration(240)}>
         <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
           <AppText variant="label" style={styles.heroEyebrow}>
-            REVENUE IN ESCROW
+            LESSONS TODAY
           </AppText>
           <AppText variant="display" style={styles.heroAmount}>
-            {fmtMoney(s.revenue_in_escrow)}
+            {s.lessons_today}
           </AppText>
           <View style={styles.heroSubRow}>
-            <AppText style={styles.heroCap}>Paid out {fmtMoney(s.revenue_paid_out)}</AppText>
+            <AppText style={styles.heroCap}>{s.lessons_this_week} this week</AppText>
             <View style={styles.heroDot} />
-            <AppText style={styles.heroCap}>{s.orders_paid} paid orders</AppText>
+            <AppText style={styles.heroCap}>{s.users} users</AppText>
+            <View style={styles.heroDot} />
+            <AppText style={styles.heroCap}>{s.tutors_approved} approved tutors</AppText>
           </View>
         </LinearGradient>
       </Animated.View>
@@ -131,8 +133,8 @@ export default function AdminConsole() {
         {[
           { label: "USERS", value: String(s.users), sub: `${s.active_users} active` },
           { label: "TUTORS", value: String(s.tutors_approved), sub: `${s.tutors_pending} pending` },
-          { label: "LESSONS TODAY", value: String(s.lessons_today), sub: `${s.lessons_this_week} this week` },
           { label: "PAYOUTS PENDING", value: fmtMoney(overview.payouts_pending_total), sub: "" },
+          { label: "IN ESCROW", value: fmtMoney(s.revenue_in_escrow), sub: `paid out ${fmtMoney(s.revenue_paid_out)}` },
         ].map((m) => (
           <Card key={m.label} padded style={styles.metricCard}>
             <AppText variant="caption" style={{ color: colors.ink[400], letterSpacing: 0.8 }}>

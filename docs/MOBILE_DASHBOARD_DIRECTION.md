@@ -61,7 +61,9 @@ Each dashboard owns ONE dominant fact, so no two dashboards compete:
 | Home · signed out | Welcome card — what NUVORA is, Log in / Create account |
 | Learning · learner | **Overall progress** — watched % as the hero number, X of Y lessons, next-lesson chip, View courses CTA |
 | Learning · tutor | **Teaching overview** — cohorts count as the hero number, lessons this term, Create exam + View schedule CTAs |
-| Tutor hub | **Available balance** — released escrow as the hero number, held/paid sub-stats, View earnings CTA |
+| Tutor earnings | Ledger-first: three equal escrow-status cards (held / released / paid out), then holds + payouts — **no money hero** |
+| Admin console | **Lessons today** — the live-class count as the hero number, users/tutors sub-stats; escrow stays in the metrics grid |
+| Tutor hub | **Up next** — the next class as the headline, LIVE chip, classes-this-week sub-stat, View schedule + Create exam CTAs |
 
 The hero card uses the single-hue deep gradient (`navy → navyDark`) — the one
 meaningful gradient in the app, echoing the deep surface of the finance
@@ -146,6 +148,8 @@ needs-attention queues, today's classes, audit feed; super admin gets the
 email-delivery test). Every dashboard owns exactly ONE dominant fact and
 every number is live backend data.
 
+Money never leads: balance figures were removed as heroes (tutor hub, earnings,
+admin escrow) — money lives in metric cards and ledgers, not the dominant slot.
 Motion: entrance animations are subtle 240ms fades — the spring/bounce
 entrance was removed across the app (press feedback on buttons/cards keeps
 its spring, which is interaction state, not decoration). Theme: a light/

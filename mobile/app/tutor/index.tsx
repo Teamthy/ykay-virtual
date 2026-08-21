@@ -45,6 +45,7 @@ export default function TutorDashboard() {
   const { colors } = useTheme();
   const [earnings, setEarnings] = useState<TutorEarnings | null>(null);
   const [upcoming, setUpcoming] = useState<TutorLesson[]>([]);
+  const [weekCount, setWeekCount] = useState(0);
   const [exams, setExams] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -64,6 +65,12 @@ export default function TutorDashboard() {
           .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
           .slice(0, 3)
       );
+      setWeekCount(
+        lessons.filter((l) => {
+          const t = new Date(l.start_at).getTime();
+          return t >= now && t < now + 7 * 24 * 3600 * 1000;
+        }).length
+      );
     } catch {
       // session handled elsewhere
     } finally {
@@ -73,7 +80,7 @@ export default function TutorDashboard() {
 
   useFocusEffect(useCallback(() => void load(), [load]));
 
-  const weekCount = useMemo(() => upcoming.length, [upcoming]);
+  const nextClass = upcoming[0];
 
   if (loading) {
     return (
@@ -99,10 +106,10 @@ export default function TutorDashboard() {
         <ScreenHeader
           eyebrow="TUTOR WORKSPACE"
           title="Your teaching hub"
-          subtitle="Money, schedule and learners at a glance."
+          subtitle="Your schedule, learners and tools at a glance."
         />
 
-        {/* B. Primary card — available balance (dominant) */}
+        {/* B. Primary card — UP NEXT: the next class is the dominant fact */}
         <Animated.View entering={FadeIn.delay(80).duration(240)}>
           <LinearGradient
             colors={[colors.navy, colors.navyDark]}
@@ -111,23 +118,41 @@ export default function TutorDashboard() {
             style={styles.hero}
           >
             <AppText variant="label" style={styles.heroEyebrow}>
-              AVAILABLE BALANCE
+              UP NEXT
             </AppText>
-            <AppText variant="display" style={styles.heroAmount}>
-              {earnings ? formatNaira(earnings.released_total) : "₦0"}
+            <AppText variant="h1" style={styles.heroTitle} numberOfLines={2}>
+              {nextClass ? nextClass.title : "No upcoming classes"}
             </AppText>
             <View style={styles.heroSubRow}>
-              <AppText style={styles.heroCap}>Held {earnings ? formatNaira(earnings.held_total) : "₦0"}</AppText>
-              <View style={styles.heroDot} />
-              <AppText style={styles.heroCap}>Paid out {earnings ? formatNaira(earnings.paid_total) : "₦0"}</AppText>
+              {nextClass ? (
+                <>
+                  <AppText style={styles.heroCap}>
+                    {formatLessonTime(nextClass.start_at)}
+                  </AppText>
+                  <View style={styles.heroDot} />
+                  <View style={[styles.heroChip, { backgroundColor: nextClass.meeting_url ? "rgba(112,242,80,0.18)" : "rgba(255,255,255,0.12)" }]}>
+                    <AppText style={[styles.heroChipText, { color: nextClass.meeting_url ? colors.green : colors.white }]}>
+                      {nextClass.meeting_url ? "LIVE" : "CLASS"}
+                    </AppText>
+                  </View>
+                  <View style={styles.heroDot} />
+                  <AppText style={styles.heroCap}>
+                    {weekCount} {weekCount === 1 ? "class" : "classes"} this week
+                  </AppText>
+                </>
+              ) : (
+                <AppText style={styles.heroCap}>
+                  Keep your availability open so parents can book you.
+                </AppText>
+              )}
             </View>
             <View style={styles.heroActions}>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => router.push("/tutor/earnings" as never)}
+                onPress={() => router.push("/tutor/schedule" as never)}
                 style={[styles.heroCta, { backgroundColor: colors.green }]}
               >
-                <AppText style={{ color: colors.ink[950], fontFamily: fonts.bodyBold, fontWeight: "700" }}>View earnings</AppText>
+                <AppText style={{ color: colors.ink[950], fontFamily: fonts.bodyBold, fontWeight: "700" }}>View schedule</AppText>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
@@ -251,7 +276,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   heroEyebrow: { color: "#70F250", letterSpacing: 1.4, fontSize: type.caption },
-  heroAmount: { color: "#FFFFFF", fontSize: 40, marginTop: spacing.xs },
+  heroTitle: { color: "#FFFFFF", fontSize: 24, marginTop: spacing.xs, lineHeight: 30 },
+  heroChip: { paddingHorizontal: spacing.xs, paddingVertical: 3, borderRadius: radius.pill },
+  heroChipText: { fontSize: type.caption, fontWeight: "800", letterSpacing: 0.6 },
   heroSubRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.sm, flexWrap: "wrap" },
   heroCap: { color: "rgba(255,255,255,0.72)", fontSize: type.bodySm },
   heroDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.4)" },
