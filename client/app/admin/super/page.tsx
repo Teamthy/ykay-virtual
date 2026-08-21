@@ -7,6 +7,7 @@ import { useSession } from "@/hooks/useSession";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashHero } from "@/components/dashboard/DashHero";
 import {
+  Mail,
   ShieldCheck,
   Users,
   BadgeCheck,
@@ -28,7 +29,8 @@ import {
   History,
   ShieldAlert,
 } from "lucide-react";
-import { listAuditLogs } from "@/features/admin/api";
+import { getAdminOverview, sendAdminTestEmail, listAuditLogs } from "@/features/admin/api";
+import { toast } from "sonner";
 
 // Super Admin control center — SUPER_ADMIN only. Academic admins see a
 // restricted notice; role grants are never self-serve (server-side only).
@@ -57,6 +59,22 @@ export default function SuperAdminPage() {
     enabled: !!user && superAdmin,
     staleTime: 60_000,
   });
+
+  const overview = useQuery({
+    queryKey: ["admin", "overview"],
+    queryFn: getAdminOverview,
+    enabled: !!user && superAdmin,
+    staleTime: 30_000,
+  });
+
+  const testEmail = async () => {
+    try {
+      const res = await sendAdminTestEmail();
+      toast.success(`Test email sent to ${res.to} via ${res.provider}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send test email");
+    }
+  };
 
   const auditLogs = useQuery({
     queryKey: ["admin", "audit"],
@@ -309,6 +327,56 @@ export default function SuperAdminPage() {
             <li>· Role/status changes are enforced server-side; you can't remove the last SUPER_ADMIN or suspend yourself.</li>
           </ul>
         </div>
+      </section>
+
+      {/* Conversion funnel */}
+      <section className="grid gap-4 sm:grid-cols-3">
+        <Stat label="New leads" value={overview.data?.leads_new} hint={`${overview.data?.leads_total ?? 0} captured total`} />
+        <Stat label="Payouts pending" value={fmtNGN(overview.data?.payouts_pending_total)} hint="tutor bank transfers" />
+        <Stat label="Attention queues" value={(overview.data?.vetting_submitted ?? 0) + (overview.data?.joins_pending ?? 0) + (overview.data?.tickets_open ?? 0)} hint="vetting + joins + tickets" />
+      </section>
+
+      {/* Email delivery check */}
+      <section className="rounded-2xl border border-ink-100 bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Mail size={18} className="text-brand-gold" />
+            <h2 className="font-display text-base font-bold text-brand-navy">Email delivery check</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => void testEmail()}
+            className="rounded-full bg-brand-gold px-5 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+          >
+            Send test email to myself
+          </button>
+        </div>
+        <p className="mt-2 text-sm text-ink-600">
+          Verifies Resend/SMTP end to end — the API log also prints the active provider at boot
+          (<code>email provider active</code>). If this test doesn&apos;t arrive, login codes and receipts aren&apos;t either.
+        </p>
+      </section>
+
+      {/* Recent activity */}
+      <section className="rounded-2xl border border-ink-100 bg-white p-6">
+        <h2 className="font-display text-base font-bold text-brand-navy">Recent platform activity</h2>
+        {(overview.data?.recent_audit ?? []).length === 0 ? (
+          <p className="mt-2 text-sm text-ink-400">No activity yet.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-ink-50">
+            {(overview.data?.recent_audit ?? []).slice(0, 8).map((a) => (
+              <li key={a.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="text-ink-700">
+                  <span className="font-bold">{String(a.action ?? "").replace(/_/g, " ")}</span>
+                  <span className="text-ink-500"> · {a.target_type ?? "platform"}</span>
+                </span>
+                <span className="text-xs text-ink-400">
+                  {new Date(a.created_at).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

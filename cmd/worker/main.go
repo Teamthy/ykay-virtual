@@ -68,6 +68,8 @@ func main() {
 	logx.Setup(cfg.Environment)
 	if !notification.EmailDeliveryConfigured() {
 		slog.Error("EMAIL DELIVERY NOT CONFIGURED — queued emails will fail and dead-letter. Set RESEND_API_KEY (recommended) or SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM.")
+	} else {
+		slog.Info("email provider active", "provider", notification.EmailProviderActive())
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

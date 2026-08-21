@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { getAdminStats2 } from "@/features/admin/api";
+import { getAdminOverview } from "@/features/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { DashHero } from "@/components/dashboard/DashHero";
@@ -15,6 +15,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   Gift,
+  History,
   LayoutDashboard,
   LifeBuoy,
   MessageSquare,
@@ -44,13 +45,14 @@ function fmtNGN(n?: number) {
 }
 
 export default function AdminOverviewPage() {
-  const stats = useQuery({
-    queryKey: ["admin", "stats2"],
-    queryFn: getAdminStats2,
-    staleTime: 60_000,
+  const overview = useQuery({
+    queryKey: ["admin", "overview"],
+    queryFn: getAdminOverview,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
   });
 
-  if (stats.isLoading) {
+  if (overview.isLoading) {
     return (
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <RoleGate page="/admin" />
@@ -62,7 +64,8 @@ export default function AdminOverviewPage() {
     );
   }
 
-  const s = stats.data;
+  const o = overview.data;
+  const s = o?.stats;
 
   const attention: { label: string; href: string; count?: number; warn: boolean }[] = [
     { label: "Tutor applications", href: "/admin/vetting", count: s?.tutors_pending, warn: (s?.tutors_pending ?? 0) > 0 },
@@ -72,7 +75,9 @@ export default function AdminOverviewPage() {
     { label: "Open support", href: "/admin/support", count: s?.support_open, warn: (s?.support_open ?? 0) > 0 },
     { label: "Pending refunds", href: "/admin/payments", count: s?.pending_refunds, warn: (s?.pending_refunds ?? 0) > 0 },
     { label: "Reviews to moderate", href: "/admin/reviews", count: s?.reviews_pending, warn: (s?.reviews_pending ?? 0) > 0 },
-  ].filter((a) => a.count);
+    { label: "Cohort join requests", href: "/admin/cohorts", count: o?.joins_pending, warn: (o?.joins_pending ?? 0) > 0 },
+    { label: "Open support tickets", href: "/admin/support", count: o?.tickets_open, warn: (o?.tickets_open ?? 0) > 0 },
+  ].filter((a) => (a.count ?? 0) > 0);
 
   const quickActions = [
     { href: "/admin/cohorts", label: "Create a cohort", desc: "Publish a new class", icon: CalendarDays },
@@ -127,6 +132,57 @@ export default function AdminOverviewPage() {
         <StatCard label="Referrals" value={s?.referrals?.toLocaleString() ?? "-"} sub="Programme referrals" />
         <StatCard label="Reviews pending" value={s?.reviews_pending?.toLocaleString() ?? "-"} sub="Moderation queue" />
         <StatCard label="Escrow disputed" value={s?.escrow_disputed?.toLocaleString() ?? "-"} sub="Needs review" />
+      </section>
+
+      {/* Growth + money in flight */}
+      <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="New leads" value={String(o?.leads_new ?? 0)} sub={`${o?.leads_total ?? 0} total captured`} accent />
+        <StatCard label="Payouts pending" value={fmtNGN(o?.payouts_pending_total)} sub="Tutor bank transfers" />
+        <StatCard label="Tutor applications" value={String(o?.vetting_submitted ?? 0)} sub="Awaiting review" />
+        <StatCard label="Open support" value={String(o?.tickets_open ?? 0)} sub="Active tickets" />
+      </section>
+
+      {/* Today's classes */}
+      {((o?.lessons_today ?? []).length ?? 0) > 0 && (
+        <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+          <h2 className="flex items-center gap-2 font-bold text-brand-navy">
+            <CalendarDays size={16} className="text-brand-gold" /> Today&apos;s classes
+          </h2>
+          <ul className="mt-3 divide-y divide-ink-50">
+            {(o?.lessons_today ?? []).slice(0, 6).map((l) => (
+              <li key={l.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="font-semibold text-ink-800">{l.title}</span>
+                <span className="text-xs text-ink-500">
+                  {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Recent activity */}
+      <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+        <h2 className="flex items-center gap-2 font-bold text-brand-navy">
+          <History size={16} className="text-brand-gold" /> Recent activity
+        </h2>
+        {(o?.recent_audit ?? []).length === 0 ? (
+          <p className="mt-2 text-sm text-ink-400">No activity recorded yet.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-ink-50">
+            {(o?.recent_audit ?? []).slice(0, 8).map((a) => (
+              <li key={a.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="text-ink-700">
+                  <span className="font-bold">{String(a.action ?? "").replace(/_/g, " ")}</span>
+                  <span className="text-ink-500"> · {a.target_type ?? "platform"}</span>
+                </span>
+                <span className="text-xs text-ink-400">
+                  {new Date(a.created_at).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* Attention needed */}

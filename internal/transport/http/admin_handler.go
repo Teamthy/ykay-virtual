@@ -16,6 +16,7 @@ import (
 	"ykay-virtual/internal/domain/institution"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
+	"ykay-virtual/internal/notification"
 	"ykay-virtual/internal/service"
 	"ykay-virtual/internal/storage"
 	"ykay-virtual/pkg"
@@ -40,6 +41,7 @@ type AdminHandler struct {
 	payments *service.PaymentService
 	storage  storage.Storage
 	notifier *service.NotifierService
+	mail     notification.EmailSender
 	uploadGuard
 }
 
@@ -60,6 +62,12 @@ func (h *AdminHandler) WithStorage(s storage.Storage) *AdminHandler {
 // WithNotifier wires WhatsApp notification (payout confirmations to tutors).
 func (h *AdminHandler) WithNotifier(n *service.NotifierService) *AdminHandler {
 	h.notifier = n
+	return h
+}
+
+// WithMail wires the email sender (admin delivery test).
+func (h *AdminHandler) WithMail(m notification.EmailSender) *AdminHandler {
+	h.mail = m
 	return h
 }
 
@@ -1164,4 +1172,48 @@ func (h *AdminHandler) UpsertTutor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusCreated, profile, nil)
+}
+
+// OperationsOverview — GET /admin/overview. One request for the admin home:
+// stats, conversion funnel, money in flight and the attention queues.
+func (h *AdminHandler) OperationsOverview(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	out, err := h.svc.OperationsOverview(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, out, nil)
+}
+
+// SendTestEmail — POST /admin/email/test (admin). Sends a branded test email
+// to the acting admin's address so delivery can be verified end to end.
+func (h *AdminHandler) SendTestEmail(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	if h.mail == nil {
+		WriteAppError(w, pkg.Conflict("email sender not configured"))
+		return
+	}
+	email := ""
+	if u, err := h.svc.UserEmail(r.Context(), *adminID); err == nil {
+		email = u
+	}
+	if email == "" {
+		WriteAppError(w, pkg.Conflict("could not resolve the admin email address"))
+		return
+	}
+	if err := h.mail.Send(r.Context(), email, "NUVORA email delivery test",
+		notification.BrandEmail(
+			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Email delivery works ✅</h1>"+
+				"<p style=\"margin:0 0 16px;\">This is a test email from your NUVORA platform.</p>"+
+				"<p style=\"margin:0;\">If you can read this, login codes, verification links and payment receipts will reach your users.</p>")); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"sent": true, "to": email, "provider": notification.EmailProviderActive()}, nil)
 }

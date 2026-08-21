@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/button";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { getMyProfile, updateBankDetails } from "@/features/vetting/api";
 import { NIGERIAN_BANKS, bankNameForCode } from "@/features/vetting/banks";
-import { getTutorEarnings } from "@/features/lms/api";
+import { getTutorEarnings, getCohort } from "@/features/lms/api";
+import { Progress } from "@/components/ui/progress";
 import { BookOpen, MessageSquare, Bell, LifeBuoy, Settings, Wallet, CalendarDays, ClipboardCheck, Users, NotebookPen } from "lucide-react";
 import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
 import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
@@ -112,6 +113,40 @@ export default function TutorDashboardPage() {
     queryFn: () => getTutorEarnings(),
     enabled: !!user,
     staleTime: 30_000,
+  });
+
+  // Teaching cohorts (Udemy-style course cards): group lessons by cohort and
+  // resolve each cohort's title + enrolment progress.
+  const teachingCohorts = useQuery({
+    queryKey: ["tutor", "teaching-cohorts"],
+    queryFn: async () => {
+      const groups = new Map<string, typeof lessons.data extends (infer L)[] ? L : never>();
+      const map = new Map<string, Lesson[]>();
+      for (const l of lessons.data ?? []) {
+        const cid = l.cohort_id ?? "none";
+        const arr = map.get(cid) ?? [];
+        arr.push(l);
+        map.set(cid, arr);
+      }
+      const out: { cohortId: string; title: string; lessonCount: number; enrolled: number; capacity: number }[] = [];
+      for (const [cid, ls] of map) {
+        if (cid === "none") continue;
+        try {
+          const c = await getCohort(cid);
+          out.push({
+            cohortId: cid,
+            title: c.title,
+            lessonCount: ls.length,
+            enrolled: c.enrolled_count,
+            capacity: c.capacity,
+          });
+        } catch {
+          out.push({ cohortId: cid, title: "Cohort", lessonCount: ls.length, enrolled: 0, capacity: 0 });
+        }
+      }
+      return out;
+    },
+    enabled: !!user && lessons.isFetched,
   });
 
   const publishedCohorts = useQuery({
@@ -293,6 +328,84 @@ export default function TutorDashboardPage() {
                   </li>
                 ))}
               </ul>
+            )}
+          </section>
+
+          {/* Teaching (Udemy-style course cards) */}
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-bold text-ink-800">Your courses</h2>
+              <Link href="/lms/tutor" className="text-sm font-bold text-brand-gold-dark hover:underline">
+                Manage courses →
+              </Link>
+            </div>
+            {teachingCohorts.isLoading ? (
+              <Skeleton className="h-24 w-full" />
+            ) : (teachingCohorts.data ?? []).length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-ink-200 p-6 text-center">
+                <p className="text-sm text-ink-500">No cohorts assigned yet.</p>
+                <p className="mt-1 text-xs text-ink-400">
+                  Request to join a cohort from the Cohorts tab, or ask an admin to assign you — your LMS fills automatically.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {(teachingCohorts.data ?? []).map((c) => (
+                  <Link
+                    key={c.cohortId}
+                    href={`/lms/tutor/cohorts/${c.cohortId}`}
+                    className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-brand-gold/50"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-bold text-ink-800">{c.title}</p>
+                      <span className="rounded-full bg-brand-blue-light px-2.5 py-1 text-[10px] font-bold text-brand-blue">
+                        {c.lessonCount} lesson{c.lessonCount === 1 ? "" : "s"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-ink-500">
+                      {c.enrolled}/{c.capacity || "—"} enrolled
+                    </p>
+                    <Progress
+                      value={c.capacity > 0 ? Math.round((c.enrolled / c.capacity) * 100) : 0}
+                      showValue={false}
+                      className="mt-3"
+                    />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* This week (availability) */}
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-bold text-ink-800">Your teaching schedule</h2>
+              <button type="button" onClick={() => setTab("availability")} className="text-sm font-bold text-brand-gold-dark hover:underline">
+                Edit availability →
+              </button>
+            </div>
+            {(availability.data ?? []).length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-ink-200 p-6 text-center text-sm text-ink-400">
+                No availability set yet — add slots so bookings can find you.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => {
+                  const slots = (availability.data ?? []).filter((a) => a.day_of_week === idx);
+                  return (
+                    <div key={day} className={`min-w-24 rounded-2xl border p-3 ${slots.length ? "border-brand-gold bg-brand-gold-light" : "border-ink-100 bg-white"}`}>
+                      <p className={`text-center text-xs font-bold ${slots.length ? "text-brand-gold-dark" : "text-ink-400"}`}>{day}</p>
+                      {slots.length ? (
+                        <p className="mt-1 text-center text-[11px] leading-tight text-ink-700">
+                          {slots.map((s) => `${s.start_time.slice(0, 5)}–${s.end_time.slice(0, 5)}`).join("\n")}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-center text-[11px] text-ink-300">—</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </section>
 

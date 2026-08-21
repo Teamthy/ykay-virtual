@@ -138,6 +138,8 @@ func main() {
 	}
 	if !notification.EmailDeliveryConfigured() {
 		slog.Error("EMAIL DELIVERY NOT CONFIGURED — login codes, verification links, receipts and admin MFA emails will NOT reach users. Set RESEND_API_KEY (recommended) or SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM.")
+	} else {
+		slog.Info("email provider active", "provider", notification.EmailProviderActive())
 	}
 	ctx := context.Background()
 	shutdownTracer := telemetry.InitTracer(ctx, cfg.OtelEndpoint)
@@ -346,12 +348,13 @@ func main() {
 	} else {
 		slog.Info("payouts: Paystack transfers disabled (set PAYSTACK_TRANSFER_ENABLED=true to enable one-click payouts)")
 	}
-	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc).WithStorage(store).WithNotifier(notifierSvc)
+	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc).WithStorage(store).WithNotifier(notifierSvc).WithMail(notification.NewEmailSender())
 	adminSvc.WithPayments(repos.Orders, repos.Payouts).
 		WithPaymentRows(repos.Payments).
 		WithStudents(repos.Students).
 		WithTutorConsole(repos.SubjectRepo, repos.TutorSubjects).
-		WithLMSStarter(lmsStarterSvc.EnsureCohortPack)
+		WithLMSStarter(lmsStarterSvc.EnsureCohortPack).
+		WithLeads(repos.Leads)
 	adminSvc.WithUsers(repos.Users, repos.Roles)
 	adminSvc.WithAuditLogs(repos.AuditRepo)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,

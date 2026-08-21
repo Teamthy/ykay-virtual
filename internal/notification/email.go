@@ -157,10 +157,26 @@ func (s *ResendEmailSender) Send(ctx context.Context, to, subject, htmlBody stri
 // is configured. Production boots call this to warn loudly when
 // transactional email will silently fail.
 func EmailDeliveryConfigured() bool {
-	if os.Getenv("RESEND_API_KEY") != "" {
-		return true
+	return EmailProviderActive() != "none"
+}
+
+// EmailProviderActive returns the provider NewEmailSender will actually use:
+// "resend", "smtp" or "none" — so boot logs and diagnostics can state exactly
+// where transactional email is going.
+func EmailProviderActive() string {
+	if os.Getenv("EMAIL_PROVIDER") == "resend" && os.Getenv("RESEND_API_KEY") != "" {
+		return "resend"
 	}
-	return os.Getenv("SMTP_HOST") != ""
+	if os.Getenv("RESEND_API_KEY") != "" && strings.TrimSpace(os.Getenv("SMTP_HOST")) == "" {
+		return "resend"
+	}
+	if strings.TrimSpace(os.Getenv("SMTP_HOST")) != "" {
+		return "smtp"
+	}
+	if os.Getenv("RESEND_API_KEY") != "" {
+		return "resend"
+	}
+	return "none"
 }
 
 // parseFrom accepts "you@domain" or "NUVORA <you@domain>" without double-wrapping.

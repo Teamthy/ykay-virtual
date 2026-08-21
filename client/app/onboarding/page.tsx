@@ -922,10 +922,22 @@ function OnboardingInner() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not create your account";
       if (/already registered|already exists/i.test(msg)) {
-        setError("This email already has an account - log in instead.");
-      } else {
-        setError(msg);
+        // The account exists (most likely a PENDING_VERIFICATION account from
+        // an earlier attempt that never got its email). Resend the 6-digit
+        // code and resume on the verify step — confirming it verifies +
+        // activates the account and starts the session. No dead ends.
+        setSubmitting(false);
+        setError(null);
+        try {
+          await requestLoginCode(state.email);
+          toast.success("We found your account — a fresh verification code is on its way to your inbox.");
+          go(2);
+        } catch (codeErr) {
+          setError(codeErr instanceof Error ? codeErr.message : "Could not send the code — try again.");
+        }
+        return;
       }
+      setError(msg);
     } finally {
       setSubmitting(false);
     }

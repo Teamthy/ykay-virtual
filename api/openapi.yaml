@@ -148,6 +148,23 @@ paths:
       responses:
         '201': { description: Lead captured (or deduped) }
 
+  /admin/overview:
+    get:
+      tags: [admin]
+      summary: Admin operations overview — stats, leads, payouts pending, attention queues, today's classes, recent activity
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Operations overview }
+
+  /admin/email/test:
+    post:
+      tags: [admin]
+      summary: Send a branded test email to the acting admin (delivery verification)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Test email sent (provider included) }
+        '409': { description: Email sender not configured }
+
   /admin/leads:
     get:
       tags: [admin]

@@ -573,3 +573,31 @@ export async function confirmPayoutPaid(payoutId: string, providerReference: str
     body: JSON.stringify({ provider_reference: providerReference }),
   });
 }
+
+// --- Admin operations overview (single request for the admin home) ---------
+
+export type AdminOverview = {
+  stats: AdminStats2;
+  leads_new: number;
+  leads_total: number;
+  payouts_pending_total: number;
+  vetting_submitted: number;
+  joins_pending: number;
+  tickets_open: number;
+  lessons_today: { id: string; title: string; start_at: string; cohort_id?: string | null }[];
+  recent_audit: { id: string; action: string; target_type?: string; created_at: string; actor_email?: string }[];
+};
+
+export async function getAdminOverview(): Promise<AdminOverview> {
+  const res = await apiFetch<AdminOverview>("/admin/overview");
+  return res.data;
+}
+
+/** Send a branded test email to the acting admin (delivery verification). */
+export async function sendAdminTestEmail(): Promise<{ sent: boolean; to: string; provider: string }> {
+  const res = await apiFetch<{ sent: boolean; to: string; provider: string }>("/admin/email/test", {
+    method: "POST",
+    body: "{}",
+  });
+  return res.data;
+}

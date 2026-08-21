@@ -2,10 +2,15 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { BookOpen, CheckCircle2, CircleHelp, Clock, Play, UserRound } from "lucide-react";
+import { BookOpen, CheckCircle2, CircleHelp, Clock, Play, UserRound, Trophy, Award, Flame } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import { listMyAssignments, listMySubmissions, getAttendanceSummary } from "@/features/portal/api";
+import { getMyLessonProgress } from "@/features/lms/api";
+import { listMyCertificates } from "@/features/certificates/api";
+import { groupByCohort, computeStats, achievements } from "@/lib/learning-stats";
+import { Progress } from "@/components/ui/progress";
+import { StatCard } from "@/components/ui/stat-card";
 import { RoleGate } from "@/components/dashboard/RoleGate";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
@@ -88,6 +93,18 @@ export default function StudentDashboardPage() {
     enabled: !!user,
     staleTime: 30_000,
   });
+  const progress = useQuery({
+    queryKey: ["student", "progress"],
+    queryFn: () => getMyLessonProgress(),
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+  const certificates = useQuery({
+    queryKey: ["student", "certificates"],
+    queryFn: () => listMyCertificates(),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
 
   const upcoming = (lessons.data ?? [])
     .filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING")
@@ -95,6 +112,23 @@ export default function StudentDashboardPage() {
   const next = upcoming[0];
   const submittedIds = new Set((submissions.data ?? []).map((s) => s.assignment_id));
   const enrolled = (lessons.data ?? []).length > 0;
+
+  // Udemy-style aggregates (pure helpers — unit tested).
+  const myCourses = groupByCohort(lessons.data ?? [], progress.data ?? [], {});
+  const myStats = computeStats({
+    lessons: lessons.data ?? [],
+    progressRows: progress.data ?? [],
+    attendancePct: attendance.data?.rate ?? null,
+    submitted: submittedIds.size,
+    assignmentsTotal: (assignments.data ?? []).length,
+    submissionScores: (submissions.data ?? [])
+      .map((x) => x.score)
+      .filter((n): n is number => typeof n === "number"),
+    certificates: (certificates.data ?? []).length,
+  });
+  const myAchievements = achievements(myStats);
+
+
   const profileDone = !!(user?.first_name && user?.last_name);
   const checksDone = [profileDone, true, false, enrolled].filter(Boolean).length;
 
@@ -229,6 +263,72 @@ export default function StudentDashboardPage() {
               </ul>
             </section>
           ) : null}
+
+          {/* ── My learning (Udemy-style) ─────────────────────────────── */}
+          <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-ink-900">My learning</h3>
+                <p className="text-sm text-ink-500">Keep your streak going</p>
+              </div>
+              <Link href="/lms" className="text-sm font-bold text-brand-gold-dark hover:underline">
+                View all →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatCard label="Course progress" value={`${myStats.overallPct}%`} hint={`${myStats.watchedLessons}/${myStats.totalLessons} lessons watched`} icon={<Flame size={16} />} />
+              <StatCard label="Attendance" value={myStats.attendancePct != null ? `${myStats.attendancePct.toFixed(0)}%` : "–"} hint="live classes" icon={<Clock size={16} />} />
+              <StatCard label="Assignments" value={`${myStats.submitted}/${myStats.assignmentsTotal}`} hint={myStats.avgScore != null ? `avg score ${myStats.avgScore}` : "submitted"} icon={<CheckCircle2 size={16} />} />
+              <StatCard label="Certificates" value={myStats.certificates} hint="earned" icon={<Trophy size={16} />} />
+            </div>
+          </section>
+
+          {myCourses.length > 0 && (
+            <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
+              <h3 className="font-bold text-ink-900">My courses</h3>
+              <div className="mt-3 space-y-4">
+                {myCourses.map((c) => (
+                  <div key={c.cohortId} className="rounded-2xl border border-ink-100 p-4 transition-colors hover:border-brand-gold/50">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-ink-800">{c.title}</p>
+                        <p className="text-xs text-ink-500">{c.watched}/{c.total} lessons completed</p>
+                      </div>
+                      <Link
+                        href={c.nextUnwatchedId ? "/lms" : "/lms"}
+                        className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light"
+                      >
+                        {c.pct >= 100 ? "Review course" : c.watched > 0 ? "Resume" : "Start course"}
+                      </Link>
+                    </div>
+                    <Progress value={c.pct} showValue={false} className="mt-3" />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Achievements */}
+          <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
+            <div className="mb-3 flex items-center gap-2">
+              <Award size={16} className="text-brand-gold" />
+              <h3 className="font-bold text-ink-900">Achievements</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {myAchievements.map((a) => (
+                <span
+                  key={a.id}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                    a.earned
+                      ? "border-brand-gold bg-brand-gold-light text-brand-gold-dark"
+                      : "border-ink-200 bg-ink-50 text-ink-400"
+                  }`}
+                >
+                  <span aria-hidden="true">{a.icon}</span> {a.label}
+                </span>
+              ))}
+            </div>
+          </section>
         </div>
 
         <aside className="space-y-4">

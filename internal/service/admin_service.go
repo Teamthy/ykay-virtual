@@ -19,6 +19,7 @@ import (
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
+	"ykay-virtual/internal/domain/leads"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
@@ -55,6 +56,7 @@ type AdminService struct {
 	subjects       academics.SubjectRepository
 	tutorSubjects  tutor.TutorSubjectRepository
 	lmsStarter     func(ctx context.Context, cohortID, tutorProfileID uuid.UUID, cohortTitle string) error
+	leadsRepo      leads.Repository
 	users          identity.UserRepository
 	roles          identity.RoleRepository
 	auditLogs      identity.AuditLogRepository
@@ -1026,6 +1028,18 @@ func (s *AdminService) GetOrderDetailRich(ctx context.Context, id uuid.UUID) (*O
 	return view, nil
 }
 
+// UserEmail resolves a user's email address (admin diagnostics: test email).
+func (s *AdminService) UserEmail(ctx context.Context, userID uuid.UUID) (string, error) {
+	if s.users == nil {
+		return "", errors.New("user store unavailable")
+	}
+	u, err := s.users.FindByID(ctx, userID)
+	if err != nil {
+		return "", err
+	}
+	return u.Email, nil
+}
+
 func strOrEmpty(p *string) string {
 	if p == nil {
 		return ""
@@ -1295,6 +1309,13 @@ func (s *AdminService) CompletePaystackTransfer(ctx context.Context, adminID, pa
 
 // ── Admin tutor console ───────────────────────────────────────────────────
 
+// WithLeads wires the lead store so the admin overview can surface the
+// conversion funnel (new leads, totals).
+func (s *AdminService) WithLeads(l leads.Repository) *AdminService {
+	s.leadsRepo = l
+	return s
+}
+
 // WithLMSStarter wires the automatic LMS starter pack: every cohort a tutor
 // is attached to gets a recorded demo lesson, study resource, assignment and
 // homework note (idempotent).
@@ -1457,4 +1478,82 @@ func (s *AdminService) ListApprovedTutors(ctx context.Context) ([]tutor.TutorPro
 		return []tutor.TutorProfile{}, 0, nil
 	}
 	return s.vetting.ListByStatus(ctx, string(tutor.TutorStatusApproved), 100, 0)
+}
+
+// ── Admin overview (single-request operations dashboard) ──────────────────
+
+// AdminOverview — everything the admin dashboard needs in one request: the
+// platform stats, the conversion funnel, money in flight and the queues that
+// need a human.
+type AdminOverview struct {
+	Stats admin.Overview2 `json:"stats"`
+	// Leads — conversion funnel.
+	LeadsNew   int64 `json:"leads_new"`
+	LeadsTotal int64 `json:"leads_total"`
+	// Money in flight.
+	PayoutsPendingTotal float64 `json:"payouts_pending_total"`
+	// Queues needing attention.
+	VettingSubmitted int64 `json:"vetting_submitted"`
+	JoinsPending     int   `json:"joins_pending"`
+	TicketsOpen      int64 `json:"tickets_open"`
+	// Activity.
+	LessonsToday []booking.Lesson    `json:"lessons_today"`
+	RecentAudit  []identity.AuditLog `json:"recent_audit"`
+}
+
+// OperationsOverview aggregates the operations dashboard (nil-safe on every
+// store) — a single request for the admin home page.
+func (s *AdminService) OperationsOverview(ctx context.Context) (*AdminOverview, error) {
+	out := &AdminOverview{LessonsToday: []booking.Lesson{}, RecentAudit: []identity.AuditLog{}}
+
+	stats, err := s.Overview2(ctx)
+	if err == nil && stats != nil {
+		out.Stats = *stats
+	}
+
+	if s.leadsRepo != nil {
+		if n, err := s.leadsRepo.CountByStatus(ctx, leads.StatusNew); err == nil {
+			out.LeadsNew = n
+		}
+		if list, total, err := s.leadsRepo.List(ctx, "", 1, 1); err == nil {
+			_ = list
+			out.LeadsTotal = total
+		}
+	}
+
+	if s.payouts != nil {
+		if rows, err := s.payouts.ListByStatus(ctx, payment.PayoutPending, 500); err == nil {
+			for _, p := range rows {
+				out.PayoutsPendingTotal += p.Amount
+			}
+		}
+	}
+
+	if s.vetting != nil {
+		if _, total, err := s.vetting.ListByStatus(ctx, string(tutor.TutorStatusSubmitted), 100, 0); err == nil {
+			out.VettingSubmitted = total
+		}
+	}
+
+	if s.cohortAdmin != nil {
+		if reqs, err := s.cohortAdmin.ListJoinRequests(ctx, booking.CohortJoinPending); err == nil {
+			out.JoinsPending = len(reqs)
+		}
+	}
+
+	if _, total, err := s.ListSupportTickets(ctx, "OPEN", 1, 100); err == nil {
+		out.TicketsOpen = total
+	}
+
+	if lessons, err := s.ListLessonsToday(ctx); err == nil {
+		out.LessonsToday = lessons
+	}
+
+	if s.auditLogs != nil {
+		if rows, err := s.auditLogs.ListRecent(ctx, "", "", 12); err == nil {
+			out.RecentAudit = rows
+		}
+	}
+
+	return out, nil
 }

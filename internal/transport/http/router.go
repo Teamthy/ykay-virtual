@@ -147,6 +147,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// Leads (public capture + admin follow-up console)
 	mux.HandleFunc("POST "+v1+"/leads", authRate(handlers.Leads.Capture))
 	mux.HandleFunc("GET "+v1+"/admin/leads", handlers.Leads.List)
+	mux.HandleFunc("GET "+v1+"/admin/overview", handlers.Admin.OperationsOverview)
+	mux.HandleFunc("POST "+v1+"/admin/email/test", handlers.Admin.SendTestEmail)
 	mux.HandleFunc("POST "+v1+"/admin/leads/{leadId}/status", handlers.Leads.UpdateStatus)
 
 	// Catalogue (public, cached 60-300s)
