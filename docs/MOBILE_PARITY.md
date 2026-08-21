@@ -35,7 +35,7 @@
 | Chat widget (AI + human handoff) | ✅ | ✅ chat screen | DONE |
 | Notifications hub + devices | ✅ | ✅ notifications + devices | DONE |
 | Leads funnel (exit intent, cart abandon, WhatsApp) | ✅ web-only (browsing UX) | n/a — mobile funnels into app | WEB-ONLY (by design) |
-| Admin console (overview, cohorts, programmes, tutors, vetting, leads, payouts, exports) | ✅ | ⚠️ desktop-first | WEB-ONLY (by design) |
+| Admin console (overview, cohorts, programmes, tutors, vetting, leads, payouts, exports) | ✅ | ✅ read-only ops overview (escrow hero, queues, today's classes, audit); mutations stay web | PARTIAL (mobile read-only) |
 | Exam prep marketing pages (WAEC/NECO/JAMB/IGCSE) | ✅ | ✅ exam-prep + subject pages | DONE |
 | Programme pages + enrolment | ✅ | ✅ programmes/[slug] | DONE |
 | Tutor search, profiles, reviews, saved | ✅ | ✅ search/subjects/tutors/saved | DONE |

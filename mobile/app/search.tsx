@@ -9,7 +9,8 @@ import { Card } from "@/src/components/ui/Card";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { TabLayout } from "@/src/components/TabLayout";
-import { colors, radius, spacing } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { radius, spacing } from "@/src/lib/theme";
 import {
   formatRating,
   listSubjects,
@@ -26,6 +27,7 @@ import { isSaved, toggleSaved, type SavedTutor } from "@/src/lib/wishlist";
 const FEATURED_QUERIES = ["Mathematics", "Computer Science", "Python"] as const;
 
 export default function ExploreScreen() {
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{ q?: string; subject?: string }>();
   const subjectSlug = typeof params.subject === "string" ? params.subject : undefined;
   const [query, setQuery] = useState(typeof params.q === "string" ? params.q : "");
@@ -151,7 +153,7 @@ export default function ExploreScreen() {
               const saved = savedSet.has(t.slug);
               return (
                 <Card key={t.id} style={styles.tutorRow}>
-                  <View style={styles.avatar}>
+                  <View style={[styles.avatar, { backgroundColor: colors.greenLight }]}>
                     <AppText style={{ fontWeight: "800", color: colors.navy }}>{t.display_name.slice(0, 1)}</AppText>
                   </View>
                   <View style={{ flex: 1, marginLeft: spacing.sm }}>
@@ -191,7 +193,7 @@ export default function ExploreScreen() {
         ) : (
           // ── Discovery content ───────────────────────────────────────────
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.section}>
-            <AppText variant="label" style={styles.sectionTitle}>
+            <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
               CATEGORIES
             </AppText>
             <View style={styles.chips}>
@@ -216,14 +218,14 @@ export default function ExploreScreen() {
         {/* Featured — shown regardless of search for discovery richness */}
         {!active && featured.length > 0 && (
           <View style={styles.section}>
-            <AppText variant="label" style={styles.sectionTitle}>
+            <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
               FEATURED
             </AppText>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -spacing.lg }}>
               <View style={styles.hScroll}>
                 {featured.map((t) => (
                   <Card key={t.id} style={styles.featuredCard} onPress={() => router.push(`/tutors/${t.slug}` as never)}>
-                    <View style={styles.fAvatar}>
+                    <View style={[styles.fAvatar, { backgroundColor: colors.green }]}>
                       <AppText style={{ fontWeight: "800", color: colors.white }}>{t.display_name.slice(0, 1)}</AppText>
                     </View>
                     <AppText variant="heading" style={{ marginTop: spacing.sm }}>
@@ -245,14 +247,14 @@ export default function ExploreScreen() {
         {/* Recommended */}
         {!active && recommended.length > 0 && (
           <View style={styles.section}>
-            <AppText variant="label" style={styles.sectionTitle}>
+            <AppText variant="label" style={[styles.sectionTitle, { color: colors.ink[500] }]}>
               RECOMMENDED FOR YOU
             </AppText>
             {recommended.slice(0, 5).map((t) => {
               const saved = savedSet.has(t.slug);
               return (
                 <Card key={t.id} style={styles.tutorRow}>
-                  <View style={styles.avatar}>
+                  <View style={[styles.avatar, { backgroundColor: colors.greenLight }]}>
                     <AppText style={{ fontWeight: "800", color: colors.navy }}>{t.display_name.slice(0, 1)}</AppText>
                   </View>
                   <View style={{ flex: 1, marginLeft: spacing.sm }}>
@@ -286,12 +288,10 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   header: { marginBottom: spacing.lg },
   section: { marginTop: spacing.xl, marginBottom: spacing.xs },
-  sectionTitle: { color: colors.ink[500], letterSpacing: 1.1, marginBottom: spacing.sm },
+  sectionTitle: { letterSpacing: 1.1, marginBottom: spacing.sm },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
   chip: {
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 2,
@@ -302,7 +302,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.green,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -316,7 +315,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.greenLight,
     alignItems: "center",
     justifyContent: "center",
   },

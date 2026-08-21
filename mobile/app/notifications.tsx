@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "@/src/components/ui/Screen";
@@ -99,7 +99,7 @@ export default function Notifications() {
 
       {/* B. Priority summary — unread is the dominant fact */}
       {!loading && unread > 0 && (
-        <Animated.View entering={FadeInDown.delay(60).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(60).duration(240)}>
           <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
             <View style={{ flex: 1 }}>
               <AppText variant="label" style={styles.heroEyebrow}>
@@ -122,7 +122,7 @@ export default function Notifications() {
       )}
 
       {loading ? (
-        <Animated.View entering={FadeInUp.delay(80)}>
+        <Animated.View entering={FadeIn.delay(80).duration(240)}>
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} height={84} style={{ marginBottom: spacing.sm }} />
           ))}
@@ -138,7 +138,7 @@ export default function Notifications() {
       ) : (
         <View style={styles.list}>
           {ordered.map((n, i) => (
-            <Animated.View key={n.id} entering={FadeInUp.delay(100 + i * 50).springify().damping(18)}>
+            <Animated.View key={n.id} entering={FadeIn.delay(100 + i * 50).duration(240)}>
               <Card onPress={() => void markRead(n)} style={styles.card}>
                 <View style={styles.cardTop}>
                   <View style={[styles.iconTile, { backgroundColor: n.is_read ? colors.ink[100] : colors.greenLight }]}>

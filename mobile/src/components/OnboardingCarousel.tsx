@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { router } from "expo-router";
 import { Image, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "@/src/components/ui/AppText";
 import { Button } from "@/src/components/ui/Button";
@@ -42,7 +42,7 @@ export function OnboardingCarousel() {
     <View style={[styles.root, { backgroundColor: colors.bg }]}>
       <Animated.View
         key={index}
-        entering={FadeInUp.duration(320).springify().damping(18)}
+        entering={FadeIn.duration(260)}
         style={styles.page}
       >
         <View style={[styles.imageWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -68,7 +68,7 @@ export function OnboardingCarousel() {
 
       {/* CTAs — singular-page navigation, no swipe */}
       <Animated.View
-        entering={FadeInDown.duration(260)}
+        entering={FadeIn.duration(260)}
         style={[styles.actions, { paddingBottom: insets.bottom + spacing.lg }]}
       >
         {last ? (

@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -60,7 +60,7 @@ export default function TutorMessagesScreen() {
       />
 
       {conversations.length > 0 && (
-        <Animated.View entering={FadeInDown.delay(60).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(60).duration(240)}>
           <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
             <AppText variant="label" style={styles.heroEyebrow}>
               {unreadTotal > 0 ? "UNREAD MESSAGES" : "INBOX STATUS"}
@@ -84,7 +84,7 @@ export default function TutorMessagesScreen() {
       ) : (
         <View style={styles.list}>
           {ordered.map((c, i) => (
-            <Animated.View key={c.id} entering={FadeInUp.delay(80 + i * 50).springify().damping(18)}>
+            <Animated.View key={c.id} entering={FadeIn.delay(80 + i * 50).duration(240)}>
               <Card onPress={() => router.push(`/tutor/messages/${c.id}` as never)} padded style={styles.row}>
                 <View style={[styles.avatar, { backgroundColor: (c.unread_count ?? 0) > 0 ? colors.greenLight : colors.ink[100] }]}>
                   <Ionicons name="person" size={16} color={colors.deep} />

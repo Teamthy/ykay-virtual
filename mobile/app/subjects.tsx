@@ -7,13 +7,14 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { listSubjects, type CatalogueSubject } from "@/src/lib/catalogue";
 
 // Subjects — the full teaching catalogue (British/Nigerian academic subjects,
 // languages, digital skills, exam prep), searchable and filterable by category.
 
 export default function SubjectsScreen() {
+  const { colors } = useTheme();
   const [subjects, setSubjects] = useState<CatalogueSubject[]>([]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
@@ -65,17 +66,17 @@ export default function SubjectsScreen() {
         <Card
           onPress={() => setCategory(null)}
           padded
-          style={category === null ? { ...styles.catChip, backgroundColor: colors.gold } : styles.catChip}
+          style={category === null ? { ...styles.catChip, backgroundColor: colors.green } : styles.catChip}
         >
-          <AppText variant="caption" style={{ color: category === null ? colors.ink[900] : colors.ink[600], fontWeight: "700" }}>
+          <AppText variant="caption" style={{ color: category === null ? colors.ink[950] : colors.ink[600], fontWeight: "700" }}>
             All
           </AppText>
         </Card>
         {categories.map((c) => {
           const active = category === c;
           return (
-            <Card key={c} onPress={() => setCategory(active ? null : c)} padded style={active ? { ...styles.catChip, backgroundColor: colors.gold } : styles.catChip}>
-              <AppText variant="caption" style={{ color: active ? colors.ink[900] : colors.ink[600], fontWeight: "700" }}>
+            <Card key={c} onPress={() => setCategory(active ? null : c)} padded style={active ? { ...styles.catChip, backgroundColor: colors.green } : styles.catChip}>
+              <AppText variant="caption" style={{ color: active ? colors.ink[950] : colors.ink[600], fontWeight: "700" }}>
                 {c}
               </AppText>
             </Card>

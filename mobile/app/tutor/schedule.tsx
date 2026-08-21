@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -79,7 +79,7 @@ export default function TutorScheduleScreen() {
       />
 
       {/* B. Primary card — this week's classes is the dominant fact */}
-      <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+      <Animated.View entering={FadeIn.delay(80).duration(240)}>
         <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
           <AppText variant="label" style={styles.heroEyebrow}>
             CLASSES THIS WEEK
@@ -126,7 +126,7 @@ export default function TutorScheduleScreen() {
         />
       ) : (
         byDay.map(([day, items], di) => (
-          <Animated.View key={day} entering={FadeInUp.delay(120 + di * 60).springify().damping(16)} style={styles.dayBlock}>
+          <Animated.View key={day} entering={FadeIn.delay(120 + di * 60).duration(240)} style={styles.dayBlock}>
             <AppText variant="label" style={{ color: colors.ink[500], letterSpacing: 1.1, fontSize: type.caption, marginBottom: spacing.xs, marginTop: spacing.sm }}>
               {day.toUpperCase()}
             </AppText>

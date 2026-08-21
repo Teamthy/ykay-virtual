@@ -6,12 +6,13 @@ import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { readSaved, removeSaved, type SavedTutor } from "@/src/lib/wishlist";
 
 // Saved tutors — device-local wishlist (same behaviour as the web /saved page).
 
 export default function SavedTutorsScreen() {
+  const { colors } = useTheme();
   const [saved, setSaved] = useState<SavedTutor[]>([]);
 
   const load = useCallback(async () => {
@@ -41,8 +42,8 @@ export default function SavedTutorsScreen() {
       ) : (
         saved.map((t) => (
           <Card key={t.slug} padded style={styles.row}>
-            <View style={styles.avatar}>
-              <AppText style={{ fontWeight: "800", color: colors.navy }}>{t.name.slice(0, 1)}</AppText>
+            <View style={[styles.avatar, { backgroundColor: colors.greenLight }]}>
+              <AppText style={{ fontWeight: "800", color: colors.deep }}>{t.name.slice(0, 1)}</AppText>
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
               <AppText variant="h3" onPress={() => router.push(`/tutors/${t.slug}` as never)}>
@@ -69,7 +70,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.goldLight,
     alignItems: "center",
     justifyContent: "center",
   },

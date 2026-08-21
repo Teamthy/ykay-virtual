@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { Linking, StyleSheet, TextInput, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
@@ -138,7 +138,7 @@ export default function CourseDetail() {
       />
 
       {playing?.video_url && (
-        <Animated.View entering={FadeInDown.springify().damping(16)} style={styles.playerBlock}>
+        <Animated.View entering={FadeIn.duration(240)} style={styles.playerBlock}>
           <Card padded={false} style={styles.playerCard}>
             <VideoPlayer lessonId={playing.id} videoUrl={playing.video_url} />
             <View style={styles.playerMeta}>
@@ -168,7 +168,7 @@ export default function CourseDetail() {
 
       <Section title={`Lessons · ${lessons.length}`}>
         {lessons.map((l, i) => (
-          <Animated.View key={l.id} entering={FadeInUp.delay(i * 40).springify().damping(18)}>
+          <Animated.View key={l.id} entering={FadeIn.delay(i * 40).duration(240)}>
             <Card style={styles.row}>
               <View style={styles.rowTop}>
                 <View style={styles.numBadge}>

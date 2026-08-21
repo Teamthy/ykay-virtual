@@ -8,7 +8,7 @@ import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { createLearner, listLearners, type Learner } from "@/src/lib/account";
 
 // Learners — the children/students linked to this account (GET/POST
@@ -18,6 +18,7 @@ import { createLearner, listLearners, type Learner } from "@/src/lib/account";
 const LEVELS = ["Year 7–9 (British)", "IGCSE (Year 10–11)", "A-Level (Year 12–13)", "JSS1–3 (Nigerian)", "SSS1–3 (Nigerian)", "Adult / professional"] as const;
 
 export default function LearnersScreen() {
+  const { colors } = useTheme();
   const [learners, setLearners] = useState<Learner[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [firstName, setFirstName] = useState("");
@@ -80,8 +81,8 @@ export default function LearnersScreen() {
       ) : (
         learners.map((l) => (
           <Card key={l.id} padded style={styles.row}>
-            <View style={styles.avatar}>
-              <Ionicons name="person" size={16} color={colors.navy} />
+            <View style={[styles.avatar, { backgroundColor: colors.greenLight }]}>
+              <Ionicons name="person" size={16} color={colors.deep} />
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
               <AppText variant="h3">
@@ -110,9 +111,9 @@ export default function LearnersScreen() {
                 key={lv}
                 onPress={() => setLevel(lv)}
                 padded
-                style={level === lv ? { ...styles.chip, backgroundColor: colors.gold } : styles.chip}
+                style={level === lv ? { ...styles.chip, backgroundColor: colors.green } : styles.chip}
               >
-                <AppText variant="caption" style={{ color: level === lv ? colors.ink[900] : colors.ink[600], fontWeight: "700" }}>
+                <AppText variant="caption" style={{ color: level === lv ? colors.ink[950] : colors.ink[600], fontWeight: "700" }}>
                   {lv}
                 </AppText>
               </Card>
@@ -141,7 +142,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.goldLight,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -138,8 +138,18 @@ Messages (unread summary card, unread-first), tutor sub-pages (Schedule
 week-view hero, Earnings balance hero, Lessons, Messages inbox,
 Availability, Profile — all themed), auth pages (login, forgot, reset,
 verify — branded with the web mark + SuccessState confirmations) and
-onboarding/wizard (branded, themed, singular pages). Every dashboard owns
-exactly ONE dominant fact and every number is live backend data.
+onboarding/wizard (branded, themed, singular pages), student pages
+(quizzes — also fixed a double tab bar, subjects, search, saved),
+parent pages (payments — total-spent hero, learners), and a NEW mobile
+admin console (read-only operations overview: revenue-in-escrow hero,
+needs-attention queues, today's classes, audit feed; super admin gets the
+email-delivery test). Every dashboard owns exactly ONE dominant fact and
+every number is live backend data.
+
+Motion: entrance animations are subtle 240ms fades — the spring/bounce
+entrance was removed across the app (press feedback on buttons/cards keeps
+its spring, which is interaction state, not decoration). Theme: a light/
+dark toggle now sits in the top-right of every stack header.
 
 Not command-center-ized (deliberate): catalogue/marketing pages (subjects,
 tutors, exam prep, programmes, cohorts) are browse flows, not dashboards —

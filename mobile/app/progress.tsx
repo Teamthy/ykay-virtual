@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -114,7 +114,7 @@ export default function Progress() {
 
       {/* B. Primary card — attendance is the dominant fact */}
       {summary && (
-        <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(80).duration(240)}>
           <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
             <AppText variant="label" style={styles.heroEyebrow}>
               ATTENDANCE
@@ -148,7 +148,7 @@ export default function Progress() {
 
       {/* C. Key metrics */}
       {summary && (
-        <Animated.View entering={FadeInUp.delay(140).springify().damping(16)} style={styles.metricGrid}>
+        <Animated.View entering={FadeIn.delay(140).duration(240)} style={styles.metricGrid}>
           {[
             { label: "PRESENT", value: String(summary.present), color: colors.greenDark },
             { label: "LATE", value: String(summary.late), color: colors.warning },
@@ -180,7 +180,7 @@ export default function Progress() {
       ) : (
         <View style={styles.list}>
           {reports.map((r, i) => (
-            <Animated.View key={r.id} entering={FadeInUp.delay(100 + i * 60).springify().damping(18)}>
+            <Animated.View key={r.id} entering={FadeIn.delay(100 + i * 60).duration(240)}>
               <Card style={styles.reportCard}>
                 <View style={styles.reportHeader}>
                   <AppText variant="h3" style={{ flex: 1 }}>

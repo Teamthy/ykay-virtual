@@ -1,7 +1,7 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
@@ -147,7 +147,7 @@ export default function PracticePlayer() {
   if (review) {
     return (
       <Screen scroll>
-        <Animated.View entering={FadeInDown.springify().damping(16)}>
+        <Animated.View entering={FadeIn.duration(240)}>
           <Card style={styles.resultCard}>
             <View style={[styles.scoreBadge, { backgroundColor: review.passed ? colors.greenLight : colors.ink[100] }]}>
               <AppText variant="display" style={{ color: review.passed ? colors.greenDark : colors.danger }}>
@@ -170,7 +170,7 @@ export default function PracticePlayer() {
         {review.questions.map((rq, i) => {
           const isCorrect = rq.chosen_index === rq.correct_index;
           return (
-            <Animated.View key={rq.id} entering={FadeInUp.delay(i * 40)}>
+            <Animated.View key={rq.id} entering={FadeIn.delay(i * 40).duration(240)}>
               <Card style={styles.reviewCard}>
                 <View style={styles.reviewTop}>
                   <AppText variant="label" style={{ color: isCorrect ? colors.greenDark : colors.danger }}>

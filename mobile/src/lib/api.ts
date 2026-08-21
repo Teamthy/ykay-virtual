@@ -313,3 +313,46 @@ export async function listExamAttempts(examId: string): Promise<PracticeAttemptI
   const res = await apiFetch<PracticeAttemptItem[]>(`/tutor/exams/${examId}/attempts`);
   return res.data ?? [];
 }
+
+// --- Admin console (mobile read-only overview) ------------------------------
+// /admin/overview aggregates the ops dashboard in one request; the full
+// console stays desktop-first on the web. /admin/email/test lets a super
+// admin verify email delivery from the mobile console.
+
+export type AdminOverview = {
+  stats: {
+    users: number;
+    active_users: number;
+    tutors_total: number;
+    tutors_approved: number;
+    tutors_pending: number;
+    orders_total: number;
+    orders_paid: number;
+    revenue_in_escrow: number;
+    revenue_paid_out: number;
+    lessons_this_week: number;
+    lessons_today: number;
+    cohorts_published: number;
+    pending_enrolments: number;
+    overdue_lesson_notes: number;
+    pending_refunds: number;
+  };
+  leads_new: number;
+  leads_total: number;
+  payouts_pending_total: number;
+  vetting_submitted: number;
+  joins_pending: number;
+  tickets_open: number;
+  lessons_today: { id: string; title: string; start_at: string; meeting_url?: string | null }[];
+  recent_audit: { id: string; action: string; target_type: string; created_at: string }[];
+};
+
+export async function getAdminOverview(): Promise<AdminOverview> {
+  const res = await apiFetch<AdminOverview>("/admin/overview");
+  return res.data;
+}
+
+export async function sendAdminTestEmail(): Promise<{ sent: boolean; to: string; provider: string }> {
+  const res = await apiFetch<{ sent: boolean; to: string; provider: string }>("/admin/email/test", { method: "POST" });
+  return res.data;
+}

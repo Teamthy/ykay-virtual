@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
@@ -94,7 +94,7 @@ export default function QuizPlayer() {
             {title}
           </AppText>
         </View>
-        <Animated.View entering={FadeInUp.springify().damping(16)}>
+        <Animated.View entering={FadeIn.duration(240)}>
           <View style={[styles.resultCard, result.passed ? styles.pass : styles.fail]}>
             <AppText style={styles.resultScore}>
               {result.score}
@@ -126,7 +126,7 @@ export default function QuizPlayer() {
       </AppText>
 
       {s.questions.map((q, qi) => (
-        <Animated.View key={q.id} entering={FadeInUp.delay(qi * 40).springify().damping(18)}>
+        <Animated.View key={q.id} entering={FadeIn.delay(qi * 40).duration(240)}>
           <View style={styles.questionCard}>
             <AppText variant="h3">
               <AppText style={{ color: colors.goldDark }}>{qi + 1}.</AppText> {q.question}

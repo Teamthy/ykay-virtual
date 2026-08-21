@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -146,7 +146,7 @@ export default function MyLessonsScreen() {
       />
 
       {/* B. Primary card — this week is the dominant fact */}
-      <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+      <Animated.View entering={FadeIn.delay(80).duration(240)}>
         <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
           <AppText variant="label" style={styles.heroEyebrow}>
             THIS WEEK

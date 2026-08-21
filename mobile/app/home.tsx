@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -118,6 +118,7 @@ export default function Home() {
 
   const roles = me?.roles ?? [];
   const isTutor = roles.includes("TUTOR");
+  const isAdmin = roles.includes("ACADEMIC_ADMIN") || roles.includes("SUPER_ADMIN");
   const isParent = roles.includes("PARENT") && !roles.includes("STUDENT");
   const signedOut = !me && !loading;
 
@@ -196,7 +197,7 @@ export default function Home() {
     <TabLayout>
       <Screen scroll>
         {/* A. Header — personal workspace identity */}
-        <Animated.View entering={FadeInDown.delay(60).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(60).duration(240)}>
           <View style={styles.header}>
             {signedOut ? (
               <View style={styles.brandSlot}>
@@ -233,8 +234,29 @@ export default function Home() {
           </View>
         </Animated.View>
 
+        {/* Admin console shortcut — ops overview for platform admins */}
+        {!signedOut && isAdmin && (
+          <Animated.View entering={FadeIn.delay(90).duration(240)}>
+            <Card
+              onPress={() => router.push("/admin" as never)}
+              style={{ flexDirection: "row", alignItems: "center", marginBottom: spacing.md }}
+            >
+              <View style={[styles.activityIcon, { backgroundColor: colors.greenLight }]}>
+                <Ionicons name="pulse-outline" size={16} color={colors.deep} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                <AppText variant="h3">Admin console</AppText>
+                <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
+                  Escrow, queues and today's classes at a glance
+                </AppText>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.greenDark} />
+            </Card>
+          </Animated.View>
+        )}
+
         {/* B. Primary card — one dominant fact per role */}
-        <Animated.View entering={FadeInDown.delay(120).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(120).duration(240)}>
           {signedOut ? (
             <Card style={styles.welcomeCard}>
               <AppText variant="h2">Your learning command center</AppText>
@@ -352,7 +374,7 @@ export default function Home() {
 
         {/* C. Key metrics — 2-up grid, tap-through to source */}
         {!signedOut && (
-          <Animated.View entering={FadeInUp.delay(160).springify().damping(16)} style={styles.metricGrid}>
+          <Animated.View entering={FadeIn.delay(160).duration(240)} style={styles.metricGrid}>
             {(isTutor
               ? [
                   { label: "THIS WEEK", value: String(weekLessons.length), href: "/tutor/schedule" },
@@ -381,7 +403,7 @@ export default function Home() {
 
         {/* D. Quick actions — primary CTA then secondary tiles */}
         {!signedOut && (
-          <Animated.View entering={FadeInUp.delay(200).springify().damping(16)}>
+          <Animated.View entering={FadeIn.delay(200).duration(240)}>
             <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
               QUICK ACTIONS
             </AppText>
@@ -424,7 +446,7 @@ export default function Home() {
         )}
 
         {/* E. Recent activity — status chips, tap-through */}
-        <Animated.View entering={FadeInUp.delay(240).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(240).duration(240)}>
           <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
             {signedOut ? "EXPLORE" : "RECENT ACTIVITY"}
           </AppText>
@@ -537,7 +559,7 @@ export default function Home() {
 
         {/* F. More tools — compact, low visual weight */}
         {!signedOut && (
-          <Animated.View entering={FadeInUp.delay(280).springify().damping(16)}>
+          <Animated.View entering={FadeIn.delay(280).duration(240)}>
             <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
               EXPLORE MORE
             </AppText>

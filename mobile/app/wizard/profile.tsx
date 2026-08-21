@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
@@ -61,7 +61,7 @@ export default function WizardProfile() {
     <Screen scroll>
       <WizardStepper step={1} labels={["Welcome", midLabel(role), "Goals"]} />
 
-      <Animated.View entering={FadeInUp.delay(60).springify().damping(16)}>
+      <Animated.View entering={FadeIn.delay(60).duration(240)}>
         <AppText variant="h1">
           {isParent ? "Add your first learner" : isStudent ? "What level are you at?" : "What do you teach?"}
         </AppText>
@@ -75,7 +75,7 @@ export default function WizardProfile() {
       </Animated.View>
 
       {isParent && (
-        <Animated.View entering={FadeInUp.delay(140).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(140).duration(240)}>
           <AppText variant="label" style={styles.fieldLabel}>FIRST NAME</AppText>
           <AppInput
             value={firstName}
@@ -86,7 +86,7 @@ export default function WizardProfile() {
         </Animated.View>
       )}
 
-      <Animated.View entering={FadeInDown.delay(180).springify().damping(16)}>
+      <Animated.View entering={FadeIn.delay(180).duration(240)}>
         {!isParent && <AppText variant="label" style={styles.fieldLabel}>CURRENT LEVEL / SUBJECT</AppText>}
         <View style={styles.pills}>
           {options.map((opt) => (
@@ -104,7 +104,7 @@ export default function WizardProfile() {
         </View>
       </Animated.View>
 
-      <Animated.View entering={FadeInUp.delay(260).springify().damping(16)} style={{ marginTop: 8 }}>
+      <Animated.View entering={FadeIn.delay(260).duration(240)} style={{ marginTop: 8 }}>
         <View style={styles.rowBtns}>
           <Button label="Back" variant="ghost" onPress={() => router.replace("/wizard" as never)} />
           <View style={{ flex: 1 }}>

@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
@@ -87,14 +87,14 @@ export default function WizardGoals() {
     <Screen scroll>
       <WizardStepper step={2} labels={["Welcome", midLabel(role), "Goals"]} />
 
-      <Animated.View entering={FadeInUp.delay(60).springify().damping(16)}>
+      <Animated.View entering={FadeIn.delay(60).duration(240)}>
         <AppText variant="h1">What are your goals?</AppText>
         <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 6, lineHeight: 20 }}>
           Pick as many as you like — they shape your “For you” feed.
         </AppText>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(140).springify().damping(16)} style={{ marginTop: 16 }}>
+      <Animated.View entering={FadeIn.delay(140).duration(240)} style={{ marginTop: 16 }}>
         {GOALS.map((g) => {
           const active = goals.includes(g.id);
           return (
@@ -116,7 +116,7 @@ export default function WizardGoals() {
 
       {error ? <AppText variant="bodySm" style={{ color: colors.danger, marginTop: 12 }}>{error}</AppText> : null}
 
-      <Animated.View entering={FadeInUp.delay(240).springify().damping(16)} style={{ marginTop: 24 }}>
+      <Animated.View entering={FadeIn.delay(240).duration(240)} style={{ marginTop: 24 }}>
         <View style={styles.rowBtns}>
           <Button label="Back" variant="ghost" onPress={() => router.replace("/wizard/profile" as never)} />
           <View style={{ flex: 1 }}>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { router } from "expo-router";
 import { Alert, StyleSheet, View } from "react-native";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
@@ -56,17 +56,17 @@ export default function Login() {
   return (
     <Screen scroll={false} padded>
       <View style={styles.content}>
-        <Animated.View entering={FadeInUp.delay(40).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(40).duration(240)}>
           <BrandLogo stacked size={52} />
         </Animated.View>
-        <Animated.View entering={FadeInUp.delay(80).springify().damping(16)} style={styles.headingWrap}>
+        <Animated.View entering={FadeIn.delay(80).duration(240)} style={styles.headingWrap}>
           <AppText variant="h1">Welcome back</AppText>
           <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 6, marginBottom: 28 }}>
             Log in to continue your learning.
           </AppText>
         </Animated.View>
 
-        <Animated.View entering={FadeInUp.delay(160).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(160).duration(240)}>
           <AppInput
             label="Email address"
             placeholder="you@example.com"
@@ -89,11 +89,11 @@ export default function Login() {
           />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(240).springify().damping(16)} style={{ marginTop: 8 }}>
+        <Animated.View entering={FadeIn.delay(240).duration(240)} style={{ marginTop: 8 }}>
           <Button label={busy ? "Logging in…" : "Log in"} onPress={() => void submit()} loading={busy} full />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(300).springify().damping(16)} style={{ marginTop: 16, alignItems: "center" }}>
+        <Animated.View entering={FadeIn.delay(300).duration(240)} style={{ marginTop: 16, alignItems: "center" }}>
           <AppText
             variant="bodySm"
             style={{ color: colors.navy, fontWeight: "700" }}

@@ -1,7 +1,7 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
@@ -61,7 +61,7 @@ export default function TutorEarningsScreen() {
       />
 
       {/* B. Primary card — available balance is the dominant fact */}
-      <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+      <Animated.View entering={FadeIn.delay(80).duration(240)}>
         <LinearGradient colors={[colors.navy, colors.navyDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
           <AppText variant="label" style={styles.heroEyebrow}>
             AVAILABLE BALANCE
@@ -78,7 +78,7 @@ export default function TutorEarningsScreen() {
       </Animated.View>
 
       {/* C. Key metrics */}
-      <Animated.View entering={FadeInUp.delay(140).springify().damping(16)} style={styles.totals}>
+      <Animated.View entering={FadeIn.delay(140).duration(240)} style={styles.totals}>
         {[
           { label: "HELD (ESCROW)", value: data?.held_total, color: colors.warning },
           { label: "RELEASED", value: data?.released_total, color: colors.greenDark },

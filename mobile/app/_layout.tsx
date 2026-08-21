@@ -18,6 +18,7 @@ import { colors, fonts } from "@/src/lib/theme";
 import { setUnauthorizedHandler } from "@/src/lib/api";
 import { parseTarget, openNotification } from "@/src/lib/deeplink";
 import { UpdateBanner } from "@/src/components/UpdateBanner";
+import { ThemeToggle } from "@/src/components/ThemeToggle";
 import { View } from "react-native";
 
 // Keep the native splash visible until the brand fonts (Anton + DM Sans) are
@@ -120,6 +121,8 @@ function ThemedApp() {
           headerTintColor: colors.white,
           headerTitleStyle: { fontFamily: fonts.display, fontWeight: "400", fontSize: 19 },
           contentStyle: { backgroundColor: colors.cream },
+          // Light/dark toggle lives at the top of every stack screen.
+          headerRight: () => <ThemeToggle />,
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -164,6 +167,9 @@ function ThemedApp() {
         <Stack.Screen name="tutor/exams" options={{ title: "My exams" }} />
         <Stack.Screen name="tutor/exams/new" options={{ title: "New exam" }} />
         <Stack.Screen name="tutor/exams/[examId]" options={{ title: "Exam results" }} />
+        {/* Admin console (read-only operations overview; super admin gets the
+            email test) */}
+        <Stack.Screen name="admin/index" options={{ title: "Operations" }} />
         <Stack.Screen name="forgot-password" options={{ title: "Forgot password" }} />
         <Stack.Screen name="reset-password" options={{ title: "Reset password" }} />
         <Stack.Screen name="verify-email" options={{ title: "Verify email" }} />

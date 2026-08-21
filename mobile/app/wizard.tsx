@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
@@ -83,7 +83,7 @@ export default function WizardWelcome() {
     <Screen scroll>
       <WizardStepper step={0} labels={["Welcome", midLabel(role), "Goals"]} />
 
-      <Animated.View entering={FadeInUp.delay(80).springify().damping(16)}>
+      <Animated.View entering={FadeIn.delay(80).duration(240)}>
         <View style={styles.imageWrap}>
           <Image source={require("@/assets/images/wizard/learn.jpg")} style={styles.image} resizeMode="cover" />
         </View>
@@ -96,7 +96,7 @@ export default function WizardWelcome() {
         </AppText>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(220).springify().damping(16)} style={{ marginTop: 28 }}>
+      <Animated.View entering={FadeIn.delay(220).duration(240)} style={{ marginTop: 28 }}>
         <Button label="Continue" full onPress={() => router.push("/wizard/profile" as never)} />
       </Animated.View>
     </Screen>

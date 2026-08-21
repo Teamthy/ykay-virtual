@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -200,7 +200,7 @@ export default function Lms() {
         />
 
         {/* B. Primary card — one dominant fact per role */}
-        <Animated.View entering={FadeInDown.delay(80).springify().damping(16)}>
+        <Animated.View entering={FadeIn.delay(80).duration(240)}>
           <LinearGradient
             colors={[colors.navy, colors.navyDark]}
             start={{ x: 0, y: 0 }}
@@ -294,7 +294,7 @@ export default function Lms() {
 
         {/* C. Key metrics */}
         {role !== "OTHER" && (
-          <Animated.View entering={FadeInUp.delay(140).springify().damping(16)} style={styles.metricGrid}>
+          <Animated.View entering={FadeIn.delay(140).duration(240)} style={styles.metricGrid}>
             {(isTutor
               ? [
                   { label: "THIS WEEK", value: String(weekLessons), href: "/tutor/schedule" },
@@ -323,7 +323,7 @@ export default function Lms() {
 
         {/* D. Quick actions */}
         {role !== "OTHER" && (
-          <Animated.View entering={FadeInUp.delay(180).springify().damping(16)}>
+          <Animated.View entering={FadeIn.delay(180).duration(240)}>
             <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
               QUICK ACTIONS
             </AppText>
@@ -360,17 +360,17 @@ export default function Lms() {
 
         {/* Body: loading / error / empty / courses */}
         {loading ? (
-          <Animated.View entering={FadeInUp.delay(120)} style={{ marginTop: spacing.lg }}>
+          <Animated.View entering={FadeIn.delay(120).duration(240)} style={{ marginTop: spacing.lg }}>
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} height={96} style={{ marginBottom: spacing.md }} />
             ))}
           </Animated.View>
         ) : error ? (
-          <Animated.View entering={FadeInUp.delay(120)}>
+          <Animated.View entering={FadeIn.delay(120).duration(240)}>
             <ErrorState title="Couldn't load your courses" message={error} onRetry={() => void load()} />
           </Animated.View>
         ) : courses.length === 0 ? (
-          <Animated.View entering={FadeInUp.delay(120).springify().damping(16)} style={styles.stateCard}>
+          <Animated.View entering={FadeIn.delay(120).duration(240)} style={styles.stateCard}>
             {isTutor ? (
               <EmptyState
                 icon="book-outline"
@@ -403,7 +403,7 @@ export default function Lms() {
           <>
             {/* E. Recent attempts (learner) */}
             {!isTutor && submitted.length > 0 && (
-              <Animated.View entering={FadeInUp.delay(200).springify().damping(16)}>
+              <Animated.View entering={FadeIn.delay(200).duration(240)}>
                 <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
                   RECENT ATTEMPTS
                 </AppText>
@@ -433,7 +433,7 @@ export default function Lms() {
             )}
 
             {/* F. Course cards */}
-            <Animated.View entering={FadeInUp.delay(220).springify().damping(16)}>
+            <Animated.View entering={FadeIn.delay(220).duration(240)}>
               <AppText variant="label" style={[styles.section, { color: colors.ink[500] }]}>
                 {isTutor ? "MY COHORTS" : "MY COURSES"}
               </AppText>
@@ -443,7 +443,7 @@ export default function Lms() {
                   const done = c.lessons.filter((l) => watched[l.id]?.watched).length;
                   const pct = Math.round((done / Math.max(c.lessons.length, 1)) * 100);
                   return (
-                    <Animated.View key={c.cohortId} entering={FadeInUp.delay(120 + i * 70).springify().damping(16)}>
+                    <Animated.View key={c.cohortId} entering={FadeIn.delay(120 + i * 70).duration(240)}>
                       <Card
                         onPress={() =>
                           router.push({ pathname: "/lms/[cohortId]", params: { cohortId: c.cohortId } })
