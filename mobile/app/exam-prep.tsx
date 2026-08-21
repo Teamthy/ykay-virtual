@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { router } from "expo-router";
 import { Linking, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,7 +7,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { EXAMS, getSubject } from "@/src/lib/exam-prep-data";
 
 // Exam preparation — the major exams NUVORA prepares learners for, with
@@ -14,6 +16,8 @@ import { EXAMS, getSubject } from "@/src/lib/exam-prep-data";
 // /exam-prep hub, drawing from the same lib/exam-prep-data.ts).
 
 export default function ExamPrepScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Screen scroll>
       <ScreenHeader
@@ -79,7 +83,8 @@ export default function ExamPrepScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   card: { marginBottom: 12 },
   cardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   levelPill: {

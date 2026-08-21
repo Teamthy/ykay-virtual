@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { AppText } from "@/src/components/ui/AppText";
 import { Button } from "@/src/components/ui/Button";
-import { colors, radius, type } from "@/src/lib/theme";
+import { radius, type } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 
 // Chat — premium AI-assistant client (same backend as the web /chat).
@@ -11,6 +13,8 @@ import { apiFetch } from "@/src/lib/api";
 type Msg = { id: string; role: string; content: string };
 
 export default function Chat() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -111,7 +115,8 @@ export default function Chat() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.cream },
   header: {
     flexDirection: "row",

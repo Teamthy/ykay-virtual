@@ -1,12 +1,13 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { formatNaira, formatRating, getTutor, type TutorCard } from "@/src/lib/catalogue";
 import { isSaved, toggleSaved, type SavedTutor } from "@/src/lib/wishlist";
 
@@ -14,6 +15,8 @@ import { isSaved, toggleSaved, type SavedTutor } from "@/src/lib/wishlist";
 // verified badge and a save-to-wishlist heart.
 
 export default function TutorDetailScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const [tutor, setTutor] = useState<TutorCard | null>(null);
   const [saved, setSaved] = useState(false);
@@ -154,7 +157,8 @@ export default function TutorDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   hero: { backgroundColor: colors.navy, borderRadius: 20, padding: 24, alignItems: "center" },
   avatar: {
     width: 64,

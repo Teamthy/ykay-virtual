@@ -1,10 +1,12 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors, radius } from "@/src/lib/theme";
+import { radius } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 import { getMessages, sendMessage, type Message } from "@/src/lib/messaging";
 import { usePolling } from "@/src/lib/realtime";
@@ -16,6 +18,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 // immediately, then reconciled with the server).
 
 export default function ConversationThreadScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -116,7 +120,8 @@ export default function ConversationThreadScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   emptyWrap: { marginTop: 40 },
   bubbleRow: { flexDirection: "row", marginBottom: 10 },
   bubbleRowMine: { justifyContent: "flex-end" },

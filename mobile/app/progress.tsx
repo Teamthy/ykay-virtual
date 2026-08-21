@@ -14,7 +14,8 @@ import { ErrorState } from "@/src/components/ui/ErrorState";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { useTheme } from "@/src/lib/theme-context";
 import { fonts, radius, spacing, type } from "@/src/lib/theme";
-import { apiFetch } from "@/src/lib/api";
+import { apiFetch, learnerQuery } from "@/src/lib/api";
+import { useLearner } from "@/src/lib/learner-context";
 
 // Progress — the learning-analytics command center: attendance rate is the
 // dominant fact (gradient hero + animated fill), key attendance metrics in a
@@ -56,6 +57,7 @@ function Gauge({ rate, fill }: { rate: number; fill: string }) {
 
 export default function Progress() {
   const { colors } = useTheme();
+  const { selectedId: learnerId } = useLearner();
   const [summary, setSummary] = useState<AttendanceSummary | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +68,8 @@ export default function Progress() {
     setError(null);
     try {
       const [a, r] = await Promise.all([
-        apiFetch<AttendanceSummary>("/me/attendance-summary").catch(() => ({ data: null })),
-        apiFetch<Report[]>("/learning/progress-reports").catch(() => ({ data: [] })),
+        apiFetch<AttendanceSummary>(`/me/attendance-summary${learnerQuery(learnerId)}`).catch(() => ({ data: null })),
+        apiFetch<Report[]>(`/learning/progress-reports${learnerQuery(learnerId)}`).catch(() => ({ data: [] })),
       ]);
       setSummary(a.data);
       setReports(r.data ?? []);
@@ -76,7 +78,7 @@ export default function Progress() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [learnerId]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
 

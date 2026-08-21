@@ -1,12 +1,14 @@
 import { useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors, radius, shadow } from "@/src/lib/theme";
+import { radius, shadow } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
 import { apiFetch } from "@/src/lib/api";
 
@@ -26,6 +28,8 @@ type Phase =
   | { kind: "done"; result: Result; title: string };
 
 export default function QuizPlayer() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { assessmentId } = useLocalSearchParams<{ assessmentId: string }>();
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -160,7 +164,8 @@ export default function QuizPlayer() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   center: { alignItems: "center", justifyContent: "center" },
   centerTop: { alignItems: "center", marginBottom: 20 },
   progressBar: { height: 6, borderRadius: 3, backgroundColor: colors.ink[100], overflow: "hidden" },

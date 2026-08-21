@@ -1,11 +1,12 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 
 // Lesson notes — the tutor's notes and homework for one lesson
@@ -23,6 +24,8 @@ type LessonNote = {
 };
 
 export default function LessonNotesScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { lessonId } = useLocalSearchParams<{ lessonId: string }>();
   const [notes, setNotes] = useState<LessonNote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +91,8 @@ export default function LessonNotesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   headerCard: {},
   noteCard: { marginTop: 12 },
   homeworkBox: {

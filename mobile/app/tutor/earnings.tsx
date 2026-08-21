@@ -7,6 +7,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
 import { EmptyState } from "@/src/components/ui/EmptyState";
+import { Button } from "@/src/components/ui/Button";
+import { router } from "expo-router";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { useTheme } from "@/src/lib/theme-context";
 import { radius, spacing, type } from "@/src/lib/theme";
@@ -106,6 +108,8 @@ export default function TutorEarningsScreen() {
           </Card>
         ))
       )}
+
+      <Button label="Bank details" variant="secondary" full style={{ marginTop: spacing.lg }} onPress={() => router.push("/tutor/bank" as never)} />
 
       <AppText variant="label" style={{ color: colors.ink[500], letterSpacing: 1.1, fontSize: type.caption, marginTop: spacing.xl, marginBottom: spacing.sm }}>
         PAYOUTS

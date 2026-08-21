@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Linking, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -5,7 +6,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 
 // Pricing — the published plan prices, mirrored from the web /pricing page.
 // No invented figures: these are the same four plans and prices shown on the
@@ -47,6 +49,8 @@ const PLANS = [
 ] as const;
 
 export default function PricingScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Screen scroll>
       <ScreenHeader
@@ -87,7 +91,8 @@ export default function PricingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   plan: { marginBottom: 12 },
   popularPill: {
     alignSelf: "flex-start",

@@ -1,18 +1,21 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { getSubject, type CatalogueSubject } from "@/src/lib/catalogue";
 
 // Subject detail — read from the live /subjects/{slug} catalogue (same data as
 // the web subject page).
 
 export default function SubjectDetailScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const [subject, setSubject] = useState<CatalogueSubject | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,7 +94,8 @@ export default function SubjectDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   hero: {
     backgroundColor: colors.navy,
     borderRadius: 20,

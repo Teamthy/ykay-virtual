@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -5,7 +6,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 
 // Help — the most common questions, plus paths to the full web Help Center and
 // the contact/support team. Answers are the same factual FAQs as the web.
@@ -19,6 +21,7 @@ const FAQS = [
 ] as const;
 
 export default function HelpScreen() {
+  const { colors } = useTheme();
   return (
     <Screen scroll>
       <ScreenHeader

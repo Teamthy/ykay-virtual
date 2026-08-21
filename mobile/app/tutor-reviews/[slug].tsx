@@ -1,18 +1,21 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { getTutorReviews, type TutorReview } from "@/src/lib/catalogue";
 
 // Tutor reviews — the published, consent-gated reviews for a tutor
 // (GET /tutors/{slug}/reviews). Reviewers are anonymous by design.
 
 function StarRow({ rating }: { rating: number }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stars}>
       {[1, 2, 3, 4, 5].map((n) => (
@@ -23,6 +26,8 @@ function StarRow({ rating }: { rating: number }) {
 }
 
 export default function TutorReviewsScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const [reviews, setReviews] = useState<TutorReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +84,8 @@ export default function TutorReviewsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   card: { marginBottom: 10 },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   stars: { flexDirection: "row", gap: 2 },

@@ -14,7 +14,8 @@ import { ErrorState } from "@/src/components/ui/ErrorState";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { useTheme } from "@/src/lib/theme-context";
 import { fonts, radius, spacing, type } from "@/src/lib/theme";
-import { apiFetch } from "@/src/lib/api";
+import { apiFetch, learnerQuery } from "@/src/lib/api";
+import { useLearner } from "@/src/lib/learner-context";
 
 // My lessons — the week-view command center for scheduled sessions
 // (docs/MOBILE_DASHBOARD_DIRECTION.md): THIS WEEK is the dominant fact, the
@@ -47,6 +48,7 @@ function fmtTime(iso: string): string {
 
 export default function MyLessonsScreen() {
   const { colors } = useTheme();
+  const { selectedId: learnerId } = useLearner();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isTutor, setIsTutor] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -59,14 +61,14 @@ export default function MyLessonsScreen() {
       const me = await apiFetch<Me>("/auth/me").catch(() => ({ data: { id: "", email: "", roles: [] as string[] } }));
       const tutor = (me.data.roles ?? []).includes("TUTOR");
       setIsTutor(tutor);
-      const res = await apiFetch<Lesson[]>(tutor ? "/me/tutor-lessons" : "/me/lessons");
+      const res = await apiFetch<Lesson[]>(tutor ? "/me/tutor-lessons" : `/me/lessons${learnerQuery(learnerId)}`);
       setLessons(res.data ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load your lessons");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [learnerId]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
 

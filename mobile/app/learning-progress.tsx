@@ -6,8 +6,10 @@ import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
-import { getMyLessonProgress, type LessonProgress } from "@/src/lib/api";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
+import { getMyLessonProgress, learnerQuery, type LessonProgress } from "@/src/lib/api";
+import { useLearner } from "@/src/lib/learner-context";
 import { apiFetch } from "@/src/lib/api";
 
 // Learning progress — your per-lesson watch state (GET /me/learning/progress),
@@ -16,6 +18,9 @@ import { apiFetch } from "@/src/lib/api";
 type Lesson = { id: string; title: string };
 
 export default function LearningProgressScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { selectedId: learnerId } = useLearner();
   const [progress, setProgress] = useState<LessonProgress[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,8 +28,8 @@ export default function LearningProgressScreen() {
   const load = useCallback(async () => {
     try {
       const [p, l] = await Promise.all([
-        getMyLessonProgress().catch(() => [] as LessonProgress[]),
-        apiFetch<Lesson[]>("/me/lessons")
+        getMyLessonProgress(learnerId).catch(() => [] as LessonProgress[]),
+        apiFetch<Lesson[]>(`/me/lessons${learnerQuery(learnerId)}`)
           .then((r) => r.data ?? [])
           .catch(() => [] as Lesson[]),
       ]);
@@ -35,7 +40,7 @@ export default function LearningProgressScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [learnerId]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
 
@@ -94,7 +99,8 @@ export default function LearningProgressScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   dot: {
     width: 30,

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Linking, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,7 +7,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import {
   getExam,
   getSubject,
@@ -18,6 +20,8 @@ import {
 // syllabus themes, with links to the subject catalogue and the web.
 
 export default function ExamPrepSubjectScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { exam: examSlug, subject: subjectSlug } = useLocalSearchParams<{
     exam: string;
     subject: string;
@@ -164,7 +168,8 @@ export default function ExamPrepSubjectScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   card: { marginBottom: 12 },
   cardTitle: { color: colors.navy },
   checkRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 8 },

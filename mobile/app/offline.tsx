@@ -1,14 +1,18 @@
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 
 // Offline — shown when the device has no connection. Suggests retrying or
 // reaching support via the web.
 
 export default function OfflineScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Screen scroll={false}>
       <View style={styles.wrap}>
@@ -31,7 +35,8 @@ export default function OfflineScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   wrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 },
   icon: {
     width: 88,

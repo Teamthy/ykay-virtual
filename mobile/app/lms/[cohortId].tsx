@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Linking, StyleSheet, TextInput, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -8,7 +8,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors, radius, spacing, type } from "@/src/lib/theme";
+import { radius, spacing, type, type ThemeColors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
 import { apiFetch } from "@/src/lib/api";
 import { VideoPlayer } from "@/src/components/VideoPlayer";
 import { cacheVideo, removeCachedVideo, isVideoCached } from "@/src/lib/offline-video";
@@ -30,6 +31,8 @@ type Assignment = { id: string; title: string; instructions?: string; due_at?: s
 type AttendanceRow = { student_profile_id: string; status: string };
 
 export default function CourseDetail() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { cohortId } = useLocalSearchParams<{ cohortId: string }>();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
@@ -270,6 +273,8 @@ export default function CourseDetail() {
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.section}>
       <AppText variant="label" style={styles.sectionTitle}>
@@ -281,6 +286,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.emptyBox}>
       <AppText variant="bodySm" style={{ color: colors.ink[400], textAlign: "center" }}>
@@ -290,7 +297,8 @@ function Empty({ children }: { children: React.ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   skeleton: { height: 96, borderRadius: radius.lg, backgroundColor: colors.ink[100], marginBottom: 12 },
   playerBlock: { marginBottom: 8 },
   playerCard: { overflow: "hidden" },

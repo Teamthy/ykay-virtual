@@ -1,10 +1,12 @@
+import { useMemo } from "react";
 import { Linking } from "react-native";
 import { Screen } from "@/src/components/ui/Screen";
 import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 
 // Terms of Service — the section headings and key points. The full text lives
 // on the web (nuvora.com/terms).
@@ -19,6 +21,7 @@ const SECTIONS = [
 ] as const;
 
 export default function TermsScreen() {
+  const { colors } = useTheme();
   return (
     <Screen scroll>
       <ScreenHeader

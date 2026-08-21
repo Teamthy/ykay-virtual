@@ -14,6 +14,7 @@ import {
 import type * as Notifications from "expo-notifications";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, useTheme } from "@/src/lib/theme-context";
+import { LearnerProvider } from "@/src/lib/learner-context";
 import { colors, fonts } from "@/src/lib/theme";
 import { setUnauthorizedHandler } from "@/src/lib/api";
 import { parseTarget, openNotification } from "@/src/lib/deeplink";
@@ -97,9 +98,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <SafeAreaProvider>
-        <ThemedApp />
-      </SafeAreaProvider>
+      <LearnerProvider>
+        <SafeAreaProvider>
+          <ThemedApp />
+        </SafeAreaProvider>
+      </LearnerProvider>
     </ThemeProvider>
   );
 }
@@ -161,6 +164,7 @@ function ThemedApp() {
         <Stack.Screen name="tutor/messages/[conversationId]" options={{ title: "Conversation" }} />
         <Stack.Screen name="tutor/profile" options={{ title: "Tutor profile" }} />
         <Stack.Screen name="tutor/availability" options={{ title: "Availability" }} />
+        <Stack.Screen name="tutor/bank" options={{ title: "Bank details" }} />
         {/* Practice exams (CBT) — student hub/player + tutor authoring console */}
         <Stack.Screen name="practice" options={{ title: "Practice exams" }} />
         <Stack.Screen name="practice/[examId]" options={{ title: "Practice", headerBackVisible: true }} />

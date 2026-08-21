@@ -1,17 +1,20 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { formatNaira, getCohort, type CohortDetail } from "@/src/lib/catalogue";
 
 // Cohort detail — a published cohort (GET /cohorts/{id}): schedule, capacity,
 // fee and status. Enrolment happens through the booking flow.
 
 export default function CohortDetailScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const [cohort, setCohort] = useState<CohortDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -121,7 +124,8 @@ export default function CohortDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   hero: { backgroundColor: colors.navy, borderRadius: 20, padding: 24 },
   statRow: { flexDirection: "row", gap: 8 },
   stat: { flex: 1, alignItems: "center" },

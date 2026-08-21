@@ -166,8 +166,14 @@ export async function getLessonProgress(
   return res.data as LessonProgress;
 }
 
-export async function getMyLessonProgress(): Promise<LessonProgress[]> {
-  const res = await apiFetch<LessonProgress[]>("/me/learning/progress");
+// learnerQuery — appends the parent's pinned learner to learner-scoped
+// endpoints (backend ResolveStudent accepts ?student_profile_id=).
+export function learnerQuery(studentProfileId?: string | null): string {
+  return studentProfileId ? `?student_profile_id=${encodeURIComponent(studentProfileId)}` : "";
+}
+
+export async function getMyLessonProgress(studentProfileId?: string | null): Promise<LessonProgress[]> {
+  const res = await apiFetch<LessonProgress[]>(`/me/learning/progress${learnerQuery(studentProfileId)}`);
   return res.data ?? [];
 }
 

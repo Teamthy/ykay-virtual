@@ -1,5 +1,5 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, Share, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -8,7 +8,8 @@ import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import {
   applyReferral,
   formatNaira,
@@ -22,6 +23,8 @@ import {
 // The reward is defined server-side; we display whatever the API returns.
 
 export default function ReferralsScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [code, setCode] = useState<ReferralCode | null>(null);
   const [refs, setRefs] = useState<Referral[]>([]);
   const [applyInput, setApplyInput] = useState("");
@@ -145,7 +148,8 @@ export default function ReferralsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   heroCard: { backgroundColor: colors.navy },
   sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
   row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },

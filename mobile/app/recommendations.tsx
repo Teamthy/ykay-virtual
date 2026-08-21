@@ -1,8 +1,10 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing } from "@/src/lib/theme";
+import { radius, spacing } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
 import { Button } from "@/src/components/ui/Button";
 import { apiFetch, getToken } from "@/src/lib/api";
@@ -16,6 +18,8 @@ type RecTutor = { profile: { id: string; slug: string; display_name: string; rat
 type Recs = { cohorts: RecCohort[]; programmes: RecProgramme[]; tutors: RecTutor[]; basis: string };
 
 export default function Recommendations() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [recs, setRecs] = useState<Recs | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,7 +122,8 @@ export default function Recommendations() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   signedOut: {
     alignItems: "center",
     gap: spacing.md,

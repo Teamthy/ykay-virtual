@@ -43,7 +43,7 @@
 | Certificates | ✅ | ✅ via LMS progress | DONE |
 | Parent learner management (link, progress, approvals) | ✅ parent dashboard | ✅ learners + progress screens | DONE |
 | Progress reports + attendance | ✅ | ✅ progress + learning-progress | DONE |
-| Dark mode | ✅ (class strategy) | ✅ NEW ThemeProvider: light/dark/system + toggle in Profile | DONE (new) |
+| Dark mode | ✅ (class strategy) | ✅ ThemeProvider: light/dark/system + header toggle + theme sweep across every screen | DONE (new) |
 | Brand system (tokens, fonts, logo) | ✅ | ✅ same tokens, Anton + DM Sans, web mark | DONE |
 | Offline banner / updates banner | ✅ | ✅ UpdateBanner + offline screen | DONE |
 | Onboarding carousel | ✅ marketing | ✅ 3 singular pages (no swipe carousel) | DONE |
@@ -56,14 +56,15 @@
 
 ## Roadmap (next parity batches)
 
-1. **Bank details on mobile** — tutor payout account entry screen
-   (currently web-only form).
-2. **Admin read-only overview on mobile** — a slim "ops at a glance" screen
-   for admin accounts (no mutations).
-3. **Google sign-in on mobile** — webview OAuth flow.
-4. **Dynamic-type scaling** — respect OS font scale for body text.
-5. **Parent learner switcher** — pin a learner so parent screens filter to
-   that child (backend already supports `student_profile_id`).
+1. **Google sign-in on mobile** — webview OAuth flow.
+2. **Dynamic-type scaling** — respect OS font scale for body text.
+3. **Tutor bank-list picker** — resolve account name from the bank code
+   (currently manual entry; backend contract identical).
+
+Closed this batch: **bank details on mobile** (DONE — `tutor/bank` screen,
+POST /tutors/me/vetting/profiles/{id}/bank), **admin read-only overview**
+(DONE — `/admin` console), **parent learner switcher** (DONE — pin a child;
+lessons/progress/LMS/attendance all filter via `student_profile_id`).
 
 ## Dark-mode coverage
 

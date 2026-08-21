@@ -158,8 +158,12 @@ dark toggle now sits in the top-right of every stack header.
 Not command-center-ized (deliberate): catalogue/marketing pages (subjects,
 tutors, exam prep, programmes, cohorts) are browse flows, not dashboards —
 they follow the same tokens/typography but keep a browse composition.
-Detail pages (lesson notes, learning progress, receipts, devices) inherit
-the themed kit and keep list/detail composition.
+Detail pages (lesson notes, learning progress, receipts, devices, course
+player, chat, help, referrals, edit profile, offline, marketing pages) are
+now fully dark-mode aware — every screen in the app resolves colours from
+the active theme. Parent accounts get a learner switcher (pin a child; all
+learner-scoped screens filter to them); tutors get bank-details entry on
+mobile.
 
 ## 8. Quality bar
 

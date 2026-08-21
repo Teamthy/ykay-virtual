@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Linking, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -5,7 +6,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 
 // Careers — mirrors the web /careers page. Honest: the two open roles that
 // exist today, how we hire, and speculative applications. No invented jobs.
@@ -23,6 +25,8 @@ const ROLES = [
 ] as const;
 
 export default function CareersScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Screen scroll>
       <ScreenHeader
@@ -81,7 +85,8 @@ export default function CareersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   mission: { backgroundColor: colors.gold, borderRadius: 20, padding: 24 },
   sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
   card: { marginBottom: 10 },

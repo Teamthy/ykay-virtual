@@ -14,7 +14,9 @@ import { TabLayout } from "@/src/components/TabLayout";
 import { BrandLogo } from "@/src/components/BrandLogo";
 import { useTheme } from "@/src/lib/theme-context";
 import { fonts, radius, spacing, type } from "@/src/lib/theme";
-import { apiFetch, getMyLessonProgress, listMyAttempts, listTutorExams, getToken, type LessonProgress, type PracticeAttemptItem } from "@/src/lib/api";
+import { apiFetch, getMyLessonProgress, learnerQuery, listMyAttempts, listTutorExams, getToken, type LessonProgress, type PracticeAttemptItem } from "@/src/lib/api";
+import { useLearner } from "@/src/lib/learner-context";
+import { LearnerSwitcher } from "@/src/components/LearnerSwitcher";
 import { formatLessonTime, formatNaira, getTutorEarnings, getTutorLessons, type TutorEarnings, type TutorLesson } from "@/src/lib/tutor";
 
 // Home — the NUVORA command center (design direction: docs/MOBILE_DASHBOARD_DIRECTION.md).
@@ -55,6 +57,7 @@ function fmtTime(t: string): string {
 
 export default function Home() {
   const { colors } = useTheme();
+  const { selectedId: learnerId } = useLearner();
 
   const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,8 +102,8 @@ export default function Home() {
         setExams(ex.length);
       } else if (isLearner) {
         const [ls, prog, at] = await Promise.all([
-          apiFetch<Lesson[]>("/me/lessons").catch(() => ({ data: [] as Lesson[] })),
-          getMyLessonProgress().catch(() => [] as LessonProgress[]),
+          apiFetch<Lesson[]>(`/me/lessons${learnerQuery(learnerId)}`).catch(() => ({ data: [] as Lesson[] })),
+          getMyLessonProgress(learnerId).catch(() => [] as LessonProgress[]),
           listMyAttempts().catch(() => [] as PracticeAttemptItem[]),
         ]);
         setLessons(ls.data ?? []);
@@ -112,7 +115,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [learnerId]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
 
@@ -233,6 +236,9 @@ export default function Home() {
             </Pressable>
           </View>
         </Animated.View>
+
+        {/* Parent learner switcher — pins the child every screen filters to */}
+        {!signedOut && isParent && <LearnerSwitcher />}
 
         {/* Admin console shortcut — ops overview for platform admins */}
         {!signedOut && isAdmin && (

@@ -1,18 +1,21 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { formatNaira, getProgramme, type ProgrammeDetail } from "@/src/lib/catalogue";
 
 // Programme detail — the published programme (GET /programmes/{slug}) with
 // curriculum/level/exam context, subjects and a next-start hint.
 
 export default function ProgrammeDetailScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const [programme, setProgramme] = useState<ProgrammeDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -133,7 +136,8 @@ export default function ProgrammeDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   hero: { backgroundColor: colors.navy, borderRadius: 20, padding: 24 },
   metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
   metaChip: {

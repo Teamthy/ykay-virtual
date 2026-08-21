@@ -15,7 +15,8 @@ import { EmptyState } from "@/src/components/ui/EmptyState";
 import { Skeleton } from "@/src/components/ui/Skeleton";
 import { useTheme } from "@/src/lib/theme-context";
 import { fonts, radius, spacing, type } from "@/src/lib/theme";
-import { apiFetch, getMyLessonProgress, listMyAttempts, listTutorExams, type LessonProgress, type PracticeAttemptItem } from "@/src/lib/api";
+import { apiFetch, getMyLessonProgress, learnerQuery, listMyAttempts, listTutorExams, type LessonProgress, type PracticeAttemptItem } from "@/src/lib/api";
+import { useLearner } from "@/src/lib/learner-context";
 import { formatLessonTime, getTutorLessons, type TutorLesson } from "@/src/lib/tutor";
 
 // LMS hub — the learning command center (docs/MOBILE_DASHBOARD_DIRECTION.md):
@@ -55,6 +56,7 @@ function fmtTime(t: string): string {
 
 export default function Lms() {
   const { colors } = useTheme();
+  const { selectedId: learnerId } = useLearner();
   const [role, setRole] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,8 +122,8 @@ export default function Lms() {
 
       // learner
       const [lessonsRes, prog, at] = await Promise.all([
-        apiFetch<Lesson[]>("/me/lessons"),
-        getMyLessonProgress().catch(() => [] as LessonProgress[]),
+        apiFetch<Lesson[]>(`/me/lessons${learnerQuery(learnerId)}`),
+        getMyLessonProgress(learnerId).catch(() => [] as LessonProgress[]),
         listMyAttempts().catch(() => [] as PracticeAttemptItem[]),
       ]);
       const lessons = lessonsRes.data ?? [];
@@ -155,7 +157,7 @@ export default function Lms() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [learnerId]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
 

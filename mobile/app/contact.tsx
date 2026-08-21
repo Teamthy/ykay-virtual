@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -7,7 +7,8 @@ import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 import { apiFetch } from "@/src/lib/api";
 
 // Contact / support — creates a real support ticket (POST /support/tickets),
@@ -17,6 +18,8 @@ import { apiFetch } from "@/src/lib/api";
 const CATEGORIES = ["General enquiry", "Private tuition", "Cohort enrolment", "Payments & refunds", "Technical support", "Safeguarding concern"] as const;
 
 export default function ContactScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [subject, setSubject] = useState("");
@@ -123,7 +126,8 @@ export default function ContactScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
   chip: { paddingVertical: 8, paddingHorizontal: 10 },
 });

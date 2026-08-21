@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Linking, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
@@ -5,7 +6,8 @@ import { ScreenHeader } from "@/src/components/ui/ScreenHeader";
 import { Card } from "@/src/components/ui/Card";
 import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
-import { colors } from "@/src/lib/theme";
+import { useTheme } from "@/src/lib/theme-context";
+import { type ThemeColors } from "@/src/lib/theme";
 
 // Become a tutor — the staged vetting journey. The full application flow
 // (profile, subjects, documents, assessment) runs on the web; here we explain
@@ -26,6 +28,8 @@ const PERKS = [
 ] as const;
 
 export default function BecomeTutorScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Screen scroll>
       <ScreenHeader
@@ -86,7 +90,8 @@ export default function BecomeTutorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
   hero: { backgroundColor: colors.gold, borderRadius: 20, padding: 24 },
   sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
   step: { flexDirection: "row", alignItems: "flex-start", marginBottom: 10 },
