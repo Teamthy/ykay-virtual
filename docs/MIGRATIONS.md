@@ -33,6 +33,13 @@ Roll back one step: `go run ./cmd/migrate --cmd=down`.
 - Demo content is opt-in dev fixture data (`SEED_DEMO_DATA=true`) — never in
   production (config.Validate refuses demo seeds in production).
 
+## Known cosmetic gap
+
+Version `000020` is absent from the chain (a historical renumbering) — this
+is harmless: versions are only required to be strictly increasing, and the
+static gate validates that. Do not try to "fill" the gap by renumbering
+applied migrations; that breaks environments.
+
 ## Adding a migration
 
 1. Pick the next free number (currently `000052` is the latest).

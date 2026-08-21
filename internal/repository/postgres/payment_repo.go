@@ -332,10 +332,10 @@ func (r *PayoutRepo) GetByID(ctx context.Context, id uuid.UUID) (*payment.Payout
 	var provider, providerRef sql.NullString
 	var processedAt sql.NullTime
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at
+		SELECT id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at, transfer_code, otp_required
 		FROM payouts WHERE id = $1`, id).
 		Scan(&p.ID, &p.TutorProfileID, &p.EscrowHoldID, &p.Amount, &p.Currency, &p.Status,
-			&provider, &providerRef, &processedAt, &p.CreatedAt, &p.UpdatedAt)
+			&provider, &providerRef, &processedAt, &p.CreatedAt, &p.UpdatedAt, &p.TransferCode, &p.OTPRequired)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
@@ -385,7 +385,7 @@ func (r *PayoutRepo) ListByStatus(ctx context.Context, status payment.PayoutStat
 	if limit < 1 {
 		limit = 200
 	}
-	cols := `id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at`
+	cols := `id, tutor_profile_id, escrow_hold_id, amount, currency, status, provider, provider_reference, processed_at, created_at, updated_at, transfer_code, otp_required`
 	var rows *sql.Rows
 	var err error
 	if status == "" {
@@ -404,7 +404,8 @@ func (r *PayoutRepo) ListByStatus(ctx context.Context, status payment.PayoutStat
 		var provider, providerRef sql.NullString
 		var processedAt sql.NullTime
 		if err := rows.Scan(&p.ID, &p.TutorProfileID, &p.EscrowHoldID, &p.Amount, &p.Currency,
-			&p.Status, &provider, &providerRef, &processedAt, &p.CreatedAt, &p.UpdatedAt); err != nil {
+			&p.Status, &provider, &providerRef, &processedAt, &p.CreatedAt, &p.UpdatedAt,
+			&p.TransferCode, &p.OTPRequired); err != nil {
 			return nil, err
 		}
 		if provider.Valid {
@@ -419,6 +420,16 @@ func (r *PayoutRepo) ListByStatus(ctx context.Context, status payment.PayoutStat
 		out = append(out, p)
 	}
 	return out, rows.Err()
+}
+
+func (r *PayoutRepo) SetTransferMeta(ctx context.Context, id uuid.UUID, transferCode *string, otpRequired bool) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE payouts SET transfer_code = $2, otp_required = $3, updated_at = NOW()
+		WHERE id = $1`, id, transferCode, otpRequired)
+	if err != nil {
+		return fmt.Errorf("set payout transfer meta: %w", err)
+	}
+	return nil
 }
 
 func (r *PayoutRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status payment.PayoutStatus, providerRef *string, processedAt *time.Time) error {

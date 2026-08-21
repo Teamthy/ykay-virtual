@@ -37,6 +37,10 @@ import (
 
 const (
 	SessionTTL    = 30 * 24 * time.Hour
+	// sessionSlidingInterval — how much idle time may be consumed before the
+	// session is extended again (sliding-window throttle: max one write per
+	// interval per session).
+	sessionSlidingInterval = 24 * time.Hour
 	bcryptCost    = 10
 	SessionCookie = "nuvora_session"
 )
@@ -544,8 +548,17 @@ func (s *AuthService) Me(ctx context.Context, tokenHash string) (*identity.User,
 	if session.RevokedAt != nil {
 		return nil, nil, fmt.Errorf("%w: session revoked", domain.ErrUnauthorized)
 	}
-	if session.ExpiresAt.Before(s.now().UTC()) {
+	now := s.now().UTC()
+	if session.ExpiresAt.Before(now) {
 		return nil, nil, fmt.Errorf("%w: session expired", domain.ErrUnauthorized)
+	}
+	// Sliding window: once at least sessionSlidingInterval of inactivity has
+	// been consumed, extend the session back to the full TTL (throttled to
+	// one write per interval per session).
+	if session.ExpiresAt.Sub(now) < SessionTTL-sessionSlidingInterval {
+		if s.sessions != nil {
+			_ = s.sessions.Extend(ctx, session.ID, now.Add(SessionTTL))
+		}
 	}
 	user, err := s.users.FindByID(ctx, session.UserID)
 	if err != nil {

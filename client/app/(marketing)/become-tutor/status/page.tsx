@@ -3,11 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSession } from "@/hooks/useSession";
 import { useTutorOnboarding } from "@/features/vetting/useTutorOnboarding";
 import { OnboardingStepper, SubmittedState } from "@/features/vetting/components/steps";
-import { getMyProfile } from "@/features/vetting/api";
+import { getMyProfile, submitForReview } from "@/features/vetting/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Tutor onboarding - step 5 of 5: live application status.
@@ -22,6 +22,15 @@ export default function BecomeTutorStatusPage() {
     queryFn: () => getMyProfile(),
     enabled: !!user,
     staleTime: 30_000,
+  });
+
+  // Submit the completed application for review — the final step of the
+  // tutor journey (was previously only reachable from the API).
+  const submit = useMutation({
+    mutationFn: (profileId: string) => submitForReview(profileId),
+    onSuccess: async () => {
+      await profile.refetch();
+    },
   });
 
   useEffect(() => {

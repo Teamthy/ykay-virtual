@@ -260,6 +260,7 @@ func (h *VettingHandler) UpdateBankDetails(w http.ResponseWriter, r *http.Reques
 	}
 	var req struct {
 		BankName      string `json:"bank_name"`
+		BankCode      string `json:"bank_code"`
 		AccountNumber string `json:"account_number"`
 		AccountName   string `json:"account_name"`
 	}
@@ -267,7 +268,7 @@ func (h *VettingHandler) UpdateBankDetails(w http.ResponseWriter, r *http.Reques
 		WriteAppError(w, err)
 		return
 	}
-	if err := h.svc.UpdateBankDetails(r.Context(), actor.UserID, profileID, req.BankName, req.AccountNumber, req.AccountName); err != nil {
+	if err := h.svc.UpdateBankDetails(r.Context(), actor.UserID, profileID, req.BankName, req.BankCode, req.AccountNumber, req.AccountName); err != nil {
 		WriteAppError(w, err)
 		return
 	}

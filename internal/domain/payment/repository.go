@@ -70,6 +70,9 @@ type PayoutRepository interface {
 	ListByStatus(ctx context.Context, status PayoutStatus, limit int) ([]Payout, error)
 	ListByTutorProfileID(ctx context.Context, tutorProfileID uuid.UUID, limit int) ([]Payout, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status PayoutStatus, providerRef *string, processedAt *time.Time) error
+	// SetTransferMeta records (or clears, with nil transferCode) the Paystack
+	// transfer_code + OTP flag on a payout (initiate/finalize flow).
+	SetTransferMeta(ctx context.Context, id uuid.UUID, transferCode *string, otpRequired bool) error
 }
 
 type WalletRepository interface {

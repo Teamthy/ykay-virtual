@@ -5,7 +5,7 @@
 // (Nigerian + British curricula seeded in migration 000052). The selected
 // value is the level name, matching student_profiles.current_level.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 
@@ -53,13 +53,24 @@ export function CurriculumLevelSelect({
   // Pre-select the curriculum owning the current level value (e.g. "JSS2").
   const [selectedCurriculum, setSelectedCurriculum] = useState<string>(curriculumId ?? "");
   const [selectedLevel, setSelectedLevel] = useState<string>(value);
+  // Start empty so the FIRST effect pass processes the initial value (e.g.
+// "Year 8" from onboarding) and finds its owning curriculum.
+const lastValueRef = useRef<string>("");
 
   useEffect(() => {
     if (curriculumId) setSelectedCurriculum(curriculumId);
   }, [curriculumId]);
 
+  // Sync rules:
+  //  - set the level ONLY when the parent value actually changes (never
+  //    clobber the user's in-form selection with a constant empty value).
+  //  - keep looking for the value's owning curriculum until it is found
+  //    (the curricula list loads async after the first render).
   useEffect(() => {
-    setSelectedLevel(value);
+    if (value !== lastValueRef.current) {
+      lastValueRef.current = value;
+      setSelectedLevel(value);
+    }
     if (!selectedCurriculum && value) {
       const owner = curricula.find((c) => c.levels.some((l) => l.name === value));
       if (owner) setSelectedCurriculum(owner.id);

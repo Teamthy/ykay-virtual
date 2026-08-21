@@ -139,8 +139,12 @@ type Payout struct {
 	Provider          *string      `json:"provider,omitempty"`
 	ProviderReference *string      `json:"provider_reference,omitempty"`
 	ProcessedAt       *time.Time   `json:"processed_at,omitempty"`
-	CreatedAt         time.Time    `json:"created_at"`
-	UpdatedAt         time.Time    `json:"updated_at"`
+	// TransferCode — Paystack transfer_code once initiated (000056).
+	TransferCode *string `json:"transfer_code,omitempty"`
+	// OTPRequired — Paystack asked for an OTP to finalize the transfer.
+	OTPRequired bool `json:"otp_required"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type PaymentProviderInterface interface {

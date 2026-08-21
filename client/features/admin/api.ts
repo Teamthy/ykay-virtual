@@ -540,9 +540,31 @@ export type AdminPayoutRow = {
   bank_details_missing?: boolean;
 };
 
-export async function listAdminPayoutRows(status?: string): Promise<AdminPayoutRow[]> {
-  const res = await apiFetch<AdminPayoutRow[]>(`/admin/payouts${status ? `?status=${status}` : ""}`);
-  return res.data ?? [];
+export async function listAdminPayoutRows(status?: string): Promise<{
+  payouts: AdminPayoutRow[];
+  paystack_transfers: boolean;
+}> {
+  const res = await apiFetch<{ payouts: AdminPayoutRow[]; paystack_transfers: boolean }>(
+    `/admin/payouts${status ? `?status=${status}` : ""}`
+  );
+  return { payouts: res.data?.payouts ?? [], paystack_transfers: !!res.data?.paystack_transfers };
+}
+
+/** Initiate a Paystack transfer for a PENDING payout (returns needs_otp). */
+export async function paystackPayout(payoutId: string): Promise<{ needs_otp: boolean; message: string }> {
+  const res = await apiFetch<{ needs_otp: boolean; message: string }>(`/admin/payouts/${payoutId}/paystack`, {
+    method: "POST",
+    body: "{}",
+  });
+  return res.data;
+}
+
+/** Finalize an OTP-gated Paystack transfer. */
+export async function finalizePaystackPayout(payoutId: string, otp: string): Promise<void> {
+  await apiFetch(`/admin/payouts/${payoutId}/paystack/otp`, {
+    method: "POST",
+    body: JSON.stringify({ otp }),
+  });
 }
 
 export async function confirmPayoutPaid(payoutId: string, providerReference: string): Promise<void> {

@@ -42,32 +42,54 @@ function getTraceId() {
 
 const DEFAULT_TIMEOUT_MS = 20000;
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Envelope<T>> {
+// Transient-failure retry: one retry with short backoff for safe methods.
+// GET is idempotent by contract; money-moving POSTs are never auto-retried
+// (idempotency keys protect those server-side instead).
+const RETRYABLE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const RETRY_BACKOFF_MS = 500;
+
+async function rawFetch(path: string, init?: RequestInit): Promise<Response> {
   const traceId = getTraceId();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  return fetch(`${API_BASE}${path}`, {
+    ...init,
+    signal: init?.signal ?? controller.signal,
+    headers: {
+      "Content-Type": "application/json",
+      "X-Trace-ID": traceId,
+      "X-Request-ID": traceId,
+      ...(init?.headers || {}),
+    },
+    credentials: "include",
+    cache: "no-store",
+  }).finally(() => clearTimeout(timer));
+}
+
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Envelope<T>> {
+  const method = (init?.method ?? "GET").toUpperCase();
+  const retryable = RETRYABLE_METHODS.has(method) && !init?.signal;
+
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      signal: init?.signal ?? controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        "X-Trace-ID": traceId,
-        "X-Request-ID": traceId,
-        ...(init?.headers || {}),
-      },
-      credentials: "include",
-      cache: "no-store",
-    });
+    try {
+      res = await rawFetch(path, init);
+    } catch (e) {
+      // Transient network failure / timeout on a safe method → one retry
+      // with backoff (flaky mobile networks, cold Render instances).
+      if (retryable && (e instanceof DOMException || e instanceof TypeError)) {
+        await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
+        res = await rawFetch(path, init);
+      } else {
+        throw e;
+      }
+    }
   } catch (e) {
-    clearTimeout(timer);
     if (e instanceof DOMException && e.name === "AbortError") {
       throw new Error("Request timed out. Check your connection.");
     }
     throw e;
   }
-  clearTimeout(timer);
 
   if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/auth/")) {
     window.location.assign("/login");

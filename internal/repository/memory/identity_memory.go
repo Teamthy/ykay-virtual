@@ -218,6 +218,19 @@ func (m *SessionMemory) FindByTokenHash(_ context.Context, tokenHash string) (*i
 	return nil, domain.ErrNotFound
 }
 
+// Extend slides a session's expiry forward.
+func (m *SessionMemory) Extend(_ context.Context, id uuid.UUID, expiresAt time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, s := range m.rows {
+		if s.ID == id {
+			s.ExpiresAt = expiresAt
+			return nil
+		}
+	}
+	return domain.ErrNotFound
+}
+
 func (m *SessionMemory) Revoke(_ context.Context, id uuid.UUID) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

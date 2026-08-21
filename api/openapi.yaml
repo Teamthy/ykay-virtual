@@ -223,6 +223,36 @@ paths:
         '200': { description: Payout marked PAID }
         '409': { description: Payout not PENDING }
 
+  /admin/payouts/{payoutId}/paystack:
+    post:
+      tags: [admin]
+      summary: One-click Paystack bank transfer for a PENDING payout (returns needs_otp when the bank requires a finalize OTP)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: payoutId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Transfer initiated }
+        '409': { description: Paystack transfers disabled / payout not PENDING / bank details missing }
+
+  /admin/payouts/{payoutId}/paystack/otp:
+    post:
+      tags: [admin]
+      summary: Finalize an OTP-gated Paystack transfer
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: payoutId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [otp]
+              properties:
+                otp: { type: string }
+      responses:
+        '200': { description: Payout marked PAID }
+
   /admin/payouts:
     get:
       tags: []
@@ -230,6 +260,38 @@ paths:
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
+
+  /admin/tutors:
+    get:
+      tags: [admin]
+      summary: Admin tutor console roster (APPROVED profiles)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Approved tutor profiles }
+    post:
+      tags: [admin]
+      summary: Create or edit a tutor account + vetting profile (optionally approve + publish)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, display_name]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, description: "required when creating the account" }
+                display_name: { type: string }
+                headline: { type: string }
+                bio: { type: string }
+                years_experience: { type: integer }
+                hourly_rate_min: { type: number }
+                hourly_rate_max: { type: number }
+                approve: { type: boolean, description: "APPROVED + public immediately" }
+                subject_slugs: { type: array, items: { type: string } }
+      responses:
+        '201': { description: Tutor profile created/updated }
 
   /admin/vetting/profiles/{profileId}/approve:
     post:

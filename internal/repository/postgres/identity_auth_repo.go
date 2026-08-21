@@ -288,6 +288,16 @@ func (r *SessionRepo) FindByTokenHash(ctx context.Context, tokenHash string) (*i
 	return s, nil
 }
 
+// Extend slides a session's expiry forward (sliding-window sessions).
+func (r *SessionRepo) Extend(ctx context.Context, id uuid.UUID, expiresAt time.Time) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE sessions SET expires_at = $2, updated_at = NOW() WHERE id = $1`, id, expiresAt)
+	if err != nil {
+		return fmt.Errorf("extend session: %w", err)
+	}
+	return nil
+}
+
 func (r *SessionRepo) Revoke(ctx context.Context, id uuid.UUID) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE sessions SET revoked_at = NOW() WHERE id = $1 AND revoked_at IS NULL", id)

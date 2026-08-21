@@ -105,6 +105,7 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
       { href: "/admin/super", label: "Super admin", icon: ShieldCheck, superAdminOnly: true },
       { href: "/admin/users", label: "Users", icon: Users },
       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
+      { href: "/admin/tutors", label: "Tutors", icon: UserPlus },
       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
       { href: "/admin/programmes", label: "Programmes", icon: BookOpen },
       { href: "/admin/admissions", label: "Admissions", icon: GraduationCap },

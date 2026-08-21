@@ -9,6 +9,8 @@ import type {
   VettingDocument,
 } from "./types";
 
+export type { TutorProfile, TutorSubjectEntry, ProfileDetail };
+
 // G1 (phase 43): the dev-auth header bridge is gone - the API resolves the
 // actor exclusively from the httpOnly session cookie. No caller-supplied
 // user IDs; object-level authorization is enforced server-side.
@@ -144,7 +146,7 @@ export async function reviewDocument(
 
 export async function updateBankDetails(
   profileId: string,
-  input: { bank_name: string; account_number: string; account_name: string }
+  input: { bank_name: string; bank_code?: string; account_number: string; account_name: string }
 ): Promise<void> {
   await apiFetch(`/tutors/me/vetting/profiles/${profileId}/bank`, {
     method: "POST",

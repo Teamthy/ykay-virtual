@@ -33,6 +33,8 @@ type UserRepository interface {
 type SessionRepository interface {
 	Create(ctx context.Context, session *Session) error
 	FindByTokenHash(ctx context.Context, tokenHash string) (*Session, error)
+	// Extend slides a session's expiry forward (sliding-window sessions).
+	Extend(ctx context.Context, id uuid.UUID, expiresAt time.Time) error
 	Revoke(ctx context.Context, id uuid.UUID) error
 	RevokeAllForUser(ctx context.Context, userID uuid.UUID) error
 	DeleteExpired(ctx context.Context) (int64, error)

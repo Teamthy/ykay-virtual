@@ -62,15 +62,15 @@ func scanTutorResult(row interface{ Scan(...any) error }) (*tutor.TutorSearchRes
 	return &res, nil
 }
 
-// tutorBankColumns — payout destination columns (000055), appended for
+// tutorBankColumns — payout destination columns (000055/000056), appended for
 // owner/admin views. NEVER part of the public search projection.
-const tutorBankColumns = `, t.bank_name, t.account_number, t.account_name`
+const tutorBankColumns = `, t.bank_name, t.bank_code, t.account_number, t.account_name, t.paystack_recipient_code`
 
 // scanTutorWithBank scans a profile row INCLUDING bank details (owner/admin
 // surfaces only). Same projection as scanTutor plus the three bank columns.
 func scanTutorWithBank(row interface{ Scan(...any) error }) (*tutor.TutorProfile, error) {
 	var t tutor.TutorProfile
-	var headline, bio, label, bankName, accountNumber, accountName sql.NullString
+	var headline, bio, label, bankName, bankCode, accountNumber, accountName, recipientCode sql.NullString
 	var verifiedAt sql.NullTime
 	if err := row.Scan(
 		&t.ID, &t.UserID, &t.Slug, &t.DisplayName, &headline, &bio,
@@ -78,7 +78,7 @@ func scanTutorWithBank(row interface{ Scan(...any) error }) (*tutor.TutorProfile
 		&t.Status, &t.IsPublic, &t.RatingAvg, &t.RatingCount, &t.TotalHoursTaught, &t.TotalStudents,
 		&t.RankingScore, &t.Timezone, &t.LocationID, &t.AcceptsOnline, &t.AcceptsInPerson,
 		&verifiedAt, &t.CreatedAt, &t.UpdatedAt, &label,
-		&bankName, &accountNumber, &accountName,
+		&bankName, &bankCode, &accountNumber, &accountName, &recipientCode,
 	); err != nil {
 		return nil, err
 	}
@@ -94,11 +94,17 @@ func scanTutorWithBank(row interface{ Scan(...any) error }) (*tutor.TutorProfile
 	if bankName.Valid {
 		t.BankName = &bankName.String
 	}
+	if bankCode.Valid {
+		t.BankCode = &bankCode.String
+	}
 	if accountNumber.Valid {
 		t.AccountNumber = &accountNumber.String
 	}
 	if accountName.Valid {
 		t.AccountName = &accountName.String
+	}
+	if recipientCode.Valid {
+		t.PaystackRecipientCode = &recipientCode.String
 	}
 	return &t, nil
 }

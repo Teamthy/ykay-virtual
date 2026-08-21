@@ -114,7 +114,7 @@ func (m *VettingMemory) CreateProfile(_ context.Context, p *tutor.TutorProfile) 
 }
 
 // UpdateBankDetails stores (or clears) the tutor's payout destination.
-func (m *VettingMemory) UpdateBankDetails(_ context.Context, profileID uuid.UUID, bankName, accountNumber, accountName *string) error {
+func (m *VettingMemory) UpdateBankDetails(_ context.Context, profileID uuid.UUID, bankName, bankCode, accountNumber, accountName *string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	p, ok := m.profiles[profileID]
@@ -122,8 +122,25 @@ func (m *VettingMemory) UpdateBankDetails(_ context.Context, profileID uuid.UUID
 		return domain.ErrNotFound
 	}
 	p.BankName = bankName
+	p.BankCode = bankCode
 	p.AccountNumber = accountNumber
 	p.AccountName = accountName
+	return nil
+}
+
+// SetPaystackRecipientCode caches a Paystack transfer-recipient code.
+func (m *VettingMemory) SetPaystackRecipientCode(_ context.Context, profileID uuid.UUID, code string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	p, ok := m.profiles[profileID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	if code == "" {
+		p.PaystackRecipientCode = nil
+	} else {
+		p.PaystackRecipientCode = &code
+	}
 	return nil
 }
 
@@ -163,6 +180,23 @@ func (m *VettingMemory) MarkApproved(_ context.Context, profileID, approvedBy uu
 	p.ApprovedAt = &now
 	p.VerifiedAt = &now
 	p.RankingScore = rankingScore
+	return nil
+}
+
+// UpdateProfileAdmin updates editable profile fields (admin console).
+func (m *VettingMemory) UpdateProfileAdmin(_ context.Context, profileID uuid.UUID, displayName string, headline, bio *string, yearsExperience int, hourlyRateMin, hourlyRateMax *float64) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	p, ok := m.profiles[profileID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	p.DisplayName = displayName
+	p.Headline = headline
+	p.Bio = bio
+	p.YearsExperience = yearsExperience
+	p.HourlyRateMin = hourlyRateMin
+	p.HourlyRateMax = hourlyRateMax
 	return nil
 }
 

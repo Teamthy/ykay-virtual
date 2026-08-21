@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/mail"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/domain"
@@ -21,6 +24,8 @@ import (
 	"ykay-virtual/internal/domain/review"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
+	"ykay-virtual/internal/ops"
+	payment_provider "ykay-virtual/internal/payment"
 
 	"github.com/google/uuid"
 )
@@ -46,6 +51,9 @@ type AdminService struct {
 	payouts        payment.PayoutRepository
 	paymentRows    payment.PaymentRepository
 	students       identity.StudentProfileRepository
+	transfers      payment_provider.TransferProvider
+	subjects       academics.SubjectRepository
+	tutorSubjects  tutor.TutorSubjectRepository
 	users          identity.UserRepository
 	roles          identity.RoleRepository
 	auditLogs      identity.AuditLogRepository
@@ -1030,15 +1038,15 @@ func (s *AdminService) ListPayouts(ctx context.Context, status string) ([]paymen
 // AdminPayoutRow — one payout joined with the tutor's identity + bank
 // details so the admin can execute the transfer and confirm it.
 type AdminPayoutRow struct {
-	Payout            payment.Payout `json:"payout"`
-	TutorProfileID    uuid.UUID      `json:"tutor_profile_id"`
-	TutorDisplayName  string         `json:"tutor_display_name"`
-	TutorEmail        string         `json:"tutor_email,omitempty"`
-	TutorPhone        string         `json:"tutor_phone,omitempty"`
-	BankName          string         `json:"bank_name,omitempty"`
-	AccountNumber     string         `json:"account_number,omitempty"`
-	AccountName       string         `json:"account_name,omitempty"`
-	BankDetailsMissing bool          `json:"bank_details_missing"`
+	Payout             payment.Payout `json:"payout"`
+	TutorProfileID     uuid.UUID      `json:"tutor_profile_id"`
+	TutorDisplayName   string         `json:"tutor_display_name"`
+	TutorEmail         string         `json:"tutor_email,omitempty"`
+	TutorPhone         string         `json:"tutor_phone,omitempty"`
+	BankName           string         `json:"bank_name,omitempty"`
+	AccountNumber      string         `json:"account_number,omitempty"`
+	AccountName        string         `json:"account_name,omitempty"`
+	BankDetailsMissing bool           `json:"bank_details_missing"`
 }
 
 // PayoutQueue — payouts joined with tutor identity + bank details. status ""
@@ -1110,4 +1118,307 @@ func (s *AdminService) PayoutTutorContact(ctx context.Context, payoutID uuid.UUI
 		return displayName, phone, email, nil
 	}
 	return "", "", "", fmt.Errorf("%w: payout not found", domain.ErrNotFound)
+}
+
+// ── Paystack one-click payouts ────────────────────────────────────────────
+
+// WithTransferProvider wires the Paystack transfer seam (nil = feature off).
+// Transfers move real money — the provider itself fails closed when its
+// secret is a placeholder.
+func (s *AdminService) WithTransferProvider(p payment_provider.TransferProvider) *AdminService {
+	s.transfers = p
+	return s
+}
+
+// TransfersEnabled reports whether one-click payouts are available.
+func (s *AdminService) TransfersEnabled() bool { return s.transfers != nil }
+
+// PayoutViaPaystack — initiates (or continues) a Paystack bank transfer for a
+// PENDING payout. Caches the transfer recipient on the tutor profile, marks
+// the payout PAID when Paystack settles immediately, or records the transfer
+// code + OTP flag when the bank requires a finalize OTP. Idempotent at
+// Paystack via the payout id as transfer reference.
+func (s *AdminService) PayoutViaPaystack(ctx context.Context, adminID, payoutID uuid.UUID) (needsOTP bool, err error) {
+	if s.transfers == nil {
+		return false, fmt.Errorf("%w: Paystack transfers are not enabled", domain.ErrConflict)
+	}
+	if s.payouts == nil {
+		return false, errors.New("payout store unavailable")
+	}
+	p, err := s.payouts.GetByID(ctx, payoutID)
+	if err != nil {
+		return false, err
+	}
+	if p.Status != payment.PayoutPending {
+		return false, fmt.Errorf("%w: payout %s is %s (only PENDING payouts can be transferred)", domain.ErrConflict, p.ID, p.Status)
+	}
+	if p.OTPRequired && p.TransferCode != nil {
+		return true, nil // already initiated; waiting on the finalize OTP
+	}
+	if s.tutors == nil {
+		return false, errors.New("tutor store unavailable")
+	}
+	tp, err := s.tutors.GetByID(ctx, p.TutorProfileID)
+	if err != nil || tp == nil {
+		return false, fmt.Errorf("%w: tutor profile not found", domain.ErrNotFound)
+	}
+	if tp.AccountNumber == nil || tp.AccountName == nil || tp.BankCode == nil || tp.BankName == nil {
+		return false, fmt.Errorf("%w: tutor has no complete bank details (bank name, bank code, account number and account name are required for Paystack transfers)", domain.ErrConflict)
+	}
+
+	recipientCode := ""
+	if tp.PaystackRecipientCode != nil {
+		recipientCode = *tp.PaystackRecipientCode
+	}
+	email := ""
+	if s.users != nil {
+		if u, uerr := s.users.FindByID(ctx, tp.UserID); uerr == nil && u != nil {
+			email = u.Email
+		}
+	}
+	if recipientCode == "" {
+		code, cerr := s.transfers.CreateTransferRecipient(ctx, payment_provider.TransferRecipientInput{
+			AccountNumber: *tp.AccountNumber,
+			BankCode:      *tp.BankCode,
+			AccountName:   *tp.AccountName,
+			Email:         email,
+		})
+		if cerr != nil {
+			return false, cerr
+		}
+		recipientCode = code
+		if s.vetting != nil {
+			_ = s.vetting.SetPaystackRecipientCode(ctx, tp.ID, code)
+		}
+	}
+
+	reason := "NUVORA tutor payout " + p.ID.String()
+	res, err := s.transfers.InitiateTransfer(ctx, p.Amount, p.Currency, recipientCode, p.ID.String(), reason)
+	if err != nil {
+		return false, err
+	}
+	switch res.Status {
+	case payment_provider.TransferSuccess:
+		now := time.Now().UTC()
+		if err := s.payouts.UpdateStatus(ctx, p.ID, payment.PayoutPaid, &res.TransferCode, &now); err != nil {
+			return false, err
+		}
+		_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditPayout, "payout",
+			&p.ID, map[string]any{"status": payment.PayoutPending}, map[string]any{
+				"status": payment.PayoutPaid, "amount": p.Amount, "currency": p.Currency,
+				"provider": "PAYSTACK", "transfer_code": res.TransferCode,
+			}, nil, nil)
+		return false, nil
+	case payment_provider.TransferOTP:
+		if err := s.payouts.SetTransferMeta(ctx, p.ID, &res.TransferCode, true); err != nil {
+			return false, err
+		}
+		_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditPayout, "payout",
+			&p.ID, nil, map[string]any{"transfer_initiated": res.TransferCode, "otp_required": true}, nil, nil)
+		return true, nil
+	case payment_provider.TransferPending:
+		if err := s.payouts.SetTransferMeta(ctx, p.ID, &res.TransferCode, false); err != nil {
+			return false, err
+		}
+		return false, nil
+	default:
+		return false, fmt.Errorf("paystack transfer %s: %s", p.ID, res.Message)
+	}
+}
+
+// CompletePaystackTransfer — finalizes an OTP-gated transfer with the OTP the
+// admin received from the bank, then marks the payout PAID.
+func (s *AdminService) CompletePaystackTransfer(ctx context.Context, adminID, payoutID uuid.UUID, otp string) (*payment.Payout, error) {
+	otp = strings.TrimSpace(otp)
+	if otp == "" {
+		return nil, fmt.Errorf("%w: OTP is required", domain.ErrInvalidInput)
+	}
+	if s.transfers == nil {
+		return nil, fmt.Errorf("%w: Paystack transfers are not enabled", domain.ErrConflict)
+	}
+	p, err := s.payouts.GetByID(ctx, payoutID)
+	if err != nil {
+		return nil, err
+	}
+	if p.Status != payment.PayoutPending || !p.OTPRequired || p.TransferCode == nil {
+		return nil, fmt.Errorf("%w: payout is not waiting on a transfer OTP", domain.ErrConflict)
+	}
+	res, err := s.transfers.FinalizeTransfer(ctx, *p.TransferCode, otp)
+	if err != nil {
+		return nil, err
+	}
+	if res.Status != payment_provider.TransferSuccess {
+		return nil, fmt.Errorf("paystack finalize: %s", res.Message)
+	}
+	now := time.Now().UTC()
+	if err := s.payouts.UpdateStatus(ctx, p.ID, payment.PayoutPaid, &res.TransferCode, &now); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditPayout, "payout",
+		&p.ID, map[string]any{"status": payment.PayoutPending}, map[string]any{
+			"status": payment.PayoutPaid, "provider": "PAYSTACK",
+			"transfer_code": res.TransferCode, "otp_finalized": true,
+		}, nil, nil)
+	p.Status = payment.PayoutPaid
+	p.ProviderReference = &res.TransferCode
+	p.ProcessedAt = &now
+	return p, nil
+}
+
+// ── Admin tutor console ───────────────────────────────────────────────────
+
+// WithTutorConsole wires the subject catalogue + teaching-scope repo so the
+// admin console can create and edit tutor profiles end to end.
+func (s *AdminService) WithTutorConsole(subjects academics.SubjectRepository, tutorSubjects tutor.TutorSubjectRepository) *AdminService {
+	s.subjects = subjects
+	s.tutorSubjects = tutorSubjects
+	return s
+}
+
+// AdminUpsertTutorInput — create (or edit) a tutor from the admin console.
+type AdminUpsertTutorInput struct {
+	Email           string   `json:"email"`
+	Password        string   `json:"password"` // required when creating the account
+	DisplayName     string   `json:"display_name"`
+	Headline        *string  `json:"headline,omitempty"`
+	Bio             *string  `json:"bio,omitempty"`
+	YearsExperience int      `json:"years_experience"`
+	HourlyRateMin   *float64 `json:"hourly_rate_min,omitempty"`
+	HourlyRateMax   *float64 `json:"hourly_rate_max,omitempty"`
+	Approve         bool     `json:"approve"` // APPROVED + public immediately (vetted tutor)
+	SubjectSlugs    []string `json:"subject_slugs,omitempty"`
+}
+
+// UpsertTutorAdmin — creates the tutor account (when the email is new) and
+// the vetting profile, applies the editable fields, optionally approves +
+// publishes, and attaches the teaching subjects. Idempotent per email.
+func (s *AdminService) UpsertTutorAdmin(ctx context.Context, adminID uuid.UUID, in AdminUpsertTutorInput) (*tutor.TutorProfile, error) {
+	if s.users == nil || s.roles == nil || s.vetting == nil {
+		return nil, errors.New("admin tutor console not configured (users/roles/vetting stores)")
+	}
+	in.Email = strings.ToLower(strings.TrimSpace(in.Email))
+	if _, err := mail.ParseAddress(in.Email); err != nil {
+		return nil, fmt.Errorf("%w: a valid email is required", domain.ErrInvalidInput)
+	}
+	in.DisplayName = strings.TrimSpace(in.DisplayName)
+	if in.DisplayName == "" || len(in.DisplayName) > 255 {
+		return nil, fmt.Errorf("%w: display name is required (max 255 chars)", domain.ErrInvalidInput)
+	}
+	if in.YearsExperience < 0 || in.YearsExperience > 80 {
+		return nil, fmt.Errorf("%w: years experience must be 0-80", domain.ErrInvalidInput)
+	}
+	if in.HourlyRateMin != nil && in.HourlyRateMax != nil && *in.HourlyRateMax < *in.HourlyRateMin {
+		return nil, fmt.Errorf("%w: hourly_rate_max cannot be below hourly_rate_min", domain.ErrInvalidInput)
+	}
+
+	// Account: create (with password) or reuse.
+	user, err := s.users.FindByEmail(ctx, in.Email)
+	if err != nil {
+		if !errors.Is(err, domain.ErrNotFound) {
+			return nil, err
+		}
+		if strings.TrimSpace(in.Password) == "" {
+			return nil, fmt.Errorf("%w: password is required to create a new tutor account", domain.ErrInvalidInput)
+		}
+		if perr := ops.ValidatePassword(in.Password); perr != nil {
+			return nil, fmt.Errorf("%w: %v", domain.ErrInvalidInput, perr)
+		}
+		hash, herr := bcrypt.GenerateFromPassword([]byte(in.Password), 12)
+		if herr != nil {
+			return nil, herr
+		}
+		now := s.now().UTC()
+		user = &identity.User{
+			Email: in.Email, PasswordHash: string(hash),
+			Status: identity.UserStatusActive, Timezone: "Africa/Lagos",
+			EmailVerifiedAt: &now, OnboardedAt: &now,
+		}
+		if err := s.users.Create(ctx, user); err != nil {
+			return nil, err
+		}
+		// TUTOR role grant.
+		if role, rerr := s.roles.FindByName(ctx, "TUTOR"); rerr == nil {
+			_ = s.roles.AssignToUser(ctx, user.ID, role.ID)
+		}
+	} else if strings.TrimSpace(in.Password) != "" {
+		// Password reset for an existing tutor account.
+		if perr := ops.ValidatePassword(in.Password); perr != nil {
+			return nil, fmt.Errorf("%w: %v", domain.ErrInvalidInput, perr)
+		}
+		hash, herr := bcrypt.GenerateFromPassword([]byte(in.Password), 12)
+		if herr != nil {
+			return nil, herr
+		}
+		user.PasswordHash = string(hash)
+		if err := s.users.Update(ctx, user); err != nil {
+			return nil, err
+		}
+	}
+
+	// Profile: create or load.
+	profile, err := s.vetting.GetProfileByUserID(ctx, user.ID)
+	created := false
+	if err != nil {
+		if !errors.Is(err, domain.ErrNotFound) {
+			return nil, err
+		}
+		profile = &tutor.TutorProfile{
+			UserID: user.ID,
+			Slug:   fmt.Sprintf("%s-%s", slugify(in.DisplayName), uuid.NewString()[:4]),
+			DisplayName: in.DisplayName, YearsExperience: in.YearsExperience,
+			Currency: "NGN", Timezone: "Africa/Lagos",
+			AcceptsOnline: true, AcceptsInPerson: true,
+		}
+		if err := s.vetting.CreateProfile(ctx, profile); err != nil {
+			return nil, err
+		}
+		created = true
+	}
+
+	// Editable fields.
+	if err := s.vetting.UpdateProfileAdmin(ctx, profile.ID, in.DisplayName, in.Headline, in.Bio, in.YearsExperience, in.HourlyRateMin, in.HourlyRateMax); err != nil {
+		return nil, err
+	}
+
+	// Approval + publication (vetted tutor).
+	if in.Approve {
+		if err := s.vetting.MarkApproved(ctx, profile.ID, adminID, 0.8); err != nil {
+			return nil, err
+		}
+		if err := s.vetting.SetPublic(ctx, profile.ID, true); err != nil {
+			return nil, err
+		}
+	}
+
+	// Teaching scope.
+	if len(in.SubjectSlugs) > 0 && s.subjects != nil && s.tutorSubjects != nil {
+		for _, slug := range in.SubjectSlugs {
+			sub, serr := s.subjects.GetBySlug(ctx, strings.TrimSpace(slug))
+			if serr != nil || sub == nil {
+				continue
+			}
+			_ = s.tutorSubjects.AddForTutor(ctx, profile.ID, sub.ID)
+		}
+	}
+
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "tutor_profile",
+		&profile.ID, nil, map[string]any{
+			"email": user.Email, "created": created, "approved": in.Approve,
+			"subjects": in.SubjectSlugs,
+		}, nil, nil)
+
+	out, err := s.vetting.GetProfileByID(ctx, profile.ID)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ListApprovedTutors — the admin console roster (APPROVED profiles, newest
+// first).
+func (s *AdminService) ListApprovedTutors(ctx context.Context) ([]tutor.TutorProfile, int64, error) {
+	if s.vetting == nil {
+		return []tutor.TutorProfile{}, 0, nil
+	}
+	return s.vetting.ListByStatus(ctx, string(tutor.TutorStatusApproved), 100, 0)
 }

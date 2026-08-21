@@ -80,8 +80,13 @@ type TutorProfile struct {
 	// Bank details — the tutor's payout destination (000055). Owner/admin
 	// surfaces only; public search results never carry these.
 	BankName        *string     `json:"bank_name,omitempty"`
+	BankCode        *string     `json:"bank_code,omitempty"` // Paystack bank code (000056)
 	AccountNumber   *string     `json:"account_number,omitempty"`
 	AccountName     *string     `json:"account_name,omitempty"`
+	// PaystackRecipientCode — cached transfer-recipient code (000056). Not
+	// serialized: it is an internal Paystack identifier, surfaced only via
+	// the admin payout queue row.
+	PaystackRecipientCode *string `json:"-"`
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`
 }

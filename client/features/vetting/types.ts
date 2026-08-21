@@ -24,6 +24,7 @@ export type TutorProfile = {
   verified_at?: string;
   approved_at?: string;
   bank_name?: string | null;
+  bank_code?: string | null;
   account_number?: string | null;
   account_name?: string | null;
 };

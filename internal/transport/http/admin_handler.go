@@ -833,7 +833,78 @@ func (h *AdminHandler) ListPayouts(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	pkg.WriteSuccess(w, http.StatusOK, rows, nil)
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"payouts":                  rows,
+		"paystack_transfers":       h.svc.TransfersEnabled(),
+		"paystack_transfer_method": "paystack",
+	}, nil)
+}
+
+// PayoutViaPaystack — POST /admin/payouts/{payoutId}/paystack (admin).
+// One-click bank transfer: returns needs_otp=true when the bank requires a
+// finalize OTP.
+func (h *AdminHandler) PayoutViaPaystack(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	payoutID, err := ParseUUID(r, "payoutId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	needsOTP, err := h.svc.PayoutViaPaystack(r.Context(), *adminID, payoutID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"initiated": true,
+		"needs_otp": needsOTP,
+		"message":   map[bool]string{true: "Transfer initiated — enter the OTP your bank sent.", false: "Transfer initiated."}[needsOTP],
+	}, nil)
+}
+
+// CompletePaystackTransfer — POST /admin/payouts/{payoutId}/paystack/otp
+// {otp} (admin). Finalizes the OTP-gated transfer.
+func (h *AdminHandler) CompletePaystackTransfer(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	payoutID, err := ParseUUID(r, "payoutId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		OTP string `json:"otp"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	p, err := h.svc.CompletePaystackTransfer(r.Context(), *adminID, payoutID, req.OTP)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	// WhatsApp the tutor that their money is on the way.
+	if h.notifier != nil && p != nil {
+		name, phone, _, cerr := h.svc.PayoutTutorContact(r.Context(), payoutID)
+		if cerr == nil && phone != "" {
+			_ = name
+			go func(phone string, amount float64, currency string) {
+				nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				msg := fmt.Sprintf("💸 NUVORA: your payout of %.2f %s has been sent to your bank account via Paystack.", amount, currency)
+				if err := h.notifier.SendWhatsAppTo(nctx, phone, msg); err != nil {
+					slog.Error("whatsapp payout notify failed", "payout", payoutID, "error", err)
+				}
+			}(phone, p.Amount, p.Currency)
+		}
+	}
+	pkg.WriteSuccess(w, http.StatusOK, p, nil)
 }
 
 // ConfirmPayoutPaid — POST /admin/payouts/{payoutId}/paid {provider_reference}
@@ -1059,4 +1130,38 @@ func (h *AdminHandler) CreateProgramme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusCreated, created, nil)
+}
+
+// ListTutors — GET /admin/tutors (admin console roster, APPROVED profiles).
+func (h *AdminHandler) ListTutors(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	list, total, err := h.svc.ListApprovedTutors(r.Context())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	p := ParsePagination(r)
+	pkg.WriteSuccess(w, http.StatusOK, list, p.Meta(total))
+}
+
+// UpsertTutor — POST /admin/tutors (admin). Creates (or edits) a tutor
+// account + vetting profile, optionally approving + publishing immediately.
+func (h *AdminHandler) UpsertTutor(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	var req service.AdminUpsertTutorInput
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	profile, err := h.svc.UpsertTutorAdmin(r.Context(), *adminID, req)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusCreated, profile, nil)
 }

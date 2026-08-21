@@ -193,6 +193,7 @@ export function LeadCapture({
               </div>
             ) : (
               <form
+                noValidate
                 className="space-y-4 p-6"
                 onSubmit={(e) => {
                   e.preventDefault();

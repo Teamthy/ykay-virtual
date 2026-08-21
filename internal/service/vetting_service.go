@@ -805,8 +805,10 @@ func (a SearchInvalidatorAdapter) InvalidateSearch(ctx context.Context) error {
 
 // UpdateBankDetails — the tutor sets (or clears) their payout destination.
 // Owner-only; account number must be digits (9-12); all three fields must be
-// set together (or all empty to clear). Audited.
-func (s *VettingService) UpdateBankDetails(ctx context.Context, actorUserID, profileID uuid.UUID, bankName, accountNumber, accountName string) error {
+// set together (or all empty to clear). bankCode (Paystack bank code) is
+// optional for manual transfers but required for Paystack one-click payouts.
+// Audited.
+func (s *VettingService) UpdateBankDetails(ctx context.Context, actorUserID, profileID uuid.UUID, bankName, bankCode, accountNumber, accountName string) error {
 	if s.uows == nil {
 		return errors.New("vetting store unavailable")
 	}
@@ -825,12 +827,23 @@ func (s *VettingService) UpdateBankDetails(ctx context.Context, actorUserID, pro
 	}
 
 	bankName = strings.TrimSpace(bankName)
+	bankCode = strings.TrimSpace(bankCode)
 	accountNumber = strings.TrimSpace(accountNumber)
 	accountName = strings.TrimSpace(accountName)
 	allEmpty := bankName == "" && accountNumber == "" && accountName == ""
 	if !allEmpty {
 		if bankName == "" || accountNumber == "" || accountName == "" {
 			return fmt.Errorf("%w: bank name, account number and account name must all be provided (or all empty to clear)", domain.ErrInvalidInput)
+		}
+		if bankCode != "" {
+			if len(bankCode) < 3 || len(bankCode) > 6 {
+				return fmt.Errorf("%w: bank code must be 3-6 digits", domain.ErrInvalidInput)
+			}
+			for _, r := range bankCode {
+				if r < '0' || r > '9' {
+					return fmt.Errorf("%w: bank code must contain digits only", domain.ErrInvalidInput)
+				}
+			}
 		}
 		if len(bankName) > 120 {
 			return fmt.Errorf("%w: bank name must be 120 characters or fewer", domain.ErrInvalidInput)
@@ -850,11 +863,14 @@ func (s *VettingService) UpdateBankDetails(ctx context.Context, actorUserID, pro
 		}
 	}
 
-	var bn, an, acn *string
+	var bn, bc, an, acn *string
 	if !allEmpty {
 		bn, an, acn = &bankName, &accountNumber, &accountName
+		if bankCode != "" {
+			bc = &bankCode
+		}
 	}
-	if err := uow.Vetting().UpdateBankDetails(ctx, profileID, bn, an, acn); err != nil {
+	if err := uow.Vetting().UpdateBankDetails(ctx, profileID, bn, bc, an, acn); err != nil {
 		return err
 	}
 	_ = s.audit.LogStateChange(ctx, &actorUserID, identity.AuditUpdate, "tutor_profile",

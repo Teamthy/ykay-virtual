@@ -36,15 +36,15 @@ func TestUpdateBankDetails_SaveClearValidate(t *testing.T) {
 	require.NoError(t, err)
 
 	// Validation: account number must be digits.
-	err = svc.UpdateBankDetails(ctx, actor, p.ID, "GTBank", "0123ABC456", "Bank Tutor")
+	err = svc.UpdateBankDetails(ctx, actor, p.ID, "GTBank", "058", "0123ABC456", "Bank Tutor")
 	assert.ErrorIs(t, err, domain.ErrInvalidInput)
 
 	// Partial update rejected.
-	err = svc.UpdateBankDetails(ctx, actor, p.ID, "GTBank", "0123456789", "")
+	err = svc.UpdateBankDetails(ctx, actor, p.ID, "GTBank", "058", "0123456789", "")
 	assert.ErrorIs(t, err, domain.ErrInvalidInput)
 
 	// Save.
-	err = svc.UpdateBankDetails(ctx, actor, p.ID, "GTBank", "0123456789", "Bank Tutor")
+	err = svc.UpdateBankDetails(ctx, actor, p.ID, "GTBank", "058", "0123456789", "Bank Tutor")
 	require.NoError(t, err)
 	got, err := store.Vetting.GetProfileByID(ctx, p.ID)
 	require.NoError(t, err)
@@ -55,11 +55,11 @@ func TestUpdateBankDetails_SaveClearValidate(t *testing.T) {
 
 	// Owner-only: a different user cannot change it.
 	other := uuid.New()
-	err = svc.UpdateBankDetails(ctx, other, p.ID, "Zenith", "9876543210", "Hacker")
+	err = svc.UpdateBankDetails(ctx, other, p.ID, "Zenith", "057", "9876543210", "Hacker")
 	assert.ErrorIs(t, err, domain.ErrForbidden)
 
 	// Clear with all-empty.
-	err = svc.UpdateBankDetails(ctx, actor, p.ID, "", "", "")
+	err = svc.UpdateBankDetails(ctx, actor, p.ID, "", "", "", "")
 	require.NoError(t, err)
 	got, err = store.Vetting.GetProfileByID(ctx, p.ID)
 	require.NoError(t, err)

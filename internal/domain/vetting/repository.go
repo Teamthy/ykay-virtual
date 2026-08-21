@@ -22,8 +22,14 @@ type VettingRepository interface {
 	UpdateStatus(ctx context.Context, profileID uuid.UUID, status string) error
 	SetPublic(ctx context.Context, profileID uuid.UUID, isPublic bool) error
 	// UpdateBankDetails stores (or clears, with all-nil) the tutor's payout
-	// destination — a bank account the tutor owns.
-	UpdateBankDetails(ctx context.Context, profileID uuid.UUID, bankName, accountNumber, accountName *string) error
+	// destination — a bank account the tutor owns. bankCode is the Paystack
+	// bank code (3-6 digits) when known.
+	UpdateBankDetails(ctx context.Context, profileID uuid.UUID, bankName, bankCode, accountNumber, accountName *string) error
+	// SetPaystackRecipientCode caches a Paystack transfer-recipient code on
+	// the profile so transfers reuse the recipient.
+	SetPaystackRecipientCode(ctx context.Context, profileID uuid.UUID, code string) error
+	// UpdateProfileAdmin updates editable profile fields (admin console).
+	UpdateProfileAdmin(ctx context.Context, profileID uuid.UUID, displayName string, headline, bio *string, yearsExperience int, hourlyRateMin, hourlyRateMax *float64) error
 	MarkApproved(ctx context.Context, profileID, approvedBy uuid.UUID, rankingScore float64) error
 	SetRankingScore(ctx context.Context, profileID uuid.UUID, score float64) error
 	ListByStatus(ctx context.Context, status string, limit, offset int) ([]tutor.TutorProfile, int64, error)

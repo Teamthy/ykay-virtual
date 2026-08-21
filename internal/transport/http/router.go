@@ -216,6 +216,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 
 	// Admin vetting queue (Phase 4)
 	mux.HandleFunc("GET "+v1+"/admin/vetting/queue", handlers.AdminVetting.ListQueue)
+	mux.HandleFunc("GET "+v1+"/admin/tutors", handlers.Admin.ListTutors)
+	mux.HandleFunc("POST "+v1+"/admin/tutors", handlers.Admin.UpsertTutor)
 	mux.HandleFunc("GET "+v1+"/admin/vetting/profiles/{profileId}", handlers.AdminVetting.GetProfile)
 	mux.HandleFunc("POST "+v1+"/admin/vetting/profiles/{profileId}/review", handlers.AdminVetting.action("review"))
 	mux.HandleFunc("POST "+v1+"/admin/vetting/profiles/{profileId}/interview", handlers.AdminVetting.action("interview"))
@@ -333,6 +335,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/orders/{orderId}/refund", handlers.Admin.RefundOrder)
 	mux.HandleFunc("GET "+v1+"/admin/payouts", handlers.Admin.ListPayouts)
 	mux.HandleFunc("POST "+v1+"/admin/payouts/{payoutId}/paid", handlers.Admin.ConfirmPayoutPaid)
+	mux.HandleFunc("POST "+v1+"/admin/payouts/{payoutId}/paystack", handlers.Admin.PayoutViaPaystack)
+	mux.HandleFunc("POST "+v1+"/admin/payouts/{payoutId}/paystack/otp", handlers.Admin.CompletePaystackTransfer)
 	mux.HandleFunc("GET "+v1+"/admin/blog", handlers.Admin.ListPosts)
 	mux.HandleFunc("POST "+v1+"/admin/blog", handlers.Admin.CreatePost)
 	mux.HandleFunc("PUT "+v1+"/admin/blog/{postId}", handlers.Admin.UpdatePost)

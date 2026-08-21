@@ -8,7 +8,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Banknote, CheckCheck, Landmark, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { listAdminPayoutRows, confirmPayoutPaid, type AdminPayoutRow } from "@/features/admin/api";
+import {
+  listAdminPayoutRows,
+  confirmPayoutPaid,
+  paystackPayout,
+  finalizePaystackPayout,
+  type AdminPayoutRow,
+} from "@/features/admin/api";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -30,7 +36,14 @@ export default function AdminPayoutsPage() {
     staleTime: 15_000,
     refetchInterval: 30_000,
   });
-  const rows = q.data ?? [];
+  const rows = q.data?.payouts ?? [];
+  const paystackEnabled = !!q.data?.paystack_transfers;
+
+  // Paystack one-click transfer state.
+  const [paystackBusyId, setPaystackBusyId] = useState<string | null>(null);
+  const [otpFor, setOtpFor] = useState<string | null>(null);
+  const [otpValue, setOtpValue] = useState("");
+  const [otpBusy, setOtpBusy] = useState(false);
 
   const pendingTotal = rows.filter((r) => r.payout.status === "PENDING").reduce((s, r) => s + r.payout.amount, 0);
 
@@ -52,6 +65,40 @@ export default function AdminPayoutsPage() {
     }
   };
 
+  const sendPaystack = async (row: AdminPayoutRow) => {
+    setPaystackBusyId(row.payout.id);
+    try {
+      const res = await paystackPayout(row.payout.id);
+      if (res.needs_otp) {
+        setOtpFor(row.payout.id);
+        toast.info("Enter the OTP sent to the tutor's bank-registered phone/email");
+      } else {
+        toast.success("Transfer sent via Paystack — payout marked PAID");
+      }
+      await qc.invalidateQueries({ queryKey: ["admin", "payouts"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Paystack transfer failed");
+    } finally {
+      setPaystackBusyId(null);
+    }
+  };
+
+  const sendOTP = async () => {
+    if (!otpFor || !otpValue.trim()) return;
+    setOtpBusy(true);
+    try {
+      await finalizePaystackPayout(otpFor, otpValue.trim());
+      toast.success("Transfer finalized — payout marked PAID");
+      setOtpFor(null);
+      setOtpValue("");
+      await qc.invalidateQueries({ queryKey: ["admin", "payouts"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "OTP rejected — check it and try again");
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -59,7 +106,9 @@ export default function AdminPayoutsPage() {
           <Banknote className="text-brand-gold" /> Tutor payouts
         </h1>
         <p className="mt-1 text-sm text-ink-500">
-          Transfer each pending amount to the tutor&apos;s bank account, then confirm it here with the transaction reference — the tutor is notified on WhatsApp.
+          {paystackEnabled
+            ? "One-click Paystack bank transfers — the tutor is notified on WhatsApp the moment the money moves."
+            : "Transfer each pending amount to the tutor&apos;s bank account, then confirm it here with the transaction reference — the tutor is notified on WhatsApp."}
         </p>
       </div>
 
@@ -129,11 +178,22 @@ export default function AdminPayoutsPage() {
                         <p><span className="font-bold text-ink-500">Name: </span>{r.account_name}</p>
                       </div>
                     )}
+                    {paystackEnabled && (
+                      <button
+                        type="button"
+                        disabled={paystackBusyId === r.payout.id}
+                        onClick={() => void sendPaystack(r)}
+                        className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#0BA4DB] px-4 py-2 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
+                      >
+                        {paystackBusyId === r.payout.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCheck size={13} />}
+                        Send via Paystack
+                      </button>
+                    )}
                     <div className="mt-2 flex gap-2">
                       <input
                         value={refs[r.payout.id] ?? ""}
                         onChange={(e) => setRefs({ ...refs, [r.payout.id]: e.target.value })}
-                        placeholder="Transaction reference"
+                        placeholder="Manual transfer reference"
                         className="min-w-0 flex-1 rounded-xl border border-ink-200 px-3 py-2 text-xs"
                       />
                       <button
@@ -152,6 +212,43 @@ export default function AdminPayoutsPage() {
             </li>
           ))}
         </ul>
+      )}
+      {/* Paystack OTP modal */}
+      {otpFor && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setOtpFor(null)}>
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-ink-900">Enter transfer OTP</h2>
+            <p className="mt-1 text-sm text-ink-500">
+              Paystack sent an OTP to the tutor&apos;s bank-registered phone or email. Enter it to finalize the transfer.
+            </p>
+            <input
+              autoFocus
+              value={otpValue}
+              onChange={(e) => setOtpValue(e.target.value.replace(/[^0-9]/g, ""))}
+              maxLength={6}
+              inputMode="numeric"
+              placeholder="6-digit OTP"
+              className="mt-4 w-full rounded-xl border border-ink-200 px-4 py-3 text-center text-xl tracking-[0.4em]"
+            />
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                disabled={otpBusy || otpValue.trim().length === 0}
+                onClick={() => void sendOTP()}
+                className="flex-1 rounded-xl bg-brand-gold px-4 py-2.5 text-sm font-bold text-ink-900 disabled:opacity-50"
+              >
+                {otpBusy ? "Finalizing…" : "Finalize transfer"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setOtpFor(null); setOtpValue(""); }}
+                className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

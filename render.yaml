@@ -83,6 +83,8 @@ services:
         value: PAYSTACK
       - key: PAYSTACK_SECRET
         sync: false
+      - key: PAYSTACK_TRANSFER_ENABLED
+        value: "false"
       - key: FLUTTERWAVE_SECRET
         sync: false
       # ── Email (magic-link codes, verification, receipts) ───────────────

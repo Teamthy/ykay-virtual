@@ -71,11 +71,24 @@ func (r *VettingRepo) CreateProfile(ctx context.Context, p *tutor.TutorProfile) 
 }
 
 // UpdateBankDetails stores (or clears) the tutor's payout destination.
-func (r *VettingRepo) UpdateBankDetails(ctx context.Context, profileID uuid.UUID, bankName, accountNumber, accountName *string) error {
+func (r *VettingRepo) UpdateBankDetails(ctx context.Context, profileID uuid.UUID, bankName, bankCode, accountNumber, accountName *string) error {
 	res, err := r.db.ExecContext(ctx, `
 		UPDATE tutor_profiles
-		SET bank_name = $2, account_number = $3, account_name = $4, updated_at = NOW()
-		WHERE id = $1`, profileID, bankName, accountNumber, accountName)
+		SET bank_name = $2, bank_code = $3, account_number = $4, account_name = $5, updated_at = NOW()
+		WHERE id = $1`, profileID, bankName, bankCode, accountNumber, accountName)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+// SetPaystackRecipientCode caches a Paystack transfer-recipient code.
+func (r *VettingRepo) SetPaystackRecipientCode(ctx context.Context, profileID uuid.UUID, code string) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE tutor_profiles SET paystack_recipient_code = $2, updated_at = NOW() WHERE id = $1`, profileID, code)
 	if err != nil {
 		return err
 	}
@@ -111,6 +124,22 @@ func (r *VettingRepo) MarkApproved(ctx context.Context, profileID, approvedBy uu
 		WHERE id = $3`, approvedBy, rankingScore, profileID)
 	if err != nil {
 		return fmt.Errorf("mark tutor approved: %w", err)
+	}
+	return nil
+}
+
+// UpdateProfileAdmin updates editable profile fields (admin console).
+func (r *VettingRepo) UpdateProfileAdmin(ctx context.Context, profileID uuid.UUID, displayName string, headline, bio *string, yearsExperience int, hourlyRateMin, hourlyRateMax *float64) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE tutor_profiles
+		SET display_name = $2, headline = $3, bio = $4, years_experience = $5,
+			hourly_rate_min = $6, hourly_rate_max = $7, updated_at = NOW()
+		WHERE id = $1`, profileID, displayName, headline, bio, yearsExperience, hourlyRateMin, hourlyRateMax)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
 	}
 	return nil
 }

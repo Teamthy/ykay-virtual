@@ -972,6 +972,19 @@ func (m *PayoutMemory) UpdateStatus(_ context.Context, id uuid.UUID, status paym
 	return nil
 }
 
+// SetTransferMeta records the Paystack transfer code + OTP flag.
+func (m *PayoutMemory) SetTransferMeta(_ context.Context, id uuid.UUID, transferCode *string, otpRequired bool) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	p, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	p.TransferCode = transferCode
+	p.OTPRequired = otpRequired
+	return nil
+}
+
 func (m *PayoutMemory) ListByTutorProfileID(_ context.Context, tutorProfileID uuid.UUID, limit int) ([]payment.Payout, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

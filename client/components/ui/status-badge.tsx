@@ -46,6 +46,7 @@ export function statusKindFor(status: string | undefined): keyof typeof KINDS {
     case "PASSED":
       return "success";
     case "PENDING":
+    case "PROCESSING":
     case "SUBMITTED":
     case "UNDER_REVIEW":
     case "INTERVIEW":
@@ -59,6 +60,7 @@ export function statusKindFor(status: string | undefined): keyof typeof KINDS {
     case "REJECTED":
     case "SUSPENDED":
     case "CANCELLED":
+    case "REFUNDED":
     case "FAILED":
     case "ABSENT":
     case "EXPIRED":

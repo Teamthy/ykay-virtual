@@ -41,6 +41,21 @@ services:
       timeout: 5s
       retries: 5
 
+  clamav:
+    # Upload malware scanning (gap #5): the API's upload guard fails closed
+    # when the scanner is unreachable, so this service is required for
+    # uploads to work in the compose stack.
+    image: clamav/clamav:stable_base
+    restart: unless-stopped
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck"] # upstream helper: exits 0 when clamd is ready
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
   migrate:
     build:
       context: .
@@ -55,6 +70,7 @@ services:
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       PAYSTACK_SECRET: ${PAYSTACK_SECRET:-}
       FLUTTERWAVE_SECRET: ${FLUTTERWAVE_SECRET:-}
+      CLAMAV_ADDR: clamav:3310
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GOOGLE_REDIRECT_URL: ${SITE_URL}/auth/google/callback
@@ -213,6 +229,7 @@ services:
 
 volumes:
   postgres_data:
+  clamav_data:
   redis_data:
   prometheus_data:
   grafana_data:

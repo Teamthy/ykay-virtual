@@ -15,6 +15,7 @@ import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { getMyProfile, updateBankDetails } from "@/features/vetting/api";
+import { NIGERIAN_BANKS, bankNameForCode } from "@/features/vetting/banks";
 import { getTutorEarnings } from "@/features/lms/api";
 import { BookOpen, MessageSquare, Bell, LifeBuoy, Settings, Wallet, CalendarDays, ClipboardCheck, Users, NotebookPen } from "lucide-react";
 import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
@@ -68,7 +69,7 @@ export default function TutorDashboardPage() {
   const { user } = useSession();
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("overview");
   const [newSlot, setNewSlot] = useState({ day_of_week: 1, start_time: "16:00", end_time: "17:00" });
-  const [bankForm, setBankForm] = useState({ bank_name: "", account_number: "", account_name: "" });
+  const [bankForm, setBankForm] = useState({ bank_name: "", bank_code: "", account_number: "", account_name: "" });
   const [bankSaving, setBankSaving] = useState(false);
   const [bankError, setBankError] = useState<string | null>(null);
 
@@ -159,6 +160,7 @@ export default function TutorDashboardPage() {
     if (p) {
       setBankForm({
         bank_name: p.bank_name ?? "",
+        bank_code: p.bank_code ?? "",
         account_number: p.account_number ?? "",
         account_name: p.account_name ?? "",
       });
@@ -172,6 +174,7 @@ export default function TutorDashboardPage() {
     try {
       await updateBankDetails(p.id, {
         bank_name: bankForm.bank_name.trim(),
+        bank_code: bankForm.bank_code.trim() || undefined,
         account_number: bankForm.account_number.trim(),
         account_name: bankForm.account_name.trim(),
       });
@@ -507,8 +510,23 @@ export default function TutorDashboardPage() {
             <p className="mt-0.5 text-xs text-ink-500">Earnings are transferred to this account. Ask the admin team to confirm each transfer.</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <label className="block">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Bank name</span>
-                <input value={bankForm.bank_name} onChange={(e) => setBankForm({ ...bankForm, bank_name: e.target.value })} placeholder="e.g. GTBank" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm" />
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Bank</span>
+                <select
+                  value={bankForm.bank_code}
+                  onChange={(e) => {
+                    const code = e.target.value;
+                    setBankForm({ ...bankForm, bank_code: code, bank_name: bankNameForCode(code) });
+                  }}
+                  className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                >
+                  <option value="">Select your bank…</option>
+                  {NIGERIAN_BANKS.map((b) => (
+                    <option key={b.code} value={b.code}>{b.name}</option>
+                  ))}
+                </select>
+                {bankForm.bank_name && (
+                  <span className="mt-0.5 block text-[10px] text-ink-400">{bankForm.bank_name} · code {bankForm.bank_code}</span>
+                )}
               </label>
               <label className="block">
                 <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Account number</span>

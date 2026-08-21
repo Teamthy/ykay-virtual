@@ -105,6 +105,7 @@ type Repositories struct {
 	Students           identity.StudentProfileRepository
 	StudentLinks       identity.ParentStudentLinkRepository
 	Vetting            vetting.VettingRepository
+	TutorSubjects      tutor.TutorSubjectRepository
 	Learning           learning.AssessmentRepository
 	Leads              leads.Repository
 	Grading            learning.GradingRepository
@@ -335,10 +336,20 @@ func main() {
 		WithVetting(repos.Vetting).
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
+	// Paystack one-click payouts (transfers) — explicit opt-in. The provider
+	// itself fails closed unless a real PAYSTACK_SECRET is present, so a
+	// placeholder secret can never fake a money-moving transfer.
+	if os.Getenv("PAYSTACK_TRANSFER_ENABLED") == "true" && cfg.PaystackSecret != "" {
+		adminSvc.WithTransferProvider(payment_provider.NewPaystack(cfg.PaystackSecret))
+		slog.Info("payouts: Paystack transfers ENABLED (PAYSTACK_TRANSFER_ENABLED=true)")
+	} else {
+		slog.Info("payouts: Paystack transfers disabled (set PAYSTACK_TRANSFER_ENABLED=true to enable one-click payouts)")
+	}
 	adminHandler := httpapi.NewAdminHandler(adminSvc).WithPayments(paymentSvc).WithStorage(store).WithNotifier(notifierSvc)
 	adminSvc.WithPayments(repos.Orders, repos.Payouts).
 		WithPaymentRows(repos.Payments).
-		WithStudents(repos.Students)
+		WithStudents(repos.Students).
+		WithTutorConsole(repos.SubjectRepo, repos.TutorSubjects)
 	adminSvc.WithUsers(repos.Users, repos.Roles)
 	adminSvc.WithAuditLogs(repos.AuditRepo)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
@@ -606,6 +617,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			StudentLinks:       store.StudentLinks,
 			StudentLink:        store.StudentLinks,
 			Vetting:            store.Vetting,
+			TutorSubjects:      store.TutorSubj,
 			Learning:           store.Learning,
 			Grading:            store.Learning,
 			ProgressReports:    store.Learning,
@@ -670,6 +682,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Students:           postgres.NewStudentProfileRepo(pg.DB()),
 		StudentLinks:       postgres.NewParentStudentLinkRepo(pg.DB()),
 		Vetting:            postgres.NewVettingRepo(pg.DB()),
+		TutorSubjects:      postgres.NewTutorSubjectRepo(pg.DB()),
 		Learning:           postgres.NewAssessmentRepo(pg.DB()),
 		Grading:            postgres.NewGradingRepo(pg.DB()),
 		ProgressReports:    postgres.NewProgressReportRepo(pg.DB()),
