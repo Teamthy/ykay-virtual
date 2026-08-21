@@ -78,7 +78,7 @@ export function AuthShell({
           {/* Navigation: back to home (always) */}
           <Link
             href="/"
-            className="absolute left-6 top-8 inline-flex items-center gap-x-1.5 text-sm font-medium text-ink-500 transition-colors hover:text-brand-navy"
+            className="absolute left-6 top-8 inline-flex items-center gap-x-1.5 text-sm font-medium text-ink-500 transition-colors hover:text-deep"
           >
             <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path
@@ -109,7 +109,7 @@ export function AuthShell({
 
           <div className="w-full max-w-md px-6 py-16">
             <div className="text-left">
-              <h2 className="text-2xl font-semibold tracking-tight text-brand-navy">{title}</h2>
+              <h2 className="text-2xl font-semibold tracking-tight text-deep">{title}</h2>
               {subtitle && <p className="mt-1 text-sm leading-5 text-ink-500">{subtitle}</p>}
             </div>
 
@@ -122,7 +122,7 @@ export function AuthShell({
           <a
             href="/contact"
             aria-label="Chat with support"
-            className="absolute -bottom-1 -right-2 hidden size-11 items-center justify-center rounded-full bg-brand-gold shadow-lg transition-colors hover:bg-brand-gold-hover lg:flex"
+            className="absolute -bottom-1 -right-2 hidden size-11 items-center justify-center rounded-full bg-primary shadow-lg transition-colors hover:bg-primary-hover lg:flex"
           >
             <svg className="size-5 text-ink-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M20 11.5a8.5 8.5 0 01-9 8.48 9.7 9.7 0 01-3.8-.77L3 20l1.08-3.8A8.48 8.48 0 013 11.5 8.5 8.5 0 0111.5 3h.01A8.5 8.5 0 0120 11.5z" />

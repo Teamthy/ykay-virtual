@@ -46,8 +46,8 @@ export function PageHero({
   const centered = align === "center";
   const split = Boolean(image) && !cover;
   const navyTone =
-    Boolean(className?.includes("bg-brand-navy")) ||
-    Boolean(className?.includes("from-brand-navy")) ||
+    Boolean(className?.includes("bg-deep")) ||
+    Boolean(className?.includes("from-deep")) ||
     Boolean(className?.includes("from-[#060F26]"));
   const onPhoto = Boolean(cover) || navyTone;
 
@@ -68,7 +68,7 @@ export function PageHero({
                     href={c.href}
                     className={cn(
                       "underline-offset-2 hover:underline",
-                      onPhoto ? "text-white/80 hover:text-white" : "hover:text-brand-navy"
+                      onPhoto ? "text-white/80 hover:text-white" : "hover:text-deep"
                     )}
                   >
                     {c.name}
@@ -85,9 +85,9 @@ export function PageHero({
       {pill && (
         <span className={cn(
           "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em]",
-          onPhoto ? "border-white/30 bg-white/10 text-white" : "border-ink-200 bg-white text-brand-navy"
+          onPhoto ? "border-white/30 bg-white/10 text-white" : "border-ink-200 bg-white text-deep"
         )}>
-          <span className="size-1.5 rounded-full bg-brand-gold" />
+          <span className="size-1.5 rounded-full bg-primary" />
           {pill}
         </span>
       )}
@@ -95,7 +95,7 @@ export function PageHero({
       <h1
         className={cn(
           "mt-6 font-display text-4xl leading-[1.08] tracking-[0.01em] md:text-6xl",
-          onPhoto ? "text-white drop-shadow-sm" : "text-brand-navy",
+          onPhoto ? "text-white drop-shadow-sm" : "text-deep",
           centered && !split && "mx-auto max-w-[850px]"
         )}
       >
@@ -115,7 +115,7 @@ export function PageHero({
               <Link
                 key={cta.label}
                 href={cta.href}
-                className="rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
+                className="rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-primary-hover"
               >
                 {cta.label}
               </Link>
@@ -127,7 +127,7 @@ export function PageHero({
                   "rounded-full border px-7 py-3.5 text-sm font-bold transition",
                   onPhoto
                     ? "border-white/50 text-white hover:bg-white/10"
-                    : "border-ink-300 text-ink-800 hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+                    : "border-ink-300 text-ink-800 hover:border-deep hover:bg-deep hover:text-white"
                 )}
               >
                 {cta.label}

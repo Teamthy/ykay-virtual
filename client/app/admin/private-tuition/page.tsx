@@ -40,7 +40,7 @@ export default function AdminPrivateTuitionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-brand-navy">Private tuition requests</h1>
+        <h1 className="text-3xl font-extrabold text-deep">Private tuition requests</h1>
         <p className="text-ink-500 text-sm mt-1">
           Parents request a vetted tutor; match one here to create their payable escrow order.
         </p>
@@ -52,7 +52,7 @@ export default function AdminPrivateTuitionPage() {
             key={s}
             onClick={() => setStatus(s)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {s}
@@ -112,7 +112,7 @@ function RequestCard({
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-bold text-brand-navy">{subjectName}</h3>
+          <h3 className="font-bold text-deep">{subjectName}</h3>
           <p className="text-xs text-ink-500 mt-0.5">Requested {new Date(r.created_at).toLocaleDateString()}</p>
         </div>
         <StatusBadge label={r.status} kind={statusKindFor(r.status)} />

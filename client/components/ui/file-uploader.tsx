@@ -58,14 +58,14 @@ export function FileUploader({ files, onChange, accept, maxFiles = 5, hint, clas
         }}
         className={cn(
           "flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors",
-          dragging ? "border-brand-blue bg-brand-blue-light/60" : "border-ink-200 bg-surface-subtle hover:border-brand-blue/50"
+          dragging ? "border-deep bg-primary-light/60" : "border-ink-200 bg-surface-subtle hover:border-deep/50"
         )}
       >
-        <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-blue-light text-brand-blue">
+        <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-light text-deep">
           <UploadCloud size={20} />
         </span>
         <span className="text-sm font-semibold text-ink-700">
-          Drag &amp; drop files here, or <span className="text-brand-blue underline underline-offset-2">browse</span>
+          Drag &amp; drop files here, or <span className="text-deep underline underline-offset-2">browse</span>
         </span>
         {hint && <span className="text-xs text-ink-500">{hint}</span>}
       </button>
@@ -88,7 +88,7 @@ export function FileUploader({ files, onChange, accept, maxFiles = 5, hint, clas
               key={`${f.name}-${f.size}`}
               className="flex items-center gap-3 rounded-xl border border-ink-100 bg-white px-3.5 py-2.5"
             >
-              <FileText size={16} className="shrink-0 text-brand-blue" aria-hidden="true" />
+              <FileText size={16} className="shrink-0 text-deep" aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink-700">{f.name}</span>
               <span className="shrink-0 text-xs text-ink-500 tabular-nums">{fmtSize(f.size)}</span>
               <Button

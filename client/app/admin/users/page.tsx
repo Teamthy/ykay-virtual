@@ -88,10 +88,10 @@ export default function AdminUsersPage() {
       <div className="space-y-6">
         <PageHeader eyebrow="Staff" title="Users" cover="/hero/about.jpg" />
         <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
-          <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-brand-navy">
+          <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-deep">
             <Lock size={26} />
           </div>
-          <h2 className="mt-4 text-lg font-extrabold text-brand-navy">Admin access required</h2>
+          <h2 className="mt-4 text-lg font-extrabold text-deep">Admin access required</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
             You need a platform admin account to view the user list.
           </p>
@@ -119,7 +119,7 @@ export default function AdminUsersPage() {
             key={t.id}
             onClick={() => { setTab(t.id); setPage(1); }}
             className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
-              tab === t.id ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              tab === t.id ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {t.label}
@@ -129,7 +129,7 @@ export default function AdminUsersPage() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white p-4">
-        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-200 px-3 focus-within:border-brand-gold">
+        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-200 px-3 focus-within:border-primary">
           <Search size={16} className="shrink-0 text-ink-400" />
           <input
             value={search}
@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
             aria-label="Search users"
           />
           {search && (
-            <button onClick={applySearch} className="text-xs font-bold text-brand-blue hover:underline">
+            <button onClick={applySearch} className="text-xs font-bold text-deep hover:underline">
               Go
             </button>
           )}
@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="h-10 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-700 outline-none focus:border-brand-gold"
+          className="h-10 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-700 outline-none focus:border-primary"
           aria-label="Filter by status"
         >
           <option value="">All statuses</option>
@@ -264,16 +264,16 @@ function UserRow({
   };
 
   return (
-    <tr className={isSelf ? "bg-brand-gold-light/30" : ""}>
+    <tr className={isSelf ? "bg-primary-light/30" : ""}>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-navy text-xs font-extrabold text-white">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-deep text-xs font-extrabold text-white">
             {(u.first_name?.[0] ?? u.email[0] ?? "?").toUpperCase()}
           </span>
           <div className="min-w-0">
             <p className="truncate font-semibold text-ink-800">
               {u.first_name || u.email} {u.last_name || ""}
-              {isSelf && <span className="ml-2 rounded-full bg-brand-gold px-2 py-0.5 text-[10px] font-bold text-ink-900">you</span>}
+              {isSelf && <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-ink-900">you</span>}
             </p>
             <p className="truncate text-xs text-ink-400">{u.email}</p>
           </div>
@@ -327,7 +327,7 @@ function UserRow({
             <button
               onClick={() => u.id && statusMut.mutate({ userId: u.id, status: "ACTIVE" })}
               disabled={busy || !canManage}
-              className="inline-flex items-center gap-1 rounded-lg bg-brand-green px-2.5 py-1.5 text-[11px] font-bold text-white hover:opacity-90 disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-[11px] font-bold text-white hover:opacity-90 disabled:opacity-40"
             >
               <UserCheck size={12} /> Reactivate
             </button>

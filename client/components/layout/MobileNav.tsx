@@ -25,7 +25,7 @@ export function MobileNav() {
               <Link
                 href={href}
                 className={`flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold ${
-                  active ? "text-brand-blue" : "text-ink-400"
+                  active ? "text-deep" : "text-ink-400"
                 }`}
               >
                 <Icon size={20} />

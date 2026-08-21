@@ -12,7 +12,7 @@ import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { Modal } from "@/components/ui/modal";
 
 const INPUT_CLS =
-  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30";
+  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 export default function AdminProgrammesPage() {
   const qc = useQueryClient();
@@ -68,8 +68,8 @@ export default function AdminProgrammesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-brand-navy flex items-center gap-2">
-            <BookOpen className="text-brand-gold" /> Programmes
+          <h1 className="text-3xl font-extrabold text-deep flex items-center gap-2">
+            <BookOpen className="text-primary" /> Programmes
           </h1>
           <p className="text-ink-500 text-sm mt-1">
             Create programme pages, then open a roster for cohorts, students and tutors.
@@ -80,7 +80,7 @@ export default function AdminProgrammesPage() {
             setError(null);
             setCreating(true);
           }}
-          className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover"
         >
           <Plus size={15} /> Create programme
         </button>
@@ -106,13 +106,13 @@ export default function AdminProgrammesPage() {
                 <StatusBadge label={p.status} kind={statusKindFor(p.status)} />
                 <Link
                   href={`/programmes/${p.slug}`}
-                  className="text-xs font-semibold text-brand-blue hover:underline"
+                  className="text-xs font-semibold text-deep hover:underline"
                 >
                   Public page ↗
                 </Link>
                 <Link
                   href={`/admin/programmes/${p.slug}`}
-                  className="rounded-full bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900"
+                  className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-ink-900"
                 >
                   Open roster
                 </Link>
@@ -201,7 +201,7 @@ export default function AdminProgrammesPage() {
             <button
               type="submit"
               disabled={busy}
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 disabled:opacity-50"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 disabled:opacity-50"
             >
               {busy ? "Creating…" : "Create DRAFT programme"}
             </button>

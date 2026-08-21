@@ -300,13 +300,13 @@ export default function TutorDashboardPage() {
             {p && (
               <div className="mt-4">
                 <div className="flex justify-between text-xs text-ink-500"><span>Profile completion</span><span>{profileCompletion}%</span></div>
-                <div className="mt-1 h-2 rounded-full bg-ink-100"><div className="h-2 rounded-full bg-brand-blue" style={{ width: `${profileCompletion}%` }} /></div>
+                <div className="mt-1 h-2 rounded-full bg-ink-100"><div className="h-2 rounded-full bg-deep" style={{ width: `${profileCompletion}%` }} /></div>
               </div>
             )}
           </section>
 
           {/* Today's lessons */}
-          <section className="rounded-2xl bg-brand-gold text-ink-900 p-6">
+          <section className="rounded-2xl bg-primary text-ink-900 p-6">
             <h2 className="font-bold text-ink-900">Today</h2>
             {lessons.isLoading ? (
               <Skeleton className="h-12 w-full mt-3 bg-white/20" />
@@ -323,7 +323,7 @@ export default function TutorDashboardPage() {
                       </div>
                     </div>
                     {l.meeting_url && (
-                      <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-white text-brand-blue text-sm font-bold px-4 py-2">Join class</a>
+                      <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-white text-deep text-sm font-bold px-4 py-2">Join class</a>
                     )}
                   </li>
                 ))}
@@ -335,7 +335,7 @@ export default function TutorDashboardPage() {
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-bold text-ink-800">Your courses</h2>
-              <Link href="/lms/tutor" className="text-sm font-bold text-brand-gold-dark hover:underline">
+              <Link href="/lms/tutor" className="text-sm font-bold text-primary-dark hover:underline">
                 Manage courses →
               </Link>
             </div>
@@ -354,11 +354,11 @@ export default function TutorDashboardPage() {
                   <Link
                     key={c.cohortId}
                     href={`/lms/tutor/cohorts/${c.cohortId}`}
-                    className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-brand-gold/50"
+                    className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-primary/50"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-bold text-ink-800">{c.title}</p>
-                      <span className="rounded-full bg-brand-blue-light px-2.5 py-1 text-[10px] font-bold text-brand-blue">
+                      <span className="rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-bold text-deep">
                         {c.lessonCount} lesson{c.lessonCount === 1 ? "" : "s"}
                       </span>
                     </div>
@@ -380,7 +380,7 @@ export default function TutorDashboardPage() {
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-bold text-ink-800">Your teaching schedule</h2>
-              <button type="button" onClick={() => setTab("availability")} className="text-sm font-bold text-brand-gold-dark hover:underline">
+              <button type="button" onClick={() => setTab("availability")} className="text-sm font-bold text-primary-dark hover:underline">
                 Edit availability →
               </button>
             </div>
@@ -393,8 +393,8 @@ export default function TutorDashboardPage() {
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => {
                   const slots = (availability.data ?? []).filter((a) => a.day_of_week === idx);
                   return (
-                    <div key={day} className={`min-w-24 rounded-2xl border p-3 ${slots.length ? "border-brand-gold bg-brand-gold-light" : "border-ink-100 bg-white"}`}>
-                      <p className={`text-center text-xs font-bold ${slots.length ? "text-brand-gold-dark" : "text-ink-400"}`}>{day}</p>
+                    <div key={day} className={`min-w-24 rounded-2xl border p-3 ${slots.length ? "border-primary bg-primary-light" : "border-ink-100 bg-white"}`}>
+                      <p className={`text-center text-xs font-bold ${slots.length ? "text-primary-dark" : "text-ink-400"}`}>{day}</p>
                       {slots.length ? (
                         <p className="mt-1 text-center text-[11px] leading-tight text-ink-700">
                           {slots.map((s) => `${s.start_time.slice(0, 5)}–${s.end_time.slice(0, 5)}`).join("\n")}
@@ -411,15 +411,15 @@ export default function TutorDashboardPage() {
 
           {/* Quick links */}
           <section>
-            <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Links</h2>
+            <h2 className="font-display text-lg tracking-[0.02em] text-deep">Links</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {quickLinks.map((q) => (
-                <Link key={q.href} href={q.href} className="group flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-brand-gold">
-                  <span className="grid size-9 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
+                <Link key={q.href} href={q.href} className="group flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary">
+                  <span className="grid size-9 place-items-center rounded-xl bg-primary-light text-primary">
                     <q.icon size={17} />
                   </span>
                   <span>
-                    <span className="block text-sm font-bold text-brand-navy">{q.label}</span>
+                    <span className="block text-sm font-bold text-deep">{q.label}</span>
                     <span className="block text-xs text-ink-500">{q.desc}</span>
                   </span>
                 </Link>
@@ -434,7 +434,7 @@ export default function TutorDashboardPage() {
         <div className="mt-6 space-y-6">
           {/* Attendance to complete */}
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="flex items-center gap-2 font-bold text-ink-800"><Users size={16} className="text-brand-green" /> Attendance to complete</h2>
+            <h2 className="flex items-center gap-2 font-bold text-ink-800"><Users size={16} className="text-primary" /> Attendance to complete</h2>
             {recent.length === 0 ? (
               <p className="mt-2 text-sm text-ink-500">No completed lessons awaiting attendance.</p>
             ) : (
@@ -448,7 +448,7 @@ export default function TutorDashboardPage() {
                       </div>
                       <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Mark attendance</span>
                     </div>
-                    <Link href="/lms/tutor" className="mt-3 inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-brand-blue transition-colors">
+                    <Link href="/lms/tutor" className="mt-3 inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-deep transition-colors">
                       Open roster to mark attendance →
                     </Link>
                   </li>
@@ -459,11 +459,11 @@ export default function TutorDashboardPage() {
 
           {/* Lesson notes */}
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="flex items-center gap-2 font-bold text-ink-800"><NotebookPen size={16} className="text-brand-green" /> Lesson notes &amp; homework</h2>
+            <h2 className="flex items-center gap-2 font-bold text-ink-800"><NotebookPen size={16} className="text-primary" /> Lesson notes &amp; homework</h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
               Write lesson notes and homework after each session — parents see them in their portal.
             </p>
-            <Link href="/lms/tutor" className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-4 py-2 text-xs font-semibold text-brand-blue transition-colors hover:border-brand-blue">
+            <Link href="/lms/tutor" className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-4 py-2 text-xs font-semibold text-deep transition-colors hover:border-deep">
               Open the teaching console <BookOpen size={13} />
             </Link>
           </section>
@@ -491,7 +491,7 @@ export default function TutorDashboardPage() {
                       <div className="flex items-center gap-2">
                         <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                         {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
-                          <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blue-dark transition-colors">Join</a>
+                          <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light transition-colors">Join</a>
                         )}
                       </div>
                     </li>
@@ -598,23 +598,23 @@ export default function TutorDashboardPage() {
       {tab === "earnings" && (
         <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
           <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-bold text-brand-navy">
-              <Wallet size={16} className="text-brand-green" /> Earnings
+            <h2 className="flex items-center gap-2 font-bold text-deep">
+              <Wallet size={16} className="text-primary" /> Earnings
             </h2>
-            <span className="rounded-full bg-brand-gold-light px-3 py-1 text-xs font-bold text-brand-navy">Escrow-protected</span>
+            <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-bold text-deep">Escrow-protected</span>
           </div>
           <p className="mt-1 text-xs text-ink-500">Held until lessons are confirmed, then paid out on the weekly schedule.</p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center">
             <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-brand-navy">₦{(earnings.data?.held_total ?? 0).toLocaleString()}</div>
+              <div className="text-lg font-extrabold text-deep">₦{(earnings.data?.held_total ?? 0).toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-ink-500">Held</div>
             </div>
             <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-brand-navy">₦{(earnings.data?.released_total ?? 0).toLocaleString()}</div>
+              <div className="text-lg font-extrabold text-deep">₦{(earnings.data?.released_total ?? 0).toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-ink-500">Released</div>
             </div>
-            <div className="rounded-xl bg-brand-gold-light p-3">
-              <div className="text-lg font-extrabold text-brand-green">₦{(earnings.data?.paid_total ?? 0).toLocaleString()}</div>
+            <div className="rounded-xl bg-primary-light p-3">
+              <div className="text-lg font-extrabold text-primary">₦{(earnings.data?.paid_total ?? 0).toLocaleString()}</div>
               <div className="text-[10px] font-semibold text-ink-600">Paid out</div>
             </div>
           </div>
@@ -651,7 +651,7 @@ export default function TutorDashboardPage() {
               </label>
             </div>
             {bankError && <p className="mt-2 text-xs text-red-600">{bankError}</p>}
-            <button type="button" onClick={() => void saveBank()} disabled={bankSaving} className="mt-3 rounded-full bg-brand-navy px-5 py-2 text-xs font-bold text-white hover:bg-brand-navy/90 disabled:opacity-50">
+            <button type="button" onClick={() => void saveBank()} disabled={bankSaving} className="mt-3 rounded-full bg-deep px-5 py-2 text-xs font-bold text-white hover:bg-deep/90 disabled:opacity-50">
               {bankSaving ? "Saving…" : "Save bank details"}
             </button>
           </div>

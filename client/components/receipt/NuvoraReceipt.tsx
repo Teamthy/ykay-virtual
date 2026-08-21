@@ -31,7 +31,7 @@ export function NuvoraReceipt({
     <article id="nuvora-receipt" className="mx-auto w-full max-w-[720px] rounded-3xl border border-ink-100 bg-white p-8 shadow-card print:shadow-none">
       <header className="flex items-start justify-between gap-4 border-b border-ink-100 pb-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-gold-dark">NUVORA</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary-dark">NUVORA</p>
           <h1 className="mt-1 font-display text-3xl text-deep">Payment receipt</h1>
           <p className="mt-1 text-sm text-ink-500">Learning beyond boundaries · Africa/Lagos</p>
         </div>

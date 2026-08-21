@@ -109,7 +109,7 @@ function Chip({
       className={cn(
         "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3.5 py-2.5 text-sm font-semibold transition-colors",
         selected
-          ? "border-brand-gold bg-brand-gold-light text-brand-navy"
+          ? "border-primary bg-primary-light text-deep"
           : "border-ink-200 bg-white text-ink-600 hover:border-ink-300 hover:text-ink-800",
         className
       )}
@@ -127,7 +127,7 @@ function ContinueBtn({ onClick, label, disabled }: { onClick: () => void; label:
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+      className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
     >
       {label}
     </button>
@@ -197,18 +197,18 @@ function Step1({
           type="button"
           onClick={onContinue}
           disabled={submitting}
-          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? "Creating account…" : "Continue"}
         </button>
       </div>
       <p className="text-xs leading-5 text-ink-400">
         We&apos;ll send a 6-digit code to your email to verify it. By continuing you agree to our{" "}
-        <Link href="/terms" className="font-medium text-brand-gold-dark hover:underline">
+        <Link href="/terms" className="font-medium text-primary-dark hover:underline">
           Terms
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" className="font-medium text-brand-gold-dark hover:underline">
+        <Link href="/privacy" className="font-medium text-primary-dark hover:underline">
           Privacy Policy
         </Link>
         .
@@ -241,7 +241,7 @@ function Step2({
   return (
     <div className="space-y-5">
       <div className="rounded-lg border border-ink-200 bg-surface-muted px-4 py-3 text-sm text-ink-600">
-        We emailed a 6-digit code to <span className="font-semibold text-brand-navy">{email}</span>. Enter it below to
+        We emailed a 6-digit code to <span className="font-semibold text-deep">{email}</span>. Enter it below to
         verify your email.
       </div>
       <div>
@@ -274,7 +274,7 @@ function Step2({
           type="button"
           onClick={onVerify}
           disabled={submitting || code.length !== 6}
-          className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? "Verifying…" : "Verify email"}
         </button>
@@ -309,20 +309,20 @@ function Step3({
           aria-pressed={selected === r.value}
           className={cn(
             "flex w-full items-start gap-4 rounded-xl border-2 p-4 text-left transition-colors",
-            selected === r.value ? "border-brand-gold bg-brand-gold-light" : "border-ink-200 bg-white hover:border-ink-300"
+            selected === r.value ? "border-primary bg-primary-light" : "border-ink-200 bg-white hover:border-ink-300"
           )}
         >
           <span className="text-2xl" aria-hidden="true">
             {r.icon}
           </span>
           <span className="flex-1">
-            <span className="block text-sm font-bold text-brand-navy">{r.label}</span>
+            <span className="block text-sm font-bold text-deep">{r.label}</span>
             <span className="mt-0.5 block text-sm text-ink-500">{r.desc}</span>
           </span>
           <span
             className={cn(
               "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2",
-              selected === r.value ? "border-brand-gold bg-brand-gold" : "border-ink-300"
+              selected === r.value ? "border-primary bg-primary" : "border-ink-300"
             )}
             aria-hidden="true"
           >
@@ -498,7 +498,7 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
         <ContinueBtn onClick={onNext} label="Continue" />
         <p className="text-xs leading-5 text-ink-400">
           Want to teach on NUVORA? Complete your profile, then{" "}
-          <Link href="/become-tutor/apply" className="font-semibold text-brand-gold-dark hover:underline">
+          <Link href="/become-tutor/apply" className="font-semibold text-primary-dark hover:underline">
             apply to become a tutor
           </Link>
           .
@@ -538,7 +538,7 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
         <ContinueBtn onClick={onNext} label="Continue" />
         <p className="text-xs leading-5 text-ink-400">
           Want to set up your school on NUVORA?{" "}
-          <Link href="/for-schools" className="font-semibold text-brand-gold-dark hover:underline">
+          <Link href="/for-schools" className="font-semibold text-primary-dark hover:underline">
             Explore NUVORA for schools
           </Link>
           .
@@ -691,11 +691,11 @@ function Step7({ state, onDone }: { state: ObState; onDone: () => void }) {
   const roleLabel = ROLES.find((r) => r.value === state.role)?.label.toLowerCase() ?? "account";
   return (
     <div className="space-y-5 text-center">
-      <div className="mx-auto grid size-16 place-items-center rounded-full bg-brand-gold-light text-4xl" aria-hidden="true">
+      <div className="mx-auto grid size-16 place-items-center rounded-full bg-primary-light text-4xl" aria-hidden="true">
         🎉
       </div>
       <div>
-        <h3 className="text-xl font-extrabold text-brand-navy">You&apos;re all set, {first}!</h3>
+        <h3 className="text-xl font-extrabold text-deep">You&apos;re all set, {first}!</h3>
         <p className="mt-1.5 text-sm leading-6 text-ink-500">
           Your NUVORA account is ready. Head to your dashboard to explore programmes, cohorts and tutors.
         </p>
@@ -703,7 +703,7 @@ function Step7({ state, onDone }: { state: ObState; onDone: () => void }) {
       <button
         type="button"
         onClick={onDone}
-        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover"
+        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover"
       >
         Go to my dashboard
       </button>
@@ -1029,7 +1029,7 @@ function OnboardingInner() {
           <button
             type="button"
             onClick={() => go(step - 1)}
-            className="text-sm font-medium text-ink-500 transition-colors hover:text-brand-navy"
+            className="text-sm font-medium text-ink-500 transition-colors hover:text-deep"
           >
             ← Back to previous step
           </button>

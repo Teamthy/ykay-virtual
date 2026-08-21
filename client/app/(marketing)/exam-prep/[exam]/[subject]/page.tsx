@@ -49,7 +49,10 @@ export default async function ExamPrepSubjectPage(props: Props) {
 
   return (
     <main className="container-x pb-16">
-      <InnerHero>
+      <InnerHero
+        variant="imageLeft"
+        image={{ src: "/hero/exam-prep.jpg", alt: `${subject.name} — ${exam.code} exam preparation` }}
+      >
         <Breadcrumbs
           items={[
             { name: "Home", href: "/" },

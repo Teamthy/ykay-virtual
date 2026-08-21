@@ -39,10 +39,10 @@ export default function AdminProgrammeRosterPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <Link href="/admin/programmes" className="text-xs font-semibold text-brand-navy hover:underline">
+          <Link href="/admin/programmes" className="text-xs font-semibold text-deep hover:underline">
             ← All programmes
           </Link>
-          <h1 className="mt-2 text-3xl font-extrabold text-brand-navy">{programme.title}</h1>
+          <h1 className="mt-2 text-3xl font-extrabold text-deep">{programme.title}</h1>
           <p className="mt-1 text-sm text-ink-500">
             {programme.slug} · {programme.format}
             {programme.summary ? ` — ${programme.summary}` : ""}
@@ -54,20 +54,20 @@ export default function AdminProgrammeRosterPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-ink-100 bg-white p-4 shadow-soft">
           <div className="flex items-center gap-2 text-xs font-semibold text-ink-500"><CalendarDays size={14} /> Cohorts</div>
-          <div className="mt-1 text-2xl font-extrabold text-brand-navy">{roster.cohort_count}</div>
+          <div className="mt-1 text-2xl font-extrabold text-deep">{roster.cohort_count}</div>
         </div>
         <div className="rounded-2xl border border-ink-100 bg-white p-4 shadow-soft">
           <div className="flex items-center gap-2 text-xs font-semibold text-ink-500"><Users size={14} /> Students</div>
-          <div className="mt-1 text-2xl font-extrabold text-brand-navy">{roster.student_count}</div>
+          <div className="mt-1 text-2xl font-extrabold text-deep">{roster.student_count}</div>
         </div>
         <div className="rounded-2xl border border-ink-100 bg-white p-4 shadow-soft">
           <div className="flex items-center gap-2 text-xs font-semibold text-ink-500"><UserCheck size={14} /> Tutors</div>
-          <div className="mt-1 text-2xl font-extrabold text-brand-navy">{roster.tutors.length}</div>
+          <div className="mt-1 text-2xl font-extrabold text-deep">{roster.tutors.length}</div>
         </div>
       </div>
 
       <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-        <h2 className="font-bold text-brand-navy">Cohorts</h2>
+        <h2 className="font-bold text-deep">Cohorts</h2>
         {(roster.cohorts ?? []).length === 0 ? (
           <p className="mt-2 text-sm text-ink-500">No cohorts on this programme yet.</p>
         ) : (
@@ -89,7 +89,7 @@ export default function AdminProgrammeRosterPage() {
       </section>
 
       <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-        <h2 className="font-bold text-brand-navy">Tutors</h2>
+        <h2 className="font-bold text-deep">Tutors</h2>
         {(roster.tutors ?? []).length === 0 ? (
           <p className="mt-2 text-sm text-ink-500">No tutor assigned yet — assign from Cohorts or approve a join request.</p>
         ) : (
@@ -124,7 +124,7 @@ export default function AdminProgrammeRosterPage() {
       </section>
 
       <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-        <h2 className="font-bold text-brand-navy">Students</h2>
+        <h2 className="font-bold text-deep">Students</h2>
         {(roster.students ?? []).length === 0 ? (
           <p className="mt-2 text-sm text-ink-500">No enrolments on this programme yet.</p>
         ) : (

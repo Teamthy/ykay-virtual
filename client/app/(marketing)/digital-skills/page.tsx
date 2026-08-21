@@ -40,21 +40,41 @@ export default function DigitalSkillsPage() {
         ]}
       />
 
-      {/* ── Dashboard-style stats strip ─────────────────────────────────── */}
-      <div className="container-x -mt-8 pb-4">
-        <div className="grid gap-4 sm:grid-cols-4">
-          {[
-            { k: "6", label: "Career-ready tracks" },
-            { k: "500+", label: "Learners taught" },
-            { k: "1:12", label: "Max tutor:student ratio" },
-            { k: "100%", label: "Project-based learning" },
-          ].map((s) => (
-            <div key={s.label} className="rounded-2xl border border-ink-100 bg-white p-5 text-center shadow-soft">
-              <p className="font-display text-3xl text-brand-navy">{s.k}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-500">{s.label}</p>
+      {/* ── Why the academy works (narrative, not a stats strip) ───────── */}
+      <div className="container-x pb-4">
+        <section className="mt-10 rounded-2xl border border-ink-100 bg-surface-muted px-6 py-8 md:px-10">
+          <div className="grid items-start gap-8 md:grid-cols-[1fr_1fr]">
+            <div>
+              <h2 className="font-display text-2xl tracking-wide text-brand-navy">Built for the way careers actually start</h2>
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-600">
+                Every track here is small-group, project-based and led by a vetted tutor.
+                You don&apos;t watch your way through the academy — you build things,
+                get feedback in class, and finish with something you can show.
+              </p>
+              <a href="#courses" className="mt-5 inline-flex items-center gap-2 rounded-full bg-deep px-5 py-2.5 text-sm font-bold text-white hover:bg-deep-light">
+                Choose your track <span aria-hidden="true">↓</span>
+              </a>
             </div>
-          ))}
-        </div>
+            <ul className="space-y-3 text-sm text-ink-700">
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">✓</span>
+                Six career-ready tracks — computer science to Microsoft Office
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">✓</span>
+                No more than 12 learners per tutor, live sessions included
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">✓</span>
+                Every course ends with a portfolio project, not just a test
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">✓</span>
+                Certificate on completion, escrow-protected payment
+              </li>
+            </ul>
+          </div>
+        </section>
       </div>
 
       {/* ── Course dashboard ────────────────────────────────────────────── */}

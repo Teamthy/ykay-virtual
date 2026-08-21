@@ -73,8 +73,8 @@ export default function AdminLeadsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-brand-navy">
-          <Users className="text-brand-gold" /> Leads
+        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-deep">
+          <Users className="text-primary" /> Leads
         </h1>
         <p className="mt-1 text-sm text-ink-500">
           Visitors who didn&apos;t enroll — new ones also land on the ops WhatsApp. Follow up fast: most conversions happen in the first hour.
@@ -97,11 +97,11 @@ export default function AdminLeadsPage() {
               setPage(1);
             }}
             className={`rounded-2xl border bg-white p-4 text-left shadow-soft transition ${
-              status === c.key ? "border-brand-gold ring-2 ring-brand-gold/20" : "border-ink-100 hover:border-ink-200"
+              status === c.key ? "border-primary ring-2 ring-primary/20" : "border-ink-100 hover:border-ink-200"
             }`}
           >
             <p className="flex items-center gap-1.5 text-xs font-semibold text-ink-500">{c.icon}{c.label}</p>
-            <p className="mt-1 font-display text-2xl text-brand-navy">{counts?.[c.key] ?? "…"}</p>
+            <p className="mt-1 font-display text-2xl text-deep">{counts?.[c.key] ?? "…"}</p>
           </button>
         ))}
       </div>
@@ -117,7 +117,7 @@ export default function AdminLeadsPage() {
               setPage(1);
             }}
             className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-              status === t.key ? "bg-brand-gold text-ink-900" : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300"
+              status === t.key ? "bg-primary text-ink-900" : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300"
             }`}
           >
             {t.label}
@@ -143,7 +143,7 @@ export default function AdminLeadsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-bold text-ink-800">{l.name}</p>
                     <StatusBadge label={l.status} kind={STATUS_KIND[l.status]} />
-                    <span className="rounded-full bg-brand-blue-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-blue">
+                    <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-deep">
                       {intentLabel(l.intent)}
                     </span>
                   </div>
@@ -174,7 +174,7 @@ export default function AdminLeadsPage() {
                       type="button"
                       disabled={busyId === l.id}
                       onClick={() => void setLead(l.id, "CONTACTED")}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-brand-blue px-4 text-xs font-bold text-brand-blue hover:bg-brand-blue-light disabled:opacity-50"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-deep px-4 text-xs font-bold text-deep hover:bg-primary-light disabled:opacity-50"
                     >
                       <CheckCheck size={13} /> Mark contacted
                     </button>
@@ -184,7 +184,7 @@ export default function AdminLeadsPage() {
                       type="button"
                       disabled={busyId === l.id}
                       onClick={() => void setLead(l.id, "CONVERTED")}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-brand-gold px-4 text-xs font-bold text-brand-gold-dark hover:bg-brand-gold-light disabled:opacity-50"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-primary px-4 text-xs font-bold text-primary-dark hover:bg-primary-light disabled:opacity-50"
                     >
                       <Trophy size={13} /> Enrolled
                     </button>

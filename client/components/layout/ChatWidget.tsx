@@ -216,7 +216,7 @@ export function ChatWidget() {
         <div className="fixed bottom-24 right-4 z-50 flex h-[min(92vh,560px)] w-[min(94vw,380px)] flex-col overflow-hidden rounded-3xl border border-ink-100 bg-ink-50 shadow-2xl animate-slide-up">
           <div className="flex items-center justify-between bg-deep px-4 py-3 text-white">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center overflow-hidden rounded-full bg-brand-gold text-lg font-bold text-ink-900">
+              <span className="grid size-10 place-items-center overflow-hidden rounded-full bg-primary text-lg font-bold text-ink-900">
                 N
               </span>
               <div>
@@ -239,7 +239,7 @@ export function ChatWidget() {
                   onClick={() => setTab("conversation")}
                   className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-soft"
                 >
-                  <span className="grid size-12 place-items-center rounded-full bg-brand-gold text-lg font-bold text-ink-900">N</span>
+                  <span className="grid size-12 place-items-center rounded-full bg-primary text-lg font-bold text-ink-900">N</span>
                   <span className="flex-1">
                     <span className="block text-sm font-bold text-ink-900">Chat with Nuvora</span>
                     <span className="block text-xs text-ink-500">Lessons, payments, accounts — ask now</span>
@@ -277,7 +277,7 @@ export function ChatWidget() {
                   <p className="text-sm font-bold text-ink-900">Previous conversations</p>
                   {!user ? (
                     <p className="mt-3 text-center text-sm text-ink-400">
-                      <button type="button" onClick={() => router.push(loginWithReturn())} className="font-semibold text-brand-gold-dark hover:underline">
+                      <button type="button" onClick={() => router.push(loginWithReturn())} className="font-semibold text-primary-dark hover:underline">
                         Log in
                       </button>{" "}
                       to keep a history
@@ -311,7 +311,7 @@ export function ChatWidget() {
                 <div className="flex-1 space-y-3 pb-3">
                   {showWelcome && (
                     <div className="flex items-start gap-2">
-                      <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-brand-gold text-xs font-bold text-ink-900">N</span>
+                      <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">N</span>
                       <div className="rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-800 shadow-sm">
                         Hi, I&apos;m Nuvora. I help with courses, assignments, payments and what to do next. What can I help with?
                       </div>
@@ -320,7 +320,7 @@ export function ChatWidget() {
                   {liveMsgs.map((m) => (
                     <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "items-start gap-2")}>
                       {m.role !== "user" && (
-                        <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-brand-gold text-xs font-bold text-ink-900">N</span>
+                        <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">N</span>
                       )}
                       <div
                         className={cn(
@@ -335,7 +335,7 @@ export function ChatWidget() {
                   {sending && <p className="pl-9 text-xs text-ink-400">Nuvora is typing…</p>}
                   {sendError && <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">{sendError}</p>}
                   {escalated && (
-                    <p className="rounded-xl bg-brand-gold-light px-3 py-2 text-xs font-semibold text-deep">
+                    <p className="rounded-xl bg-primary-light px-3 py-2 text-xs font-semibold text-deep">
                       A human on the NUVORA team will pick this up. Watch your inbox and Notifications.
                     </p>
                   )}
@@ -348,7 +348,7 @@ export function ChatWidget() {
                             key={s}
                             type="button"
                             onClick={() => void send(s)}
-                            className="w-full rounded-full border border-ink-200 bg-white px-4 py-2.5 text-left text-sm text-ink-800 hover:border-brand-gold"
+                            className="w-full rounded-full border border-ink-200 bg-white px-4 py-2.5 text-left text-sm text-ink-800 hover:border-primary"
                           >
                             {s}
                           </button>
@@ -365,10 +365,10 @@ export function ChatWidget() {
                             key={n}
                             type="button"
                             onClick={() => void submitRating(n)}
-                            className="p-1 text-ink-300 hover:text-brand-gold"
+                            className="p-1 text-ink-300 hover:text-primary"
                             aria-label={`${n} stars`}
                           >
-                            <Star size={16} fill={rating >= n ? "currentColor" : "none"} className={rating >= n ? "text-brand-gold" : ""} />
+                            <Star size={16} fill={rating >= n ? "currentColor" : "none"} className={rating >= n ? "text-primary" : ""} />
                           </button>
                         ))}
                       </div>
@@ -401,7 +401,7 @@ export function ChatWidget() {
                       className="rounded-2xl bg-white p-3 shadow-soft"
                     >
                       <summary className="cursor-pointer list-none">
-                        <span className="inline-block rounded-md bg-brand-gold-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-deep">
+                        <span className="inline-block rounded-md bg-primary-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-deep">
                           {a.category.title}
                         </span>
                         <span className="mt-1 block text-sm font-semibold text-ink-900">{a.q}</span>
@@ -421,7 +421,7 @@ export function ChatWidget() {
                   type="button"
                   onClick={() => void askHuman()}
                   disabled={sending || escalated}
-                  className="text-[11px] font-bold text-brand-gold-dark hover:underline disabled:opacity-40"
+                  className="text-[11px] font-bold text-primary-dark hover:underline disabled:opacity-40"
                 >
                   Talk to a person
                 </button>
@@ -484,7 +484,7 @@ export function ChatWidget() {
         onPointerUp={launcherUp}
         onPointerCancel={launcherUp}
         aria-label={open ? "Close chat" : "Open chat"}
-        className="grid size-14 touch-none select-none place-items-center rounded-full bg-brand-gold text-ink-900 shadow-brand transition-transform hover:scale-105 active:cursor-grabbing"
+        className="grid size-14 touch-none select-none place-items-center rounded-full bg-primary text-ink-900 shadow-brand transition-transform hover:scale-105 active:cursor-grabbing"
       >
         {open ? <X size={26} /> : <MessageSquare size={26} />}
       </button>

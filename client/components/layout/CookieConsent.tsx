@@ -35,7 +35,7 @@ export function CookieConsent() {
       <p className="text-sm leading-6 text-ink-700 dark:text-ink-200">
         🍪 We use a session cookie to keep you signed in and a few preferences
         (theme, language).{" "}
-        <Link href="/privacy" className="font-semibold text-brand-gold-dark hover:underline">
+        <Link href="/privacy" className="font-semibold text-primary-dark hover:underline">
           Learn more
         </Link>
       </p>
@@ -44,7 +44,7 @@ export function CookieConsent() {
           type="button"
           onClick={accept}
           data-testid="cookie-accept"
-          className="flex-1 rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+          className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover"
         >
           Accept
         </button>

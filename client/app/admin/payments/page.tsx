@@ -67,9 +67,9 @@ export default function AdminPaymentsPage() {
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/admin" className="hover:text-brand-gold-dark">Admin</Link> / Payments
+            <Link href="/admin" className="hover:text-primary-dark">Admin</Link> / Payments
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">Payments console</h1>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-deep">Payments console</h1>
           <p className="mt-1 text-sm text-ink-500">
             {total} orders · {pendingCount} pending · {paidCount} paid on this page
           </p>
@@ -80,7 +80,7 @@ export default function AdminPaymentsPage() {
         {/* Orders */}
         <section className="rounded-2xl border border-ink-100 bg-white shadow-sm">
           <div className="border-b border-ink-100 px-5 py-4">
-            <h2 className="font-display text-lg font-bold text-brand-navy">Orders</h2>
+            <h2 className="font-display text-lg font-bold text-deep">Orders</h2>
           </div>
           {orders.isLoading ? (
             <div className="space-y-2 p-4">
@@ -104,7 +104,7 @@ export default function AdminPaymentsPage() {
                   {(orders.data?.orders ?? []).map((o) => (
                     <tr key={o.id} className="border-b border-ink-50 last:border-0 hover:bg-[#FFF7E4]">
                       <td className="px-5 py-3">
-                        <Link href={`/admin/payments/${o.id}`} className="font-semibold text-brand-navy hover:underline">
+                        <Link href={`/admin/payments/${o.id}`} className="font-semibold text-deep hover:underline">
                           {o.order_number}
                         </Link>
                         <p className="text-xs text-ink-400">{o.id.slice(0, 8)}… · open details</p>
@@ -125,7 +125,7 @@ export default function AdminPaymentsPage() {
                               type="button"
                               disabled={confirm.isPending}
                               onClick={() => confirm.mutate(o.id)}
-                              className="rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+                              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
                             >
                               Confirm payment
                             </button>
@@ -163,7 +163,7 @@ export default function AdminPaymentsPage() {
         {/* Payouts */}
         <section className="mt-6 rounded-2xl border border-ink-100 bg-white shadow-sm">
           <div className="border-b border-ink-100 px-5 py-4">
-            <h2 className="font-display text-lg font-bold text-brand-navy">Tutor payouts</h2>
+            <h2 className="font-display text-lg font-bold text-deep">Tutor payouts</h2>
           </div>
           {(payouts.data ?? []).length === 0 ? (
             <p className="py-10 text-center text-sm text-ink-400">No payouts yet - released escrow generates them on the payout schedule.</p>
@@ -204,7 +204,7 @@ export default function AdminPaymentsPage() {
       {refundFor && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="font-display text-lg font-bold text-brand-navy">Refund order</h3>
+            <h3 className="font-display text-lg font-bold text-deep">Refund order</h3>
             <p className="mt-1 text-sm text-ink-500">
               Escrow is returned to the parent&apos;s wallet and the order is marked refunded.
             </p>

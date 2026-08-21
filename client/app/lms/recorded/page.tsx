@@ -40,7 +40,7 @@ export default function RecordedLibraryPage() {
     <DashboardPage className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold text-ink-900">
-          <Video className="text-brand-gold" /> Recorded lessons
+          <Video className="text-primary" /> Recorded lessons
         </h1>
         <p className="mt-1 text-sm text-ink-500">
           Rewatch your recorded classes any time. Only lessons from cohorts you&apos;re enrolled in appear here.
@@ -53,7 +53,7 @@ export default function RecordedLibraryPage() {
           <select
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30"
+            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30"
           >
             {pickerOptions.map((l) => (
               <option key={l.id} value={l.id}>
@@ -94,7 +94,7 @@ export default function RecordedLibraryPage() {
                     {new Date(l.start_at).toLocaleDateString()} · {l.timezone}
                   </p>
                 </div>
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-gold/20 text-brand-gold">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/20 text-primary">
                   <Play size={18} />
                 </span>
               </div>
@@ -103,7 +103,7 @@ export default function RecordedLibraryPage() {
                   href={l.video_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-brand-gold px-5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-bold text-ink-900 hover:bg-primary-hover"
                 >
                   Watch recording
                 </a>

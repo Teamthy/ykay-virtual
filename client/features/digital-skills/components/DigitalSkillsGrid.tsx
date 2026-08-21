@@ -37,7 +37,7 @@ export function DigitalSkillsGrid() {
             onClick={() => setLevel(l)}
             className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
               level === l
-                ? "bg-brand-gold text-ink-900"
+                ? "bg-primary text-ink-900"
                 : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300"
             }`}
           >
@@ -64,7 +64,7 @@ export function DigitalSkillsGrid() {
                   <Icon size={22} />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate font-display text-lg font-bold text-brand-navy">{c.title}</p>
+                  <p className="truncate font-display text-lg font-bold text-deep">{c.title}</p>
                   <span
                     className="mt-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
                     style={{ background: c.color }}
@@ -84,8 +84,8 @@ export function DigitalSkillsGrid() {
                 </div>
 
                 <div className="mt-5 flex items-center justify-between border-t border-ink-50 pt-4">
-                  <span className="text-sm font-bold text-brand-navy">{c.price}</span>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-brand-gold-dark group-hover:gap-2 transition-all">
+                  <span className="text-sm font-bold text-deep">{c.price}</span>
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-primary-dark group-hover:gap-2 transition-all">
                     View course <ArrowRight size={14} />
                   </span>
                 </div>

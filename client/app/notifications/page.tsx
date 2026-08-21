@@ -75,7 +75,7 @@ export default function NotificationsPage() {
                 className={
                   n.is_read
                     ? "px-5 py-4"
-                    : "cursor-pointer border-brand-blue/30 bg-brand-blue-light/50 px-5 py-4 transition-colors hover:bg-brand-blue-light/80"
+                    : "cursor-pointer border-deep/30 bg-primary-light/50 px-5 py-4 transition-colors hover:bg-primary-light/80"
                 }
                 onClick={() => {
                   if (!n.is_read) markRead.mutate(n.id);
@@ -84,7 +84,7 @@ export default function NotificationsPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${n.is_read ? "bg-ink-200" : "bg-brand-blue"}`}
+                      className={`h-2 w-2 shrink-0 rounded-full ${n.is_read ? "bg-ink-200" : "bg-deep"}`}
                       aria-hidden="true"
                     />
                     <span className="truncate text-sm font-semibold text-ink-800">{n.title}</span>

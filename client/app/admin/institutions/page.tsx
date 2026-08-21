@@ -41,7 +41,7 @@ export default function AdminInstitutionsPage() {
               setPage(1);
             }}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              type === t ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              type === t ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {t || "All"}
@@ -54,7 +54,7 @@ export default function AdminInstitutionsPage() {
             setPage(1);
           }}
           placeholder="Search institutions…"
-          className="ml-auto rounded-xl border border-ink-200 px-4 py-2 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          className="ml-auto rounded-xl border border-ink-200 px-4 py-2 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
         />
       </div>
 

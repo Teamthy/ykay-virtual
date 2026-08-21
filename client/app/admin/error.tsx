@@ -21,7 +21,7 @@ export default function AdminError({
     <main className="mx-auto max-w-2xl px-6 py-20">
       <div className="rounded-3xl border border-ink-100 bg-white p-8 text-center shadow-card">
         <p className="text-4xl" aria-hidden="true">⚠️</p>
-        <h1 className="mt-3 font-display text-2xl text-brand-navy">This page hit a snag</h1>
+        <h1 className="mt-3 font-display text-2xl text-deep">This page hit a snag</h1>
         <p className="mt-2 text-sm text-ink-600">
           The error was logged to the browser console (F12 → Console). If it keeps happening,
           copy the message and send it to the engineering team.
@@ -34,7 +34,7 @@ export default function AdminError({
           <button
             type="button"
             onClick={reset}
-            className="rounded-full bg-brand-gold px-6 py-2.5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+            className="rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-ink-900 hover:bg-primary-hover"
           >
             Reload this page
           </button>

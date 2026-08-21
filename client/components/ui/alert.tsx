@@ -7,25 +7,25 @@ import { cn } from "@/lib/utils";
 
 const VARIANTS = {
   info: {
-    box: "border-brand-blue/25 bg-brand-blue-light/60 text-brand-navy",
+    box: "border-deep/25 bg-primary-light/60 text-deep",
     icon: <Info size={16} />,
-    iconColor: "text-brand-blue",
+    iconColor: "text-deep",
     label: "Info",
   },
   success: {
-    box: "border-brand-green/25 bg-green-50 text-brand-navy",
+    box: "border-primary/25 bg-green-50 text-deep",
     icon: <CheckCircle2 size={16} />,
-    iconColor: "text-brand-green",
+    iconColor: "text-primary",
     label: "Success",
   },
   warning: {
-    box: "border-brand-gold/40 bg-brand-gold-light/70 text-brand-navy",
+    box: "border-primary/40 bg-primary-light/70 text-deep",
     icon: <TriangleAlert size={16} />,
-    iconColor: "text-brand-gold-dark",
+    iconColor: "text-primary-dark",
     label: "Attention",
   },
   error: {
-    box: "border-red-200 bg-red-50 text-brand-navy",
+    box: "border-red-200 bg-red-50 text-deep",
     icon: <AlertCircle size={16} />,
     iconColor: "text-red-600",
     label: "Error",

@@ -18,13 +18,13 @@ export function StatCard({ label, value, hint, icon, trend, className }: StatCar
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-wide text-ink-500">{label}</p>
-          <p className="mt-1.5 text-2xl font-extrabold tracking-tight text-brand-navy tabular-nums">{value}</p>
+          <p className="mt-1.5 text-2xl font-extrabold tracking-tight text-deep tabular-nums">{value}</p>
           {hint && <p className="mt-1 text-xs text-ink-500">{hint}</p>}
           {trend && (
             <p
               className={cn(
                 "mt-1.5 inline-flex items-center gap-1 text-xs font-semibold",
-                trend.positive === false ? "text-red-600" : "text-brand-green"
+                trend.positive === false ? "text-red-600" : "text-primary"
               )}
             >
               <span aria-hidden="true">{trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "→"}</span>
@@ -32,7 +32,7 @@ export function StatCard({ label, value, hint, icon, trend, className }: StatCar
             </p>
           )}
         </div>
-        {icon && <div className="shrink-0 text-brand-blue">{icon}</div>}
+        {icon && <div className="shrink-0 text-deep">{icon}</div>}
       </div>
     </div>
   );

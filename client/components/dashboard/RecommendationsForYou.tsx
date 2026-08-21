@@ -83,7 +83,7 @@ export function RecommendationsForYou() {
     <section aria-label="Recommended for you" className="mb-8">
       <div className="flex items-baseline justify-between gap-3 mb-3">
         <div>
-          <h2 className="font-display text-lg font-bold text-brand-navy">For you</h2>
+          <h2 className="font-display text-lg font-bold text-deep">For you</h2>
           <p className="text-xs text-ink-500 mt-0.5">{data.basis}</p>
         </div>
       </div>
@@ -97,7 +97,7 @@ export function RecommendationsForYou() {
               {data.cohorts.slice(0, 2).map((c) => (
                 <li key={c.id}>
                   <Link href={`/cohorts/${c.id}`} className="group block">
-                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-brand-blue">
+                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-deep">
                       {c.title}
                     </span>
                     <span className="block text-xs text-ink-500">
@@ -118,7 +118,7 @@ export function RecommendationsForYou() {
               {data.programmes.slice(0, 2).map((p) => (
                 <li key={p.id}>
                   <Link href={`/programmes/${p.slug ?? p.id}`} className="group block">
-                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-brand-blue">
+                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-deep">
                       {p.title}
                     </span>
                     <span className="block text-xs text-ink-500">{p.reason}</span>
@@ -137,7 +137,7 @@ export function RecommendationsForYou() {
               {data.tutors.slice(0, 2).map((t) => (
                 <li key={t.profile.id}>
                   <Link href={`/tutors/${t.profile.slug ?? t.profile.id}`} className="group block">
-                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-brand-blue">
+                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-deep">
                       {t.profile.display_name}
                     </span>
                     <span className="block text-xs text-ink-500">

@@ -75,7 +75,7 @@ export default function AdminAnalyticsPage() {
           </button>
           <a
             href={`${API_BASE}/admin/reports/revenue.csv`}
-            className="rounded-xl bg-brand-gold px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
             ⬇ Revenue CSV
           </a>
@@ -117,7 +117,7 @@ export default function AdminAnalyticsPage() {
                 </div>
                 <div className="mt-1 h-2.5 rounded-full bg-ink-100">
                   <div
-                    className="h-full rounded-full bg-brand-gold transition-all"
+                    className="h-full rounded-full bg-primary transition-all"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -189,11 +189,11 @@ export default function AdminAnalyticsPage() {
                         <span className="truncate pr-2 font-semibold text-ink-700">
                           {r.programme_title || r.programme_id.slice(0, 8)}
                         </span>
-                        <span className="shrink-0 font-bold text-brand-navy">{fmtMoney(r.revenue)}</span>
+                        <span className="shrink-0 font-bold text-deep">{fmtMoney(r.revenue)}</span>
                       </div>
                       <div className="mt-1 h-3 w-full overflow-hidden rounded-md bg-ink-100">
                         <div
-                          className="h-full rounded-md bg-gradient-to-r from-brand-green to-brand-blue"
+                          className="h-full rounded-md bg-gradient-to-r from-primary to-deep"
                           style={{ width: `${Math.max((r.revenue / maxRev) * 100, r.revenue > 0 ? 4 : 0)}%` }}
                         />
                       </div>

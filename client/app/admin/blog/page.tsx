@@ -78,7 +78,7 @@ export default function AdminBlogPage() {
               setPage(1);
             }}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {s || "All"}
@@ -91,7 +91,7 @@ export default function AdminBlogPage() {
             setPage(1);
           }}
           placeholder="Search title or slug…"
-          className="ml-auto rounded-xl border border-ink-200 px-4 py-2 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          className="ml-auto rounded-xl border border-ink-200 px-4 py-2 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
         />
       </div>
 
@@ -223,13 +223,13 @@ function CreatePostForm({ onDone }: { onDone: () => void }) {
       {rows ? (
         <textarea
           rows={rows}
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
           value={form[key]}
           onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         />
       ) : (
         <input
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
           value={form[key]}
           onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         />

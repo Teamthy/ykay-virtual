@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
 
 const INPUT_CLS =
-  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30";
+  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 type SubjectOption = { id: string; name: string; slug: string };
 
@@ -112,8 +112,8 @@ export default function AdminTutorsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="flex items-center gap-2 text-3xl font-extrabold text-brand-navy">
-            <BadgeCheck className="text-brand-gold" /> Tutors
+          <h1 className="flex items-center gap-2 text-3xl font-extrabold text-deep">
+            <BadgeCheck className="text-primary" /> Tutors
           </h1>
           <p className="mt-1 text-sm text-ink-500">
             Create vetted tutors from here — account, profile, approval and subjects in one step. No database access needed.
@@ -124,7 +124,7 @@ export default function AdminTutorsPage() {
             setError(null);
             setCreating(true);
           }}
-          className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover"
         >
           <Plus size={15} /> Add tutor
         </button>
@@ -157,7 +157,7 @@ export default function AdminTutorsPage() {
                   className={`rounded-full px-4 py-1.5 text-xs font-bold ${
                     t.is_public
                       ? "border border-ink-200 text-ink-600 hover:bg-ink-50"
-                      : "border border-brand-gold text-brand-gold-dark hover:bg-brand-gold-light"
+                      : "border border-primary text-primary-dark hover:bg-primary-light"
                   }`}
                 >
                   {t.is_public ? "Hide from marketplace" : "Make public"}
@@ -273,7 +273,7 @@ export default function AdminTutorsPage() {
                   onClick={() => toggleSubject(s.slug)}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                     subjects.includes(s.slug)
-                      ? "bg-brand-gold text-ink-900"
+                      ? "bg-primary text-ink-900"
                       : "border border-ink-200 text-ink-600 hover:border-ink-300"
                   }`}
                 >
@@ -283,14 +283,14 @@ export default function AdminTutorsPage() {
             </div>
           </div>
 
-          <label className="flex items-center gap-3 rounded-xl border border-brand-gold bg-brand-gold-light p-3">
+          <label className="flex items-center gap-3 rounded-xl border border-primary bg-primary-light p-3">
             <input
               type="checkbox"
               checked={form.approve}
               onChange={(e) => setForm({ ...form, approve: e.target.checked })}
-              className="size-4 accent-brand-gold"
+              className="size-4 accent-primary"
             />
-            <span className="text-sm font-semibold text-brand-navy">
+            <span className="text-sm font-semibold text-deep">
               Approve immediately (vetted tutor — public in the marketplace)
             </span>
           </label>
@@ -300,7 +300,7 @@ export default function AdminTutorsPage() {
             <button
               type="submit"
               disabled={busy}
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 disabled:opacity-50"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 disabled:opacity-50"
             >
               {busy ? "Saving…" : form.approve ? "Create vetted tutor" : "Create tutor (DRAFT)"}
             </button>

@@ -69,7 +69,7 @@ export default function AdminVettingPage() {
             key={s}
             onClick={() => setStatus(s)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {STATUS_LABEL[s]}
@@ -96,7 +96,7 @@ export default function AdminVettingPage() {
                 <button
                   onClick={() => setSelected(p.id)}
                   className={`w-full text-left border rounded-2xl p-4 transition-colors ${
-                    selected === p.id ? "border-brand-blue bg-brand-blue/5" : "hover:border-ink-300"
+                    selected === p.id ? "border-deep bg-deep/5" : "hover:border-ink-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -231,7 +231,7 @@ function Dossier({
         <ol className="space-y-2 text-xs border-l border-ink-200 pl-4">
           {detail.events.map((e) => (
             <li key={e.id} className="relative">
-              <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-brand-blue" />
+              <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-deep" />
               <span className="font-semibold">{e.from_status ?? "-"} → {e.to_status}</span>
               <span className="text-ink-400"> · {new Date(e.created_at).toLocaleString()}</span>
               {e.notes ? <p className="text-ink-500">{e.notes}</p> : null}
@@ -271,7 +271,7 @@ function Dossier({
             onChange={(e) => { setRejectReason(e.target.value); setRejectError(null); }}
             rows={3}
             placeholder="e.g. Document is blurry or expired - please re-upload a clear copy."
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
           />
         </label>
         {rejectError && <p className="mt-2 text-xs text-red-600">{rejectError}</p>}

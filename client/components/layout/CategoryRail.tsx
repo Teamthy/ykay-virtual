@@ -34,10 +34,10 @@ export function CategoryRail() {
                 href={c.href}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
-                  active ? "bg-brand-gold text-ink-900" : "text-ink-700 hover:bg-ink-100"
+                  active ? "bg-primary text-ink-900" : "text-ink-700 hover:bg-ink-100"
                 )}
               >
-                <span className={cn(active ? "text-ink-900" : "text-brand-blue")}>{c.icon}</span>
+                <span className={cn(active ? "text-ink-900" : "text-deep")}>{c.icon}</span>
                 {c.label}
               </Link>
             </li>

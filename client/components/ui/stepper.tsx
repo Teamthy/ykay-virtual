@@ -22,8 +22,8 @@ export function Stepper({ steps, current, className }: StepperProps) {
               <span
                 className={cn(
                   "grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold transition-colors",
-                  done && "bg-brand-green text-white",
-                  active && "bg-brand-gold text-ink-900 ring-4 ring-brand-gold-light",
+                  done && "bg-primary text-white",
+                  active && "bg-primary text-ink-900 ring-4 ring-primary-light",
                   !done && !active && "bg-ink-100 text-ink-500"
                 )}
                 aria-current={active ? "step" : undefined}
@@ -33,14 +33,14 @@ export function Stepper({ steps, current, className }: StepperProps) {
               <span
                 className={cn(
                   "truncate text-xs font-semibold",
-                  active ? "text-brand-navy" : done ? "text-ink-600" : "text-ink-400"
+                  active ? "text-deep" : done ? "text-ink-600" : "text-ink-400"
                 )}
               >
                 {label}
               </span>
             </div>
             {i < steps.length - 1 && (
-              <span className={cn("h-px flex-1 min-w-4", done ? "bg-brand-green" : "bg-ink-200")} aria-hidden="true" />
+              <span className={cn("h-px flex-1 min-w-4", done ? "bg-primary" : "bg-ink-200")} aria-hidden="true" />
             )}
           </li>
         );

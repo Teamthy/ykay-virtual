@@ -34,8 +34,8 @@ export default function AdminAdmissionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-brand-navy flex items-center gap-2">
-          <GraduationCap className="text-brand-gold" /> Admissions
+        <h1 className="text-3xl font-extrabold text-deep flex items-center gap-2">
+          <GraduationCap className="text-primary" /> Admissions
         </h1>
         <p className="text-ink-500 text-sm mt-1">Review enrolment applications: offer, accept or reject.</p>
       </div>
@@ -46,7 +46,7 @@ export default function AdminAdmissionsPage() {
             key={s || "ALL"}
             onClick={() => setStatus(s)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {s || "All"}
@@ -66,7 +66,7 @@ export default function AdminAdmissionsPage() {
             <div key={a.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-brand-navy">{a.applicant_name || "Application"}</h3>
+                  <h3 className="font-bold text-deep">{a.applicant_name || "Application"}</h3>
                   <p className="text-xs text-ink-500 mt-0.5">
                     {a.current_level || "—"} · {a.preferred_term || "—"}
                   </p>

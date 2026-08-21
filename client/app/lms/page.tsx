@@ -26,7 +26,7 @@ import { GraduationCap } from "lucide-react";
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-      <p className="text-3xl font-extrabold text-brand-navy">{value}</p>
+      <p className="text-3xl font-extrabold text-deep">{value}</p>
       <p className="mt-1 text-sm font-semibold text-ink-700">{label}</p>
       {hint && <p className="mt-0.5 text-xs text-ink-500">{hint}</p>}
     </div>
@@ -37,7 +37,7 @@ function Section({ title, children, action }: { title: string; children: React.R
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-brand-navy">{title}</h2>
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">{title}</h2>
         {action}
       </div>
       <div className="mt-3">{children}</div>
@@ -112,7 +112,7 @@ export default function LmsHomePage() {
           <h2 className="text-2xl font-bold text-ink-900">My courses</h2>
           <p className="text-sm text-ink-500">Track live classes, assignments and course access from one place.</p>
         </div>
-        <Link href="/cohorts" className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-brand-gold">
+        <Link href="/cohorts" className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-primary">
           Browse cohorts
         </Link>
       </div>
@@ -127,15 +127,15 @@ export default function LmsHomePage() {
         </div>
 
         {/* Courses */}
-        <Section title="My courses" action={<Link href="/cohorts" className="text-sm font-semibold text-brand-gold-dark hover:underline">View all →</Link>}>
+        <Section title="My courses" action={<Link href="/cohorts" className="text-sm font-semibold text-primary-dark hover:underline">View all →</Link>}>
           {lessons.isLoading ? (
             <p className="py-8 text-center text-sm text-ink-500">Loading your courses…</p>
           ) : courses.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
-              <GraduationCap size={28} className="text-brand-navy" />
+              <GraduationCap size={28} className="text-deep" />
               <p className="mt-2 font-semibold text-ink-700">You&apos;re not enrolled in any course yet.</p>
               <p className="mt-1 text-sm text-ink-500">Explore programmes and join a cohort to get started.</p>
-              <Link href="/programmes" className="mt-4 inline-flex rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover">
+              <Link href="/programmes" className="mt-4 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-primary-hover">
                 Browse programmes
               </Link>
             </div>
@@ -148,7 +148,7 @@ export default function LmsHomePage() {
                 const pct = c.lessons.length ? Math.round((done / c.lessons.length) * 100) : 0;
                 return (
                   <article key={c.cohortId} className="overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-soft">
-                    <div className="flex items-center justify-between bg-brand-gold px-5 py-4 text-ink-900">
+                    <div className="flex items-center justify-between bg-primary px-5 py-4 text-ink-900">
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-900/70">Cohort</p>
                         <h3 className="font-display text-xl tracking-wide">{meta.title}</h3>
@@ -176,7 +176,7 @@ export default function LmsHomePage() {
                           Last visited
                           <p className="font-bold text-ink-800">Open LMS to continue</p>
                         </div>
-                        <div className="rounded-2xl bg-brand-gold-light px-4 py-3 text-xs text-deep">
+                        <div className="rounded-2xl bg-primary-light px-4 py-3 text-xs text-deep">
                           Next live class
                           <p className="font-bold">{next ? new Date(next.start_at).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "Check schedule"}</p>
                         </div>
@@ -193,7 +193,7 @@ export default function LmsHomePage() {
         </Section>
 
         {/* Assignments */}
-        <Section title="Assignments" action={<Link href="/lms" className="text-sm font-semibold text-brand-gold-dark hover:underline">Manage →</Link>}>
+        <Section title="Assignments" action={<Link href="/lms" className="text-sm font-semibold text-primary-dark hover:underline">Manage →</Link>}>
           {assignments.isLoading ? (
             <p className="py-6 text-center text-sm text-ink-500">Loading…</p>
           ) : (assignments.data ?? []).length === 0 ? (
@@ -220,7 +220,7 @@ export default function LmsHomePage() {
                         sub?.score !== undefined
                           ? "bg-green-100 text-green-700"
                           : sub
-                          ? "bg-brand-gold-light text-brand-navy"
+                          ? "bg-primary-light text-deep"
                           : "bg-ink-100 text-ink-500"
                       )}
                     >
@@ -236,7 +236,7 @@ export default function LmsHomePage() {
         {/* Exams & quizzes */}
         <Section
           title="Exams & quizzes"
-          action={<Link href="/lms" className="text-sm font-semibold text-brand-gold-dark hover:underline">Open a course →</Link>}
+          action={<Link href="/lms" className="text-sm font-semibold text-primary-dark hover:underline">Open a course →</Link>}
         >
           {(quizzes.data ?? []).length === 0 ? (
             <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center">
@@ -248,19 +248,19 @@ export default function LmsHomePage() {
                 <Link
                   key={q.id}
                   href={q.cohort_id ? `/lms/courses/${q.cohort_id}` : "/lms"}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white px-5 py-4 shadow-sm transition-colors hover:border-brand-gold/50"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white px-5 py-4 shadow-sm transition-colors hover:border-primary/50"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-bold text-ink-800">{q.title}</p>
                     <p className="mt-0.5 text-xs text-ink-500">
-                      <span className="rounded-full bg-brand-blue-light px-2 py-0.5 text-[10px] font-bold text-brand-blue">
+                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-deep">
                         {subjectName(subjectMap, q.subject_id)}
                       </span>{" "}
                       Pass {q.pass_threshold}%
                       {q.due_at ? ` · due ${new Date(q.due_at).toLocaleDateString()}` : ""}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900">
+                  <span className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-bold text-ink-900">
                     Take exam
                   </span>
                 </Link>
@@ -283,7 +283,7 @@ export default function LmsHomePage() {
                     <p className="text-sm font-semibold text-ink-700">
                       {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
                     </p>
-                    <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-bold text-brand-navy">
+                    <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-xs font-bold text-deep">
                       ★ {r.overall_rating}/5
                     </span>
                   </div>

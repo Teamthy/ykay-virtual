@@ -211,7 +211,7 @@ export default function LmsTutorCohortPage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* Attendance console */}
           <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-brand-navy">Attendance</h2>
+            <h2 className="font-display text-lg font-bold text-deep">Attendance</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {(lessons.data ?? []).map((l) => (
                 <button
@@ -220,7 +220,7 @@ export default function LmsTutorCohortPage() {
                   onClick={() => setSelectedLessonId(l.id)}
                   className={cn(
                     "rounded-lg px-3 py-1.5 text-xs font-bold",
-                    lessonId === l.id ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+                    lessonId === l.id ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
                   )}
                 >
                   {l.title}
@@ -230,12 +230,12 @@ export default function LmsTutorCohortPage() {
             <div className="mt-4 space-y-2">
               {(attendanceRows.data ?? []).map((row) => (
                 <div key={row.student_profile_id} className="flex items-center gap-3 rounded-xl border border-ink-100 px-4 py-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-gold-light text-xs font-bold text-brand-navy">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary-light text-xs font-bold text-deep">
                     {row.student_profile_id.slice(-2).toUpperCase()}
                   </span>
                   <span className="flex-1 truncate text-sm font-semibold text-ink-700">{row.student_profile_id}</span>
                   <select
-                    className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs font-semibold text-ink-700 focus:border-brand-gold focus:outline-none"
+                    className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs font-semibold text-ink-700 focus:border-primary focus:outline-none"
                     value={attendance[row.student_profile_id] ?? row.status}
                     onChange={(e) => setAttendance((m) => ({ ...m, [row.student_profile_id]: e.target.value }))}
                   >
@@ -247,7 +247,7 @@ export default function LmsTutorCohortPage() {
                     type="button"
                     disabled={mark.isPending}
                     onClick={() => mark.mutate(row)}
-                    className="rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
                   >
                     Save
                   </button>
@@ -263,10 +263,10 @@ export default function LmsTutorCohortPage() {
 
           {/* Grading console */}
           <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-brand-navy">Grading</h2>
+            <h2 className="font-display text-lg font-bold text-deep">Grading</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {(assignments.data ?? []).map((a) => (
-                <span key={a.id} className="rounded-lg bg-brand-gold-light px-3 py-1.5 text-xs font-bold text-brand-navy">
+                <span key={a.id} className="rounded-lg bg-primary-light px-3 py-1.5 text-xs font-bold text-deep">
                   {a.title}
                 </span>
               ))}
@@ -292,14 +292,14 @@ export default function LmsTutorCohortPage() {
                       min={0}
                       max={10}
                       placeholder="Score /10"
-                      className="h-10 w-24 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                      className="h-10 w-24 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
                       value={grade[s.id] ?? s.score ?? ""}
                       onChange={(e) => setGrade((m) => ({ ...m, [s.id]: e.target.value }))}
                     />
                     <input
                       type="text"
                       placeholder="Feedback..."
-                      className="h-10 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                      className="h-10 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
                       value={feedback[s.id] ?? s.feedback ?? ""}
                       onChange={(e) => setFeedback((m) => ({ ...m, [s.id]: e.target.value }))}
                     />
@@ -307,7 +307,7 @@ export default function LmsTutorCohortPage() {
                       type="button"
                       disabled={gradeIt.isPending || grade[s.id] === "" && s.score === undefined}
                       onClick={() => gradeIt.mutate(s)}
-                      className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+                      className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
                     >
                       Grade
                     </button>
@@ -324,7 +324,7 @@ export default function LmsTutorCohortPage() {
         {/* Roster */}
         <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold text-brand-navy">Class roster ({cohort.data?.enrolled_count ?? roster.data?.length ?? "-"})</h2>
+            <h2 className="font-display text-lg font-bold text-deep">Class roster ({cohort.data?.enrolled_count ?? roster.data?.length ?? "-"})</h2>
             <span className="text-xs text-ink-400">Learners enrolled in this cohort</span>
           </div>
           <div className="mt-3 overflow-x-auto">
@@ -341,7 +341,7 @@ export default function LmsTutorCohortPage() {
                   <tr key={r.student_profile_id} className="border-b border-ink-50 last:border-0">
                     <td className="py-2.5 pr-4 font-semibold text-ink-800">{r.name || r.student_profile_id.slice(0, 8) + "..."}</td>
                     <td className="py-2.5 pr-4">
-                      <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-bold text-brand-navy">{r.status}</span>
+                      <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-xs font-bold text-deep">{r.status}</span>
                     </td>
                     <td className="py-2.5 text-ink-500">{new Date(r.enrolled_at).toLocaleDateString()}</td>
                   </tr>
@@ -357,10 +357,10 @@ export default function LmsTutorCohortPage() {
         {/* Authoring console */}
         <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-bold text-brand-navy">Create content</h2>
+            <h2 className="font-display text-lg font-bold text-deep">Create content</h2>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setShowQuizBuilder((v) => !v)} className="rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-navy/90">+ Quiz</button>
-              <button type="button" onClick={() => setShowAssignmentForm((v) => !v)} className="rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover">+ Assignment</button>
+              <button type="button" onClick={() => setShowQuizBuilder((v) => !v)} className="rounded-lg bg-deep px-3 py-1.5 text-xs font-bold text-white hover:bg-deep/90">+ Quiz</button>
+              <button type="button" onClick={() => setShowAssignmentForm((v) => !v)} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-primary-hover">+ Assignment</button>
               <button type="button" onClick={() => setShowResourceForm((v) => !v)} className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-700 hover:border-ink-300">+ Resource</button>
             </div>
           </div>
@@ -372,7 +372,7 @@ export default function LmsTutorCohortPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wide text-ink-500">Subject (from your teaching scope)</span>
                 <select
                   aria-label="Quiz subject"
-                  className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                  className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
                   value={quizDraft.subject_id}
                   onChange={(e) => setQuizDraft((d) => ({ ...d, subject_id: e.target.value }))}
                 >
@@ -386,23 +386,23 @@ export default function LmsTutorCohortPage() {
                 </span>
               </label>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" aria-label="Quiz title" placeholder="Quiz title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
-                <input type="number" aria-label="Pass percentage" placeholder="Pass %" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={quizDraft.pass_threshold} onChange={(e) => setQuizDraft((d) => ({ ...d, pass_threshold: e.target.value }))} />
+                <input type="text" aria-label="Quiz title" placeholder="Quiz title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" aria-label="Pass percentage" placeholder="Pass %" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={quizDraft.pass_threshold} onChange={(e) => setQuizDraft((d) => ({ ...d, pass_threshold: e.target.value }))} />
               </div>
               <div className="space-y-3">
                 {quizDraft.questions.map((q, qi) => (
                   <div key={qi} className="rounded-lg border border-ink-100 p-3">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-ink-400">Q{qi + 1}</span>
-                      <input type="text" aria-label="Question text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
+                      <input type="text" aria-label="Question text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
                       <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: d.questions.filter((_, i) => i !== qi) }))} className="text-xs font-bold text-red-500">✕</button>
                     </div>
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
                       {q.options.map((opt, oi) => (
                         <div key={oi} className="flex items-center gap-2">
                           <input type="radio" checked={q.correct_index === oi} onChange={() => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, correct_index: oi } : x)) }))} title="Correct answer" />
-                          <input type="text" placeholder={`Option ${String.fromCharCode(65 + oi)}`} className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={opt} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, options: x.options.map((o, j) => (j === oi ? e.target.value : o)) } : x)) }))} />
+                          <input type="text" placeholder={`Option ${String.fromCharCode(65 + oi)}`} className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={opt} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, options: x.options.map((o, j) => (j === oi ? e.target.value : o)) } : x)) }))} />
                         </div>
                       ))}
                     </div>
@@ -411,7 +411,7 @@ export default function LmsTutorCohortPage() {
               </div>
               <div className="flex gap-2">
                 <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: [...d.questions, { question: "", options: ["", "", "", ""], correct_index: 0 }] }))} className="rounded-lg border border-ink-200 px-3 py-2 text-xs font-bold text-ink-600 hover:border-ink-300">+ Add question</button>
-                <button type="button" disabled={createQuiz.isPending || !quizDraft.title.trim() || quizDraft.questions.filter((q) => q.question.trim()).length === 0} onClick={() => createQuiz.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+                <button type="button" disabled={createQuiz.isPending || !quizDraft.title.trim() || quizDraft.questions.filter((q) => q.question.trim()).length === 0} onClick={() => createQuiz.mutate()} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40">
                   {createQuiz.isPending ? "Publishing..." : "Publish quiz"}
                 </button>
               </div>
@@ -422,11 +422,11 @@ export default function LmsTutorCohortPage() {
             <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
               <p className="text-sm font-bold text-ink-700">New assignment</p>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" aria-label="Assignment title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.title} onChange={(e) => setAssignmentDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.instructions} onChange={(e) => setAssignmentDraft((d) => ({ ...d, instructions: e.target.value }))} />
-                <input type="number" aria-label="Max score" placeholder="Max score" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={assignmentDraft.max_score} onChange={(e) => setAssignmentDraft((d) => ({ ...d, max_score: e.target.value }))} />
+                <input type="text" aria-label="Assignment title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={assignmentDraft.title} onChange={(e) => setAssignmentDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={assignmentDraft.instructions} onChange={(e) => setAssignmentDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" aria-label="Max score" placeholder="Max score" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={assignmentDraft.max_score} onChange={(e) => setAssignmentDraft((d) => ({ ...d, max_score: e.target.value }))} />
               </div>
-              <button type="button" disabled={createAssignment.isPending || !assignmentDraft.title.trim()} onClick={() => createAssignment.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+              <button type="button" disabled={createAssignment.isPending || !assignmentDraft.title.trim()} onClick={() => createAssignment.mutate()} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40">
                 {createAssignment.isPending ? "Publishing..." : "Publish assignment"}
               </button>
             </div>
@@ -446,7 +446,7 @@ export default function LmsTutorCohortPage() {
                         <iframe title={r.title} className="h-full w-full" src={`https://www.youtube.com/embed/${yt[1]}`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
                       </div>
                     ) : url ? (
-                      <a href={url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-bold text-brand-navy underline">Open file / video</a>
+                      <a href={url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-bold text-deep underline">Open file / video</a>
                     ) : null}
                   </li>
                 );
@@ -479,7 +479,7 @@ export default function LmsTutorCohortPage() {
                       e.target.value = "";
                     }
                   }}
-                  className="block text-xs text-ink-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-navy file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"
+                  className="block text-xs text-ink-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-deep file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"
                   aria-label="Upload a material file"
                 />
                 {resourceDraft.file_url ? (
@@ -500,11 +500,11 @@ export default function LmsTutorCohortPage() {
                 )}
               </div>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" aria-label="Resource title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" aria-label="Resource description" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
-                <input type="url" aria-label="File or video URL" placeholder="https://youtube.com/watch?v=... or file URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
+                <input type="text" aria-label="Resource title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Resource description" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
+                <input type="url" aria-label="File or video URL" placeholder="https://youtube.com/watch?v=... or file URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
               </div>
-              <button type="button" disabled={createResource.isPending || resourceUploading || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40">
+              <button type="button" disabled={createResource.isPending || resourceUploading || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40">
                 {createResource.isPending ? "Adding..." : "Add material"}
               </button>
             </div>
@@ -514,7 +514,7 @@ export default function LmsTutorCohortPage() {
         {/* Quizzes + progress report */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-brand-navy">Quizzes in this cohort</h2>
+            <h2 className="font-display text-lg font-bold text-deep">Quizzes in this cohort</h2>
             <div className="mt-3 space-y-2">
               {(quizzes.data ?? []).map((q) => (
 
@@ -522,13 +522,13 @@ export default function LmsTutorCohortPage() {
                   <div>
                     <p className="text-sm font-semibold text-ink-800">{q.title}</p>
                     <p className="text-xs text-ink-400">
-                      <span className="rounded-full bg-brand-blue-light px-2 py-0.5 text-[10px] font-bold text-brand-blue">
+                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-deep">
                         {subjectName(subjectMap, q.subject_id)}
                       </span>{" "}
                       Pass {q.pass_threshold}% · {q.status}
                     </p>
                   </div>
-                  <span className="rounded-full bg-brand-gold-light px-2.5 py-1 text-xs font-bold text-brand-navy">Auto-graded</span>
+                  <span className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-bold text-deep">Auto-graded</span>
                 </div>
               ))}
               {(quizzes.data ?? []).length === 0 && <p className="py-6 text-center text-sm text-ink-400">No quizzes yet.</p>}
@@ -536,10 +536,10 @@ export default function LmsTutorCohortPage() {
           </section>
 
           <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-brand-navy">New progress report</h2>
+            <h2 className="font-display text-lg font-bold text-deep">New progress report</h2>
             <div className="mt-3 space-y-3">
               <select
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
                 value={reportStudentId}
                 onChange={(e) => setReportStudentId(e.target.value)}
               >
@@ -553,21 +553,21 @@ export default function LmsTutorCohortPage() {
               <input
                 type="text"
                 placeholder="Strengths (e.g. strong grasp of algebra)"
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
                 value={report.strengths}
                 onChange={(e) => setReport((r) => ({ ...r, strengths: e.target.value }))}
               />
               <input
                 type="text"
                 placeholder="Weaknesses"
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
                 value={report.weaknesses}
                 onChange={(e) => setReport((r) => ({ ...r, weaknesses: e.target.value }))}
               />
               <input
                 type="text"
                 placeholder="Recommendations"
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-brand-gold focus:outline-none"
+                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
                 value={report.recommendations}
                 onChange={(e) => setReport((r) => ({ ...r, recommendations: e.target.value }))}
               />
@@ -580,7 +580,7 @@ export default function LmsTutorCohortPage() {
                     onClick={() => setReport((r) => ({ ...r, rating: n }))}
                     className={cn(
                       "grid size-9 place-items-center rounded-full text-sm font-bold",
-                      report.rating === n ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-500"
+                      report.rating === n ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-500"
                     )}
                   >
                     {n}
@@ -591,7 +591,7 @@ export default function LmsTutorCohortPage() {
                 type="button"
                 disabled={createReport.isPending || !report.strengths || !reportStudentId}
                 onClick={() => createReport.mutate()}
-                className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+                className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
               >
                 {createReport.isPending ? "Creating..." : "Publish report"}
               </button>

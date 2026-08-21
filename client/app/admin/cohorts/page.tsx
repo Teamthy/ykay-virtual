@@ -197,11 +197,11 @@ export default function AdminCohortsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-brand-navy">Cohorts</h1>
+          <h1 className="text-3xl font-extrabold text-deep">Cohorts</h1>
           <p className="text-ink-500 text-sm mt-1">Create cohorts, assign tutors, manage capacity, publish.</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/admin/programmes" className="inline-flex items-center rounded-full border border-ink-200 px-4 py-2 text-sm font-semibold text-brand-navy hover:border-brand-gold">
+          <Link href="/admin/programmes" className="inline-flex items-center rounded-full border border-ink-200 px-4 py-2 text-sm font-semibold text-deep hover:border-primary">
             Programme rosters
           </Link>
           <Button variant="gold" onClick={() => setShowCreate(!showCreate)}>{showCreate ? "Close" : "+ New cohort"}</Button>
@@ -212,7 +212,7 @@ export default function AdminCohortsPage() {
 
       {(joins.data?.length ?? 0) > 0 && (
         <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-          <h2 className="font-bold text-brand-navy">Tutor join requests</h2>
+          <h2 className="font-bold text-deep">Tutor join requests</h2>
           <p className="mt-1 text-xs text-ink-500">Approve assigns the tutor to that cohort. Reject leaves assignment unchanged.</p>
           <ul className="mt-4 divide-y divide-ink-100">
             {(joins.data ?? []).map((j) => (
@@ -238,7 +238,7 @@ export default function AdminCohortsPage() {
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map((s) => (
           <button key={s || "all"} onClick={() => { setStatus(s); setPage(1); }}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
             {s || "All"}
           </button>
         ))}
@@ -359,20 +359,20 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
     <label className="block text-sm">
       <span className="font-medium text-ink-700">{label}</span>
       <input type={type} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-        className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+        className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none" />
     </label>
   );
 
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-6 space-y-4 shadow-soft">
-      <h2 className="font-bold text-brand-navy">New cohort</h2>
+      <h2 className="font-bold text-deep">New cohort</h2>
       <div className="grid md:grid-cols-2 gap-4">
         <label className="block text-sm">
           <span className="font-medium text-ink-700">Programme *</span>
           <select
             value={form.programme_id}
             onChange={(e) => setForm({ ...form, programme_id: e.target.value })}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
           >
             <option value="">Select a programme…</option>
             {programmes.map((p) => (
@@ -398,7 +398,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
             type="file"
             accept="image/jpeg,image/png"
             onChange={(e) => pickBanner(e.target.files?.[0] ?? null)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-brand-gold file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold"
           />
           {bannerPreview ? (
             // eslint-disable-next-line @next/next/no-img-element

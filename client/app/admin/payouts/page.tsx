@@ -102,8 +102,8 @@ export default function AdminPayoutsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-brand-navy">
-          <Banknote className="text-brand-gold" /> Tutor payouts
+        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-deep">
+          <Banknote className="text-primary" /> Tutor payouts
         </h1>
         <p className="mt-1 text-sm text-ink-500">
           {paystackEnabled
@@ -119,14 +119,14 @@ export default function AdminPayoutsPage() {
             type="button"
             onClick={() => setStatus(f.key)}
             className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-              status === f.key ? "bg-brand-gold text-ink-900" : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300"
+              status === f.key ? "bg-primary text-ink-900" : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300"
             }`}
           >
             {f.label}
           </button>
         ))}
         {status === "PENDING" && (
-          <span className="ml-auto rounded-full bg-brand-gold-light px-4 py-2 text-xs font-bold text-brand-navy">
+          <span className="ml-auto rounded-full bg-primary-light px-4 py-2 text-xs font-bold text-deep">
             Pending total: {rows[0]?.payout.currency ?? "NGN"} {pendingTotal.toLocaleString()}
           </span>
         )}
@@ -200,7 +200,7 @@ export default function AdminPayoutsPage() {
                         type="button"
                         disabled={busyId === r.payout.id}
                         onClick={() => void confirm(r)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-brand-gold px-4 py-2 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-50"
                       >
                         {busyId === r.payout.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCheck size={13} />}
                         Confirm paid
@@ -235,7 +235,7 @@ export default function AdminPayoutsPage() {
                 type="button"
                 disabled={otpBusy || otpValue.trim().length === 0}
                 onClick={() => void sendOTP()}
-                className="flex-1 rounded-xl bg-brand-gold px-4 py-2.5 text-sm font-bold text-ink-900 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-ink-900 disabled:opacity-50"
               >
                 {otpBusy ? "Finalizing…" : "Finalize transfer"}
               </button>

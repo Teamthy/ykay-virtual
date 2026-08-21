@@ -85,23 +85,23 @@ export default function AdminChatPage() {
     <main className="mx-auto min-h-screen max-w-6xl bg-[#FFF7E4] px-4 py-6 lg:px-6">
       <header>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-          <Link href="/admin" className="hover:text-brand-gold-dark">Admin</Link> / Chat inbox
+          <Link href="/admin" className="hover:text-primary-dark">Admin</Link> / Chat inbox
         </p>
-        <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-brand-navy">
+        <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-deep">
           Agent inbox <span className="align-middle text-sm font-semibold text-ink-400">· {escalatedCount} waiting</span>
         </h1>
         <p className="mt-1 text-sm text-ink-500">
           CSAT:{" "}
-          <span className="font-bold text-brand-navy">{analytics.data ? `${Math.round(analytics.data.csat)}%` : "-"}</span>{" "}
+          <span className="font-bold text-deep">{analytics.data ? `${Math.round(analytics.data.csat)}%` : "-"}</span>{" "}
           satisfied ({analytics.data?.csat_responded ?? 0}/{analytics.data?.csat_total ?? 0} rated) ·{" "}
-          <a href="/api/v1/admin/chat/csat.csv" className="font-semibold text-brand-gold-dark hover:underline">export CSV ↓</a>
+          <a href="/api/v1/admin/chat/csat.csv" className="font-semibold text-primary-dark hover:underline">export CSV ↓</a>
         </p>
       </header>
 
       {/* Trends (last 14 days) */}
       <div className="mt-5 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-brand-navy">CSAT & volume - last 14 days</h2>
+          <h2 className="font-display text-lg font-bold text-deep">CSAT & volume - last 14 days</h2>
           <span className="text-xs text-ink-400">CSAT = % of that day&apos;s ratings ≥ 4★</span>
         </div>
         <TrendChart data={trends.data ?? []} />
@@ -111,7 +111,7 @@ export default function AdminChatPage() {
       <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-6">
         {stats.map((s) => (
           <div key={s.label} className="rounded-2xl border border-ink-100 bg-white p-4 shadow-sm">
-            <p className="text-xl font-extrabold text-brand-navy">{s.value}</p>
+            <p className="text-xl font-extrabold text-deep">{s.value}</p>
             <p className="mt-0.5 text-xs font-semibold text-ink-500">{s.label}</p>
           </div>
         ))}
@@ -135,7 +135,7 @@ export default function AdminChatPage() {
                   onClick={() => setActiveId(t.id)}
                   className={cn(
                     "block w-full rounded-xl px-3 py-2.5 text-left text-sm",
-                    activeId === t.id ? "bg-brand-gold-light font-semibold text-brand-navy" : "text-ink-700 hover:bg-ink-50"
+                    activeId === t.id ? "bg-primary-light font-semibold text-deep" : "text-ink-700 hover:bg-ink-50"
                   )}
                 >
                   <span className="flex items-center justify-between gap-2">
@@ -167,7 +167,7 @@ export default function AdminChatPage() {
         <section className="flex min-h-[60vh] flex-col rounded-2xl border border-ink-100 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3">
             <div>
-              <p className="text-sm font-bold text-brand-navy">{activeThread?.title ?? "Select a thread"}</p>
+              <p className="text-sm font-bold text-deep">{activeThread?.title ?? "Select a thread"}</p>
               <p className="text-xs text-ink-400">Thread {activeId ? activeId.slice(0, 8) : ""}…</p>
             </div>
             {activeThread && activeThread.status !== "CLOSED" && (
@@ -199,8 +199,8 @@ export default function AdminChatPage() {
                         m.role === "user"
                           ? "bg-ink-100 text-ink-500"
                           : m.role === "agent"
-                          ? "bg-brand-gold text-ink-900"
-                          : "bg-brand-gold-light text-brand-navy"
+                          ? "bg-primary text-ink-900"
+                          : "bg-primary-light text-deep"
                       )}
                     >
                       {m.role === "user" ? "STUDENT" : m.role === "agent" ? "YOU (AGENT)" : "NUVORA AI"}
@@ -209,9 +209,9 @@ export default function AdminChatPage() {
                       className={cn(
                         "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                         m.role === "user"
-                          ? "rounded-br-md bg-brand-navy text-white"
+                          ? "rounded-br-md bg-deep text-white"
                           : m.role === "agent"
-                          ? "rounded-bl-md border-2 border-brand-gold bg-white text-ink-800"
+                          ? "rounded-bl-md border-2 border-primary bg-white text-ink-800"
                           : "rounded-bl-md bg-[#F8EBCF] text-ink-800"
                       )}
                     >
@@ -232,13 +232,13 @@ export default function AdminChatPage() {
                   onChange={(e) => setReplyText(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && replyText.trim() && void reply.mutate()}
                   placeholder="Reply as a human agent…"
-                  className="h-11 flex-1 rounded-lg border border-ink-200 px-4 text-sm focus:border-brand-gold focus:outline-none"
+                  className="h-11 flex-1 rounded-lg border border-ink-200 px-4 text-sm focus:border-primary focus:outline-none"
                 />
                 <button
                   type="button"
                   disabled={!replyText.trim() || reply.isPending}
                   onClick={() => reply.mutate()}
-                  className="shrink-0 rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+                  className="shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
                 >
                   {reply.isPending ? "Sending…" : "Send"}
                 </button>
@@ -259,11 +259,11 @@ function TrendChart({ data }: { data: ChatTrendPoint[] }) {
       <div className="flex items-end gap-1" style={{ height: 120 }}>
         {data.map((d) => (
           <div key={d.date} className="flex flex-1 flex-col items-center justify-end gap-1" style={{ width: `${barW}%` }}>
-            <span className="text-[10px] font-bold text-brand-navy">
+            <span className="text-[10px] font-bold text-deep">
               {d.rated > 0 ? `${Math.round(d.csat)}%` : "-"}
             </span>
             <div
-              className="w-full rounded-t bg-brand-gold transition-all"
+              className="w-full rounded-t bg-primary transition-all"
               style={{ height: `${Math.max(3, (d.threads / maxThreads) * 100)}px` }}
               title={`${d.date}: ${d.threads} threads · ${d.rated} rated · CSAT ${d.csat}%`}
             />

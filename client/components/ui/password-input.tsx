@@ -15,7 +15,7 @@ export type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement
 
 export const INPUT_CLS =
   "h-11 w-full rounded-lg border border-ink-200 bg-white px-4 text-sm text-ink-900 " +
-  "placeholder:text-ink-400 transition-colors focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/30 focus:outline-none disabled:opacity-50";
+  "placeholder:text-ink-400 transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none disabled:opacity-50";
 
 export function PasswordInput({ id, label, error, className, ...props }: PasswordInputProps) {
   const [show, setShow] = React.useState(false);

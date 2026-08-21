@@ -3,12 +3,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center text-sm font-semibold transition-colors focus-visible:outline-none disabled:opacity-50",
+  "inline-flex items-center justify-center text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-brand-blue text-white hover:bg-brand-blue/90",
-        gold: "bg-brand-gold text-ink-900 hover:bg-brand-gold/90",
+        default: "bg-deep text-white hover:bg-deep/90",
+        gold: "bg-primary text-ink-900 hover:bg-primary/90",
         outline: "rounded-full border-[1.5px] border-ink-900 bg-transparent hover:bg-ink-50",
         ghost: "rounded-xl hover:bg-ink-100",
       },

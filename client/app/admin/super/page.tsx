@@ -38,7 +38,7 @@ import { toast } from "sonner";
 function Stat({ label, value, hint }: { label: string; value?: string | number; hint?: string }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-4">
-      <p className="text-2xl font-extrabold text-brand-navy">{value ?? "-"}</p>
+      <p className="text-2xl font-extrabold text-deep">{value ?? "-"}</p>
       <p className="mt-0.5 text-xs font-semibold text-ink-500">{label}</p>
       {hint && <p className="mt-0.5 text-[11px] text-ink-500">{hint}</p>}
     </div>
@@ -98,10 +98,10 @@ export default function SuperAdminPage() {
       <div className="space-y-6">
         <DashHero icon={<Lock size={20} />} kicker="Super admin" title="Restricted" body="This control centre is SUPER_ADMIN only." chipTitle="Locked" chipHint="Access" />
         <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
-          <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-brand-navy">
+          <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-deep">
             <Lock size={26} />
           </div>
-          <h2 className="mt-4 text-lg font-extrabold text-brand-navy">SUPER_ADMIN access only</h2>
+          <h2 className="mt-4 text-lg font-extrabold text-deep">SUPER_ADMIN access only</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
             This control center is restricted to SUPER_ADMIN. Academic admins can manage content, cohorts and
             operations from the admin console, but platform-level controls require the SUPER_ADMIN role.
@@ -201,22 +201,22 @@ export default function SuperAdminPage() {
 
       {/* Quick actions */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-brand-navy">Quick actions</h2>
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">Quick actions</h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {quickActions.map((a) => {
             const Icon = a.icon;
             return (
-              <Link key={a.href + a.label} href={a.href} className="group flex items-start justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition-all hover:border-brand-gold hover:shadow-lift">
+              <Link key={a.href + a.label} href={a.href} className="group flex items-start justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition-all hover:border-primary hover:shadow-lift">
                 <div className="flex items-start gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-gold-light text-brand-navy">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
                     <Icon size={16} />
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-brand-navy">{a.label}</p>
+                    <p className="text-sm font-bold text-deep">{a.label}</p>
                     <p className="text-xs text-ink-500">{a.desc}</p>
                   </div>
                 </div>
-                <ArrowUpRight size={16} className="mt-1 shrink-0 text-ink-300 transition-colors group-hover:text-brand-gold" />
+                <ArrowUpRight size={16} className="mt-1 shrink-0 text-ink-300 transition-colors group-hover:text-primary" />
               </Link>
             );
           })}
@@ -225,7 +225,7 @@ export default function SuperAdminPage() {
 
       {/* Platform modules */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-brand-navy">Platform modules</h2>
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">Platform modules</h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {modules.map((m) => {
             const Icon = m.icon;
@@ -233,13 +233,13 @@ export default function SuperAdminPage() {
               <Link
                 key={m.href}
                 href={m.href}
-                className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-white p-5 transition-all hover:border-brand-gold hover:shadow-lift"
+                className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-white p-5 transition-all hover:border-primary hover:shadow-lift"
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-gold-light text-brand-navy">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
                   <Icon size={18} />
                 </span>
                 <span>
-                  <span className="block text-sm font-bold text-brand-navy">{m.label}</span>
+                  <span className="block text-sm font-bold text-deep">{m.label}</span>
                   <span className="mt-0.5 block text-xs text-ink-500">{m.desc}</span>
                 </span>
               </Link>
@@ -252,10 +252,10 @@ export default function SuperAdminPage() {
       <section className="rounded-2xl border border-ink-100 bg-white p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History size={18} className="text-brand-green" />
-            <h2 className="font-display text-base font-bold text-brand-navy">Recent audit trail</h2>
+            <History size={18} className="text-primary" />
+            <h2 className="font-display text-base font-bold text-deep">Recent audit trail</h2>
           </div>
-          <Link href="/admin/users" className="text-xs font-bold text-brand-blue hover:underline">
+          <Link href="/admin/users" className="text-xs font-bold text-deep hover:underline">
             Manage users →
           </Link>
         </div>
@@ -295,17 +295,17 @@ export default function SuperAdminPage() {
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-ink-100 bg-white p-6">
           <div className="flex items-center gap-2">
-            <TrendingUp size={18} className="text-brand-green" />
-            <h2 className="font-display text-base font-bold text-brand-navy">Revenue position</h2>
+            <TrendingUp size={18} className="text-primary" />
+            <h2 className="font-display text-base font-bold text-deep">Revenue position</h2>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-ink-500">In escrow (not yet paid to tutors)</p>
-              <p className="text-xl font-extrabold text-brand-navy">{fmtNGN(s?.revenue_in_escrow)}</p>
+              <p className="text-xl font-extrabold text-deep">{fmtNGN(s?.revenue_in_escrow)}</p>
             </div>
             <div>
               <p className="text-xs text-ink-500">Paid out to tutors</p>
-              <p className="text-xl font-extrabold text-brand-green">{fmtNGN(s?.revenue_paid_out)}</p>
+              <p className="text-xl font-extrabold text-primary">{fmtNGN(s?.revenue_paid_out)}</p>
             </div>
           </div>
           <p className="mt-3 text-xs text-ink-500">
@@ -317,8 +317,8 @@ export default function SuperAdminPage() {
 
         <div className="rounded-2xl border border-ink-100 bg-white p-6">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={18} className="text-brand-green" />
-            <h2 className="font-display text-base font-bold text-brand-navy">Role model &amp; security</h2>
+            <ShieldCheck size={18} className="text-primary" />
+            <h2 className="font-display text-base font-bold text-deep">Role model &amp; security</h2>
           </div>
           <ul className="mt-3 space-y-2 text-sm text-ink-600">
             <li>· <b>SUPER_ADMIN</b> — full platform access, incl. role management (server-side only).</li>
@@ -340,13 +340,13 @@ export default function SuperAdminPage() {
       <section className="rounded-2xl border border-ink-100 bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Mail size={18} className="text-brand-gold" />
-            <h2 className="font-display text-base font-bold text-brand-navy">Email delivery check</h2>
+            <Mail size={18} className="text-primary" />
+            <h2 className="font-display text-base font-bold text-deep">Email delivery check</h2>
           </div>
           <button
             type="button"
             onClick={() => void testEmail()}
-            className="rounded-full bg-brand-gold px-5 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+            className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover"
           >
             Send test email to myself
           </button>
@@ -359,7 +359,7 @@ export default function SuperAdminPage() {
 
       {/* Recent activity */}
       <section className="rounded-2xl border border-ink-100 bg-white p-6">
-        <h2 className="font-display text-base font-bold text-brand-navy">Recent platform activity</h2>
+        <h2 className="font-display text-base font-bold text-deep">Recent platform activity</h2>
         {(overview.data?.recent_audit ?? []).length === 0 ? (
           <p className="mt-2 text-sm text-ink-400">No activity yet.</p>
         ) : (

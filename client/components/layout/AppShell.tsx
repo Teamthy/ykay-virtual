@@ -54,10 +54,10 @@ function NavList({
                 active ? "bg-deep text-white" : "text-ink-700 hover:bg-ink-50"
               )}
             >
-              <Icon size={16} className={active ? "text-brand-gold" : "text-ink-500"} />
+              <Icon size={16} className={active ? "text-primary" : "text-ink-500"} />
               {item.label}
               {item.href === "/notifications" && unreadN > 0 && (
-                <span className="ml-auto rounded-full bg-brand-gold px-2 py-0.5 text-[10px] font-bold text-ink-900">
+                <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-ink-900">
                   {unreadN}
                 </span>
               )}
@@ -97,7 +97,7 @@ export function AppShell({
       <Link href={spec.home} className="block px-5 pb-4 pt-6" onClick={() => setOpen(false)}>
         <Logo markClassName="size-8" />
       </Link>
-      <div className="mx-4 mb-6 rounded-xl bg-brand-gold-light px-3 py-2">
+      <div className="mx-4 mb-6 rounded-xl bg-primary-light px-3 py-2">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-deep/70">Enrolled as</p>
         <p className="text-sm font-bold text-deep">{spec.chip}</p>
       </div>
@@ -146,7 +146,7 @@ export function AppShell({
             >
               <Bell size={16} />
               {unreadN > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-gold px-1 text-[10px] font-bold text-ink-900">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-ink-900">
                   {unreadN}
                 </span>
               )}

@@ -210,7 +210,7 @@ export default function AccountPage() {
               onClick={() => setTab(t)}
               className={cn(
                 "block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold",
-                tab === t ? "bg-brand-gold text-ink-900" : "text-ink-600 hover:bg-ink-50"
+                tab === t ? "bg-primary text-ink-900" : "text-ink-600 hover:bg-ink-50"
               )}
             >
               {t}
@@ -221,18 +221,18 @@ export default function AccountPage() {
         <div className="space-y-6">
           {tab === "Profile" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-brand-navy">Profile</h2>
+              <h2 className="text-lg font-bold text-deep">Profile</h2>
               <div className="mt-4 flex items-center gap-4">
                 <div className="relative">
                   {user.avatar_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={user.avatar_url} alt="Your profile" className="size-20 rounded-full object-cover ring-2 ring-brand-gold" />
+                    <img src={user.avatar_url} alt="Your profile" className="size-20 rounded-full object-cover ring-2 ring-primary" />
                   ) : (
-                    <div className="grid size-20 place-items-center rounded-full bg-brand-navy text-2xl font-bold text-white">
+                    <div className="grid size-20 place-items-center rounded-full bg-deep text-2xl font-bold text-white">
                       {(user.first_name?.[0] ?? user.email[0] ?? "?").toUpperCase()}
                     </div>
                   )}
-                  <label className="absolute -bottom-1 -right-1 grid size-8 cursor-pointer place-items-center rounded-full bg-brand-gold text-ink-900 shadow-md transition-transform hover:scale-105" title="Upload photo">
+                  <label className="absolute -bottom-1 -right-1 grid size-8 cursor-pointer place-items-center rounded-full bg-primary text-ink-900 shadow-md transition-transform hover:scale-105" title="Upload photo">
                     <Camera size={15} />
                     <input
                       type="file"
@@ -299,7 +299,7 @@ export default function AccountPage() {
                 type="button"
                 onClick={() => saveProfile.mutate()}
                 disabled={saveProfile.isPending}
-                className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-50"
+                className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-50"
               >
                 {saveProfile.isPending ? "Saving…" : "Save changes"}
               </button>
@@ -308,7 +308,7 @@ export default function AccountPage() {
 
           {tab === "Learners" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-brand-navy">Learners</h2>
+              <h2 className="text-lg font-bold text-deep">Learners</h2>
               <p className="mt-1 text-sm text-ink-500">Learners linked to your account (you book for them).</p>
               <ul className="mt-4 space-y-2">
                 {(learners.data ?? []).map((l: Learner) => (
@@ -326,7 +326,7 @@ export default function AccountPage() {
                 )}
               </ul>
               {user.roles.includes("PARENT") && (
-              <Link href="/dashboard?section=learners" className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-brand-gold">
+              <Link href="/dashboard?section=learners" className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-primary">
                 <UserPlus size={15} /> Add a learner
               </Link>
               )}
@@ -339,7 +339,7 @@ export default function AccountPage() {
 
           {tab === "Security" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-brand-navy">Change password</h2>
+              <h2 className="text-lg font-bold text-deep">Change password</h2>
               <div className="mt-4 max-w-md space-y-4">
                 <PasswordInput id="ac-current-pw" label="Current password" autoComplete="current-password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
                 <PasswordInput id="ac-pw" label="New password" autoComplete="new-password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
@@ -349,7 +349,7 @@ export default function AccountPage() {
                   type="button"
                   disabled={savePassword.isPending || !currentPw || !newPw || newPw.length < 8 || newPw !== newPw2}
                   onClick={() => savePassword.mutate({ currentPw, pw: newPw })}
-                  className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+                  className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
                 >
                   {savePassword.isPending ? "Updating…" : "Update password"}
                 </button>
@@ -359,7 +359,7 @@ export default function AccountPage() {
 
           {tab === "Devices" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-brand-navy">Push devices</h2>
+              <h2 className="text-lg font-bold text-deep">Push devices</h2>
               <p className="mt-1 text-sm text-ink-500">Devices that receive notifications from NUVORA.</p>
               <div className="mt-4 space-y-2">
                 {(devices.data ?? []).map((d: Device) => (
@@ -391,7 +391,7 @@ export default function AccountPage() {
 
           {tab === "Preferences" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-brand-navy">Email preferences</h2>
+              <h2 className="text-lg font-bold text-deep">Email preferences</h2>
               <p className="mt-1 text-sm text-ink-500">Stored on this device for now — server-side preferences ship with the notification centre.</p>
               <div className="mt-4 space-y-3">
                 {[
@@ -416,16 +416,16 @@ export default function AccountPage() {
           {tab === "Data" && (
             <div className="space-y-6">
               <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-brand-navy">Export your data</h2>
+                <h2 className="text-lg font-bold text-deep">Export your data</h2>
                 <p className="mt-1 text-sm leading-6 text-ink-500">
                   Download everything we hold on your account: profile, roles, learners, devices and chat
                   history — as a JSON file. This fulfils the export right in our{" "}
-                  <Link href="/privacy" className="font-semibold text-brand-gold-dark hover:underline">privacy policy</Link>.
+                  <Link href="/privacy" className="font-semibold text-primary-dark hover:underline">privacy policy</Link>.
                 </p>
                 <button
                   type="button"
                   onClick={() => void doExport()}
-                  className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-brand-navy px-6 text-sm font-bold text-white hover:bg-brand-navy/90"
+                  className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-deep px-6 text-sm font-bold text-white hover:bg-deep/90"
                 >
                   ⬇ Download my data
                 </button>

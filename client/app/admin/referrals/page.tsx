@@ -38,7 +38,7 @@ export default function AdminReferralsPage() {
               setPage(1);
             }}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {s || "All"}

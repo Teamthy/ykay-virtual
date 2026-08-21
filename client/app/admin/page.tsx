@@ -32,8 +32,8 @@ import {
 
 function StatCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-5 ${accent ? "bg-brand-blue text-white border-brand-blue" : "bg-white"}`}>
-      <div className={`text-2xl font-extrabold ${accent ? "text-white" : "text-brand-blue"}`}>{value}</div>
+    <div className={`rounded-2xl border p-5 ${accent ? "bg-deep text-white border-deep" : "bg-white"}`}>
+      <div className={`text-2xl font-extrabold ${accent ? "text-white" : "text-deep"}`}>{value}</div>
       <div className={`text-xs mt-1 ${accent ? "text-white/80" : "text-ink-500"}`}>{label}</div>
       {sub && <div className={`text-[10px] mt-1 ${accent ? "text-white/60" : "text-ink-400"}`}>{sub}</div>}
     </div>
@@ -145,8 +145,8 @@ export default function AdminOverviewPage() {
       {/* Today's classes */}
       {((o?.lessons_today ?? []).length ?? 0) > 0 && (
         <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-          <h2 className="flex items-center gap-2 font-bold text-brand-navy">
-            <CalendarDays size={16} className="text-brand-gold" /> Today&apos;s classes
+          <h2 className="flex items-center gap-2 font-bold text-deep">
+            <CalendarDays size={16} className="text-primary" /> Today&apos;s classes
           </h2>
           <ul className="mt-3 divide-y divide-ink-50">
             {(o?.lessons_today ?? []).slice(0, 6).map((l) => (
@@ -163,8 +163,8 @@ export default function AdminOverviewPage() {
 
       {/* Recent activity */}
       <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-        <h2 className="flex items-center gap-2 font-bold text-brand-navy">
-          <History size={16} className="text-brand-gold" /> Recent activity
+        <h2 className="flex items-center gap-2 font-bold text-deep">
+          <History size={16} className="text-primary" /> Recent activity
         </h2>
         {(o?.recent_audit ?? []).length === 0 ? (
           <p className="mt-2 text-sm text-ink-400">No activity recorded yet.</p>
@@ -207,22 +207,22 @@ export default function AdminOverviewPage() {
 
       {/* Quick actions */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-brand-navy">Quick actions</h2>
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">Quick actions</h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {quickActions.map((a) => {
             const Icon = a.icon;
             return (
-              <Link key={a.href + a.label} href={a.href} className="group flex items-start justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition-all hover:border-brand-blue hover:shadow-lift">
+              <Link key={a.href + a.label} href={a.href} className="group flex items-start justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition-all hover:border-deep hover:shadow-lift">
                 <div className="flex items-start gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-blue/10 text-brand-blue">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-deep/10 text-deep">
                     <Icon size={16} />
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-brand-navy">{a.label}</p>
+                    <p className="text-sm font-bold text-deep">{a.label}</p>
                     <p className="text-xs text-ink-500">{a.desc}</p>
                   </div>
                 </div>
-                <ArrowUpRight size={16} className="mt-1 shrink-0 text-ink-300 transition-colors group-hover:text-brand-blue" />
+                <ArrowUpRight size={16} className="mt-1 shrink-0 text-ink-300 transition-colors group-hover:text-deep" />
               </Link>
             );
           })}
@@ -231,17 +231,17 @@ export default function AdminOverviewPage() {
 
       {/* Module quick links */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-brand-navy">Operations modules</h2>
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">Operations modules</h2>
         <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {modules.map((m) => {
             const Icon = m.icon;
             return (
-              <Link key={m.href} href={m.href} className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-white p-5 transition-all hover:border-brand-blue hover:shadow-lift">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-blue/10 text-brand-blue">
+              <Link key={m.href} href={m.href} className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-white p-5 transition-all hover:border-deep hover:shadow-lift">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-deep/10 text-deep">
                   <Icon size={18} />
                 </span>
                 <span>
-                  <span className="block text-sm font-bold text-brand-navy">{m.label}</span>
+                  <span className="block text-sm font-bold text-deep">{m.label}</span>
                   <span className="mt-0.5 block text-xs text-ink-500">{m.desc}</span>
                 </span>
               </Link>

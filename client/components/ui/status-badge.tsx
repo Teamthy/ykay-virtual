@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 // Status (brand spec) - text + icon + colour together, never colour alone.
 
 const KINDS = {
-  success: { icon: <CheckCircle2 size={13} />, cls: "bg-green-50 text-brand-green-dark border-green-200" },
+  success: { icon: <CheckCircle2 size={13} />, cls: "bg-green-50 text-primary-dark border-green-200" },
   pending: { icon: <Clock size={13} />, cls: "bg-amber-50 text-amber-700 border-amber-200" },
   error: { icon: <XCircle size={13} />, cls: "bg-red-50 text-red-600 border-red-200" },
   neutral: { icon: <MinusCircle size={13} />, cls: "bg-ink-100 text-ink-600 border-ink-200" },
-  info: { icon: <HelpCircle size={13} />, cls: "bg-brand-blue-light text-brand-blue-dark border-brand-blue/20" },
+  info: { icon: <HelpCircle size={13} />, cls: "bg-primary-light text-deep-light border-deep/20" },
 } as const;
 
 export type StatusBadgeProps = {

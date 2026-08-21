@@ -27,7 +27,7 @@ export default function AdminLessonsPage() {
           <h1 className="text-3xl font-extrabold">Today&apos;s classes</h1>
           <p className="text-ink-500 text-sm mt-1">Live overview of scheduled lessons, attendance and meeting links.</p>
         </div>
-        <Link href="/admin/vetting" className="text-sm font-semibold text-brand-blue hover:underline">Tutor vetting →</Link>
+        <Link href="/admin/vetting" className="text-sm font-semibold text-deep hover:underline">Tutor vetting →</Link>
       </div>
 
       {lessons.isLoading ? (
@@ -51,7 +51,7 @@ export default function AdminLessonsPage() {
               <div className="flex items-center gap-3">
                 <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                 {l.status === "SCHEDULED" && (
-                  <Link href={`/cohorts/${l.cohort_id ?? "list"}`} className="text-xs font-semibold text-brand-blue hover:underline">Cohort →</Link>
+                  <Link href={`/cohorts/${l.cohort_id ?? "list"}`} className="text-xs font-semibold text-deep hover:underline">Cohort →</Link>
                 )}
               </div>
             </li>

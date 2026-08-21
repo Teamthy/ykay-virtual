@@ -48,7 +48,7 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
               type="button"
               onClick={() => choose(o.value)}
               className={`block w-full px-3 py-2 text-left text-sm hover:bg-ink-50 dark:hover:bg-ink-700 ${
-                lang === o.value ? "font-bold text-brand-gold-dark" : "text-ink-700 dark:text-ink-200"
+                lang === o.value ? "font-bold text-primary-dark" : "text-ink-700 dark:text-ink-200"
               }`}
             >
               {o.label}

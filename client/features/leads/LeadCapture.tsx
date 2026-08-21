@@ -34,7 +34,7 @@ function markLeadShown() {
 }
 
 const INPUT_CLS =
-  "mt-1.5 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30";
+  "mt-1.5 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 export function LeadCapture({
   source,
@@ -134,7 +134,7 @@ export function LeadCapture({
           markLeadShown();
           setOpen(true);
         }}
-        className="inline-flex items-center gap-2 rounded-full border border-brand-gold bg-brand-gold-light px-4 py-2 text-xs font-bold text-brand-gold-dark transition-colors hover:bg-brand-gold hover:text-ink-900"
+        className="inline-flex items-center gap-2 rounded-full border border-primary bg-primary-light px-4 py-2 text-xs font-bold text-primary-dark transition-colors hover:bg-primary hover:text-ink-900"
       >
         <Phone size={13} /> {ctaLabel}
       </button>
@@ -150,7 +150,7 @@ export function LeadCapture({
           }}
         >
           <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-card">
-            <div className="flex items-start justify-between gap-4 bg-brand-navy p-5">
+            <div className="flex items-start justify-between gap-4 bg-deep p-5">
               <div>
                 <p className="font-display text-lg font-bold text-white">{sent ? "You're on the list 🎉" : heading}</p>
                 {!sent && <p className="mt-1 text-xs text-white/70">We call back fast — usually within the hour.</p>}
@@ -226,7 +226,7 @@ export function LeadCapture({
                 <button
                   type="submit"
                   disabled={busy}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-gold px-4 text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:opacity-50"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover disabled:opacity-50"
                 >
                   <Phone size={15} /> {busy ? "Sending…" : "Call me back"}
                 </button>

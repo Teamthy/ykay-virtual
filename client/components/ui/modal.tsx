@@ -41,7 +41,7 @@ export function Modal({ open, onClose, title, description, children, footer, sid
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center">
       <button
         aria-label="Close dialog"
-        className="absolute inset-0 bg-brand-navy/40 backdrop-blur-[2px] animate-fade-in"
+        className="absolute inset-0 bg-deep/40 backdrop-blur-[2px] animate-fade-in"
         onClick={onClose}
       />
       <div
@@ -59,7 +59,7 @@ export function Modal({ open, onClose, title, description, children, footer, sid
       >
         <div className="flex items-start justify-between gap-4 border-b border-ink-100 px-6 py-4">
           <div>
-            {title && <h2 className="text-lg font-bold text-brand-navy">{title}</h2>}
+            {title && <h2 className="text-lg font-bold text-deep">{title}</h2>}
             {description && <p className="mt-0.5 text-sm text-ink-500">{description}</p>}
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">

@@ -20,7 +20,7 @@ export default function AdminOrderDetailPage() {
     return (
       <div className="p-8">
         <p className="text-red-600">Could not load this order.</p>
-        <Link href="/admin/payments" className="mt-2 inline-block text-sm font-bold text-brand-gold-dark">
+        <Link href="/admin/payments" className="mt-2 inline-block text-sm font-bold text-primary-dark">
           Back to payments
         </Link>
       </div>
@@ -33,7 +33,7 @@ export default function AdminOrderDetailPage() {
   return (
     <div className="space-y-6 px-4 py-6 md:px-8">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-        <Link href="/admin/payments" className="hover:text-brand-gold-dark">Payments</Link> / {order.order_number}
+        <Link href="/admin/payments" className="hover:text-primary-dark">Payments</Link> / {order.order_number}
       </p>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>

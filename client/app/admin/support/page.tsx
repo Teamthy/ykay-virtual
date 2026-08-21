@@ -42,7 +42,7 @@ export default function AdminSupportPage() {
       header: "Ticket",
       cell: (t) => (
         <button type="button" onClick={() => setOpen(t)} className="text-left">
-          <p className="font-semibold text-brand-navy hover:underline">{t.subject}</p>
+          <p className="font-semibold text-deep hover:underline">{t.subject}</p>
           <p className="text-[11px] text-ink-400">{t.email} · {new Date(t.created_at).toLocaleString()}</p>
         </button>
       ),
@@ -79,14 +79,14 @@ export default function AdminSupportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-brand-navy">Support tickets</h1>
+        <h1 className="text-3xl font-extrabold text-deep">Support tickets</h1>
         <p className="text-ink-500 text-sm mt-1">Trackable enquiries from contact forms, private-tuition requests and signed-in users.</p>
       </div>
 
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map((s) => (
           <button key={s || "all"} onClick={() => { setStatus(s); setPage(1); }}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
             {s || "All"}
           </button>
         ))}

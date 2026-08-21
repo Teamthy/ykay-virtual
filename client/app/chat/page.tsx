@@ -137,9 +137,9 @@ export default function ChatPage() {
       <header className="flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/" className="hover:text-brand-gold-dark">NUVORA</Link> / Assistant
+            <Link href="/" className="hover:text-primary-dark">NUVORA</Link> / Assistant
           </p>
-          <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-brand-navy">
+          <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-deep">
             Chat with Nuvora ✨
           </h1>
           <p className="text-sm text-ink-500">
@@ -149,7 +149,7 @@ export default function ChatPage() {
         <button
           type="button"
           onClick={() => void newThread()}
-          className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover"
         >
           + New chat
         </button>
@@ -173,11 +173,11 @@ export default function ChatPage() {
                   onClick={() => setActiveId(t.id)}
                   className={cn(
                     "block w-full rounded-xl px-3 py-2.5 text-left text-sm",
-                    activeId === t.id ? "bg-brand-gold-light font-semibold text-brand-navy" : "text-ink-700 hover:bg-ink-50"
+                    activeId === t.id ? "bg-primary-light font-semibold text-deep" : "text-ink-700 hover:bg-ink-50"
                   )}
                 >
                   <span className="block truncate">{t.title}</span>
-                  <span className={cn("mt-0.5 block text-[11px]", escalated && t.id === activeId ? "font-bold text-brand-gold-dark" : "text-ink-400")}>
+                  <span className={cn("mt-0.5 block text-[11px]", escalated && t.id === activeId ? "font-bold text-primary-dark" : "text-ink-400")}>
                     {t.status === "ESCALATED" ? "👤 With a human agent" : new Date(t.updated_at).toLocaleDateString()}
                   </span>
                 </button>
@@ -204,15 +204,15 @@ export default function ChatPage() {
                 {(messages.data ?? []).map((m) => (
                   <div key={m.id} className={cn("flex flex-col", m.role === "user" ? "items-end" : "items-start")}>
                     {m.role === "agent" && (
-                      <span className="mb-0.5 rounded-full bg-brand-navy px-2 py-0.5 text-[10px] font-bold text-white">SUPPORT AGENT</span>
+                      <span className="mb-0.5 rounded-full bg-deep px-2 py-0.5 text-[10px] font-bold text-white">SUPPORT AGENT</span>
                     )}
                     <div
                       className={cn(
                         "max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                         m.role === "user"
-                          ? "rounded-br-md bg-brand-navy text-white"
+                          ? "rounded-br-md bg-deep text-white"
                           : m.role === "agent"
-                          ? "rounded-bl-md border-2 border-brand-gold bg-white text-ink-800"
+                          ? "rounded-bl-md border-2 border-primary bg-white text-ink-800"
                           : "rounded-bl-md border border-ink-100 bg-[#F8EBCF] text-ink-800"
                       )}
                     >
@@ -254,7 +254,7 @@ export default function ChatPage() {
               </div>
             )}
             {escalated && (
-              <p className="mb-3 rounded-xl bg-brand-gold-light px-4 py-2.5 text-xs font-semibold text-brand-navy">
+              <p className="mb-3 rounded-xl bg-primary-light px-4 py-2.5 text-xs font-semibold text-deep">
                 👤 A human agent is on this thread - they&apos;ll reply here. You can keep messaging.
               </p>
             )}
@@ -275,13 +275,13 @@ export default function ChatPage() {
                 onKeyDown={(e) => e.key === "Enter" && void send()}
                 placeholder={activeId ? "Type your message…" : "Start a new chat first"}
                 disabled={!activeId || sending}
-                className="h-11 flex-1 rounded-lg border border-ink-200 px-4 text-sm focus:border-brand-gold focus:outline-none disabled:opacity-50"
+                className="h-11 flex-1 rounded-lg border border-ink-200 px-4 text-sm focus:border-primary focus:outline-none disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={() => void send()}
                 disabled={!input.trim() || !activeId || sending}
-                className="shrink-0 rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-40"
+                className="shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
               >
                 Send
               </button>

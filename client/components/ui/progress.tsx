@@ -19,7 +19,7 @@ export function Progress({ value, label, showValue = true, size = "md", classNam
       {(label || showValue) && (
         <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
           {label && <span className="font-semibold text-ink-600">{label}</span>}
-          {showValue && <span className="font-bold text-brand-navy tabular-nums">{Math.round(clamped)}%</span>}
+          {showValue && <span className="font-bold text-deep tabular-nums">{Math.round(clamped)}%</span>}
         </div>
       )}
       <div
@@ -32,7 +32,7 @@ export function Progress({ value, label, showValue = true, size = "md", classNam
       >
         <div
           className={cn(
-            "h-full rounded-full bg-gradient-to-r from-brand-navy to-brand-gold transition-all duration-500",
+            "h-full rounded-full bg-primary transition-all duration-500",
             barClassName
           )}
           style={{ width: `${clamped}%` }}

@@ -52,9 +52,9 @@ export function AuthNav() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-full border border-ink-200 py-1.5 pl-1.5 pr-4 text-sm font-semibold hover:border-brand-blue transition-colors"
+        className="flex items-center gap-2 rounded-full border border-ink-200 py-1.5 pl-1.5 pr-4 text-sm font-semibold hover:border-deep transition-colors"
       >
-        <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-brand-blue text-xs font-bold text-white">
+        <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-deep text-xs font-bold text-white">
           {user.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />

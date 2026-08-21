@@ -83,7 +83,7 @@ export default async function BlogSlugPage(props: Props) {
     <main className="container-x py-12 max-w-4xl">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }} />
       <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Blog", href: "/blog" }, { name: post.title }]} />
-      <InnerHero>
+      <InnerHero variant="centered" eyebrow={(post.exam_slugs ?? []).join(" • ") || undefined}>
         <div className="text-xs uppercase font-semibold text-brand-blue">
           {(post.exam_slugs ?? []).join(" • ")}
         </div>

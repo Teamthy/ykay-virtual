@@ -134,7 +134,7 @@ export function Header() {
                             onClick={closeAll}
                             className="flex items-center gap-3 rounded-lg p-2 text-sm font-medium text-ink-800 transition-colors hover:bg-ink-100"
                           >
-                            <span className="shrink-0 text-brand-gold-dark">{g.icon}</span>
+                            <span className="shrink-0 text-primary-dark">{g.icon}</span>
                             {it.label}
                           </Link>
                         ))}
@@ -159,7 +159,7 @@ export function Header() {
                     <a
                       href="/success-stories"
                       onClick={closeAll}
-                      className="mt-3 inline-flex items-center gap-x-1 text-sm font-bold text-brand-green decoration-2 hover:underline"
+                      className="mt-3 inline-flex items-center gap-x-1 text-sm font-bold text-primary decoration-2 hover:underline"
                     >
                       Read parent stories
                       <ArrowRight size={14} />
@@ -180,7 +180,7 @@ export function Header() {
           {!isLoading && !user && (
             <Link
               href="/onboarding"
-              className="rounded-lg bg-brand-gold px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:bg-brand-gold-hover"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:bg-primary-hover"
             >
               Get started
             </Link>
@@ -198,7 +198,7 @@ export function Header() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="What do you want to learn?"
-              className="w-48 rounded-full border border-ink-200 bg-ink-50 py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-brand-gold focus:bg-white focus:ring-2 focus:ring-brand-gold/30"
+              className="w-48 rounded-full border border-ink-200 bg-ink-50 py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/30"
             />
           </form>
           <AuthNav />
@@ -239,7 +239,7 @@ export function Header() {
               <Link
                 href="/onboarding"
                 onClick={closeAll}
-                className="block rounded-lg bg-brand-gold px-4 py-2.5 text-center text-sm font-medium text-ink-900"
+                className="block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-ink-900"
               >
                 Get started
               </Link>

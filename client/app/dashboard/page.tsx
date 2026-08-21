@@ -217,10 +217,10 @@ export default function ParentDashboardPage() {
           <RecommendationsForYou />
 
           {!learnerId && (
-            <div className="rounded-2xl border border-brand-blue/20 bg-brand-blue-light/60 p-6 text-sm">
-              <strong className="text-brand-navy">No learner linked yet.</strong>{" "}
+            <div className="rounded-2xl border border-deep/20 bg-primary-light/60 p-6 text-sm">
+              <strong className="text-deep">No learner linked yet.</strong>{" "}
               <span className="text-ink-600">Add your first learner to see schedules, attendance and progress.</span>{" "}
-              <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-brand-blue hover:underline">
+              <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-deep hover:underline">
                 <UserPlus size={15} /> Add a learner →
               </button>
             </div>
@@ -237,7 +237,7 @@ export default function ParentDashboardPage() {
                   <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} · completes your booking</p>
                 </div>
               </div>
-              <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-brand-gold px-6 py-3 text-sm font-bold text-brand-navy hover:bg-brand-gold-dark transition-colors">
+              <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-deep hover:bg-primary-dark transition-colors">
                 Complete payment
               </a>
             </div>
@@ -276,9 +276,9 @@ export default function ParentDashboardPage() {
                         setSection(a.section);
                       }
                     }}
-                    className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-brand-navy transition-all hover:border-brand-blue hover:shadow-lift"
+                    className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-deep transition-all hover:border-deep hover:shadow-lift"
                   >
-                    <span className="grid size-8 place-items-center rounded-lg bg-brand-blue-light text-brand-blue">{a.icon}</span>
+                    <span className="grid size-8 place-items-center rounded-lg bg-primary-light text-deep">{a.icon}</span>
                     {a.label}
                   </Link>
                 ))}
@@ -288,7 +288,7 @@ export default function ParentDashboardPage() {
                 <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-blue-light text-brand-blue">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
                         <CalendarDays size={20} />
                       </span>
                       <div>
@@ -300,7 +300,7 @@ export default function ParentDashboardPage() {
                       </div>
                     </div>
                     {nextLesson.meeting_url && (
-                      <a href={nextLesson.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-blue-dark transition-colors">
+                      <a href={nextLesson.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-deep px-5 py-2.5 text-sm font-bold text-white hover:bg-deep-light transition-colors">
                         Join class
                       </a>
                     )}
@@ -312,7 +312,7 @@ export default function ParentDashboardPage() {
                   title="No upcoming lessons"
                   description="When lessons are booked they appear here with time and join links."
                   action={
-                    <Link href="/private-tuition" className="rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover">
+                    <Link href="/private-tuition" className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-ink-900 hover:bg-primary-hover">
                       Book tuition
                     </Link>
                   }
@@ -354,7 +354,7 @@ export default function ParentDashboardPage() {
                     key={t}
                     onClick={() => setTab(t)}
                     className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-                      tab === t ? "bg-brand-gold text-ink-900" : "bg-white text-ink-600 ring-1 ring-ink-200 hover:bg-ink-100"
+                      tab === t ? "bg-primary text-ink-900" : "bg-white text-ink-600 ring-1 ring-ink-200 hover:bg-ink-100"
                     }`}
                   >
                     {t}
@@ -378,7 +378,7 @@ export default function ParentDashboardPage() {
                     <li key={l.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-4">
-                          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-blue-light text-brand-blue">
+                          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
                             <CalendarDays size={18} />
                           </span>
                           <div>
@@ -391,7 +391,7 @@ export default function ParentDashboardPage() {
                         <div className="flex items-center gap-3">
                           <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                           {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
-                            <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blue-dark transition-colors">
+                            <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light transition-colors">
                               Join class
                             </a>
                           )}
@@ -428,7 +428,7 @@ export default function ParentDashboardPage() {
                         <span className="font-bold text-ink-800">{o.currency} {o.total_amount.toLocaleString()}</span>
                         <button
                           onClick={() => void openReceipt(o.id)}
-                          className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light transition-colors"
+                          className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-deep hover:bg-primary-light transition-colors"
                         >
                           Receipt
                         </button>
@@ -448,10 +448,10 @@ export default function ParentDashboardPage() {
                 {attendance.data ? (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                     {[
-                      { label: "Present", value: attendance.data.present, cls: "text-brand-green" },
+                      { label: "Present", value: attendance.data.present, cls: "text-primary" },
                       { label: "Absent", value: attendance.data.absent, cls: "text-red-600" },
                       { label: "Late", value: attendance.data.late, cls: "text-amber-600" },
-                      { label: "Rate", value: `${attendance.data.rate.toFixed(0)}%`, cls: "text-brand-blue" },
+                      { label: "Rate", value: `${attendance.data.rate.toFixed(0)}%`, cls: "text-deep" },
                     ].map((s) => (
                       <div key={s.label} className="rounded-xl bg-surface-muted p-3">
                         <div className={`text-2xl font-extrabold ${s.cls}`}>{s.value}</div>
@@ -479,13 +479,13 @@ export default function ParentDashboardPage() {
                           <p className="text-sm font-semibold text-ink-700">
                             {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
                           </p>
-                          <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-bold text-brand-navy">
+                          <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-xs font-bold text-deep">
                             ★ {r.overall_rating}/5
                           </span>
                         </div>
-                        {r.strengths && <p className="mt-2 flex items-start gap-2 text-sm text-ink-600"><TrendingUp size={15} className="mt-0.5 shrink-0 text-brand-green" /> {r.strengths}</p>}
+                        {r.strengths && <p className="mt-2 flex items-start gap-2 text-sm text-ink-600"><TrendingUp size={15} className="mt-0.5 shrink-0 text-primary" /> {r.strengths}</p>}
                         {r.weaknesses && <p className="mt-1 flex items-start gap-2 text-sm text-ink-600"><AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-600" /> {r.weaknesses}</p>}
-                        {r.recommendations && <p className="mt-1 flex items-start gap-2 text-sm text-ink-700"><Compass size={15} className="mt-0.5 shrink-0 text-brand-blue" /> {r.recommendations}</p>}
+                        {r.recommendations && <p className="mt-1 flex items-start gap-2 text-sm text-ink-700"><Compass size={15} className="mt-0.5 shrink-0 text-deep" /> {r.recommendations}</p>}
                       </div>
                     ))}
                   </div>
@@ -501,7 +501,7 @@ export default function ParentDashboardPage() {
                 <h2 className="font-bold text-ink-800">Learners</h2>
                 <button
                   onClick={() => setAddOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover"
                 >
                   <UserPlus size={15} /> Add a learner
                 </button>
@@ -519,7 +519,7 @@ export default function ParentDashboardPage() {
                   {(learners.data ?? []).map((l) => (
                     <li key={l.id} className="flex items-center justify-between gap-3 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-gold-light font-bold text-brand-navy">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-light font-bold text-deep">
                           {l.first_name?.[0]?.toUpperCase() ?? "?"}
                         </span>
                         <div>
@@ -532,7 +532,7 @@ export default function ParentDashboardPage() {
                       </div>
                       <button
                         onClick={() => { setSelectedLearner(l.id); setSection("bookings"); }}
-                        className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light transition-colors"
+                        className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-deep hover:bg-primary-light transition-colors"
                       >
                         View bookings
                       </button>
@@ -545,7 +545,7 @@ export default function ParentDashboardPage() {
 
           <Link
             href="/account"
-            className="mt-4 block rounded-2xl border border-ink-100 bg-white p-5 shadow-soft text-center text-sm font-bold text-brand-navy hover:border-brand-gold"
+            className="mt-4 block rounded-2xl border border-ink-100 bg-white p-5 shadow-soft text-center text-sm font-bold text-deep hover:border-primary"
           >
             <span className="inline-flex items-center gap-2"><Settings size={16} /> Account</span>
           </Link>
@@ -582,11 +582,11 @@ export default function ParentDashboardPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">First name *</span>
-              <input required value={addForm.first_name} onChange={(e) => setAddForm({ ...addForm, first_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+              <input required value={addForm.first_name} onChange={(e) => setAddForm({ ...addForm, first_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </label>
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Last name *</span>
-              <input required value={addForm.last_name} onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+              <input required value={addForm.last_name} onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </label>
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Date of birth</span>
@@ -595,7 +595,7 @@ export default function ParentDashboardPage() {
                 max={new Date().toISOString().split("T")[0]}
                 value={addForm.date_of_birth}
                 onChange={(e) => setAddForm({ ...addForm, date_of_birth: e.target.value })}
-                className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </label>
             <div className="sm:col-span-2">
@@ -606,11 +606,11 @@ export default function ParentDashboardPage() {
             </div>
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">School (optional)</span>
-              <input value={addForm.school_name} onChange={(e) => setAddForm({ ...addForm, school_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30" />
+              <input value={addForm.school_name} onChange={(e) => setAddForm({ ...addForm, school_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </label>
           </div>
           {addError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{addError}</p>}
-          <button type="submit" disabled={addSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-gold text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:opacity-50">
+          <button type="submit" disabled={addSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover disabled:opacity-50">
             {addSubmitting ? "Adding…" : "Add learner"}
           </button>
         </form>

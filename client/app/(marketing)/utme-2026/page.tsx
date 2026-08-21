@@ -89,11 +89,11 @@ export default function Utme2026Page() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
 
       {/* ── Prep hero: brand gradient + blockquote + form card ── */}
-      <section className="relative bg-gradient-to-bl from-[#E9F4EB] via-transparent to-[#FFF7E4]">
+      <section className="relative bg-primary-light/40">
         <div className="mx-auto max-w-[1400px] px-6 py-10 sm:px-6 md:px-10 lg:py-14">
           <div className="grid items-center gap-8 md:grid-cols-2 lg:gap-12">
             <div>
-              <p className="inline-block bg-clip-text bg-gradient-to-l from-[#013920] to-[#4CCB31] text-sm font-semibold uppercase tracking-[0.14em] text-transparent">
+              <p className="inline-block text-sm font-semibold uppercase tracking-[0.14em] text-primary-dark">
                 Online Prep · Jan - Apr 2026
               </p>
 
@@ -119,7 +119,7 @@ export default function Utme2026Page() {
                   </p>
                 </div>
                 <footer className="mt-3 flex items-center gap-x-4">
-                  <div className="shrink-0 grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-[#013920] to-[#0A4D32] font-display text-white text-sm">
+                  <div className="shrink-0 grid h-8 w-8 place-items-center rounded-full bg-deep font-display text-white text-sm">
                     O
                   </div>
                   <div>

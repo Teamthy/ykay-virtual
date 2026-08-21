@@ -42,11 +42,11 @@ function CheckRow({
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white px-4 py-3.5 transition-colors hover:border-brand-gold/50"
+      className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white px-4 py-3.5 transition-colors hover:border-primary/50"
     >
       <span
         className={`grid size-9 shrink-0 place-items-center rounded-full ${
-          done ? "bg-brand-gold text-ink-900" : "bg-ink-50 text-ink-400"
+          done ? "bg-primary text-ink-900" : "bg-ink-50 text-ink-400"
         }`}
       >
         {done ? <CheckCircle2 size={18} /> : <span className="size-2.5 rounded-full bg-ink-300" />}
@@ -55,7 +55,7 @@ function CheckRow({
         <span className="block text-sm font-bold text-ink-900">{title}</span>
         <span className="block text-xs text-ink-500">{hint}</span>
       </span>
-      <span className={`text-xs font-bold ${done ? "text-brand-gold-dark" : "text-ink-400"}`}>
+      <span className={`text-xs font-bold ${done ? "text-primary-dark" : "text-ink-400"}`}>
         {done ? "Done" : "To do"}
       </span>
     </Link>
@@ -137,18 +137,18 @@ export default function StudentDashboardPage() {
       <RoleGate page="/student-dashboard" />
 
       {me?.is_minor && (
-        <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-gold bg-brand-gold-light px-5 py-4">
+        <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary bg-primary-light px-5 py-4">
           <div className="flex items-start gap-3">
             <span className="text-xl" aria-hidden="true">🛡️</span>
             <div>
-              <p className="font-bold text-brand-navy">Parent-guided account</p>
+              <p className="font-bold text-deep">Parent-guided account</p>
               <p className="text-sm text-ink-600">
                 You&apos;re under 15, so a parent or guardian manages bookings and payments for you.
                 Your lessons, assignments and progress all work right here.
               </p>
             </div>
           </div>
-          <Link href="/account" className="text-sm font-bold text-brand-gold-dark hover:underline">
+          <Link href="/account" className="text-sm font-bold text-primary-dark hover:underline">
             View settings
           </Link>
         </section>
@@ -157,10 +157,10 @@ export default function StudentDashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-6">
           <section className="relative overflow-hidden rounded-3xl bg-deep p-6 text-white shadow-card md:p-8">
-            <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-brand-gold/15" />
+            <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-primary/15" />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-xl">
-                <div className="mb-4 grid size-11 place-items-center rounded-2xl bg-brand-gold text-ink-900">
+                <div className="mb-4 grid size-11 place-items-center rounded-2xl bg-primary text-ink-900">
                   <BookOpen size={20} />
                 </div>
                 <h2 className="font-display text-2xl tracking-wide md:text-3xl">
@@ -182,7 +182,7 @@ export default function StudentDashboardPage() {
                 </p>
               </div>
               <div className="rounded-2xl bg-white/10 px-4 py-3 text-center">
-                <Clock size={18} className="mx-auto text-brand-gold" />
+                <Clock size={18} className="mx-auto text-primary" />
                 <p className="mt-1 text-sm font-bold">
                   {next
                     ? new Date(next.start_at).toLocaleString([], { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
@@ -206,14 +206,14 @@ export default function StudentDashboardPage() {
                   href={next.meeting_url || next.video_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-brand-gold"
+                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-primary"
                 >
                   Watch
                 </a>
               ) : (
                 <Link
                   href="/lms"
-                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-brand-gold"
+                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-primary"
                 >
                   Open LMS
                 </Link>
@@ -271,7 +271,7 @@ export default function StudentDashboardPage() {
                 <h3 className="font-bold text-ink-900">My learning</h3>
                 <p className="text-sm text-ink-500">Keep your streak going</p>
               </div>
-              <Link href="/lms" className="text-sm font-bold text-brand-gold-dark hover:underline">
+              <Link href="/lms" className="text-sm font-bold text-primary-dark hover:underline">
                 View all →
               </Link>
             </div>
@@ -288,7 +288,7 @@ export default function StudentDashboardPage() {
               <h3 className="font-bold text-ink-900">My courses</h3>
               <div className="mt-3 space-y-4">
                 {myCourses.map((c) => (
-                  <div key={c.cohortId} className="rounded-2xl border border-ink-100 p-4 transition-colors hover:border-brand-gold/50">
+                  <div key={c.cohortId} className="rounded-2xl border border-ink-100 p-4 transition-colors hover:border-primary/50">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <p className="font-bold text-ink-800">{c.title}</p>
@@ -311,7 +311,7 @@ export default function StudentDashboardPage() {
           {/* Achievements */}
           <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
             <div className="mb-3 flex items-center gap-2">
-              <Award size={16} className="text-brand-gold" />
+              <Award size={16} className="text-primary" />
               <h3 className="font-bold text-ink-900">Achievements</h3>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -320,7 +320,7 @@ export default function StudentDashboardPage() {
                   key={a.id}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${
                     a.earned
-                      ? "border-brand-gold bg-brand-gold-light text-brand-gold-dark"
+                      ? "border-primary bg-primary-light text-primary-dark"
                       : "border-ink-200 bg-ink-50 text-ink-400"
                   }`}
                 >
@@ -333,12 +333,12 @@ export default function StudentDashboardPage() {
 
         <aside className="space-y-4">
           <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
-            <div className="mb-3 grid size-10 place-items-center rounded-full bg-brand-gold-light text-deep">
+            <div className="mb-3 grid size-10 place-items-center rounded-full bg-primary-light text-deep">
               <CircleHelp size={18} />
             </div>
             <h3 className="font-bold text-ink-900">Have a question?</h3>
             <p className="mt-1 text-sm text-ink-500">Support is happy to help you get settled in before class begins.</p>
-            <Link href="/help" className="mt-3 inline-block text-sm font-bold text-brand-gold-dark hover:underline">
+            <Link href="/help" className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline">
               Contact support →
             </Link>
           </div>
@@ -357,7 +357,7 @@ export default function StudentDashboardPage() {
               <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Your learner profile</p>
               <p className="mt-2 font-bold text-ink-900">{me.first_name} {me.last_name}</p>
               <p className="text-sm text-ink-500">{me.current_level || "Level from onboarding"}</p>
-              <Link href="/account" className="mt-3 inline-block text-sm font-bold text-brand-gold-dark hover:underline">
+              <Link href="/account" className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline">
                 Edit in settings →
               </Link>
             </div>

@@ -62,7 +62,7 @@ export default function GmatPage() {
           <div className="mx-auto mt-6 max-w-2xl text-center">
             <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
               Prepare for GMAT{" "}
-              <span className="bg-clip-text bg-gradient-to-tl from-brand-gold-dark to-brand-gold text-transparent">
+              <span className="text-brand-gold-dark">
                 from your diagnostic
               </span>
             </h1>
@@ -79,7 +79,7 @@ export default function GmatPage() {
           <div className="mt-8 flex justify-center gap-3">
             <a
               href="#lead"
-              className="inline-flex items-center gap-x-3 rounded-md bg-gradient-to-tl from-brand-gold-dark to-brand-gold py-3 px-4 text-sm font-medium text-white transition-all hover:from-brand-gold hover:to-brand-gold-hover"
+              className="inline-flex items-center gap-x-3 rounded-md bg-primary-dark py-3 px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover"
             >
               Get a GMAT tutor
               <ArrowRight size={16} />

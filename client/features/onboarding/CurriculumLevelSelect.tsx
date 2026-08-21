@@ -22,7 +22,7 @@ export async function fetchCurricula(): Promise<CurriculumOption[]> {
 }
 
 const SELECT_CLS =
-  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30";
+  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 export function useCurricula() {
   return useQuery({

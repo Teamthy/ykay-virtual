@@ -70,7 +70,7 @@ export default async function SubjectPage(props: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqs) }} />
 
-      <InnerHero>
+      <InnerHero variant="centered">
         <span className="inline-flex rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-brand-green">
           {subject.category}
         </span>

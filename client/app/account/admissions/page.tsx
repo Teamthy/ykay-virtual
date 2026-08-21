@@ -29,8 +29,8 @@ export default function AdmissionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-brand-navy flex items-center gap-2">
-            <GraduationCap className="text-brand-gold" /> Admissions
+          <h1 className="text-2xl font-extrabold text-deep flex items-center gap-2">
+            <GraduationCap className="text-primary" /> Admissions
           </h1>
           <p className="text-ink-500 text-sm mt-1">Apply to enrol a learner in a NUVORA school or programme.</p>
         </div>
@@ -62,7 +62,7 @@ export default function AdmissionsPage() {
             <div key={a.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-brand-navy">{a.applicant_name || "Application"}</h3>
+                  <h3 className="font-bold text-deep">{a.applicant_name || "Application"}</h3>
                   <p className="text-xs text-ink-500 mt-0.5">
                     {a.current_level || "—"} · {a.preferred_term || "Preferred term not set"}
                   </p>
@@ -105,7 +105,7 @@ function ApplyForm({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-6 space-y-4 shadow-soft">
-      <h2 className="font-bold text-brand-navy">New application</h2>
+      <h2 className="font-bold text-deep">New application</h2>
       <div className="grid md:grid-cols-2 gap-4">
         <label className="block text-sm">
           <span className="font-medium text-ink-700">Learner *</span>

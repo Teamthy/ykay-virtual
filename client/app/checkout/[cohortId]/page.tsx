@@ -56,7 +56,7 @@ export default async function CheckoutPage(props: Props) {
             Your enrolment is confirmed instantly after payment. Lessons follow the published cohort schedule
             in {cohort.timezone}.
           </p>
-          <section className="mt-8 overflow-hidden rounded-2xl bg-gradient-to-br from-[#060F26] via-brand-navy to-brand-navy p-6 text-white shadow-brand">
+          <section className="mt-8 overflow-hidden rounded-2xl bg-deep p-6 text-white">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-bold">What you get</h2>
               <span className="rounded-full bg-brand-gold px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-navy">

@@ -46,7 +46,7 @@ export default function AdminReviewsPage() {
               setPage(1);
             }}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {s}
@@ -71,7 +71,7 @@ export default function AdminReviewsPage() {
             <li key={rv.id} className="border rounded-2xl p-5">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-extrabold text-brand-gold">★ {rv.rating}.0</span>
+                  <span className="text-lg font-extrabold text-primary">★ {rv.rating}.0</span>
                   <div>
                     <p className="text-sm font-semibold">{rv.title ?? "Untitled review"}</p>
                     <p className="text-[11px] text-ink-400">

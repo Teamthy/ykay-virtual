@@ -34,17 +34,17 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-24 left-4 z-40 flex max-w-xs items-center gap-3 rounded-2xl border border-ink-100 bg-white p-3 shadow-xl lg:bottom-8 lg:left-8">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-gold-light text-xl" aria-hidden="true">
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-light text-xl" aria-hidden="true">
         📲
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-brand-navy">Install NUVORA</p>
+        <p className="text-sm font-bold text-deep">Install NUVORA</p>
         <p className="text-xs text-ink-500">Add to your home screen for the app experience.</p>
         <div className="mt-1.5 flex gap-2">
           <button
             type="button"
             onClick={() => void install()}
-            className="rounded-lg bg-brand-gold px-3 py-1 text-xs font-bold text-ink-900 hover:bg-brand-gold-hover"
+            className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-ink-900 hover:bg-primary-hover"
           >
             Install
           </button>
