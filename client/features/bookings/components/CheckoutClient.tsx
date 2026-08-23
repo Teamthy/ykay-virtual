@@ -105,6 +105,9 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           order_id: booking.order.id,
           provider: value.provider,
           email: value.email,
+          // Gateway sends the payer back to the in-app receipt, which polls
+          // until the webhook confirms the order as PAID.
+          callback_url: `/receipts/${booking.order.id}`,
         });
         setStep({ name: "link", booking, payment });
         toast.success("Order created — opening the payment page");

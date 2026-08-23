@@ -38,6 +38,14 @@ type CohortEnrollmentRepository interface {
 	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]CohortEnrollment, error)
 	// ListByParent — the parent's confirmed enrollments (messaging contacts).
 	ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]CohortEnrollment, error)
+	// ListStalePending — PENDING enrollments created before cutoff. Feeds the
+	// seat-leak recovery cron (expire_stale_pending_enrollments): abandoned
+	// checkouts must release their reserved cohort seat.
+	ListStalePending(ctx context.Context, cutoff time.Time, limit int) ([]CohortEnrollment, error)
+	// Reactivate — revive a CANCELLED enrollment for a fresh order. The table
+	// has UNIQUE(cohort_id, student_profile_id), so a re-booking after an
+	// expired checkout must reuse the row instead of inserting a new one.
+	Reactivate(ctx context.Context, id uuid.UUID, orderID uuid.UUID) error
 }
 
 type PrivateTuitionRequestRepository interface {

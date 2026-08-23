@@ -184,9 +184,17 @@ func (s *BookingService) CreateCohortBooking(ctx context.Context, in CreateCohor
 		return nil, fmt.Errorf("%w: cohort %s status=%s capacity=%d enrolled=%d",
 			domain.ErrCapacityFull, cohort.ID, cohort.Status, cohort.Capacity, cohort.EnrolledCount)
 	}
+	var revive *booking.CohortEnrollment
 	if existing, err := uow.Enrollments().GetByCohortAndStudent(ctx, cohort.ID, in.StudentID); err == nil {
-		return nil, fmt.Errorf("%w: student %s already enrolled in cohort %s (enrollment %s, status %s)",
-			domain.ErrConflict, in.StudentID, cohort.ID, existing.ID, existing.Status)
+		if existing.Status == booking.EnrollmentCancelled {
+			// An expired/cancelled checkout released this seat earlier. The
+			// table has UNIQUE(cohort_id, student_profile_id) so we revive
+			// the same row for the new order instead of inserting.
+			revive = existing
+		} else {
+			return nil, fmt.Errorf("%w: student %s already enrolled in cohort %s (enrollment %s, status %s)",
+				domain.ErrConflict, in.StudentID, cohort.ID, existing.ID, existing.Status)
+		}
 	} else if !errors.Is(err, domain.ErrNotFound) {
 		return nil, err
 	}
@@ -242,7 +250,12 @@ func (s *BookingService) CreateCohortBooking(ctx context.Context, in CreateCohor
 		OrderID:          &order.ID,
 		Status:           booking.EnrollmentPending,
 	}
-	if err := uow.Enrollments().Create(ctx, enrollment); err != nil {
+	if revive != nil {
+		if err := uow.Enrollments().Reactivate(ctx, revive.ID, order.ID); err != nil {
+			return nil, err
+		}
+		enrollment.ID = revive.ID
+	} else if err := uow.Enrollments().Create(ctx, enrollment); err != nil {
 		return nil, err
 	}
 	if err := uow.Cohorts().IncrementEnrolledCount(ctx, cohort.ID, 1); err != nil {
@@ -656,4 +669,62 @@ func (s *BookingService) replay(ctx context.Context, parentUserID uuid.UUID, key
 		return nil, err
 	}
 	return &BookingResult{Order: order, Items: items, Replayed: true}, nil
+}
+
+// ExpireStalePendingEnrollments — seat-leak recovery cron. A cohort booking
+// reserves a seat (enrolled_count++) while the order is PENDING; if the payer
+// abandons checkout the seat would be blocked forever. This sweep cancels
+// PENDING enrollments older than olderThan whose order was never paid, and
+// releases the reserved seat. If the payment webhook lands later anyway,
+// PaymentService.confirmEnrollment revives the enrollment and re-takes a seat.
+func (s *BookingService) ExpireStalePendingEnrollments(ctx context.Context, olderThan time.Duration, limit int) (int, error) {
+	cutoff := time.Now().UTC().Add(-olderThan)
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer uow.Rollback()
+
+	stale, err := uow.Enrollments().ListStalePending(ctx, cutoff, limit)
+	if err != nil {
+		return 0, err
+	}
+	expired := 0
+	for i := range stale {
+		e := stale[i]
+		// Only expire when the linked order is still PENDING — a PAID order
+		// means the webhook is (or was) in flight and must win.
+		if e.OrderID != nil {
+			order, err := uow.Orders().GetByID(ctx, *e.OrderID)
+			if err != nil && !errors.Is(err, domain.ErrNotFound) {
+				return expired, err
+			}
+			if err == nil {
+				if order.Status != payment.OrderPending {
+					continue
+				}
+				if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderCancelled); err != nil {
+					return expired, err
+				}
+			}
+		}
+		if err := uow.Enrollments().UpdateStatus(ctx, e.ID, booking.EnrollmentCancelled); err != nil {
+			return expired, err
+		}
+		if err := uow.Cohorts().IncrementEnrolledCount(ctx, e.CohortID, -1); err != nil && !errors.Is(err, domain.ErrNotFound) {
+			return expired, err
+		}
+		_ = s.audit.LogStateChange(ctx, nil, identity.AuditUpdate, "cohort_enrollment",
+			&e.ID, map[string]any{"status": booking.EnrollmentPending},
+			map[string]any{"status": booking.EnrollmentCancelled, "reason": "checkout_abandoned",
+				"cohort_id": e.CohortID, "order_id": e.OrderID}, nil, nil)
+		expired++
+	}
+	if expired == 0 {
+		return 0, nil
+	}
+	if err := uow.Commit(ctx); err != nil {
+		return 0, err
+	}
+	return expired, nil
 }

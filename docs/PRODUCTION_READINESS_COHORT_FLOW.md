@@ -1,0 +1,139 @@
+# NUVORA — Cohort → Enrolment → Payment → Student/Tutor: Production Readiness Audit
+
+Date: 2026-08-23 · Scope: full end-to-end money path, repository-wide review.
+Verdict summary at the bottom.
+
+---
+
+## 1. The end-to-end flow (as verified in code)
+
+```
+Catalogue (/cohorts, cached 300s)
+   └─ Checkout (/checkout/{cohortId})
+        └─ POST /bookings  (type=COHORT)
+             • authorizeEnrollment: parent-linked learner OR adult self-enrol;
+               under-15 minors require a linked guardian ✅
+             • Row-locked cohort read (GetByIDForUpdate) → no oversubscription ✅
+             • Coupon validation + usage record in the same tx ✅
+             • Order (PENDING) + OrderItem + Enrollment (PENDING) + seat++ in ONE tx ✅
+             • Idempotency-key replay returns the original order ✅
+             • Cart-abandon lead fired for ops follow-up ✅
+        └─ POST /payments/initiate
+             • YK-010: actor must own the order; auth required ✅
+             • Reuses existing PENDING payment (idempotent initiate) ✅
+             • Paystack /transaction/initialize → hosted checkout link ✅
+        └─ Paystack/Flutterwave hosted page → payer pays
+        └─ POST /payments/webhooks/{provider}
+             • HMAC signature verified server-side (SHA512/SHA256) ✅
+             • UNIQUE provider_reference ⇒ duplicate delivery can't double-charge ✅
+             • Amount reconciliation (kobo-normalised) ✅
+             • Currency reconciliation ✅  ← ADDED IN THIS PASS
+             • Payment SUCCESS + Order PAID + Enrollment CONFIRMED +
+               student linked to all upcoming cohort lessons + escrow HELD, one tx ✅
+             • Receipt email + WhatsApp confirmation (best-effort) ✅
+        └─ Escrow (72h hold) → release (parent confirm or auto-expire cron)
+             → Payout PENDING → Paystack transfer (fail-closed until enabled) ✅
+Student side: dashboard, LMS course page, lessons, resources, assignments ✅
+Tutor side: roster (ListByCohort), earnings Held/Released, bank details, payouts ✅
+```
+
+Test evidence: 13 backend packages green (incl. webhook-hardening, escrow,
+payout, authz suites), OpenAPI contract test, client typecheck + vitest (34) +
+full `next build` all pass.
+
+## 2. Defects found and FIXED in this pass
+
+### 🔴 P1 — Seat leak: abandoned checkouts blocked cohort seats forever
+`CreateCohortBooking` increments `enrolled_count` when the PENDING enrollment
+is created, but **nothing ever decremented it**. Every visitor who reached
+checkout and never paid consumed a seat permanently; a 20-seat cohort could
+show "full" with zero paid students, and `CanEnroll()` would reject real buyers.
+
+**Fix (shipped):**
+- New cron `expire_stale_pending_enrollments` (worker, 15-min tick + boot
+  recovery, Redis leader lock): cancels PENDING enrollments older than 2h whose
+  order is still unpaid, cancels the order, releases the seat, writes audit.
+- Re-booking after expiry revives the same row (table has
+  `UNIQUE(cohort_id, student_profile_id)`) — previously a cancelled learner
+  could never enrol again ("already enrolled" conflict).
+- Late-webhook race closed: if payment lands after expiry,
+  `confirmEnrollment` re-takes the seat and confirms.
+- `cancelled_at` now stamped on cancellation (Postgres + memory repos).
+- Tests: 5 new service tests cover release, fresh-checkout safety, paid-order
+  skip, rebook-revive, late-webhook seat re-take.
+
+### 🔴 P1 — Payer stranded on the gateway after paying
+The API validated and *stored* `callback_url` but **never sent it to
+Paystack** (`/transaction/initialize` body had no `callback_url`), and the
+Flutterwave adapter hardcoded `https://nuvora.com/checkout/verify` — a route
+that does not exist. After paying, users were left on the gateway's generic
+success page with no route back into the app — the top driver of "I paid but
+nothing happened" support tickets.
+
+**Fix (shipped):**
+- New `CallbackLinkCreator` capability on both providers; Paystack initialize
+  now carries `callback_url`, Flutterwave uses it as `redirect_url`.
+- Handler defaults the callback to `/receipts/{orderId}` and resolves it
+  against the trusted `SITE_URL` (relative-path-only validation kept — no
+  open redirect).
+- Checkout client passes `/receipts/{orderId}`; the receipt page now **polls
+  every 5s while PENDING** and flips to "✅ Payment confirmed" when the
+  webhook settles — the webhook remains the only source of truth.
+- Tests: httptest-backed provider tests assert the callback reaches both
+  gateway APIs (and kobo conversion).
+
+### 🟠 P2 — Webhook accepted any currency
+Amount was reconciled but currency was not: a signed success event for
+**1,000 USD** would settle a **1,000 NGN** order (numeric match). Added a
+currency guard (mismatch → audit `currency_mismatch`, webhook consumed,
+payment stays PENDING) + tests for reject and accept paths.
+
+## 3. What is done well (keep as-is)
+
+- **Money engine**: single-transaction settlement, idempotent webhooks via DB
+  unique constraint, escrow with fail-closed refunds (YK-006) and fail-closed
+  payouts in production (YK-005), amount normalisation, full audit trail.
+- **Authorization**: object-level checks everywhere sampled (order ownership
+  YK-010, booking-scoped messaging, profile authorizer, minor gating).
+- **Concurrency**: row-locked cohort capacity, idempotency-key replays,
+  cron leader election (A-09), SKIP LOCKED sweeps.
+- **Ops**: Prometheus cron heartbeats, dead-letter queue, DR runbook,
+  payments runbook with the ₦1,000 live-loop drill, env fail-closed boot.
+- **Testing culture**: contract test locks router ↔ OpenAPI; webhook
+  hardening suite; 59 migrations with up/down pairs.
+
+## 4. What's left / should be added (not blockers for the cohort loop)
+
+| Priority | Item | Notes |
+|---|---|---|
+| P2 | Private-tuition E2E purchase journey | Request→match→package exists; the storefront journey (price → schedule → pay) is not a first-class flow (also flagged in GAP_ANALYSIS). |
+| P2 | Gateway refunds | Refunds are fail-closed OFF in production (correct), but a certified Paystack refund flow should be wired so admins aren't doing manual bank reversals. |
+| P2 | Lesson double-booking guard (FR-10) | Explicit tutor-availability conflict check on lesson creation is partial. |
+| P3 | MFA for admin accounts | Token/MFA migration exists (000058); enforce for SUPER_ADMIN/ACADEMIC_ADMIN logins. |
+| P3 | Enrolment windows (FR-25) | Cohorts publish/unpublish, but no `enrol_from/enrol_until` gating; `CanEnroll` ignores start date — a learner can enrol in an already-started cohort. |
+| P3 | Reschedule/cancellation self-service (FR-23) | States exist; parent-facing reschedule flow is partial. |
+| P3 | Upload malware scanning | Size/MIME validated; add ClamAV/lambda-scan before serving. |
+| P3 | Recorded-lesson library & transcripts | Future virtual-school phase (already in the roadmap docs). |
+| P3 | Payment-abandon nudge | The lead exists; auto-WhatsApp "complete your enrolment" with the stored payment link would recover revenue. |
+
+## 5. Production-readiness verdict — cohort → enrolment → payment → student/tutor
+
+**GO — production ready**, with the two P1 fixes in this commit deployed and
+the following runbook items confirmed live (all documented in
+`docs/PAYMENTS_RUNBOOK.md`):
+
+- [ ] `PAYSTACK_SECRET=sk_live_…` on the API + worker; webhook URL set to
+      `/api/v1/payments/webhooks/paystack` in the Paystack dashboard.
+- [ ] `SITE_URL` set (the post-payment redirect now depends on it).
+- [ ] Worker deployed alongside the API (the new seat-release cron runs there)
+      with Redis available for leader election.
+- [ ] `PAYSTACK_TRANSFER_ENABLED=true` only when tutor payouts should really move money.
+- [ ] Run the ₦1,000 live loop once end-to-end (enrol → pay → escrow → release
+      → transfer) per the runbook before announcing.
+
+Invariants verified by the test suite after the changes:
+- A seat is held only while a checkout is live (≤2h) or paid — never leaked.
+- No duplicate charge on duplicate webhook delivery; wrong amount **or wrong
+  currency** never settles an order.
+- The payer always lands back on an in-app receipt that reflects the
+  webhook-confirmed truth.

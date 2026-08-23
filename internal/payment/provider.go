@@ -26,6 +26,15 @@ type Provider interface {
 	Refund(reference string, amount float64) error
 }
 
+// CallbackLinkCreator — optional capability: providers that can send the payer
+// back to an order-specific URL after checkout implement this. PaymentService
+// prefers it whenever a callback URL is available, so the payer lands on the
+// in-app receipt (which polls the webhook-confirmed order status) instead of
+// being stranded on the gateway's generic success page.
+type CallbackLinkCreator interface {
+	CreatePaymentLinkWithCallback(amount float64, currency, reference, email, callbackURL string) (string, error)
+}
+
 // --- Paystack ---
 
 type PaystackProvider struct {
@@ -94,18 +103,28 @@ func (p *PaystackProvider) Refund(reference string, amount float64) error {
 }
 
 func (p *PaystackProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {
+	return p.CreatePaymentLinkWithCallback(amount, currency, reference, email, "")
+}
+
+// CreatePaymentLinkWithCallback — Paystack initialize with an order-specific
+// callback_url so the payer returns to the in-app receipt after paying.
+func (p *PaystackProvider) CreatePaymentLinkWithCallback(amount float64, currency, reference, email, callbackURL string) (string, error) {
 	if p.Secret == "" {
 		if strings.EqualFold(os.Getenv("ENVIRONMENT"), "production") || strings.EqualFold(os.Getenv("ENVIRONMENT"), "prod") {
 			return "", fmt.Errorf("paystack secret is not configured")
 		}
 		return fmt.Sprintf("https://paystack.com/pay/%s", reference), nil
 	}
-	body, _ := json.Marshal(map[string]any{
+	payload := map[string]any{
 		"amount":    int64(amount * 100), // kobo
 		"currency":  currency,
 		"reference": reference,
 		"email":     email,
-	})
+	}
+	if callbackURL != "" {
+		payload["callback_url"] = callbackURL
+	}
+	body, _ := json.Marshal(payload)
 	req, err := http.NewRequest(http.MethodPost, p.BaseURL+"/transaction/initialize", bytes.NewReader(body))
 	if err != nil {
 		return "", err
@@ -194,17 +213,31 @@ func (p *FlutterwaveProvider) Refund(reference string, amount float64) error {
 }
 
 func (p *FlutterwaveProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {
+	return p.CreatePaymentLinkWithCallback(amount, currency, reference, email, "")
+}
+
+// CreatePaymentLinkWithCallback — Flutterwave hosted payment with an
+// order-specific redirect_url (falls back to SITE_URL when absent).
+func (p *FlutterwaveProvider) CreatePaymentLinkWithCallback(amount float64, currency, reference, email, callbackURL string) (string, error) {
 	if p.Secret == "" {
 		if strings.EqualFold(os.Getenv("ENVIRONMENT"), "production") || strings.EqualFold(os.Getenv("ENVIRONMENT"), "prod") {
 			return "", fmt.Errorf("flutterwave secret is not configured")
 		}
 		return fmt.Sprintf("https://checkout.flutterwave.com/pay/%s", reference), nil
 	}
+	redirect := callbackURL
+	if redirect == "" {
+		if site := strings.TrimRight(os.Getenv("SITE_URL"), "/"); site != "" {
+			redirect = site + "/dashboard"
+		} else {
+			redirect = "https://nuvora.com/dashboard"
+		}
+	}
 	body, _ := json.Marshal(map[string]any{
 		"tx_ref":       reference,
 		"amount":       amount,
 		"currency":     currency,
-		"redirect_url": "https://nuvora.com/checkout/verify",
+		"redirect_url": redirect,
 		"customer":     map[string]string{"email": email},
 	})
 	req, err := http.NewRequest(http.MethodPost, p.BaseURL+"/payments", bytes.NewReader(body))

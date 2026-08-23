@@ -219,10 +219,55 @@ func (r *CohortEnrollmentRepo) GetByCohortAndStudent(ctx context.Context, cohort
 }
 
 func (r *CohortEnrollmentRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status booking.EnrollmentStatus) error {
-	_, err := r.db.ExecContext(ctx,
-		"UPDATE cohort_enrollments SET status = $1, updated_at = NOW() WHERE id = $2", status, id)
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE cohort_enrollments SET status = $1, updated_at = NOW(),
+			cancelled_at = CASE WHEN $1 = 'CANCELLED' THEN NOW() ELSE cancelled_at END
+		WHERE id = $2`, status, id)
 	if err != nil {
 		return fmt.Errorf("update enrollment status: %w", err)
+	}
+	return nil
+}
+
+// ListStalePending — PENDING enrollments older than cutoff (seat-leak cron).
+// SKIP LOCKED keeps a second worker replica from double-processing a row.
+func (r *CohortEnrollmentRepo) ListStalePending(ctx context.Context, cutoff time.Time, limit int) ([]booking.CohortEnrollment, error) {
+	if limit < 1 || limit > 500 {
+		limit = 200
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT `+enrollmentColumns+` FROM cohort_enrollments
+		WHERE status = 'PENDING' AND created_at < $1
+		ORDER BY created_at ASC LIMIT $2
+		FOR UPDATE SKIP LOCKED`, cutoff, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list stale pending enrollments: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.CohortEnrollment{}
+	for rows.Next() {
+		e, err := scanEnrollment(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *e)
+	}
+	return out, rows.Err()
+}
+
+// Reactivate — revive a CANCELLED enrollment (expired checkout) for a new
+// order: back to PENDING with a fresh order and enrolment timestamp.
+func (r *CohortEnrollmentRepo) Reactivate(ctx context.Context, id uuid.UUID, orderID uuid.UUID) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE cohort_enrollments
+		SET status = 'PENDING', order_id = $1, cancelled_at = NULL,
+			enrolled_at = NOW(), updated_at = NOW()
+		WHERE id = $2`, orderID, id)
+	if err != nil {
+		return fmt.Errorf("reactivate enrollment: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
 	}
 	return nil
 }

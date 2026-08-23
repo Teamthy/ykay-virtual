@@ -17,6 +17,9 @@ const (
 	JobProcessPaymentWebhook   JobType = "process_payment_webhook_async"
 	JobGenerateLessonReminders JobType = "generate_lesson_reminders"
 	JobExpireStaleBookingHolds JobType = "expire_stale_booking_holds"
+	// JobExpirePendingEnrollments — seat-leak recovery: cancel PENDING cohort
+	// enrollments whose checkout was abandoned and release the reserved seat.
+	JobExpirePendingEnrollments JobType = "expire_stale_pending_enrollments"
 	JobComputeTutorRanking     JobType = "compute_tutor_ranking_score"
 	JobRefreshSearchCache      JobType = "refresh_search_cache"
 	JobProcessWeeklyPayouts    JobType = "process_weekly_tutor_payouts"

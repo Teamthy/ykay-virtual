@@ -69,6 +69,8 @@ export type InitiatePaymentParams = {
   order_id: string;
   provider: PaymentProvider;
   email: string;
+  /** Relative in-app path the gateway sends the payer back to (defaults server-side to /receipts/{orderId}). */
+  callback_url?: string;
 };
 
 /**

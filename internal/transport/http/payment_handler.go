@@ -71,18 +71,29 @@ func (h *PaymentHandler) Initiate(w http.ResponseWriter, r *http.Request) {
 	}
 	// YK-010: callback_url must be empty or a same-origin relative path —
 	// never an arbitrary absolute URL (open-redirect / payment-confusion).
-	if cb := strings.TrimSpace(req.CallbackURL); cb != "" {
+	cb := strings.TrimSpace(req.CallbackURL)
+	if cb != "" {
 		if strings.Contains(cb, "://") || !strings.HasPrefix(cb, "/") || strings.HasPrefix(cb, "//") {
 			WriteAppError(w, pkg.BadRequest("callback_url must be a relative path", nil))
 			return
 		}
+	} else {
+		// Default: send the payer back to the in-app receipt, which polls the
+		// webhook-confirmed order status.
+		cb = "/receipts/" + orderID.String()
+	}
+	// Resolve against the trusted site origin; the gateway needs an absolute
+	// URL. No SITE_URL (bare dev) → no callback, gateway default applies.
+	resolvedCallback := ""
+	if base := strings.TrimRight(h.siteURL, "/"); base != "" {
+		resolvedCallback = base + cb
 	}
 	reqID := requestIDString(r)
 	res, err := h.svc.InitiatePayment(r.Context(), service.InitiatePaymentInput{
 		OrderID:     orderID,
 		Provider:    provider,
 		PayerEmail:  req.Email,
-		CallbackURL: req.CallbackURL,
+		CallbackURL: resolvedCallback,
 		ActorUserID: actor.UserID,
 		RequestID:   &reqID,
 		TraceID:     &reqID,

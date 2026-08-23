@@ -93,6 +93,10 @@ func main() {
 		slog.Warn("worker: automatic payout processing DISABLED (production, no certified provider) — payouts stay PENDING until an admin confirms the bank transfer from Admin → Payouts")
 	}
 	vettingSvc := service.NewVettingService(r.uowFactory, storage.NewLocalStorage(), audit, nil, nil)
+	// Seat-leak recovery: abandoned checkouts (PENDING enrollment + unpaid
+	// order) release their reserved cohort seat after pendingEnrollmentTTL.
+	bookingSvc := service.NewBookingService(r.uowFactory, nil, nil, audit)
+	const pendingEnrollmentTTL = 2 * time.Hour
 
 	// --- Notification dispatch (G4): email/SMS/push adapters ---
 	pushSvc := service.NewPushService(r.devices, service.NewExpoPushSender(cfg.ExpoAccessToken))
@@ -129,6 +133,13 @@ func main() {
 			n, err := paymentSvc.ExpireStaleHolds(jctx, 200)
 			if err == nil && n > 0 {
 				slog.Info("job: expire_stale_booking_holds", "released", n)
+			}
+			return err
+		})
+		queue.Register(worker.JobExpirePendingEnrollments, func(jctx context.Context, _ worker.Job) error {
+			n, err := bookingSvc.ExpireStalePendingEnrollments(jctx, pendingEnrollmentTTL, 200)
+			if err == nil && n > 0 {
+				slog.Info("job: expire_stale_pending_enrollments", "seats_released", n)
 			}
 			return err
 		})
@@ -191,6 +202,15 @@ func main() {
 			}
 			release()
 		}
+		if release, ok := cronLock.TryLock(ctx, "expire_stale_pending_enrollments", 14*time.Minute); ok {
+			if _, err := bookingSvc.ExpireStalePendingEnrollments(ctx, pendingEnrollmentTTL, 200); err != nil {
+				slog.Error("cron boot: expire_stale_pending_enrollments", "error", err)
+				telemetry.CronRun("expire_stale_pending_enrollments", false)
+			} else {
+				telemetry.CronRun("expire_stale_pending_enrollments", true)
+			}
+			release()
+		}
 	}()
 
 	go func() {
@@ -221,6 +241,18 @@ func main() {
 						telemetry.CronRun("expire_stale_learning_attempts", true)
 						if n > 0 {
 							slog.Info("cron: expire_stale_learning_attempts", "expired", n)
+						}
+					}
+					release()
+				}
+				if release, ok := cronLock.TryLock(ctx, "expire_stale_pending_enrollments", 14*time.Minute); ok {
+					if n, eerr := bookingSvc.ExpireStalePendingEnrollments(ctx, pendingEnrollmentTTL, 200); eerr != nil {
+						slog.Error("cron: expire_stale_pending_enrollments", "error", eerr)
+						telemetry.CronRun("expire_stale_pending_enrollments", false)
+					} else {
+						telemetry.CronRun("expire_stale_pending_enrollments", true)
+						if n > 0 {
+							slog.Info("cron: expire_stale_pending_enrollments", "seats_released", n)
 						}
 					}
 					release()

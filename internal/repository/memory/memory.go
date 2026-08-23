@@ -456,6 +456,9 @@ func (m *EnrollmentMemory) Create(_ context.Context, e *booking.CohortEnrollment
 	if e.EnrolledAt.IsZero() {
 		e.EnrolledAt = time.Now().UTC()
 	}
+	if e.CreatedAt.IsZero() {
+		e.CreatedAt = time.Now().UTC()
+	}
 	m.rows[e.ID] = e
 	return nil
 }
@@ -510,6 +513,45 @@ func (m *EnrollmentMemory) UpdateStatus(_ context.Context, id uuid.UUID, status 
 		return domain.ErrNotFound
 	}
 	e.Status = status
+	if status == booking.EnrollmentCancelled {
+		now := time.Now().UTC()
+		e.CancelledAt = &now
+	}
+	return nil
+}
+
+// ListStalePending — PENDING enrollments older than cutoff (seat-leak cron).
+func (m *EnrollmentMemory) ListStalePending(_ context.Context, cutoff time.Time, limit int) ([]booking.CohortEnrollment, error) {
+	if limit < 1 || limit > 500 {
+		limit = 200
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []booking.CohortEnrollment{}
+	for _, e := range m.rows {
+		if e.Status == booking.EnrollmentPending && e.CreatedAt.Before(cutoff) {
+			out = append(out, *e)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.Before(out[j].CreatedAt) })
+	if len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
+// Reactivate — revive a CANCELLED enrollment for a new order (row reuse).
+func (m *EnrollmentMemory) Reactivate(_ context.Context, id uuid.UUID, orderID uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	e, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	e.Status = booking.EnrollmentPending
+	e.OrderID = &orderID
+	e.CancelledAt = nil
+	e.EnrolledAt = time.Now().UTC()
 	return nil
 }
 

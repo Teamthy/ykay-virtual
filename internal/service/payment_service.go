@@ -196,6 +196,17 @@ type InitiationResult struct {
 	PaymentLink string
 }
 
+// createLink — prefers the callback-aware capability when the caller supplied
+// an order-specific return URL; falls back to the plain link otherwise.
+func createLink(p payment_provider.Provider, amount float64, currency, reference, email, callbackURL string) (string, error) {
+	if callbackURL != "" {
+		if c, ok := p.(payment_provider.CallbackLinkCreator); ok {
+			return c.CreatePaymentLinkWithCallback(amount, currency, reference, email, callbackURL)
+		}
+	}
+	return p.CreatePaymentLink(amount, currency, reference, email)
+}
+
 func (s *PaymentService) InitiatePayment(ctx context.Context, in InitiatePaymentInput) (*InitiationResult, error) {
 	provider, ok := s.providers[in.Provider]
 	if !ok {
@@ -228,7 +239,7 @@ func (s *PaymentService) InitiatePayment(ctx context.Context, in InitiatePayment
 		for i := range existing {
 			p := existing[i]
 			if p.Status == payment.PaymentPending && p.Provider == in.Provider && p.ProviderReference != nil {
-				link, lerr := provider.CreatePaymentLink(order.TotalAmount, order.Currency, *p.ProviderReference, in.PayerEmail)
+				link, lerr := createLink(provider, order.TotalAmount, order.Currency, *p.ProviderReference, in.PayerEmail, in.CallbackURL)
 				if lerr != nil {
 					return nil, fmt.Errorf("create payment link: %w", lerr)
 				}
@@ -264,7 +275,7 @@ func (s *PaymentService) InitiatePayment(ctx context.Context, in InitiatePayment
 		return nil, err
 	}
 
-	link, err := provider.CreatePaymentLink(order.TotalAmount, order.Currency, reference, in.PayerEmail)
+	link, err := createLink(provider, order.TotalAmount, order.Currency, reference, in.PayerEmail, in.CallbackURL)
 	if err != nil {
 		_ = uow.Payments().UpdateStatus(ctx, p.ID, payment.PaymentFailed, nil)
 		_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "payment",
@@ -301,6 +312,7 @@ type webhookPayload struct {
 		Reference string  `json:"reference"` // paystack
 		TxRef     string  `json:"tx_ref"`    // flutterwave
 		Amount    float64 `json:"amount"`
+		Currency  string  `json:"currency"`
 		Status    string  `json:"status"`
 	} `json:"data"`
 }
@@ -407,6 +419,17 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 		return nil, err
 	}
 
+	// Currency reconciliation guard: a numerically-equal amount in a different
+	// currency must never settle the order (e.g. 1,000 USD vs 1,000 NGN).
+	if c := strings.TrimSpace(parsed.Data.Currency); c != "" && !strings.EqualFold(c, paymentRow.Currency) {
+		_ = uow.Webhooks().MarkProcessed(ctx, webhook.ID)
+		_ = s.audit.LogStateChange(ctx, nil, identity.AuditPayment, "payment_webhook", &webhook.ID,
+			nil, map[string]any{"action": "currency_mismatch", "received": c, "expected": paymentRow.Currency},
+			nil, nil)
+		_ = uow.Commit(ctx)
+		return nil, fmt.Errorf("%w: currency mismatch received=%s expected=%s", domain.ErrInvalidInput, c, paymentRow.Currency)
+	}
+
 	now := s.Clock().UTC()
 	order, err := uow.Orders().GetByID(ctx, paymentRow.OrderID)
 	if err != nil {
@@ -492,6 +515,13 @@ func (s *PaymentService) confirmEnrollment(ctx context.Context, uow repository.U
 		}
 		if enrollment.Status == booking.EnrollmentConfirmed {
 			return it.ReferenceID, nil
+		}
+		// Late webhook after the seat-leak cron expired this checkout: the
+		// seat was released, so confirming must re-take it.
+		if enrollment.Status == booking.EnrollmentCancelled {
+			if err := uow.Cohorts().IncrementEnrolledCount(ctx, it.ReferenceID, 1); err != nil && !errors.Is(err, domain.ErrNotFound) {
+				return uuid.Nil, err
+			}
 		}
 		if err := uow.Enrollments().UpdateStatus(ctx, enrollment.ID, booking.EnrollmentConfirmed); err != nil {
 			return uuid.Nil, err
