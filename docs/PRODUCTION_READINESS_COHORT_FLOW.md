@@ -111,8 +111,8 @@ payment stays PENDING) + tests for reject and accept paths.
 | ~~P2~~ ✅ | ~~Lesson double-booking guard (FR-10)~~ | Verified already fully implemented (`HasOverlappingLessons` in ScheduleLesson + postgres/memory + tests) — GAP_ANALYSIS was stale. |
 | ~~P3~~ ✅ | ~~MFA for admin accounts~~ | Verified already fully enforced in code (`requiresMFA` for all admin roles + emailed second factor + frontend flow) — GAP_ANALYSIS was stale. |
 | ~~P3~~ ✅ | ~~Enrolment windows (FR-25)~~ | DONE (2026-08-23): migration 000060 adds optional `enrollment_opens_at/closes_at`; server gate + checkout UI + admin form; enrolment always closes at `end_date`. |
-| P3 | Reschedule/cancellation self-service (FR-23) | States exist; parent-facing reschedule flow is partial. |
-| P3 | Upload malware scanning | Size/MIME validated; add ClamAV/lambda-scan before serving. |
+| ~~P3~~ ✅ | ~~Reschedule/cancellation self-service (FR-23)~~ | DONE (2026-08-23): `POST /lessons/{id}/reschedule` + `/cancel` (tutor own lesson or admin, double-booking guarded, COMPLETED/CANCELLED immutable) + tutor console UI; cancelled lessons free the calendar slot. |
+| ~~P3~~ ✅ | ~~Upload malware scanning~~ | DONE (2026-08-23): scanner (signatures + zip-bomb + fail-closed ClamAV via `CLAMAV_ADDR`) already existed but only covered avatars — now every upload through UploadGuard is scanned BEFORE storing, fail-closed. |
 | P3 | Recorded-lesson library & transcripts | Future virtual-school phase (already in the roadmap docs). |
 | ~~P3~~ ✅ | ~~Payment-abandon nudge~~ | DONE (2026-08-23): `send_payment_nudges` worker cron — one WhatsApp per stalled checkout (45 min–24 h), lead flips NEW→CONTACTED, never double-sends. |
 

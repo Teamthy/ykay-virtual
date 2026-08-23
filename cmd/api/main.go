@@ -164,7 +164,8 @@ func main() {
 		}
 		store = guarded
 	} else {
-		store = storage.NewUploadGuard(localStore, nil, 0)
+		store = storage.NewUploadGuard(localStore, nil, 0).
+			WithMalwareScanner(storage.NewDefaultMalwareScanner(getEnvDefault("CLAMAV_ADDR", "")))
 	}
 
 	// --- Repositories: Postgres → in-memory fallback (dev mode) ---

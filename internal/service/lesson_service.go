@@ -253,6 +253,65 @@ func (s *LessonService) ScheduleLesson(ctx context.Context, in ScheduleLessonInp
 	return lesson, nil
 }
 
+// RescheduleLesson — FR-23: the lesson's tutor (or an admin) moves a lesson
+// to a new time window. The double-booking guard applies, excluding the
+// lesson itself; COMPLETED/CANCELLED lessons cannot be rescheduled.
+func (s *LessonService) RescheduleLesson(ctx context.Context, actorUserID uuid.UUID, isAdmin bool,
+	lessonID uuid.UUID, startAt, endAt time.Time) (*booking.Lesson, error) {
+
+	if !endAt.After(startAt) {
+		return nil, fmt.Errorf("%w: end_at must be after start_at", domain.ErrInvalidInput)
+	}
+	lesson, err := s.lessonTutorScope(ctx, actorUserID, isAdmin, lessonID)
+	if err != nil {
+		return nil, err
+	}
+	switch lesson.Status {
+	case booking.LessonCompleted, booking.LessonCancelled:
+		return nil, fmt.Errorf("%w: a %s lesson cannot be rescheduled", domain.ErrConflict, lesson.Status)
+	}
+	conflict, err := s.lessons.HasOverlappingLessons(ctx, lesson.TutorProfileID, startAt, endAt, &lesson.ID)
+	if err != nil {
+		return nil, err
+	}
+	if conflict {
+		return nil, fmt.Errorf("%w: tutor is already booked for an overlapping lesson at %s",
+			domain.ErrConflict, startAt.Format(time.RFC3339))
+	}
+	if err := s.lessons.Reschedule(ctx, lesson.ID, startAt, endAt); err != nil {
+		return nil, err
+	}
+	lesson.StartAt = startAt
+	lesson.EndAt = endAt
+	lesson.Status = booking.LessonRescheduled
+	return lesson, nil
+}
+
+// CancelLesson — FR-23: the lesson's tutor (or an admin) cancels a lesson.
+// Cancelled lessons free the tutor's calendar (the double-booking guard
+// ignores CANCELLED) and surface as cancelled on every enrolled learner's
+// schedule. COMPLETED lessons cannot be cancelled; cancelling twice is a
+// no-op conflict.
+func (s *LessonService) CancelLesson(ctx context.Context, actorUserID uuid.UUID, isAdmin bool,
+	lessonID uuid.UUID) (*booking.Lesson, error) {
+
+	lesson, err := s.lessonTutorScope(ctx, actorUserID, isAdmin, lessonID)
+	if err != nil {
+		return nil, err
+	}
+	switch lesson.Status {
+	case booking.LessonCompleted:
+		return nil, fmt.Errorf("%w: a completed lesson cannot be cancelled", domain.ErrConflict)
+	case booking.LessonCancelled:
+		return nil, fmt.Errorf("%w: lesson is already cancelled", domain.ErrConflict)
+	}
+	if err := s.lessons.UpdateStatus(ctx, lesson.ID, booking.LessonCancelled); err != nil {
+		return nil, err
+	}
+	lesson.Status = booking.LessonCancelled
+	return lesson, nil
+}
+
 // SetRecordedVideo — admin/tutor attaches (or clears) a recorded-lesson video
 // URL on a lesson. Only the cohort's tutor or a platform admin may do so.
 func (s *LessonService) SetRecordedVideo(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, lessonID uuid.UUID, videoURL *string) error {

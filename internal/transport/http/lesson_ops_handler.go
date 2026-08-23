@@ -193,6 +193,53 @@ func (h *LessonOpsHandler) SetRecordedVideo(w http.ResponseWriter, r *http.Reque
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"lesson_id": lessonID, "video_url": req.VideoURL}, nil)
 }
 
+// RescheduleLesson — POST /api/v1/lessons/{lessonId}/reschedule (FR-23).
+// The lesson's tutor or an admin moves the lesson; double-booking guarded.
+func (h *LessonOpsHandler) RescheduleLesson(w http.ResponseWriter, r *http.Request) {
+	actor := h.requireTutor(w, r)
+	if actor == nil {
+		return
+	}
+	lessonID, err := ParseUUID(r, "lessonId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		StartAt time.Time `json:"start_at"`
+		EndAt   time.Time `json:"end_at"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	lesson, err := h.svc.RescheduleLesson(r.Context(), actor.UserID, actor.IsAdmin, lessonID, req.StartAt.UTC(), req.EndAt.UTC())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, lesson, nil)
+}
+
+// CancelLesson — POST /api/v1/lessons/{lessonId}/cancel (FR-23).
+func (h *LessonOpsHandler) CancelLesson(w http.ResponseWriter, r *http.Request) {
+	actor := h.requireTutor(w, r)
+	if actor == nil {
+		return
+	}
+	lessonID, err := ParseUUID(r, "lessonId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	lesson, err := h.svc.CancelLesson(r.Context(), actor.UserID, actor.IsAdmin, lessonID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, lesson, nil)
+}
+
 // MyRecordedLibrary — GET /api/v1/me/recorded-lessons (owner). The learner's
 // recorded-lesson library across their enrolled cohorts.
 func (h *LessonOpsHandler) MyRecordedLibrary(w http.ResponseWriter, r *http.Request) {

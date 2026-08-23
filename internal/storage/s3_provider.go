@@ -193,6 +193,9 @@ type UploadGuard struct {
 	allowedMIMEs   map[string]bool
 	maxUploadBytes int64
 	onScan         func(ctx context.Context, b BucketType, key string)
+	// scanner — synchronous malware scan of the raw bytes BEFORE the file is
+	// stored (gap #5). Fail-closed: a scanner error rejects the upload.
+	scanner MalwareScanner
 }
 
 func NewUploadGuard(inner Storage, allowed []string, maxBytes int64) *UploadGuard {
@@ -215,7 +218,15 @@ func (g *UploadGuard) SetScanner(fn func(ctx context.Context, b BucketType, key 
 	g.onScan = fn
 }
 
-// GuardedUpload validates MIME + size, then delegates.
+// WithMalwareScanner installs a synchronous pre-store malware scanner. Every
+// GuardedUpload/Upload runs the bytes through it BEFORE persisting; a threat
+// or scanner failure rejects the upload (fail-closed).
+func (g *UploadGuard) WithMalwareScanner(m MalwareScanner) *UploadGuard {
+	g.scanner = m
+	return g
+}
+
+// GuardedUpload validates MIME + size + malware scan, then delegates.
 func (g *UploadGuard) GuardedUpload(ctx context.Context, b BucketType, key, contentType string, size int64, data []byte) error {
 	if size > g.maxUploadBytes {
 		return fmt.Errorf("invalid input: upload exceeds %d MB limit", g.maxUploadBytes>>20)
@@ -223,6 +234,15 @@ func (g *UploadGuard) GuardedUpload(ctx context.Context, b BucketType, key, cont
 	ct := strings.ToLower(strings.TrimSpace(contentType))
 	if !g.allowedMIMEs[ct] {
 		return fmt.Errorf("invalid input: file type %q is not accepted", ct)
+	}
+	if g.scanner != nil {
+		res, err := g.scanner.Scan(ctx, data)
+		if err != nil {
+			return fmt.Errorf("invalid input: upload rejected — malware scan unavailable: %w", err)
+		}
+		if !res.Clean {
+			return fmt.Errorf("invalid input: upload rejected — %s", res.Threat)
+		}
 	}
 	if err := g.inner.Upload(ctx, b, key, data, ct); err != nil {
 		return err
@@ -302,7 +322,8 @@ func NewGuardedStorageFromEnv() (*UploadGuard, error) {
 			maxBytes = n
 		}
 	}
-	return NewUploadGuard(inner, allowed, maxBytes), nil
+	return NewUploadGuard(inner, allowed, maxBytes).
+		WithMalwareScanner(NewDefaultMalwareScanner(os.Getenv("CLAMAV_ADDR"))), nil
 }
 
 func getenv(k, def string) string {

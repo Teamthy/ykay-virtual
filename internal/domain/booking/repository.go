@@ -113,6 +113,11 @@ type LessonRepository interface {
 	HasOverlappingLessons(ctx context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error)
 	// SetVideoURL attaches (or clears) a recorded-lesson video URL on a lesson.
 	SetVideoURL(ctx context.Context, lessonID uuid.UUID, videoURL *string) error
+	// Reschedule moves a lesson to a new time window and marks it
+	// RESCHEDULED (FR-23; double-booking guard applied by the service).
+	Reschedule(ctx context.Context, lessonID uuid.UUID, startAt, endAt time.Time) error
+	// UpdateStatus advances a lesson's lifecycle status (FR-23 cancel).
+	UpdateStatus(ctx context.Context, lessonID uuid.UUID, status LessonStatus) error
 	// ListRecordedForStudent returns the recorded (video) lessons the student
 	// is entitled to across their enrolled cohorts, newest first.
 	ListRecordedForStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Lesson, error)

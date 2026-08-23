@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
 )
 
@@ -147,6 +148,33 @@ func (r *LessonRepo) SetVideoURL(ctx context.Context, lessonID uuid.UUID, videoU
 	_, err := r.db.ExecContext(ctx, `UPDATE lessons SET video_url=$1, updated_at=NOW() WHERE id=$2`, videoURL, lessonID)
 	if err != nil {
 		return fmt.Errorf("set lesson video url: %w", err)
+	}
+	return nil
+}
+
+// Reschedule — FR-23: move a lesson to a new window and mark it RESCHEDULED.
+func (r *LessonRepo) Reschedule(ctx context.Context, lessonID uuid.UUID, startAt, endAt time.Time) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE lessons SET start_at=$1, end_at=$2, status='RESCHEDULED', updated_at=NOW()
+		WHERE id=$3`, startAt, endAt, lessonID)
+	if err != nil {
+		return fmt.Errorf("reschedule lesson: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+// UpdateStatus — FR-23: lesson lifecycle transition (e.g. CANCELLED).
+func (r *LessonRepo) UpdateStatus(ctx context.Context, lessonID uuid.UUID, status booking.LessonStatus) error {
+	res, err := r.db.ExecContext(ctx,
+		`UPDATE lessons SET status=$1, updated_at=NOW() WHERE id=$2`, status, lessonID)
+	if err != nil {
+		return fmt.Errorf("update lesson status: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
 	}
 	return nil
 }

@@ -19,6 +19,8 @@ import {
   getLessonAttendance,
   markAttendance,
   uploadResourceFile,
+  rescheduleLesson,
+  cancelLesson,
   type AttendanceRow,
 } from "@/features/lms/api";
 import {
@@ -209,6 +211,22 @@ export default function LmsTutorCohortPage() {
 
       <div className="mx-auto max-w-6xl">
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          {/* Lesson schedule — reschedule / cancel (FR-23) */}
+          <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm lg:col-span-2">
+            <h2 className="font-display text-lg font-bold text-deep">Lesson schedule</h2>
+            <p className="mt-1 text-xs text-ink-500">
+              Move or cancel a lesson — learners see the change instantly. Overlapping times are rejected automatically.
+            </p>
+            <div className="mt-3 space-y-2">
+              {(lessons.data ?? []).map((l) => (
+                <LessonScheduleRow key={l.id} lesson={l} cohortId={cohortId} />
+              ))}
+              {(lessons.data ?? []).length === 0 && (
+                <p className="py-4 text-center text-sm text-ink-400">No lessons scheduled yet.</p>
+              )}
+            </div>
+          </section>
+
           {/* Attendance console */}
           <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
             <h2 className="font-display text-lg font-bold text-deep">Attendance</h2>
@@ -600,5 +618,110 @@ export default function LmsTutorCohortPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// --- FR-23: per-lesson reschedule/cancel row ------------------------------
+
+function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: string; start_at: string; end_at: string; status: string }; cohortId: string }) {
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [startAt, setStartAt] = useState(() => lesson.start_at.slice(0, 16));
+  const [endAt, setEndAt] = useState(() => lesson.end_at.slice(0, 16));
+
+  const move = useMutation({
+    mutationFn: () =>
+      rescheduleLesson(lesson.id, new Date(startAt).toISOString(), new Date(endAt).toISOString()),
+    onSuccess: () => {
+      toast.success("Lesson rescheduled — learners see the new time");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["lms", "lessons", cohortId] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not reschedule"),
+  });
+
+  const cancel = useMutation({
+    mutationFn: () => cancelLesson(lesson.id),
+    onSuccess: () => {
+      toast.success("Lesson cancelled");
+      qc.invalidateQueries({ queryKey: ["lms", "lessons", cohortId] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not cancel"),
+  });
+
+  const done = lesson.status === "COMPLETED" || lesson.status === "CANCELLED";
+
+  return (
+    <div className="rounded-xl border border-ink-100 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="flex-1 truncate text-sm font-semibold text-ink-800">{lesson.title}</span>
+        <span className="text-xs tabular-nums text-ink-500">
+          {new Date(lesson.start_at).toLocaleString()} → {new Date(lesson.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </span>
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-0.5 text-[10px] font-bold",
+            lesson.status === "CANCELLED"
+              ? "bg-red-100 text-red-700"
+              : lesson.status === "RESCHEDULED"
+                ? "bg-amber-100 text-amber-700"
+                : "bg-ink-100 text-ink-600"
+          )}
+        >
+          {lesson.status}
+        </span>
+        {!done && (
+          <>
+            <button
+              type="button"
+              onClick={() => setEditing((v) => !v)}
+              className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-700 hover:border-ink-300"
+            >
+              {editing ? "Close" : "Reschedule"}
+            </button>
+            <button
+              type="button"
+              disabled={cancel.isPending}
+              onClick={() => {
+                if (window.confirm(`Cancel "${lesson.title}"? Learners will see it as cancelled.`)) cancel.mutate();
+              }}
+              className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-40"
+            >
+              Cancel
+            </button>
+          </>
+        )}
+      </div>
+      {editing && !done && (
+        <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-ink-100 pt-3">
+          <label className="block text-xs font-semibold text-ink-600">
+            New start
+            <input
+              type="datetime-local"
+              value={startAt}
+              onChange={(e) => setStartAt(e.target.value)}
+              className="mt-1 block rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <label className="block text-xs font-semibold text-ink-600">
+            New end
+            <input
+              type="datetime-local"
+              value={endAt}
+              onChange={(e) => setEndAt(e.target.value)}
+              className="mt-1 block rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            />
+          </label>
+          <button
+            type="button"
+            disabled={move.isPending || !startAt || !endAt}
+            onClick={() => move.mutate()}
+            className="rounded-lg bg-deep px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+          >
+            {move.isPending ? "Moving…" : "Confirm new time"}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

@@ -2138,6 +2138,38 @@ paths:
       responses:
         '200': { description: Notes }
 
+  /lessons/{lessonId}/reschedule:
+    post:
+      tags: [learning]
+      summary: Reschedule a lesson (tutor own lesson or admin; double-booking guarded) — FR-23
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [start_at, end_at]
+              properties:
+                start_at: { type: string, format: date-time }
+                end_at: { type: string, format: date-time }
+      responses:
+        '200': { description: Lesson rescheduled }
+        '409': { description: Overlapping lesson or lesson not reschedulable }
+
+  /lessons/{lessonId}/cancel:
+    post:
+      tags: [learning]
+      summary: Cancel a lesson (tutor own lesson or admin) — FR-23
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Lesson cancelled }
+        '409': { description: Lesson already cancelled or completed }
+
   /lessons/{lessonId}/meeting-link:
     post:
       tags: [lessons]

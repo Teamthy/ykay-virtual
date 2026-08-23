@@ -112,6 +112,32 @@ func (m *LessonMemory) SetVideoURL(_ context.Context, lessonID uuid.UUID, videoU
 	return nil
 }
 
+// Reschedule — FR-23: move a lesson to a new window and mark it RESCHEDULED.
+func (m *LessonMemory) Reschedule(_ context.Context, lessonID uuid.UUID, startAt, endAt time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	l, ok := m.rows[lessonID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	l.StartAt = startAt
+	l.EndAt = endAt
+	l.Status = booking.LessonRescheduled
+	return nil
+}
+
+// UpdateStatus — FR-23: lesson lifecycle transition (e.g. CANCELLED).
+func (m *LessonMemory) UpdateStatus(_ context.Context, lessonID uuid.UUID, status booking.LessonStatus) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	l, ok := m.rows[lessonID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	l.Status = status
+	return nil
+}
+
 func (m *LessonMemory) ListRecordedForStudent(_ context.Context, studentProfileID uuid.UUID, limit int) ([]booking.Lesson, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

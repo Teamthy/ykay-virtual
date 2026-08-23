@@ -112,6 +112,24 @@ export async function getMyTutorLessons(tutorProfileId?: string): Promise<Cohort
   return res.data ?? [];
 }
 
+// --- Reschedule / cancel (FR-23) ---
+
+/** Moves a lesson to a new window (tutor own lesson or admin). The server
+ * applies the double-booking guard and returns 409 on an overlap. */
+export async function rescheduleLesson(lessonId: string, startAt: string, endAt: string): Promise<CohortLesson> {
+  const res = await apiFetch<CohortLesson>(`/lessons/${lessonId}/reschedule`, {
+    method: "POST",
+    body: JSON.stringify({ start_at: startAt, end_at: endAt }),
+  });
+  return res.data;
+}
+
+/** Cancels a lesson (tutor own lesson or admin). Frees the calendar slot. */
+export async function cancelLesson(lessonId: string): Promise<CohortLesson> {
+  const res = await apiFetch<CohortLesson>(`/lessons/${lessonId}/cancel`, { method: "POST" });
+  return res.data;
+}
+
 // --- Notes ---
 
 export async function getLessonNotes(lessonId: string): Promise<LessonNote[]> {
