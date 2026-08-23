@@ -274,6 +274,8 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
     capacity: "20",
     start_date: "",
     end_date: "",
+    enrollment_opens_at: "",
+    enrollment_closes_at: "",
     timezone: "Africa/Lagos",
     location_mode: "ONLINE",
     fee: "50000",
@@ -327,6 +329,8 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         capacity: Number(form.capacity),
         start_date: form.start_date,
         end_date: form.end_date,
+        enrollment_opens_at: form.enrollment_opens_at || undefined,
+        enrollment_closes_at: form.enrollment_closes_at || undefined,
         timezone: form.timezone,
         location_mode: form.location_mode,
         fee: Number(form.fee),
@@ -388,6 +392,8 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         {field("title", "Title *")}
         {field("start_date", "Start date *", "date")}
         {field("end_date", "End date *", "date")}
+        {field("enrollment_opens_at", "Enrolment opens (optional)", "date")}
+        {field("enrollment_closes_at", "Enrolment closes (optional)", "date")}
         {field("capacity", "Capacity", "number")}
         {field("fee", "Fee", "number")}
         {field("timezone", "Timezone")}

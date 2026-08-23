@@ -227,7 +227,9 @@ func TestCreatePrivateBooking_Success(t *testing.T) {
 
 	req, err := env.store.PrivateReqs.GetByID(ctx, pkg.RequestID)
 	require.NoError(t, err)
-	assert.Equal(t, booking.PrivatePending, req.Status)
+	// Self-serve booking: the learner picked the tutor, so the request is
+	// born MATCHED (it must never sit in the admin "awaiting match" queue).
+	assert.Equal(t, booking.PrivateMatched, req.Status)
 }
 
 func TestCreatePrivateBooking_Validation(t *testing.T) {

@@ -180,9 +180,14 @@ func (s *BookingService) CreateCohortBooking(ctx context.Context, in CreateCohor
 	if err != nil {
 		return nil, err
 	}
-	if !cohort.CanEnroll() {
+	if cohort.Status != booking.CohortPublished || cohort.IsFull() {
 		return nil, fmt.Errorf("%w: cohort %s status=%s capacity=%d enrolled=%d",
 			domain.ErrCapacityFull, cohort.ID, cohort.Status, cohort.Capacity, cohort.EnrolledCount)
+	}
+	if !cohort.EnrollmentWindowOpen(time.Now().UTC()) {
+		return nil, fmt.Errorf("%w: enrolment for cohort %s is closed (window %v — %v, ends %s)",
+			domain.ErrConflict, cohort.ID, cohort.EnrollmentOpensAt, cohort.EnrollmentClosesAt,
+			cohort.EndDate.Format("2006-01-02"))
 	}
 	var revive *booking.CohortEnrollment
 	if existing, err := uow.Enrollments().GetByCohortAndStudent(ctx, cohort.ID, in.StudentID); err == nil {
@@ -358,6 +363,18 @@ func (s *BookingService) CreatePrivateBooking(ctx context.Context, in CreatePriv
 	if err := uow.PrivateRequests().Create(ctx, req); err != nil {
 		return nil, err
 	}
+	// Self-serve booking: the learner picked this tutor themselves, so the
+	// request is born MATCHED — it must never appear in the admin
+	// "awaiting match" queue, and downstream flows (lesson scheduling,
+	// booking-scoped messaging) can rely on the matched tutor being set.
+	if err := uow.PrivateRequests().SetMatchedTutor(ctx, req.ID, in.TutorProfileID); err != nil {
+		return nil, err
+	}
+	if err := uow.PrivateRequests().UpdateStatus(ctx, req.ID, booking.PrivateMatched); err != nil {
+		return nil, err
+	}
+	req.MatchedTutorID = &in.TutorProfileID
+	req.Status = booking.PrivateMatched
 
 	pkg := &booking.PrivatePackage{
 		RequestID:           req.ID,

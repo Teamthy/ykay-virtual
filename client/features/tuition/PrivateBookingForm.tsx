@@ -47,6 +47,7 @@ export function PrivateBookingForm({
   const [busy, setBusy] = useState(false);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState("");
+  const [orderId, setOrderId] = useState("");
 
   if (!user) {
     return (
@@ -92,7 +93,11 @@ export function PrivateBookingForm({
         order_id: booking.order.id,
         provider: "PAYSTACK",
         email: user.email,
+        // Gateway sends the payer back to the in-app receipt, which polls
+        // until the webhook confirms the order as PAID (tutor secured).
+        callback_url: `/receipts/${booking.order.id}`,
       });
+      setOrderId(booking.order.id);
       setOrderNumber(payment.order_number);
       setPaymentLink(payment.payment_link);
       toast.success("Order created - complete payment to confirm your tutor");
@@ -114,8 +119,6 @@ export function PrivateBookingForm({
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <a
             href={paymentLink}
-            target="_blank"
-            rel="noreferrer"
             className="rounded-lg bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
           >
             Continue to payment gateway
@@ -128,6 +131,14 @@ export function PrivateBookingForm({
             Copy payment link
           </button>
         </div>
+        {orderId && (
+          <p className="mt-3 text-xs text-ink-500">
+            Already paid?{" "}
+            <a href={`/receipts/${orderId}`} className="font-semibold text-brand-green underline">
+              Track your order status
+            </a>
+          </p>
+        )}
       </div>
     );
   }

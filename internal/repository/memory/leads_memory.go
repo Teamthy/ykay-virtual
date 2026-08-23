@@ -157,3 +157,27 @@ func uuidPtrEqual(a, b *uuid.UUID) bool {
 }
 
 var _ leads.Repository = (*LeadMemory)(nil)
+
+// ListOpenByIntent — NEW leads of an intent aged into the nudge window.
+func (m *LeadMemory) ListOpenByIntent(_ context.Context, intent string, olderThan, newerThan time.Time, limit int) ([]leads.Lead, error) {
+	if limit < 1 || limit > 500 {
+		limit = 100
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []leads.Lead{}
+	for _, l := range m.rows {
+		if l.Status != leads.StatusNew || l.Intent != intent {
+			continue
+		}
+		if l.CreatedAt.After(olderThan) || !l.CreatedAt.After(newerThan) {
+			continue
+		}
+		out = append(out, *l)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.Before(out[j].CreatedAt) })
+	if len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}

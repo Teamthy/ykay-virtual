@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"ykay-virtual/internal/domain/academics"
@@ -468,6 +469,10 @@ func (h *AdminHandler) CreateCohort(w http.ResponseWriter, r *http.Request) {
 		Status              string  `json:"status"`
 		BannerURL           *string `json:"banner_url"`
 		Code                string  `json:"code"`
+		// FR-25: optional enrolment window (RFC3339). Empty = open while
+		// published, until end_date.
+		EnrollmentOpensAt  string `json:"enrollment_opens_at"`
+		EnrollmentClosesAt string `json:"enrollment_closes_at"`
 	}
 	if err := DecodeJSON(r, &req); err != nil {
 		WriteAppError(w, err)
@@ -497,22 +502,52 @@ func (h *AdminHandler) CreateCohort(w http.ResponseWriter, r *http.Request) {
 		}
 		tutorID = &id
 	}
+	parseWindow := func(field, value string) (*time.Time, bool) {
+		if strings.TrimSpace(value) == "" {
+			return nil, true
+		}
+		// Accept full RFC3339 or bare date (admin form convenience).
+		if t, err := time.Parse(time.RFC3339, value); err == nil {
+			u := t.UTC()
+			return &u, true
+		}
+		if t, err := time.Parse("2006-01-02", value); err == nil {
+			u := t.UTC()
+			return &u, true
+		}
+		WriteAppError(w, pkg.BadRequest(field+" must be RFC3339 or YYYY-MM-DD", nil))
+		return nil, false
+	}
+	enrolOpens, ok := parseWindow("enrollment_opens_at", req.EnrollmentOpensAt)
+	if !ok {
+		return
+	}
+	enrolCloses, ok := parseWindow("enrollment_closes_at", req.EnrollmentClosesAt)
+	if !ok {
+		return
+	}
+	if enrolOpens != nil && enrolCloses != nil && enrolCloses.Before(*enrolOpens) {
+		WriteAppError(w, pkg.BadRequest("enrollment_closes_at must be after enrollment_opens_at", nil))
+		return
+	}
 	cohort, err := h.svc.CreateCohortAdmin(r.Context(), *adminID, &booking.Cohort{
-		ProgrammeID:    programmeID,
-		Title:          req.Title,
-		Slug:           req.Slug,
-		TutorProfileID: tutorID,
-		Capacity:       req.Capacity,
-		StartDate:      start,
-		EndDate:        end,
-		ScheduleDesc:   req.ScheduleDescription,
-		Timezone:       req.Timezone,
-		LocationMode:   req.LocationMode,
-		Fee:            req.Fee,
-		Currency:       req.Currency,
-		Status:         booking.CohortStatus(req.Status),
-		BannerURL:      req.BannerURL,
-		Code:           req.Code,
+		ProgrammeID:        programmeID,
+		Title:              req.Title,
+		Slug:               req.Slug,
+		TutorProfileID:     tutorID,
+		Capacity:           req.Capacity,
+		StartDate:          start,
+		EndDate:            end,
+		ScheduleDesc:       req.ScheduleDescription,
+		Timezone:           req.Timezone,
+		LocationMode:       req.LocationMode,
+		Fee:                req.Fee,
+		Currency:           req.Currency,
+		Status:             booking.CohortStatus(req.Status),
+		BannerURL:          req.BannerURL,
+		Code:               req.Code,
+		EnrollmentOpensAt:  enrolOpens,
+		EnrollmentClosesAt: enrolCloses,
 	})
 	if err != nil {
 		WriteAppError(w, err)

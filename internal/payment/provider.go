@@ -97,7 +97,8 @@ func (p *PaystackProvider) Refund(reference string, amount float64) error {
 	}
 	defer res.Body.Close()
 	if res.StatusCode >= 400 {
-		return fmt.Errorf("paystack refund failed")
+		raw, _ := io.ReadAll(io.LimitReader(res.Body, 2048))
+		return fmt.Errorf("paystack refund failed (HTTP %d): %s", res.StatusCode, strings.TrimSpace(string(raw)))
 	}
 	return nil
 }
@@ -207,7 +208,8 @@ func (p *FlutterwaveProvider) Refund(reference string, amount float64) error {
 	}
 	defer res.Body.Close()
 	if res.StatusCode >= 400 {
-		return fmt.Errorf("flutterwave refund failed")
+		raw, _ := io.ReadAll(io.LimitReader(res.Body, 2048))
+		return fmt.Errorf("flutterwave refund failed (HTTP %d): %s", res.StatusCode, strings.TrimSpace(string(raw)))
 	}
 	return nil
 }

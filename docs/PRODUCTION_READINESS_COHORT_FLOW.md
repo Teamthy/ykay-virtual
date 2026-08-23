@@ -106,15 +106,15 @@ payment stays PENDING) + tests for reject and accept paths.
 
 | Priority | Item | Notes |
 |---|---|---|
-| P2 | Private-tuition E2E purchase journey | Request→match→package exists; the storefront journey (price → schedule → pay) is not a first-class flow (also flagged in GAP_ANALYSIS). |
-| P2 | Gateway refunds | Refunds are fail-closed OFF in production (correct), but a certified Paystack refund flow should be wired so admins aren't doing manual bank reversals. |
-| P2 | Lesson double-booking guard (FR-10) | Explicit tutor-availability conflict check on lesson creation is partial. |
-| P3 | MFA for admin accounts | Token/MFA migration exists (000058); enforce for SUPER_ADMIN/ACADEMIC_ADMIN logins. |
-| P3 | Enrolment windows (FR-25) | Cohorts publish/unpublish, but no `enrol_from/enrol_until` gating; `CanEnroll` ignores start date — a learner can enrol in an already-started cohort. |
+| ~~P2~~ ✅ | ~~Private-tuition E2E purchase journey~~ | DONE (2026-08-23): self-serve flow (tutor profile → package → pay) hardened — request is born MATCHED to the chosen tutor, payer returns to the in-app receipt after the gateway. |
+| ~~P2~~ ✅ | ~~Gateway refunds~~ | DONE (2026-08-23): refund flow certified — state checks before the gateway call (double-refund + refund-after-payout blocked), partial dispute refunds hit the gateway too, reconciliation logging; enable with `PAYMENT_REFUNDS_ENABLED=true` after the refund drill. |
+| ~~P2~~ ✅ | ~~Lesson double-booking guard (FR-10)~~ | Verified already fully implemented (`HasOverlappingLessons` in ScheduleLesson + postgres/memory + tests) — GAP_ANALYSIS was stale. |
+| ~~P3~~ ✅ | ~~MFA for admin accounts~~ | Verified already fully enforced in code (`requiresMFA` for all admin roles + emailed second factor + frontend flow) — GAP_ANALYSIS was stale. |
+| ~~P3~~ ✅ | ~~Enrolment windows (FR-25)~~ | DONE (2026-08-23): migration 000060 adds optional `enrollment_opens_at/closes_at`; server gate + checkout UI + admin form; enrolment always closes at `end_date`. |
 | P3 | Reschedule/cancellation self-service (FR-23) | States exist; parent-facing reschedule flow is partial. |
 | P3 | Upload malware scanning | Size/MIME validated; add ClamAV/lambda-scan before serving. |
 | P3 | Recorded-lesson library & transcripts | Future virtual-school phase (already in the roadmap docs). |
-| P3 | Payment-abandon nudge | The lead exists; auto-WhatsApp "complete your enrolment" with the stored payment link would recover revenue. |
+| ~~P3~~ ✅ | ~~Payment-abandon nudge~~ | DONE (2026-08-23): `send_payment_nudges` worker cron — one WhatsApp per stalled checkout (45 min–24 h), lead flips NEW→CONTACTED, never double-sends. |
 
 ## 5. Production-readiness verdict — cohort → enrolment → payment → student/tutor
 

@@ -280,14 +280,18 @@ func main() {
 		payment.ProviderFlutterwave: payment_provider.NewFlutterwave(cfg.FlutterwaveSecret),
 	}
 	paymentSvc := service.NewPaymentService(repos.UoWFactory, providers, audit, repos.EscrowRead)
-	// YK-006 fail-closed: until a real, certified gateway refund flow exists,
-	// production must refuse refunds rather than silently credit the wallet and
-	// mark orders REFUNDED without refunding the gateway. Disabled in
-	// production REGARDLESS of which payment secrets are present — refund
-	// capability is a certification question, not a configuration one.
+	// YK-006 fail-closed: refunds stay OFF in production unless explicitly
+	// certified and enabled via PAYMENT_REFUNDS_ENABLED=true. The refund flow
+	// now calls the gateway BEFORE committing (state-checked, double-refund
+	// safe), so ops may enable it once the live-loop refund drill passes.
 	if cfg.IsProduction() {
-		paymentSvc.SetRefundsEnabled(false)
-		slog.Warn("refunds DISABLED (production, gateway refund flow not certified — YK-006)")
+		if strings.EqualFold(os.Getenv("PAYMENT_REFUNDS_ENABLED"), "true") {
+			paymentSvc.SetRefundsEnabled(true)
+			slog.Info("refunds ENABLED (PAYMENT_REFUNDS_ENABLED=true — gateway-backed refund flow active)")
+		} else {
+			paymentSvc.SetRefundsEnabled(false)
+			slog.Warn("refunds DISABLED (production default — set PAYMENT_REFUNDS_ENABLED=true after the refund drill, YK-006)")
+		}
 	}
 
 	subjectSvc := service.NewSubjectService(repos.SubjectRepo, cacheBackend)

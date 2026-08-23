@@ -14,7 +14,7 @@ import { listLearners } from "@/features/onboarding/api";
 import { useSession } from "@/hooks/useSession";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import type { Cohort } from "@/features/cohorts/api/get";
+import { enrollmentWindow, type Cohort } from "@/features/cohorts/api/get";
 import type { BookingResponse, InitiatePaymentResponse, Order, PaymentProvider } from "@/features/bookings/types";
 
 // Zod schema — client + server validation parity (AGENTS.md).
@@ -143,6 +143,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
     () => Math.max(0, cohort.capacity - cohort.enrolled_count),
     [cohort.capacity, cohort.enrolled_count]
   );
+  const window_ = useMemo(() => enrollmentWindow(cohort), [cohort]);
 
   if (step.name === "creating" || step.name === "initiating") {
     return (
@@ -198,6 +199,14 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           <p className={seatsLeft <= 5 ? "text-amber-700 font-medium" : ""}>
             {seatsLeft > 0 ? `${seatsLeft} of ${cohort.capacity} seats left` : "Cohort full"}
           </p>
+          {!window_.open && (
+            <p className="font-semibold text-red-700">{window_.reason}</p>
+          )}
+          {window_.open && cohort.enrollment_closes_at && (
+            <p className="text-amber-700 font-medium">
+              Enrolment closes {new Date(cohort.enrollment_closes_at).toLocaleDateString()}
+            </p>
+          )}
         </div>
 
         {/* Steps */}
@@ -345,10 +354,15 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                 payMutation.isPending ||
                 !values.student_id ||
                 !values.email ||
-                seatsLeft === 0
+                seatsLeft === 0 ||
+                !window_.open
               }
             >
-              {createBooking.isPending || payMutation.isPending ? "Processing…" : "Pay securely now"}
+              {createBooking.isPending || payMutation.isPending
+                ? "Processing…"
+                : !window_.open
+                  ? (window_.reason ?? "Enrolment closed")
+                  : "Pay securely now"}
             </Button>
           )}
         </form.Subscribe>

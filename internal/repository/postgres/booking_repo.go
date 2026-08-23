@@ -20,18 +20,18 @@ func NewCohortRepo(db TxQuerier) *CohortRepo { return &CohortRepo{db: db} }
 const cohortColumns = `id, programme_id, title, slug, tutor_profile_id, capacity, enrolled_count,
 	start_date, end_date, schedule_description, timezone, location_mode, location_id,
 	fee, currency, status, meeting_link_template, created_by, published_at, created_at, updated_at,
-	COALESCE(code, ''), banner_url`
+	COALESCE(code, ''), banner_url, enrollment_opens_at, enrollment_closes_at`
 
 func scanCohort(row interface{ Scan(...any) error }) (*booking.Cohort, error) {
 	var c booking.Cohort
 	var tutorID, locID, createdBy uuidNull
 	var schedule, meetingLink, banner sql.NullString
-	var publishedAt sql.NullTime
+	var publishedAt, enrolOpens, enrolCloses sql.NullTime
 	if err := row.Scan(
 		&c.ID, &c.ProgrammeID, &c.Title, &c.Slug, &tutorID, &c.Capacity, &c.EnrolledCount,
 		&c.StartDate, &c.EndDate, &schedule, &c.Timezone, &c.LocationMode, &locID,
 		&c.Fee, &c.Currency, &c.Status, &meetingLink, &createdBy, &publishedAt, &c.CreatedAt, &c.UpdatedAt,
-		&c.Code, &banner,
+		&c.Code, &banner, &enrolOpens, &enrolCloses,
 	); err != nil {
 		return nil, err
 	}
@@ -55,6 +55,12 @@ func scanCohort(row interface{ Scan(...any) error }) (*booking.Cohort, error) {
 	}
 	if banner.Valid {
 		c.BannerURL = &banner.String
+	}
+	if enrolOpens.Valid {
+		c.EnrollmentOpensAt = &enrolOpens.Time
+	}
+	if enrolCloses.Valid {
+		c.EnrollmentClosesAt = &enrolCloses.Time
 	}
 	return &c, nil
 }

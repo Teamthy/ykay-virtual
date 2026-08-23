@@ -291,3 +291,55 @@ func trimMsg(m *string) *string {
 	}
 	return strOrNil(t)
 }
+
+// SendPaymentNudges — payment-abandon recovery. Every ENROLLMENT_STARTED lead
+// still NEW after minAge (payer stalled at the gateway) gets ONE WhatsApp
+// nudge with a link back to the checkout, then flips to CONTACTED so it is
+// never nudged twice (the ops funnel keeps working from CONTACTED onwards).
+// Leads older than maxAge are left for manual follow-up (intent gone cold).
+// The checkout link survives seat-expiry: re-booking revives the enrollment.
+func (s *LeadService) SendPaymentNudges(ctx context.Context, siteURL string, minAge, maxAge time.Duration, limit int) (int, error) {
+	if s.repo == nil || s.notifier == nil {
+		return 0, nil
+	}
+	now := s.now().UTC()
+	stale, err := s.repo.ListOpenByIntent(ctx, leads.IntentEnrollmentStarted, now.Add(-minAge), now.Add(-maxAge), limit)
+	if err != nil {
+		return 0, err
+	}
+	base := strings.TrimRight(siteURL, "/")
+	sent := 0
+	for i := range stale {
+		l := stale[i]
+		if (l.Phone == nil || strings.TrimSpace(*l.Phone) == "") && l.UserID == nil {
+			continue // no way to reach this lead on WhatsApp
+		}
+		link := base + "/cohorts"
+		if l.CohortID != nil {
+			link = base + "/checkout/" + l.CohortID.String()
+		}
+		first := strings.TrimSpace(strings.SplitN(l.Name, " ", 2)[0])
+		if first == "" || first == "Enrolling" {
+			first = "there"
+		}
+		body := "Hi " + first + " 👋 — your NUVORA enrolment is one step from done. " +
+			"Your seat is reserved but unpaid; complete payment here to secure it:\n" + link +
+			"\n\nNeed help or a different payment method? Just reply to this message."
+		if err := s.notifier.NotifyUser(ctx, l.Phone, l.UserID, body); err != nil {
+			slog.Error("payment nudge send failed", "lead_id", l.ID, "error", err)
+			continue // leave NEW so the next tick retries
+		}
+		if err := s.repo.UpdateStatus(ctx, l.ID, leads.StatusContacted, now); err != nil {
+			slog.Error("payment nudge status update failed", "lead_id", l.ID, "error", err)
+			continue
+		}
+		if s.audit != nil {
+			_ = s.audit.LogStateChange(ctx, nil, identity.AuditUpdate, "lead", &l.ID,
+				map[string]any{"status": leads.StatusNew},
+				map[string]any{"status": leads.StatusContacted, "reason": "payment_abandon_nudge", "cohort_id": l.CohortID},
+				nil, nil)
+		}
+		sent++
+	}
+	return sent, nil
+}

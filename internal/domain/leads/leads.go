@@ -67,4 +67,9 @@ type Repository interface {
 	// don't spam the ops channel. Nil email+phone matches any contact info.
 	FindRecentOpen(ctx context.Context, intent, source string, userID, cohortID *uuid.UUID, email, phone *string, since time.Time) (*Lead, error)
 	CountByStatus(ctx context.Context, status string) (int64, error)
+	// ListOpenByIntent — NEW leads of an intent created inside
+	// (newerThan, olderThan], oldest first. Feeds the payment-abandon
+	// WhatsApp nudge cron: old enough that the payer truly stalled, new
+	// enough that the intent is still warm.
+	ListOpenByIntent(ctx context.Context, intent string, olderThan, newerThan time.Time, limit int) ([]Lead, error)
 }

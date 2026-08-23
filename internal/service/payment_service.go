@@ -705,11 +705,18 @@ func (s *PaymentService) ReleaseEscrow(ctx context.Context, escrowHoldID uuid.UU
 }
 
 // RefundOrder — admin refund of an entire order: refunds every escrow hold
-// attached to the order and marks the order REFUNDED.
+// attached to the order, marks the order REFUNDED, and refunds the money at
+// the payment gateway. Ordering is deliberate (refund certification):
+//  1. state checks first — an already-refunded order or a hold already
+//     RELEASED to a tutor payout can never reach the gateway (no double or
+//     over-refund);
+//  2. all DB mutations inside the unit of work;
+//  3. the gateway refund LAST, immediately before commit — a gateway failure
+//     rolls everything back, so the books never say REFUNDED unless the
+//     gateway accepted the refund.
 func (s *PaymentService) RefundOrder(ctx context.Context, orderID uuid.UUID, actorID *uuid.UUID, reason string) error {
-	// YK-006 fail-closed: without a real gateway refund capability in
-	// production, refuse to mark an order REFUNDED (which would otherwise
-	// silently credit the wallet while the gateway keeps the funds).
+	// YK-006 fail-closed: refunds must be explicitly enabled
+	// (PAYMENT_REFUNDS_ENABLED=true in production).
 	if !s.refundsEnabled {
 		return fmt.Errorf("%w: refunds disabled in this environment (no certified gateway refund flow)", domain.ErrForbidden)
 	}
@@ -722,6 +729,24 @@ func (s *PaymentService) RefundOrder(ctx context.Context, orderID uuid.UUID, act
 	if err != nil {
 		return err
 	}
+	if order.Status == payment.OrderRefunded {
+		return fmt.Errorf("%w: order already refunded", domain.ErrConflict)
+	}
+	holds, err := uow.Escrow().GetByOrderID(ctx, orderID)
+	if err != nil {
+		return err
+	}
+	for _, h := range holds {
+		if h.Status == payment.EscrowReleased {
+			return fmt.Errorf("%w: escrow hold %s was already released for tutor payout — a full-order refund would over-refund; use the partial dispute refund instead",
+				domain.ErrConflict, h.ID)
+		}
+	}
+
+	// Gateway refund after all state checks, before any book mutation: an
+	// already-refunded order or released hold can never reach the gateway,
+	// and a gateway failure leaves the books untouched.
+	var refundedRefs []string
 	if pays, perr := uow.Payments().GetByOrderID(ctx, orderID); perr == nil {
 		for i := range pays {
 			p := pays[i]
@@ -732,33 +757,41 @@ func (s *PaymentService) RefundOrder(ctx context.Context, orderID uuid.UUID, act
 				if rerr := provider.Refund(*p.ProviderReference, p.Amount); rerr != nil {
 					return fmt.Errorf("gateway refund: %w", rerr)
 				}
+				refundedRefs = append(refundedRefs, *p.ProviderReference)
 			}
 		}
 	}
-	if order.Status == payment.OrderRefunded {
-		return fmt.Errorf("%w: order already refunded", domain.ErrConflict)
-	}
-	holds, err := uow.Escrow().GetByOrderID(ctx, orderID)
-	if err != nil {
-		return err
-	}
+
 	for _, h := range holds {
 		if h.Status != payment.EscrowHeld {
 			continue
 		}
 		if err := s.refundEscrowInUOW(ctx, uow, h.ID, actorID, reason); err != nil {
+			s.logRefundReconcile(orderID, refundedRefs, err)
 			return err
 		}
 	}
 	if err := uow.Orders().UpdateStatus(ctx, orderID, payment.OrderRefunded); err != nil {
+		s.logRefundReconcile(orderID, refundedRefs, err)
 		return err
 	}
 	if err := uow.Commit(ctx); err != nil {
+		s.logRefundReconcile(orderID, refundedRefs, err)
 		return err
 	}
 	_ = s.audit.LogStateChange(ctx, actorID, identity.AuditUpdate, "order",
-		&orderID, nil, map[string]any{"event": "refund", "reason": reason}, nil, nil)
+		&orderID, nil, map[string]any{"event": "refund", "reason": reason, "gateway_refs": refundedRefs}, nil, nil)
 	return nil
+}
+
+// logRefundReconcile — the gateway already accepted a refund but our books
+// failed to record it. Surface loudly for manual reconciliation.
+func (s *PaymentService) logRefundReconcile(orderID uuid.UUID, refs []string, err error) {
+	if len(refs) == 0 {
+		return
+	}
+	slog.Error("CRITICAL: gateway refund succeeded but book update failed — manual reconciliation required",
+		"order_id", orderID, "gateway_refs", refs, "error", err)
 }
 
 // RefundEscrow — dispute/refund path: escrow → REFUNDED, parent wallet
@@ -775,10 +808,32 @@ func (s *PaymentService) RefundEscrow(ctx context.Context, escrowHoldID uuid.UUI
 		return err
 	}
 	defer uow.Rollback()
+	hold, err := uow.Escrow().GetByID(ctx, escrowHoldID)
+	if err != nil {
+		return err
+	}
+	if hold.Status != payment.EscrowHeld {
+		return fmt.Errorf("%w: escrow hold %s is %s (not HELD)", domain.ErrConflict, hold.ID, hold.Status)
+	}
+	// Gateway partial refund of exactly this hold's amount, after the state
+	// check and before the book mutations: a gateway failure leaves the
+	// wallet and statuses untouched.
+	var gatewayRefs []string
+	if p, perr := uow.Payments().GetByID(ctx, hold.PaymentID); perr == nil &&
+		p.Status == payment.PaymentSuccess && p.ProviderReference != nil {
+		if provider, ok := s.providers[p.Provider]; ok {
+			if rerr := provider.Refund(*p.ProviderReference, hold.Amount); rerr != nil {
+				return fmt.Errorf("gateway refund: %w", rerr)
+			}
+			gatewayRefs = append(gatewayRefs, *p.ProviderReference)
+		}
+	}
 	if err := s.refundEscrowInUOW(ctx, uow, escrowHoldID, actorID, reason); err != nil {
+		s.logRefundReconcile(hold.OrderID, gatewayRefs, err)
 		return err
 	}
 	if err := uow.Commit(ctx); err != nil {
+		s.logRefundReconcile(hold.OrderID, gatewayRefs, err)
 		return err
 	}
 	return nil

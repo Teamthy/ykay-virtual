@@ -178,3 +178,28 @@ func (r *LeadsRepo) CountByStatus(ctx context.Context, status string) (int64, er
 }
 
 var _ leads.Repository = (*LeadsRepo)(nil)
+
+// ListOpenByIntent — NEW leads of an intent aged into the nudge window
+// (created_at <= olderThan AND created_at > newerThan), oldest first.
+func (r *LeadsRepo) ListOpenByIntent(ctx context.Context, intent string, olderThan, newerThan time.Time, limit int) ([]leads.Lead, error) {
+	if limit < 1 || limit > 500 {
+		limit = 100
+	}
+	rows, err := r.db.QueryContext(ctx, `SELECT `+leadColumns+` FROM leads
+		WHERE status = 'NEW' AND intent = $1
+		AND created_at <= $2 AND created_at > $3
+		ORDER BY created_at ASC LIMIT $4`, intent, olderThan, newerThan, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list open leads by intent: %w", err)
+	}
+	defer rows.Close()
+	out := []leads.Lead{}
+	for rows.Next() {
+		l, err := scanLead(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *l)
+	}
+	return out, rows.Err()
+}

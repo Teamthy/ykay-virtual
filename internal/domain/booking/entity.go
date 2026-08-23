@@ -80,12 +80,37 @@ type Cohort struct {
 	MeetingLinkTemplate *string      `json:"meeting_link_template,omitempty"`
 	CreatedBy           *uuid.UUID   `json:"created_by,omitempty"`
 	PublishedAt         *time.Time   `json:"published_at,omitempty"`
-	CreatedAt           time.Time    `json:"created_at"`
-	UpdatedAt           time.Time    `json:"updated_at"`
+	// Enrolment window (FR-25). NULL opens_at = open once published;
+	// NULL closes_at = open until end_date (mid-cohort join allowed).
+	EnrollmentOpensAt  *time.Time `json:"enrollment_opens_at,omitempty"`
+	EnrollmentClosesAt *time.Time `json:"enrollment_closes_at,omitempty"`
+	CreatedAt          time.Time  `json:"created_at"`
+	UpdatedAt          time.Time  `json:"updated_at"`
 }
 
 func (c *Cohort) IsFull() bool    { return c.EnrolledCount >= c.Capacity }
-func (c *Cohort) CanEnroll() bool { return c.Status == CohortPublished && !c.IsFull() }
+func (c *Cohort) CanEnroll() bool { return c.CanEnrollAt(time.Now().UTC()) }
+
+// EnrollmentWindowOpen — the time-based half of CanEnroll: published-status
+// and capacity are checked separately so callers can produce precise errors.
+func (c *Cohort) EnrollmentWindowOpen(now time.Time) bool {
+	if c.EnrollmentOpensAt != nil && now.Before(*c.EnrollmentOpensAt) {
+		return false
+	}
+	if c.EnrollmentClosesAt != nil && now.After(*c.EnrollmentClosesAt) {
+		return false
+	}
+	// Never enrol into a finished cohort (legacy rows keep end_date set).
+	if !c.EndDate.IsZero() && now.After(c.EndDate) {
+		return false
+	}
+	return true
+}
+
+// CanEnrollAt — full enrolment gate: published + seat available + window open.
+func (c *Cohort) CanEnrollAt(now time.Time) bool {
+	return c.Status == CohortPublished && !c.IsFull() && c.EnrollmentWindowOpen(now)
+}
 
 type CohortEnrollment struct {
 	ID               uuid.UUID        `json:"id"`

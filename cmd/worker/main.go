@@ -14,6 +14,7 @@ import (
 
 	"ykay-virtual/internal/config"
 	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/domain/leads"
 	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/logx"
@@ -60,6 +61,7 @@ type repos struct {
 	learning   learning.AssessmentRepository
 	devices    identity.DeviceRepository
 	users      identity.UserRepository
+	leadsRepo  leads.Repository
 }
 
 func main() {
@@ -98,6 +100,11 @@ func main() {
 	bookingSvc := service.NewBookingService(r.uowFactory, nil, nil, audit)
 	const pendingEnrollmentTTL = 2 * time.Hour
 
+	// Payment-abandon nudge (revenue recovery): one WhatsApp per stalled
+	// checkout, 45 min – 24 h after the order went PENDING unpaid.
+	const nudgeMinAge = 45 * time.Minute
+	const nudgeMaxAge = 24 * time.Hour
+
 	// --- Notification dispatch (G4): email/SMS/push adapters ---
 	pushSvc := service.NewPushService(r.devices, service.NewExpoPushSender(cfg.ExpoAccessToken))
 	dispatchSvc := service.NewDispatchService(
@@ -115,8 +122,13 @@ func main() {
 	redisClient := newRedisClient(cfg.RedisURL)
 	telemetry.RedisConnected(redisClient != nil)
 	cronLock := worker.NewCronLock(redisClient)
+	// leadSvc powers the payment-abandon WhatsApp nudge cron. With Redis the
+	// sends go through the durable send_whatsapp queue; without it they
+	// dispatch directly through the configured WhatsApp sender.
+	var leadSvc *service.LeadService
 	if redisClient != nil {
 		queue := worker.NewRedisQueue(redisClient)
+		leadSvc = service.NewLeadService(r.leadsRepo, service.NewNotifierService(queue, nil), r.users, audit)
 		queue.Register(worker.JobSendEmail, func(jctx context.Context, job worker.Job) error {
 			return dispatchSvc.HandleSendEmail(jctx, job.Payload)
 		})
@@ -168,6 +180,7 @@ func main() {
 		slog.Info("worker: durable Redis queue consuming (retry + dead-letter enabled)")
 	} else {
 		slog.Warn("worker: Redis unavailable — cron-only mode (no durable queue)")
+		leadSvc = service.NewLeadService(r.leadsRepo, service.NewNotifierService(nil, notification.NewWhatsAppSender()), r.users, audit)
 	}
 
 	// --- Cron scheduler ---
@@ -253,6 +266,18 @@ func main() {
 						telemetry.CronRun("expire_stale_pending_enrollments", true)
 						if n > 0 {
 							slog.Info("cron: expire_stale_pending_enrollments", "seats_released", n)
+						}
+					}
+					release()
+				}
+				if release, ok := cronLock.TryLock(ctx, "send_payment_nudges", 14*time.Minute); ok {
+					if n, nerr := leadSvc.SendPaymentNudges(ctx, cfg.SiteURL, nudgeMinAge, nudgeMaxAge, 100); nerr != nil {
+						slog.Error("cron: send_payment_nudges", "error", nerr)
+						telemetry.CronRun("send_payment_nudges", false)
+					} else {
+						telemetry.CronRun("send_payment_nudges", true)
+						if n > 0 {
+							slog.Info("cron: send_payment_nudges", "nudged", n)
 						}
 					}
 					release()
@@ -359,6 +384,7 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 			learning:   store.Learning,
 			devices:    memory.NewDeviceMemory(),
 			users:      store.Users,
+			leadsRepo:  store.Leads,
 		}
 	}
 	_ = ctx
@@ -369,6 +395,7 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 		learning:   postgres.NewAssessmentRepo(pg.DB()),
 		devices:    postgres.NewDeviceRepo(pg.DB()),
 		users:      postgres.NewUserRepo(pg.DB()),
+		leadsRepo:  postgres.NewLeadsRepo(pg.DB()),
 	}
 }
 
