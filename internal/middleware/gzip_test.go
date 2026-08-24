@@ -2,11 +2,13 @@ package middleware
 
 import (
 	"compress/gzip"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestGzip_CompressesLargeJSON(t *testing.T) {
@@ -102,4 +104,46 @@ func TestGzip_NeverCompressesImages(t *testing.T) {
 	if res.Header.Get("Content-Encoding") == "gzip" {
 		t.Fatal("already-compressed media must never be gzipped")
 	}
+}
+
+func TestGzip_NeverBuffersSSEStream(t *testing.T) {
+	srv := httptest.NewServer(Gzip(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, "event: message.new\ndata: {\"x\":1}\n\n")
+		if f, ok := w.(http.Flusher); ok {
+			f.Flush()
+		}
+		select { // hold the stream open a moment like a real SSE response
+		case <-r.Context().Done():
+		}
+	})))
+	defer srv.Close()
+
+	req, _ := http.NewRequest(http.MethodGet, srv.URL, nil)
+	req.Header.Set("Accept-Encoding", "gzip")
+	ctx, cancel := context.WithTimeout(req.Context(), 1500*time.Millisecond)
+	defer cancel()
+	req = req.WithContext(ctx)
+
+	res, err := srv.Client().Do(req)
+	if err != nil {
+		t.Fatalf("get: %v", err)
+	}
+	defer res.Body.Close()
+	if res.Header.Get("Content-Encoding") == "gzip" {
+		t.Fatal("SSE must never be gzipped/buffered")
+	}
+	buf := make([]byte, 64)
+	n, _ := io.ReadFull(res.Body, buf[:min(34, len(buf))])
+	if !strings.Contains(string(buf[:n]), "event:") {
+		t.Fatalf("SSE event must flush through immediately, got %q", buf[:n])
+	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

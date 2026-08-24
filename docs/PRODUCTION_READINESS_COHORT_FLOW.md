@@ -163,3 +163,31 @@ Verify-path invariants (all test-covered in `payment_verify_test.go`):
 - Amount **and** currency reconciliation identical to the webhook guards.
 - Gateway "pending"/"failed" is a truthful no-op — never an error, never a settle.
 - Unconfigured gateway secrets can NEVER report success (dev/e2e stubs return pending).
+
+## Realtime layer — Phase 5b (2026-08-24)
+
+Chat/notification latency drops from the next poll tick (was 10–15 s) to
+instant: `GET /api/v1/me/events` streams per-user **poke events**
+(`message.new`, `notification.new`) over SSE; clients invalidate their
+TanStack caches and refetch through the normal REST endpoints — realtime
+never carries data, so there is exactly one source of truth.
+
+| Piece | Where |
+|---|---|
+| Broker (per-instance hub + optional Redis pub/sub cross-instance fan-out) | `internal/realtime/broker.go` |
+| Publish point (recipient + sender's other tabs) | `internal/service/messaging_service.go` `SendMessage` |
+| SSE endpoint (25 s heartbeats, ~9 min recycle, session auth) | `internal/transport/http/events_handler.go` |
+| Client (one EventSource per signed-in tab; auto-reconnect; poll fallback 30–45 s) | `client/hooks/useRealtimeEvents.ts`, `RealtimeBridge` |
+| gzip exclusion for `text/event-stream` | `internal/middleware/gzip.go` |
+
+Invariants (test-covered):
+- Events never cross users (recipient-scoped hub, verified in broker + handler tests).
+- A slow subscriber can never block a publisher (non-blocking sends, drop-oldest).
+- Without Redis the hub is local-only — everything still works, polling covers other instances.
+- `realtime = nil` ⇒ the service behaves exactly as before (notification rows unchanged).
+- SSE is never gzipped/buffered; heartbeats keep proxies from idling the stream.
+
+Ops notes: no new env vars — the broker reuses the existing `REDIS_URL`
+connection. With Redis, events fan out across ALL API instances; without it,
+events reach only streams on the instance that handled the send (Render
+single instance = full effect either way).

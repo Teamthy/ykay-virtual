@@ -18,6 +18,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"ykay-virtual/internal/cache"
+	"ykay-virtual/internal/realtime"
 	"ykay-virtual/internal/config"
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/academics"
@@ -151,6 +152,16 @@ func main() {
 
 	// --- Cache: Redis real → InMemory fallback (AGENTS.md) ---
 	rawCache := setupCache(ctx, cfg.RedisURL)
+
+	// --- Phase 5b realtime: SSE event broker. Redis pub/sub fans events
+	// across API instances; without Redis the hub is local-only (events
+	// reach streams on this instance; clients always have poll fallback). ---
+	var realtimeRedis *goredis.Client
+	if rc, ok := rawCache.(*cache.RedisCache); ok {
+		realtimeRedis = rc.Raw()
+	}
+	eventBroker := realtime.NewBroker(realtimeRedis)
+	defer eventBroker.Close()
 
 	// --- Object storage: real S3/MinIO when configured, local otherwise.
 	// In dev the guard wraps the SAME LocalStorage instance that serves the
@@ -304,7 +315,8 @@ func main() {
 	messagingSvc := service.NewMessagingService(
 		repos.Conversations, repos.Messages, repos.Notifications,
 		repos.PrivatePackages, repos.Cohorts, nil).
-		WithContactDeps(repos.Vetting, repos.Enrollments, repos.Students, repos.Users)
+		WithContactDeps(repos.Vetting, repos.Enrollments, repos.Students, repos.Users).
+		WithRealtime(eventBroker) // Phase 5b: instant message pokes
 	dashboardSvc := service.NewDashboardService(
 		repos.Orders, repos.Escrow, repos.Payouts, repos.Lessons)
 	lessonSvc := service.NewLessonService(repos.Lessons, repos.Attendance, repos.LessonNotes,
@@ -456,6 +468,7 @@ func main() {
 		LessonOps:      httpapi.NewLessonOpsHandler(lessonSvc),
 		Meeting:        httpapi.NewMeetingHandler(meetingSvc, profileAuthz),
 		Chat:           chatHandler,
+		Events:         httpapi.NewEventsHandler(eventBroker),
 		Devices:        deviceHandler,
 		Account:        accountHandler,
 		Leads:          httpapi.NewLeadsHandler(leadsSvc),

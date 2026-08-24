@@ -307,6 +307,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/attendance-summary", handlers.Portal.AttendanceSummary)
 	mux.HandleFunc("GET "+v1+"/me/orders/{orderId}", handlers.Portal.OrderReceipt)
 	mux.HandleFunc("POST "+v1+"/me/orders/{orderId}/verify", handlers.Payments.VerifyOrder)
+	// Phase 5b realtime: the user's SSE event stream (message.new pokes).
+	mux.HandleFunc("GET "+v1+"/me/events", handlers.Events.Stream)
 
 	// Onboarding (Phase 10b)
 	mux.HandleFunc("POST "+v1+"/me/learners", handlers.Onboarding.CreateLearner)
@@ -448,6 +450,7 @@ type Handlers struct {
 	LessonOps       *LessonOpsHandler
 	Meeting         *MeetingHandler
 	Chat            *ChatHandler
+	Events          *EventsHandler
 	Devices         *DeviceHandler
 	Account         *AccountHandler
 	Leads           *LeadsHandler

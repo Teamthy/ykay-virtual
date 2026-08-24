@@ -36,6 +36,15 @@ type MessagingService struct {
 	enrollments   booking.CohortEnrollmentRepository
 	students      identity.StudentProfileRepository
 	users         identity.UserRepository
+	// realtime — Phase 5b live pokes (optional; polling remains the
+	// fallback). Nil ⇒ behaviour is exactly the pre-realtime service.
+	realtime RealtimePoker
+}
+
+// RealtimePoker — implemented by realtime.Broker; kept as an interface so
+// the service stays testable with a fake.
+type RealtimePoker interface {
+	UserEvent(ctx context.Context, userID uuid.UUID, eventType, conversationID, messageID string)
 }
 
 // displayNameReader resolves user display names for notification bodies.
@@ -221,6 +230,16 @@ func (s *MessagingService) SendMessage(ctx context.Context, in SendMessageInput)
 			Body:   &body,
 			Data:   strPtr(string(data)),
 		})
+		// Phase 5b: poke the recipient's open SSE stream so their message
+		// center refreshes instantly instead of on the next poll tick.
+		// Fire-and-forget — a missing stream just means polling continues.
+		if s.realtime != nil {
+			s.realtime.UserEvent(ctx, p.UserID, "message.new", in.ConversationID.String(), msg.ID.String())
+		}
+	}
+	// The sender's other tabs/windows stay in sync too.
+	if s.realtime != nil {
+		s.realtime.UserEvent(ctx, in.SenderUserID, "message.new", in.ConversationID.String(), msg.ID.String())
 	}
 	return msg, nil
 }
@@ -314,6 +333,14 @@ func (s *MessagingService) WithContactDeps(
 	s.enrollments = enrollments
 	s.students = students
 	s.users = users
+	return s
+}
+
+// WithRealtime — wires the Phase 5b live-event broker. When set, a sent
+// message pokes every participant's open SSE stream instantly (polling
+// remains as the fallback path).
+func (s *MessagingService) WithRealtime(p RealtimePoker) *MessagingService {
+	s.realtime = p
 	return s
 }
 

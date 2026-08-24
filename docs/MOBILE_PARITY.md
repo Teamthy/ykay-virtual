@@ -99,3 +99,8 @@ total for the domain).
 - **Payment verify (server-side)** — `POST /me/orders/{id}/verify` settles a
   paid order without waiting for the webhook. The web receipt auto-verifies on
   landing; mobile order detail can adopt the same call.
+
+- **Realtime events (2026-08-24, web-first)** — `GET /api/v1/me/events` SSE
+  stream live on web (message/notification pokes; Redis pub/sub fan-out).
+  Mobile messages screens still refresh on focus; an EventSource polyfill
+  (react-native-sse) can adopt the same endpoint in a later batch.

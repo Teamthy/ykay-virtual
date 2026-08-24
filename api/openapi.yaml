@@ -2405,6 +2405,24 @@ paths:
         '200': { description: Receipt }
         '403': { description: Not the order owner }
 
+  /me/events:
+    get:
+      tags: [portals]
+      summary: Realtime SSE stream — the authenticated user's live events (Phase 5b)
+      description: >
+        Server-Sent Events. Emits named events ("message.new", "notification.new")
+        as tiny pokes; clients refetch via the normal REST endpoints. 25s
+        heartbeats; the stream recycles after ~9 minutes and EventSource
+        reconnects automatically. Requires the session cookie like every /me
+        route. Falls back gracefully: without this stream, clients still poll.
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: text/event-stream
+          content:
+            text/event-stream:
+              schema: { type: string }
+
   /me/orders/{orderId}/verify:
     post:
       tags: [payments]

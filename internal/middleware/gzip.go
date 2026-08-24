@@ -54,6 +54,12 @@ func (g *gzipResponseWriter) decide() {
 	if i := strings.IndexByte(base, ';'); i >= 0 {
 		base = strings.TrimSpace(base[:i])
 	}
+	// SSE streams must NEVER be buffered/compressed — they are long-lived
+	// incremental pushes (Phase 5b realtime); buffering breaks liveness.
+	if strings.HasPrefix(base, "text/event-stream") {
+		g.flushSniffRaw()
+		return
+	}
 	compressible := false
 	for _, p := range compressiblePrefixes {
 		if strings.HasPrefix(base, p) {

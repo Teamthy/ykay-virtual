@@ -33,7 +33,9 @@ export function MessageCenter() {
     queryFn: () => listConversations(),
     enabled: !!currentUserId,
     staleTime: 30_000,
-    refetchInterval: 15_000, // dev polling; Redis pub/sub in prod
+    // Phase 5b: realtime SSE pokes refresh this instantly; this slower poll
+    // is the fallback for environments where the stream cannot connect.
+    refetchInterval: 45_000,
   });
 
   const messages = useQuery({
@@ -41,7 +43,7 @@ export function MessageCenter() {
     queryFn: () => (selected ? listMessages(selected) : Promise.resolve([])),
     enabled: !!selected,
     staleTime: 10_000,
-    refetchInterval: 10_000,
+    refetchInterval: 30_000, // fallback — realtime covers the instant case
   });
 
   // Envelope-normalised data (apiFetch returns {data, meta}; a fresh account
