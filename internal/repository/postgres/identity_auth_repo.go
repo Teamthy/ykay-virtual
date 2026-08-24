@@ -128,6 +128,29 @@ func (r *UserRepo) Update(ctx context.Context, u *identity.User) error {
 	return nil
 }
 
+// ListCreatedBetween — drip sweep window [from, to), oldest-first.
+func (r *UserRepo) ListCreatedBetween(ctx context.Context, from, to time.Time, limit int) ([]identity.User, error) {
+	if limit < 1 {
+		limit = 100
+	}
+	rows, err := r.db.QueryContext(ctx, `SELECT `+userColumns+`
+		FROM users WHERE created_at >= $1 AND created_at < $2
+		ORDER BY created_at ASC LIMIT $3`, from, to, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list users created between: %w", err)
+	}
+	defer rows.Close()
+	out := []identity.User{}
+	for rows.Next() {
+		u, err := scanUser(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *u)
+	}
+	return out, rows.Err()
+}
+
 func (r *UserRepo) UpdateLastLogin(ctx context.Context, id uuid.UUID, at time.Time) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE users SET last_login_at = $1, updated_at = NOW() WHERE id = $2", at, id)

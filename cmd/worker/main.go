@@ -62,6 +62,9 @@ type repos struct {
 	devices    identity.DeviceRepository
 	users      identity.UserRepository
 	leadsRepo  leads.Repository
+	orders     payment.OrderRepository
+	dripRepo   identity.EmailDripRepository
+	roleRepo   identity.RoleRepository
 }
 
 func main() {
@@ -185,7 +188,20 @@ func main() {
 		WithEmail(notification.NewEmailSender())
 	}
 
+	// Onboarding email drip (000062) — welcome + conversion nudges. Gated on
+	// a real email transport so dev/console workers skip it entirely.
+	var dripSvc *service.DripService
+	if os.Getenv("RESEND_API_KEY") != "" || os.Getenv("SMTP_HOST") != "" {
+		dripSvc = service.NewDripService(r.users, r.roleRepo, r.orders, r.dripRepo,
+			notification.NewEmailSender(), cfg.SiteURL)
+		slog.Info("drip: onboarding email sequence enabled")
+	} else {
+		slog.Info("drip: email not configured — onboarding drip disabled")
+	}
+
 	// --- Cron scheduler ---
+	dripTicker := time.NewTicker(30 * time.Minute)
+	defer dripTicker.Stop()
 	expireTicker := time.NewTicker(15 * time.Minute)
 	defer expireTicker.Stop()
 	payoutTicker := time.NewTicker(7 * 24 * time.Hour)
@@ -233,6 +249,25 @@ func main() {
 			select {
 			case <-ctx.Done():
 				return
+			case <-dripTicker.C:
+				if dripSvc != nil {
+					if release, ok := cronLock.TryLock(ctx, "send_onboarding_drip", 25*time.Minute); ok {
+						total := 0
+						for _, step := range service.OnboardingDripSteps {
+							if n, derr := dripSvc.SendOnboardingStep(ctx, step, 100); derr != nil {
+								slog.Error("cron: send_onboarding_drip", "step", step.Step, "error", derr)
+								telemetry.CronRun("send_onboarding_drip", false)
+							} else {
+								total += n
+							}
+						}
+						telemetry.CronRun("send_onboarding_drip", true)
+						if total > 0 {
+							slog.Info("cron: send_onboarding_drip", "sent", total)
+						}
+						release()
+					}
+				}
 			case <-expireTicker.C:
 				// A-09: leader election — only one replica runs each tick.
 				if release, ok := cronLock.TryLock(ctx, "expire_stale_booking_holds", 14*time.Minute); ok {
@@ -387,6 +422,9 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 			devices:    memory.NewDeviceMemory(),
 			users:      store.Users,
 			leadsRepo:  store.Leads,
+			orders:     store.Orders,
+			dripRepo:   memory.NewEmailDripMemory(),
+			roleRepo:   store.Roles,
 		}
 	}
 	_ = ctx
@@ -398,6 +436,9 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 		devices:    postgres.NewDeviceRepo(pg.DB()),
 		users:      postgres.NewUserRepo(pg.DB()),
 		leadsRepo:  postgres.NewLeadsRepo(pg.DB()),
+		orders:     postgres.NewOrderRepo(pg.DB()),
+		dripRepo:   postgres.NewEmailDripRepo(pg.DB()),
+		roleRepo:   postgres.NewRoleRepo(pg.DB()),
 	}
 }
 

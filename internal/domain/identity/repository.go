@@ -28,6 +28,10 @@ type UserRepository interface {
 	// SetStatus activates/suspends a user account. Returns ErrNotFound when the
 	// user does not exist.
 	SetStatus(ctx context.Context, id uuid.UUID, status string) error
+	// ListCreatedBetween returns users whose account was created in
+	// [from, to) — the onboarding email-drip sweep window (000062). Ordered
+	// oldest-first so a limited sweep prioritises the longest-waiting.
+	ListCreatedBetween(ctx context.Context, from, to time.Time, limit int) ([]User, error)
 }
 
 type SessionRepository interface {

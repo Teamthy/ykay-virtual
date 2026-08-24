@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -104,6 +105,43 @@ func (m *UserMemory) Update(_ context.Context, u *identity.User) error {
 	m.rows[u.ID] = u
 	m.byEmail[u.Email] = u
 	return nil
+}
+
+// ListCreatedBetween — drip sweep window; oldest-first.
+func (m *UserMemory) ListCreatedBetween(_ context.Context, from, to time.Time, limit int) ([]identity.User, error) {
+	if limit < 1 {
+		limit = 100
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	out := []identity.User{}
+	ids := make([]uuid.UUID, 0, len(m.rows))
+	for id := range m.rows {
+		ids = append(ids, id)
+	}
+	sort.Slice(ids, func(i, j int) bool { return m.rows[ids[i]].CreatedAt.Before(m.rows[ids[j]].CreatedAt) })
+	for _, id := range ids {
+		u := m.rows[id]
+		// window is [from, to): created at/after from and strictly before to
+		if u.CreatedAt.Before(from) || !u.CreatedAt.Before(to) {
+			continue
+		}
+		out = append(out, *u)
+		if len(out) >= limit {
+			break
+		}
+	}
+	return out, nil
+}
+
+// BackdateCreated — test helper: force CreatedAt (drip-window tests).
+func (m *UserMemory) BackdateCreated(id uuid.UUID, at time.Time) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if u, ok := m.rows[id]; ok {
+		u.CreatedAt = at
+		m.rows[id] = u
+	}
 }
 
 func (m *UserMemory) UpdateLastLogin(_ context.Context, id uuid.UUID, at time.Time) error {

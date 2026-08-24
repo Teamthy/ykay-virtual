@@ -191,3 +191,13 @@ Ops notes: no new env vars — the broker reuses the existing `REDIS_URL`
 connection. With Redis, events fan out across ALL API instances; without it,
 events reach only streams on the instance that handled the send (Render
 single instance = full effect either way).
+
+## Onboarding email drip (2026-08-25, migration 000062)
+
+Three-step lifecycle sequence, driven by the `send_onboarding_drip` worker
+cron (30 min): **welcome** (0–24 h), **first-booking nudge** (2–4 d, only if
+no PAID order), **last nudge** (7–14 d, only if no PAID order). Sent-once is
+enforced in storage (`UNIQUE(user_id, sequence, step)` on `email_drips`) —
+crashed-cron retries can never double-send. Audience: verified + active +
+non-tutor. Disabled entirely unless `RESEND_API_KEY`/`SMTP_*` is set on the
+worker (no console-email drips in dev). Tests: `drip_service_test.go`.
