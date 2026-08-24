@@ -13,6 +13,8 @@ import { qk } from "@/lib/queryClient";
 import { loginWithReturn } from "@/lib/safe-next";
 import { createCohortBooking, initiatePayment, validateCoupon, type CouponValidation } from "@/features/bookings/api/create";
 import { verifyOrder } from "@/features/portal/api";
+import { abVariant } from "@/lib/ab";
+import { trackEvent } from "@/lib/analytics";
 import { listLearners } from "@/features/onboarding/api";
 import { useSession } from "@/hooks/useSession";
 import { useQuery } from "@tanstack/react-query";
@@ -92,6 +94,8 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
       },
     },
     onSubmit: async ({ value }) => {
+      const ab = abVariant("checkout-copy");
+      trackEvent("begin_checkout", { ab, cohort: cohort.id });
       setStep({ name: "creating" });
       try {
         const booking = await createBooking.mutateAsync({
@@ -114,6 +118,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
           callback_url: `/receipts/${booking.order.id}`,
         });
         setStep({ name: "link", booking, payment });
+        trackEvent("payment_link", { ab, provider: payment.provider });
         toast.success("Order created — opening the payment page");
         if (payment.payment_link) {
           window.location.assign(payment.payment_link);
@@ -415,7 +420,9 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                 ? "Processing…"
                 : !window_.open
                   ? (window_.reason ?? "Enrolment closed")
-                  : "Pay securely now"}
+                  : abVariant("checkout-copy") === "b"
+                    ? "Secure my seat now"
+                    : "Pay securely now"}
             </Button>
           )}
         </form.Subscribe>

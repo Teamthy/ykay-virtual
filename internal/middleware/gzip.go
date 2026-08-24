@@ -32,11 +32,11 @@ var compressiblePrefixes = []string{
 
 type gzipResponseWriter struct {
 	http.ResponseWriter
-	decided  bool
-	gz       *gzip.Writer
-	sniff    []byte
-	wroteGz  bool
-	status   int
+	decided bool
+	gz      *gzip.Writer
+	sniff   []byte
+	wroteGz bool
+	status  int
 }
 
 func (g *gzipResponseWriter) WriteHeader(code int) {

@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { getOrderReceipt, verifyOrder } from "@/features/portal/api";
+import { trackEvent } from "@/lib/analytics";
 import { NuvoraReceipt } from "@/components/receipt/NuvoraReceipt";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 
@@ -25,6 +26,16 @@ export default function ReceiptPage() {
   });
 
   const status = q.data?.order.status;
+
+  // Funnel goal: the receipt observed a paid order (fires once per page
+  // view — the ref guard keeps effect re-runs from double-counting).
+  const paidTracked = useRef(false);
+  useEffect(() => {
+    if (status !== "PAID" && status !== "COMPLETED") return;
+    if (paidTracked.current) return;
+    paidTracked.current = true;
+    trackEvent("receipt_paid");
+  }, [status]);
 
   // F-3: the moment a PENDING receipt renders, ask the API to verify against
   // the gateway directly — don't sit waiting for a possibly-lost webhook.

@@ -43,12 +43,24 @@ func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 // RemoteAddr, collapsing all users into one rate-limit bucket (the "many users
 // on the same IP" problem). In direct/dev mode X-Forwarded-For is ignored so a
 // caller cannot forge a fresh bucket.
+//
+// TRUST_CF_IP=true (requires TRUST_PROXY=true) — a CDN such as Cloudflare
+// sits in front. XFF's leftmost entry is then CLIENT-CONTROLLED (a caller
+// can send their own XFF and CF appends to it), which would let anyone mint
+// fresh rate-limit buckets. CF-Connecting-IP is stripped from inbound
+// requests by Cloudflare and stamped with the true client address, so it is
+// preferred unconditionally when this flag is on.
 func clientIP(r *http.Request) string {
 	ip := r.RemoteAddr
 	if host, _, err := net.SplitHostPort(ip); err == nil {
 		ip = host
 	}
 	if os.Getenv("TRUST_PROXY") == "true" {
+		if os.Getenv("TRUST_CF_IP") == "true" {
+			if cf := strings.TrimSpace(r.Header.Get("CF-Connecting-IP")); cf != "" {
+				return cf
+			}
+		}
 		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
 			// XFF may be a comma-separated chain: client, proxy1, proxy2.
 			first, _, _ := strings.Cut(xff, ",")

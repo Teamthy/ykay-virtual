@@ -405,12 +405,47 @@ func cache60(h http.HandlerFunc) http.Handler {
 	return middleware.PublicCacheForAnonymous(60)(h)
 }
 
+// privateNoStorePrefixes — CDN defense-in-depth: every user-scoped or
+// mutating API area gets Cache-Control: no-store so no shared cache can
+// ever store one user's data, even under a misconfigured "Cache Everything"
+// rule. Public catalogue handlers (cache60) deliberately re-stamp public
+// for anonymous reads on the same prefixes. See docs/CDN_SETUP.md.
+func privateNoStorePrefixes(v1 string) []string {
+	return []string{
+		v1 + "/me",
+		v1 + "/auth",
+		v1 + "/admin",
+		v1 + "/payments",
+		v1 + "/chat",
+		v1 + "/learning",
+		v1 + "/lessons",
+		v1 + "/tutor",
+		v1 + "/tutors/me",
+		v1 + "/tutors/banks",
+		v1 + "/private-tuition",
+		v1 + "/bookings",
+		v1 + "/coupons",
+		v1 + "/certificates",
+		v1 + "/admissions",
+		v1 + "/referrals",
+		v1 + "/reviews",
+		v1 + "/institutions",
+		v1 + "/support",
+		v1 + "/leads",
+		v1 + "/notifications",
+		v1 + "/devices",
+		v1 + "/objects",
+	}
+}
+
 func (rt *Router) Handler() http.Handler {
 	var h http.Handler = rt.mux
 	h = telemetry.DefaultMetrics().Middleware(h)
 	// F-4: transparent gzip for compressible JSON responses (3–6× faster on
 	// mobile networks). See internal/middleware/gzip.go.
 	h = middleware.Gzip(h)
+	// CDN defense-in-depth: private paths are explicitly no-store.
+	h = middleware.NewPrivateNoStore(privateNoStorePrefixes("/api/v1")).Middleware(h)
 	h = middleware.Logger(h)
 	h = middleware.Recover(h)
 	h = middleware.RequestID(h)
