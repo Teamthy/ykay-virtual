@@ -12,6 +12,7 @@ import (
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/leads"
+	"ykay-virtual/internal/notification"
 
 	"github.com/google/uuid"
 )
@@ -25,7 +26,17 @@ type LeadService struct {
 	notifier *NotifierService
 	users    identity.UserRepository
 	audit    identity.AuditService
-	now      func() time.Time
+	// mail — optional email fallback for nudges when WhatsApp cannot reach
+	// the lead (no phone on file and no user record with a number).
+	mail notification.EmailSender
+	now  func() time.Time
+}
+
+// WithEmail wires the email fallback for payment-abandon nudges. Without it
+// the nudge stays WhatsApp-only (previous behaviour).
+func (s *LeadService) WithEmail(mail notification.EmailSender) *LeadService {
+	s.mail = mail
+	return s
 }
 
 // dedupeWindow — repeat captures for the same person+intent+source inside
@@ -293,9 +304,10 @@ func trimMsg(m *string) *string {
 }
 
 // SendPaymentNudges — payment-abandon recovery. Every ENROLLMENT_STARTED lead
-// still NEW after minAge (payer stalled at the gateway) gets ONE WhatsApp
-// nudge with a link back to the checkout, then flips to CONTACTED so it is
-// never nudged twice (the ops funnel keeps working from CONTACTED onwards).
+// still NEW after minAge (payer stalled at the gateway) gets ONE nudge with a
+// link back to the checkout — WhatsApp first; email fallback when WhatsApp
+// cannot reach the lead (WithEmail) — then flips to CONTACTED so it is never
+// nudged twice (the ops funnel keeps working from CONTACTED onwards).
 // Leads older than maxAge are left for manual follow-up (intent gone cold).
 // The checkout link survives seat-expiry: re-booking revives the enrollment.
 func (s *LeadService) SendPaymentNudges(ctx context.Context, siteURL string, minAge, maxAge time.Duration, limit int) (int, error) {
@@ -311,9 +323,6 @@ func (s *LeadService) SendPaymentNudges(ctx context.Context, siteURL string, min
 	sent := 0
 	for i := range stale {
 		l := stale[i]
-		if (l.Phone == nil || strings.TrimSpace(*l.Phone) == "") && l.UserID == nil {
-			continue // no way to reach this lead on WhatsApp
-		}
 		link := base + "/cohorts"
 		if l.CohortID != nil {
 			link = base + "/checkout/" + l.CohortID.String()
@@ -322,12 +331,51 @@ func (s *LeadService) SendPaymentNudges(ctx context.Context, siteURL string, min
 		if first == "" || first == "Enrolling" {
 			first = "there"
 		}
-		body := "Hi " + first + " 👋 — your NUVORA enrolment is one step from done. " +
-			"Your seat is reserved but unpaid; complete payment here to secure it:\n" + link +
-			"\n\nNeed help or a different payment method? Just reply to this message."
-		if err := s.notifier.NotifyUser(ctx, l.Phone, l.UserID, body); err != nil {
-			slog.Error("payment nudge send failed", "lead_id", l.ID, "error", err)
-			continue // leave NEW so the next tick retries
+
+		// Channel selection: WhatsApp first (highest open rates in our
+		// market), email as the fallback when WhatsApp cannot reach the
+		// lead — no phone AND no user record, or the WhatsApp send failed.
+		// Exactly ONE nudge is ever delivered: the first channel that
+		// succeeds flips the lead NEW → CONTACTED.
+		channel := ""
+		var sendErr error
+		whatsappReachable := (l.Phone != nil && strings.TrimSpace(*l.Phone) != "") || l.UserID != nil
+		if whatsappReachable {
+			body := "Hi " + first + " 👋 — your NUVORA enrolment is one step from done. " +
+				"Your seat is reserved but unpaid; complete payment here to secure it:\n" + link +
+				"\n\nNeed help or a different payment method? Just reply to this message."
+			if err := s.notifier.NotifyUser(ctx, l.Phone, l.UserID, body); err != nil {
+				sendErr = err
+				slog.Error("payment nudge whatsapp failed", "lead_id", l.ID, "error", err)
+			} else {
+				channel = "whatsapp"
+			}
+		}
+		if channel == "" && s.mail != nil && l.Email != nil && strings.TrimSpace(*l.Email) != "" {
+			subject := first + ", your NUVORA seat is waiting 🎓"
+			body := notification.BrandEmail(
+				`<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Your seat is one step from secured</h1>`+
+					`<p style="margin:0 0 12px;">Hi `+first+`,</p>`+
+					`<p style="margin:0 0 16px;">You started enrolling in a NUVORA cohort but the payment step is still open. `+
+					`Your seat is reserved for a short while — complete payment to secure it:</p>`+
+					`<p style="margin:0 0 16px;"><a href="`+link+`" style="display:inline-block;background:#013920;color:#f7d774;`+
+					`padding:12px 24px;border-radius:9999px;font-weight:700;text-decoration:none;">Complete my enrolment</a></p>`+
+					`<p style="margin:0 0 6px;color:#555;">Questions, or prefer a different payment method? Just reply to this email.</p>`+
+					`<p style="margin:0;color:#555;">— the NUVORA team</p>`)
+			if err := s.mail.Send(ctx, strings.TrimSpace(*l.Email), subject, body); err != nil {
+				sendErr = err
+				slog.Error("payment nudge email failed", "lead_id", l.ID, "error", err)
+			} else {
+				channel = "email"
+			}
+		}
+		if channel == "" {
+			if sendErr == nil {
+				// Neither channel configured for this lead (no phone, no
+				// user, no email) — skip silently, leave NEW.
+				continue
+			}
+			continue // send failed on the available channel — leave NEW so the next tick retries
 		}
 		if err := s.repo.UpdateStatus(ctx, l.ID, leads.StatusContacted, now); err != nil {
 			slog.Error("payment nudge status update failed", "lead_id", l.ID, "error", err)
@@ -336,7 +384,7 @@ func (s *LeadService) SendPaymentNudges(ctx context.Context, siteURL string, min
 		if s.audit != nil {
 			_ = s.audit.LogStateChange(ctx, nil, identity.AuditUpdate, "lead", &l.ID,
 				map[string]any{"status": leads.StatusNew},
-				map[string]any{"status": leads.StatusContacted, "reason": "payment_abandon_nudge", "cohort_id": l.CohortID},
+				map[string]any{"status": leads.StatusContacted, "reason": "payment_abandon_nudge", "channel": channel, "cohort_id": l.CohortID},
 				nil, nil)
 		}
 		sent++

@@ -114,7 +114,7 @@ payment stays PENDING) + tests for reject and accept paths.
 | ~~P3~~ ✅ | ~~Reschedule/cancellation self-service (FR-23)~~ | DONE (2026-08-23): `POST /lessons/{id}/reschedule` + `/cancel` (tutor own lesson or admin, double-booking guarded, COMPLETED/CANCELLED immutable) + tutor console UI; cancelled lessons free the calendar slot. |
 | ~~P3~~ ✅ | ~~Upload malware scanning~~ | DONE (2026-08-23): scanner (signatures + zip-bomb + fail-closed ClamAV via `CLAMAV_ADDR`) already existed but only covered avatars — now every upload through UploadGuard is scanned BEFORE storing, fail-closed. |
 | P3 | Recorded-lesson library & transcripts | Future virtual-school phase (already in the roadmap docs). |
-| ~~P3~~ ✅ | ~~Payment-abandon nudge~~ | DONE (2026-08-23): `send_payment_nudges` worker cron — one WhatsApp per stalled checkout (45 min–24 h), lead flips NEW→CONTACTED, never double-sends. |
+| ~~P3~~ ✅ | ~~Payment-abandon nudge~~ | DONE (2026-08-23): `send_payment_nudges` worker cron — one WhatsApp per stalled checkout (45 min–24 h), lead flips NEW→CONTACTED, never double-sends. **2026-08-24: email fallback** — leads WhatsApp can't reach (no phone/user, or a send failure) get one branded email instead (`RESEND_API_KEY`/`SMTP_*` on the worker); channel recorded in the lead audit trail. |
 
 ## 5. Production-readiness verdict — cohort → enrolment → payment → student/tutor
 

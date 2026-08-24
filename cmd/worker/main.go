@@ -128,7 +128,8 @@ func main() {
 	var leadSvc *service.LeadService
 	if redisClient != nil {
 		queue := worker.NewRedisQueue(redisClient)
-		leadSvc = service.NewLeadService(r.leadsRepo, service.NewNotifierService(queue, nil), r.users, audit)
+		leadSvc = service.NewLeadService(r.leadsRepo, service.NewNotifierService(queue, nil), r.users, audit).
+			WithEmail(notification.NewEmailSender()) // nudge fallback when WhatsApp cannot reach the lead
 		queue.Register(worker.JobSendEmail, func(jctx context.Context, job worker.Job) error {
 			return dispatchSvc.HandleSendEmail(jctx, job.Payload)
 		})
@@ -180,7 +181,8 @@ func main() {
 		slog.Info("worker: durable Redis queue consuming (retry + dead-letter enabled)")
 	} else {
 		slog.Warn("worker: Redis unavailable — cron-only mode (no durable queue)")
-		leadSvc = service.NewLeadService(r.leadsRepo, service.NewNotifierService(nil, notification.NewWhatsAppSender()), r.users, audit)
+		leadSvc = service.NewLeadService(r.leadsRepo, service.NewNotifierService(nil, notification.NewWhatsAppSender()), r.users, audit).
+		WithEmail(notification.NewEmailSender())
 	}
 
 	// --- Cron scheduler ---
