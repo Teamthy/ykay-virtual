@@ -154,6 +154,8 @@ func WriteAppError(w http.ResponseWriter, err error) {
 		pkg.WriteError(w, http.StatusConflict, string(pkg.CodeConflict), err.Error(), nil)
 	case errors.Is(err, domain.ErrInvalidInput), errors.Is(err, domain.ErrInvalidSignature):
 		pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), err.Error(), nil)
+	case errors.Is(err, domain.ErrTooManyRequests):
+		pkg.WriteError(w, http.StatusTooManyRequests, string(pkg.CodeTooManyRequests), err.Error(), nil)
 	default:
 		// Log the real cause server-side (5xx visibility) without leaking it
 		// to the client.

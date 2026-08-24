@@ -15,6 +15,7 @@ var (
 	ErrInvalidInput        = errors.New("invalid input")
 	ErrUnauthorized        = errors.New("unauthorized")
 	ErrForbidden           = errors.New("forbidden")
+	ErrTooManyRequests     = errors.New("too many requests")
 	ErrAlreadyExists       = errors.New("resource already exists")
 	ErrCapacityFull        = errors.New("capacity full")
 	ErrNotPublished        = errors.New("resource not published")

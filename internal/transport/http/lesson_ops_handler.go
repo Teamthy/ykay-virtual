@@ -193,6 +193,32 @@ func (h *LessonOpsHandler) SetRecordedVideo(w http.ResponseWriter, r *http.Reque
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"lesson_id": lessonID, "video_url": req.VideoURL}, nil)
 }
 
+// SetLessonTranscript — POST /lessons/{lessonId}/transcript (tutor-of-cohort
+// or admin). Body: {"transcript": "…"} — empty string clears it.
+func (h *LessonOpsHandler) SetLessonTranscript(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	lessonID, err := uuid.Parse(r.PathValue("lessonId"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("lessonId must be a valid UUID", nil))
+		return
+	}
+	var req struct {
+		Transcript *string `json:"transcript"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetLessonTranscript(r.Context(), actor.UserID, actor.IsAdmin, lessonID, req.Transcript); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"lesson_id": lessonID, "saved": true}, nil)
+}
+
 // RescheduleLesson — POST /api/v1/lessons/{lessonId}/reschedule (FR-23).
 // The lesson's tutor or an admin moves the lesson; double-booking guarded.
 func (h *LessonOpsHandler) RescheduleLesson(w http.ResponseWriter, r *http.Request) {

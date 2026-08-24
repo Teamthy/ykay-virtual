@@ -37,10 +37,10 @@ func NewLessonRepo(db TxQuerier) *LessonRepo { return &LessonRepo{db: db} }
 func scanLessonRow(row interface{ Scan(...any) error }) (*booking.Lesson, error) {
 	var l booking.Lesson
 	var cohortID, pkgID, locID, createdBy uuidNull
-	var desc, meetingURL, videoURL sql.NullString
+	var desc, meetingURL, videoURL, transcript sql.NullString
 	if err := row.Scan(&l.ID, &cohortID, &pkgID, &l.TutorProfileID, &l.Title, &desc,
 		&l.StartAt, &l.EndAt, &l.Timezone, &meetingURL, &l.MeetingProvider, &locID,
-		&l.Status, &createdBy, &l.CreatedAt, &l.UpdatedAt, &videoURL); err != nil {
+		&l.Status, &createdBy, &l.CreatedAt, &l.UpdatedAt, &videoURL, &transcript); err != nil {
 		return nil, err
 	}
 	if cohortID.Valid {
@@ -64,6 +64,9 @@ func scanLessonRow(row interface{ Scan(...any) error }) (*booking.Lesson, error)
 	if videoURL.Valid {
 		l.VideoURL = &videoURL.String
 	}
+	if transcript.Valid {
+		l.Transcript = &transcript.String
+	}
 	return &l, nil
 }
 
@@ -74,7 +77,7 @@ func (r *LessonRepo) ListByStudent(ctx context.Context, studentProfileID uuid.UU
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT DISTINCT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
-			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+			l.status, l.created_by, l.created_at, l.updated_at, l.video_url, l.transcript
 		FROM lessons l
 		JOIN lesson_participants lp ON lp.lesson_id = l.id
 		WHERE lp.student_profile_id = $1
@@ -101,7 +104,7 @@ func (r *LessonRepo) ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, 
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
-			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+			l.status, l.created_by, l.created_at, l.updated_at, l.video_url, l.transcript
 		FROM lessons l
 		WHERE l.tutor_profile_id = $1 ORDER BY l.start_at DESC LIMIT $2`, tutorProfileID, limit)
 	if err != nil {
@@ -152,6 +155,15 @@ func (r *LessonRepo) SetVideoURL(ctx context.Context, lessonID uuid.UUID, videoU
 	return nil
 }
 
+// SetTranscript attaches (or clears) a lesson transcript (migration 000061).
+func (r *LessonRepo) SetTranscript(ctx context.Context, lessonID uuid.UUID, transcript *string) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE lessons SET transcript=$1, updated_at=NOW() WHERE id=$2`, transcript, lessonID)
+	if err != nil {
+		return fmt.Errorf("set lesson transcript: %w", err)
+	}
+	return nil
+}
+
 // Reschedule — FR-23: move a lesson to a new window and mark it RESCHEDULED.
 func (r *LessonRepo) Reschedule(ctx context.Context, lessonID uuid.UUID, startAt, endAt time.Time) error {
 	res, err := r.db.ExecContext(ctx, `
@@ -188,7 +200,7 @@ func (r *LessonRepo) ListRecordedForStudent(ctx context.Context, studentProfileI
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT DISTINCT l.id, l.cohort_id, l.private_package_id, l.tutor_profile_id, l.title, l.description,
 			l.start_at, l.end_at, l.timezone, l.meeting_url, l.meeting_provider, l.location_id,
-			l.status, l.created_by, l.created_at, l.updated_at, l.video_url
+			l.status, l.created_by, l.created_at, l.updated_at, l.video_url, l.transcript
 		FROM lessons l
 		JOIN lesson_participants lp ON lp.lesson_id = l.id
 		WHERE lp.student_profile_id = $1 AND l.video_url IS NOT NULL AND l.status <> 'CANCELLED'

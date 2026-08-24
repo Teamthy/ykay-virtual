@@ -180,6 +180,9 @@ type Lesson struct {
 	// On-demand video lesson (000035): a pre-recorded lesson students watch
 	// in-app, in addition to any live meeting link.
 	VideoURL *string `json:"video_url,omitempty"`
+	// Transcript — optional plain-text transcript/lesson notes attached to a
+	// recorded lesson (migration 000061). Shown in the LMS + recorded library.
+	Transcript *string `json:"transcript,omitempty"`
 	// Meeting-link lifecycle (000028): provider reference for idempotent
 	// refresh, link expiry and the participant join window. Internal state —
 	// never serialized into lesson API payloads (MeetingService exposes

@@ -329,6 +329,23 @@ func (s *LessonService) SetRecordedVideo(ctx context.Context, actorUserID uuid.U
 	return s.lessons.SetVideoURL(ctx, lessonID, videoURL)
 }
 
+// SetLessonTranscript — admin/tutor attaches (or clears) a plain-text
+// transcript on a lesson. Same ownership scope as SetRecordedVideo: the
+// cohort's tutor or a platform admin. Empty string clears.
+func (s *LessonService) SetLessonTranscript(ctx context.Context, actorUserID uuid.UUID, isAdmin bool, lessonID uuid.UUID, transcript *string) error {
+	if transcript != nil {
+		if t := *transcript; len(t) > 100_000 {
+			return fmt.Errorf("%w: transcript too long (max 100,000 characters)", domain.ErrInvalidInput)
+		}
+	}
+	// Same ownership rule as reschedule/cancel: the lesson's tutor (cohort
+	// or private) or a platform admin.
+	if _, err := s.lessonTutorScope(ctx, actorUserID, isAdmin, lessonID); err != nil {
+		return err
+	}
+	return s.lessons.SetTranscript(ctx, lessonID, transcript)
+}
+
 // ListRecordedLibrary — the recorded-lesson library for an enrolled learner.
 // Returns the video lessons the caller is entitled to across their cohorts.
 // Ownership (actor must be the learner or an admin) is enforced here.

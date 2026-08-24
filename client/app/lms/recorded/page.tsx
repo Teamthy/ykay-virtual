@@ -1,12 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Play, Video, Clock } from "lucide-react";
+import { Play, Video, Clock, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { listRecordedLessons } from "@/features/lms/recorded";
 import { listLearners } from "@/features/onboarding/api";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TranscriptPanel } from "@/features/lms/components/TranscriptPanel";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { useSession } from "@/hooks/useSession";
 
@@ -110,6 +111,7 @@ export default function RecordedLibraryPage() {
               ) : (
                 <p className="mt-4 text-xs text-ink-400">Recording not yet available.</p>
               )}
+              {l.transcript ? <TranscriptPanel text={l.transcript} /> : null}
             </div>
           ))}
         </div>

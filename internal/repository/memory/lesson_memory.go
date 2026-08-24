@@ -101,6 +101,17 @@ func (m *LessonMemory) HasOverlappingLessons(_ context.Context, tutorProfileID u
 
 var _ booking.LessonRepository = (*LessonMemory)(nil)
 
+func (m *LessonMemory) SetTranscript(_ context.Context, lessonID uuid.UUID, transcript *string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	l, ok := m.rows[lessonID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	l.Transcript = transcript
+	return nil
+}
+
 func (m *LessonMemory) SetVideoURL(_ context.Context, lessonID uuid.UUID, videoURL *string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

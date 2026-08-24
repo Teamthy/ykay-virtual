@@ -1,6 +1,8 @@
 package service
 
 import (
+	"math"
+	"sync"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -76,6 +78,64 @@ type AuthService struct {
 	students  identity.StudentProfileRepository
 	now       func() time.Time
 	devLog    func(format string, args ...any) // nil outside development
+	// Per-account failed-login throttling (in-process; per API instance).
+	// The per-IP auth rate limiter covers brute force from one source; this
+	// covers a DISTRIBUTED attack focused on a single account.
+	failMu      sync.Mutex
+	failures    map[string]loginFailState
+}
+
+type loginFailState struct {
+	count      int
+	lockedUntil time.Time
+	windowStart time.Time
+}
+
+const (
+	loginFailThreshold = 5                // failures before the account locks
+	loginFailWindow    = 15 * time.Minute // counting window
+	loginLockDuration  = 15 * time.Minute // lock duration
+)
+
+// loginThrottleState returns the remaining lock, or zero when unlocked.
+func (s *AuthService) loginThrottleState(key string) time.Duration {
+	s.failMu.Lock()
+	defer s.failMu.Unlock()
+	if s.failures == nil {
+		return 0
+	}
+	st, ok := s.failures[key]
+	if !ok {
+		return 0
+	}
+	if remain := time.Until(st.lockedUntil); remain > 0 {
+		return remain
+	}
+	return 0
+}
+
+func (s *AuthService) recordLoginFailure(key string, now time.Time) {
+	s.failMu.Lock()
+	defer s.failMu.Unlock()
+	if s.failures == nil {
+		s.failures = make(map[string]loginFailState)
+	}
+	st := s.failures[key]
+	if now.Sub(st.windowStart) > loginFailWindow {
+		st = loginFailState{windowStart: now}
+	}
+	st.count++
+	if st.count >= loginFailThreshold {
+		st.lockedUntil = now.Add(loginLockDuration)
+		st.count = 0 // lock consumed the streak
+	}
+	s.failures[key] = st
+}
+
+func (s *AuthService) clearLoginFailures(key string) {
+	s.failMu.Lock()
+	defer s.failMu.Unlock()
+	delete(s.failures, key)
 }
 
 func NewAuthService(users identity.UserRepository, sessions identity.SessionRepository,
@@ -405,6 +465,14 @@ func (s *AuthService) logOTP(format string, args ...any) {
 // MFA code (challenge); the session is created only after ConfirmMFA.
 func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent string) (*LoginResult, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
+	// Per-account throttle: even a distributed attacker (many IPs, one
+	// account) hits a hard lock after repeated failures. Keyed by the
+	// normalized email; emails are unique in the users table.
+	if remain := s.loginThrottleState(email); remain > 0 {
+		mins := int(math.Ceil(remain.Minutes()))
+		return nil, fmt.Errorf("%w: too many failed attempts — try again in %d minute(s)",
+			domain.ErrTooManyRequests, mins)
+	}
 	user, err := s.users.FindByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
@@ -416,6 +484,7 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
+		s.recordLoginFailure(email, s.now().UTC())
 		return nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
 	}
 	if user.Status == identity.UserStatusPending {
@@ -424,6 +493,7 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 	if !user.CanLogin() {
 		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
+	s.clearLoginFailures(email)
 
 	roleList, _ := s.roles.RolesForUser(ctx, user.ID)
 	roles := make([]string, 0, len(roleList))

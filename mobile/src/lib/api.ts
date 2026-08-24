@@ -14,7 +14,7 @@ import { Platform } from "react-native";
 // EXPO_PUBLIC_API_URL targets localhost and fails fast, it never silently
 // ships traffic at the wrong backend.
 
-const API_BASE =
+export const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
   "http://localhost:8080/api/v1";
 

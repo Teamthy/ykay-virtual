@@ -61,7 +61,7 @@ export default function Notifications() {
   }, [load]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
-  usePolling(load, { intervalMs: 15000, enabled: !error }); // real-time-ish refresh
+  usePolling(load, { intervalMs: 15000, enabled: !error, events: ["notification.new", "message.new"] });
 
   const markRead = async (n: Notif) => {
     void Haptics.selectionAsync().catch(() => {});

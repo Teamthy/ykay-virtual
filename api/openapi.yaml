@@ -2159,6 +2159,29 @@ paths:
         '200': { description: Lesson rescheduled }
         '409': { description: Overlapping lesson or lesson not reschedulable }
 
+  /lessons/{lessonId}/transcript:
+    post:
+      tags: [lessons]
+      summary: Attach or clear a lesson transcript (tutor-of-cohort or admin)
+      description: >
+        Plain-text transcript/lesson notes for a (usually recorded) lesson,
+        surfaced in the LMS course view and the recorded-lesson library.
+        Empty string clears. Max 100,000 characters.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transcript: { type: string, maxLength: 100000 }
+      responses:
+        '200': { description: Saved }
+        '403': { description: Not the cohort's tutor or admin }
+
   /lessons/{lessonId}/cancel:
     post:
       tags: [learning]

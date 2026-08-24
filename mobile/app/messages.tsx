@@ -44,7 +44,7 @@ export default function MessagesScreen() {
   }, [load]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
-  usePolling(load, { intervalMs: 8000 }); // real-time-ish refresh while mounted
+  usePolling(load, { intervalMs: 8000, events: ["message.new", "notification.new"] }); // SSE pokes + poll fallback
 
   const unreadTotal = useMemo(() => conversations.reduce((n, c) => n + (c.unread_count ?? 0), 0), [conversations]);
 

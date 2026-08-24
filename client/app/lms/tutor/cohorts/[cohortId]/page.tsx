@@ -20,6 +20,7 @@ import {
   markAttendance,
   uploadResourceFile,
   rescheduleLesson,
+  setLessonTranscript,
   cancelLesson,
   type AttendanceRow,
 } from "@/features/lms/api";
@@ -623,11 +624,13 @@ export default function LmsTutorCohortPage() {
 
 // --- FR-23: per-lesson reschedule/cancel row ------------------------------
 
-function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: string; start_at: string; end_at: string; status: string }; cohortId: string }) {
+function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: string; start_at: string; end_at: string; status: string; transcript?: string | null }; cohortId: string }) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [startAt, setStartAt] = useState(() => lesson.start_at.slice(0, 16));
   const [endAt, setEndAt] = useState(() => lesson.end_at.slice(0, 16));
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [notes, setNotes] = useState(() => lesson.transcript ?? "");
 
   const move = useMutation({
     mutationFn: () =>
@@ -647,6 +650,16 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
       qc.invalidateQueries({ queryKey: ["lms", "lessons", cohortId] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not cancel"),
+  });
+
+  const saveTranscript = useMutation({
+    mutationFn: () => setLessonTranscript(lesson.id, notes),
+    onSuccess: () => {
+      toast.success("Transcript saved — learners can read it now");
+      setNotesOpen(false);
+      qc.invalidateQueries({ queryKey: ["lms", "lessons", cohortId] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save transcript"),
   });
 
   const done = lesson.status === "COMPLETED" || lesson.status === "CANCELLED";
@@ -681,6 +694,13 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
             </button>
             <button
               type="button"
+              onClick={() => setNotesOpen((v) => !v)}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-bold ${lesson.transcript ? "border-primary/50 text-primary-dark" : "border-ink-200 text-ink-700 hover:border-ink-300"}`}
+            >
+              {notesOpen ? "Close" : lesson.transcript ? "Transcript ✓" : "Add transcript"}
+            </button>
+            <button
+              type="button"
               disabled={cancel.isPending}
               onClick={() => {
                 if (window.confirm(`Cancel "${lesson.title}"? Learners will see it as cancelled.`)) cancel.mutate();
@@ -692,6 +712,42 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
           </>
         )}
       </div>
+      {notesOpen && (
+        <div className="mt-3 space-y-2 border-t border-ink-100 pt-3">
+          <p className="text-xs font-semibold text-ink-600">
+            Lesson transcript / notes — learners read this under the recording (plain text).
+          </p>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={6}
+            maxLength={100000}
+            placeholder="Key points covered, worked examples, homework set…"
+            className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm leading-relaxed focus:border-primary focus:outline-none"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={saveTranscript.isPending}
+              onClick={() => saveTranscript.mutate()}
+              className="rounded-lg bg-deep px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+            >
+              {saveTranscript.isPending ? "Saving…" : "Save transcript"}
+            </button>
+            <button
+              type="button"
+              disabled={saveTranscript.isPending || !lesson.transcript}
+              onClick={() => {
+                setNotes("");
+                saveTranscript.mutate();
+              }}
+              className="rounded-lg border border-red-200 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-40"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
       {editing && !done && (
         <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-ink-100 pt-3">
           <label className="block text-xs font-semibold text-ink-600">

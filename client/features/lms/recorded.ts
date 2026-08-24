@@ -9,6 +9,8 @@ export type RecordedLesson = {
   timezone: string;
   status: string;
   video_url?: string | null;
+  /** Plain-text transcript/lesson notes, when the tutor attached one. */
+  transcript?: string | null;
 };
 
 /** The learner's recorded-lesson library across their enrolled cohorts. */

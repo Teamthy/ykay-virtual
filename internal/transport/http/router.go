@@ -189,6 +189,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.AddNote)
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/reschedule", handlers.LessonOps.RescheduleLesson)
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/cancel", handlers.LessonOps.CancelLesson)
+	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/transcript", handlers.LessonOps.SetLessonTranscript)
 	mux.HandleFunc("POST "+v1+"/admin/lessons", handlers.LessonOps.ScheduleLesson)
 	mux.HandleFunc("POST "+v1+"/admin/lessons/{lessonId}/video", handlers.LessonOps.SetRecordedVideo)
 	mux.HandleFunc("GET "+v1+"/me/recorded-lessons", handlers.LessonOps.MyRecordedLibrary)

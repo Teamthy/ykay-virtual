@@ -15,6 +15,8 @@ import { homeForRoles } from "@/hooks/useDashboardRoute";
 import { createLearner } from "@/features/onboarding/api";
 import { CurriculumLevelSelect } from "@/features/onboarding/CurriculumLevelSelect";
 import { safeNextPath } from "@/lib/safe-next";
+import { abVariant } from "@/lib/ab";
+import { trackEvent } from "@/lib/analytics";
 import { clearOnboardingDraft, ONBOARDING_STORAGE_KEY } from "@/lib/onboarding";
 import {
   register,
@@ -724,6 +726,15 @@ function OnboardingInner() {
   const qc = useQueryClient();
   const { user, isLoading: sessionLoading } = useSession();
 
+  // A/B: step-1 hero copy (sticky per browser). Events let Plausible read
+  // completion rate per variant (onboarding_started / onboarding_completed).
+  const onboardingAB = abVariant("onboarding-step1");
+  useEffect(() => {
+    trackEvent("onboarding_started", { ab: onboardingAB });
+    // fire once per mount of the flow — the wizard is a single mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [state, setState] = useState<ObState>(() => {
     if (typeof window === "undefined") return { name: "", email: "", verified: false };
     try {
@@ -1021,8 +1032,12 @@ function OnboardingInner() {
 
   return (
     <AuthShell
-      title={STEP_META[step].title}
-      subtitle={STEP_META[step].subtitle}
+      title={step === 1 && onboardingAB === "b" ? "Join NUVORA free" : STEP_META[step].title}
+      subtitle={
+        step === 1 && onboardingAB === "b"
+          ? "Under 2 minutes to unlock vetted tutors, escrow-protected payments and live cohorts."
+          : STEP_META[step].subtitle
+      }
       skip={skip}
       footer={
         step > 1 && step < 7 ? (
@@ -1094,6 +1109,7 @@ function OnboardingInner() {
               /* never trap the user on the finish line */
             }
             clearOnboardingDraft();
+            trackEvent("onboarding_completed", { ab: onboardingAB, role: state.role ?? "PARENT" });
             const dest =
               state.role === "TUTOR"
                 ? "/become-tutor/apply"

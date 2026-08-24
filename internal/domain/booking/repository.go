@@ -113,6 +113,7 @@ type LessonRepository interface {
 	HasOverlappingLessons(ctx context.Context, tutorProfileID uuid.UUID, startAt, endAt time.Time, excludeLessonID *uuid.UUID) (bool, error)
 	// SetVideoURL attaches (or clears) a recorded-lesson video URL on a lesson.
 	SetVideoURL(ctx context.Context, lessonID uuid.UUID, videoURL *string) error
+	SetTranscript(ctx context.Context, lessonID uuid.UUID, transcript *string) error
 	// Reschedule moves a lesson to a new time window and marks it
 	// RESCHEDULED (FR-23; double-booking guard applied by the service).
 	Reschedule(ctx context.Context, lessonID uuid.UUID, startAt, endAt time.Time) error

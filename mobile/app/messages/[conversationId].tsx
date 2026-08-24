@@ -41,7 +41,7 @@ export default function ConversationThreadScreen() {
   }, [conversationId]);
 
   useFocusEffect(useCallback(() => void load(), [load]));
-  usePolling(load, { intervalMs: 6000 }); // real-time-ish refresh while open
+  usePolling(load, { intervalMs: 6000, events: ["message.new"] }); // instant on new message
 
   const send = async () => {
     const body = draft.trim();

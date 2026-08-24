@@ -322,3 +322,11 @@ export async function getTutorEarnings(tutorProfileId?: string): Promise<TutorEa
   const res = await apiFetch<TutorEarnings>(`/me/earnings${q}`);
   return res.data;
 }
+
+// Attach (or clear — empty string) a lesson transcript. Tutor-of-cohort or admin.
+export async function setLessonTranscript(lessonId: string, transcript: string) {
+  await apiFetch(`/lessons/${lessonId}/transcript`, {
+    method: "POST",
+    body: JSON.stringify({ transcript }),
+  });
+}
