@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -86,5 +87,88 @@ func TestFlutterwaveCreatePayment_UsesCallbackAsRedirect(t *testing.T) {
 	}
 	if got["redirect_url"] != "https://app.example.com/receipts/xyz" {
 		t.Fatalf("redirect_url not forwarded, body: %v", got)
+	}
+}
+
+func TestPaystackVerifyTransaction_ConvertsKoboAndReportsStatus(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Fatalf("verify must be GET, got %s", r.Method)
+		}
+		if !strings.HasPrefix(r.URL.Path, "/transaction/verify/") {
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+		if r.Header.Get("Authorization") != "Bearer sk-test" {
+			t.Fatalf("missing bearer secret")
+		}
+		if ref := strings.TrimPrefix(r.URL.Path, "/transaction/verify/"); ref != "NUV-VRF-PS" {
+			t.Fatalf("reference not path-escaped into URL: %q", ref)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"status": true,
+			"data": map[string]any{
+				"reference": "NUV-VRF-PS",
+				"status":    "success",
+				"amount":    7_500_000, // kobo
+				"currency":  "NGN",
+			},
+		})
+	}))
+	defer ts.Close()
+
+	p := &PaystackProvider{Secret: "sk-test", BaseURL: ts.URL, HTTPClient: ts.Client()}
+	res, err := p.VerifyTransaction("NUV-VRF-PS")
+	if err != nil {
+		t.Fatalf("verify: %v", err)
+	}
+	if !res.IsSuccess() {
+		t.Fatalf("expected success, got %q", res.Status)
+	}
+	if res.Amount != 75000 {
+		t.Fatalf("kobo → major conversion failed: %v", res.Amount)
+	}
+	if res.Currency != "NGN" {
+		t.Fatalf("currency: %q", res.Currency)
+	}
+}
+
+func TestPaystackVerifyTransaction_UnconfiguredReportsPending(t *testing.T) {
+	p := NewPaystack("")
+	res, err := p.VerifyTransaction("whatever")
+	if err != nil {
+		t.Fatalf("unconfigured verify must not error: %v", err)
+	}
+	if res.IsSuccess() {
+		t.Fatal("unconfigured gateway must NEVER report success (would settle unpaid orders)")
+	}
+}
+
+func TestFlutterwaveVerifyTransaction_ReportsMajorUnits(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("tx_ref") != "NUV-VRF-FLW" {
+			t.Fatalf("tx_ref not forwarded: %q", r.URL.RawQuery)
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"status": "success",
+			"data": map[string]any{
+				"tx_ref":   "NUV-VRF-FLW",
+				"status":   "successful",
+				"amount":   75000, // already major units
+				"currency": "NGN",
+			},
+		})
+	}))
+	defer ts.Close()
+
+	p := &FlutterwaveProvider{Secret: "FLWSECK-test", BaseURL: ts.URL, HTTPClient: ts.Client()}
+	res, err := p.VerifyTransaction("NUV-VRF-FLW")
+	if err != nil {
+		t.Fatalf("verify: %v", err)
+	}
+	if !res.IsSuccess() {
+		t.Fatalf("flutterwave 'successful' must count as success, got %q", res.Status)
+	}
+	if res.Amount != 75000 {
+		t.Fatalf("flutterwave amounts are major units — no conversion: %v", res.Amount)
 	}
 }

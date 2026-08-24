@@ -2,7 +2,7 @@
 
 > Scope: which web features exist on mobile, which are mobile-only, which are
 > intentionally web-only, and the roadmap to close remaining gaps.
-> Updated 2026-08-21 (mobile SDK 54, backend 000059).
+> Updated 2026-08-24 (mobile SDK 54, backend 000060; commerce deep-link pass).
 
 ## Principles
 
@@ -28,7 +28,7 @@
 | Tutor workspace (earnings, schedule, lessons, messages, availability, profile) | ✅ | ✅ tutor/* screens + exams console | DONE |
 | **CBT practice exams (student)** | ✅ assessments | ✅ NEW `practice` hub + timed player + marked-paper review | DONE (new) |
 | **Tutor-authored school exams** | ✅ assessments | ✅ NEW `tutor/exams` console (builder, results, delete) | DONE (new) |
-| Payments: orders, receipts, Paystack checkout | ✅ | ✅ payments + order detail + receipt | DONE |
+| Payments: orders, receipts, Paystack checkout | ✅ | ✅ payments + order detail + receipt; cohort detail deep-links "Enrol on web" to the browser checkout (escrow/coupons/gateway return all live on web) | DONE (deep-link) |
 | Escrow / refunds / disputes | ✅ | ✅ order detail surfaces status | DONE |
 | Tutor payouts + bank details | ✅ | ✅ via tutor earnings/profile (bank details entry on web) | PARTIAL |
 | Messaging (contacts, threads, unread) | ✅ | ✅ messages + tutor/messages | DONE |
@@ -86,3 +86,16 @@ total for the domain).
   login when the request actually carried a token. Signed-out browsing of
   public screens can never wipe a session (it has none) nor bounce a signed-in
   user. Sessions last 30 days (backend `SessionTTL`).
+
+## Roadmap deltas (2026-08-24 friction pass)
+
+- **Commerce deep-link (DONE)** — cohort detail now carries an "Enrol on web —
+  pay securely" button (`Linking.openURL` → `SITE_URL/cohorts/{id}/enroll`).
+  `EXPO_PUBLIC_SITE_URL` overrides the web origin per environment.
+- **Lesson reschedule/cancel (FR-23, web-only → ROADMAP)** — the tutor web
+  console can reschedule/cancel lessons (`POST /lessons/{id}/reschedule|cancel`).
+  Mobile tutor schedule screens surface statuses; inline mutation controls
+  land with the next parity batch.
+- **Payment verify (server-side)** — `POST /me/orders/{id}/verify` settles a
+  paid order without waiting for the webhook. The web receipt auto-verifies on
+  landing; mobile order detail can adopt the same call.

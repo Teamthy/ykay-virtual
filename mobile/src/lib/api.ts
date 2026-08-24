@@ -18,6 +18,11 @@ const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
   "http://localhost:8080/api/v1";
 
+// SITE_URL — the WEB app origin (checkout/receipts live there). Commerce on
+// mobile deep-links out to the browser (store-safe for services; the gateway
+// round-trip needs web routes anyway).
+export const SITE_URL = (process.env.EXPO_PUBLIC_SITE_URL || "https://ykay-virtual-wtar.vercel.app").replace(/\/$/, "");
+
 const TOKEN_KEY = "nuvora_session_token";
 
 const DEFAULT_TIMEOUT_MS = 20000;

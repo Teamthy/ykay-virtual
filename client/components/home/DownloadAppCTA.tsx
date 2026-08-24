@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Play, Apple, WifiOff, Bell, FileCheck2 } from "lucide-react";
 
@@ -56,11 +57,16 @@ export function DownloadAppCTA() {
           </ul>
         </div>
 
-        {/* Local image */}
+        {/* Local image — 104KB optimized JPEG via next/image (was a 2.5MB
+            raw <img>: the single biggest first-load cost on the home page) */}
         <div className="mx-auto w-full max-w-md">
-          <img
-            src="/hero/african-student.png"
+          <Image
+            src="/hero/african-student.jpg"
             alt="African student learning on the NUVORA app"
+            width={768}
+            height={1376}
+            sizes="(max-width: 768px) 92vw, 448px"
+            priority={false}
             className="w-full rounded-3xl object-cover shadow-card ring-1 ring-ink-100"
           />
         </div>

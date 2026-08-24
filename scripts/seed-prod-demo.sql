@@ -1,3 +1,9 @@
+-- ┌─────────────────────────────────────────────────────────────────────────┐
+-- │ ⚠️  SEED SCRIPT — RUN DELIBERATELY, NEVER ON AUTOPILOT                    │
+-- │ Run against PRODUCTION only from a reviewed terminal session:            │
+-- │   psql "$DATABASE_URL" --file=scripts/<this-file>                        │
+-- │ Re-running inserts duplicate rows (no upserts). Snapshot/backup first.   │
+-- └─────────────────────────────────────────────────────────────────────────┘
 -- =============================================================================
 -- NUVORA — PRODUCTION-SAFE DEMO SEED
 --  20 programmes · 20 tutors · 20 cohorts (+ lessons) · blog · testimonials

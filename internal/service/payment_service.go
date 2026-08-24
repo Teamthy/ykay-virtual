@@ -436,43 +436,9 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 		return nil, err
 	}
 
-	if err := uow.Payments().UpdateStatus(ctx, paymentRow.ID, payment.PaymentSuccess, &now); err != nil {
-		return nil, err
-	}
-	if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderPaid); err != nil {
-		return nil, err
-	}
-	if s.referrals != nil {
-		// Referral rewards qualify on first paid order (idempotent).
-		if err := s.referrals.QualifyOnOrderPaid(ctx, order.ParentUserID, order.ID); err != nil {
-			return nil, err
-		}
-	}
-
-	// Confirm the cohort enrollment tied to this order.
-	cohortID, err := s.confirmEnrollment(ctx, uow, order.ID, now)
+	cohortID, err := s.settleSuccessInUOW(ctx, uow, paymentRow, order, now)
 	if err != nil {
 		return nil, err
-	}
-	// YK-004: a private-tuition package becomes ACTIVE only now, in the same
-	// transaction that records the payment as successful — never before.
-	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
-		return nil, err
-	}
-
-	// Escrow hold: money is captured but not yet released to the tutor.
-	hold, err := s.createEscrowHold(ctx, uow, order, paymentRow, now)
-	if err != nil {
-		return nil, err
-	}
-
-	_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "order",
-		&order.ID, map[string]any{"status": payment.OrderPending}, map[string]any{"status": payment.OrderPaid},
-		nil, nil)
-	if hold != nil {
-		_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "escrow_hold",
-			&hold.ID, nil, map[string]any{"action": "held", "amount": hold.Amount, "release_at": hold.ReleaseAt},
-			nil, nil)
 	}
 
 	if err := uow.Webhooks().MarkProcessed(ctx, webhook.ID); err != nil {
@@ -487,6 +453,54 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 		s.markLeadConverted(ctx, order.ParentUserID, cohortID)
 	}
 	return &WebhookResult{Processed: true, PaymentID: &paymentRow.ID}, nil
+}
+
+// settleSuccessInUOW — the single settlement path shared by the webhook and
+// the payer-facing verify endpoint (F-3). Runs inside the caller's UoW:
+// payment → SUCCESS, order → PAID, referral qualification, enrolment
+// confirmation, private-package activation, escrow hold and audit entries.
+// The caller commits and sends the receipt notifications.
+func (s *PaymentService) settleSuccessInUOW(ctx context.Context, uow repository.UnitOfWork,
+	paymentRow *payment.Payment, order *payment.Order, now time.Time) (uuid.UUID, error) {
+	if err := uow.Payments().UpdateStatus(ctx, paymentRow.ID, payment.PaymentSuccess, &now); err != nil {
+		return uuid.Nil, err
+	}
+	if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderPaid); err != nil {
+		return uuid.Nil, err
+	}
+	if s.referrals != nil {
+		// Referral rewards qualify on first paid order (idempotent).
+		if err := s.referrals.QualifyOnOrderPaid(ctx, order.ParentUserID, order.ID); err != nil {
+			return uuid.Nil, err
+		}
+	}
+
+	// Confirm the cohort enrollment tied to this order.
+	cohortID, err := s.confirmEnrollment(ctx, uow, order.ID, now)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	// YK-004: a private-tuition package becomes ACTIVE only now, in the same
+	// transaction that records the payment as successful — never before.
+	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
+		return uuid.Nil, err
+	}
+
+	// Escrow hold: money is captured but not yet released to the tutor.
+	hold, err := s.createEscrowHold(ctx, uow, order, paymentRow, now)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "order",
+		&order.ID, map[string]any{"status": payment.OrderPending}, map[string]any{"status": payment.OrderPaid},
+		nil, nil)
+	if hold != nil {
+		_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "escrow_hold",
+			&hold.ID, nil, map[string]any{"action": "held", "amount": hold.Amount, "release_at": hold.ReleaseAt},
+			nil, nil)
+	}
+	return cohortID, nil
 }
 
 // confirmEnrollment flips the cohort enrollment linked to the order to
@@ -640,6 +654,151 @@ func isSuccessEvent(p webhookPayload) bool {
 		return true
 	}
 	return status == "success" || status == "successful"
+}
+
+// VerifyOrderInput — F-3 payer-facing server-side verification. When the
+// gateway webhook is delayed or lost, the payer taps "I've paid — confirm
+// now" and the API asks the gateway directly, then settles through the SAME
+// code path as the webhook (settleSuccessInUOW).
+type VerifyOrderInput struct {
+	OrderID     uuid.UUID
+	ActorUserID uuid.UUID
+	IsAdmin     bool
+}
+
+// VerifyOrderResult — outcome for the client. Settled=true means THIS call
+// flipped the order to PAID; false means it was already settled, is still
+// unpaid, or the gateway has not confirmed yet (gateway_status explains).
+type VerifyOrderResult struct {
+	OrderNumber   string              `json:"order_number"`
+	OrderStatus   payment.OrderStatus `json:"order_status"`
+	Settled       bool                `json:"settled"`
+	GatewayStatus string              `json:"gateway_status,omitempty"`
+}
+
+func (s *PaymentService) VerifyOrder(ctx context.Context, in VerifyOrderInput) (*VerifyOrderResult, error) {
+	if in.ActorUserID == uuid.Nil {
+		return nil, fmt.Errorf("%w: authentication required to verify an order", domain.ErrUnauthorized)
+	}
+
+	readUow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer readUow.Rollback()
+
+	order, err := readUow.Orders().GetByID(ctx, in.OrderID)
+	if err != nil {
+		return nil, err
+	}
+	if order.ParentUserID != in.ActorUserID && !in.IsAdmin {
+		return nil, fmt.Errorf("%w: cannot verify another user's order", domain.ErrForbidden)
+	}
+
+	// Idempotent: an order that already left PENDING needs no gateway call.
+	if order.Status != payment.OrderPending {
+		return &VerifyOrderResult{OrderNumber: order.OrderNumber, OrderStatus: order.Status}, nil
+	}
+
+	// Find the newest PENDING payment attempt for this order.
+	attempts, err := readUow.Payments().GetByOrderID(ctx, in.OrderID)
+	if err != nil {
+		return nil, err
+	}
+	var pending *payment.Payment
+	for i := range attempts {
+		if attempts[i].Status == payment.PaymentPending && attempts[i].ProviderReference != nil {
+			pending = &attempts[i] // last PENDING wins (newest attempt)
+		}
+	}
+	if pending == nil {
+		return nil, fmt.Errorf("%w: order %s has no pending payment attempt — start payment first",
+			domain.ErrConflict, order.OrderNumber)
+	}
+
+	provider, ok := s.providers[pending.Provider]
+	if !ok {
+		return nil, fmt.Errorf("%w: unsupported provider %s", domain.ErrInvalidInput, pending.Provider)
+	}
+	verifier, ok := provider.(payment_provider.TransactionVerifier)
+	if !ok {
+		return nil, fmt.Errorf("%w: provider %s does not support transaction verification",
+			domain.ErrConflict, pending.Provider)
+	}
+
+	// Ask the gateway. VerifyTransaction returns MAJOR units (Paystack kobo
+	// is converted inside the adapter) so reconciliation compares directly
+	// against the recorded amount.
+	vr, err := verifier.VerifyTransaction(*pending.ProviderReference)
+	if err != nil {
+		return nil, fmt.Errorf("gateway verify %s: %w", order.OrderNumber, err)
+	}
+	if !vr.IsSuccess() {
+		// Not paid (yet) — a truthful answer, never an error.
+		return &VerifyOrderResult{
+			OrderNumber:   order.OrderNumber,
+			OrderStatus:   order.Status,
+			GatewayStatus: vr.Status,
+		}, nil
+	}
+
+	// Same reconciliation guards as the webhook: amount and currency must
+	// match the recorded payment or the order never settles.
+	diff := vr.Amount - pending.Amount
+	if vr.Amount <= 0 || diff < -0.01 || diff > 0.01 {
+		_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "order_verify",
+			&order.ID, nil, map[string]any{"action": "amount_mismatch", "received": vr.Amount, "expected": pending.Amount},
+			nil, nil)
+		return nil, fmt.Errorf("%w: gateway amount %.2f does not match order total %.2f",
+			domain.ErrInvalidInput, vr.Amount, pending.Amount)
+	}
+	if c := strings.TrimSpace(vr.Currency); c != "" && !strings.EqualFold(c, pending.Currency) {
+		_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "order_verify",
+			&order.ID, nil, map[string]any{"action": "currency_mismatch", "received": c, "expected": pending.Currency},
+			nil, nil)
+		return nil, fmt.Errorf("%w: currency mismatch received=%s expected=%s",
+			domain.ErrInvalidInput, c, pending.Currency)
+	}
+
+	// Settle on a fresh transaction (the read UoW is rolled back above).
+	uow, err := s.uows.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer uow.Rollback()
+
+	// Re-load under the settlement tx: a concurrently delivered webhook may
+	// have settled this payment already (idempotency under race).
+	paymentRow, err := uow.Payments().GetByProviderReference(ctx, pending.Provider, *pending.ProviderReference)
+	if err != nil {
+		return nil, err
+	}
+	if paymentRow.Status == payment.PaymentSuccess {
+		return &VerifyOrderResult{OrderNumber: order.OrderNumber, OrderStatus: payment.OrderPaid}, nil
+	}
+	freshOrder, err := uow.Orders().GetByID(ctx, in.OrderID)
+	if err != nil {
+		return nil, err
+	}
+	if freshOrder.Status != payment.OrderPending {
+		return &VerifyOrderResult{OrderNumber: order.OrderNumber, OrderStatus: freshOrder.Status}, nil
+	}
+
+	now := s.Clock().UTC()
+	cohortID, err := s.settleSuccessInUOW(ctx, uow, paymentRow, freshOrder, now)
+	if err != nil {
+		return nil, err
+	}
+	if err := uow.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	s.emailReceipt(ctx, freshOrder)
+	s.whatsappConfirmation(ctx, freshOrder)
+	if cohortID != uuid.Nil {
+		s.markLeadConverted(ctx, freshOrder.ParentUserID, cohortID)
+	}
+	return &VerifyOrderResult{OrderNumber: order.OrderNumber, OrderStatus: payment.OrderPaid, Settled: true, GatewayStatus: vr.Status}, nil
 }
 
 // --- Escrow lifecycle ---

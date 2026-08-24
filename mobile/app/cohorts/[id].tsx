@@ -1,12 +1,14 @@
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/src/components/ui/Screen";
 import { Card } from "@/src/components/ui/Card";
+import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { useTheme } from "@/src/lib/theme-context";
 import { type ThemeColors } from "@/src/lib/theme";
+import { SITE_URL } from "@/src/lib/api";
 import { formatNaira, getCohort, type CohortDetail } from "@/src/lib/catalogue";
 
 // Cohort detail — a published cohort (GET /cohorts/{id}): schedule, capacity,
@@ -117,9 +119,20 @@ export default function CohortDetailScreen() {
         </AppText>
       </Card>
 
-      <AppText variant="caption" style={{ color: colors.ink[400], textAlign: "center", marginTop: 16 }}>
-        Enrolment happens through the booking flow on the web — sign in and choose this cohort to join.
-      </AppText>
+      {/* Commerce deep-link (parity fix): enrolment runs on the web checkout —
+          escrow, coupons and gateway return all live there. One tap opens the
+          browser at this cohort's enrolment page; no dead end in the app. */}
+      <View style={{ marginTop: 16, paddingHorizontal: 4 }}>
+        <Button
+          label={seatsLeft > 0 ? "Enrol on web — pay securely" : "Join the waiting list on web"}
+          full
+          icon={<Ionicons name="open-outline" size={16} color={colors.navy} />}
+          onPress={() => void Linking.openURL(`${SITE_URL}/cohorts/${cohort.id}/enroll`)}
+        />
+        <AppText variant="caption" style={{ color: colors.ink[400], textAlign: "center", marginTop: 10 }}>
+          Secure checkout with escrow protection opens in your browser. Your sign-in works there too.
+        </AppText>
+      </View>
     </Screen>
   );
 }

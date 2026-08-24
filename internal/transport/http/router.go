@@ -171,13 +171,13 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/curricula", handlers.Curricula.List)
 	mux.HandleFunc("GET "+v1+"/subjects", handlers.Subjects.List)
 	mux.HandleFunc("GET "+v1+"/subjects/{slug}", handlers.Subjects.GetBySlug)
-	mux.HandleFunc("GET "+v1+"/tutors/search", handlers.Tutors.Search)
+	mux.Handle("GET "+v1+"/tutors/search", cache60(handlers.Tutors.Search))
 	mux.HandleFunc("GET "+v1+"/tutors/{slug}", handlers.Tutors.GetBySlug)
 	mux.HandleFunc("GET "+v1+"/programmes", handlers.Programmes.List)
 	mux.HandleFunc("GET "+v1+"/programmes/{slug}", handlers.Programmes.GetBySlug)
-	mux.HandleFunc("GET "+v1+"/programmes/{slug}/tutors", handlers.Programmes.Tutors)
-	mux.HandleFunc("GET "+v1+"/cohorts", handlers.Cohorts.List)
-	mux.HandleFunc("GET "+v1+"/cohorts/{id}", handlers.Cohorts.GetByID)
+	mux.Handle("GET "+v1+"/programmes/{slug}/tutors", cache60(handlers.Programmes.Tutors))
+	mux.Handle("GET "+v1+"/cohorts", cache60(handlers.Cohorts.List))
+	mux.Handle("GET "+v1+"/cohorts/{id}", cache60(handlers.Cohorts.GetByID))
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/lessons", handlers.LessonOps.ListCohortLessons)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/resources", handlers.LessonOps.ListResources)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/assignments", handlers.LessonOps.ListAssignments)
@@ -306,6 +306,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/submissions", handlers.Portal.MySubmissions)
 	mux.HandleFunc("GET "+v1+"/me/attendance-summary", handlers.Portal.AttendanceSummary)
 	mux.HandleFunc("GET "+v1+"/me/orders/{orderId}", handlers.Portal.OrderReceipt)
+	mux.HandleFunc("POST "+v1+"/me/orders/{orderId}/verify", handlers.Payments.VerifyOrder)
 
 	// Onboarding (Phase 10b)
 	mux.HandleFunc("POST "+v1+"/me/learners", handlers.Onboarding.CreateLearner)
@@ -396,9 +397,18 @@ func (rt *Router) SetRateLimiters(global, auth HTTPRateLimiter) {
 	}
 }
 
+// cache60 — 60s anonymous browser cache + 5min stale-while-revalidate for
+// public catalogue GETs (F-4). Authenticated requests are never cached.
+func cache60(h http.HandlerFunc) http.Handler {
+	return middleware.PublicCacheForAnonymous(60)(h)
+}
+
 func (rt *Router) Handler() http.Handler {
 	var h http.Handler = rt.mux
 	h = telemetry.DefaultMetrics().Middleware(h)
+	// F-4: transparent gzip for compressible JSON responses (3–6× faster on
+	// mobile networks). See internal/middleware/gzip.go.
+	h = middleware.Gzip(h)
 	h = middleware.Logger(h)
 	h = middleware.Recover(h)
 	h = middleware.RequestID(h)

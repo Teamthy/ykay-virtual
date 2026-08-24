@@ -149,3 +149,30 @@ func (h *PaymentHandler) Webhook(w http.ResponseWriter, r *http.Request) {
 	}
 	pkg.WriteSuccess(w, http.StatusOK, res, nil)
 }
+
+// VerifyOrder — POST /me/orders/{orderId}/verify (F-3).
+// The payer (back from the gateway) or an admin asks the API to check the
+// order against the gateway directly and settle it through the same path as
+// the webhook. Kills "waiting for confirmation" limbo when a webhook is
+// delayed or lost. Idempotent and owner-scoped.
+func (h *PaymentHandler) VerifyOrder(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	orderID, err := uuid.Parse(r.PathValue("orderId"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("orderId must be a valid UUID", nil))
+		return
+	}
+	res, err := h.svc.VerifyOrder(r.Context(), service.VerifyOrderInput{
+		OrderID:     orderID,
+		ActorUserID: actor.UserID,
+		IsAdmin:     actor.IsAdmin,
+	})
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, res, nil)
+}

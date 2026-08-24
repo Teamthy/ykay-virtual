@@ -14,6 +14,7 @@ import { HomeOnly } from "@/components/layout/HomeOnly";
 import { Providers } from "@/components/providers";
 import { RegisterSW } from "@/components/register-sw";
 import { Toaster } from "@/components/toaster";
+import { Analytics } from "@/components/layout/Analytics";
 import { organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -79,6 +80,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${anton.variable} ${dmSans.variable} ${poppins.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
+        {/* Analytics loads after hydration when (and only when)
+            NEXT_PUBLIC_PLAUSIBLE_DOMAIN is configured. */}
+        <Analytics />
       </head>
       <body suppressHydrationWarning>
         <Providers>

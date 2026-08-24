@@ -2405,6 +2405,24 @@ paths:
         '200': { description: Receipt }
         '403': { description: Not the order owner }
 
+  /me/orders/{orderId}/verify:
+    post:
+      tags: [payments]
+      summary: Server-side payment verification — ask the gateway directly when the webhook is delayed
+      description: >
+        Owner/admin asks the API to verify the order's latest PENDING payment
+        against the gateway (Paystack/Flutterwave transaction verify). If the
+        gateway confirms, the order settles through the same path as the
+        webhook (idempotent — an order not PENDING returns immediately
+        without a gateway call).
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: 'Verify outcome: order_status + settled + gateway_status' }
+        '403': { description: Not the order owner }
+        '409': { description: No pending payment attempt for this order }
+
   /admin/stats/overview2:
     get:
       tags: [admin]

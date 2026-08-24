@@ -156,3 +156,21 @@ export async function getOrderReceipt(orderId: string): Promise<OrderReceipt> {
   const res = await apiFetch<OrderReceipt>(`/me/orders/${orderId}`);
   return res.data;
 }
+
+// F-3 — outcome of POST /me/orders/{orderId}/verify.
+export type VerifyOrderResult = {
+  order_number: string;
+  order_status: string;
+  settled: boolean;
+  gateway_status?: string;
+};
+
+// F-3: ask the API to verify this order against the gateway directly (the
+// payer is back but the webhook may be delayed/lost). Settles the order
+// server-side through the same path as the webhook; idempotent.
+export async function verifyOrder(orderId: string): Promise<VerifyOrderResult> {
+  const res = await apiFetch<VerifyOrderResult>(`/me/orders/${orderId}/verify`, {
+    method: "POST",
+  });
+  return res.data;
+}

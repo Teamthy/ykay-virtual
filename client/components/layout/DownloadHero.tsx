@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { WifiOff, Bell, FileCheck2 } from "lucide-react";
 import { GooglePlayBadge } from "@/components/ui/StoreBadges";
 
@@ -41,9 +42,13 @@ export function DownloadHero() {
         </div>
 
         <div className="mx-auto w-full max-w-sm">
-          <img
-            src="/hero/african-student.png"
+          <Image
+            src="/hero/african-student.jpg"
             alt="African student learning on the NUVORA app"
+            width={768}
+            height={1376}
+            sizes="(max-width: 768px) 90vw, 384px"
+            priority={false}
             className="w-full rounded-3xl object-cover shadow-card ring-1 ring-ink-100"
           />
         </div>

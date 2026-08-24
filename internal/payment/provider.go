@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -101,6 +102,75 @@ func (p *PaystackProvider) Refund(reference string, amount float64) error {
 		return fmt.Errorf("paystack refund failed (HTTP %d): %s", res.StatusCode, strings.TrimSpace(string(raw)))
 	}
 	return nil
+}
+
+// VerifyResult — normalized outcome of a server-side transaction
+// verification. Used by the payer-facing "confirm now" path when the webhook
+// is delayed or lost: the API asks the gateway directly instead of making the
+// payer wait for a webhook delivery.
+type VerifyResult struct {
+	Reference string  // gateway reference as verified
+	Status    string  // "success" | "failed" | "pending" | "abandoned" …
+	Amount    float64 // MAJOR units as the gateway reports it (already converted)
+	Currency  string  // ISO 4217 as reported by the gateway
+}
+
+// TransactionVerifier — providers that support direct transaction lookup.
+// Both gateways implement it; asserted at the call site so a future provider
+// without lookup support degrades gracefully.
+type TransactionVerifier interface {
+	VerifyTransaction(reference string) (*VerifyResult, error)
+}
+
+// IsSuccess reports whether the gateway confirmed the transaction paid
+// (same truth table as the webhook isSuccessEvent path).
+func (v *VerifyResult) IsSuccess() bool {
+	s := strings.ToLower(strings.TrimSpace(v.Status))
+	return s == "success" || s == "successful" || s == "completed"
+}
+
+// VerifyTransaction — GET /transaction/verify/:reference.
+// Amount arrives in KOBO (subunits) exactly like the webhook payload; it is
+// converted to major units here so the service can run the same
+// reconciliation guards as the webhook path.
+func (p *PaystackProvider) VerifyTransaction(reference string) (*VerifyResult, error) {
+	if p.Secret == "" || p.Secret == "test-secret" || strings.HasPrefix(p.Secret, "e2e") {
+		// Unconfigured (dev/e2e): no live gateway to ask — report pending so
+		// the caller never settles from a fabricated confirmation.
+		return &VerifyResult{Reference: reference, Status: "pending"}, nil
+	}
+	req, err := http.NewRequest(http.MethodGet, p.BaseURL+"/transaction/verify/"+url.PathEscape(reference), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+p.Secret)
+	res, err := p.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("paystack verify: %w", err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode >= 400 {
+		raw, _ := io.ReadAll(io.LimitReader(res.Body, 2048))
+		return nil, fmt.Errorf("paystack verify failed (HTTP %d): %s", res.StatusCode, strings.TrimSpace(string(raw)))
+	}
+	var out struct {
+		Status bool   `json:"status"`
+		Data   struct {
+			Reference string  `json:"reference"`
+			Status    string  `json:"status"`
+			Amount    float64 `json:"amount"` // kobo
+			Currency  string  `json:"currency"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, fmt.Errorf("paystack verify decode: %w", err)
+	}
+	return &VerifyResult{
+		Reference: out.Data.Reference,
+		Status:    strings.ToLower(strings.TrimSpace(out.Data.Status)),
+		Amount:    out.Data.Amount / 100,
+		Currency:  strings.ToUpper(strings.TrimSpace(out.Data.Currency)),
+	}, nil
 }
 
 func (p *PaystackProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {
@@ -212,6 +282,49 @@ func (p *FlutterwaveProvider) Refund(reference string, amount float64) error {
 		return fmt.Errorf("flutterwave refund failed (HTTP %d): %s", res.StatusCode, strings.TrimSpace(string(raw)))
 	}
 	return nil
+}
+
+// VerifyTransaction — GET /transactions/verify-by-reference?tx_ref=…
+// Flutterwave reports amounts in MAJOR units (no conversion needed).
+func (p *FlutterwaveProvider) VerifyTransaction(reference string) (*VerifyResult, error) {
+	if p.Secret == "" || p.Secret == "test-secret" || strings.HasPrefix(p.Secret, "e2e") {
+		// Unconfigured (dev/e2e): no live gateway to ask — report pending so
+		// the caller never settles from a fabricated confirmation.
+		return &VerifyResult{Reference: reference, Status: "pending"}, nil
+	}
+	req, err := http.NewRequest(http.MethodGet,
+		p.BaseURL+"/transactions/verify-by-reference?tx_ref="+url.QueryEscape(reference), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+p.Secret)
+	res, err := p.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("flutterwave verify: %w", err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode >= 400 {
+		raw, _ := io.ReadAll(io.LimitReader(res.Body, 2048))
+		return nil, fmt.Errorf("flutterwave verify failed (HTTP %d): %s", res.StatusCode, strings.TrimSpace(string(raw)))
+	}
+	var out struct {
+		Status string `json:"status"`
+		Data   struct {
+			Reference string  `json:"tx_ref"`
+			Status    string  `json:"status"`
+			Amount    float64 `json:"amount"`
+			Currency  string  `json:"currency"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&out); err != nil {
+		return nil, fmt.Errorf("flutterwave verify decode: %w", err)
+	}
+	return &VerifyResult{
+		Reference: out.Data.Reference,
+		Status:    strings.ToLower(strings.TrimSpace(out.Data.Status)),
+		Amount:    out.Data.Amount,
+		Currency:  strings.ToUpper(strings.TrimSpace(out.Data.Currency)),
+	}, nil
 }
 
 func (p *FlutterwaveProvider) CreatePaymentLink(amount float64, currency, reference, email string) (string, error) {

@@ -1,13 +1,18 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { getOrderReceipt } from "@/features/portal/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { getOrderReceipt, verifyOrder } from "@/features/portal/api";
 import { NuvoraReceipt } from "@/components/receipt/NuvoraReceipt";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 
 export default function ReceiptPage() {
   const params = useParams<{ orderId: string }>();
+  const queryClient = useQueryClient();
+  const [verifying, setVerifying] = useState(false);
+  const autoVerified = useRef(false);
+
   const q = useQuery({
     queryKey: ["receipt", params.orderId],
     queryFn: () => getOrderReceipt(params.orderId),
@@ -16,10 +21,40 @@ export default function ReceiptPage() {
     // webhook settles the order. Poll while PENDING so the page flips to
     // PAID on its own (webhook round-trip is the source of truth).
     refetchInterval: (query) =>
-      query.state.data?.order.status === "PENDING" ? 5000 : false,
+      query.state.data?.order.status === "PENDING" ? 4000 : false,
   });
 
   const status = q.data?.order.status;
+
+  // F-3: the moment a PENDING receipt renders, ask the API to verify against
+  // the gateway directly — don't sit waiting for a possibly-lost webhook.
+  // Idempotent: if the webhook already settled the order, the server skips
+  // the gateway call and returns the paid status immediately.
+  useEffect(() => {
+    if (status !== "PENDING" || autoVerified.current || !params.orderId) return;
+    autoVerified.current = true;
+    void (async () => {
+      try {
+        await verifyOrder(params.orderId);
+        await queryClient.invalidateQueries({ queryKey: ["receipt", params.orderId] });
+      } catch {
+        /* gateway hiccup — 4s polling continues as the fallback */
+      }
+    })();
+  }, [status, params.orderId, queryClient]);
+
+  async function confirmNow() {
+    if (!params.orderId || verifying) return;
+    setVerifying(true);
+    try {
+      await verifyOrder(params.orderId);
+      await queryClient.invalidateQueries({ queryKey: ["receipt", params.orderId] });
+    } catch {
+      /* network hiccup — polling continues; the user can retry */
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   return (
     <DashboardPage>
@@ -31,6 +66,17 @@ export default function ReceiptPage() {
             <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
               ⏳ Waiting for payment confirmation… this page refreshes automatically.
               If you completed payment, your seat will be confirmed in a moment.
+              <span className="mt-2 block font-normal">
+                Paid and still waiting?{" "}
+                <button
+                  type="button"
+                  onClick={() => void confirmNow()}
+                  disabled={verifying}
+                  className="font-bold text-brand-navy underline disabled:opacity-50"
+                >
+                  {verifying ? "Checking with the gateway…" : "Confirm payment now"}
+                </button>
+              </span>
             </div>
           )}
           {(status === "PAID" || status === "COMPLETED") && (

@@ -137,3 +137,29 @@ Invariants verified by the test suite after the changes:
   currency** never settles an order.
 - The payer always lands back on an in-app receipt that reflects the
   webhook-confirmed truth.
+
+---
+
+## Frictionless-flow pass (2026-08-24)
+
+Wait-time / dead-end fixes layered on top of the payment-safety work:
+
+| # | Fix | Where |
+|---|---|---|
+| F-2 | Logged-out visitor at `/cohorts/{id}/enroll` gets a **sign-in/register step with a return trip back to checkout** (was: empty learner select + forever-disabled Pay button) | `client/features/bookings/components/CheckoutClient.tsx` |
+| F-3 | **`POST /me/orders/{orderId}/verify`** — server asks Paystack/Flutterwave to confirm the transaction and settles through the *same* path as the webhook (`settleSuccessInUOW`). The web receipt auto-verifies on landing and offers "Confirm payment now"; checkout's payment-link card auto-checks 6s after return. A lost webhook can no longer strand a paid seat. | `internal/payment/provider.go`, `internal/service/payment_service.go`, `internal/transport/http/payment_handler.go` |
+| F-4a | **gzip** on compressible API responses (3–6× smaller JSON on mobile data; images excluded, tiny bodies excluded, `Vary: Accept-Encoding`) | `internal/middleware/gzip.go` |
+| F-4b | **60s anonymous browser cache + 5min stale-while-revalidate** on public catalogue GETs (cohorts list/detail, tutors search, programmes) — authenticated requests are never cached | `internal/middleware/public_cache.go`, router |
+| F-5 | Home page hero PNG **2.56 MB → 104 KB JPEG** served via `next/image` (was the single biggest first-load cost) | `client/public/hero/african-student.jpg` |
+| F-6 | SEO metadata for the 7 naked routes (pricing, contact, 5 become-tutor steps) via server layouts | `client/app/(marketing)/**/layout.tsx` |
+| F-7 | Optional privacy-friendly analytics (`NEXT_PUBLIC_PLAUSIBLE_DOMAIN`; inert when unset) | `client/components/layout/Analytics.tsx` |
+
+New env vars: **none required**. Optional: `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`
+(web analytics), `EXPO_PUBLIC_SITE_URL` (mobile → web checkout origin).
+
+Verify-path invariants (all test-covered in `payment_verify_test.go`):
+- Idempotent: non-PENDING order → no gateway call; SUCCESS payment → no re-settle.
+- Owner/admin only (`ErrForbidden` otherwise; anonymous rejected outright).
+- Amount **and** currency reconciliation identical to the webhook guards.
+- Gateway "pending"/"failed" is a truthful no-op — never an error, never a settle.
+- Unconfigured gateway secrets can NEVER report success (dev/e2e stubs return pending).

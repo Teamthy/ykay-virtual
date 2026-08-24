@@ -2,6 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -9,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, ShieldCheck, RefreshCcw } from "lucide-react";
 import { qk } from "@/lib/queryClient";
+import { loginWithReturn } from "@/lib/safe-next";
 import { createCohortBooking, initiatePayment, validateCoupon, type CouponValidation } from "@/features/bookings/api/create";
+import { verifyOrder } from "@/features/portal/api";
 import { listLearners } from "@/features/onboarding/api";
 import { useSession } from "@/hooks/useSession";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +40,8 @@ type Step =
 
 export function CheckoutClient({ cohort }: { cohort: Cohort }) {
   const queryClient = useQueryClient();
-  const { user } = useSession();
+  const router = useRouter();
+  const { user, isLoading: sessionLoading } = useSession();
   const learners = useQuery({
     queryKey: ["onboarding", "learners"],
     queryFn: listLearners,
@@ -154,6 +158,55 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         <p className="text-sm text-ink-500 pt-2">
           {step.name === "creating" ? "Creating your secure booking order…" : "Connecting to the payment gateway…"}
         </p>
+      </div>
+    );
+  }
+
+  // F-2: never render a dead checkout. A logged-out visitor gets a clear
+  // sign-in/register step (with a return trip back to this checkout) instead
+  // of an empty learner select and a forever-disabled pay button.
+  if (!user) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-card">
+        <div className="bg-deep px-6 py-8 text-white md:px-8">
+          <h2 className="font-display text-xl tracking-[0.02em]">Secure checkout</h2>
+          <p className="mt-1 text-sm text-white/70">
+            {cohort.title} · ₦{cohort.fee.toLocaleString()} {cohort.currency}
+          </p>
+        </div>
+        <div className="space-y-4 p-6 md:p-8">
+          {sessionLoading ? (
+            <>
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-11 w-full" />
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-ink-600">
+                One quick step before payment: sign in (or create a free parent account) so we can
+                secure your seat, hold the payment in escrow and give you instant receipts.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button variant="gold" size="lg" className="w-full sm:w-auto" onClick={() => router.push(loginWithReturn())}>
+                  Sign in to enrol
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                  onClick={() => router.push(`/register?next=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/cohorts")}`)}
+                >
+                  Create free account
+                </Button>
+              </div>
+              <p className="flex items-center justify-center gap-4 border-t border-ink-100 pt-4 text-[11px] font-semibold text-ink-400">
+                <span className="flex items-center gap-1.5"><Lock size={12} className="text-brand-green" /> 256-bit SSL</span>
+                <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-brand-green" /> Escrow protected</span>
+                <span className="flex items-center gap-1.5"><RefreshCcw size={12} className="text-brand-green" /> Idempotent orders</span>
+              </p>
+            </>
+          )}
+        </div>
       </div>
     );
   }
@@ -382,6 +435,7 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
   const [copied, setCopied] = useState(false);
   const [status, setStatus] = useState<string>(order.status);
   const [checked, setChecked] = useState(0);
+  const [verifying, setVerifying] = useState(false);
 
   // Poll the order until it leaves PENDING (webhook round-trip → PAID/CANCELLED).
   useEffect(() => {
@@ -397,6 +451,32 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
     }, 6000);
     return () => clearInterval(t);
   }, [status, order.id]);
+
+  // F-3: settle without waiting for the webhook. Ask the API to verify the
+  // transaction against the gateway directly (idempotent — the server skips
+  // the gateway once the order has left PENDING).
+  async function checkWithGateway() {
+    if (verifying) return;
+    setVerifying(true);
+    try {
+      const res = await verifyOrder(order.id);
+      if (res.order_status) setStatus(res.order_status);
+    } catch {
+      /* gateway hiccup — the 6s poll keeps running */
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  // One automatic gateway check shortly after the payer returns from the
+  // hosted checkout — covers the common "webhook lands 10s late" case with
+  // zero user action.
+  useEffect(() => {
+    if (status !== "PENDING") return;
+    const t = setTimeout(() => void checkWithGateway(), 6000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   const paid = status === "PAID" || status === "COMPLETED";
   const stillPending = status === "PENDING";
@@ -436,6 +516,15 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
             }}
           >
             {copied ? "Copied ✓" : "Copy payment link"}
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => void checkWithGateway()}
+            disabled={verifying}
+            aria-live="polite"
+          >
+            {verifying ? "Checking…" : "I've paid — confirm now"}
           </Button>
         </div>
       )}

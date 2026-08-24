@@ -1,89 +1,52 @@
+# ─── Dependencies / builds ────────────────────────────────────────────────
 node_modules/
 .next/
 out/
 dist/
-.env
-.env.*
-*.log
 coverage/
-.vscode/
-.DS_Store
-/tmp/
-*.bundle
 *.tsbuildinfo
-.history/
-legacy/server/.env
 
-# e2e API binary
+# Go
+*.exe
+*.test
+*.out
 .e2e-api
-
-# Production secrets + local backups
-.env.production
-backups/
-
-# Prometheus textfile heartbeats (backup/drill)
-metrics-textfile/
-
-# staging harness binary
 .staging-api
 
-# Mobile build artifacts (large) — never commit these; host the APK in
-# object storage (R2/S3/GitHub Releases) and set NEXT_PUBLIC_APK_URL.
+# Mobile build artifacts (large) — host the APK/AAB in object storage
+# (R2/S3/GitHub Releases) and set NEXT_PUBLIC_APK_URL. Never commit builds.
 *.apk
 *.aab
-*.exe
 mobile/dist/
 mobile/android/app/build/
 mobile/ios/build/
 
-# Local audit patches — do not commit
+# ─── Secrets & environments ───────────────────────────────────────────────
+# Only .env.production.example is tracked. Everything real is local.
+.env
+.env.*
+!.env.production.example
+
+# ─── Local data / ops artifacts ───────────────────────────────────────────
+*.log
+backups/
+metrics-textfile/
+/tmp/
+.DS_Store
+.vscode/
+.vercel
+.history/
+
+# ─── Local working files — never commit ───────────────────────────────────
+# Root-level apply/seed/cleanup scripts from local patch runs.
+/APPLY*.ps1
+/FIX*.ps1
+/SEED*.ps1
+/CLEANUP_JUNK.ps1
+# Local audit patches and one-off local seeds.
+*.patch
 audit-round*.patch
 seed-quickstart.sql
 seed-local-users.once.txt
-
-about.jpg
-
-african-student.png
-
-APPLY*.ps1
-
-FIX*.ps1
-
-SEED*.ps1
-
-british.jpg
-
-checkout.jpg
-
-CLEANUP_JUNK.ps1
-
-cohorts.jpg
-
-digital.jpg
-
-entrance-exam.jpg
-
-exam-prep.jpg
-
-home-tutoring.jpg
-
-how-it-works.jpg
-
-international.jpg
-
-nigerian.jpg
-
-nuvora-fixes.patch
-
-nuvora-plus.jpg
-
-programmes.jpg
-
-subjects.jpg
-
-test-prep.jpg
-
-utme.jpg
-.vercel
-.env*
-*.patch
+# Local git-bundle patch artifacts from phased delivery (root level).
+*.bundle
