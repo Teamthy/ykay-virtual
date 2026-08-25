@@ -359,6 +359,8 @@ func main() {
 		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin).
 		WithTutors(repos.TutorRepo).
 		WithVetting(repos.Vetting).
+		WithEnrollments(repos.Enrollments).                       // pending-enrolment admin view
+		WithTutorLookup(repos.Vetting.GetProfileByUserID).       // user-detail tutor summary
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
 	// Paystack one-click payouts (transfers) — explicit opt-in. The provider

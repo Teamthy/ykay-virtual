@@ -279,6 +279,29 @@ func (r *CohortRepo) Create(ctx context.Context, c *booking.Cohort) error {
 	return nil
 }
 
+// Update saves the editable cohort fields (admin edit console).
+func (r *CohortRepo) Update(ctx context.Context, c *booking.Cohort) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE cohorts SET
+			title = $1, capacity = $2, start_date = $3, end_date = $4,
+			schedule_description = $5, timezone = $6, location_mode = $7, location_id = $8,
+			fee = $9, currency = $10, enrollment_opens_at = $11, enrollment_closes_at = $12,
+			updated_at = NOW()
+		WHERE id = $13`,
+		c.Title, c.Capacity, c.StartDate, c.EndDate,
+		c.ScheduleDesc, c.Timezone, c.LocationMode, c.LocationID,
+		c.Fee, c.Currency, c.EnrollmentOpensAt, c.EnrollmentClosesAt, c.ID)
+	if err != nil {
+		return fmt.Errorf("update cohort: %w", err)
+	}
+	return nil
+}
+
+// GetCohort loads one cohort (admin detail/edit).
+func (r *CohortRepo) GetCohort(ctx context.Context, id uuid.UUID) (*booking.Cohort, error) {
+	return r.GetByID(ctx, id)
+}
+
 func (r *CohortRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status booking.CohortStatus) error {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE cohorts SET status = $1,

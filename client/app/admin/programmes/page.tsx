@@ -1,14 +1,15 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 import { BookOpen, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { listProgrammes } from "@/features/programmes/api/list";
-import { createAdminProgramme } from "@/features/admin/api";
+import { createAdminProgramme, updateProgramme, setAdminProgrammeStatus } from "@/features/admin/api";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
+import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
 const INPUT_CLS =
@@ -22,6 +23,16 @@ export default function AdminProgrammesPage() {
     staleTime: 30_000,
   });
   const rows = programmes.data?.data ?? [];
+  const [editing, setEditing] = useState<(typeof rows)[number] | null>(null);
+
+  const statusMut = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "DRAFT" | "PUBLISHED" | "ARCHIVED" }) => setAdminProgrammeStatus(id, status),
+    onSuccess: () => {
+      toast.success("Programme status updated");
+      void qc.invalidateQueries({ queryKey: ["admin", "programmes"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update status"),
+  });
 
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
@@ -116,10 +127,37 @@ export default function AdminProgrammesPage() {
                 >
                   Open roster
                 </Link>
+                <button
+                  onClick={() => setEditing(p)}
+                  className="rounded-full border border-ink-200 px-4 py-2 text-xs font-bold text-ink-700 hover:border-ink-300"
+                >
+                  Edit
+                </button>
+                {p.status === "DRAFT" && (
+                  <button onClick={() => statusMut.mutate({ id: p.id, status: "PUBLISHED" })} className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white">Publish</button>
+                )}
+                {p.status === "PUBLISHED" && (
+                  <button onClick={() => statusMut.mutate({ id: p.id, status: "ARCHIVED" })} className="rounded-full border border-red-200 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Archive</button>
+                )}
+                {p.status === "ARCHIVED" && (
+                  <button onClick={() => statusMut.mutate({ id: p.id, status: "DRAFT" })} className="rounded-full border border-ink-200 px-4 py-2 text-xs font-bold text-ink-700">Restore</button>
+                )}
               </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {editing && (
+        <Modal open onClose={() => setEditing(null)} title="Edit programme">
+          <ProgrammeEditForm
+            programme={editing}
+            onDone={() => {
+              setEditing(null);
+              void qc.invalidateQueries({ queryKey: ["admin", "programmes"] });
+            }}
+          />
+        </Modal>
       )}
 
       <Modal open={creating} onClose={() => setCreating(false)} title="Create programme">
@@ -219,5 +257,78 @@ export default function AdminProgrammesPage() {
         </form>
       </Modal>
     </div>
+  );
+}
+
+
+function ProgrammeEditForm({ programme, onDone }: { programme: { id: string; title: string; summary?: string | null; currency?: string; price_min?: number | null; price_max?: number | null }; onDone: () => void }) {
+  const [form, setForm] = useState({
+    title: programme.title ?? "",
+    summary: programme.summary ?? "",
+    currency: programme.currency || "NGN",
+    price_min: String(programme.price_min ?? ""),
+    price_max: String(programme.price_max ?? ""),
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    if (!form.title.trim()) {
+      setError("Title is required");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await updateProgramme(programme.id, {
+        title: form.title.trim(),
+        summary: form.summary.trim(),
+        price_min: form.price_min ? Number(form.price_min) : 0,
+        price_max: form.price_max ? Number(form.price_max) : 0,
+        currency: form.currency || "NGN",
+        is_featured: false,
+      });
+      toast.success("Programme updated");
+      onDone();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void save();
+      }}
+    >
+      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{error}</p>}
+      <label className="block text-sm">
+        <span className="font-medium text-ink-700">Title *</span>
+        <input autoFocus value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={INPUT_CLS} />
+      </label>
+      <label className="block text-sm">
+        <span className="font-medium text-ink-700">Summary</span>
+        <textarea rows={3} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} className={INPUT_CLS} />
+      </label>
+      <div className="grid grid-cols-3 gap-3">
+        <label className="block text-sm">
+          <span className="font-medium text-ink-700">Price min</span>
+          <input type="number" value={form.price_min} onChange={(e) => setForm({ ...form, price_min: e.target.value })} className={INPUT_CLS} />
+        </label>
+        <label className="block text-sm">
+          <span className="font-medium text-ink-700">Price max</span>
+          <input type="number" value={form.price_max} onChange={(e) => setForm({ ...form, price_max: e.target.value })} className={INPUT_CLS} />
+        </label>
+        <label className="block text-sm">
+          <span className="font-medium text-ink-700">Currency</span>
+          <input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className={INPUT_CLS} />
+        </label>
+      </div>
+      <Button type="submit" disabled={busy} className="w-full">{busy ? "Saving…" : "Save changes"}</Button>
+    </form>
   );
 }

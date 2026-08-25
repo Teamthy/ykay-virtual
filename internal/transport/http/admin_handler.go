@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -1027,6 +1028,168 @@ func (h *AdminHandler) RequestCohortJoin(w http.ResponseWriter, r *http.Request)
 }
 
 // ListCohortJoins — GET /admin/cohort-joins?status=
+// UpdateProgramme — PUT /admin/programmes/{programmeId}
+func (h *AdminHandler) UpdateProgramme(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	programmeID, err := ParseUUID(r, "programmeId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Title       string  `json:"title"`
+		Summary     string  `json:"summary"`
+		Description *string `json:"description"`
+		PriceMin    float64 `json:"price_min"`
+		PriceMax    float64 `json:"price_max"`
+		Currency    string  `json:"currency"`
+		IsFeatured  bool    `json:"is_featured"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	p, err := h.svc.UpdateProgrammeAdmin(r.Context(), *adminID, programmeID, req.Title, req.Summary,
+		req.Description, req.PriceMin, req.PriceMax, req.Currency, req.IsFeatured)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, p, nil)
+}
+
+// UpdateCohort — PUT /admin/cohorts/{cohortId} — edit title/capacity/dates/
+// schedule/fee/enrolment window. Slug, tutor assignment and status keep
+// their dedicated actions.
+func (h *AdminHandler) UpdateCohort(w http.ResponseWriter, r *http.Request) {
+	adminID := h.requireAdmin(w, r)
+	if adminID == nil {
+		return
+	}
+	cohortID, err := ParseUUID(r, "cohortId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Title              string  `json:"title"`
+		Capacity           int     `json:"capacity"`
+		StartDate          string  `json:"start_date"`
+		EndDate            string  `json:"end_date"`
+		ScheduleDesc       *string `json:"schedule_description"`
+		Timezone           string  `json:"timezone"`
+		LocationMode       string  `json:"location_mode"`
+		Fee                float64 `json:"fee"`
+		Currency           string  `json:"currency"`
+		EnrollmentOpensAt  string  `json:"enrollment_opens_at"`
+		EnrollmentClosesAt string  `json:"enrollment_closes_at"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	parseDate := func(v string) (time.Time, error) {
+		if t, err := time.Parse(time.RFC3339, v); err == nil {
+			return t, nil
+		}
+		return time.Parse("2006-01-02", v)
+	}
+	start, err := parseDate(req.StartDate)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("start_date must be YYYY-MM-DD or RFC3339", nil))
+		return
+	}
+	end, err := parseDate(req.EndDate)
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("end_date must be YYYY-MM-DD or RFC3339", nil))
+		return
+	}
+	in := service.UpdateCohortInput{
+		Title: req.Title, Capacity: req.Capacity, StartDate: start, EndDate: end,
+		ScheduleDesc: req.ScheduleDesc, Timezone: req.Timezone, LocationMode: req.LocationMode,
+		Fee: req.Fee, Currency: req.Currency,
+	}
+	if req.EnrollmentOpensAt != "" {
+		t, err := parseDate(req.EnrollmentOpensAt)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("enrollment_opens_at must be RFC3339 or YYYY-MM-DD", nil))
+			return
+		}
+		in.EnrollmentOpensAt = &t
+	}
+	if req.EnrollmentClosesAt != "" {
+		t, err := parseDate(req.EnrollmentClosesAt)
+		if err != nil {
+			WriteAppError(w, pkg.BadRequest("enrollment_closes_at must be RFC3339 or YYYY-MM-DD", nil))
+			return
+		}
+		in.EnrollmentClosesAt = &t
+	}
+	c, err := h.svc.UpdateCohortAdmin(r.Context(), *adminID, cohortID, in)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, c, nil)
+}
+
+// ListPendingEnrollments — GET /admin/pending-enrollments — STUDENT
+// enrolments awaiting payment. Deliberately separate from tutor cohort
+// JOIN requests (/admin/cohort-joins).
+func (h *AdminHandler) ListPendingEnrollments(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	limit := 100
+	if v := r.URL.Query().Get("limit"); v != "" {
+		if n, err := strconvAtoi(v); err == nil {
+			limit = n
+		}
+	}
+	rows, err := h.svc.ListPendingEnrollments(r.Context(), limit)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, rows, nil)
+}
+
+// GetUserDetail — GET /admin/users/{userId} — full profile view (any admin
+// can VIEW; edits stay SUPER_ADMIN-only on their own routes).
+func (h *AdminHandler) GetUserDetail(w http.ResponseWriter, r *http.Request) {
+	if h.requireAdmin(w, r) == nil {
+		return
+	}
+	userID, err := ParseUUID(r, "userId")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	view, err := h.svc.GetUserDetail(r.Context(), userID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, view, nil)
+}
+
+func strconvAtoi(s string) (int, error) {
+	n := 0
+	if s == "" {
+		return 0, errors.New("empty")
+	}
+	for _, ch := range s {
+		if ch < '0' || ch > '9' {
+			return 0, errors.New("not a number")
+		}
+		n = n*10 + int(ch-'0')
+	}
+	return n, nil
+}
+
 func (h *AdminHandler) ListCohortJoins(w http.ResponseWriter, r *http.Request) {
 	if h.requireAdmin(w, r) == nil {
 		return

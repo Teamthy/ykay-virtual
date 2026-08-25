@@ -214,6 +214,10 @@ export type AdminCohort = {
   tutor_profile_id?: string | null;
   code?: string;
   banner_url?: string | null;
+  location_mode?: string;
+  schedule_description?: string | null;
+  enrollment_opens_at?: string | null;
+  enrollment_closes_at?: string | null;
 };
 
 export async function listAdminCohorts(params: { status?: string; page?: number }): Promise<Envelope<AdminCohort[]>> {
@@ -343,8 +347,13 @@ export async function refundOrder(orderId: string, reason: string): Promise<void
 }
 
 export async function listAdminPayouts(status?: string): Promise<AdminPayout[]> {
-  const res = await apiFetch<AdminPayout[]>(`/admin/payouts${status ? `?status=${status}` : ""}`);
-  return res.data ?? [];
+  // The endpoint returns { payouts: [...], paystack_transfers: bool, ... } —
+  // unwrap the array (treating res.data as an array caused
+  // "(intermediate value).map is not a function" on the admin payments page).
+  const res = await apiFetch<{ payouts?: AdminPayout[] }>(
+    `/admin/payouts${status ? `?status=${status}` : ""}`
+  );
+  return Array.isArray(res.data?.payouts) ? res.data.payouts : [];
 }
 
 // --- SUPER_ADMIN user/role management -------------------------------------
@@ -418,8 +427,87 @@ export type CohortJoinRequest = {
   reviewed_at?: string | null;
   cohort_title?: string;
   tutor_name?: string;
+  tutor_email?: string;
+  tutor_slug?: string;
+  tutor_status?: string;
+  tutor_years_experience?: number;
   programme_title?: string;
 };
+
+// Student enrolments awaiting payment — DISTINCT from tutor join requests.
+export type PendingEnrollment = {
+  id: string;
+  cohort_id: string;
+  student_profile_id: string;
+  parent_user_id: string;
+  status: string;
+  created_at: string;
+  student_name: string;
+  cohort_title: string;
+  cohort_fee: number;
+};
+
+export async function listPendingEnrollments(limit = 100): Promise<PendingEnrollment[]> {
+  const res = await apiFetch<PendingEnrollment[]>(`/admin/pending-enrollments?limit=${limit}`);
+  return res.data ?? [];
+}
+
+export type CohortUpdateInput = {
+  title: string;
+  capacity: number;
+  start_date: string;
+  end_date: string;
+  schedule_description?: string | null;
+  timezone: string;
+  location_mode: string;
+  fee: number;
+  currency: string;
+  enrollment_opens_at?: string;
+  enrollment_closes_at?: string;
+};
+
+export async function updateCohort(cohortId: string, input: CohortUpdateInput): Promise<void> {
+  await apiFetch(`/admin/cohorts/${cohortId}`, { method: "PUT", body: JSON.stringify(input) });
+}
+
+export async function setAdminProgrammeStatus(programmeId: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED"): Promise<void> {
+  await apiFetch(`/admin/programmes/${programmeId}/status`, { method: "POST", body: JSON.stringify({ status }) });
+}
+
+export type ProgrammeUpdateInput = {
+  title: string;
+  summary: string;
+  description?: string | null;
+  price_min: number;
+  price_max: number;
+  currency: string;
+  is_featured: boolean;
+};
+
+export async function updateProgramme(programmeId: string, input: ProgrammeUpdateInput): Promise<void> {
+  await apiFetch(`/admin/programmes/${programmeId}`, { method: "PUT", body: JSON.stringify(input) });
+}
+
+export type AdminUserDetail = {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string | null;
+  status: string;
+  created_at: string;
+  last_login_at?: string | null;
+  email_verified_at?: string | null;
+  onboarded_at?: string | null;
+  roles: string[];
+  tutor_slug?: string;
+  tutor_status?: string;
+};
+
+export async function getUserDetail(userId: string): Promise<AdminUserDetail> {
+  const res = await apiFetch<AdminUserDetail>(`/admin/users/${userId}/detail`);
+  return res.data;
+}
 
 export async function listCohortJoins(status?: string): Promise<CohortJoinRequest[]> {
   const qs = status ? `?status=${encodeURIComponent(status)}` : "";

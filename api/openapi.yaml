@@ -2591,6 +2591,46 @@ paths:
         '400': { description: Not a valid JPEG/PNG image }
         '404': { description: Unknown cohort }
 
+  /admin/cohorts/{cohortId}:
+    put:
+      tags: [admin]
+      summary: Edit a cohort (title/capacity/dates/schedule/fee/enrolment window)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Updated cohort }
+        '400': { description: Validation failed (e.g. capacity below enrolled count) }
+
+  /admin/programmes/{programmeId}:
+    put:
+      tags: [admin]
+      summary: Edit a programme (title/summary/description/pricing/featured)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: programmeId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Updated programme }
+
+  /admin/pending-enrollments:
+    get:
+      tags: [admin]
+      summary: Student enrolments awaiting payment (distinct from tutor cohort join requests)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Pending enrolments with student + cohort context }
+
+  /admin/users/{userId}/detail:
+    get:
+      tags: [admin]
+      summary: Full profile view (any admin) — roles + tutor summary; edits are SUPER_ADMIN-only routes
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: User detail }
+        '404': { description: No such user }
+
   /admin/cohort-joins:
     get:
       tags: [admin]

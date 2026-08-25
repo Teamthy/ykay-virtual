@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   createAdminCohort, listAdminCohorts, setAdminCohortStatus,
   listApprovedTutors, assignAdminCohortTutor,
-  listCohortJoins, reviewCohortJoin,
+  listCohortJoins, reviewCohortJoin, listPendingEnrollments, updateCohort,
   type AdminCohort, type AdminVettingProfile,
 } from "@/features/admin/api";
 import Link from "next/link";
@@ -43,6 +43,14 @@ export default function AdminCohortsPage() {
     queryKey: ["admin", "tutors", "approved"],
     queryFn: () => listApprovedTutors(),
     staleTime: 30_000,
+  });
+
+  const [editing, setEditing] = useState<AdminCohort | null>(null);
+
+  const pending = useQuery({
+    queryKey: ["admin", "pending-enrollments"],
+    queryFn: () => listPendingEnrollments(100),
+    refetchInterval: 60_000,
   });
 
   const joins = useQuery({
@@ -173,6 +181,7 @@ export default function AdminCohortsPage() {
       header: <span className="sr-only">Actions</span>,
       cell: (c) => (
         <div className="flex justify-end gap-2">
+          <Button size="sm" variant="outline" onClick={() => setEditing(c)}>Edit</Button>
           {c.status === "DRAFT" && (
             <Button size="sm" onClick={() => setStatusMut.mutate({ id: c.id, s: "PUBLISHED" })}>Publish</Button>
           )}
@@ -210,6 +219,35 @@ export default function AdminCohortsPage() {
 
       {showCreate && <CreateCohortForm onDone={() => { setShowCreate(false); qc.invalidateQueries({ queryKey: ["admin", "cohorts"] }); }} />}
 
+      {(pending.data?.length ?? 0) > 0 && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-6 shadow-soft">
+          <h2 className="font-bold text-deep">Student enrolments awaiting payment</h2>
+          <p className="mt-1 text-xs text-ink-500">
+            Checkouts that started but have not paid yet — the seat-release cron frees stale seats (≤2h).
+            Different from tutor join requests below.
+          </p>
+          <ul className="mt-4 divide-y divide-amber-100">
+            {(pending.data ?? []).map((e) => (
+              <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div>
+                  <p className="font-semibold text-ink-800">{e.student_name}</p>
+                  <p className="text-xs text-ink-500">
+                    {e.cohort_title} · ₦{e.cohort_fee.toLocaleString()} · started {new Date(e.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold text-amber-700">
+                  AWAITING PAYMENT
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {editing && (
+        <CohortEditDialog cohort={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); void qc.invalidateQueries({ queryKey: ["admin", "cohorts"] }); }} />
+      )}
+
       {(joins.data?.length ?? 0) > 0 && (
         <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
           <h2 className="font-bold text-deep">Tutor join requests</h2>
@@ -217,11 +255,27 @@ export default function AdminCohortsPage() {
           <ul className="mt-4 divide-y divide-ink-100">
             {(joins.data ?? []).map((j) => (
               <li key={j.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div>
-                  <p className="font-semibold text-ink-800">{j.tutor_name || j.tutor_profile_id}</p>
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 font-semibold text-ink-800">
+                    {j.tutor_slug ? (
+                      <a href={`/tutors/${j.tutor_slug}`} target="_blank" rel="noreferrer" className="hover:underline">
+                        {j.tutor_name}
+                      </a>
+                    ) : (
+                      j.tutor_name
+                    )}
+                    {j.tutor_status ? (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        j.tutor_status === "APPROVED" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                      }`}>
+                        {j.tutor_status === "APPROVED" ? "VERIFIED TUTOR" : `TUTOR: ${j.tutor_status}`}
+                      </span>
+                    ) : null}
+                  </p>
                   <p className="text-xs text-ink-500">
-                    {j.cohort_title || j.cohort_id}
-                    {j.programme_title ? ` · ${j.programme_title}` : ""}
+                    {j.tutor_email ? `${j.tutor_email} · ` : ""}
+                    {j.tutor_years_experience ? `${j.tutor_years_experience} yrs · ` : ""}
+                    {j.cohort_title}
                     {j.note ? ` — ${j.note}` : ""}
                   </p>
                 </div>
@@ -425,6 +479,91 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
       <div className="flex gap-3">
         <Button variant="gold" disabled={busy} onClick={() => void submit()}>{busy ? "Creating…" : "Create draft cohort"}</Button>
         <Button variant="outline" onClick={onDone}>Cancel</Button>
+      </div>
+    </div>
+  );
+}
+
+
+// CohortEditDialog — edit title/capacity/dates/fee/enrolment window. Slug,
+// tutor assignment and status keep their dedicated actions.
+function CohortEditDialog({ cohort, onClose, onSaved }: { cohort: AdminCohort; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({
+    title: cohort.title ?? "",
+    capacity: String(cohort.capacity ?? 20),
+    start_date: (cohort.start_date ?? "").slice(0, 10),
+    end_date: (cohort.end_date ?? "").slice(0, 10),
+    timezone: cohort.timezone || "Africa/Lagos",
+    location_mode: cohort.location_mode || "ONLINE",
+    fee: String(cohort.fee ?? 0),
+    currency: cohort.currency || "NGN",
+    enrollment_opens_at: "",
+    enrollment_closes_at: "",
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await updateCohort(cohort.id, {
+        title: form.title,
+        capacity: Number(form.capacity) || 0,
+        start_date: form.start_date,
+        end_date: form.end_date,
+        timezone: form.timezone,
+        location_mode: form.location_mode,
+        fee: Number(form.fee) || 0,
+        currency: form.currency,
+        enrollment_opens_at: form.enrollment_opens_at || undefined,
+        enrollment_closes_at: form.enrollment_closes_at || undefined,
+      });
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const field = "mt-1 h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="Edit cohort">
+      <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="text-lg font-extrabold text-deep">Edit cohort</h3>
+          <button onClick={onClose} className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold text-ink-600">Close</button>
+        </div>
+        {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{error}</p>}
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="text-xs font-bold text-ink-600 sm:col-span-2">Title
+            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={field} />
+          </label>
+          <label className="text-xs font-bold text-ink-600">Capacity
+            <input type="number" min={1} value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} className={field} />
+          </label>
+          <label className="text-xs font-bold text-ink-600">Fee ({form.currency})
+            <input type="number" min={0} value={form.fee} onChange={(e) => setForm({ ...form, fee: e.target.value })} className={field} />
+          </label>
+          <label className="text-xs font-bold text-ink-600">Start date
+            <input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} className={field} />
+          </label>
+          <label className="text-xs font-bold text-ink-600">End date
+            <input type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} className={field} />
+          </label>
+          <label className="text-xs font-bold text-ink-600">Enrolment opens (optional)
+            <input type="date" value={form.enrollment_opens_at} onChange={(e) => setForm({ ...form, enrollment_opens_at: e.target.value })} className={field} />
+          </label>
+          <label className="text-xs font-bold text-ink-600">Enrolment closes (optional)
+            <input type="date" value={form.enrollment_closes_at} onChange={(e) => setForm({ ...form, enrollment_closes_at: e.target.value })} className={field} />
+          </label>
+        </div>
+        <p className="mt-3 text-[11px] text-ink-400">Capacity cannot drop below the enrolled count; the server rejects it.</p>
+        <button onClick={() => void save()} disabled={busy || !form.title} className="mt-4 h-11 w-full rounded-xl bg-primary text-sm font-bold text-ink-900 disabled:opacity-40">
+          {busy ? "Saving…" : "Save changes"}
+        </button>
       </div>
     </div>
   );

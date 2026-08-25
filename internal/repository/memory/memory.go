@@ -480,6 +480,26 @@ func (m *EnrollmentMemory) ListByParent(_ context.Context, parentUserID uuid.UUI
 	return out, nil
 }
 
+// ListPending — admin-wide PENDING enrolments (awaiting payment), newest first.
+func (m *EnrollmentMemory) ListPending(_ context.Context, limit int) ([]booking.CohortEnrollment, error) {
+	if limit < 1 {
+		limit = 100
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	out := []booking.CohortEnrollment{}
+	for _, e := range m.rows {
+		if e.Status == booking.EnrollmentPending {
+			out = append(out, *e)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
+	if len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
 func (m *EnrollmentMemory) ListByCohort(_ context.Context, cohortID uuid.UUID) ([]booking.CohortEnrollment, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

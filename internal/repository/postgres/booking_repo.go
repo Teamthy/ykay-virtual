@@ -237,6 +237,38 @@ func (r *CohortEnrollmentRepo) UpdateStatus(ctx context.Context, id uuid.UUID, s
 
 // ListStalePending — PENDING enrollments older than cutoff (seat-leak cron).
 // SKIP LOCKED keeps a second worker replica from double-processing a row.
+// ListPending — admin-wide PENDING enrolments (awaiting payment), newest first.
+func (r *CohortEnrollmentRepo) ListPending(ctx context.Context, limit int) ([]booking.CohortEnrollment, error) {
+	if limit < 1 || limit > 500 {
+		limit = 100
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, cohort_id, student_profile_id, parent_user_id, order_id, status, enrolled_at, cancelled_at, created_at
+		FROM cohort_enrollments WHERE status = 'PENDING'
+		ORDER BY created_at DESC LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list pending enrollments: %w", err)
+	}
+	defer rows.Close()
+	out := []booking.CohortEnrollment{}
+	for rows.Next() {
+		var e booking.CohortEnrollment
+		var orderID, cancelledAt *uuid.UUID
+		var cancelled *time.Time
+		if err := rows.Scan(&e.ID, &e.CohortID, &e.StudentProfileID, &e.ParentUserID, &orderID,
+			&e.Status, &e.EnrolledAt, &cancelled, &e.CreatedAt); err != nil {
+			return nil, err
+		}
+		e.OrderID = orderID
+		if cancelled != nil {
+			e.CancelledAt = cancelled
+		}
+		_ = cancelledAt
+		out = append(out, e)
+	}
+	return out, rows.Err()
+}
+
 func (r *CohortEnrollmentRepo) ListStalePending(ctx context.Context, cutoff time.Time, limit int) ([]booking.CohortEnrollment, error) {
 	if limit < 1 || limit > 500 {
 		limit = 200

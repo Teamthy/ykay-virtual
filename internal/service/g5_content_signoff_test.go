@@ -162,6 +162,10 @@ type fakeProgrammeLifecycle struct {
 	life map[uuid.UUID]*academics.ProgrammeLifecycle
 }
 
+func (f *fakeProgrammeLifecycle) UpdateProgramme(_ context.Context, _ *academics.Programme) error {
+	return nil // unused in sign-off tests; satisfies the extended interface
+}
+
 func (f *fakeProgrammeLifecycle) GetLifecycle(_ context.Context, id uuid.UUID) (*academics.ProgrammeLifecycle, error) {
 	if l, ok := f.life[id]; ok {
 		cp := *l

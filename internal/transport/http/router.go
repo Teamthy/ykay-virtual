@@ -333,6 +333,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// SUPER_ADMIN — user/role management
 	mux.HandleFunc("GET "+v1+"/admin/users", handlers.Admin.ListUsers)
 	mux.HandleFunc("GET "+v1+"/admin/users/roles", handlers.Admin.ListRoles)
+	mux.HandleFunc("GET "+v1+"/admin/users/{userId}/detail", handlers.Admin.GetUserDetail)
 	mux.HandleFunc("GET "+v1+"/admin/audit", handlers.Admin.ListAuditLogs)
 	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/role", handlers.Admin.SetUserRole)
 	mux.HandleFunc("POST "+v1+"/admin/users/{userId}/status", handlers.Admin.SetUserStatus)
@@ -341,6 +342,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/support/{ticketId}/status", handlers.Admin.SetSupportStatus)
 	mux.HandleFunc("GET "+v1+"/admin/cohorts", handlers.Admin.ListCohorts)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts", handlers.Admin.CreateCohort)
+	mux.HandleFunc("PUT "+v1+"/admin/cohorts/{cohortId}", handlers.Admin.UpdateCohort)
+	mux.HandleFunc("GET "+v1+"/admin/pending-enrollments", handlers.Admin.ListPendingEnrollments)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/status", handlers.Admin.SetCohortStatus)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/tutor", handlers.Admin.AssignCohortTutor)
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/banner", handlers.Admin.UploadCohortBanner)
@@ -349,6 +352,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/cohort-joins/{id}/review", handlers.Admin.ReviewCohortJoin)
 	mux.HandleFunc("GET "+v1+"/admin/programmes/{slug}/roster", handlers.Admin.ProgrammeRoster)
 	mux.HandleFunc("POST "+v1+"/admin/programmes", handlers.Admin.CreateProgramme)
+	mux.HandleFunc("PUT "+v1+"/admin/programmes/{programmeId}", handlers.Admin.UpdateProgramme)
 	// G5.3 — catalogue sign-off: publish/unpublish programmes and
 	// testimonials without a code deployment (admin-only, audited).
 	mux.HandleFunc("POST "+v1+"/admin/programmes/{programmeId}/status", handlers.Admin.SetProgrammeStatus)

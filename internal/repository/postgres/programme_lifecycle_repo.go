@@ -63,6 +63,23 @@ func (r *ProgrammeLifecycleRepo) CreateProgramme(ctx context.Context, p *academi
 	return nil
 }
 
+// UpdateProgramme saves editable programme fields (admin edit).
+func (r *ProgrammeLifecycleRepo) UpdateProgramme(ctx context.Context, p *academics.Programme) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE programmes SET
+			title = $1, summary = $2, description = $3, price_min = $4, price_max = $5,
+			currency = $6, is_featured = $7, updated_at = NOW()
+		WHERE id = $8`,
+		p.Title, p.Summary, p.Description, p.PriceMin, p.PriceMax, p.Currency, p.IsFeatured, p.ID)
+	if err != nil {
+		return fmt.Errorf("update programme: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
 func (r *ProgrammeLifecycleRepo) SetLifecycle(ctx context.Context, l academics.ProgrammeLifecycle) error {
 	res, err := r.db.ExecContext(ctx, `
 		UPDATE programmes

@@ -56,6 +56,24 @@ func (m *ProgrammeLifecycleMemory) CreateProgramme(_ context.Context, p *academi
 	return nil
 }
 
+// UpdateProgramme saves editable programme fields (admin edit).
+func (m *ProgrammeLifecycleMemory) UpdateProgramme(_ context.Context, p *academics.Programme) error {
+	m.pm.mu.Lock()
+	defer m.pm.mu.Unlock()
+	old, ok := m.pm.rows[p.ID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	old.Title = p.Title
+	old.Summary = p.Summary
+	old.Description = p.Description
+	old.PriceMin = p.PriceMin
+	old.PriceMax = p.PriceMax
+	old.Currency = p.Currency
+	old.IsFeatured = p.IsFeatured
+	return nil
+}
+
 func (m *ProgrammeLifecycleMemory) SetLifecycle(_ context.Context, l academics.ProgrammeLifecycle) error {
 	m.pm.mu.Lock()
 	defer m.pm.mu.Unlock()

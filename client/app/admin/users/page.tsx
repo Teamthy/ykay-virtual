@@ -14,6 +14,7 @@ import {
   listAdminRoles,
   setUserRole,
   setUserStatus,
+  getUserDetail,
   type AdminUserRow,
   type AdminRole,
 } from "@/features/admin/api";
@@ -33,6 +34,7 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [tab, setTab] = useState<"all" | "admins">("all");
+  const [detailFor, setDetailFor] = useState<string | null>(null);
 
   // Platform staff roles (admin accounts).
   const isStaffRole = (roles: string[]) =>
@@ -198,6 +200,7 @@ export default function AdminUsersPage() {
                       canManage={superAdmin}
                       roleMut={roleMut}
                       statusMut={statusMut}
+                      onView={() => setDetailFor(u.id)}
                     />
                   ))}
               </tbody>
@@ -232,6 +235,8 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {detailFor && <UserDetailDialog userId={detailFor} onClose={() => setDetailFor(null)} />}
+
       <p className="flex items-center gap-1.5 text-xs text-ink-400">
         <ShieldCheck size={13} /> Role grants &amp; status changes are enforced server-side and audited. You cannot
         remove the last SUPER_ADMIN or suspend your own account.
@@ -247,6 +252,7 @@ function UserRow({
   canManage,
   roleMut,
   statusMut,
+  onView,
 }: {
   u: AdminUserRow;
   roles: AdminRole[];
@@ -254,6 +260,7 @@ function UserRow({
   canManage: boolean;
   roleMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; role: string; grant: boolean }>>;
   statusMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; status: string }>>;
+  onView: () => void;
 }) {
   const isSelf = u.id === selfId;
   const busy = roleMut.isPending || statusMut.isPending;
@@ -298,6 +305,13 @@ function UserRow({
       <td className="px-4 py-3">
         <div className="flex items-center justify-end gap-2">
           {!canManage && <span className="text-[11px] text-ink-400">View only</span>}
+          <button
+            onClick={onView}
+            className="inline-flex items-center gap-1 rounded-lg border border-ink-200 px-2.5 py-1.5 text-[11px] font-bold text-ink-700 hover:border-ink-300"
+            title="View full profile"
+          >
+            View
+          </button>
           <select
             value=""
             onChange={(e) => e.target.value && toggleRole(e.target.value, true)}
@@ -344,5 +358,57 @@ function UserRow({
         </div>
       </td>
     </tr>
+  );
+}
+
+
+// UserDetailDialog — full profile view. ANY platform admin can view; edits
+// remain on the row actions (SUPER_ADMIN-only, enforced server-side).
+function UserDetailDialog({ userId, onClose }: { userId: string; onClose: () => void }) {
+  const q = useQuery({ queryKey: ["admin", "user-detail", userId], queryFn: () => getUserDetail(userId) });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="User profile details">
+      <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="text-lg font-extrabold text-deep">Profile details</h3>
+          <button onClick={onClose} className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold text-ink-600 hover:border-ink-300">
+            Close
+          </button>
+        </div>
+
+        {q.isLoading && <Skeleton className="mt-4 h-40 w-full rounded-xl" />}
+        {q.error && <p className="mt-4 text-sm text-red-600">Could not load the profile.</p>}
+
+        {q.data && (
+          <dl className="mt-4 space-y-3 text-sm">
+            <Detail label="Name" value={`${q.data.first_name ?? ""} ${q.data.last_name ?? ""}`.trim() || "—"} />
+            <Detail label="Email" value={q.data.email} />
+            <Detail label="Status" value={q.data.status} />
+            <Detail label="Roles" value={(q.data.roles ?? []).join(", ") || "no roles"} />
+            <Detail label="Phone" value={q.data.phone || "—"} />
+            <Detail label="Joined" value={q.data.created_at ? new Date(q.data.created_at).toLocaleString() : "—"} />
+            <Detail label="Email verified" value={q.data.email_verified_at ? new Date(q.data.email_verified_at).toLocaleString() : "not verified"} />
+            <Detail label="Last login" value={q.data.last_login_at ? new Date(q.data.last_login_at).toLocaleString() : "never"} />
+            <Detail label="Onboarded" value={q.data.onboarded_at ? new Date(q.data.onboarded_at).toLocaleString() : "not yet"} />
+            {q.data.tutor_slug && (
+              <Detail label="Tutor profile" value={`${q.data.tutor_slug} (${q.data.tutor_status ?? "—"})`} />
+            )}
+          </dl>
+        )}
+        <p className="mt-4 border-t border-ink-100 pt-3 text-[11px] text-ink-400">
+          View-only. Role and status changes are SUPER_ADMIN actions on the table row.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-ink-50 pb-2">
+      <dt className="text-xs font-bold uppercase tracking-wide text-ink-400">{label}</dt>
+      <dd className="max-w-[65%] break-words text-right font-semibold text-ink-800">{value}</dd>
+    </div>
   );
 }

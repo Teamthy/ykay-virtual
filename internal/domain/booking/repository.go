@@ -36,6 +36,10 @@ type CohortEnrollmentRepository interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status EnrollmentStatus) error
 	// ListByCohort — roster for the tutor console (LMS).
 	ListByCohort(ctx context.Context, cohortID uuid.UUID) ([]CohortEnrollment, error)
+	// ListPending — admin-wide PENDING enrolments (awaiting payment),
+	// newest first. Distinct from tutor cohort JOIN requests: these are
+	// student enrolment records created at checkout.
+	ListPending(ctx context.Context, limit int) ([]CohortEnrollment, error)
 	// ListByParent — the parent's confirmed enrollments (messaging contacts).
 	ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]CohortEnrollment, error)
 	// ListStalePending — PENDING enrollments created before cutoff. Feeds the
@@ -284,6 +288,11 @@ type CohortAdminRepository interface {
 	// ReviewJoin stamps APPROVED/REJECTED plus reviewer on a join request and
 	// returns the updated row.
 	ReviewJoin(ctx context.Context, requestID uuid.UUID, status string, reviewedBy uuid.UUID) (*CohortJoinRequest, error)
+	// GetCohort loads one cohort (admin detail/edit view).
+	GetCohort(ctx context.Context, id uuid.UUID) (*Cohort, error)
+	// Update saves editable cohort fields (admin edit). Capacity below the
+	// current enrolled_count is rejected by the service layer first.
+	Update(ctx context.Context, c *Cohort) error
 	// ProgrammeRoster aggregates the delivery picture for one programme slug:
 	// programme, its cohorts, the tutors attached to them, and the students
 	// enrolled. Returned as a JSON-ready map (admin console contract).

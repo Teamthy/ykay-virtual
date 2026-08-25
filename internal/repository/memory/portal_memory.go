@@ -196,6 +196,31 @@ func (m *CohortMemory) Create(_ context.Context, c *booking.Cohort) error {
 	return nil
 }
 
+// Update saves editable cohort fields (admin edit console).
+func (m *CohortMemory) Update(_ context.Context, c *booking.Cohort) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	old, ok := m.rows[c.ID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	// Preserve identity/lifecycle fields the edit form does not own.
+	c.ProgrammeID = old.ProgrammeID
+	c.Slug = old.Slug
+	c.TutorProfileID = old.TutorProfileID
+	c.EnrolledCount = old.EnrolledCount
+	c.Status = old.Status
+	c.CreatedAt = old.CreatedAt
+	stored := m.rows[c.ID]
+	*stored = *c
+	return nil
+}
+
+// GetCohort loads one cohort (admin detail/edit).
+func (m *CohortMemory) GetCohort(ctx context.Context, id uuid.UUID) (*booking.Cohort, error) {
+	return m.GetByID(ctx, id)
+}
+
 func (m *CohortMemory) UpdateStatus(_ context.Context, id uuid.UUID, status booking.CohortStatus) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

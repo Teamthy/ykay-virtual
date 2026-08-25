@@ -25,4 +25,7 @@ type ProgrammeLifecycleRepository interface {
 	// CreateProgramme inserts a new programme (always DRAFT; slug uniqueness
 	// is enforced by the store). Fills ID/CreatedAt/UpdatedAt.
 	CreateProgramme(ctx context.Context, p *Programme) error
+	// UpdateProgramme saves editable fields (title/summary/description/pricing/
+	// featured). Slug and status keep their dedicated flows.
+	UpdateProgramme(ctx context.Context, p *Programme) error
 }

@@ -57,6 +57,8 @@ type AdminService struct {
 	tutorSubjects  tutor.TutorSubjectRepository
 	lmsStarter     func(ctx context.Context, cohortID, tutorProfileID uuid.UUID, cohortTitle string) error
 	leadsRepo      leads.Repository
+	enrollments    booking.CohortEnrollmentRepository
+	tutorByUser    func(ctx context.Context, userID uuid.UUID) (*tutor.TutorProfile, error)
 	users          identity.UserRepository
 	roles          identity.RoleRepository
 	auditLogs      identity.AuditLogRepository
@@ -64,6 +66,18 @@ type AdminService struct {
 	vetting        vetting.VettingRepository
 	audit          identity.AuditService
 	now            func() time.Time
+}
+
+// WithEnrollments wires the pending-enrolment admin view.
+func (s *AdminService) WithEnrollments(e booking.CohortEnrollmentRepository) *AdminService {
+	s.enrollments = e
+	return s
+}
+
+// WithTutorLookup wires tutor-profile-by-user for the user detail view.
+func (s *AdminService) WithTutorLookup(f func(ctx context.Context, userID uuid.UUID) (*tutor.TutorProfile, error)) *AdminService {
+	s.tutorByUser = f
+	return s
 }
 
 // WithUsers wires the user + role repositories for the SUPER_ADMIN
@@ -614,6 +628,42 @@ type CreateProgrammeInput struct {
 // CreateProgrammeAdmin — creates a DRAFT programme (admin console). The slug
 // is normalised from the title when not supplied; duplicates are rejected so
 // programme pages always have a stable URL.
+// UpdateProgrammeAdmin — edit an existing programme (title/summary/description/
+// pricing/featured). Slug + status flow through their own actions.
+func (s *AdminService) UpdateProgrammeAdmin(ctx context.Context, adminID, programmeID uuid.UUID,
+	title, summary string, description *string, priceMin, priceMax float64, currency string, featured bool) (*academics.Programme, error) {
+	if s.programmes == nil {
+		return nil, errors.New("programme lifecycle store unavailable")
+	}
+	if strings.TrimSpace(title) == "" {
+		return nil, fmt.Errorf("%w: title is required", domain.ErrInvalidInput)
+	}
+	life, err := s.programmes.GetLifecycle(ctx, programmeID)
+	if err != nil {
+		return nil, err
+	}
+	var summaryPtr *string
+	if strings.TrimSpace(summary) != "" {
+		summaryPtr = &summary
+	}
+	var priceMinPtr, priceMaxPtr *float64
+	if priceMin > 0 {
+		priceMinPtr = &priceMin
+	}
+	if priceMax > 0 {
+		priceMaxPtr = &priceMax
+	}
+	p := &academics.Programme{ID: life.ID, Title: strings.TrimSpace(title),
+		Summary: summaryPtr, Description: description, PriceMin: priceMinPtr, PriceMax: priceMaxPtr,
+		Currency: currency, IsFeatured: featured, Status: life.Status}
+	if err := s.programmes.UpdateProgramme(ctx, p); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "programme", &programmeID,
+		nil, map[string]any{"action": "programme_updated", "title": p.Title}, nil, nil)
+	return p, nil
+}
+
 func (s *AdminService) CreateProgrammeAdmin(ctx context.Context, adminID uuid.UUID, in CreateProgrammeInput) (*academics.Programme, error) {
 	if s.programmes == nil {
 		return nil, errors.New("programme lifecycle store unavailable")
@@ -922,11 +972,185 @@ func (s *AdminService) RequestCohortJoinForUser(ctx context.Context, userID, coh
 	return s.RequestCohortJoin(ctx, profile.ID, cohortID, note)
 }
 
-func (s *AdminService) ListCohortJoins(ctx context.Context, status string) ([]booking.CohortJoinRequest, error) {
+// CohortJoinView — a join request enriched with the details admins actually
+// review: who the tutor is (name, email, verification state) and which
+// cohort (title). Raw UUIDs never reach the console again.
+type CohortJoinView struct {
+	booking.CohortJoinRequest
+	TutorName    string `json:"tutor_name"`
+	TutorEmail   string `json:"tutor_email,omitempty"`
+	TutorSlug    string `json:"tutor_slug,omitempty"`
+	TutorStatus  string `json:"tutor_status,omitempty"`
+	TutorYears   int    `json:"tutor_years_experience,omitempty"`
+	CohortTitle  string `json:"cohort_title"`
+}
+
+func (s *AdminService) ListCohortJoins(ctx context.Context, status string) ([]CohortJoinView, error) {
 	if s.cohortAdmin == nil {
-		return []booking.CohortJoinRequest{}, nil
+		return []CohortJoinView{}, nil
 	}
-	return s.cohortAdmin.ListJoinRequests(ctx, status)
+	rows, err := s.cohortAdmin.ListJoinRequests(ctx, status)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]CohortJoinView, 0, len(rows))
+	for i := range rows {
+		v := CohortJoinView{CohortJoinRequest: rows[i], TutorName: "Unknown tutor", CohortTitle: "Unknown cohort"}
+		if s.tutors != nil {
+			if tp, err := s.tutors.GetByID(ctx, rows[i].TutorProfileID); err == nil && tp != nil {
+				v.TutorName = tp.DisplayName
+				v.TutorSlug = tp.Slug
+				v.TutorStatus = string(tp.Status)
+				v.TutorYears = tp.YearsExperience
+				if s.users != nil {
+					if u, err := s.users.FindByID(ctx, tp.UserID); err == nil && u != nil {
+						v.TutorEmail = u.Email
+					}
+				}
+			}
+		}
+		if s.cohortAdmin != nil {
+			if c, err := s.cohortAdmin.GetCohort(ctx, rows[i].CohortID); err == nil && c != nil {
+				v.CohortTitle = c.Title
+			}
+		}
+		out = append(out, v)
+	}
+	return out, nil
+}
+
+// PendingEnrollmentView — student enrolments awaiting payment, with the
+// human-readable context. Deliberately SEPARATE from tutor join requests:
+// joins are tutors asking to teach; pending enrolments are students who
+// started checkout and have not paid (the seat-expiry cron sweeps these).
+type PendingEnrollmentView struct {
+	booking.CohortEnrollment
+	StudentName string `json:"student_name"`
+	CohortTitle string `json:"cohort_title"`
+	CohortFee   float64 `json:"cohort_fee"`
+}
+
+func (s *AdminService) ListPendingEnrollments(ctx context.Context, limit int) ([]PendingEnrollmentView, error) {
+	if s.enrollments == nil || s.cohortAdmin == nil {
+		return []PendingEnrollmentView{}, nil
+	}
+	if limit < 1 || limit > 500 {
+		limit = 100
+	}
+	rows, err := s.enrollments.ListPending(ctx, limit)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]PendingEnrollmentView, 0, len(rows))
+	for i := range rows {
+		v := PendingEnrollmentView{CohortEnrollment: rows[i], StudentName: "Unknown student", CohortTitle: "Unknown cohort"}
+		if s.students != nil {
+			if st, err := s.students.FindByID(ctx, rows[i].StudentProfileID); err == nil && st != nil {
+				v.StudentName = st.FirstName + " " + st.LastName
+			}
+		}
+		if c, err := s.cohortAdmin.GetCohort(ctx, rows[i].CohortID); err == nil && c != nil {
+			v.CohortTitle = c.Title
+			v.CohortFee = c.Fee
+		}
+		out = append(out, v)
+	}
+	return out, nil
+}
+
+// UpdateCohortInput — admin cohort edit. Slug/programme/tutor/status are
+// managed by their own dedicated actions, not this form.
+type UpdateCohortInput struct {
+	Title        string     `json:"title"`
+	Capacity     int        `json:"capacity"`
+	StartDate    time.Time  `json:"start_date"`
+	EndDate      time.Time  `json:"end_date"`
+	ScheduleDesc *string    `json:"schedule_description"`
+	Timezone     string     `json:"timezone"`
+	LocationMode string     `json:"location_mode"`
+	Fee          float64    `json:"fee"`
+	Currency     string     `json:"currency"`
+	EnrollmentOpensAt  *time.Time `json:"enrollment_opens_at"`
+	EnrollmentClosesAt *time.Time `json:"enrollment_closes_at"`
+}
+
+// UpdateCohortAdmin — edit an existing cohort. Capacity can never drop below
+// the count of already-enrolled students; end must follow start; fee ≥ 0.
+func (s *AdminService) UpdateCohortAdmin(ctx context.Context, adminID, cohortID uuid.UUID, in UpdateCohortInput) (*booking.Cohort, error) {
+	if s.cohortAdmin == nil {
+		return nil, errors.New("cohort store unavailable")
+	}
+	c, err := s.cohortAdmin.GetCohort(ctx, cohortID)
+	if err != nil {
+		return nil, err
+	}
+	if strings.TrimSpace(in.Title) == "" {
+		return nil, fmt.Errorf("%w: title is required", domain.ErrInvalidInput)
+	}
+	if in.Capacity < 1 {
+		return nil, fmt.Errorf("%w: capacity must be at least 1", domain.ErrInvalidInput)
+	}
+	if in.Capacity < c.EnrolledCount {
+		return nil, fmt.Errorf("%w: capacity (%d) is below the enrolled count (%d)", domain.ErrInvalidInput, in.Capacity, c.EnrolledCount)
+	}
+	if !in.EndDate.After(in.StartDate) {
+		return nil, fmt.Errorf("%w: end date must be after start date", domain.ErrInvalidInput)
+	}
+	if in.Fee < 0 {
+		return nil, fmt.Errorf("%w: fee cannot be negative", domain.ErrInvalidInput)
+	}
+	c.Title = strings.TrimSpace(in.Title)
+	c.Capacity = in.Capacity
+	c.StartDate = in.StartDate
+	c.EndDate = in.EndDate
+	c.ScheduleDesc = in.ScheduleDesc
+	c.Timezone = in.Timezone
+	c.LocationMode = in.LocationMode
+	c.Fee = in.Fee
+	c.Currency = in.Currency
+	c.EnrollmentOpensAt = in.EnrollmentOpensAt
+	c.EnrollmentClosesAt = in.EnrollmentClosesAt
+	if err := s.cohortAdmin.Update(ctx, c); err != nil {
+		return nil, err
+	}
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditUpdate, "cohort", &cohortID,
+		nil, map[string]any{"action": "cohort_updated", "title": c.Title, "capacity": c.Capacity, "fee": c.Fee}, nil, nil)
+	return c, nil
+}
+
+// UserDetailView — full profile for the user console: account + roles +
+// tutor profile summary when the account is a tutor. Read for any admin;
+// edits remain SUPER_ADMIN-only (enforced at the route).
+type UserDetailView struct {
+	identity.User
+	Roles       []string           `json:"roles"`
+	TutorSlug   string             `json:"tutor_slug,omitempty"`
+	TutorStatus string             `json:"tutor_status,omitempty"`
+}
+
+func (s *AdminService) GetUserDetail(ctx context.Context, userID uuid.UUID) (*UserDetailView, error) {
+	if s.users == nil {
+		return nil, errors.New("user store unavailable")
+	}
+	u, err := s.users.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	view := &UserDetailView{User: *u, Roles: []string{}}
+	if s.roles != nil {
+		if list, err := s.roles.RolesForUser(ctx, userID); err == nil {
+			for _, r := range list {
+				view.Roles = append(view.Roles, r.Name)
+			}
+		}
+	}
+	if s.tutorByUser != nil {
+		if tp, err := s.tutorByUser(ctx, userID); err == nil && tp != nil {
+			view.TutorSlug = tp.Slug
+			view.TutorStatus = string(tp.Status)
+		}
+	}
+	return view, nil
 }
 
 func (s *AdminService) ReviewCohortJoin(ctx context.Context, adminID, requestID uuid.UUID, status string) (*booking.CohortJoinRequest, error) {
