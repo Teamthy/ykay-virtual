@@ -105,6 +105,20 @@ export function getTutorLessons(): Promise<TutorLesson[]> {
   return apiFetch<TutorLesson[]>("/me/tutor-lessons").then((r) => r.data ?? []);
 }
 
+// FR-23 self-service: move or cancel a lesson (tutor-of-lesson or admin).
+export function rescheduleTutorLesson(lessonId: string, startAt: string, endAt: string): Promise<void> {
+  return apiFetch(`/lessons/${lessonId}/reschedule`, {
+    method: "POST",
+    body: JSON.stringify({ start_at: startAt, end_at: endAt }),
+  }).then(() => undefined);
+}
+
+export function cancelTutorLesson(lessonId: string): Promise<void> {
+  return apiFetch(`/lessons/${lessonId}/cancel`, {
+    method: "POST",
+  }).then(() => undefined);
+}
+
 export function getAvailability(): Promise<AvailabilitySlot[]> {
   return apiFetch<AvailabilitySlot[]>("/me/availability").then((r) => r.data ?? []);
 }

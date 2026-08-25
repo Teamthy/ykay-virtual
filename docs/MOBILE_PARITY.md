@@ -92,10 +92,10 @@ total for the domain).
 - **Commerce deep-link (DONE)** — cohort detail now carries an "Enrol on web —
   pay securely" button (`Linking.openURL` → `SITE_URL/cohorts/{id}/enroll`).
   `EXPO_PUBLIC_SITE_URL` overrides the web origin per environment.
-- **Lesson reschedule/cancel (FR-23, web-only → ROADMAP)** — the tutor web
+- **Lesson reschedule/cancel (FR-23, DONE 2026-08-25)** — tutor lessons screen reschedules/cancels inline. (Historical: the tutor web
   console can reschedule/cancel lessons (`POST /lessons/{id}/reschedule|cancel`).
-  Mobile tutor schedule screens surface statuses; inline mutation controls
-  land with the next parity batch.
+  console shipped it first; mobile caught up in the CI/CD + design-audit pass —
+  see docs/MOBILE_DESIGN_AUDIT_2026-08.md.)
 - **Payment verify (server-side)** — `POST /me/orders/{id}/verify` settles a
   paid order without waiting for the webhook. The web receipt auto-verifies on
   landing; mobile order detail can adopt the same call.
