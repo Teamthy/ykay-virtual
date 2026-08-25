@@ -884,6 +884,28 @@ function OnboardingInner() {
     }
   };
 
+  // A-29 session recovery: the wizard's session is born in step 2 (code
+  // confirm). If it is later lost mid-flow (step ≥3, expired cookie, stale
+  // draft from another device…), bouncing to /login is a dead end for a
+  // brand-new user whose password is still the random one generated in
+  // step 1. Instead: email a FRESH code and return to step 2 — confirming
+  // it re-creates the session and the flow resumes exactly where the draft
+  // left off. Only if email delivery itself is down do we fall back to
+  // /login (which also offers the code + forgot-password paths).
+  const reverify = async (reason: string) => {
+    try {
+      await requestLoginCode(state.email);
+      toast.error(reason + " — we emailed you a fresh code. Enter it to pick up where you left off.");
+      setCode("");
+      setCodeSent(true);
+      setCountdown(30);
+      go(2);
+    } catch {
+      toast.error("We couldn't send a sign-in code right now — email delivery is down. Your progress is saved; please try again in a few minutes.");
+      router.replace("/login");
+    }
+  };
+
   const pickRole = async (r: string) => {
     setSubmitting(true);
     setError(null);
@@ -895,12 +917,12 @@ function OnboardingInner() {
       go(4);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not save your role";
-      // A-28: if the session is missing/expired (401) the role can't be saved
-      // and retrying forever just shows a raw "not authenticated". Send the
-      // user back to login once instead of trapping them.
-      if (/authentication required|not authenticated|unauthorized/i.test(msg)) {
-        toast.error("Your session expired - please log in again.");
-        router.replace("/login");
+      // A-28/A-29: if the session is missing/expired (401) the role can't be
+      // saved. Recover IN-FLOW with a fresh emailed code (confirm re-creates
+      // the session); /login is a dead end for a user who hasn't set a
+      // password yet.
+      if (/authentication required|not authenticated|unauthorized|session expired/i.test(msg)) {
+        await reverify("Your session expired");
         return;
       }
       setError(msg);
@@ -967,7 +989,12 @@ function OnboardingInner() {
       toast.success("Password set - you can now log in with it anytime.");
       go(6);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not set your password");
+      const msg = err instanceof Error ? err.message : "Could not set your password";
+      if (/authentication required|not authenticated|unauthorized|session expired/i.test(msg)) {
+        await reverify("Your session expired before the password was saved");
+        return;
+      }
+      setError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -1004,8 +1031,11 @@ function OnboardingInner() {
     if (sessionLoading || step < 3 || step > 6) return;
     if (user || verifiedRef.current) return;
     if (staleDraft) return;
-    router.replace("/login");
-  }, [sessionLoading, user, step, staleDraft, router]);
+    // A-29: recover in-flow with a fresh code (re-verify), never a dead-end
+    // /login bounce for a password-less brand-new account.
+    void reverify("Your session expired");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionLoading, user, step, staleDraft]);
 
   if (staleDraft || (!sessionLoading && !user && !verifiedRef.current && step >= 3 && step <= 6)) {
     return <Loading />;

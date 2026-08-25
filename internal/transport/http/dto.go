@@ -156,6 +156,9 @@ func WriteAppError(w http.ResponseWriter, err error) {
 		pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), err.Error(), nil)
 	case errors.Is(err, domain.ErrTooManyRequests):
 		pkg.WriteError(w, http.StatusTooManyRequests, string(pkg.CodeTooManyRequests), err.Error(), nil)
+	case errors.Is(err, domain.ErrEmailDelivery):
+		pkg.WriteError(w, http.StatusServiceUnavailable, "EMAIL_UNAVAILABLE",
+			sentinelMessage(err, domain.ErrEmailDelivery, "email delivery is temporarily unavailable"), nil)
 	default:
 		// Log the real cause server-side (5xx visibility) without leaking it
 		// to the client.

@@ -201,3 +201,35 @@ enforced in storage (`UNIQUE(user_id, sequence, step)` on `email_drips`) —
 crashed-cron retries can never double-send. Audience: verified + active +
 non-tutor. Disabled entirely unless `RESEND_API_KEY`/`SMTP_*` is set on the
 worker (no console-email drips in dev). Tests: `drip_service_test.go`.
+
+## A-29 onboarding/auth hardening (2026-08-25) — real-user sign-up drill
+
+Symptoms seen in the wild: **500 "internal server error" requesting the
+onboarding code**, then **"Your session expired – please log in again"** on
+verify, with the account created but no password ever set (onboarding
+generates a random password the user never sees until step 5).
+
+Root cause chain + fixes:
+
+1. **Email provider failing at the edge** (unverified Resend sender / bad
+   key) made `RequestLoginCode` return a bare 500.
+   → now a typed `ErrEmailDelivery` → **503 `EMAIL_UNAVAILABLE`** with the
+   message "we couldn't send your code right now – please try again in a few
+   minutes". Provider detail stays in the server log (`login code email
+   failed … error=…`).
+2. **Session-lost mid-wizard was a dead end**: steps ≥3 need the session born
+   in step 2; losing it bounced to `/login` — impossible for a user who
+   hasn't set a password.
+   → the wizard now **re-verifies in flow**: it emails a fresh code and
+   returns to step 2; confirming re-creates the session and the draft
+   resumes. Applies to the step≥3 recovery effect, role-pick (A-28) and the
+   set-password step. Only when email itself is down does it fall back to
+   `/login` (which carries the code + forgot-password paths).
+
+**Pre-launch ops check (30 s):** in the Render API logs, request a code from
+the real app and grep `login code email failed`. No hit + email received =
+green. A Resend `403 sender not verified` = verify `EMAIL_FROM`'s domain in
+the Resend dashboard, then redeploy.
+
+Tests: `auth_magiclink_delivery_test.go` (typed error + anti-enumeration),
+`error_mapping_test.go` (503 mapping).

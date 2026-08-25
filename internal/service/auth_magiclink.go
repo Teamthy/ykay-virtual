@@ -71,7 +71,11 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 					"<p style=\"margin:0 0 20px;text-align:center;\"><span style=\"display:inline-block;background:#E9F0FF;color:#0A1F44;font-size:30px;font-weight:800;letter-spacing:0.35em;padding:14px 22px;border-radius:12px;font-family:monospace;\">"+code+"</span></p>"+
 					"<p style=\"margin:0 0 0;color:#8794AC;font-size:13px;\">If you didn't request this code, you can safely ignore this email.</p>")); err != nil {
 			slog.Error("login code email failed", "to", user.Email, "error", err)
-			return fmt.Errorf("could not send login code: %w", err)
+			// Typed: the API answers 503 EMAIL_UNAVAILABLE with a clear user
+			// message instead of a bare 500, so onboarding surfaces "email
+			// delivery is down, try shortly" instead of "internal server
+			// error". The provider detail stays in the server log above.
+			return fmt.Errorf("%w: we couldn't send your code right now - please try again in a few minutes", domain.ErrEmailDelivery)
 		}
 	}
 	_ = s.audit.LogStateChange(ctx, &user.ID, identity.AuditLogin, "auth_token",
