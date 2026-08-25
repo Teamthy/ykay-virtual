@@ -49,11 +49,11 @@ paths:
         '200': { description: Recommendations }
 
 
-# ── contract-generated (G6.1): routed endpoints not previously documented ──
+# â”€â”€ contract-generated (G6.1): routed endpoints not previously documented â”€â”€
   /admin/chat/analytics:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -61,7 +61,7 @@ paths:
   /admin/chat/analytics/trends:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -69,7 +69,7 @@ paths:
   /admin/chat/csat.csv:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -77,7 +77,7 @@ paths:
   /admin/chat/threads:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -85,7 +85,7 @@ paths:
   /admin/chat/threads/{threadId}/close:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -94,7 +94,7 @@ paths:
   /admin/chat/threads/{threadId}/messages:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -102,7 +102,7 @@ paths:
   /admin/chat/threads/{threadId}/reply:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -111,7 +111,7 @@ paths:
   /admin/orders:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -127,7 +127,7 @@ paths:
   /leads:
     post:
       tags: [leads]
-      summary: Capture a lead (callback request / browse interest) — ops is pinged on WhatsApp
+      summary: Capture a lead (callback request / browse interest) â€” ops is pinged on WhatsApp
       security: []
       requestBody:
         required: true
@@ -151,7 +151,7 @@ paths:
   /admin/overview:
     get:
       tags: [admin]
-      summary: Admin operations overview — stats, leads, payouts pending, attention queues, today's classes, recent activity
+      summary: Admin operations overview â€” stats, leads, payouts pending, attention queues, today's classes, recent activity
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: Operations overview }
@@ -214,7 +214,7 @@ paths:
   /admin/orders/{orderId}/refund:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -273,7 +273,7 @@ paths:
   /admin/payouts:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -313,7 +313,7 @@ paths:
   /admin/vetting/profiles/{profileId}/approve:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -322,7 +322,7 @@ paths:
   /admin/vetting/profiles/{profileId}/hold:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -331,7 +331,7 @@ paths:
   /admin/vetting/profiles/{profileId}/interview:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -340,7 +340,7 @@ paths:
   /admin/vetting/profiles/{profileId}/reject:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -349,7 +349,7 @@ paths:
   /admin/vetting/profiles/{profileId}/review:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -358,7 +358,7 @@ paths:
   /admin/vetting/profiles/{profileId}/suspend:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -386,7 +386,7 @@ paths:
   /admin/vetting/profiles/{profileId}/verify:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -395,7 +395,7 @@ paths:
   /auth/google/callback:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -403,7 +403,7 @@ paths:
   /auth/google/exchange:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -412,7 +412,7 @@ paths:
   /auth/google/url:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -420,7 +420,7 @@ paths:
   /auth/login-code/confirm:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -429,7 +429,7 @@ paths:
   /auth/login-code/mobile/confirm:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -438,7 +438,7 @@ paths:
   /auth/login-code/request:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -447,7 +447,7 @@ paths:
   /auth/login/mobile:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -456,7 +456,7 @@ paths:
   /auth/me/context:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -464,7 +464,7 @@ paths:
   /auth/me/delete:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -473,7 +473,7 @@ paths:
   /auth/me/export:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -481,7 +481,7 @@ paths:
   /auth/me/password:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -490,7 +490,7 @@ paths:
   /auth/me/profile:
     put:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -547,7 +547,7 @@ paths:
   /auth/me/role:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -556,13 +556,13 @@ paths:
   /chat/threads:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -571,7 +571,7 @@ paths:
   /chat/threads/{threadId}/escalate:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -580,13 +580,13 @@ paths:
   /chat/threads/{threadId}/messages:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -595,7 +595,7 @@ paths:
   /chat/threads/{threadId}/rating:
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -604,7 +604,7 @@ paths:
   /cohorts/{id}/enrollments:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -612,7 +612,7 @@ paths:
   /me/availability-exceptions/{id}:
     delete:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -620,7 +620,7 @@ paths:
   /me/availability/{id}:
     delete:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -628,13 +628,13 @@ paths:
   /me/devices:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
     post:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -643,7 +643,7 @@ paths:
   /me/devices/{deviceId}:
     delete:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -651,7 +651,7 @@ paths:
   /me/submissions:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -659,7 +659,7 @@ paths:
   /programmes/{slug}:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -667,7 +667,7 @@ paths:
   /health:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -675,7 +675,7 @@ paths:
   /health/live:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -683,7 +683,7 @@ paths:
   /health/ready:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -691,7 +691,7 @@ paths:
   /metrics:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -699,7 +699,7 @@ paths:
   /objects/{bucket}/{key...}:
     get:
       tags: []
-      summary: "Routed endpoint (contract-generated — expand me)"
+      summary: "Routed endpoint (contract-generated â€” expand me)"
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: OK }
@@ -749,7 +749,7 @@ paths:
                 password: { type: string }
       responses:
         '200':
-          description: Logged in — sets httpOnly nuvora_session cookie
+          description: Logged in â€” sets httpOnly nuvora_session cookie
           content:
             application/json:
               schema:
@@ -831,7 +831,7 @@ paths:
                 token: { type: string }
       responses:
         '200':
-          description: Verified — account activated
+          description: Verified â€” account activated
           content:
             application/json:
               schema:
@@ -989,7 +989,7 @@ paths:
     post:
       tags: [bookings]
       summary: >-
-        Create booking (COHORT enrollment or PRIVATE package) — transactional,
+        Create booking (COHORT enrollment or PRIVATE package) â€” transactional,
         bounded pool, no N+1. Idempotent via idempotency_key: a repeated key
         returns the original order (replayed=true) with no duplicate charge.
       requestBody:
@@ -1283,6 +1283,164 @@ paths:
       responses:
         '200': { description: Updated }
 
+  /admin/school/sessions:
+    post:
+      tags: [admin]
+      summary: Create an academic session (DRAFT) â€” virtual school calendar
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, starts_on, ends_on]
+              properties:
+                institution_id: { type: string, format: uuid, description: Omit for the platform-wide NUVORA school }
+                name: { type: string, example: "2026/2027" }
+                starts_on: { type: string, format: date }
+                ends_on: { type: string, format: date }
+      responses:
+        '201': { description: Session created (DRAFT) }
+        '409': { description: Overlaps an open session in the same scope }
+    get:
+      tags: [admin]
+      summary: List academic sessions for a scope (newest first)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: institution_id, in: query, schema: { type: string, format: uuid }, description: Omit for the platform scope }
+      responses:
+        '200': { description: Sessions }
+
+  /admin/school/sessions/{id}:
+    put:
+      tags: [admin]
+      summary: Edit a session's name/dates (not allowed once CLOSED)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, starts_on, ends_on]
+              properties:
+                name: { type: string }
+                starts_on: { type: string, format: date }
+                ends_on: { type: string, format: date }
+      responses:
+        '200': { description: Updated }
+        '409': { description: Closed session, or new dates overlap/orphan terms }
+
+  /admin/school/sessions/{id}/status:
+    post:
+      tags: [admin]
+      summary: Move a session DRAFTâ†’ACTIVEâ†’CLOSED (one ACTIVE per scope; closing cascades to its terms)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [DRAFT, ACTIVE, CLOSED] }
+      responses:
+        '200': { description: Updated }
+        '409': { description: Illegal transition, or another session is ACTIVE in the scope }
+
+  /admin/school/sessions/{id}/terms:
+    post:
+      tags: [admin]
+      summary: Add a term (UPCOMING) to a session â€” must lie inside the session dates and not overlap siblings
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, number, starts_on, ends_on]
+              properties:
+                name: { type: string, example: "First Term" }
+                number: { type: integer, minimum: 1, maximum: 6 }
+                starts_on: { type: string, format: date }
+                ends_on: { type: string, format: date }
+                enrollment_opens_at: { type: string, format: date-time }
+                enrollment_closes_at: { type: string, format: date-time }
+      responses:
+        '201': { description: Term created (UPCOMING) }
+        '409': { description: Overlaps a sibling term, or session is CLOSED }
+    get:
+      tags: [admin]
+      summary: List a session's terms ordered by number
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Terms }
+
+  /admin/school/terms/{id}:
+    put:
+      tags: [admin]
+      summary: Edit a term's name/number/dates/enrolment window (not allowed once CLOSED)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, number, starts_on, ends_on]
+              properties:
+                name: { type: string }
+                number: { type: integer, minimum: 1, maximum: 6 }
+                starts_on: { type: string, format: date }
+                ends_on: { type: string, format: date }
+                enrollment_opens_at: { type: string, format: date-time }
+                enrollment_closes_at: { type: string, format: date-time }
+      responses:
+        '200': { description: Updated }
+        '409': { description: Closed term/session, or overlap/number clash }
+
+  /admin/school/terms/{id}/status:
+    post:
+      tags: [admin]
+      summary: Move a term UPCOMINGâ†’ACTIVEâ†’CLOSED (session must be ACTIVE; one ACTIVE term per session)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [UPCOMING, ACTIVE, CLOSED] }
+      responses:
+        '200': { description: Updated }
+        '409': { description: Illegal transition, or another term is ACTIVE }
+
+  /school/calendar/current:
+    get:
+      tags: [learning]
+      summary: Public current academic calendar â€” ACTIVE session + terms with enrolment windows evaluated
+      parameters:
+        - { name: institution_id, in: query, schema: { type: string, format: uuid }, description: Omit for the platform scope }
+      responses:
+        '200': { description: "{ active: false } when no session is live for the scope" }
+
   /payments/initiate:
     post:
       tags: [payments]
@@ -1315,7 +1473,7 @@ paths:
       tags: [payments]
       summary: >-
         Idempotent webhook (UNIQUE provider_reference, HMAC signature verified
-        server-side — the client redirect is never trusted). Duplicate
+        server-side â€” the client redirect is never trusted). Duplicate
         deliveries return 200 with duplicate=true; signature failures 400.
       parameters:
         - { name: provider, in: path, required: true, schema: { type: string, enum: [PAYSTACK, FLUTTERWAVE] } }
@@ -1498,7 +1656,7 @@ paths:
   /admin/vetting/profiles/{profileId}/{action}:
     post:
       tags: [admin]
-      summary: Admin workflow action — review | interview | verify | approve | reject | hold | suspend
+      summary: Admin workflow action â€” review | interview | verify | approve | reject | hold | suspend
       security: [{ actorHeader: [] }]
       parameters:
         - { name: action, in: path, required: true, schema: { type: string } }
@@ -1655,7 +1813,7 @@ paths:
       summary: Lessons for a linked student (student portal)
       security: [{ actorHeader: [] }]
       parameters:
-        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Lessons }
 
@@ -1665,7 +1823,7 @@ paths:
       summary: Lessons for a tutor profile
       security: [{ actorHeader: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Lessons }
 
@@ -1675,7 +1833,7 @@ paths:
       summary: Tutor earnings (escrow holds + payouts)
       security: [{ actorHeader: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Earnings summary }
 
@@ -1706,7 +1864,7 @@ paths:
   /support/tickets:
     post:
       tags: [support]
-      summary: Open a support ticket (G5.2 — categorised intake with SLA)
+      summary: Open a support ticket (G5.2 â€” categorised intake with SLA)
       description: |
         SAFEGUARDING tickets get a 4-hour SLA and severity floored at MEDIUM;
         HIGH/URGENT get 8h; default 24h. Unknown categories are rejected.
@@ -1781,7 +1939,7 @@ paths:
   /admin/programmes/{programmeId}/status:
     post:
       tags: [admin]
-      summary: Publish/unpublish a programme (G5.3 — catalogue operable without deploys)
+      summary: Publish/unpublish a programme (G5.3 â€” catalogue operable without deploys)
       description: |
         DRAFT/PUBLISHED/ARCHIVED transitions. Publishing stamps published_at
         and a 90-day review_due_at; unpublishing clears both and flushes the
@@ -1898,7 +2056,7 @@ paths:
   /redirects/{slug}:
     get:
       tags: [content]
-      summary: Resolve a renamed slug (RedirectMap table → 301s; fixes soft-404s)
+      summary: Resolve a renamed slug (RedirectMap table â†’ 301s; fixes soft-404s)
       parameters:
         - { name: slug, in: path, required: true, schema: { type: string } }
       responses:
@@ -2141,7 +2299,7 @@ paths:
   /lessons/{lessonId}/reschedule:
     post:
       tags: [learning]
-      summary: Reschedule a lesson (tutor own lesson or admin; double-booking guarded) — FR-23
+      summary: Reschedule a lesson (tutor own lesson or admin; double-booking guarded) â€” FR-23
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -2185,7 +2343,7 @@ paths:
   /lessons/{lessonId}/cancel:
     post:
       tags: [learning]
-      summary: Cancel a lesson (tutor own lesson or admin) — FR-23
+      summary: Cancel a lesson (tutor own lesson or admin) â€” FR-23
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -2201,7 +2359,7 @@ paths:
         G4.2 meeting-link lifecycle. Creates the room on the configured
         provider (MEETING_PROVIDER=whereby|stub) the first time and reuses it
         while unexpired; refreshes when the previous link expired. The tutor
-        profile is resolved from the session — no profile ID is accepted from
+        profile is resolved from the session â€” no profile ID is accepted from
         the caller.
       security: [{ sessionCookie: [] }]
       parameters:
@@ -2225,7 +2383,7 @@ paths:
       summary: Join link for a lesson (participant; join window enforced)
       description: |
         Learners receive the join link only while the server-enforced window
-        is open (start − join_window … end + 30m grace). The student profile
+        is open (start âˆ’ join_window â€¦ end + 30m grace). The student profile
         is resolved from the session (G1.2). Tutors receive the host link.
       security: [{ sessionCookie: [] }]
       parameters:
@@ -2316,7 +2474,7 @@ paths:
       summary: Tutor recurring availability slots
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Slots }
     post:
@@ -2344,7 +2502,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Deleted }
 
@@ -2354,7 +2512,7 @@ paths:
       summary: Tutor availability exceptions (days off / ad-hoc availability)
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: tutor_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: tutor_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Exceptions }
     post:
@@ -2384,7 +2542,7 @@ paths:
       summary: Assignments for a student's confirmed cohorts
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Assignments }
 
@@ -2395,7 +2553,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       requestBody:
         required: true
         content:
@@ -2413,14 +2571,14 @@ paths:
       summary: Student attendance summary (present/absent/late/excused/rate)
       security: [{ sessionCookie: [] }]
       parameters:
-        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200': { description: Summary }
 
   /me/orders/{orderId}:
     get:
       tags: [portals]
-      summary: Parent receipt — order + items + payments (owner only)
+      summary: Parent receipt â€” order + items + payments (owner only)
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -2431,7 +2589,7 @@ paths:
   /me/events:
     get:
       tags: [portals]
-      summary: Realtime SSE stream — the authenticated user's live events (Phase 5b)
+      summary: Realtime SSE stream â€” the authenticated user's live events (Phase 5b)
       description: >
         Server-Sent Events. Emits named events ("message.new", "notification.new")
         as tiny pokes; clients refetch via the normal REST endpoints. 25s
@@ -2449,12 +2607,12 @@ paths:
   /me/orders/{orderId}/verify:
     post:
       tags: [payments]
-      summary: Server-side payment verification — ask the gateway directly when the webhook is delayed
+      summary: Server-side payment verification â€” ask the gateway directly when the webhook is delayed
       description: >
         Owner/admin asks the API to verify the order's latest PENDING payment
         against the gateway (Paystack/Flutterwave transaction verify). If the
         gateway confirms, the order settles through the same path as the
-        webhook (idempotent — an order not PENDING returns immediately
+        webhook (idempotent â€” an order not PENDING returns immediately
         without a gateway call).
       security: [{ sessionCookie: [] }]
       parameters:
@@ -2623,7 +2781,7 @@ paths:
   /admin/users/{userId}/detail:
     get:
       tags: [admin]
-      summary: Full profile view (any admin) — roles + tutor summary; edits are SUPER_ADMIN-only routes
+      summary: Full profile view (any admin) â€” roles + tutor summary; edits are SUPER_ADMIN-only routes
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -2662,7 +2820,7 @@ paths:
   /admin/programmes/{slug}/roster:
     get:
       tags: [admin]
-      summary: Programme roster — cohorts, tutors and enrolled students for one programme
+      summary: Programme roster â€” cohorts, tutors and enrolled students for one programme
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: slug, in: path, required: true, schema: { type: string } }
@@ -3118,7 +3276,7 @@ paths:
   /learning/exams/attempts/{attemptId}:
     get:
       tags: [learning]
-      summary: Marked paper review — per-question correct answers + explanations
+      summary: Marked paper review â€” per-question correct answers + explanations
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: Review }
@@ -3143,7 +3301,7 @@ paths:
   /learning/assessments:
     get:
       tags: [learning]
-      summary: List assessments — ?cohort_id= scopes to a cohort; without it, tutors get their authored exams and students their enrolled-cohort exams
+      summary: List assessments â€” ?cohort_id= scopes to a cohort; without it, tutors get their authored exams and students their enrolled-cohort exams
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: cohort_id, in: query, required: false, schema: { type: string, format: uuid } }
@@ -3188,7 +3346,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       responses:
         '200':
           description: Attempt started
@@ -3206,7 +3364,7 @@ paths:
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
-        - { name: student_profile_id, in: query, required: false, description: "Optional — resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
+        - { name: student_profile_id, in: query, required: false, description: "Optional â€” resolved from the session; a supplied ID must belong to the caller (403 otherwise).", schema: { type: string, format: uuid } }
       requestBody:
         required: true
         content:

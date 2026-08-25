@@ -18,7 +18,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"ykay-virtual/internal/cache"
-	"ykay-virtual/internal/realtime"
 	"ykay-virtual/internal/config"
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/academics"
@@ -36,6 +35,7 @@ import (
 	"ykay-virtual/internal/domain/practice"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
+	"ykay-virtual/internal/domain/school"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
 	"ykay-virtual/internal/logx"
@@ -44,6 +44,7 @@ import (
 	"ykay-virtual/internal/notification"
 	"ykay-virtual/internal/ops"
 	payment_provider "ykay-virtual/internal/payment"
+	"ykay-virtual/internal/realtime"
 	"ykay-virtual/internal/repository"
 	"ykay-virtual/internal/repository/memory"
 	"ykay-virtual/internal/repository/postgres"
@@ -59,7 +60,7 @@ import (
 
 const Version = "0.4.0"
 
-// Repositories — resolved dependency set (Postgres when reachable, otherwise
+// Repositories â€” resolved dependency set (Postgres when reachable, otherwise
 // the in-memory store so the API runs standalone in dev).
 type Repositories struct {
 	UoWFactory         repository.UnitOfWorkFactory
@@ -75,6 +76,7 @@ type Repositories struct {
 	Orders             payment.OrderRepository
 	Coupons            payment.CouponRepository
 	Admissions         admissions.Repository
+	SchoolCalendar     school.CalendarRepository
 	Payments           payment.PaymentRepository
 	Enrollments        booking.CohortEnrollmentRepository
 	Escrow             payment.EscrowHoldRepository
@@ -124,7 +126,7 @@ type Repositories struct {
 	ProgrammeLifecycle academics.ProgrammeLifecycleRepository
 	StorageBackend     string  // "postgres" | "memory"
 	CachePrefix        string  // namespaces the shared cache per backend
-	DB                 *sql.DB // raw handle (nil in memory mode) — boot migrations
+	DB                 *sql.DB // raw handle (nil in memory mode) â€” boot migrations
 }
 
 func main() {
@@ -140,7 +142,7 @@ func main() {
 		logx.Fatal("config invalid", "error", err)
 	}
 	if !notification.EmailDeliveryConfigured() {
-		slog.Error("EMAIL DELIVERY NOT CONFIGURED — login codes, verification links, receipts and admin MFA emails will NOT reach users. Set RESEND_API_KEY (recommended) or SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM.")
+		slog.Error("EMAIL DELIVERY NOT CONFIGURED â€” login codes, verification links, receipts and admin MFA emails will NOT reach users. Set RESEND_API_KEY (recommended) or SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM.")
 	} else {
 		slog.Info("email provider active", "provider", notification.EmailProviderActive())
 		slog.Info("whatsapp provider active", "provider", notification.WhatsAppProviderActive())
@@ -150,7 +152,7 @@ func main() {
 	defer shutdownTracer()
 	telemetry.DefaultMetrics().MarkBuild(Version)
 
-	// --- Cache: Redis real → InMemory fallback (AGENTS.md) ---
+	// --- Cache: Redis real â†’ InMemory fallback (AGENTS.md) ---
 	rawCache := setupCache(ctx, cfg.RedisURL)
 
 	// --- Phase 5b realtime: SSE event broker. Redis pub/sub fans events
@@ -179,12 +181,12 @@ func main() {
 			WithMalwareScanner(storage.NewDefaultMalwareScanner(getEnvDefault("CLAMAV_ADDR", "")))
 	}
 
-	// --- Repositories: Postgres → in-memory fallback (dev mode) ---
+	// --- Repositories: Postgres â†’ in-memory fallback (dev mode) ---
 	repos, readyCheck := setupRepositories(ctx, cfg)
 	if repos.StorageBackend == "postgres" {
 		slog.Info("storage connected", "backend", "postgres")
 	} else {
-		slog.Warn("postgres unavailable — using in-memory store (dev mode)")
+		slog.Warn("postgres unavailable â€” using in-memory store (dev mode)")
 	}
 	// Namespace the shared cache per storage backend: a Redis shared between
 	// a PG instance and a memory-mode dev instance must never serve each
@@ -192,7 +194,7 @@ func main() {
 	cacheBackend := cache.WithPrefix(rawCache, repos.CachePrefix)
 
 	// MIGRATE_ON_BOOT=true applies the embedded migration chain before the
-	// server starts — the release image is a scratch container without the
+	// server starts â€” the release image is a scratch container without the
 	// migrations folder, and a fresh Render DB needs this first deploy.
 	// Keep it on for the FIRST deploy only (then set false): concurrent
 	// boots on multiple replicas would race the schema_migrations table.
@@ -269,6 +271,8 @@ func main() {
 		WithOwnership(func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
 			return repos.Students.ListByParentUserID(ctx, parentUserID)
 		})
+	// Virtual school, Pillar 1: academic calendar (sessions + terms).
+	schoolCalSvc := service.NewSchoolCalendarService(repos.SchoolCalendar)
 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
 		ClientID:     cfg.GoogleClientID,
 		ClientSecret: cfg.GoogleClientSecret,
@@ -299,10 +303,10 @@ func main() {
 	if cfg.IsProduction() {
 		if strings.EqualFold(os.Getenv("PAYMENT_REFUNDS_ENABLED"), "true") {
 			paymentSvc.SetRefundsEnabled(true)
-			slog.Info("refunds ENABLED (PAYMENT_REFUNDS_ENABLED=true — gateway-backed refund flow active)")
+			slog.Info("refunds ENABLED (PAYMENT_REFUNDS_ENABLED=true â€” gateway-backed refund flow active)")
 		} else {
 			paymentSvc.SetRefundsEnabled(false)
-			slog.Warn("refunds DISABLED (production default — set PAYMENT_REFUNDS_ENABLED=true after the refund drill, YK-006)")
+			slog.Warn("refunds DISABLED (production default â€” set PAYMENT_REFUNDS_ENABLED=true after the refund drill, YK-006)")
 		}
 	}
 
@@ -359,11 +363,11 @@ func main() {
 		WithCohortAdmin(repos.CohortAdmin, repos.LessonAdmin).
 		WithTutors(repos.TutorRepo).
 		WithVetting(repos.Vetting).
-		WithEnrollments(repos.Enrollments).                       // pending-enrolment admin view
-		WithTutorLookup(repos.Vetting.GetProfileByUserID).       // user-detail tutor summary
+		WithEnrollments(repos.Enrollments).                // pending-enrolment admin view
+		WithTutorLookup(repos.Vetting.GetProfileByUserID). // user-detail tutor summary
 		WithContentSignoff(repos.Testimonials, repos.ProgrammeLifecycle).
 		WithCatalogueCache(cacheBackend)
-	// Paystack one-click payouts (transfers) — explicit opt-in. The provider
+	// Paystack one-click payouts (transfers) â€” explicit opt-in. The provider
 	// itself fails closed unless a real PAYSTACK_SECRET is present, so a
 	// placeholder secret can never fake a money-moving transfer.
 	if os.Getenv("PAYSTACK_TRANSFER_ENABLED") == "true" && cfg.PaystackSecret != "" {
@@ -416,7 +420,7 @@ func main() {
 	deviceHandler := httpapi.NewDeviceHandler(pushSvc)
 
 	// --- Transport ---
-	// G1: object-level authorization — profile IDs resolve through the session.
+	// G1: object-level authorization â€” profile IDs resolve through the session.
 	profileAuthz := httpapi.NewProfileAuthorizer(repos.Students, repos.Vetting)
 
 	// --- Meeting links (G4.2): stub in dev, Whereby when configured ---
@@ -436,21 +440,22 @@ func main() {
 	// Free path: MEETING_PROVIDER=jitsi (public meet.jit.si rooms).
 	telemetry.MeetingProviderStub(strings.ToLower(cfg.MeetingProvider), meetingStub)
 	if meetingStub && cfg.IsProduction() {
-		logx.Fatal("meeting provider resolved to STUB in production — set MEETING_PROVIDER=jitsi (free) or whereby + WHEREBY_API_KEY")
+		logx.Fatal("meeting provider resolved to STUB in production â€” set MEETING_PROVIDER=jitsi (free) or whereby + WHEREBY_API_KEY")
 	}
 	meetingSvc := service.NewMeetingService(repos.Meeting, meetingProvider)
 
 	handlers := &httpapi.Handlers{
-		Subjects:     httpapi.NewSubjectHandler(subjectSvc),
-		Curricula:    httpapi.NewCurriculaHandler(curriculumSvc),
-		Tutors:       httpapi.NewTutorHandler(tutorSvc),
-		Programmes:   httpapi.NewProgrammeHandler(programmeSvc),
-		Cohorts:      httpapi.NewCohortHandler(cohortSvc),
-		Bookings:     httpapi.NewBookingHandler(bookingSvc),
-		Coupons:      httpapi.NewCouponHandler(couponSvc),
-		Notifier:     httpapi.NewNotifierHandler(notifierSvc),
-		Certificates: httpapi.NewCertificateHandler(certSvc),
-		Admissions:   httpapi.NewAdmissionsHandler(admissionsSvc),
+		Subjects:       httpapi.NewSubjectHandler(subjectSvc),
+		Curricula:      httpapi.NewCurriculaHandler(curriculumSvc),
+		Tutors:         httpapi.NewTutorHandler(tutorSvc),
+		Programmes:     httpapi.NewProgrammeHandler(programmeSvc),
+		Cohorts:        httpapi.NewCohortHandler(cohortSvc),
+		Bookings:       httpapi.NewBookingHandler(bookingSvc),
+		Coupons:        httpapi.NewCouponHandler(couponSvc),
+		Notifier:       httpapi.NewNotifierHandler(notifierSvc),
+		Certificates:   httpapi.NewCertificateHandler(certSvc),
+		Admissions:     httpapi.NewAdmissionsHandler(admissionsSvc),
+		SchoolCalendar: httpapi.NewSchoolCalendarHandler(schoolCalSvc),
 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
 			payment.ProviderPaystack:    cfg.PaystackSecret,
 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
@@ -534,14 +539,14 @@ func setupCache(ctx context.Context, redisURL string) cache.Cache {
 		_ = rc.Close()
 	}
 	// A-13: the in-memory fallback silently degrades rate limiting, session
-	// caching and the job queue to per-instance/direct behaviour — publish a
+	// caching and the job queue to per-instance/direct behaviour â€” publish a
 	// metric so ops alerting can fire on it.
 	telemetry.RedisConnected(false)
-	slog.Warn("cache: redis unavailable — falling back to in-memory cache")
+	slog.Warn("cache: redis unavailable â€” falling back to in-memory cache")
 	return cache.NewInMemoryCache()
 }
 
-// setupJobQueue — enqueue-side durable queue for the API (G4.1). Returns
+// setupJobQueue â€” enqueue-side durable queue for the API (G4.1). Returns
 // nil when Redis is unreachable (synchronous fallback everywhere).
 func setupJobQueue(redisURL string) worker.Queue {
 	opts, err := goredis.ParseURL(redisURL)
@@ -553,16 +558,16 @@ func setupJobQueue(redisURL string) worker.Queue {
 	defer cancel()
 	if err := client.Ping(pingCtx).Err(); err != nil {
 		_ = client.Close()
-		slog.Warn("jobs: redis unavailable — direct dispatch (no queue)")
+		slog.Warn("jobs: redis unavailable â€” direct dispatch (no queue)")
 		return nil
 	}
-	slog.Info("jobs: redis queue connected — outbound messages enqueue for the worker")
+	slog.Info("jobs: redis queue connected â€” outbound messages enqueue for the worker")
 	return worker.NewRedisQueue(client)
 }
 
-// getEnvDefault — env value or fallback (demo credentials are overridable;
+// getEnvDefault â€” env value or fallback (demo credentials are overridable;
 // hardcoded secrets are removed from source per hardening SEC-003).
-// authDevLogging — prints plain-text login codes / reset links to logs.
+// authDevLogging â€” prints plain-text login codes / reset links to logs.
 // Always false in production (AUTH_LOG_CODES cannot override). Outside
 // production, codes are logged unless AUTH_LOG_CODES is explicitly false.
 func authDevLogging(cfg config.Config) bool {
@@ -590,7 +595,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			// database means the service must not serve stale/empty data.
 			logx.Fatal("storage init failed", "error", err)
 		}
-		slog.Warn("postgres unavailable — using in-memory store (dev mode)")
+		slog.Warn("postgres unavailable â€” using in-memory store (dev mode)")
 		store := memory.NewMemoryStore()
 		store.Roles.Seed() // mirror migration 000001 role inserts
 		// Exam-hub parity: the memory learning store resolves a learner's
@@ -629,6 +634,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Orders:             store.Orders,
 			Coupons:            store.Coupons,
 			Admissions:         store.Admissions,
+			SchoolCalendar:     memory.NewSchoolCalendarMemory(),
 			Payments:           store.Payments,
 			Enrollments:        store.Enrollments,
 			Escrow:             store.Escrow,
@@ -696,6 +702,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Orders:             postgres.NewOrderRepo(pg.DB()),
 		Coupons:            postgres.NewCouponRepo(pg.DB()),
 		Admissions:         postgres.NewAdmissionsRepo(pg.DB()),
+		SchoolCalendar:     postgres.NewSchoolCalendarRepo(pg.DB()),
 		Payments:           postgres.NewPaymentRepo(pg.DB()),
 		Enrollments:        postgres.NewCohortEnrollmentRepo(pg.DB()),
 		Escrow:             postgres.NewEscrowHoldRepo(pg.DB()),
@@ -747,7 +754,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 	}, func() error { return pg.DB().PingContext(ctx) }
 }
 
-// sessionResolverAdapter — bridges AuthService.Me into the middleware's
+// sessionResolverAdapter â€” bridges AuthService.Me into the middleware's
 // SessionResolver shape.
 type sessionResolverAdapter struct {
 	svc *service.AuthService
@@ -763,10 +770,10 @@ func (a sessionResolverAdapter) Me(ctx context.Context, tokenHash string) (uuid.
 
 var _ middleware.SessionResolver = (*sessionResolverAdapter)(nil)
 
-// seedConsentedTestimonials — dev-mode testimonials that MIRROR PRODUCTION
+// seedConsentedTestimonials â€” dev-mode testimonials that MIRROR PRODUCTION
 // RULES: every row has consent_given + a consent source recorded, and only
 // then is it published (G5.3). The web carousel consumes these through the
-// consent-gated /content/testimonials endpoint — identical data path to prod.
+// consent-gated /content/testimonials endpoint â€” identical data path to prod.
 func seedConsentedTestimonials(store *memory.MemoryStore) {
 	now := time.Now()
 	store.Testimonials.Seed(content.Testimonial{
@@ -795,7 +802,7 @@ func seedConsentedTestimonials(store *memory.MemoryStore) {
 func strPtr(s string) *string { return &s }
 func intPtr(i int) *int       { return &i }
 
-// seedMemoryTutors — explicit local-development fixture data (matches the frontend mock
+// seedMemoryTutors â€” explicit local-development fixture data (matches the frontend mock
 // tutors chinasa/oluwatobi) so reviews, search and profiles work without
 // Postgres.
 func seedMemoryTutors(store *memory.MemoryStore) {
@@ -811,7 +818,7 @@ func seedMemoryTutors(store *memory.MemoryStore) {
 		Subjects: []string{"Mathematics", "Physics"}, SubjectSlugs: []string{"mathematics", "physics"},
 	})
 	// Mirror into the vetting store so the demo tutor's SESSION resolves to
-	// this profile (G1.2: ResolveTutor → GetProfileByUserID). Without this
+	// this profile (G1.2: ResolveTutor â†’ GetProfileByUserID). Without this
 	// link the demo tutor's own-lesson/earnings surfaces 403 in dev.
 	store.Vetting.SeedProfile(&tutor.TutorProfile{
 		ID: oluwatobi, UserID: demoTutorUser, Slug: "oluwatobi",
@@ -832,7 +839,7 @@ func seedMemoryTutors(store *memory.MemoryStore) {
 	})
 }
 
-// seedMemoryCatalogue — dev-mode curriculum catalogue (subjects +
+// seedMemoryCatalogue â€” dev-mode curriculum catalogue (subjects +
 // programmes) so catalogue pages and the tutor vetting subject picker work
 // without Postgres.
 func seedMemoryCatalogue(store *memory.MemoryStore) {
@@ -885,16 +892,16 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 	store.Programmes.Seed(academics.Programme{ID: p2, Title: "British Curriculum (IGCSE Prep)", Slug: "british-curriculum", Format: academics.FormatCohort, Status: academics.ProgrammePublished, Currency: "NGN", IsFeatured: false, CreatedAt: now})
 
 	// Demo cohorts (published) + scheduled lessons so the cohort flow works
-	// end-to-end in dev (list → detail → enroll → checkout).
+	// end-to-end in dev (list â†’ detail â†’ enroll â†’ checkout).
 	oluwatobiID := uuid.MustParse("00000000-0000-0000-0000-000000000102")
 	c1 := uuid.MustParse("00000000-0000-0000-0000-00000000c010")
 	c2 := uuid.MustParse("00000000-0000-0000-0000-00000000c011")
 	c3 := uuid.MustParse("00000000-0000-0000-0000-00000000c012")
 	desc1 := "Live classes Tue/Thu/Sat evenings + weekly mock CBT."
 	desc2 := "Small-group live sessions with a certified specialist."
-	desc3 := "Rolling enrolment · weekend cohorts · past papers."
+	desc3 := "Rolling enrolment Â· weekend cohorts Â· past papers."
 	store.Cohorts.Seed(&booking.Cohort{
-		ID: c1, ProgrammeID: p1, Title: "UTME 2026 Mastery — 320+ Programme", Slug: "utme-2026-mastery",
+		ID: c1, ProgrammeID: p1, Title: "UTME 2026 Mastery â€” 320+ Programme", Slug: "utme-2026-mastery",
 		TutorProfileID: &oluwatobiID, Capacity: 60, EnrolledCount: 41,
 		StartDate: now.Add(25 * 24 * time.Hour), EndDate: now.Add(145 * 24 * time.Hour),
 		ScheduleDesc: &desc1, Timezone: "Africa/Lagos", LocationMode: "ONLINE",
@@ -902,7 +909,7 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 		CreatedAt: now, UpdatedAt: now,
 	})
 	store.Cohorts.Seed(&booking.Cohort{
-		ID: c2, ProgrammeID: p2, Title: "IGCSE Computer Science — 2026 Cohort", Slug: "igcse-computer-science",
+		ID: c2, ProgrammeID: p2, Title: "IGCSE Computer Science â€” 2026 Cohort", Slug: "igcse-computer-science",
 		TutorProfileID: &oluwatobiID, Capacity: 20, EnrolledCount: 12,
 		StartDate: now.Add(32 * 24 * time.Hour), EndDate: now.Add(200 * 24 * time.Hour),
 		ScheduleDesc: &desc2, Timezone: "Africa/Lagos", LocationMode: "ONLINE",
@@ -932,19 +939,19 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 		})
 	}
 
-	// Vet competency question bank (mathematics) — dev-mode stand-in for the
+	// Vet competency question bank (mathematics) â€” dev-mode stand-in for the
 	// SQL-seeded bank; correct answer is always option index 1 so e2e can
 	// answer deterministically.
 	bank := []struct {
 		q string
 		o []string
 	}{
-		{"What is 7 × 6?", []string{"36", "42", "48", "54"}},
+		{"What is 7 Ã— 6?", []string{"36", "42", "48", "54"}},
 		{"What is 15% of 200?", []string{"20", "30", "35", "40"}},
 		{"Solve for x: 2x + 4 = 12", []string{"2", "4", "6", "8"}},
 		{"What is the square root of 144?", []string{"10", "12", "14", "16"}},
 		{"What is 3/4 as a decimal?", []string{"0.25", "0.75", "0.5", "1.25"}},
-		{"What is the area of a 6×9 rectangle?", []string{"36", "54", "63", "72"}},
+		{"What is the area of a 6Ã—9 rectangle?", []string{"36", "54", "63", "72"}},
 	}
 	for _, item := range bank {
 		store.Vetting.SeedQuestion(vetting.AssessmentQuestion{
@@ -954,7 +961,7 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 	}
 }
 
-// seedLMSDemo — LMS demo content for the seeded UTME cohort (c010) so the
+// seedLMSDemo â€” LMS demo content for the seeded UTME cohort (c010) so the
 // student/tutor LMS portals have real data in dev: 2 assignments, a 3-question
 // auto-graded quiz, attendance rows and a graded submission for learner 0001.
 func seedLMSDemo(store *memory.MemoryStore) {
@@ -993,7 +1000,7 @@ func seedLMSDemo(store *memory.MemoryStore) {
 		q string
 		o []string
 	}{
-		{"What is 7 × 6?", []string{"36", "42", "48", "54"}},
+		{"What is 7 Ã— 6?", []string{"36", "42", "48", "54"}},
 		{"Solve for x: 2x + 4 = 12", []string{"2", "4", "6", "8"}},
 		{"What is 15% of 200?", []string{"20", "30", "35", "40"}},
 	}
@@ -1022,9 +1029,9 @@ func seedLMSDemo(store *memory.MemoryStore) {
 	}
 
 	// One graded submission for the first assignment.
-	content := "Worksheet attached — factorisation and linear equations completed."
+	content := "Worksheet attached â€” factorisation and linear equations completed."
 	score := 17.0
-	feedback := "Strong on factorisation; review linear equations 4–6."
+	feedback := "Strong on factorisation; review linear equations 4â€“6."
 	store.Learning.SeedSubmission(learning.GradedSubmission{
 		ID: uuid.New(), AssignmentID: a1, StudentProfileID: studentID,
 		Content: &content, Score: &score, Feedback: &feedback,
@@ -1032,7 +1039,7 @@ func seedLMSDemo(store *memory.MemoryStore) {
 	})
 }
 
-// seedDemoUsers — explicit local-development fixtures only. Never enable these
+// seedDemoUsers â€” explicit local-development fixtures only. Never enable these
 // accounts in staging or production. Password is provided only through DEMO_PASSWORD.
 func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(demoPassword), bcrypt.DefaultCost)
@@ -1059,7 +1066,7 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 			EmailVerifiedAt: &verified,
 			// OnboardedAt set so demo logins route straight to the role
 			// dashboard instead of the first-time onboarding wizard (G6 fix:
-			// "login not routing properly" — seed accounts were active but not
+			// "login not routing properly" â€” seed accounts were active but not
 			// marked onboarded, so destinationFor sent them to /onboarding).
 			OnboardedAt: &now,
 			CreatedAt:   now, UpdatedAt: now,
@@ -1071,7 +1078,7 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 	}
 
 	// Demo learner: owned by the demo STUDENT account (a4) and linked to the
-	// demo PARENT account (a2) via a parent_student_link — mirrors the G1
+	// demo PARENT account (a2) via a parent_student_link â€” mirrors the G1
 	// session-resolution rules (student sees own profile; parent sees links).
 	parentID := uuid.MustParse("00000000-0000-0000-0000-0000000000a2")
 	studentUserID := uuid.MustParse("00000000-0000-0000-0000-0000000000a4")
@@ -1088,7 +1095,7 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 	})
 }
 
-// buildChatContext — grounding context for the AI assistant: a compact,
+// buildChatContext â€” grounding context for the AI assistant: a compact,
 // always-current snapshot of programmes, cohorts and tutors so Gemini answers
 // from live data instead of memory.
 func buildChatContext(programmes *service.ProgrammeService, cohorts *service.CohortService,
