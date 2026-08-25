@@ -2,11 +2,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "@/components/layout/Logo";
 
-// Auth shell - Preline split-panel: left 30% FULL-BLEED education photo with
-// overlaid brand header + headline + trusted strip, right 70% white panel
-// with the form. Navigation: logo → home, "← Back to home" top-left of the
-// form panel. Skip is OPT-IN (`skip` prop) - auth pages don't show it; only
-// onboarding steps where skipping makes sense pass it.
+// Auth shell — split panel. LEFT: narrow, calm, near-black brand rail
+// (reference: dark 28% rail — logo top, one contained photo, headline block
+// at the lower third, hairline footnote). RIGHT: the form panel, unchanged.
+//
+// Design rules (docs/MOBILE_DESIGN_AUDIT_2026-08.md / web DESIGN_SYSTEM):
+//   - no busy full-bleed photography on the rail; ONE rounded image card
+//   - no fabricated social proof — only real, verifiable claims
+//   - one deliberate brand accent (the lime rule), no decoration without
+//     purpose
+// Navigation: logo → home, "← Back to home" on the form panel. Skip is
+// OPT-IN (`skip` prop) — auth pages don't show it; onboarding steps where
+// skipping makes sense pass it.
 
 export type AuthShellProps = {
   title: string;
@@ -18,7 +25,7 @@ export type AuthShellProps = {
   skip?: { href: string; label?: string };
 };
 
-const IMG = "/hero/home-tutoring.jpg";
+const IMG = "/hero/african-student.jpg";
 
 export function AuthShell({
   title,
@@ -26,49 +33,64 @@ export function AuthShell({
   children,
   footer,
   image = IMG,
-  imageAlt = "Students learning together",
+  imageAlt = "A student learning on the NUVORA app",
   skip,
 }: AuthShellProps) {
   return (
     <div className="min-h-screen bg-white">
       <div className="grid min-h-screen lg:grid-cols-[30%_70%]">
-        {/* ── Left panel: full-bleed image with overlay content ── */}
-        <aside className="relative hidden overflow-hidden lg:block">
-          <Image
-            src={image}
-            alt={imageAlt}
-            fill
-            priority
-            sizes="30vw"
-            className="object-cover"
+        {/* ── Left rail: dark brand panel ── */}
+        <aside
+          className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-8"
+          style={{ background: "linear-gradient(175deg,#002A18 0%,#013920 62%,#0A4D32 100%)" }}
+          aria-hidden="true"
+        >
+          {/* quiet texture: one deep radial glow, no gradients on content */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-70"
+            style={{ background: "radial-gradient(120% 60% at 50% -10%, rgba(112,242,80,0.08), transparent 60%)" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
 
-          {/* Header over image */}
-          <div className="absolute inset-x-0 top-0 flex items-center justify-between p-8">
-            <Link href="/" aria-label="NUVORA home" className="drop-shadow">
+          {/* top — brand */}
+          <div className="relative z-10">
+            <Link href="/" aria-label="NUVORA home" tabIndex={-1}>
               <Logo dark />
             </Link>
-            <span className="inline-flex h-9 items-center gap-x-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-medium text-white shadow-sm backdrop-blur-sm">
-              🇳🇬 English (NG)
-            </span>
           </div>
 
-          {/* Headline over image */}
-          <div className="absolute inset-x-0 bottom-0 p-9 pb-7">
-            <h1 className="max-w-xs font-display text-3xl leading-tight tracking-[0.02em] text-white">
-              Learning beyond boundaries
+          {/* middle — single contained photograph (rounded, natural light) */}
+          <div className="relative z-10 mx-auto w-full max-w-[280px]">
+            <div className="overflow-hidden rounded-2xl ring-1 ring-white/15">
+              <Image
+                src={image}
+                alt={imageAlt}
+                width={768}
+                height={1376}
+                sizes="(max-width: 1024px) 0px, 280px"
+                priority={false}
+                className="h-auto w-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* lower third — headline block */}
+          <div className="relative z-10 pb-2">
+            <span className="mb-4 block h-0.5 w-10 rounded-full bg-primary" aria-hidden="true" />
+            <h1 className="max-w-[17rem] font-display text-[2rem] leading-[1.15] tracking-[0.02em] text-white">
+              Learning beyond boundaries.
             </h1>
-            <p className="mt-3 max-w-xs text-sm leading-6 text-white/80">
-              Join 30,000+ families learning with NUVORA tutors.
+            <p className="mt-3 max-w-[17rem] text-sm leading-6 text-white/70">
+              Vetted tutors, live cohorts and exam prep across the British &amp; Nigerian
+              curricula — with every payment held in escrow until lessons are delivered.
             </p>
 
-            {/* Trusted strip */}
-            <div className="mt-6 flex items-center gap-x-6 border-t border-white/20 pt-5 text-sm font-semibold text-white/70">
-              <span className="font-serif font-bold italic">Forbes</span>
-              <span>BBC</span>
-              <span className="font-extrabold tracking-tight">Microsoft</span>
-              <span className="font-extrabold tracking-[0.18em]">TEF</span>
+            {/* footnote — real, verifiable claims only */}
+            <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/15 pt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
+              <span>Escrow-protected</span>
+              <span aria-hidden="true" className="size-1 rounded-full bg-primary/60" />
+              <span>Vetted tutors</span>
+              <span aria-hidden="true" className="size-1 rounded-full bg-primary/60" />
+              <span>WAEC · NECO · JAMB · IGCSE</span>
             </div>
           </div>
         </aside>
