@@ -212,8 +212,15 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/certificates/verify", handlers.Certificates.Verify)
 	mux.HandleFunc("POST "+v1+"/admissions/apply", handlers.Admissions.Apply)
 	mux.HandleFunc("GET "+v1+"/admissions/me", handlers.Admissions.ListMine)
+	// Parent: accept an offer (auto-enrol + fee wiring) and manage supporting documents.
+	mux.HandleFunc("POST "+v1+"/me/admissions/{id}/accept", handlers.Admissions.Accept)
+	mux.HandleFunc("GET "+v1+"/me/admissions/{id}/documents", handlers.Admissions.ListMyDocuments)
+	mux.HandleFunc("POST "+v1+"/me/admissions/{id}/documents", handlers.Admissions.AddDocument)
+	mux.HandleFunc("DELETE "+v1+"/me/admissions/{id}/documents/{docId}", handlers.Admissions.RemoveMyDocument)
+	// Admin queue + review/offer + read documents.
 	mux.HandleFunc("GET "+v1+"/admin/admissions", handlers.Admissions.ListQueue)
 	mux.HandleFunc("POST "+v1+"/admin/admissions/{id}/status", handlers.Admissions.SetStatus)
+	mux.HandleFunc("GET "+v1+"/admin/admissions/{id}/documents", handlers.Admissions.ListDocuments)
 
 	// Virtual school, Pillar 1: academic calendar (sessions + terms). Admin
 	// manages the calendar; the public read powers "current term" states on
@@ -227,6 +234,17 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("PUT "+v1+"/admin/school/terms/{id}", handlers.SchoolCalendar.UpdateTerm)
 	mux.HandleFunc("POST "+v1+"/admin/school/terms/{id}/status", handlers.SchoolCalendar.SetTermStatus)
 	mux.Handle("GET "+v1+"/school/calendar/current", cache60(handlers.SchoolCalendar.CurrentCalendar))
+
+	// On-demand recorded-lesson library (migration 000064). Public browse is
+	// anonymous-cacheable (metadata only — the service strips video/transcript
+	// for non-participants, so the cache can never leak paid content). Admin
+	// routes curate the catalogue.
+	mux.Handle("GET "+v1+"/library", cache60(handlers.Library.Catalogue))
+	mux.Handle("GET "+v1+"/library/featured", cache60(handlers.Library.Featured))
+	mux.HandleFunc("GET "+v1+"/library/{lessonId}", handlers.Library.Get)
+	mux.HandleFunc("GET "+v1+"/admin/library", handlers.Library.ListAdmin)
+	mux.HandleFunc("PUT "+v1+"/admin/library/{lessonId}", handlers.Library.UpdateMeta)
+
 	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
 	mux.HandleFunc("GET "+v1+"/private-tuition/requests", handlers.Bookings.ListMyPrivateRequests)
 	mux.HandleFunc("GET "+v1+"/private-tuition/requests/{id}", handlers.Bookings.GetPrivateRequest)
@@ -337,6 +355,19 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/referrals/{code}", handlers.Growth.LookupCode)
 	mux.HandleFunc("GET "+v1+"/me/referrals", handlers.Growth.ListMyReferrals)
 	mux.HandleFunc("POST "+v1+"/institutions", handlers.Growth.CreateInstitution)
+	// B2B self-serve console: public profile + user-scoped management routes
+	// (membership/role/student authorization enforced in the service layer).
+	mux.HandleFunc("GET "+v1+"/institutions/{slug}", handlers.Institutions.GetBySlug)
+	mux.HandleFunc("GET "+v1+"/me/institutions", handlers.Institutions.ListMine)
+	mux.HandleFunc("GET "+v1+"/me/institutions/{id}", handlers.Institutions.GetByID)
+	mux.HandleFunc("PUT "+v1+"/me/institutions/{id}", handlers.Institutions.Update)
+	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/memberships", handlers.Institutions.ListMemberships)
+	mux.HandleFunc("POST "+v1+"/me/institutions/{id}/members", handlers.Institutions.InviteMember)
+	mux.HandleFunc("PUT "+v1+"/me/institutions/{id}/members/{userId}/role", handlers.Institutions.SetMemberRole)
+	mux.HandleFunc("DELETE "+v1+"/me/institutions/{id}/members/{userId}", handlers.Institutions.RemoveMember)
+	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/students", handlers.Institutions.ListStudents)
+	mux.HandleFunc("POST "+v1+"/me/institutions/{id}/students", handlers.Institutions.AddStudent)
+	mux.HandleFunc("DELETE "+v1+"/me/institutions/{id}/students/{studentId}", handlers.Institutions.RemoveStudent)
 
 	// Support tickets (Phase 9 site)
 	mux.HandleFunc("POST "+v1+"/support/tickets", handlers.Support.CreateTicket)
@@ -384,6 +415,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("PUT "+v1+"/admin/blog/{postId}", handlers.Admin.UpdatePost)
 	mux.HandleFunc("POST "+v1+"/admin/blog/{postId}/status", handlers.Admin.SetPostStatus)
 	mux.HandleFunc("GET "+v1+"/admin/institutions", handlers.Admin.ListInstitutions)
+	mux.HandleFunc("PUT "+v1+"/admin/institutions/{id}", handlers.Institutions.AdminUpdate)
+	mux.HandleFunc("POST "+v1+"/admin/institutions/{id}/status", handlers.Institutions.AdminSetStatus)
 	mux.HandleFunc("GET "+v1+"/admin/referrals", handlers.Admin.ListReferrals)
 	mux.HandleFunc("GET "+v1+"/admin/reviews", handlers.Admin.ListReviews)
 	mux.HandleFunc("POST "+v1+"/admin/reviews/{reviewId}/moderate", handlers.Admin.ModerateReview)
@@ -489,6 +522,7 @@ type Handlers struct {
 	Certificates    *CertificateHandler
 	Admissions      *AdmissionsHandler
 	SchoolCalendar  *SchoolCalendarHandler
+	Library         *LibraryHandler
 	Payments        *PaymentHandler
 	Vetting         *VettingHandler
 	AdminVetting    *AdminVettingHandler
@@ -501,6 +535,7 @@ type Handlers struct {
 	Admin           *AdminHandler
 	Support         *SupportHandler
 	Growth          *GrowthHandler
+	Institutions    *InstitutionHandler
 	LessonOps       *LessonOpsHandler
 	Meeting         *MeetingHandler
 	Chat            *ChatHandler

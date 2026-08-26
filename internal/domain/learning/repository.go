@@ -21,8 +21,8 @@ const (
 )
 
 type LearnerAssessment struct {
-	ID             uuid.UUID        `json:"id"`
-	CohortID       *uuid.UUID       `json:"cohort_id,omitempty"`
+	ID       uuid.UUID  `json:"id"`
+	CohortID *uuid.UUID `json:"cohort_id,omitempty"`
 	// SubjectID — the assessment's subject: always one of the tutor's
 	// onboarded teaching subjects (000057).
 	SubjectID      *uuid.UUID       `json:"subject_id,omitempty"`

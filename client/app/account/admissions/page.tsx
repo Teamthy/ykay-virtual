@@ -3,8 +3,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ClipboardList, GraduationCap } from "lucide-react";
-import { applyAdmission, listMyAdmissions, type AdmissionStatus } from "@/features/admissions/api";
+import Link from "next/link";
+import { ClipboardList, FileText, GraduationCap, Plus, Trash2 } from "lucide-react";
+import {
+  acceptAdmission,
+  addDocument,
+  applyAdmission,
+  listMyAdmissions,
+  listMyDocuments,
+  removeDocument,
+  type AdmissionStatus,
+  type Application,
+} from "@/features/admissions/api";
 import { listLearners } from "@/features/onboarding/api";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -59,19 +69,7 @@ export default function AdmissionsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {(apps.data ?? []).map((a) => (
-            <div key={a.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-bold text-deep">{a.applicant_name || "Application"}</h3>
-                  <p className="text-xs text-ink-500 mt-0.5">
-                    {a.current_level || "—"} · {a.preferred_term || "Preferred term not set"}
-                  </p>
-                </div>
-                <StatusBadge label={STATUS_LABEL[a.status]} kind={statusKindFor(a.status)} />
-              </div>
-              {a.notes && <p className="mt-3 text-sm text-ink-600 line-clamp-2">{a.notes}</p>}
-              <p className="mt-3 text-[11px] text-ink-400">Submitted {new Date(a.created_at).toLocaleDateString()}</p>
-            </div>
+            <ApplicationCard key={a.id} app={a} />
           ))}
         </div>
       )}
@@ -150,6 +148,113 @@ function ApplyForm({ onDone }: { onDone: () => void }) {
           {apply.isPending ? "Submitting…" : "Submit application"}
         </Button>
         <Button variant="outline" onClick={onDone}>Cancel</Button>
+      </div>
+    </div>
+  );
+}
+
+function ApplicationCard({ app }: { app: Application }) {
+  const qc = useQueryClient();
+  const [showDocs, setShowDocs] = useState(false);
+
+  const docs = useQuery({
+    queryKey: ["me", "admissions", app.id, "documents"],
+    queryFn: () => listMyDocuments(app.id),
+    enabled: showDocs,
+  });
+
+  const accept = useMutation({
+    mutationFn: () => acceptAdmission(app.id),
+    onSuccess: (res) => {
+      toast.success("Offer accepted — order created");
+      qc.invalidateQueries({ queryKey: ["me", "admissions"] });
+      window.location.href = `/receipts/${res.order.id}`;
+    },
+    onError: () => toast.error("Could not accept the offer"),
+  });
+
+  return (
+    <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-bold text-deep">{app.applicant_name || "Application"}</h3>
+          <p className="text-xs text-ink-500 mt-0.5">
+            {app.current_level || "—"} · {app.preferred_term || "Preferred term not set"}
+          </p>
+        </div>
+        <StatusBadge label={STATUS_LABEL[app.status]} kind={statusKindFor(app.status)} />
+      </div>
+      {app.notes && <p className="mt-3 text-sm text-ink-600 line-clamp-2">{app.notes}</p>}
+
+      {app.status === "OFFERED" && app.offer_fee ? (
+        <div className="mt-3 rounded-xl bg-green-50 border border-green-200 p-3">
+          <p className="text-sm font-bold text-deep">Offer fee: {app.offer_fee.toLocaleString()} {app.offer_currency || "NGN"}</p>
+          {app.offer_message && <p className="mt-1 text-xs text-ink-600">{app.offer_message}</p>}
+        </div>
+      ) : null}
+
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-[11px] text-ink-400">Submitted {new Date(app.created_at).toLocaleDateString()}</p>
+        <button onClick={() => setShowDocs((v) => !v)} className="flex items-center gap-1 text-xs font-semibold text-brand-blue hover:underline">
+          <FileText size={13} /> Documents ({docs.data?.length ?? 0})
+        </button>
+      </div>
+
+      {showDocs && (
+        <DocumentsPanel appId={app.id} onChanged={() => qc.invalidateQueries({ queryKey: ["me", "admissions", app.id, "documents"] })} />
+      )}
+
+      {app.status === "OFFERED" && (
+        <div className="mt-4 border-t border-ink-100 pt-3">
+          <Button variant="gold" onClick={() => accept.mutate()} disabled={accept.isPending} className="w-full">
+            {accept.isPending ? "Accepting…" : "Accept offer & enrol"}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DocumentsPanel({ appId, onChanged }: { appId: string; onChanged: () => void }) {
+  const qc = useQueryClient();
+  const docs = useQuery({ queryKey: ["me", "admissions", appId, "documents"], queryFn: () => listMyDocuments(appId), enabled: !!appId });
+  const [name, setName] = useState("");
+  const [url, setUrl] = useState("");
+
+  const add = useMutation({
+    mutationFn: () => addDocument(appId, { name, url }),
+    onSuccess: () => {
+      setName("");
+      setUrl("");
+      qc.invalidateQueries({ queryKey: ["me", "admissions", appId, "documents"] });
+    },
+  });
+  const remove = useMutation({
+    mutationFn: (docId: string) => removeDocument(appId, docId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "admissions", appId, "documents"] }),
+  });
+
+  return (
+    <div className="mt-3 rounded-xl border border-ink-100 bg-ink-50/50 p-3">
+      <div className="space-y-2">
+        {(docs.data ?? []).map((d) => (
+          <div key={d.id} className="flex items-center justify-between gap-2 text-sm">
+            <a href={d.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-brand-blue hover:underline">
+              <FileText size={14} /> {d.name}
+            </a>
+            <button onClick={() => remove.mutate(d.id)} className="text-ink-400 hover:text-red-600">
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+        {docs.data && docs.data.length === 0 && <p className="text-xs text-ink-500">No documents attached yet.</p>}
+      </div>
+      <div className="mt-2 flex gap-2">
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name (e.g. Birth certificate)" className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs" />
+        <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs" />
+        <Button size="sm" onClick={() => add.mutate()} disabled={!name.trim() || !url.trim() || add.isPending}>
+          <Plus size={14} className="mr-1" /> Add
+        </Button>
       </div>
     </div>
   );

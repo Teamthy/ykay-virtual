@@ -114,6 +114,28 @@ export async function listInstitutions(params: {
   return apiFetch<Institution[]>(`/admin/institutions?${qs}`);
 }
 
+export async function adminUpdateInstitution(
+  id: string,
+  input: { name?: string; type?: string; email?: string; phone?: string; website?: string; description?: string }
+): Promise<Institution> {
+  const res = await apiFetch<Institution>(`/admin/institutions/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
+export async function adminSetInstitutionStatus(
+  id: string,
+  input: { active?: boolean; verified?: boolean }
+): Promise<Institution> {
+  const res = await apiFetch<Institution>(`/admin/institutions/${id}/status`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
 // --- Referrals ---
 
 export type Referral = {

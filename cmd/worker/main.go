@@ -185,7 +185,7 @@ func main() {
 	} else {
 		slog.Warn("worker: Redis unavailable — cron-only mode (no durable queue)")
 		leadSvc = service.NewLeadService(r.leadsRepo, service.NewNotifierService(nil, notification.NewWhatsAppSender()), r.users, audit).
-		WithEmail(notification.NewEmailSender())
+			WithEmail(notification.NewEmailSender())
 	}
 
 	// Onboarding email drip (000062) — welcome + conversion nudges. Gated on

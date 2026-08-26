@@ -31,7 +31,7 @@ func (c *capturingEmail) Send(_ context.Context, to, subject, body string) error
 	if c.fail {
 		return errEmailDown
 	}
-	c.sends = append(c.sends, struct{ To, Subject, Body string}{to, subject, body})
+	c.sends = append(c.sends, struct{ To, Subject, Body string }{to, subject, body})
 	return nil
 }
 
@@ -50,10 +50,10 @@ func (*fakeNetError) Error() string { return "smtp: connection refused" }
 func seedEmailLead(t *testing.T, repo *memory.LeadMemory, name, email, phone string, withUser bool, age time.Duration) *leads.Lead {
 	t.Helper()
 	l := &leads.Lead{
-		Name:     name,
-		Source:   "cohort-enrollment",
-		Intent:   leads.IntentEnrollmentStarted,
-		Status:   leads.StatusNew,
+		Name:   name,
+		Source: "cohort-enrollment",
+		Intent: leads.IntentEnrollmentStarted,
+		Status: leads.StatusNew,
 	}
 	if email != "" {
 		l.Email = &email

@@ -34,8 +34,25 @@ type Application struct {
 	PreferredTerm    *string    `json:"preferred_term,omitempty"`
 	Notes            *string    `json:"notes,omitempty"`
 	Status           Status     `json:"status"`
-	ReviewedBy       *uuid.UUID `json:"reviewed_by,omitempty"`
-	ReviewedAt       *time.Time `json:"reviewed_at,omitempty"`
-	CreatedAt        time.Time  `json:"created_at"`
-	UpdatedAt        time.Time  `json:"updated_at"`
+	// OfferFee / OfferCurrency — set by an admin when OFFERED. Accept creates
+	// a PENDING order for this amount (auto-enrol fee wiring).
+	OfferFee      *float64   `json:"offer_fee,omitempty"`
+	OfferCurrency *string    `json:"offer_currency,omitempty"`
+	OfferMessage  *string    `json:"offer_message,omitempty"`
+	ReviewedBy    *uuid.UUID `json:"reviewed_by,omitempty"`
+	ReviewedAt    *time.Time `json:"reviewed_at,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+}
+
+// Document — a supporting document attached to an application.
+type Document struct {
+	ID            uuid.UUID  `json:"id"`
+	ApplicationID uuid.UUID  `json:"application_id"`
+	Name          string     `json:"name"`
+	URL           string     `json:"url"`
+	MimeType      *string    `json:"mime_type,omitempty"`
+	SizeBytes     *int64     `json:"size_bytes,omitempty"`
+	UploadedBy    *uuid.UUID `json:"uploaded_by,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
 }

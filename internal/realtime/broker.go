@@ -24,7 +24,7 @@ import (
 
 // Event types. Keep stable — clients match on these strings.
 const (
-	EventMessageNew     = "message.new"
+	EventMessageNew      = "message.new"
 	EventNotificationNew = "notification.new"
 )
 

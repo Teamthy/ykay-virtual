@@ -22,9 +22,9 @@ import (
 //     itself, so the recycle is invisible to users).
 //   - Auth identical to every other /me route (httpOnly session cookie).
 type EventsHandler struct {
-	broker  *realtime.Broker
+	broker             *realtime.Broker
 	heartbeatsInterval time.Duration
-	maxLife time.Duration
+	maxLife            time.Duration
 }
 
 func NewEventsHandler(broker *realtime.Broker) *EventsHandler {

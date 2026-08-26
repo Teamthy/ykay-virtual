@@ -15,7 +15,30 @@ export type Application = {
   preferred_term?: string | null;
   notes?: string | null;
   status: AdmissionStatus;
+  offer_fee?: number | null;
+  offer_currency?: string | null;
+  offer_message?: string | null;
   created_at: string;
+};
+
+export type AdmissionDocument = {
+  id: string;
+  application_id: string;
+  name: string;
+  url: string;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  created_at: string;
+};
+
+export type AcceptResult = {
+  order: {
+    id: string;
+    order_number: string;
+    total_amount: number;
+    currency: string;
+  };
+  application: Application;
 };
 
 export type ApplyInput = {
@@ -44,6 +67,31 @@ export async function listMyAdmissions(): Promise<Application[]> {
   return res.data ?? [];
 }
 
+// --- Parent actions ---
+
+/** Accept an OFFERED application — auto-enrols the learner + wires a payable order. */
+export async function acceptAdmission(id: string): Promise<AcceptResult> {
+  const res = await apiFetch<AcceptResult>(`/me/admissions/${id}/accept`, { method: "POST" });
+  return res.data;
+}
+
+export async function listMyDocuments(appId: string): Promise<AdmissionDocument[]> {
+  const res = await apiFetch<AdmissionDocument[]>(`/me/admissions/${appId}/documents`);
+  return res.data ?? [];
+}
+
+export async function addDocument(appId: string, input: { name: string; url: string; mime_type?: string; size_bytes?: number }): Promise<AdmissionDocument> {
+  const res = await apiFetch<AdmissionDocument>(`/me/admissions/${appId}/documents`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return res.data;
+}
+
+export async function removeDocument(appId: string, docId: string): Promise<void> {
+  await apiFetch(`/me/admissions/${appId}/documents/${docId}`, { method: "DELETE" });
+}
+
 // --- Admin queue ---
 
 export async function listAdminAdmissions(status?: string): Promise<Envelope<Application[]>> {
@@ -51,10 +99,19 @@ export async function listAdminAdmissions(status?: string): Promise<Envelope<App
   return apiFetch<Application[]>(`/admin/admissions${qs}`);
 }
 
-export async function setAdmissionStatus(id: string, status: AdmissionStatus): Promise<Application> {
+export async function setAdmissionStatus(
+  id: string,
+  status: AdmissionStatus,
+  offer?: { offer_fee?: number; offer_currency?: string; offer_message?: string }
+): Promise<Application> {
   const res = await apiFetch<Application>(`/admin/admissions/${id}/status`, {
     method: "POST",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, ...offer }),
   });
   return res.data;
+}
+
+export async function listAdminDocuments(appId: string): Promise<AdmissionDocument[]> {
+  const res = await apiFetch<AdmissionDocument[]>(`/admin/admissions/${appId}/documents`);
+  return res.data ?? [];
 }

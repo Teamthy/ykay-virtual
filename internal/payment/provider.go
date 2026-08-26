@@ -154,7 +154,7 @@ func (p *PaystackProvider) VerifyTransaction(reference string) (*VerifyResult, e
 		return nil, fmt.Errorf("paystack verify failed (HTTP %d): %s", res.StatusCode, strings.TrimSpace(string(raw)))
 	}
 	var out struct {
-		Status bool   `json:"status"`
+		Status bool `json:"status"`
 		Data   struct {
 			Reference string  `json:"reference"`
 			Status    string  `json:"status"`

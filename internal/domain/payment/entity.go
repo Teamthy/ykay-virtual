@@ -142,7 +142,7 @@ type Payout struct {
 	// TransferCode — Paystack transfer_code once initiated (000056).
 	TransferCode *string `json:"transfer_code,omitempty"`
 	// OTPRequired — Paystack asked for an OTP to finalize the transfer.
-	OTPRequired bool `json:"otp_required"`
+	OTPRequired bool      `json:"otp_required"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

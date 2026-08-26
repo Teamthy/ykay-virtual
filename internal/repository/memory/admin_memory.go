@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/admin"
@@ -138,12 +139,20 @@ var _ content.AdminBlogRepository = (*AdminBlogMemory)(nil)
 // --- Institutions ---
 
 type InstitutionMemory struct {
-	mu   sync.RWMutex
-	rows map[uuid.UUID]*institution.Institution
+	mu          sync.RWMutex
+	rows        map[uuid.UUID]*institution.Institution
+	bySlug      map[string]uuid.UUID
+	memberships map[string]*institution.Membership         // instID|userID -> member
+	students    map[string]*institution.InstitutionStudent // instID|studentID -> link
 }
 
 func NewInstitutionMemory() *InstitutionMemory {
-	return &InstitutionMemory{rows: map[uuid.UUID]*institution.Institution{}}
+	return &InstitutionMemory{
+		rows:        map[uuid.UUID]*institution.Institution{},
+		bySlug:      map[string]uuid.UUID{},
+		memberships: map[string]*institution.Membership{},
+		students:    map[string]*institution.InstitutionStudent{},
+	}
 }
 
 func (m *InstitutionMemory) Seed(i *institution.Institution) {
@@ -153,6 +162,15 @@ func (m *InstitutionMemory) Seed(i *institution.Institution) {
 		i.ID = uuid.New()
 	}
 	m.rows[i.ID] = i
+	m.bySlug[i.Slug] = i.ID
+}
+
+func (m *InstitutionMemory) membershipKey(instID, userID uuid.UUID) string {
+	return instID.String() + "|" + userID.String()
+}
+
+func (m *InstitutionMemory) studentKey(instID, studentID uuid.UUID) string {
+	return instID.String() + "|" + studentID.String()
 }
 
 func (m *InstitutionMemory) List(_ context.Context, params institution.InstitutionListParams) ([]institution.Institution, int64, error) {
@@ -194,6 +212,159 @@ func (m *InstitutionMemory) GetByID(_ context.Context, id uuid.UUID) (*instituti
 		return &cp, nil
 	}
 	return nil, domain.ErrNotFound
+}
+
+func (m *InstitutionMemory) GetBySlug(_ context.Context, slug string) (*institution.Institution, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	id, ok := m.bySlug[slug]
+	if !ok {
+		return nil, domain.ErrNotFound
+	}
+	cp := *m.rows[id]
+	return &cp, nil
+}
+
+func (m *InstitutionMemory) Update(_ context.Context, i *institution.Institution) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	ex, ok := m.rows[i.ID]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	ex.Name = i.Name
+	ex.Type = i.Type
+	ex.Email = i.Email
+	ex.Phone = i.Phone
+	ex.Website = i.Website
+	ex.LogoURL = i.LogoURL
+	ex.Description = i.Description
+	ex.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+func (m *InstitutionMemory) SetActive(_ context.Context, id uuid.UUID, active bool) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	ex, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	ex.IsActive = active
+	ex.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+func (m *InstitutionMemory) SetVerified(_ context.Context, id uuid.UUID, verifiedAt *time.Time) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	ex, ok := m.rows[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	ex.VerifiedAt = verifiedAt
+	ex.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+// --- Memberships ---
+
+func (m *InstitutionMemory) GetMembership(_ context.Context, instID, userID uuid.UUID) (*institution.Membership, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if mem, ok := m.memberships[m.membershipKey(instID, userID)]; ok {
+		cp := *mem
+		return &cp, nil
+	}
+	return nil, domain.ErrNotFound
+}
+
+func (m *InstitutionMemory) ListMemberships(_ context.Context, instID uuid.UUID) ([]institution.Membership, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []institution.Membership{}
+	for _, mem := range m.memberships {
+		if mem.InstitutionID == instID {
+			out = append(out, *mem)
+		}
+	}
+	return out, nil
+}
+
+func (m *InstitutionMemory) ListMembershipsByUser(_ context.Context, userID uuid.UUID) ([]institution.Membership, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []institution.Membership{}
+	for _, mem := range m.memberships {
+		if mem.UserID == userID {
+			out = append(out, *mem)
+		}
+	}
+	return out, nil
+}
+
+func (m *InstitutionMemory) SetMembershipRole(_ context.Context, instID, userID uuid.UUID, role institution.MembershipRole) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	mem, ok := m.memberships[m.membershipKey(instID, userID)]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	mem.Role = role
+	return nil
+}
+
+func (m *InstitutionMemory) RemoveMembership(_ context.Context, instID, userID uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	k := m.membershipKey(instID, userID)
+	if _, ok := m.memberships[k]; !ok {
+		return domain.ErrNotFound
+	}
+	delete(m.memberships, k)
+	return nil
+}
+
+// --- Students ---
+
+func (m *InstitutionMemory) ListStudents(_ context.Context, instID uuid.UUID) ([]institution.InstitutionStudent, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []institution.InstitutionStudent{}
+	for _, s := range m.students {
+		if s.InstitutionID == instID {
+			out = append(out, *s)
+		}
+	}
+	return out, nil
+}
+
+func (m *InstitutionMemory) AddStudent(_ context.Context, s *institution.InstitutionStudent) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	k := m.studentKey(s.InstitutionID, s.StudentProfileID)
+	if _, ok := m.students[k]; ok {
+		return domain.ErrAlreadyExists
+	}
+	cp := *s
+	if cp.ID == uuid.Nil {
+		cp.ID = uuid.New()
+	}
+	cp.CreatedAt = time.Now().UTC()
+	m.students[k] = &cp
+	*s = cp
+	return nil
+}
+
+func (m *InstitutionMemory) RemoveStudent(_ context.Context, instID, studentID uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	k := m.studentKey(instID, studentID)
+	if _, ok := m.students[k]; !ok {
+		return domain.ErrNotFound
+	}
+	delete(m.students, k)
+	return nil
 }
 
 var _ institution.InstitutionRepository = (*InstitutionMemory)(nil)

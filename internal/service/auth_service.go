@@ -1,8 +1,6 @@
 package service
 
 import (
-	"math"
-	"sync"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -11,9 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/mail"
 	"os"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 
@@ -38,13 +38,13 @@ import (
 //   - Rate limiting on auth endpoints is applied at the transport layer
 
 const (
-	SessionTTL    = 30 * 24 * time.Hour
+	SessionTTL = 30 * 24 * time.Hour
 	// sessionSlidingInterval — how much idle time may be consumed before the
 	// session is extended again (sliding-window throttle: max one write per
 	// interval per session).
 	sessionSlidingInterval = 24 * time.Hour
-	bcryptCost    = 10
-	SessionCookie = "nuvora_session"
+	bcryptCost             = 10
+	SessionCookie          = "nuvora_session"
 )
 
 // selfAssignableRoles — the ONLY roles a user may grant themselves, either at
@@ -81,12 +81,12 @@ type AuthService struct {
 	// Per-account failed-login throttling (in-process; per API instance).
 	// The per-IP auth rate limiter covers brute force from one source; this
 	// covers a DISTRIBUTED attack focused on a single account.
-	failMu      sync.Mutex
-	failures    map[string]loginFailState
+	failMu   sync.Mutex
+	failures map[string]loginFailState
 }
 
 type loginFailState struct {
-	count      int
+	count       int
 	lockedUntil time.Time
 	windowStart time.Time
 }

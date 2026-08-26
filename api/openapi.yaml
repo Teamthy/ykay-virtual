@@ -1268,6 +1268,9 @@ paths:
     post:
       tags: [admin]
       summary: Review/offer/accept/reject an admissions application
+      description: >
+        When moving to OFFERED you may attach an offer fee + currency + a
+        message. The parent's Accept then auto-creates a payable order for it.
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1280,8 +1283,81 @@ paths:
               required: [status]
               properties:
                 status: { type: string, enum: [PENDING, REVIEWING, OFFERED, ACCEPTED, REJECTED, WITHDRAWN] }
+                offer_fee: { type: number }
+                offer_currency: { type: string, example: NGN }
+                offer_message: { type: string }
       responses:
         '200': { description: Updated }
+
+  /admin/admissions/{id}/documents:
+    get:
+      tags: [admin]
+      summary: List an application's supporting documents (admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Documents }
+
+  /me/admissions/{id}/accept:
+    post:
+      tags: [admissions]
+      summary: Accept an offered application (parent) — auto-enrols the learner and wires a payable order for the offer fee
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Accepted; order created (redirect to payment)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order: { type: object }
+                  application: { type: object }
+        '409': { description: Not in OFFERED state }
+
+  /me/admissions/{id}/documents:
+    get:
+      tags: [admissions]
+      summary: List the application's documents (parent)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Documents }
+    post:
+      tags: [admissions]
+      summary: Attach a supporting document (parent)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, url]
+              properties:
+                name: { type: string }
+                url: { type: string }
+                mime_type: { type: string }
+                size_bytes: { type: integer, format: int64 }
+      responses:
+        '201': { description: Document attached }
+
+  /me/admissions/{id}/documents/{docId}:
+    delete:
+      tags: [admissions]
+      summary: Remove a document (parent)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: docId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Removed }
 
   /admin/school/sessions:
     post:
@@ -3148,6 +3224,201 @@ paths:
       responses:
         '201': { description: Institution created }
 
+  /institutions/{slug}:
+    get:
+      tags: [institutions]
+      summary: Public institution profile by slug
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Institution profile }
+        '404': { description: Not found }
+
+  /me/institutions:
+    get:
+      tags: [institutions]
+      summary: List the institutions the user belongs to, with their role
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Membership views (institution + role) }
+
+  /me/institutions/{id}:
+    get:
+      tags: [institutions]
+      summary: Institution detail scoped to a member (or admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Institution }
+        '403': { description: Not a member }
+    put:
+      tags: [institutions]
+      summary: Update institution profile (OWNER/ADMIN or platform admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                type: { type: string, enum: [SCHOOL, CORPORATE, GOVERNMENT, NGO, OTHER] }
+                email: { type: string, format: email }
+                phone: { type: string }
+                website: { type: string }
+                logo_url: { type: string }
+                description: { type: string }
+      responses:
+        '200': { description: Updated institution }
+        '403': { description: Not a manager }
+
+  /me/institutions/{id}/memberships:
+    get:
+      tags: [institutions]
+      summary: List an institution's members (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Memberships }
+
+  /me/institutions/{id}/members:
+    post:
+      tags: [institutions]
+      summary: Add a member to the institution (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, role]
+              properties:
+                user_id: { type: string, format: uuid }
+                role: { type: string, enum: [OWNER, ADMIN, TEACHER, STUDENT, BILLING] }
+      responses:
+        '201': { description: Membership created }
+
+  /me/institutions/{id}/members/{userId}/role:
+    put:
+      tags: [institutions]
+      summary: Change a member's role (OWNER/ADMIN; OWNER role only by the owner)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role: { type: string, enum: [OWNER, ADMIN, TEACHER, STUDENT, BILLING] }
+      responses:
+        '204': { description: Updated }
+
+  /me/institutions/{id}/members/{userId}:
+    delete:
+      tags: [institutions]
+      summary: Remove a member (OWNER/ADMIN; owner cannot remove themself)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Removed }
+
+  /me/institutions/{id}/students:
+    get:
+      tags: [institutions]
+      summary: List an institution's linked learners (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Linked students (enriched with names) }
+    post:
+      tags: [institutions]
+      summary: Link a learner to the institution (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [student_profile_id]
+              properties:
+                student_profile_id: { type: string, format: uuid }
+                enrollment_ref: { type: string }
+      responses:
+        '201': { description: Student linked }
+
+  /me/institutions/{id}/students/{studentId}:
+    delete:
+      tags: [institutions]
+      summary: Unlink a learner from the institution (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: studentId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Removed }
+
+  /admin/institutions/{id}:
+    put:
+      tags: [admin]
+      summary: Edit an institution profile (platform admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                type: { type: string, enum: [SCHOOL, CORPORATE, GOVERNMENT, NGO, OTHER] }
+                email: { type: string, format: email }
+                phone: { type: string }
+                website: { type: string }
+                logo_url: { type: string }
+                description: { type: string }
+      responses:
+        '200': { description: Updated }
+
+  /admin/institutions/{id}/status:
+    post:
+      tags: [admin]
+      summary: Activate/deactivate or verify/un-verify an institution (platform admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                active: { type: boolean }
+                verified: { type: boolean }
+      responses:
+        '200': { description: Updated institution }
+
   # ---- Practice exams (CBT: tutor-authored papers, timed student attempts) ----
   /auth/google/callback-mobile:
     get:
@@ -3567,6 +3838,79 @@ paths:
           content:
             text/csv: {}
 
+  /library:
+    get:
+      tags: [library]
+      summary: Browse the on-demand recorded-lesson library catalogue (public)
+      description: >
+        Returns recorded-lesson metadata for items admins marked `visible`.
+        Video URLs and transcripts are only present for authenticated
+        participants of the lesson's cohort/package (or admins); everyone else
+        sees metadata only, so the shared public cache can never leak paid
+        content.
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: Search title / cohort title }
+        - { name: featured, in: query, schema: { type: boolean }, description: Only featured items }
+        - { name: programme_id, in: query, schema: { type: string, format: uuid } }
+        - { name: subject_id, in: query, schema: { type: string, format: uuid } }
+        - { name: level_id, in: query, schema: { type: string, format: uuid } }
+        - { name: curriculum_id, in: query, schema: { type: string, format: uuid } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Library catalogue (paged) }
+
+  /library/featured:
+    get:
+      tags: [library]
+      summary: Featured recorded lessons (homepage rail)
+      responses:
+        '200': { description: Featured items (metadata only) }
+
+  /library/{lessonId}:
+    get:
+      tags: [library]
+      summary: Recorded-lesson detail (metadata + entitlement-gated playback)
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Item with video_url/transcript only when entitled }
+        '404': { description: Not found }
+
+  /admin/library:
+    get:
+      tags: [admin]
+      summary: List every recorded lesson with its library curation (admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Recorded lessons + curation flags (paged) }
+
+  /admin/library/{lessonId}:
+    put:
+      tags: [admin]
+      summary: Curate a lesson's library row (visible/featured/thumbnail/duration/sort)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visible: { type: boolean }
+                featured: { type: boolean }
+                thumbnail_url: { type: string }
+                duration_seconds: { type: integer }
+                sort_order: { type: integer }
+      responses:
+        '200': { description: Updated item }
+        '404': { description: Lesson not found }
 
 components:
   securitySchemes:

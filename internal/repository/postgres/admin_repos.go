@@ -310,6 +310,205 @@ func (r *InstitutionRepo) GetByID(ctx context.Context, id uuid.UUID) (*instituti
 	return i, nil
 }
 
+func (r *InstitutionRepo) GetBySlug(ctx context.Context, slug string) (*institution.Institution, error) {
+	row := r.db.QueryRowContext(ctx, "SELECT "+institutionColumns+" FROM institutions WHERE slug = $1", slug)
+	i, err := scanInstitution(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	return i, nil
+}
+
+func (r *InstitutionRepo) Update(ctx context.Context, i *institution.Institution) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE institutions SET name = $1, type = $2, email = $3, phone = $4, website = $5,
+			logo_url = $6, description = $7, updated_at = NOW()
+		WHERE id = $8`,
+		i.Name, i.Type, i.Email, i.Phone, i.Website, i.LogoURL, i.Description, i.ID)
+	if err != nil {
+		return fmt.Errorf("update institution: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func (r *InstitutionRepo) SetActive(ctx context.Context, id uuid.UUID, active bool) error {
+	res, err := r.db.ExecContext(ctx, `UPDATE institutions SET is_active = $2, updated_at = NOW() WHERE id = $1`, id, active)
+	if err != nil {
+		return fmt.Errorf("set institution active: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func (r *InstitutionRepo) SetVerified(ctx context.Context, id uuid.UUID, verifiedAt *time.Time) error {
+	res, err := r.db.ExecContext(ctx, `UPDATE institutions SET verified_at = $2, updated_at = NOW() WHERE id = $1`, id, verifiedAt)
+	if err != nil {
+		return fmt.Errorf("set institution verified: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+// --- Memberships ---
+
+func (r *InstitutionRepo) GetMembership(ctx context.Context, institutionID, userID uuid.UUID) (*institution.Membership, error) {
+	row := r.db.QueryRowContext(ctx, `
+		SELECT id, institution_id, user_id, role, invited_by, joined_at, created_at
+		FROM institution_memberships WHERE institution_id = $1 AND user_id = $2`,
+		institutionID, userID)
+	m, err := scanMembership(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	return m, nil
+}
+
+func (r *InstitutionRepo) ListMemberships(ctx context.Context, institutionID uuid.UUID) ([]institution.Membership, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, institution_id, user_id, role, invited_by, joined_at, created_at
+		FROM institution_memberships WHERE institution_id = $1 ORDER BY created_at ASC`, institutionID)
+	if err != nil {
+		return nil, fmt.Errorf("list institution memberships: %w", err)
+	}
+	defer rows.Close()
+	out := []institution.Membership{}
+	for rows.Next() {
+		m, err := scanMembership(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *m)
+	}
+	return out, rows.Err()
+}
+
+func (r *InstitutionRepo) ListMembershipsByUser(ctx context.Context, userID uuid.UUID) ([]institution.Membership, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, institution_id, user_id, role, invited_by, joined_at, created_at
+		FROM institution_memberships WHERE user_id = $1 ORDER BY created_at ASC`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list user institution memberships: %w", err)
+	}
+	defer rows.Close()
+	out := []institution.Membership{}
+	for rows.Next() {
+		m, err := scanMembership(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *m)
+	}
+	return out, rows.Err()
+}
+
+func (r *InstitutionRepo) SetMembershipRole(ctx context.Context, institutionID, userID uuid.UUID, role institution.MembershipRole) error {
+	res, err := r.db.ExecContext(ctx, `
+		UPDATE institution_memberships SET role = $3 WHERE institution_id = $1 AND user_id = $2`,
+		institutionID, userID, role)
+	if err != nil {
+		return fmt.Errorf("set membership role: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func (r *InstitutionRepo) RemoveMembership(ctx context.Context, institutionID, userID uuid.UUID) error {
+	res, err := r.db.ExecContext(ctx,
+		`DELETE FROM institution_memberships WHERE institution_id = $1 AND user_id = $2`, institutionID, userID)
+	if err != nil {
+		return fmt.Errorf("remove membership: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func scanMembership(row interface{ Scan(...any) error }) (*institution.Membership, error) {
+	var m institution.Membership
+	var invitedBy uuidNull
+	var joinedAt sql.NullTime
+	if err := row.Scan(&m.ID, &m.InstitutionID, &m.UserID, &m.Role, &invitedBy, &joinedAt, &m.CreatedAt); err != nil {
+		return nil, err
+	}
+	if invitedBy.Valid {
+		m.InvitedBy = &invitedBy.UUID
+	}
+	if joinedAt.Valid {
+		t := joinedAt.Time
+		m.JoinedAt = &t
+	}
+	return &m, nil
+}
+
+// --- Linked students ---
+
+func (r *InstitutionRepo) ListStudents(ctx context.Context, institutionID uuid.UUID) ([]institution.InstitutionStudent, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, institution_id, student_profile_id, enrollment_ref, created_at
+		FROM institution_students WHERE institution_id = $1 ORDER BY created_at ASC`, institutionID)
+	if err != nil {
+		return nil, fmt.Errorf("list institution students: %w", err)
+	}
+	defer rows.Close()
+	out := []institution.InstitutionStudent{}
+	for rows.Next() {
+		s := institution.InstitutionStudent{}
+		var ref sql.NullString
+		if err := rows.Scan(&s.ID, &s.InstitutionID, &s.StudentProfileID, &ref, &s.CreatedAt); err != nil {
+			return nil, err
+		}
+		if ref.Valid {
+			s.EnrollmentRef = &ref.String
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}
+
+func (r *InstitutionRepo) AddStudent(ctx context.Context, s *institution.InstitutionStudent) error {
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO institution_students (institution_id, student_profile_id, enrollment_ref)
+		VALUES ($1,$2,$3) ON CONFLICT (institution_id, student_profile_id) DO NOTHING
+		RETURNING id, created_at`,
+		s.InstitutionID, s.StudentProfileID, s.EnrollmentRef).Scan(&s.ID, &s.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrAlreadyExists // already linked
+		}
+		return fmt.Errorf("add institution student: %w", err)
+	}
+	return nil
+}
+
+func (r *InstitutionRepo) RemoveStudent(ctx context.Context, institutionID, studentProfileID uuid.UUID) error {
+	res, err := r.db.ExecContext(ctx,
+		`DELETE FROM institution_students WHERE institution_id = $1 AND student_profile_id = $2`,
+		institutionID, studentProfileID)
+	if err != nil {
+		return fmt.Errorf("remove institution student: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
 var _ institution.InstitutionRepository = (*InstitutionRepo)(nil)
 
 // --- Reviews ---

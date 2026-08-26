@@ -51,3 +51,32 @@ type Membership struct {
 	JoinedAt      *time.Time     `json:"joined_at,omitempty"`
 	CreatedAt     time.Time      `json:"created_at"`
 }
+
+// InstitutionStudent — a learner linked to an institution
+// (institution_students, migration 000003). EnrollmentRef is an optional
+// school-internal reference number.
+type InstitutionStudent struct {
+	ID               uuid.UUID `json:"id"`
+	InstitutionID    uuid.UUID `json:"institution_id"`
+	StudentProfileID uuid.UUID `json:"student_profile_id"`
+	EnrollmentRef    *string   `json:"enrollment_ref,omitempty"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
+// MembershipView — a membership plus its institution, so a user can list the
+// schools/orgs they belong to and their role in each in one round-trip.
+type MembershipView struct {
+	Membership
+	Institution *Institution `json:"institution"`
+}
+
+// CanManage reports whether a membership role may manage the institution's
+// profile, members and students (OWNER + ADMIN).
+func (m Membership) CanManage() bool {
+	return m.Role == RoleOwner || m.Role == RoleAdmin
+}
+
+// IsOwner reports whether the membership is the institution OWNER.
+func (m Membership) IsOwner() bool {
+	return m.Role == RoleOwner
+}

@@ -977,12 +977,12 @@ func (s *AdminService) RequestCohortJoinForUser(ctx context.Context, userID, coh
 // cohort (title). Raw UUIDs never reach the console again.
 type CohortJoinView struct {
 	booking.CohortJoinRequest
-	TutorName    string `json:"tutor_name"`
-	TutorEmail   string `json:"tutor_email,omitempty"`
-	TutorSlug    string `json:"tutor_slug,omitempty"`
-	TutorStatus  string `json:"tutor_status,omitempty"`
-	TutorYears   int    `json:"tutor_years_experience,omitempty"`
-	CohortTitle  string `json:"cohort_title"`
+	TutorName   string `json:"tutor_name"`
+	TutorEmail  string `json:"tutor_email,omitempty"`
+	TutorSlug   string `json:"tutor_slug,omitempty"`
+	TutorStatus string `json:"tutor_status,omitempty"`
+	TutorYears  int    `json:"tutor_years_experience,omitempty"`
+	CohortTitle string `json:"cohort_title"`
 }
 
 func (s *AdminService) ListCohortJoins(ctx context.Context, status string) ([]CohortJoinView, error) {
@@ -1025,8 +1025,8 @@ func (s *AdminService) ListCohortJoins(ctx context.Context, status string) ([]Co
 // started checkout and have not paid (the seat-expiry cron sweeps these).
 type PendingEnrollmentView struct {
 	booking.CohortEnrollment
-	StudentName string `json:"student_name"`
-	CohortTitle string `json:"cohort_title"`
+	StudentName string  `json:"student_name"`
+	CohortTitle string  `json:"cohort_title"`
 	CohortFee   float64 `json:"cohort_fee"`
 }
 
@@ -1061,15 +1061,15 @@ func (s *AdminService) ListPendingEnrollments(ctx context.Context, limit int) ([
 // UpdateCohortInput — admin cohort edit. Slug/programme/tutor/status are
 // managed by their own dedicated actions, not this form.
 type UpdateCohortInput struct {
-	Title        string     `json:"title"`
-	Capacity     int        `json:"capacity"`
-	StartDate    time.Time  `json:"start_date"`
-	EndDate      time.Time  `json:"end_date"`
-	ScheduleDesc *string    `json:"schedule_description"`
-	Timezone     string     `json:"timezone"`
-	LocationMode string     `json:"location_mode"`
-	Fee          float64    `json:"fee"`
-	Currency     string     `json:"currency"`
+	Title              string     `json:"title"`
+	Capacity           int        `json:"capacity"`
+	StartDate          time.Time  `json:"start_date"`
+	EndDate            time.Time  `json:"end_date"`
+	ScheduleDesc       *string    `json:"schedule_description"`
+	Timezone           string     `json:"timezone"`
+	LocationMode       string     `json:"location_mode"`
+	Fee                float64    `json:"fee"`
+	Currency           string     `json:"currency"`
 	EnrollmentOpensAt  *time.Time `json:"enrollment_opens_at"`
 	EnrollmentClosesAt *time.Time `json:"enrollment_closes_at"`
 }
@@ -1123,9 +1123,9 @@ func (s *AdminService) UpdateCohortAdmin(ctx context.Context, adminID, cohortID 
 // edits remain SUPER_ADMIN-only (enforced at the route).
 type UserDetailView struct {
 	identity.User
-	Roles       []string           `json:"roles"`
-	TutorSlug   string             `json:"tutor_slug,omitempty"`
-	TutorStatus string             `json:"tutor_status,omitempty"`
+	Roles       []string `json:"roles"`
+	TutorSlug   string   `json:"tutor_slug,omitempty"`
+	TutorStatus string   `json:"tutor_status,omitempty"`
 }
 
 func (s *AdminService) GetUserDetail(ctx context.Context, userID uuid.UUID) (*UserDetailView, error) {

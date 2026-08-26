@@ -13,9 +13,9 @@ import (
 
 // Intent — why the lead exists.
 const (
-	IntentCallbackRequest    = "CALLBACK_REQUEST"    // visitor asked us to reach out
-	IntentEnrollmentStarted  = "ENROLLMENT_STARTED"  // checkout began, payment not completed
-	IntentGeneralInterest    = "GENERAL_INTEREST"    // exit-intent / browse capture
+	IntentCallbackRequest   = "CALLBACK_REQUEST"   // visitor asked us to reach out
+	IntentEnrollmentStarted = "ENROLLMENT_STARTED" // checkout began, payment not completed
+	IntentGeneralInterest   = "GENERAL_INTEREST"   // exit-intent / browse capture
 )
 
 // Status — follow-up lifecycle.

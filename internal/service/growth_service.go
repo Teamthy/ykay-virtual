@@ -318,12 +318,20 @@ func generateReferralCode() string {
 
 type InstitutionService struct {
 	institutions institution.InstitutionRepository
+	students     identity.StudentProfileRepository
 	audit        identity.AuditService
 	now          func() time.Time
 }
 
 func NewInstitutionService(inst institution.InstitutionRepository, audit identity.AuditService) *InstitutionService {
 	return &InstitutionService{institutions: inst, audit: audit, now: time.Now}
+}
+
+// WithStudents wires the learner store so the console can enrich linked
+// students with their names and validate student IDs.
+func (s *InstitutionService) WithStudents(students identity.StudentProfileRepository) *InstitutionService {
+	s.students = students
+	return s
 }
 
 type CreateInstitutionInput struct {

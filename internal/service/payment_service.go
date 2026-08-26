@@ -116,11 +116,11 @@ func (s *PaymentService) emailReceipt(ctx context.Context, order *payment.Order)
 	link := base + "/receipts/" + order.ID.String()
 	amount := fmt.Sprintf("%.2f %s", order.TotalAmount, order.Currency)
 	body := notification.BrandEmail(
-		`<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Payment received</h1>`+
-			`<p style="margin:0 0 16px;">Thank you. Your NUVORA payment is confirmed.</p>`+
-			`<p style="margin:0 0 8px;"><strong>Order</strong> `+order.OrderNumber+`</p>`+
-			`<p style="margin:0 0 20px;"><strong>Amount</strong> `+amount+`</p>`+
-			`<p><a href="`+link+`" style="display:inline-block;background:#70F250;color:#013920;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;">View / print receipt</a></p>`+
+		`<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Payment received</h1>` +
+			`<p style="margin:0 0 16px;">Thank you. Your NUVORA payment is confirmed.</p>` +
+			`<p style="margin:0 0 8px;"><strong>Order</strong> ` + order.OrderNumber + `</p>` +
+			`<p style="margin:0 0 20px;"><strong>Amount</strong> ` + amount + `</p>` +
+			`<p><a href="` + link + `" style="display:inline-block;background:#70F250;color:#013920;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;">View / print receipt</a></p>` +
 			`<p style="margin:20px 0 0;color:#8794AC;font-size:13px;">Keep this email for your records. You can print or save a PDF from the receipt page.</p>`,
 	)
 	if err := s.mail.Send(ctx, user.Email, "Your NUVORA receipt — "+order.OrderNumber, body); err != nil {
@@ -400,7 +400,6 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 		}
 		return nil, err
 	}
-
 
 	// Idempotency: already SUCCESS → acknowledge, do not mutate again.
 	if paymentRow.Status == payment.PaymentSuccess {

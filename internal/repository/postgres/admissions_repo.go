@@ -18,16 +18,18 @@ func NewAdmissionsRepo(db TxQuerier) *AdmissionsRepo { return &AdmissionsRepo{db
 
 const admissionsColumns = `id, institution_id, programme_id, cohort_id, parent_user_id,
 	student_profile_id, applicant_name, current_level, preferred_term, notes, status,
+	offer_fee, offer_currency, offer_message,
 	reviewed_by, reviewed_at, created_at, updated_at`
 
 func scanApplication(row interface{ Scan(...any) error }) (*admissions.Application, error) {
 	var a admissions.Application
 	var inst, prog, cohort, reviewedBy uuidNull
-	var level, term, notes sql.NullString
+	var level, term, notes, offerFee, offerCurrency, offerMessage sql.NullString
 	var reviewedAt sql.NullTime
 	if err := row.Scan(&a.ID, &inst, &prog, &cohort, &a.ParentUserID, &a.StudentProfileID,
-		&a.ApplicantName, &level, &term, &notes, &a.Status, &reviewedBy, &reviewedAt,
-		&a.CreatedAt, &a.UpdatedAt); err != nil {
+		&a.ApplicantName, &level, &term, &notes, &a.Status,
+		&offerFee, &offerCurrency, &offerMessage,
+		&reviewedBy, &reviewedAt, &a.CreatedAt, &a.UpdatedAt); err != nil {
 		return nil, err
 	}
 	if inst.Valid {
@@ -50,6 +52,18 @@ func scanApplication(row interface{ Scan(...any) error }) (*admissions.Applicati
 	}
 	if notes.Valid {
 		a.Notes = &notes.String
+	}
+	if offerFee.Valid {
+		var f float64
+		if _, err := fmt.Sscan(offerFee.String, &f); err == nil {
+			a.OfferFee = &f
+		}
+	}
+	if offerCurrency.Valid {
+		a.OfferCurrency = &offerCurrency.String
+	}
+	if offerMessage.Valid {
+		a.OfferMessage = &offerMessage.String
 	}
 	if reviewedAt.Valid {
 		a.ReviewedAt = &reviewedAt.Time
@@ -94,6 +108,93 @@ func (r *AdmissionsRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status 
 		return fmt.Errorf("update admissions status: %w", err)
 	}
 	return nil
+}
+
+func (r *AdmissionsRepo) SetOffer(ctx context.Context, id uuid.UUID, fee *float64, currency *string, message *string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE admissions_applications SET offer_fee=$1, offer_currency=$2, offer_message=$3, updated_at=NOW()
+		WHERE id=$4`, fee, currency, message, id)
+	if err != nil {
+		return fmt.Errorf("set admissions offer: %w", err)
+	}
+	return nil
+}
+
+// --- Documents ---
+
+func (r *AdmissionsRepo) AddDocument(ctx context.Context, d *admissions.Document) error {
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO admissions_documents (application_id, name, url, mime_type, size_bytes, uploaded_by)
+		VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_at`,
+		d.ApplicationID, d.Name, d.URL, d.MimeType, d.SizeBytes, d.UploadedBy).Scan(&d.ID, &d.CreatedAt)
+	if err != nil {
+		return fmt.Errorf("add admissions document: %w", err)
+	}
+	return nil
+}
+
+func (r *AdmissionsRepo) ListDocuments(ctx context.Context, applicationID uuid.UUID) ([]admissions.Document, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, application_id, name, url, mime_type, size_bytes, uploaded_by, created_at
+		FROM admissions_documents WHERE application_id=$1 ORDER BY created_at ASC`, applicationID)
+	if err != nil {
+		return nil, fmt.Errorf("list admissions documents: %w", err)
+	}
+	defer rows.Close()
+	out := []admissions.Document{}
+	for rows.Next() {
+		d, err := scanAdmissionDocument(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *d)
+	}
+	return out, rows.Err()
+}
+
+func (r *AdmissionsRepo) GetDocument(ctx context.Context, id uuid.UUID) (*admissions.Document, error) {
+	row := r.db.QueryRowContext(ctx, `
+		SELECT id, application_id, name, url, mime_type, size_bytes, uploaded_by, created_at
+		FROM admissions_documents WHERE id=$1`, id)
+	d, err := scanAdmissionDocument(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		return nil, err
+	}
+	return d, nil
+}
+
+func (r *AdmissionsRepo) RemoveDocument(ctx context.Context, id uuid.UUID) error {
+	res, err := r.db.ExecContext(ctx, `DELETE FROM admissions_documents WHERE id=$1`, id)
+	if err != nil {
+		return fmt.Errorf("remove admissions document: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+func scanAdmissionDocument(row interface{ Scan(...any) error }) (*admissions.Document, error) {
+	var d admissions.Document
+	var mime sql.NullString
+	var size sql.NullInt64
+	var uploadedBy uuidNull
+	if err := row.Scan(&d.ID, &d.ApplicationID, &d.Name, &d.URL, &mime, &size, &uploadedBy, &d.CreatedAt); err != nil {
+		return nil, err
+	}
+	if mime.Valid {
+		d.MimeType = &mime.String
+	}
+	if size.Valid {
+		d.SizeBytes = &size.Int64
+	}
+	if uploadedBy.Valid {
+		d.UploadedBy = &uploadedBy.UUID
+	}
+	return &d, nil
 }
 
 func (r *AdmissionsRepo) ListByParent(ctx context.Context, parentUserID uuid.UUID, limit int) ([]admissions.Application, error) {

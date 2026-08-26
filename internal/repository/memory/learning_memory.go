@@ -16,13 +16,13 @@ import (
 // In-memory learning stores (tests / dev fallback).
 
 type LearningMemory struct {
-	mu          sync.RWMutex
-	assessments map[uuid.UUID]*learning.LearnerAssessment
-	questions   map[uuid.UUID][]learning.AssessmentQuestion
-	attempts    map[uuid.UUID]*learning.LearnerAttempt
-	byStudent   map[string]*learning.LearnerAttempt // assessment|student
-	reports     []learning.ProgressReport
-	submissions map[uuid.UUID][]learning.GradedSubmission // assignmentID → rows
+	mu                sync.RWMutex
+	assessments       map[uuid.UUID]*learning.LearnerAssessment
+	questions         map[uuid.UUID][]learning.AssessmentQuestion
+	attempts          map[uuid.UUID]*learning.LearnerAttempt
+	byStudent         map[string]*learning.LearnerAttempt // assessment|student
+	reports           []learning.ProgressReport
+	submissions       map[uuid.UUID][]learning.GradedSubmission // assignmentID → rows
 	cohortsForStudent func(ctx context.Context, studentProfileID uuid.UUID) ([]uuid.UUID, error)
 }
 

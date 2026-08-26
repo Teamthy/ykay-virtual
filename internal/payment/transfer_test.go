@@ -21,12 +21,12 @@ func newStubPaystack(t *testing.T) (*PaystackProvider, *httptest.Server) {
 		case "/transfer":
 			json.NewEncoder(w).Encode(paystackEnvelope{
 				Status: true, Message: "Transfer requires OTP",
-				Data:    paystackData{TransferCode: "TRF_stub456", Status: "otp"},
+				Data: paystackData{TransferCode: "TRF_stub456", Status: "otp"},
 			})
 		case "/transfer/finalize":
 			json.NewEncoder(w).Encode(paystackEnvelope{
 				Status: true, Message: "Transfer completed",
-				Data:    paystackData{TransferCode: "TRF_stub456", Status: "success"},
+				Data: paystackData{TransferCode: "TRF_stub456", Status: "success"},
 			})
 		default:
 			http.NotFound(w, r)

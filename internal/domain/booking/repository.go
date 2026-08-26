@@ -126,6 +126,9 @@ type LessonRepository interface {
 	// ListRecordedForStudent returns the recorded (video) lessons the student
 	// is entitled to across their enrolled cohorts, newest first.
 	ListRecordedForStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]Lesson, error)
+	// IsParticipant reports whether the learner is a participant of the lesson
+	// (used by the on-demand library to gate playback entitlement).
+	IsParticipant(ctx context.Context, lessonID, studentProfileID uuid.UUID) (bool, error)
 }
 
 // LessonProgress — per-student watch state for a lesson (000035).

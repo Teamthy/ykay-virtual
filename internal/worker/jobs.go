@@ -20,15 +20,15 @@ const (
 	// JobExpirePendingEnrollments — seat-leak recovery: cancel PENDING cohort
 	// enrollments whose checkout was abandoned and release the reserved seat.
 	JobExpirePendingEnrollments JobType = "expire_stale_pending_enrollments"
-	JobComputeTutorRanking     JobType = "compute_tutor_ranking_score"
-	JobRefreshSearchCache      JobType = "refresh_search_cache"
-	JobProcessWeeklyPayouts    JobType = "process_weekly_tutor_payouts"
-	JobGenerateProgressReports JobType = "generate_progress_reports"
-	JobSendReferralRewards     JobType = "send_referral_rewards"
-	JobCleanupExpiredUploads   JobType = "cleanup_expired_uploads"
-	JobRegenerateSitemaps      JobType = "regenerate_sitemaps"
-	JobPublishScheduledPosts   JobType = "publish_scheduled_blog_posts"
-	JobArchiveAuditLogs        JobType = "archive_audit_logs" // G7.3 retention
+	JobComputeTutorRanking      JobType = "compute_tutor_ranking_score"
+	JobRefreshSearchCache       JobType = "refresh_search_cache"
+	JobProcessWeeklyPayouts     JobType = "process_weekly_tutor_payouts"
+	JobGenerateProgressReports  JobType = "generate_progress_reports"
+	JobSendReferralRewards      JobType = "send_referral_rewards"
+	JobCleanupExpiredUploads    JobType = "cleanup_expired_uploads"
+	JobRegenerateSitemaps       JobType = "regenerate_sitemaps"
+	JobPublishScheduledPosts    JobType = "publish_scheduled_blog_posts"
+	JobArchiveAuditLogs         JobType = "archive_audit_logs" // G7.3 retention
 )
 
 type Job struct {

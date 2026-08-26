@@ -268,13 +268,24 @@ func (m *InstitutionMemory) Create(_ context.Context, i *institution.Institution
 	i.CreatedAt = nowUTC()
 	i.UpdatedAt = i.CreatedAt
 	m.rows[i.ID] = i
+	m.bySlug[i.Slug] = i.ID
 	return nil
 }
 
 func (m *InstitutionMemory) AddMembership(_ context.Context, mem *institution.Membership) error {
-	// memory: no-op (memberships tracked implicitly)
-	mem.ID = uuid.New()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	k := m.membershipKey(mem.InstitutionID, mem.UserID)
+	if _, ok := m.memberships[k]; ok {
+		return nil // already a member
+	}
+	if mem.ID == uuid.Nil {
+		mem.ID = uuid.New()
+	}
 	mem.CreatedAt = nowUTC()
+	cp := *mem
+	m.memberships[k] = &cp
+	*mem = cp
 	return nil
 }
 

@@ -19,7 +19,7 @@ import (
 func TestSetLessonTranscript_OwnerAttachesAndClears(t *testing.T) {
 	svc, lessons, owner, profileID := newRescheduleEnv(t)
 	ctx := context.Background()
-	l := seedLesson(lessons, profileID, time.Now().Add(2 * time.Hour).UTC(), booking.LessonScheduled)
+	l := seedLesson(lessons, profileID, time.Now().Add(2*time.Hour).UTC(), booking.LessonScheduled)
 
 	text := "Key points: factorisation, quadratic formula. Homework: ex 4.2 q1-q8."
 	require.NoError(t, svc.SetLessonTranscript(ctx, owner, false, l.ID, &text))
@@ -39,7 +39,7 @@ func TestSetLessonTranscript_OwnerAttachesAndClears(t *testing.T) {
 func TestSetLessonTranscript_Authz(t *testing.T) {
 	svc, lessons, _, profileID := newRescheduleEnv(t)
 	ctx := context.Background()
-	l := seedLesson(lessons, profileID, time.Now().Add(2 * time.Hour).UTC(), booking.LessonScheduled)
+	l := seedLesson(lessons, profileID, time.Now().Add(2*time.Hour).UTC(), booking.LessonScheduled)
 
 	// A random non-owner tutor is refused.
 	text := "should not save"
@@ -62,7 +62,7 @@ func TestSetLessonTranscript_Authz(t *testing.T) {
 func TestSetLessonTranscript_RejectsOversized(t *testing.T) {
 	svc, lessons, owner, profileID := newRescheduleEnv(t)
 	ctx := context.Background()
-	l := seedLesson(lessons, profileID, time.Now().Add(2 * time.Hour).UTC(), booking.LessonScheduled)
+	l := seedLesson(lessons, profileID, time.Now().Add(2*time.Hour).UTC(), booking.LessonScheduled)
 
 	huge := make([]byte, 100_001)
 	for i := range huge {

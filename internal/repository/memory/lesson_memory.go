@@ -164,3 +164,14 @@ func (m *LessonMemory) ListRecordedForStudent(_ context.Context, studentProfileI
 	}
 	return out, nil
 }
+
+func (m *LessonMemory) IsParticipant(_ context.Context, lessonID, studentProfileID uuid.UUID) (bool, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, id := range m.student[studentProfileID] {
+		if id == lessonID {
+			return true, nil
+		}
+	}
+	return false, nil
+}

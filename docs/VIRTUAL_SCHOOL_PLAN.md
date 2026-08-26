@@ -125,3 +125,99 @@ and covered by service tests in `school_calendar_service_test.go`.
    calendar itself is not money, so it follows the catalogue's plain-repo pattern.
 5. No fabricated slate: Nigerian 3-term and British 3-term naming both fit the
    `number`-anchored model; names are free text per school.
+
+## 7. Recorded-lesson library expansion (shipped 2026-08-26)
+
+On top of the per-cohort on-demand lessons (000035 `lessons.video_url` +
+`lesson_progress`; 000061 `transcript`), the library is now a **first-class,
+browsable catalogue**:
+
+- **`migration 000064`** adds a 1:1 `recorded_library` companion table keyed to
+  `lessons` (`visible`, `featured`, `thumbnail_url`, `duration_seconds`,
+  `sort_order`). Extend-don't-fork: the core `lessons` table and its queries are
+  untouched.
+- **New `internal/domain/library`** + postgres/memory repos + `LibraryService`:
+  public catalogue browse (search / curriculum / level / subject / programme /
+  featured), featured rail, detail, and admin curation. `lesson_repo` gained
+  `IsParticipant` to gate playback entitlement.
+- **Gating rule (extend-don't-fork):** the library is a discovery surface. Making
+  an item `visible` never grants playback to non-members — the service returns
+  `video_url`/`transcript` only for the lesson's participants (or admins), so the
+  anonymous-cacheable public route can never leak paid content.
+- **Routes** (contract-tested in `api/openapi.yaml`):
+  - `GET /library` (public, cache60) · `GET /library/featured` · `GET /library/{lessonId}`
+  - `GET /admin/library` · `PUT /admin/library/{lessonId}` (staff only)
+- **Web**: `/library` browse + `/library/{lessonId}` detail (entitlement-gated
+  video + transcript) + `/admin/library` content manager; `/lms/recorded` links
+  into the library. Service tests cover gating/filters/merge validation.
+
+**Still open:** admin cannot attach a lesson that has no video URL yet (only
+curate existing recorded lessons); programme-level "series" grouping and
+per-term ordering are future niceties.
+
+## 8. Institutions / B2B self-serve console (shipped 2026-08-26)
+
+Built on the existing `institutions` / `institution_memberships` /
+`institution_students` schema (migration 000003) — extend-don't-fork:
+
+- **Expanded `InstitutionRepository`** (postgres + memory): get-by-slug,
+  profile update, set-active, set-verified, memberships (list by institution /
+  by user, get one, set role, remove), linked students (list / add / remove).
+- **`InstitutionService` console methods** (in `institution_service.go`):
+  `ListMine` (institutions + role), scoped `GetByID`, `Update` (OWNER/ADMIN or
+  platform admin), `SetActive`/`SetVerified` (platform admin), membership
+  management (`InviteMember`, `SetMemberRole`, `RemoveMember` — owner/admin
+  gated, owner cannot self-demote/self-remove, OWNER role only assignable by
+  the owner), and linked-student management (enriched with learner names).
+  Every mutation is audit-logged.
+- **Routes** (contract-tested in `api/openapi.yaml`):
+  - `GET /institutions/{slug}` (public profile)
+  - `GET /me/institutions` · `GET/PUT /me/institutions/{id}`
+  - `GET /me/institutions/{id}/memberships` · `POST /me/institutions/{id}/members`
+  - `PUT /me/institutions/{id}/members/{userId}/role` · `DELETE /me/institutions/{id}/members/{userId}`
+  - `GET/POST /me/institutions/{id}/students` · `DELETE /me/institutions/{id}/students/{studentId}`
+  - `PUT /admin/institutions/{id}` · `POST /admin/institutions/{id}/status`
+- **Web**: `/account/institutions` console (list my institutions) +
+  `/account/institutions/[id]` detail (profile / members / students tabs);
+  `/admin/institutions` list gained a **Manage** modal (edit + activate +
+  verify). Service tests cover ownership gating, roles, owner protections and
+  student linking.
+
+**Still open:** invite-by-email (no user yet → link/claim flow), institution
+branding/theme, and institution-scoped cohort/lesson dashboards (data isolation
+beyond profile/members/students).
+
+## 9. Admissions v2 — documents + offer→accept auto-enrol fee wiring (shipped 2026-08-26)
+
+Built on the existing `admissions_applications` flow (migration 000048) —
+extend-don't-fork:
+
+- **`migration 000065`** adds `admissions_documents` (name, url/object-key,
+  mime, size, uploaded_by) and `admissions_applications.offer_fee /
+  offer_currency / offer_message`.
+- **Documents** — a parent attaches supporting documents to their application
+  (birth certificate, prior transcripts); the admin queue can read them. Routes:
+  - `GET/POST /me/admissions/{id}/documents` · `DELETE /me/admissions/{id}/documents/{docId}` (parent)
+  - `GET /admin/admissions/{id}/documents` (admin)
+- **Offer → accept → auto-enrol fee wiring** — `POST /admin/admissions/{id}/status`
+  now accepts an optional `offer_fee`/`offer_currency`/`offer_message` when
+  offering. The parent's `POST /me/admissions/{id}/accept`:
+  - sets status ACCEPTED,
+  - auto-creates a PENDING order for the offer fee (reusing the existing
+    payment → webhook → escrow engine),
+  - when the application references a cohort, also creates a PENDING cohort
+    enrollment + reserves the seat and uses a COHORT order item, so the existing
+    payment-confirm path flips the enrollment to CONFIRMED on success.
+  - returns the order so the client can route the parent to the receipt/payment.
+- **Notifications** — `WithNotifications(users, mail, siteURL)` sends a branded
+  status email to the parent on OFFERED / ACCEPTED / REJECTED (best-effort,
+  never fails the flow).
+- **Web** — `/account/admissions` now shows offer fees, an **Accept offer & enrol**
+  action (routes to payment), and per-application document management;
+  `/admin/admissions` gained an **Offer** dialog (fee/currency/message) and an
+  inline documents viewer. Service tests cover accept-with-fee (order + cohort
+  enrollment + seat), documents ownership, and offer validation.
+
+**Still open:** document binary upload via the object store (documents are
+currently keyed by an already-hosted URL/object key), an application detail
+route for large document sets, and admissions fee discounts/coupons.

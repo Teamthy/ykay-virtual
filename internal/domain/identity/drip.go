@@ -16,8 +16,8 @@ type EmailDrip struct {
 	// Sequence groups a drip programme, e.g. "onboarding".
 	Sequence string `json:"sequence"`
 	// Step is 1-based position in the sequence.
-	Step    int       `json:"step"`
-	SentAt  time.Time `json:"sent_at"`
+	Step      int       `json:"step"`
+	SentAt    time.Time `json:"sent_at"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

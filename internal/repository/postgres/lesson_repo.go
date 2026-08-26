@@ -122,6 +122,20 @@ func (r *LessonRepo) ListByTutor(ctx context.Context, tutorProfileID uuid.UUID, 
 	return out, rows.Err()
 }
 
+// IsParticipant — whether the learner is a participant of the lesson
+// (lesson_participants). Used to gate on-demand library playback.
+func (r *LessonRepo) IsParticipant(ctx context.Context, lessonID, studentProfileID uuid.UUID) (bool, error) {
+	var exists bool
+	err := r.db.QueryRowContext(ctx,
+		`SELECT EXISTS(
+			SELECT 1 FROM lesson_participants WHERE lesson_id = $1 AND student_profile_id = $2
+		)`, lessonID, studentProfileID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("check lesson participant: %w", err)
+	}
+	return exists, nil
+}
+
 var _ booking.LessonRepository = (*LessonRepo)(nil)
 
 // Create inserts a scheduled lesson. The double-booking guard is enforced in

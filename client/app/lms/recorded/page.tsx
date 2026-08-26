@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { Play, Video, Clock, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { listRecordedLessons } from "@/features/lms/recorded";
@@ -40,12 +41,22 @@ export default function RecordedLibraryPage() {
   return (
     <DashboardPage className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold text-ink-900">
-          <Video className="text-primary" /> Recorded lessons
-        </h1>
-        <p className="mt-1 text-sm text-ink-500">
-          Rewatch your recorded classes any time. Only lessons from cohorts you&apos;re enrolled in appear here.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-ink-900">
+              <Video className="text-primary" /> Recorded lessons
+            </h1>
+            <p className="mt-1 text-sm text-ink-500">
+              Rewatch your recorded classes any time. Only lessons from cohorts you&apos;re enrolled in appear here.
+            </p>
+          </div>
+          <Link
+            href="/library"
+            className="shrink-0 rounded-full bg-deep px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-deep/90"
+          >
+            Browse library
+          </Link>
+        </div>
       </div>
 
       {pickerOptions.length > 1 && (

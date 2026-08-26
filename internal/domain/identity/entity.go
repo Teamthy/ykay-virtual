@@ -18,23 +18,23 @@ const (
 )
 
 type User struct {
-	ID              uuid.UUID  `json:"id"`
-	Email           string     `json:"email"`
-	FirstName       string     `json:"first_name,omitempty"`
-	LastName        string     `json:"last_name,omitempty"`
-	Phone           *string    `json:"phone,omitempty"`
-	AvatarURL       *string    `json:"avatar_url,omitempty"` // profile photo (public object URL)
-	PasswordHash    string     `json:"-"`
-	Status          UserStatus `json:"status"`
-	Timezone        string     `json:"timezone"`
-	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty"`
-	PhoneVerifiedAt *time.Time `json:"phone_verified_at,omitempty"`
-	LastLoginAt     *time.Time `json:"last_login_at,omitempty"`
-	OnboardedAt     *time.Time `json:"onboarded_at,omitempty"` // wizard complete (000031)
-	Bio             *string    `json:"bio,omitempty"`           // onboarding "about you" (000053)
-	PreferredLanguage *string  `json:"preferred_language,omitempty"` // onboarding language (000053)
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       time.Time  `json:"updated_at"`
+	ID                uuid.UUID  `json:"id"`
+	Email             string     `json:"email"`
+	FirstName         string     `json:"first_name,omitempty"`
+	LastName          string     `json:"last_name,omitempty"`
+	Phone             *string    `json:"phone,omitempty"`
+	AvatarURL         *string    `json:"avatar_url,omitempty"` // profile photo (public object URL)
+	PasswordHash      string     `json:"-"`
+	Status            UserStatus `json:"status"`
+	Timezone          string     `json:"timezone"`
+	EmailVerifiedAt   *time.Time `json:"email_verified_at,omitempty"`
+	PhoneVerifiedAt   *time.Time `json:"phone_verified_at,omitempty"`
+	LastLoginAt       *time.Time `json:"last_login_at,omitempty"`
+	OnboardedAt       *time.Time `json:"onboarded_at,omitempty"`       // wizard complete (000031)
+	Bio               *string    `json:"bio,omitempty"`                // onboarding "about you" (000053)
+	PreferredLanguage *string    `json:"preferred_language,omitempty"` // onboarding language (000053)
+	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
 }
 
 type Role struct {

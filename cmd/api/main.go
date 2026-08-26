@@ -30,6 +30,7 @@ import (
 	"ykay-virtual/internal/domain/institution"
 	"ykay-virtual/internal/domain/leads"
 	"ykay-virtual/internal/domain/learning"
+	"ykay-virtual/internal/domain/library"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/practice"
@@ -108,6 +109,7 @@ type Repositories struct {
 	LessonProgress     booking.LessonProgressRepository
 	Students           identity.StudentProfileRepository
 	StudentLinks       identity.ParentStudentLinkRepository
+	Library            library.Repository
 	Vetting            vetting.VettingRepository
 	TutorSubjects      tutor.TutorSubjectRepository
 	Learning           learning.AssessmentRepository
@@ -270,7 +272,8 @@ func main() {
 	admissionsSvc := service.NewAdmissionsService(repos.UoWFactory).
 		WithOwnership(func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
 			return repos.Students.ListByParentUserID(ctx, parentUserID)
-		})
+		}).
+		WithNotifications(repos.Users, notification.NewEmailSender(), cfg.SiteURL)
 	// Virtual school, Pillar 1: academic calendar (sessions + terms).
 	schoolCalSvc := service.NewSchoolCalendarService(repos.SchoolCalendar)
 	googleAuth := service.NewGoogleAuthService(service.GoogleOAuthConfig{
@@ -389,10 +392,21 @@ func main() {
 		repos.Assignments, audit).WithNotifications(messagingSvc).
 		WithScope(repos.CohortRepo, repos.TutorSubjects)
 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)
+	// On-demand recorded-lesson library (migration 000064). Public catalogue +
+	// admin curation; playback gated by lesson participation per viewer.
+	librarySvc := service.NewLibraryService(repos.Library, repos.Lessons).
+		WithStudentResolvers(
+			func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error) {
+				return repos.Students.FindByUserID(ctx, userID)
+			},
+			func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error) {
+				return repos.Students.ListByParentUserID(ctx, parentUserID)
+			},
+		)
 	supportSvc := service.NewSupportService(repos.SupportTickets).WithNotifier(notifierSvc)
 	reviewSvc := service.NewReviewService(repos.Reviews, repos.TutorRepo, audit)
 	referralSvc := service.NewReferralService(repos.Referrals, repos.Wallets, audit).WithUsers(repos.Users)
-	institutionSvc := service.NewInstitutionService(repos.Institutions, audit)
+	institutionSvc := service.NewInstitutionService(repos.Institutions, audit).WithStudents(repos.Students)
 	paymentSvc.WithReferrals(referralSvc)
 	paymentSvc.WithReceipts(repos.Users, notification.NewEmailSender(), cfg.SiteURL)
 	paymentSvc.WithWhatsApp(notifierSvc)
@@ -456,6 +470,7 @@ func main() {
 		Certificates:   httpapi.NewCertificateHandler(certSvc),
 		Admissions:     httpapi.NewAdmissionsHandler(admissionsSvc),
 		SchoolCalendar: httpapi.NewSchoolCalendarHandler(schoolCalSvc),
+		Library:        httpapi.NewLibraryHandler(librarySvc),
 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
 			payment.ProviderPaystack:    cfg.PaystackSecret,
 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
@@ -472,6 +487,7 @@ func main() {
 		Admin:          adminHandler,
 		Support:        httpapi.NewSupportHandler(supportSvc),
 		Growth:         httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
+		Institutions:   httpapi.NewInstitutionHandler(institutionSvc),
 		LessonOps:      httpapi.NewLessonOpsHandler(lessonSvc),
 		Meeting:        httpapi.NewMeetingHandler(meetingSvc, profileAuthz),
 		Chat:           chatHandler,
@@ -667,6 +683,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Students:           store.Students,
 			StudentLinks:       store.StudentLinks,
 			StudentLink:        store.StudentLinks,
+			Library:            memory.NewLibraryMemory(),
 			Vetting:            store.Vetting,
 			TutorSubjects:      store.TutorSubj,
 			Learning:           store.Learning,
@@ -734,6 +751,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		LessonProgress:     postgres.NewLessonProgressRepo(pg.DB()),
 		Students:           postgres.NewStudentProfileRepo(pg.DB()),
 		StudentLinks:       postgres.NewParentStudentLinkRepo(pg.DB()),
+		Library:            postgres.NewLibraryRepo(pg.DB()),
 		Vetting:            postgres.NewVettingRepo(pg.DB()),
 		TutorSubjects:      postgres.NewTutorSubjectRepo(pg.DB()),
 		Learning:           postgres.NewAssessmentRepo(pg.DB()),
