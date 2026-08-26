@@ -99,6 +99,15 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
 	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
 	mux.HandleFunc("GET "+v1+"/auth/me/context", handlers.SessionContext.Get)
+	// Student dashboard insight widgets (000070): quote, gradebook, review
+	// queue, leaderboard, feedback, prefs.
+	mux.HandleFunc("GET "+v1+"/me/dashboard/quote", handlers.DashboardInsights.Quote)
+	mux.HandleFunc("GET "+v1+"/me/dashboard/gradebook", handlers.DashboardInsights.Gradebook)
+	mux.HandleFunc("GET "+v1+"/me/dashboard/review-queue", handlers.DashboardInsights.ReviewQueue)
+	mux.HandleFunc("GET "+v1+"/me/dashboard/leaderboard", handlers.DashboardInsights.Leaderboard)
+	mux.HandleFunc("GET "+v1+"/me/dashboard/prefs", handlers.DashboardInsights.GetPrefs)
+	mux.HandleFunc("PUT "+v1+"/me/dashboard/prefs", handlers.DashboardInsights.UpdatePrefs)
+	mux.HandleFunc("POST "+v1+"/me/lessons/{lessonId}/feedback", handlers.DashboardInsights.Feedback)
 	mux.HandleFunc("POST "+v1+"/auth/me/onboarded", handlers.Auth.MarkOnboarded)
 	mux.HandleFunc("GET "+v1+"/me/recommendations", handlers.Recommendations.Get)
 	mux.HandleFunc("POST "+v1+"/auth/verify-email/request", authRate(handlers.Auth.ResendVerification))
@@ -531,47 +540,48 @@ func (rt *Router) Handler() http.Handler {
 
 // Handlers â€” dependency container so the router stays declarative.
 type Handlers struct {
-	Subjects        *SubjectHandler
-	Curricula       *CurriculaHandler
-	Tutors          *TutorHandler
-	Programmes      *ProgrammeHandler
-	Cohorts         *CohortHandler
-	Bookings        *BookingHandler
-	Coupons         *CouponHandler
-	Notifier        *NotifierHandler
-	Certificates    *CertificateHandler
-	Admissions      *AdmissionsHandler
-	SchoolCalendar  *SchoolCalendarHandler
-	Library         *LibraryHandler
-	Plus            *PlusHandler
-	Advisor         *AdvisorHandler
-	PlusTeams       *PlusTeamsHandler
-	Payments        *PaymentHandler
-	Vetting         *VettingHandler
-	AdminVetting    *AdminVettingHandler
-	Messaging       *MessagingHandler
-	Dashboard       *DashboardHandler
-	Recommendations *RecommendationHandler
-	Content         *ContentHandler
-	Auth            *AuthHandler
-	SessionContext  *SessionContextHandler
-	Admin           *AdminHandler
-	Support         *SupportHandler
-	Growth          *GrowthHandler
-	Institutions    *InstitutionHandler
-	LessonOps       *LessonOpsHandler
-	Meeting         *MeetingHandler
-	Chat            *ChatHandler
-	Events          *EventsHandler
-	Devices         *DeviceHandler
-	Account         *AccountHandler
-	Leads           *LeadsHandler
-	PracticeExams   *PracticeExamHandler
-	Banks           *BankHandler
-	Onboarding      *OnboardingHandler
-	Portal          *PortalHandler
-	Learning        *LearningHandler
-	Objects         *ObjectHandler
+	Subjects          *SubjectHandler
+	Curricula         *CurriculaHandler
+	Tutors            *TutorHandler
+	Programmes        *ProgrammeHandler
+	Cohorts           *CohortHandler
+	Bookings          *BookingHandler
+	Coupons           *CouponHandler
+	Notifier          *NotifierHandler
+	Certificates      *CertificateHandler
+	Admissions        *AdmissionsHandler
+	SchoolCalendar    *SchoolCalendarHandler
+	Library           *LibraryHandler
+	Plus              *PlusHandler
+	Advisor           *AdvisorHandler
+	PlusTeams         *PlusTeamsHandler
+	DashboardInsights *DashboardInsightsHandler
+	Payments          *PaymentHandler
+	Vetting           *VettingHandler
+	AdminVetting      *AdminVettingHandler
+	Messaging         *MessagingHandler
+	Dashboard         *DashboardHandler
+	Recommendations   *RecommendationHandler
+	Content           *ContentHandler
+	Auth              *AuthHandler
+	SessionContext    *SessionContextHandler
+	Admin             *AdminHandler
+	Support           *SupportHandler
+	Growth            *GrowthHandler
+	Institutions      *InstitutionHandler
+	LessonOps         *LessonOpsHandler
+	Meeting           *MeetingHandler
+	Chat              *ChatHandler
+	Events            *EventsHandler
+	Devices           *DeviceHandler
+	Account           *AccountHandler
+	Leads             *LeadsHandler
+	PracticeExams     *PracticeExamHandler
+	Banks             *BankHandler
+	Onboarding        *OnboardingHandler
+	Portal            *PortalHandler
+	Learning          *LearningHandler
+	Objects           *ObjectHandler
 }
 
 // rateLimitPerMinute â€” global per-IP rate limit (env-tunable, G7 capacity).

@@ -25,8 +25,9 @@ export default function HomeTutorsPage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      {/* Hero - PrebuiltUI template */}
+      {/* Hero - background image cover */}
       <PageHero
+        cover="/hero/home-tutoring.jpg"
         announcement="Home tutoring · Vetted tutors"
         title="Better, Brighter Future For Your Kids."
         subtitle="Get personalized home tutoring that is designed to guide your children toward exam success, boost their confidence, and get better school grades."
@@ -34,7 +35,6 @@ export default function HomeTutorsPage() {
           { label: "Get Started", href: "/tutors", primary: true },
           { label: "Learn how it works", href: "#how" },
         ]}
-        image={{ src: "/hero/home-tutoring.jpg", alt: "Tutor helping a young student at home" }}
       />
 
       <LearningNeeds />

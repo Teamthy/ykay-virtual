@@ -7,6 +7,12 @@ import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import { listMyAssignments, listMySubmissions, getAttendanceSummary } from "@/features/portal/api";
 import { getMyLessonProgress } from "@/features/lms/api";
+import { getGradebook, getReviewQueue, getLeaderboard, submitLessonFeedback } from "@/features/dashboard/api";
+import { CalendarWidget } from "@/components/dashboard/CalendarWidget";
+import { ResumeRail } from "@/components/dashboard/ResumeRail";
+import { WelcomeQuote } from "@/components/dashboard/WelcomeQuote";
+import { WeeklyGoal } from "@/components/dashboard/WeeklyGoal";
+import { GradebookWidget, ReviewQueueWidget, LeaderboardWidget, FeedbackPrompt } from "@/components/dashboard/InsightWidgets";
 import { listMyCertificates } from "@/features/certificates/api";
 import { groupByCohort, computeStats, achievements } from "@/lib/learning-stats";
 import { Progress } from "@/components/ui/progress";
@@ -105,6 +111,9 @@ export default function StudentDashboardPage() {
     enabled: !!user,
     staleTime: 60_000,
   });
+  const gradebook = useQuery({ queryKey: ["dashboard", "gradebook"], queryFn: () => getGradebook(me?.id), enabled: !!user && !!me?.id, staleTime: 60_000 });
+  const reviewQueue = useQuery({ queryKey: ["dashboard", "review"], queryFn: () => getReviewQueue(me?.id), enabled: !!user && !!me?.id, staleTime: 60_000 });
+  const leaderboard = useQuery({ queryKey: ["dashboard", "leaderboard"], queryFn: () => getLeaderboard(me?.id), enabled: !!user && !!me?.id, staleTime: 60_000 });
 
   const upcoming = (lessons.data ?? [])
     .filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING")
@@ -135,6 +144,14 @@ export default function StudentDashboardPage() {
   return (
     <DashboardPage>
       <RoleGate page="/student-dashboard" />
+
+      <WelcomeQuote />
+      <ResumeRail
+        items={(lessons.data ?? [])
+          .filter((l) => l.video_url && l.status !== "CANCELLED")
+          .slice(0, 3)
+          .map((l) => ({ id: l.id, title: l.title, href: "/lms/recorded", subtitle: "Recorded lesson" }))}
+      />
 
       {me?.is_minor && (
         <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary bg-primary-light px-5 py-4">
@@ -329,6 +346,15 @@ export default function StudentDashboardPage() {
               ))}
             </div>
           </section>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <CalendarWidget lessons={(lessons.data ?? []) as any[]} />
+            <WeeklyGoal done={(progress.data ?? []).filter((p) => p.watched).length} goal={3} />
+            <GradebookWidget rows={gradebook.data ?? []} />
+            <ReviewQueueWidget items={reviewQueue.data ?? []} />
+            <LeaderboardWidget rows={leaderboard.data ?? []} />
+            <FeedbackPrompt onRate={(rating) => { const next = (lessons.data ?? []).find((l) => l.status !== "CANCELLED"); if (next) void submitLessonFeedback(next.id, rating, undefined, me?.id); }} />
+          </div>
         </div>
 
         <aside className="space-y-4">

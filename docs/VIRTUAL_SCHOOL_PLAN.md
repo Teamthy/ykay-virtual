@@ -321,3 +321,30 @@ diagnostic→learning-plan engine.
 With this, the Nuvora Plus premium tier is **complete through P5**: subscription
 engine, feature gates, order-backed billing, named advisor, weekly report,
 diagnostic→learning-plan, offline downloads, and the Plus Teams console.
+
+## 14. Student dashboard — industry-standard widgets + daily welcome quote (shipped 2026-08-26)
+
+- **`migration 000070`** — `lesson_feedback` (1-5 ratings) and `dashboard_prefs`
+  (leaderboard opt-in, weekly goal, widget visibility).
+- **Backend `internal/domain/dash` + DashboardInsightsService**:
+  - `GET /me/dashboard/quote` — a **daily welcome quote**, deterministic per
+    (user, UTC date) so different users get different quotes on the same day and
+    each user's quote changes daily (no DB writes).
+  - `POST /me/lessons/{lessonId}/feedback` — post-lesson 1-5 rating.
+  - `GET /me/dashboard/gradebook` — per-subject mastery aggregate from learner
+    assessments + practice-exam attempts.
+  - `GET /me/dashboard/review-queue` — missed questions from completed attempts
+    (spaced-repetition / re-drill).
+  - `GET /me/dashboard/leaderboard` — XP-ranked, **leaderboard-opted-in only**
+    (safeguarding-safe; default off).
+  - `GET/PUT /me/dashboard/prefs` — opt-in, weekly goal, widget visibility.
+- **Web** — the student dashboard now includes: **daily WelcomeQuote banner**,
+  **ResumeRail** (continue where you left off), **CalendarWidget** (upcoming
+  classes), **WeeklyGoal** (progress ring), **GradebookWidget**, **ReviewQueueWidget**,
+  **LeaderboardWidget**, and a **FeedbackPrompt**. Parent + tutor dashboards also
+  show the daily quote.
+- **Admin console** — `/admin/dashboard` ("Student dashboard" in the admin nav)
+  surfaces the feature set + confirms the API is live.
+- Tests: `TestDailyQuote_Deterministic_PerUserPerDay`,
+  `TestDashboardInsights_FeedbackAndPrefs`, `TestDashboardInsights_LeaderboardRespectsOptIn`.
+  OpenAPI contract (257/262).

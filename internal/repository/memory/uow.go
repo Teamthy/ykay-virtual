@@ -133,6 +133,7 @@ type MemoryStore struct {
 	Plus           *PlusMemory
 	Advisor        *AdvisorMemory
 	PlusTeams      *PlusTeamsMemory
+	Dash           *DashMemory
 	Reviews        *ReviewMemory
 	ProgrammesSeed []academics.Programme
 	Users          *UserMemory
@@ -180,6 +181,7 @@ func NewMemoryStore() *MemoryStore {
 		Plus:         NewPlusMemory(),
 		Advisor:      NewAdvisorMemory(),
 		PlusTeams:    NewPlusTeamsMemory(),
+		Dash:         NewDashMemory(),
 		Reviews:      NewReviewMemory(),
 		Users:        NewUserMemory(),
 		Sessions:     NewSessionMemory(),

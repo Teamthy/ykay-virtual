@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
+import { CardCarousel } from "@/components/layout/CardCarousel";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
-import Link from "next/link";
+import { BookOpen, FileText, LineChart, PlayCircle } from "lucide-react";
 
 export const metadata: Metadata = buildMetadata({
   title: "British Curriculum Online - Year 7-9, IGCSE & A-Level | NUVORA",
@@ -15,6 +17,13 @@ const STAGES = [
   { title: "Year 7-9", desc: "Build strong foundations across English, Maths, Sciences and Computing.", subjects: ["Mathematics", "English", "Science", "Computing"], photo: "/hero/subjects.jpg" },
   { title: "IGCSE · Year 10-11", desc: "Structured subject cohorts with past-paper practice and coursework support.", subjects: ["Computer Science", "Mathematics", "Physics", "English"], photo: "/hero/british.jpg" },
   { title: "A-Level · Year 12-13", desc: "Subject-specialist teaching for university-bound learners.", subjects: ["Computer Science", "Mathematics", "Further Maths", "Physics"], photo: "/hero/programmes.jpg" },
+];
+
+const HOW = [
+  { icon: <FileText size={18} />, t: "Termly assessments", d: "Aligned to the British curriculum at every stage." },
+  { icon: <PlayCircle size={18} />, t: "Past-paper mocks", d: "IGCSE and A-Level practice with full mock exams." },
+  { icon: <LineChart size={18} />, t: "Weekly parent reports", d: "Clear visibility into progress every week." },
+  { icon: <BookOpen size={18} />, t: "Recorded lessons", d: "Resources and replays after every session." },
 ];
 
 const FAQS = [
@@ -41,6 +50,7 @@ export default function BritishCurriculumPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+
       <PageHero
         cover="/hero/british.jpg"
         eyebrow="British pathway"
@@ -49,82 +59,83 @@ export default function BritishCurriculumPage() {
         crumbs={[{ name: "Home", href: "/" }, { name: "Curricula" }, { name: "British Curriculum" }]}
         align="center"
       >
-<Link href="/programmes" className="btn-primary">Browse programmes</Link>
+        <Link href="/programmes" className="btn-primary">Browse programmes</Link>
         <Link href="/private-tuition" className="btn-gold">Book private tuition</Link>
       </PageHero>
 
       <div className="container-x pb-16">
-      <section className="mt-14 grid md:grid-cols-3 gap-5">
-        {STAGES.map((s) => (
-          <div
-            key={s.title}
-            className="flex min-h-[280px] flex-col overflow-hidden rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
-            style={{
-              backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.78), rgba(1,57,32,0.62)), url(${s.photo})`,
-            }}
-          >
-            <h2 className="text-xl font-extrabold">{s.title}</h2>
-            <p className="mt-2 text-sm text-white/85">{s.desc}</p>
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {s.subjects.map((sub) => (
-                <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold text-white">
-                  {sub}
-                </span>
+        {/* Stage carousel */}
+        <section className="mt-14">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-extrabold">Learning stages</h2>
+          </div>
+          <CardCarousel>
+            {STAGES.map((s) => (
+              <div
+                key={s.title}
+                data-card
+                className="flex min-h-[280px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+                style={{ backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.78), rgba(1,57,32,0.62)), url(${s.photo})` }}
+              >
+                <h2 className="text-xl font-extrabold">{s.title}</h2>
+                <p className="mt-2 text-sm text-white/85">{s.desc}</p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {s.subjects.map((sub) => (
+                    <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold text-white">{sub}</span>
+                  ))}
+                </div>
+                <Link href="/tutors" className="mt-auto pt-5 inline-block text-sm font-semibold text-brand-gold">Find a tutor →</Link>
+              </div>
+            ))}
+          </CardCarousel>
+        </section>
+
+        {/* How assessment works */}
+        <section className="mt-14 grid items-center gap-8 md:grid-cols-2">
+          <div>
+            <h2 className="text-2xl font-extrabold">How assessment &amp; exam support works</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {HOW.map((h) => (
+                <div key={h.t} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-light text-deep">{h.icon}</span>
+                  <p className="mt-3 font-bold text-ink-900">{h.t}</p>
+                  <p className="mt-1 text-sm text-ink-500">{h.d}</p>
+                </div>
               ))}
             </div>
-            <Link href="/tutors" className="mt-auto pt-5 inline-block text-sm font-semibold text-brand-gold">
-              Find a tutor →
-            </Link>
           </div>
-        ))}
-      </section>
+          <div className="rounded-2xl bg-ink-50 border border-ink-100 p-6">
+            <h3 className="font-bold">Featured next steps</h3>
+            <div className="mt-4 space-y-3">
+              <Link href="/programmes" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
+                <span className="font-semibold text-sm">IGCSE Computer Science</span>
+                <span className="block text-xs text-ink-500 mt-0.5">Year 10-11 · cohort + private</span>
+              </Link>
+              <Link href="/programmes" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
+                <span className="font-semibold text-sm">IGCSE Mathematics</span>
+                <span className="block text-xs text-ink-500 mt-0.5">Year 10-11 · cohort + private</span>
+              </Link>
+              <Link href="/private-tuition" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
+                <span className="font-semibold text-sm">A-Level subject tuition</span>
+                <span className="block text-xs text-ink-500 mt-0.5">Request a specialist tutor</span>
+              </Link>
+            </div>
+          </div>
+        </section>
 
-      <section className="mt-14 grid md:grid-cols-2 gap-8 items-center">
-        <div>
-          <h2 className="text-2xl font-extrabold">How assessment & exam support works</h2>
-          <ul className="mt-4 space-y-3 text-sm text-ink-700">
-            {[
-              "Termly progress assessments aligned to the British curriculum",
-              "Past-paper practice and mock examinations for IGCSE and A-Level",
-              "Weekly progress reports for parents",
-              "Recorded lessons and resources after every session",
-            ].map((t) => (
-              <li key={t} className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>{t}</li>
+        <CohortStrip />
+
+        <section className="mt-14">
+          <h2 className="text-2xl font-extrabold mb-6">Frequently asked questions</h2>
+          <div className="max-w-2xl space-y-3">
+            {FAQS.map((f) => (
+              <details key={f.question} className="border rounded-xl px-5 py-4">
+                <summary className="font-semibold cursor-pointer">{f.question}</summary>
+                <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
+              </details>
             ))}
-          </ul>
-        </div>
-        <div className="rounded-2xl bg-ink-50 border border-ink-100 p-6">
-          <h3 className="font-bold">Featured next steps</h3>
-          <div className="mt-4 space-y-3">
-            <Link href="/programmes" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
-              <span className="font-semibold text-sm">IGCSE Computer Science</span>
-              <span className="block text-xs text-ink-500 mt-0.5">Year 10-11 · cohort + private</span>
-            </Link>
-            <Link href="/programmes" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
-              <span className="font-semibold text-sm">IGCSE Mathematics</span>
-              <span className="block text-xs text-ink-500 mt-0.5">Year 10-11 · cohort + private</span>
-            </Link>
-            <Link href="/private-tuition" className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors">
-              <span className="font-semibold text-sm">A-Level subject tuition</span>
-              <span className="block text-xs text-ink-500 mt-0.5">Request a specialist tutor</span>
-            </Link>
           </div>
-        </div>
-      </section>
-
-      <CohortStrip />
-
-      <section className="mt-14">
-        <h2 className="text-2xl font-extrabold mb-6">Frequently asked questions</h2>
-        <div className="max-w-2xl space-y-3">
-          {FAQS.map((f) => (
-            <details key={f.question} className="border rounded-xl px-5 py-4">
-              <summary className="font-semibold cursor-pointer">{f.question}</summary>
-              <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
-            </details>
-          ))}
-        </div>
-      </section>
+        </section>
       </div>
     </main>
   );

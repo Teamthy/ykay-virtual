@@ -31,6 +31,7 @@ import { listProgressReports } from "@/features/learning/api";
 import { createLearner, listLearners, type Learner } from "@/features/onboarding/api";
 import { CurriculumLevelSelect } from "@/features/onboarding/CurriculumLevelSelect";
 import { RoleGate } from "@/components/dashboard/RoleGate";
+import { WelcomeQuote } from "@/components/dashboard/WelcomeQuote";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
@@ -172,6 +173,7 @@ export default function ParentDashboardPage() {
     <DashboardPage>
         <div className="space-y-6">
           <RoleGate page="/dashboard" />
+          <WelcomeQuote />
           <DashHero
             icon={<Users size={20} />}
             kicker="Family"

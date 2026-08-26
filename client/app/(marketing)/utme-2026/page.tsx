@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
 import { UtmeCallbackForm } from "@/features/programmes/components/UtmeCallbackForm";
 import { SuccessChampions } from "@/components/home/SuccessChampions";
+import { CardCarousel } from "@/components/layout/CardCarousel";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { Check, BrainCircuit, FileCheck2, CalendarCheck2, LifeBuoy, Trophy } from "lucide-react";
 
@@ -89,7 +90,9 @@ export default function Utme2026Page() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
 
       {/* ── Prep hero: brand gradient + blockquote + form card ── */}
-      <section className="relative bg-primary-light/40">
+      <section className="relative overflow-hidden bg-primary-light/40">
+  <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: "linear-gradient(165deg, rgba(1,57,32,0.6), rgba(1,57,32,0.2)), url(\"/hero/utme.jpg\")" }} aria-hidden="true" />
+  <div className="relative z-10">
         <div className="mx-auto max-w-[1400px] px-6 py-10 sm:px-6 md:px-10 lg:py-14">
           <div className="grid items-center gap-8 md:grid-cols-2 lg:gap-12">
             <div>
@@ -147,6 +150,7 @@ export default function Utme2026Page() {
               </span>
             ))}
           </div>
+        </div>
         </div>
       </section>
 
@@ -261,14 +265,15 @@ export default function Utme2026Page() {
               <Link href="/utme-2026/faq" className="text-ink-600 hover:text-[#013920] hover:underline">FAQ</Link>
             </div>
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <CardCarousel>
             {PACKAGES.map((p) => (
               <div
                 key={p.name}
+                data-card
                 className={
-                  p.featured
+                  (p.featured
                     ? "relative rounded-3xl border-2 border-[#4CCB31] bg-white p-8 shadow-card"
-                    : "relative rounded-3xl border border-ink-100 bg-white p-8 shadow-soft"
+                    : "relative rounded-3xl border border-ink-100 bg-white p-8 shadow-soft") + " w-[360px] shrink-0 snap-start"
                 }
               >
                 {p.featured && (
@@ -302,7 +307,7 @@ export default function Utme2026Page() {
                 </Link>
               </div>
             ))}
-          </div>
+          </CardCarousel>
         </div>
       </section>
 

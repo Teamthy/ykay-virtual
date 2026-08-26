@@ -112,6 +112,7 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
       { href: "/admin/programmes", label: "Programmes", icon: BookOpen },
       { href: "/admin/admissions", label: "Admissions", icon: GraduationCap },
+      { href: "/admin/dashboard", label: "Student dashboard", icon: LayoutDashboard },
     ],
     more: [
       { href: "/admin/private-tuition", label: "Private tuition", icon: UserPlus },

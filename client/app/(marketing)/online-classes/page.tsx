@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
 import { CategoryRail } from "@/components/layout/CategoryRail";
+import { CardCarousel } from "@/components/layout/CardCarousel";
 
 export const revalidate = 600; // ISR 10min
 
@@ -54,11 +55,12 @@ export default function OnlineClassesPage() {
         </aside>
         <div>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <CardCarousel>
         {tracks.map((c) => (
           <div
             key={c.title}
-            className="flex min-h-[220px] flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+            data-card
+            className="flex min-h-[220px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
             style={{
               backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.82), rgba(1,57,32,0.55)), url(${c.photo})`,
             }}
@@ -69,7 +71,7 @@ export default function OnlineClassesPage() {
             <Link href={c.href} className="mt-auto pt-5 text-sm font-bold text-brand-gold">Open this track →</Link>
           </div>
         ))}
-      </div>
+      </CardCarousel>
 
       <section className="mt-16 grid lg:grid-cols-2 gap-10">
         <div>

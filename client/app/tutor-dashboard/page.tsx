@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import { RoleGate } from "@/components/dashboard/RoleGate";
+import { WelcomeQuote } from "@/components/dashboard/WelcomeQuote";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
@@ -241,6 +242,7 @@ export default function TutorDashboardPage() {
   return (
     <DashboardPage>
       <RoleGate page="/tutor-dashboard" />
+      <WelcomeQuote variant="deep" />
       <DashHero
         icon={<BookOpen size={20} />}
         kicker="Tutor workspace"

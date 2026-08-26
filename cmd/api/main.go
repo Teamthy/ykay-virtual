@@ -27,6 +27,7 @@ import (
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/chat"
 	"ykay-virtual/internal/domain/content"
+	"ykay-virtual/internal/domain/dash"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/institution"
 	"ykay-virtual/internal/domain/leads"
@@ -116,6 +117,7 @@ type Repositories struct {
 	Plus               plus.Repository
 	Advisor            advisor.Repository
 	PlusTeams          plusteams.Repository
+	Dash               dash.Repository
 	Vetting            vetting.VettingRepository
 	TutorSubjects      tutor.TutorSubjectRepository
 	Learning           learning.AssessmentRepository
@@ -262,6 +264,12 @@ func main() {
 	advisorSvc := service.NewAdvisorService(repos.Advisor, audit).WithPlus(plusSvc).WithUsers(repos.Users)
 	// NUVORA Plus Teams (000069): institution seat management. Managers are the
 	// institution OWNER/ADMIN (reusing the membership check) or a platform admin.
+	// Student dashboard insights (000070): quote, gradebook, review queue,
+	// leaderboard, feedback, prefs.
+	dashSvc := service.NewDashboardInsightsService(repos.Dash).
+		WithPractice(repos.Exams).WithLearning(repos.Learning).WithUsers(repos.Users)
+	// (profileAuthz is created after the services block)
+	_ = dashSvc
 	plusTeamsSvc := service.NewPlusTeamsService(repos.PlusTeams, audit).WithUsers(repos.Users).
 		WithManagerCheck(func(ctx context.Context, actorUserID, institutionID uuid.UUID, isAdmin bool) error {
 			if isAdmin {
@@ -518,25 +526,26 @@ func main() {
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc, profileAuthz),
 		Recommendations: httpapi.NewRecommendationHandler(
 			service.NewRecommendationService(repos.Cohorts, repos.ProgrammeRepo, repos.TutorRepo, repos.Students)),
-		Content:        httpapi.NewContentHandler(contentSvc),
-		Auth:           httpapi.NewAuthHandlerWithCookieDomain(authSvc, cfg.Environment == "production", cfg.SiteURL, cfg.CookieDomain, googleAuth),
-		SessionContext: httpapi.NewSessionContextHandler(repos.Students, repos.Vetting),
-		Admin:          adminHandler,
-		Support:        httpapi.NewSupportHandler(supportSvc),
-		Growth:         httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
-		Institutions:   httpapi.NewInstitutionHandler(institutionSvc),
-		LessonOps:      httpapi.NewLessonOpsHandler(lessonSvc),
-		Meeting:        httpapi.NewMeetingHandler(meetingSvc, profileAuthz),
-		Chat:           chatHandler,
-		Events:         httpapi.NewEventsHandler(eventBroker),
-		Devices:        deviceHandler,
-		Account:        accountHandler,
-		Leads:          httpapi.NewLeadsHandler(leadsSvc),
-		PracticeExams:  httpapi.NewPracticeExamHandler(examSvc, profileAuthz),
-		Banks:          httpapi.NewBankHandler(payment_provider.NewBankResolver(cfg.PaystackSecret)),
-		Onboarding:     httpapi.NewOnboardingHandler(onboardingSvc),
-		Portal:         httpapi.NewPortalHandler(portalSvc, profileAuthz),
-		Learning:       httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
+		Content:           httpapi.NewContentHandler(contentSvc),
+		Auth:              httpapi.NewAuthHandlerWithCookieDomain(authSvc, cfg.Environment == "production", cfg.SiteURL, cfg.CookieDomain, googleAuth),
+		SessionContext:    httpapi.NewSessionContextHandler(repos.Students, repos.Vetting),
+		Admin:             adminHandler,
+		Support:           httpapi.NewSupportHandler(supportSvc),
+		Growth:            httpapi.NewGrowthHandler(reviewSvc, referralSvc, institutionSvc, repos.TutorRepo),
+		Institutions:      httpapi.NewInstitutionHandler(institutionSvc),
+		LessonOps:         httpapi.NewLessonOpsHandler(lessonSvc),
+		Meeting:           httpapi.NewMeetingHandler(meetingSvc, profileAuthz),
+		Chat:              chatHandler,
+		Events:            httpapi.NewEventsHandler(eventBroker),
+		Devices:           deviceHandler,
+		Account:           accountHandler,
+		Leads:             httpapi.NewLeadsHandler(leadsSvc),
+		PracticeExams:     httpapi.NewPracticeExamHandler(examSvc, profileAuthz),
+		Banks:             httpapi.NewBankHandler(payment_provider.NewBankResolver(cfg.PaystackSecret)),
+		Onboarding:        httpapi.NewOnboardingHandler(onboardingSvc),
+		Portal:            httpapi.NewPortalHandler(portalSvc, profileAuthz),
+		Learning:          httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
+		DashboardInsights: httpapi.NewDashboardInsightsHandler(dashSvc, profileAuthz),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
@@ -724,6 +733,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Plus:               memory.NewPlusMemory(),
 			Advisor:            memory.NewAdvisorMemory(),
 			PlusTeams:          memory.NewPlusTeamsMemory(),
+			Dash:               memory.NewDashMemory(),
 			Vetting:            store.Vetting,
 			TutorSubjects:      store.TutorSubj,
 			Learning:           store.Learning,
@@ -795,6 +805,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Plus:               postgres.NewPlusRepo(pg.DB()),
 		Advisor:            postgres.NewAdvisorRepo(pg.DB()),
 		PlusTeams:          postgres.NewPlusTeamsRepo(pg.DB()),
+		Dash:               postgres.NewDashRepo(pg.DB()),
 		Vetting:            postgres.NewVettingRepo(pg.DB()),
 		TutorSubjects:      postgres.NewTutorSubjectRepo(pg.DB()),
 		Learning:           postgres.NewAssessmentRepo(pg.DB()),

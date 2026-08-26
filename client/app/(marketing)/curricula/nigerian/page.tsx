@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo";
 import { PageHero } from "@/components/layout/PageHero";
+import { CardCarousel } from "@/components/layout/CardCarousel";
 import { CohortStrip } from "@/features/cohorts/components/CohortStrip";
-import Link from "next/link";
 
 export const metadata: Metadata = buildMetadata({
   title: "Nigerian Curriculum Online - JSS1-3, SSS1-3, WAEC, NECO, JAMB | NUVORA",
@@ -15,6 +16,12 @@ const STAGES = [
   { title: "JSS1 - JSS3", desc: "Junior secondary foundations in Mathematics, English, Basic Science and more.", subjects: ["Mathematics", "English", "Basic Science", "Computer Studies"], photo: "/hero/nigerian.jpg" },
   { title: "SSS1 - SSS3", desc: "Senior secondary pathways with subject specialisation and exam focus.", subjects: ["Mathematics", "English", "Physics", "Biology", "Economics"], photo: "/hero/exam-prep.jpg" },
   { title: "WAEC · NECO · JAMB", desc: "Focused exam preparation: past questions, mocks and revision plans.", subjects: ["WAEC", "NECO", "JAMB/UTME", "Post-UTME"], photo: "/hero/utme.jpg" },
+];
+
+const EXAMS = [
+  { title: "WAEC", desc: "Core and elective subjects with past-question practice." },
+  { title: "NECO", desc: "Aligned preparation across the shared syllabus." },
+  { title: "JAMB / UTME", desc: "Past-paper patterns, topic focus and timed CBT-style mocks." },
 ];
 
 const FAQS = [
@@ -41,6 +48,7 @@ export default function NigerianCurriculumPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+
       <PageHero
         cover="/hero/nigerian.jpg"
         eyebrow="Nigerian pathway"
@@ -56,35 +64,35 @@ export default function NigerianCurriculumPage() {
       </PageHero>
 
       <div className="container-x pb-16">
-        <section className="mt-14 grid gap-5 md:grid-cols-3">
-          {STAGES.map((s) => (
-            <div
-              key={s.title}
-              className="flex min-h-[260px] flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
-              style={{ backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.8), rgba(1,57,32,0.6)), url(${s.photo})` }}
-            >
-              <h2 className="text-xl font-extrabold">{s.title}</h2>
-              <p className="mt-2 text-sm text-white/85">{s.desc}</p>
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {s.subjects.map((sub) => (
-                  <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">
-                    {sub}
-                  </span>
-                ))}
+        {/* Stage carousel */}
+        <section className="mt-14">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-extrabold">Learning stages</h2>
+          </div>
+          <CardCarousel>
+            {STAGES.map((s) => (
+              <div
+                key={s.title}
+                data-card
+                className="flex min-h-[260px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+                style={{ backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.8), rgba(1,57,32,0.6)), url(${s.photo})` }}
+              >
+                <h2 className="text-xl font-extrabold">{s.title}</h2>
+                <p className="mt-2 text-sm text-white/85">{s.desc}</p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {s.subjects.map((sub) => (
+                    <span key={sub} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">{sub}</span>
+                  ))}
+                </div>
+                <Link href="/tutors" className="mt-auto inline-block pt-5 text-sm font-semibold text-brand-gold">Find a tutor →</Link>
               </div>
-              <Link href="/tutors" className="mt-auto inline-block pt-5 text-sm font-semibold text-brand-gold">
-                Find a tutor →
-              </Link>
-            </div>
-          ))}
+            ))}
+          </CardCarousel>
         </section>
 
+        {/* Exam focus */}
         <section className="mt-14 grid gap-8 rounded-3xl border border-ink-100 bg-ink-50 p-8 md:grid-cols-3 md:p-12">
-          {[
-            { title: "WAEC", desc: "Core and elective subjects with past-question practice." },
-            { title: "NECO", desc: "Aligned preparation across the shared syllabus." },
-            { title: "JAMB / UTME", desc: "Past-paper patterns, topic focus and timed CBT-style mocks." },
-          ].map((e) => (
+          {EXAMS.map((e) => (
             <div key={e.title} className="text-center">
               <div className="text-2xl font-extrabold text-brand-blue">{e.title}</div>
               <p className="mt-2 text-sm text-ink-600">{e.desc}</p>
