@@ -36,7 +36,18 @@ type LearningService struct {
 	audit       identity.AuditService
 	cohorts     booking.CohortRepository
 	tutorSubj   tutor.TutorSubjectRepository
-	now         func() time.Time
+	// diagnosticPlanner — optional hook (P5 / 000068): when a learner completes
+	// a diagnostic assessment, auto-author a Plus learning plan for the parent.
+	diagnosticPlanner func(ctx context.Context, parentUserID, studentProfileID uuid.UUID,
+		subject string, score, total float64) error
+	now func() time.Time
+}
+
+// WithDiagnosticPlanner wires the Plus diagnostic→learning-plan hook.
+func (s *LearningService) WithDiagnosticPlanner(fn func(ctx context.Context, parentUserID, studentProfileID uuid.UUID,
+	subject string, score, total float64) error) *LearningService {
+	s.diagnosticPlanner = fn
+	return s
 }
 
 // WithScope wires the subject-scope enforcement: every tutor-authored exam is
@@ -76,6 +87,7 @@ type CreateAssessmentInput struct {
 	Instructions  *string
 	PassThreshold float64
 	DueAt         *time.Time
+	IsDiagnostic  bool
 	Questions     []AssessmentQuestionInput
 }
 
@@ -158,6 +170,7 @@ func (s *LearningService) CreateAssessment(ctx context.Context, in CreateAssessm
 		Instructions:   in.Instructions,
 		PassThreshold:  in.PassThreshold,
 		DueAt:          in.DueAt,
+		IsDiagnostic:   in.IsDiagnostic,
 		Status:         learning.AssessmentPublished,
 		CreatedBy:      &in.AuthorUserID,
 	}
@@ -179,6 +192,18 @@ func (s *LearningService) CreateAssessment(ctx context.Context, in CreateAssessm
 	_ = s.audit.LogStateChange(ctx, &in.AuthorUserID, identity.AuditCreate, "learner_assessment",
 		&a.ID, nil, map[string]any{"title": a.Title, "questions": len(in.Questions)}, nil, nil)
 	return a, nil
+}
+
+// SetDiagnostic marks an assessment as a diagnostic (000068), so completing it
+// auto-authors a Plus learning plan.
+func (s *LearningService) SetDiagnostic(ctx context.Context, assessmentID uuid.UUID, diagnostic bool) error {
+	if s.assessments == nil {
+		return errors.New("assessment store unavailable")
+	}
+	if _, err := s.assessments.GetAssessment(ctx, assessmentID); err != nil {
+		return err
+	}
+	return s.assessments.SetDiagnostic(ctx, assessmentID, diagnostic)
 }
 
 func (s *LearningService) ListAssessmentsByCohort(ctx context.Context, cohortID uuid.UUID) ([]learning.LearnerAssessment, error) {
@@ -285,7 +310,7 @@ type LearnerAssessmentResult struct {
 // SubmitAssessmentForStudent — resolves the student's (single) attempt for an
 // assessment and submits it. Convenience for the HTTP surface where the
 // client addresses the assessment, not the attempt UUID.
-func (s *LearningService) SubmitAssessmentForStudent(ctx context.Context, studentProfileID, assessmentID uuid.UUID, answers []AssessmentAnswer) (*LearnerAssessmentResult, error) {
+func (s *LearningService) SubmitAssessmentForStudent(ctx context.Context, actorUserID, studentProfileID, assessmentID uuid.UUID, answers []AssessmentAnswer) (*LearnerAssessmentResult, error) {
 	attempt, err := s.assessments.GetAttemptForStudent(ctx, assessmentID, studentProfileID)
 	if err != nil {
 		return nil, err
@@ -293,12 +318,12 @@ func (s *LearningService) SubmitAssessmentForStudent(ctx context.Context, studen
 	if attempt.Status == learning.AttemptCompleted || attempt.Status == learning.AttemptExpired {
 		return nil, fmt.Errorf("%w: attempt already completed or expired", domain.ErrConflict)
 	}
-	return s.SubmitAssessment(ctx, studentProfileID, attempt.ID, answers)
+	return s.SubmitAssessment(ctx, actorUserID, studentProfileID, attempt.ID, answers)
 }
 
 // SubmitAssessment — auto-grades the attempt (MCQ), records the result and
 // notifies the student.
-func (s *LearningService) SubmitAssessment(ctx context.Context, studentProfileID, attemptID uuid.UUID, answers []AssessmentAnswer) (*LearnerAssessmentResult, error) {
+func (s *LearningService) SubmitAssessment(ctx context.Context, actorUserID, studentProfileID, attemptID uuid.UUID, answers []AssessmentAnswer) (*LearnerAssessmentResult, error) {
 	if s.assessments == nil {
 		return nil, errors.New("assessment store unavailable")
 	}
@@ -346,6 +371,12 @@ func (s *LearningService) SubmitAssessment(ctx context.Context, studentProfileID
 
 	if err := s.assessments.CompleteAttempt(ctx, attemptID, score, float64(total), passed); err != nil {
 		return nil, err
+	}
+	// P5 / 000068: completing a diagnostic auto-authors a Plus learning plan.
+	if s.diagnosticPlanner != nil {
+		if a, err := s.assessments.GetAssessment(ctx, attempt.AssessmentID); err == nil && a.IsDiagnostic {
+			_ = s.diagnosticPlanner(ctx, actorUserID, studentProfileID, a.Title, score, float64(total))
+		}
 	}
 	if s.notify != nil {
 		body := fmt.Sprintf("Your score: %d/%d (%s).", correct, total, passLabel(passed))

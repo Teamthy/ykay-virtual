@@ -10,7 +10,7 @@ import { Button } from "@/src/components/ui/Button";
 import { AppText } from "@/src/components/ui/AppText";
 import { radius, spacing, type, type ThemeColors } from "@/src/lib/theme";
 import { useTheme } from "@/src/lib/theme-context";
-import { apiFetch } from "@/src/lib/api";
+import { apiFetch, getPlusStatus, getPlusDownloadUrl } from "@/src/lib/api";
 import { VideoPlayer } from "@/src/components/VideoPlayer";
 import { cacheVideo, removeCachedVideo, isVideoCached } from "@/src/lib/offline-video";
 
@@ -44,6 +44,14 @@ export default function CourseDetail() {
   const [playing, setPlaying] = useState<Lesson | null>(null);
   const [offlineState, setOfflineState] = useState<Record<string, "idle" | "downloading" | "cached">>({});
   const [offlineChecked, setOfflineChecked] = useState(false);
+  const [hasPlus, setHasPlus] = useState(false);
+
+  // Check NUVORA Plus (offline downloads are a Plus feature).
+  useEffect(() => {
+    getPlusStatus()
+      .then((st) => setHasPlus(!!st.active))
+      .catch(() => setHasPlus(false));
+  }, []);
 
   // On mount, check which of the loaded lessons are already cached offline.
   useEffect(() => {
@@ -71,8 +79,11 @@ export default function CourseDetail() {
       setOfflineState((m) => ({ ...m, [l.id]: "idle" }));
       return;
     }
+    // Plus-gated: fetch an authorized URL from the server before caching.
     setOfflineState((m) => ({ ...m, [l.id]: "downloading" }));
-    const ok = await cacheVideo(l.id, l.video_url);
+    const authorized = await getPlusDownloadUrl(l.id).catch(() => null);
+    const source = authorized ?? l.video_url;
+    const ok = await cacheVideo(l.id, source);
     setOfflineState((m) => ({ ...m, [l.id]: ok ? "cached" : "idle" }));
   };
 
@@ -150,18 +161,22 @@ export default function CourseDetail() {
                 Now playing · recorded lesson
               </AppText>
               <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                <Button
-                  label={
-                    offlineState[playing.id] === "cached"
-                      ? "Remove offline copy"
-                      : offlineState[playing.id] === "downloading"
-                      ? "Downloading…"
-                      : "Download for offline"
-                  }
-                  variant={offlineState[playing.id] === "cached" ? "secondary" : "dark"}
-                  onPress={() => void toggleOffline(playing)}
-                  disabled={offlineState[playing.id] === "downloading"}
-                />
+                {hasPlus ? (
+                  <Button
+                    label={
+                      offlineState[playing.id] === "cached"
+                        ? "Remove offline copy"
+                        : offlineState[playing.id] === "downloading"
+                        ? "Downloading…"
+                        : "Download for offline"
+                    }
+                    variant={offlineState[playing.id] === "cached" ? "secondary" : "dark"}
+                    onPress={() => void toggleOffline(playing)}
+                    disabled={offlineState[playing.id] === "downloading"}
+                  />
+                ) : (
+                  <Button label="Upgrade for offline · NUVORA Plus" variant="dark" onPress={() => Linking.openURL("https://nuvora.com/account/plus")} />
+                )}
               </View>
             </View>
           </Card>

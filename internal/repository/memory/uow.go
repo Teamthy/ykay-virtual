@@ -9,6 +9,7 @@ import (
 	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
 	"ykay-virtual/internal/repository"
@@ -35,6 +36,7 @@ type MemoryUnitOfWork struct {
 	coupons      *CouponMemory
 	certificates *CertificateMemory
 	admissions   *AdmissionsMemory
+	plus         *PlusMemory
 }
 
 func (u *MemoryUnitOfWork) LessonLinks() booking.LessonParticipantLinker    { return u.lessonLinks }
@@ -56,6 +58,7 @@ func (u *MemoryUnitOfWork) AuditLogs() identity.AuditLogRepository            { 
 func (u *MemoryUnitOfWork) Coupons() payment.CouponRepository                 { return u.coupons }
 func (u *MemoryUnitOfWork) Certificates() certificate.CertificateRepository   { return u.certificates }
 func (u *MemoryUnitOfWork) Admissions() admissions.Repository                 { return u.admissions }
+func (u *MemoryUnitOfWork) Plus() plus.Repository                             { return u.plus }
 
 func (u *MemoryUnitOfWork) Commit(_ context.Context) error { return nil }
 func (u *MemoryUnitOfWork) Rollback()                      {}
@@ -87,6 +90,7 @@ func (f *MemoryUnitOfWorkFactory) Begin(_ context.Context) (repository.UnitOfWor
 		coupons:      f.store.Coupons,
 		certificates: f.store.Certificates,
 		admissions:   f.store.Admissions,
+		plus:         f.store.Plus,
 	}, nil
 }
 
@@ -126,6 +130,9 @@ type MemoryStore struct {
 	Testimonials   *TestimonialMemory
 	Referrals      *ReferralMemory
 	Institutions   *InstitutionMemory
+	Plus           *PlusMemory
+	Advisor        *AdvisorMemory
+	PlusTeams      *PlusTeamsMemory
 	Reviews        *ReviewMemory
 	ProgrammesSeed []academics.Programme
 	Users          *UserMemory
@@ -170,6 +177,9 @@ func NewMemoryStore() *MemoryStore {
 		Testimonials: NewTestimonialMemory(),
 		Referrals:    NewReferralMemory(),
 		Institutions: NewInstitutionMemory(),
+		Plus:         NewPlusMemory(),
+		Advisor:      NewAdvisorMemory(),
+		PlusTeams:    NewPlusTeamsMemory(),
 		Reviews:      NewReviewMemory(),
 		Users:        NewUserMemory(),
 		Sessions:     NewSessionMemory(),

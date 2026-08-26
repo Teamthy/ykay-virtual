@@ -13,6 +13,7 @@ import (
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/notification"
 	payment_provider "ykay-virtual/internal/payment"
 	"ykay-virtual/internal/repository"
@@ -48,6 +49,14 @@ type PaymentService struct {
 	siteURL        string
 	notifier       *NotifierService
 	leads          *LeadService
+	plus           *PlusService // activates Plus subscriptions on payment (000066)
+}
+
+// WithPlus wires the NUVORA Plus service so a paid PLUS_SUBSCRIPTION order
+// item activates the subscription in the same settlement transaction.
+func (s *PaymentService) WithPlus(p *PlusService) *PaymentService {
+	s.plus = p
+	return s
 }
 
 // SetRefundsEnabled controls whether refunds are allowed. Production must keep
@@ -484,6 +493,12 @@ func (s *PaymentService) settleSuccessInUOW(ctx context.Context, uow repository.
 	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
 		return uuid.Nil, err
 	}
+	// NUVORA Plus: a paid PLUS_SUBSCRIPTION order item activates (or renews)
+	// the user's subscription in the same settlement transaction — access is
+	// granted only after the money actually clears.
+	if err := s.activatePlusOnPaid(ctx, uow, order); err != nil {
+		return uuid.Nil, err
+	}
 
 	// Escrow hold: money is captured but not yet released to the tutor.
 	hold, err := s.createEscrowHold(ctx, uow, order, paymentRow, now)
@@ -575,6 +590,52 @@ func (s *PaymentService) activatePrivatePackages(ctx context.Context, uow reposi
 		if err := uow.PrivatePackages().UpdateStatus(ctx, pkg.ID, booking.PrivatePackageActive); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// activatePlusOnPaid — a PLUS_SUBSCRIPTION order item activates (or renews)
+// the payer's NUVORA Plus subscription only once the order is PAID, inside the
+// same transaction that records the payment. The plan_code is carried in the
+// item's reference. Idempotent for a given term (a new subscription row is
+// created per paid term; the entitlement check just needs one active row).
+func (s *PaymentService) activatePlusOnPaid(ctx context.Context, uow repository.UnitOfWork, order *payment.Order) error {
+	if s.plus == nil {
+		return nil
+	}
+	items, err := uow.Orders().ListItems(ctx, order.ID)
+	if err != nil {
+		return err
+	}
+	for _, it := range items {
+		if it.ItemType != "PLUS_SUBSCRIPTION" {
+			continue
+		}
+		plan, err := uow.Plus().GetPlanByID(ctx, it.ReferenceID)
+		if err != nil {
+			if errors.Is(err, domain.ErrNotFound) {
+				return fmt.Errorf("%w: plus plan not found", domain.ErrInvalidInput)
+			}
+			return err
+		}
+		planCode := plan.Code
+		now := s.Clock().UTC()
+		var endsAt time.Time
+		if plan.Billing == "ANNUAL" {
+			endsAt = now.AddDate(1, 0, 0)
+		} else {
+			endsAt = now.AddDate(0, 1, 0)
+		}
+		sub := &plus.Subscription{
+			UserID: order.ParentUserID, PlanCode: planCode,
+			Status: plus.SubActive, StartedAt: now, EndsAt: endsAt, AutoRenew: true,
+		}
+		if err := uow.Plus().Activate(ctx, sub); err != nil {
+			return err
+		}
+		_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "plus_subscription",
+			&sub.ID, nil, map[string]any{"plan": planCode, "action": "paid_activate", "order_id": order.ID.String()},
+			nil, nil)
 	}
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/domain/practice"
 
 	"github.com/google/uuid"
@@ -22,11 +23,18 @@ import (
 type PracticeExamService struct {
 	repo        practice.Repository
 	enrollments booking.CohortEnrollmentRepository
+	plus        *PlusService // premium vault gate (000066)
 	now         func() time.Time
 }
 
 func NewPracticeExamService(repo practice.Repository, enrollments booking.CohortEnrollmentRepository) *PracticeExamService {
 	return &PracticeExamService{repo: repo, enrollments: enrollments, now: time.Now}
+}
+
+// WithPlus wires the NUVORA Plus entitlement gate (premium CBT vault).
+func (s *PracticeExamService) WithPlus(p *PlusService) *PracticeExamService {
+	s.plus = p
+	return s
 }
 
 // WithClock overrides the time source (tests).
@@ -51,6 +59,7 @@ type CreateExamInput struct {
 	DurationMinutes int                 `json:"duration_minutes"`
 	PassingScore    int                 `json:"passing_score"`
 	CohortID        *uuid.UUID          `json:"cohort_id,omitempty"`
+	Premium         bool                `json:"premium,omitempty"` // Plus vault
 	Questions       []ExamQuestionInput `json:"questions"`
 }
 
@@ -105,6 +114,7 @@ func (s *PracticeExamService) CreateExam(ctx context.Context, tutorID uuid.UUID,
 		PassingScore:    in.PassingScore,
 		CohortID:        in.CohortID,
 		Status:          practice.StatusActive,
+		Premium:         in.Premium,
 		Questions:       make([]practice.Question, len(in.Questions)),
 	}
 	for i, q := range in.Questions {
@@ -159,6 +169,7 @@ func (s *PracticeExamService) UpdateExam(ctx context.Context, tutorID, examID uu
 	cur.DurationMinutes = in.DurationMinutes
 	cur.PassingScore = in.PassingScore
 	cur.CohortID = in.CohortID
+	cur.Premium = in.Premium
 	cur.Questions = make([]practice.Question, len(in.Questions))
 	for i, q := range in.Questions {
 		cur.Questions[i] = practice.Question{
@@ -189,9 +200,13 @@ func (s *PracticeExamService) DeleteExam(ctx context.Context, tutorID, examID uu
 
 // ---- student side -----------------------------------------------------------
 
-func (s *PracticeExamService) eligible(ctx context.Context, e *practice.Exam, studentID uuid.UUID) error {
+func (s *PracticeExamService) eligible(ctx context.Context, e *practice.Exam, studentID, userID uuid.UUID) error {
 	if e.Status != practice.StatusActive {
 		return practice.ErrNotAvailable
+	}
+	// NUVORA Plus gate (000066): premium-vault exams require an active plan.
+	if e.Premium && (s.plus == nil || !s.plus.HasActivePlan(ctx, userID)) {
+		return plus.ErrPremiumRequired
 	}
 	if e.CohortID == nil {
 		return nil
@@ -206,34 +221,34 @@ func (s *PracticeExamService) eligible(ctx context.Context, e *practice.Exam, st
 	return nil
 }
 
-func (s *PracticeExamService) ListStudentExams(ctx context.Context, studentID uuid.UUID) ([]practice.Exam, error) {
+func (s *PracticeExamService) ListStudentExams(ctx context.Context, studentID, userID uuid.UUID) ([]practice.Exam, error) {
 	exams, err := s.repo.ListActive(ctx)
 	if err != nil {
 		return nil, err
 	}
 	out := []practice.Exam{}
 	for _, e := range exams {
-		if s.eligible(ctx, &e, studentID) == nil {
+		if s.eligible(ctx, &e, studentID, userID) == nil {
 			out = append(out, e)
 		}
 	}
 	return out, nil
 }
 
-func (s *PracticeExamService) GetStudentExam(ctx context.Context, studentID, examID uuid.UUID) (*practice.Exam, error) {
+func (s *PracticeExamService) GetStudentExam(ctx context.Context, studentID, examID, userID uuid.UUID) (*practice.Exam, error) {
 	e, err := s.repo.GetExam(ctx, examID)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.eligible(ctx, e, studentID); err != nil {
+	if err := s.eligible(ctx, e, studentID, userID); err != nil {
 		return nil, err
 	}
 	return e, nil
 }
 
 // StartAttempt opens a timed sitting for the student.
-func (s *PracticeExamService) StartAttempt(ctx context.Context, studentID, examID uuid.UUID) (*practice.Attempt, error) {
-	e, err := s.GetStudentExam(ctx, studentID, examID)
+func (s *PracticeExamService) StartAttempt(ctx context.Context, studentID, examID, userID uuid.UUID) (*practice.Attempt, error) {
+	e, err := s.GetStudentExam(ctx, studentID, examID, userID)
 	if err != nil {
 		return nil, err
 	}

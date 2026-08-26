@@ -10,6 +10,7 @@ import (
 	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
 	"ykay-virtual/internal/repository"
@@ -37,6 +38,7 @@ type PgUnitOfWork struct {
 	coupons      *CouponRepo
 	certificates *CertificateRepo
 	admissions   *AdmissionsRepo
+	plus         *PlusRepo
 }
 
 func (u *PgUnitOfWork) LessonLinks() booking.LessonParticipantLinker             { return u.lessonLinks }
@@ -56,6 +58,7 @@ func (u *PgUnitOfWork) AuditLogs() identity.AuditLogRepository                  
 func (u *PgUnitOfWork) Coupons() payment.CouponRepository                        { return u.coupons }
 func (u *PgUnitOfWork) Certificates() certificate.CertificateRepository          { return u.certificates }
 func (u *PgUnitOfWork) Admissions() admissions.Repository                        { return u.admissions }
+func (u *PgUnitOfWork) Plus() plus.Repository                                    { return u.plus }
 
 func (u *PgUnitOfWork) Commit(ctx context.Context) error {
 	if err := u.tx.Commit(); err != nil {
@@ -96,6 +99,7 @@ func (f *PgUnitOfWorkFactory) Begin(ctx context.Context) (repository.UnitOfWork,
 		coupons:      NewCouponRepo(tx),
 		certificates: NewCertificateRepo(tx),
 		admissions:   NewAdmissionsRepo(tx),
+		plus:         NewPlusRepo(tx),
 	}, nil
 }
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/middleware"
 	"ykay-virtual/pkg"
 
@@ -154,6 +155,8 @@ func WriteAppError(w http.ResponseWriter, err error) {
 		pkg.WriteError(w, http.StatusConflict, string(pkg.CodeConflict), err.Error(), nil)
 	case errors.Is(err, domain.ErrInvalidInput), errors.Is(err, domain.ErrInvalidSignature):
 		pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), err.Error(), nil)
+	case errors.Is(err, plus.ErrPremiumRequired):
+		pkg.WriteError(w, http.StatusPaymentRequired, "PREMIUM_REQUIRED", err.Error(), nil)
 	case errors.Is(err, domain.ErrTooManyRequests):
 		pkg.WriteError(w, http.StatusTooManyRequests, string(pkg.CodeTooManyRequests), err.Error(), nil)
 	case errors.Is(err, domain.ErrEmailDelivery):

@@ -8,6 +8,7 @@ import (
 	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
 )
@@ -38,6 +39,7 @@ type UnitOfWork interface {
 	TutorSubjects() tutor.TutorSubjectRepository
 	AuditLogs() identity.AuditLogRepository
 	LessonLinks() booking.LessonParticipantLinker
+	Plus() plus.Repository
 	Commit(ctx context.Context) error
 	Rollback()
 }

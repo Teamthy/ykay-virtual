@@ -221,3 +221,103 @@ extend-don't-fork:
 **Still open:** document binary upload via the object store (documents are
 currently keyed by an already-hosted URL/object key), an application detail
 route for large document sets, and admissions fee discounts/coupons.
+
+## 10. NUVORA Plus — premium tier engine + gates (shipped 2026-08-26)
+
+Turns the marketing-only Plus page into a real, sellable premium tier. Companion
+plan: `docs/NUVORA_PLUS_PREMIUM_PLAN.md` (industry-benchmarked feature set).
+
+- **`migration 000066`** — `subscription_plans` (PLUS / PLUS_FAMILY / PLUS_TEAMS,
+  seeded), `subscriptions` (per-user active/trial/cancelled), `plus_usage`
+  (per-user, per-feature, per-day counters), and `practice_exams.premium`.
+- **`internal/domain/plus`** + postgres/memory repos + `PlusService`:
+  `HasActivePlan` (the core entitlement check), `AIAllowance`/`CanUseFeature`/
+  `RecordUsage`, `GetMyPlan` (status + entitlements), `ActivatePlan` (trial or
+  paid), `CancelPlan`, `EnsureDefaultPlans` (boot seed).
+- **Routes** (contract-tested): `GET /plus/plans` (public) · `GET /me/plus` ·
+  `POST /me/plus/activate` · `POST /me/plus/cancel` · plus
+  `POST /me/certificates/{id}/verified` (Plus-gated verified share).
+- **Gates (P2) — expose already-built features behind Plus:**
+  - **CBT vault**: `practice.Exam.Premium`; free users only see/start non-premium
+    exams, Plus unlocks the full vault (`plus.ErrPremiumRequired` → HTTP 402).
+  - **Verified certificates**: `POST /me/certificates/{id}/verified` returns a
+    shareable verified-credential link only for Plus.
+  - **Recorded-library transcripts**: transcripts are now Plus-gated in the
+    library (admins always have them); video playback stays entitlement-gated.
+  - **AI assistant**: per-user daily query allowance — free = 10/day, Plus = 100/day;
+    exhaustion returns a premium nudge.
+- **Web**: `/account/plus` status + upgrade (7-day trial, plan picker, manage/
+  cancel) reachable from the parent/student nav; `/account/certificates` gains a
+  "Verified share link" action with an upgrade prompt on 402.
+- **Tests**: PlusService subscription lifecycle, entitlement, AI allowance/usage,
+  and the practice-exam premium gate.
+
+**Order-backed billing (closed 2026-08-26):** Plus is now a real paid product.
+`POST /me/plus/purchase` creates a PENDING order (PLUS_SUBSCRIPTION item) for
+the plan price; the user pays via the standard initiate → webhook → settle flow;
+`PaymentService.activatePlusOnPaid` activates the subscription in the same
+settlement transaction (access granted only after money clears). The payment UoW
+now exposes `Plus()`. A worker cron (`expire_plus_subscriptions`) marks
+ACTIVE/TRIAL subscriptions whose term passed as EXPIRED so the entitlement gate
+drops access. The `/account/plus` page offers order-backed "Subscribe & pay"
+(via Paystack) alongside the 7-day free trial. Test:
+`TestPaymentSettlement_ActivatesPlus` (webhook settlement grants access).
+
+**Still open:** PLUS_TEAMS admin console, offline/mobile downloads, and a
+diagnostic→learning-plan engine.
+
+## 11. NUVORA Plus P3–P4 — named Learning Advisor + weekly report (shipped 2026-08-26)
+
+- **`migration 000067`** — `plus_advisors` (named Learning Advisor per Plus
+  user) and `plus_learning_plans` (personalised plan per Plus user + learner).
+- **Named Learning Advisor (P3)** — `internal/domain/advisor` + postgres/memory
+  repos + `AdvisorService`. An admin assigns a staff advisor to a Plus subscriber
+  (`PUT /admin/plus/{userId}/advisor`); the subscriber reads their advisor +
+  contact (`GET /me/advisor`). Plus-gated (no plan → 409/402). The `/account/plus`
+  page surfaces a **"Your Learning Advisor"** card.
+- **Learning plan (P4)** — advisor-authored personalised plan per learner
+  (`PUT /admin/plus/{userId}/plan`, `GET /me/advisor/plan`), surfaced on the
+  Plus dashboard.
+- **Plus weekly report email (P4)** — `plus.Repository.ListActiveUserIDs` +
+  `PlusReportService` render a branded weekly HTML report (print-to-PDF, no PDF
+  dependency) and the worker cron `send_plus_weekly_reports` emails every active
+  Plus subscriber weekly. Reuses the existing email sender + `BrandEmail`.
+- Tests: `TestAdvisorService_AssignAndGet`, `TestAdvisorService_LearningPlan`,
+  `TestPlusReportService_SendWeeklyReports`. OpenAPI contract (246/251).
+
+## 12. NUVORA Plus P5 — diagnostic → learning-plan engine (shipped 2026-08-26)
+
+- **`migration 000068`** — `learner_assessments.is_diagnostic` and
+  `plus_learning_plans.source` (MANUAL | DIAGNOSTIC).
+- **Mark as diagnostic** — `POST /learning/assessments/{id}/diagnostic`
+  (tutor/admin) + `is_diagnostic` on assessment create.
+- **Auto-authoring** — `AdvisorService.GeneratePlanFromScore` derives a
+  personalised plan (goals / focus areas / recommendations) from the score
+  ratio + subject, Plus-gated (non-Plus → no plan). `LearningService` gets a
+  `WithDiagnosticPlanner` hook fired inside `SubmitAssessment` when the
+  completed assessment is a diagnostic — the parent's plan is written
+  automatically on completion.
+- **Client** — the `/account/plus` learning-plan card labels plans
+  "Auto-generated from a diagnostic" when `source = DIAGNOSTIC`.
+- Tests: `TestLearning_Diagnostic_TriggersPlanHook`,
+  `TestLearning_NonDiagnostic_NoPlanHook`,
+  `TestAdvisorService_GeneratePlanFromScore`. OpenAPI contract (247/252).
+
+## 13. NUVORA Plus P5 — offline downloads + Plus Teams console (shipped 2026-08-26)
+
+- **Offline/mobile downloads (Plus-gated)** — `POST /me/plus/library/{lessonId}/download`
+  returns an authorized `video_url` only for entitled **and** Plus viewers (402
+  otherwise). The mobile app (`lms/[cohortId].tsx`) now checks Plus status,
+  fetches the authorized URL before caching via `cacheVideo`, and shows an
+  "Upgrade for offline" CTA for non-Plus users. Tests:
+  `TestLibraryService_DownloadURL_RequiresPlus`.
+- **PLUS_TEAMS admin console** — `migration 000069` (`institution_plus` +
+  `institution_plus_seats`), `internal/domain/plusteams` + postgres/memory repos,
+  `PlusTeamsService` (allocation, set seats, assign/release seats, list holders,
+  enriched with user names), and routes under `/me/institutions/{id}/plus…`.
+  Institution OWNER/ADMIN (or platform admin) manage seats. The `/account/institutions/{id}`
+  page gains a **Plus Teams** tab. Tests: `TestPlusTeams_AllocationAndSeats`.
+
+With this, the Nuvora Plus premium tier is **complete through P5**: subscription
+engine, feature gates, order-backed billing, named advisor, weekly report,
+diagnostic→learning-plan, offline downloads, and the Plus Teams console.

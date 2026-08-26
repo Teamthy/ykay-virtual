@@ -34,3 +34,19 @@ export async function verifyCertificate(credential: string): Promise<VerifiedCer
   const res = await apiFetch<VerifiedCertificate>(`/certificates/verify?credential=${encodeURIComponent(credential)}`);
   return res.data;
 }
+
+export type VerifiedShare = {
+  credential_number: string;
+  learner_name: string;
+  title: string;
+  programme_title?: string | null;
+  issued_by: string;
+  issued_at: string;
+  verify_url: string;
+};
+
+/** NUVORA Plus: generate a verified, shareable credential link. 402 if not subscribed. */
+export async function verifiedShare(certId: string): Promise<VerifiedShare> {
+  const res = await apiFetch<VerifiedShare>(`/me/certificates/${certId}/verified`, { method: "POST" });
+  return res.data;
+}

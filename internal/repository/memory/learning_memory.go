@@ -163,6 +163,18 @@ func (m *LearningMemory) SetStatus(_ context.Context, id uuid.UUID, status learn
 	return nil
 }
 
+func (m *LearningMemory) SetDiagnostic(_ context.Context, id uuid.UUID, diagnostic bool) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	a, ok := m.assessments[id]
+	if !ok {
+		return domain.ErrNotFound
+	}
+	a.IsDiagnostic = diagnostic
+	a.UpdatedAt = nowUTC()
+	return nil
+}
+
 func (m *LearningMemory) CreateAttempt(_ context.Context, a *learning.LearnerAttempt) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

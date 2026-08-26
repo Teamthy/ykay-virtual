@@ -118,6 +118,14 @@ func main() {
 		r.users,
 	)
 
+	// NUVORA Plus weekly report email (000067 / P4). The plus repo comes from
+	// the UoW (it shares the same store); nil when the UoW can't provide it.
+	var plusReportSvc *service.PlusReportService
+	if uow, err := r.uowFactory.Begin(ctx); err == nil {
+		plusReportSvc = service.NewPlusReportService(uow.Plus(), r.users, notification.NewEmailSender(), cfg.SiteURL)
+		uow.Rollback()
+	}
+
 	// --- Durable job queue (G3.1) ---
 	// Redis-backed with retries + dead-letter; consumers are idempotent.
 	// The client is hoisted so the cron scheduler can share it for leader
@@ -242,6 +250,18 @@ func main() {
 			}
 			release()
 		}
+		if release, ok := cronLock.TryLock(ctx, "expire_plus_subscriptions", 14*time.Minute); ok {
+			if uow, err := r.uowFactory.Begin(ctx); err == nil {
+				if _, perr := uow.Plus().ExpireEnded(ctx, time.Now().UTC()); perr != nil {
+					slog.Error("cron boot: expire_plus_subscriptions", "error", perr)
+					telemetry.CronRun("expire_plus_subscriptions", false)
+				} else {
+					telemetry.CronRun("expire_plus_subscriptions", true)
+				}
+				uow.Rollback()
+			}
+			release()
+		}
 	}()
 
 	go func() {
@@ -307,6 +327,27 @@ func main() {
 					}
 					release()
 				}
+				// NUVORA Plus: expire subscriptions whose term passed, so the
+				// entitlement gate stops granting access after the period.
+				if release, ok := cronLock.TryLock(ctx, "expire_plus_subscriptions", 14*time.Minute); ok {
+					uow, uerr := r.uowFactory.Begin(ctx)
+					if uerr != nil {
+						slog.Error("cron: expire_plus_subscriptions", "error", uerr)
+					} else {
+						n, perr := uow.Plus().ExpireEnded(ctx, time.Now().UTC())
+						uow.Rollback()
+						if perr != nil {
+							slog.Error("cron: expire_plus_subscriptions", "error", perr)
+							telemetry.CronRun("expire_plus_subscriptions", false)
+						} else {
+							telemetry.CronRun("expire_plus_subscriptions", true)
+							if n > 0 {
+								slog.Info("cron: expire_plus_subscriptions", "expired", n)
+							}
+						}
+					}
+					release()
+				}
 				if release, ok := cronLock.TryLock(ctx, "send_payment_nudges", 14*time.Minute); ok {
 					if n, nerr := leadSvc.SendPaymentNudges(ctx, cfg.SiteURL, nudgeMinAge, nudgeMaxAge, 100); nerr != nil {
 						slog.Error("cron: send_payment_nudges", "error", nerr)
@@ -330,6 +371,22 @@ func main() {
 						slog.Info("cron: process_weekly_tutor_payouts", "paid", n)
 					}
 					release()
+				}
+				// NUVORA Plus weekly report email (P4).
+				if plusReportSvc != nil {
+					if release, ok := cronLock.TryLock(ctx, "send_plus_weekly_reports", 6*24*time.Hour); ok {
+						n, rerr := plusReportSvc.SendWeeklyReports(ctx)
+						if rerr != nil {
+							slog.Error("cron: send_plus_weekly_reports", "error", rerr)
+							telemetry.CronRun("send_plus_weekly_reports", false)
+						} else {
+							telemetry.CronRun("send_plus_weekly_reports", true)
+							if n > 0 {
+								slog.Info("cron: send_plus_weekly_reports", "sent", n)
+							}
+						}
+						release()
+					}
 				}
 			case <-rankingTicker.C:
 				if release, ok := cronLock.TryLock(ctx, "compute_tutor_ranking_score", 20*time.Hour); ok {

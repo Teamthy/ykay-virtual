@@ -110,6 +110,27 @@ func (h *LibraryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, it, nil)
 }
 
+// Download — POST /api/v1/me/plus/library/{lessonId}/download (Plus-gated).
+// Returns the authorized video_url for offline/mobile download; 402 for
+// entitled viewers without a Plus plan.
+func (h *LibraryHandler) Download(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	lessonID, err := uuid.Parse(r.PathValue("lessonId"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("invalid lesson id", nil))
+		return
+	}
+	url, err := h.svc.DownloadURL(r.Context(), actor.IsAdmin, actor.UserID, lessonID)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"video_url": url}, nil)
+}
+
 // ListAdmin — GET /api/v1/admin/library (admin content manager).
 func (h *LibraryHandler) ListAdmin(w http.ResponseWriter, r *http.Request) {
 	if requireActor(w, r) == nil {

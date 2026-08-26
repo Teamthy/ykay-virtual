@@ -33,9 +33,12 @@ type LearnerAssessment struct {
 	PassThreshold  float64          `json:"pass_threshold"`
 	DueAt          *time.Time       `json:"due_at,omitempty"`
 	Status         AssessmentStatus `json:"status"`
-	CreatedBy      *uuid.UUID       `json:"created_by,omitempty"`
-	CreatedAt      time.Time        `json:"created_at"`
-	UpdatedAt      time.Time        `json:"updated_at"`
+	// IsDiagnostic — a diagnostic assessment (000068): when completed, the
+	// platform auto-authors a Plus learning plan from the score + subject.
+	IsDiagnostic bool       `json:"is_diagnostic"`
+	CreatedBy    *uuid.UUID `json:"created_by,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 type AssessmentQuestion struct {
@@ -101,6 +104,8 @@ type AssessmentRepository interface {
 	ListForStudent(ctx context.Context, studentProfileID uuid.UUID, limit int) ([]LearnerAssessment, error)
 	GetQuestions(ctx context.Context, assessmentID uuid.UUID) ([]AssessmentQuestion, error)
 	SetStatus(ctx context.Context, id uuid.UUID, status AssessmentStatus) error
+	// SetDiagnostic toggles the diagnostic flag on an assessment (000068).
+	SetDiagnostic(ctx context.Context, id uuid.UUID, diagnostic bool) error
 
 	CreateAttempt(ctx context.Context, a *LearnerAttempt) error
 	GetAttempt(ctx context.Context, id uuid.UUID) (*LearnerAttempt, error)

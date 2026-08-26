@@ -10,6 +10,7 @@ import (
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/library"
+	"ykay-virtual/internal/domain/plus"
 )
 
 // LessonParticipantReader — reports whether a learner is a participant of a
@@ -26,6 +27,7 @@ type LessonParticipantReader interface {
 type LibraryService struct {
 	repo         library.Repository
 	participants LessonParticipantReader
+	plus         *PlusService // transcript gate (000066)
 	// studentsForUser resolves the student profile IDs the actor may act for
 	// (their own + any linked learners). Used to gate entitlement.
 	studentByUserID   func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error)
@@ -34,6 +36,14 @@ type LibraryService struct {
 
 func NewLibraryService(repo library.Repository, participants LessonParticipantReader) *LibraryService {
 	return &LibraryService{repo: repo, participants: participants}
+}
+
+// WithPlus wires the NUVORA Plus gate: recorded-library transcripts are a
+// Plus feature (000066). Video playback stays entitlement-gated by cohort
+// participation; transcripts additionally require an active Plus plan.
+func (s *LibraryService) WithPlus(p *PlusService) *LibraryService {
+	s.plus = p
+	return s
 }
 
 // WithStudentResolvers wires identity resolution so entitlement can be
@@ -90,9 +100,10 @@ func (s *LibraryService) entitled(ctx context.Context, isAdmin bool, userID uuid
 	return false
 }
 
-// gate applies playback entitlement to catalogue items: video_url/transcript
-// are kept only for entitled viewers.
+// gate applies playback entitlement to catalogue items: video_url is kept
+// only for entitled viewers; transcript additionally requires Plus (000066).
 func (s *LibraryService) gate(ctx context.Context, isAdmin bool, userID uuid.UUID, items []library.Item) []library.Item {
+	transcripts := s.transcriptAllowed(ctx, isAdmin, userID)
 	out := make([]library.Item, 0, len(items))
 	for _, it := range items {
 		if !s.entitled(ctx, isAdmin, userID, it.LessonID) {
@@ -101,6 +112,9 @@ func (s *LibraryService) gate(ctx context.Context, isAdmin bool, userID uuid.UUI
 			it.Entitled = false
 		} else {
 			it.Entitled = true
+			if !transcripts {
+				it.Transcript = nil
+			}
 		}
 		out = append(out, it)
 	}
@@ -117,8 +131,19 @@ func (s *LibraryService) gateOne(ctx context.Context, isAdmin bool, userID uuid.
 		it.Entitled = false
 	} else {
 		it.Entitled = true
+		if !s.transcriptAllowed(ctx, isAdmin, userID) {
+			it.Transcript = nil
+		}
 	}
 	return it
+}
+
+// transcriptAllowed — transcripts are a Plus feature; admins always have them.
+func (s *LibraryService) transcriptAllowed(ctx context.Context, isAdmin bool, userID uuid.UUID) bool {
+	if isAdmin {
+		return true
+	}
+	return s.plus != nil && s.plus.HasActivePlan(ctx, userID)
 }
 
 // Catalogue — public browse (filters + paging). Returns metadata always; video
@@ -161,6 +186,30 @@ func (s *LibraryService) Get(ctx context.Context, lessonID uuid.UUID, isAdmin bo
 		return nil, err
 	}
 	return s.gateOne(ctx, isAdmin, userID, it), nil
+}
+
+// DownloadURL — offline/mobile download (P5). Returns the video URL for a
+// recorded lesson only when the viewer is entitled AND has an active NUVORA
+// Plus plan (or is an admin). Downloads are a Plus feature, enforced server-side
+// so the mobile app can cache offline. Returns plus.ErrPremiumRequired (HTTP
+// 402) for entitled-but-not-Plus viewers.
+func (s *LibraryService) DownloadURL(ctx context.Context, isAdmin bool, userID uuid.UUID, lessonID uuid.UUID) (*string, error) {
+	if !s.entitled(ctx, isAdmin, userID, lessonID) {
+		return nil, domain.ErrForbidden
+	}
+	if !isAdmin {
+		if s.plus == nil || !s.plus.HasActivePlan(ctx, userID) {
+			return nil, plus.ErrPremiumRequired
+		}
+	}
+	it, err := s.repo.GetByLessonID(ctx, lessonID)
+	if err != nil {
+		return nil, err
+	}
+	if it.VideoURL == nil || *it.VideoURL == "" {
+		return nil, domain.ErrNotFound
+	}
+	return it.VideoURL, nil
 }
 
 // ListAdmin — recorded lessons + curation meta for the admin content manager.

@@ -22,6 +22,7 @@ import {
   Play,
   PhoneCall,
   Banknote,
+  Crown,
 } from "lucide-react";
 
 export type AppNavItem = {
@@ -58,6 +59,7 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
     ],
     more: [
       { href: "/notifications", label: "Notifications", icon: Bell },
+      { href: "/account/plus", label: "NUVORA Plus", icon: Crown },
       { href: "/account", label: "Settings", icon: Settings },
       { href: "/help", label: "Help Center", icon: LifeBuoy },
     ],
@@ -75,6 +77,7 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
     ],
     more: [
       { href: "/notifications", label: "Notifications", icon: Bell },
+      { href: "/account/plus", label: "NUVORA Plus", icon: Crown },
       { href: "/account", label: "Settings", icon: Settings },
       { href: "/help", label: "Help Center", icon: LifeBuoy },
     ],

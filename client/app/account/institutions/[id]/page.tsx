@@ -21,11 +21,12 @@ import {
   type MembershipRole,
 } from "@/features/institutions/console";
 import { listLearners } from "@/features/onboarding/api";
+import { getPlusTeamsAllocation, setPlusTeamsSeats, listPlusTeamsSeats, assignPlusTeamSeat, releasePlusTeamSeat, type PlusTeamsAllocation, type PlusTeamsSeat } from "@/features/plus/api";
 
 const ROLES: MembershipRole[] = ["OWNER", "ADMIN", "TEACHER", "STUDENT", "BILLING"];
 const TYPES: InstitutionType[] = ["SCHOOL", "CORPORATE", "GOVERNMENT", "NGO", "OTHER"];
 
-type Tab = "profile" | "members" | "students";
+type Tab = "profile" | "members" | "students" | "plusteams";
 
 export default function InstitutionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -102,7 +103,7 @@ export default function InstitutionDetailPage() {
       </div>
 
       <div className="flex gap-1 rounded-xl bg-ink-100 p-1 text-sm font-semibold">
-        {(["profile", "members", "students"] as Tab[]).map((t) => (
+        {(["profile", "members", "students", "plusteams"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -173,6 +174,7 @@ export default function InstitutionDetailPage() {
 
       {tab === "members" && <MembersPanel id={id} />}
       {tab === "students" && <StudentsPanel id={id} />}
+      {tab === "plusteams" && <PlusTeamsPanel id={id} />}
     </div>
   );
 }
@@ -332,6 +334,100 @@ function StudentsPanel({ id }: { id: string }) {
             </div>
             <button onClick={() => remove.mutate(s.student_profile_id)} className="text-ink-400 hover:text-red-600" title="Unlink learner">
               <X size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlusTeamsPanel({ id }: { id: string }) {
+  const qc = useQueryClient();
+  const [seatCount, setSeatCount] = useState("");
+  const [userId, setUserId] = useState("");
+
+  const alloc = useQuery({
+    queryKey: ["me", "institution", id, "plusteams"],
+    queryFn: () => getPlusTeamsAllocation(id),
+    enabled: !!id,
+  });
+  const seats = useQuery({
+    queryKey: ["me", "institution", id, "plusteams", "seats"],
+    queryFn: () => listPlusTeamsSeats(id),
+    enabled: !!id,
+  });
+
+  const saveSeats = useMutation({
+    mutationFn: () => setPlusTeamsSeats(id, Number(seatCount)),
+    onSuccess: () => {
+      setSeatCount("");
+      qc.invalidateQueries({ queryKey: ["me", "institution", id, "plusteams"] });
+    },
+  });
+  const assign = useMutation({
+    mutationFn: () => assignPlusTeamSeat(id, userId),
+    onSuccess: () => {
+      setUserId("");
+      qc.invalidateQueries({ queryKey: ["me", "institution", id, "plusteams"] });
+    },
+  });
+  const release = useMutation({
+    mutationFn: (uid: string) => releasePlusTeamSeat(id, uid),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "institution", id, "plusteams"] }),
+  });
+
+  const a = alloc.data;
+  const rows = seats.data ?? [];
+
+  return (
+    <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold text-ink-900">NUVORA Plus Teams</h2>
+        <span className="rounded-full bg-brand-gold px-3 py-1 text-xs font-bold text-deep">
+          {a ? `${a.used_seats} / ${a.total_seats} seats` : "No seats yet"}
+        </span>
+      </div>
+      <p className="mt-1 text-sm text-ink-500">
+        Allocate seats covered by your organisation&apos;s Plus Teams plan.
+      </p>
+
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <input
+          value={seatCount}
+          onChange={(e) => setSeatCount(e.target.value)}
+          type="number"
+          min={0}
+          placeholder="Total seats"
+          className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+        />
+        <Button onClick={() => saveSeats.mutate()} disabled={!seatCount || saveSeats.isPending}>
+          {saveSeats.isPending ? "Saving…" : "Set seat capacity"}
+        </Button>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <input
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+          placeholder="User ID to cover (uuid)"
+          className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+        />
+        <Button onClick={() => assign.mutate()} disabled={!userId.trim() || assign.isPending} variant="outline">
+          Assign seat
+        </Button>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        {rows.length === 0 && <p className="text-sm text-ink-500">No seats assigned yet.</p>}
+        {rows.map((s) => (
+          <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5">
+            <div className="text-sm">
+              <span className="font-semibold text-ink-800">{s.user_name || s.user_id.slice(0, 8)}</span>
+              {s.user_email && <span className="ml-2 text-xs text-ink-500">{s.user_email}</span>}
+            </div>
+            <button onClick={() => release.mutate(s.user_id)} className="text-ink-400 hover:text-red-600" title="Release seat">
+              Release
             </button>
           </div>
         ))}

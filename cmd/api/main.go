@@ -23,6 +23,7 @@ import (
 	"ykay-virtual/internal/domain/academics"
 	"ykay-virtual/internal/domain/admin"
 	"ykay-virtual/internal/domain/admissions"
+	"ykay-virtual/internal/domain/advisor"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/chat"
 	"ykay-virtual/internal/domain/content"
@@ -33,6 +34,8 @@ import (
 	"ykay-virtual/internal/domain/library"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/plus"
+	"ykay-virtual/internal/domain/plusteams"
 	"ykay-virtual/internal/domain/practice"
 	"ykay-virtual/internal/domain/referral"
 	"ykay-virtual/internal/domain/review"
@@ -110,6 +113,9 @@ type Repositories struct {
 	Students           identity.StudentProfileRepository
 	StudentLinks       identity.ParentStudentLinkRepository
 	Library            library.Repository
+	Plus               plus.Repository
+	Advisor            advisor.Repository
+	PlusTeams          plusteams.Repository
 	Vetting            vetting.VettingRepository
 	TutorSubjects      tutor.TutorSubjectRepository
 	Learning           learning.AssessmentRepository
@@ -249,10 +255,31 @@ func main() {
 	// ops team follows up on WhatsApp (public capture + enrollment-started +
 	// auto-CONVERTED on settlement).
 	leadsSvc := service.NewLeadService(repos.Leads, notifierSvc, repos.Users, audit)
+	// NUVORA Plus premium tier (000066): subscription entitlements + usage gates.
+	plusSvc := service.NewPlusService(repos.Plus, audit).WithUnitOfWork(repos.UoWFactory)
+	plusSvc.EnsureDefaultPlans(ctx)
+	// NUVORA Plus named Learning Advisor + learning plan (000067).
+	advisorSvc := service.NewAdvisorService(repos.Advisor, audit).WithPlus(plusSvc).WithUsers(repos.Users)
+	// NUVORA Plus Teams (000069): institution seat management. Managers are the
+	// institution OWNER/ADMIN (reusing the membership check) or a platform admin.
+	plusTeamsSvc := service.NewPlusTeamsService(repos.PlusTeams, audit).WithUsers(repos.Users).
+		WithManagerCheck(func(ctx context.Context, actorUserID, institutionID uuid.UUID, isAdmin bool) error {
+			if isAdmin {
+				return nil
+			}
+			m, err := repos.Institutions.GetMembership(ctx, institutionID, actorUserID)
+			if err != nil {
+				return domain.ErrForbidden
+			}
+			if !m.CanManage() {
+				return fmt.Errorf("%w: only the institution owner or an admin can manage Plus Teams", domain.ErrForbidden)
+			}
+			return nil
+		})
 	// CBT practice exams: tutor-authored papers + timed student attempts.
-	examSvc := service.NewPracticeExamService(repos.Exams, repos.Enrollments)
+	examSvc := service.NewPracticeExamService(repos.Exams, repos.Enrollments).WithPlus(plusSvc)
 	// Learner completion certificates (virtual-school item).
-	certSvc := service.NewCertificateService(repos.UoWFactory).
+	certSvc := service.NewCertificateService(repos.UoWFactory).WithPlus(plusSvc).WithSiteURL(cfg.SiteURL).
 		WithStudentReader(func(ctx context.Context, id uuid.UUID) (string, error) {
 			p, err := repos.Students.FindByID(ctx, id)
 			if err != nil {
@@ -390,11 +417,17 @@ func main() {
 	adminSvc.WithAuditLogs(repos.AuditRepo)
 	learningSvc := service.NewLearningService(repos.Learning, repos.Grading, repos.ProgressReports,
 		repos.Assignments, audit).WithNotifications(messagingSvc).
-		WithScope(repos.CohortRepo, repos.TutorSubjects)
+		WithScope(repos.CohortRepo, repos.TutorSubjects).
+		// P5 / 000068: completing a diagnostic auto-authors a Plus learning plan.
+		WithDiagnosticPlanner(func(ctx context.Context, parentUserID, studentProfileID uuid.UUID,
+			subject string, score, total float64) error {
+			_, err := advisorSvc.GeneratePlanFromScore(ctx, parentUserID, studentProfileID, subject, score, total)
+			return err
+		})
 	analyticsSvc := service.NewAnalyticsService(repos.Analytics)
 	// On-demand recorded-lesson library (migration 000064). Public catalogue +
 	// admin curation; playback gated by lesson participation per viewer.
-	librarySvc := service.NewLibraryService(repos.Library, repos.Lessons).
+	librarySvc := service.NewLibraryService(repos.Library, repos.Lessons).WithPlus(plusSvc).
 		WithStudentResolvers(
 			func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error) {
 				return repos.Students.FindByUserID(ctx, userID)
@@ -411,10 +444,11 @@ func main() {
 	paymentSvc.WithReceipts(repos.Users, notification.NewEmailSender(), cfg.SiteURL)
 	paymentSvc.WithWhatsApp(notifierSvc)
 	paymentSvc.WithLeads(leadsSvc)
+	paymentSvc.WithPlus(plusSvc)
 	authSvc.WithReferrals(referralSvc)
 
 	// --- AI assistant (phase 33) ---
-	chatSvc := service.NewChatService(repos.Chat, supportSvc, repos.Users)
+	chatSvc := service.NewChatService(repos.Chat, supportSvc, repos.Users).WithPlus(plusSvc)
 	chatSvc.WithNotifier(notifierSvc)
 	chatSvc.WithContextBuilder(buildChatContext(programmeSvc, cohortSvc, tutorSvc))
 	if cfg.ChatbotEnabled && cfg.GeminiAPIKey != "" {
@@ -471,6 +505,9 @@ func main() {
 		Admissions:     httpapi.NewAdmissionsHandler(admissionsSvc),
 		SchoolCalendar: httpapi.NewSchoolCalendarHandler(schoolCalSvc),
 		Library:        httpapi.NewLibraryHandler(librarySvc),
+		Plus:           httpapi.NewPlusHandler(plusSvc),
+		Advisor:        httpapi.NewAdvisorHandler(advisorSvc),
+		PlusTeams:      httpapi.NewPlusTeamsHandler(plusTeamsSvc),
 		Payments: httpapi.NewPaymentHandler(paymentSvc, map[payment.PaymentProvider]string{
 			payment.ProviderPaystack:    cfg.PaystackSecret,
 			payment.ProviderFlutterwave: cfg.FlutterwaveSecret,
@@ -684,6 +721,9 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			StudentLinks:       store.StudentLinks,
 			StudentLink:        store.StudentLinks,
 			Library:            memory.NewLibraryMemory(),
+			Plus:               memory.NewPlusMemory(),
+			Advisor:            memory.NewAdvisorMemory(),
+			PlusTeams:          memory.NewPlusTeamsMemory(),
 			Vetting:            store.Vetting,
 			TutorSubjects:      store.TutorSubj,
 			Learning:           store.Learning,
@@ -752,6 +792,9 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Students:           postgres.NewStudentProfileRepo(pg.DB()),
 		StudentLinks:       postgres.NewParentStudentLinkRepo(pg.DB()),
 		Library:            postgres.NewLibraryRepo(pg.DB()),
+		Plus:               postgres.NewPlusRepo(pg.DB()),
+		Advisor:            postgres.NewAdvisorRepo(pg.DB()),
+		PlusTeams:          postgres.NewPlusTeamsRepo(pg.DB()),
 		Vetting:            postgres.NewVettingRepo(pg.DB()),
 		TutorSubjects:      postgres.NewTutorSubjectRepo(pg.DB()),
 		Learning:           postgres.NewAssessmentRepo(pg.DB()),

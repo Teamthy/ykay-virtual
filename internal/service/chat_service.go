@@ -11,6 +11,7 @@ import (
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/chat"
 	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/domain/plus"
 
 	"github.com/google/uuid"
 )
@@ -54,6 +55,7 @@ type ChatService struct {
 	contextFor ChatContextBuilder
 	pusher     *PushService
 	notifier   *NotifierService
+	plus       *PlusService // AI-assistant allowance gate (000066)
 	now        func() time.Time
 }
 
@@ -68,6 +70,12 @@ func NewChatService(threads chat.ThreadRepository, support *SupportService, user
 
 // WithNotifier wires WhatsApp notification when a chat escalates to a human
 // (best-effort; failures never fail the escalation itself).
+// WithPlus wires the NUVORA Plus gate for the AI-assistant daily allowance.
+func (s *ChatService) WithPlus(p *PlusService) *ChatService {
+	s.plus = p
+	return s
+}
+
 func (s *ChatService) WithNotifier(n *NotifierService) *ChatService {
 	s.notifier = n
 	return s
@@ -167,6 +175,17 @@ func (s *ChatService) SendMessage(ctx context.Context, userID, threadID uuid.UUI
 
 	reply := cannedReply(content)
 	if s.provider != nil {
+		// NUVORA Plus gate (000066): the AI assistant has a per-user daily
+		// allowance. Plus accounts get a much higher allowance; free accounts
+		// that exhaust their quota get a premium nudge instead of an answer.
+		if s.plus != nil {
+			allowance := s.plus.AIAllowance(ctx, userID)
+			if !s.plus.CanUseFeature(ctx, userID, plus.FeatureAIAssistant, allowance) {
+				reply = premiumAINudge()
+				_, _ = s.append(ctx, threadID, chat.RoleAssistant, reply)
+				return reply, thread.Status, nil
+			}
+		}
 		grounding := ""
 		if s.contextFor != nil {
 			grounding, _ = s.contextFor(ctx) // grounding is best-effort
@@ -181,6 +200,9 @@ func (s *ChatService) SendMessage(ctx context.Context, userID, threadID uuid.UUI
 		}
 		if ai, err := s.provider.Reply(ctx, clean, grounding); err == nil && strings.TrimSpace(ai) != "" {
 			reply = strings.TrimSpace(ai)
+			if s.plus != nil {
+				_, _ = s.plus.RecordUsage(ctx, userID, plus.FeatureAIAssistant)
+			}
 		}
 	}
 
@@ -498,6 +520,12 @@ func redactPII(s string) string {
 }
 
 // cannedReply lives in chat_kb.go — FAQ answers when Gemini is off.
+
+// premiumAINudge — shown to free users who exhaust their daily AI-assistant
+// allowance, directing them to the NUVORA Plus upgrade.
+func premiumAINudge() string {
+	return "You've reached your free daily AI-tutor limit. Upgrade to NUVORA Plus for a much higher AI-tutor allowance, the full practice-exam vault, verified certificates and more — visit /nuvora-plus to unlock it."
+}
 
 func round1(v float64) float64 {
 	return float64(int(v*10+0.5)) / 10

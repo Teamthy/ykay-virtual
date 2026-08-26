@@ -397,3 +397,31 @@ export async function resolveBankAccount(
   });
   return res.data.account_name;
 }
+
+// --- NUVORA Plus ---
+
+export type PlusStatus = {
+  active: boolean;
+  entitlements?: {
+    cbt_vault: boolean;
+    verified_certs: boolean;
+    transcripts: boolean;
+    ai_assistant: boolean;
+    ai_assist_per_day: number;
+  };
+};
+
+/** The caller's NUVORA Plus status (for gating offline downloads etc.). */
+export async function getPlusStatus(): Promise<PlusStatus> {
+  const res = await apiFetch<PlusStatus>("/me/plus");
+  return res.data;
+}
+
+/** Get an authorized video URL to download a recorded lesson offline (Plus). */
+export async function getPlusDownloadUrl(lessonId: string): Promise<string | null> {
+  const res = await apiFetch<{ video_url: string | null }>(
+    `/me/plus/library/${lessonId}/download`,
+    { method: "POST" }
+  );
+  return res.data.video_url ?? null;
+}

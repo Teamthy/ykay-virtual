@@ -76,6 +76,26 @@ func (h *CertificateHandler) GetMine(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, c, nil)
 }
 
+// VerifiedShare — POST /api/v1/me/certificates/{id}/verified (Plus-gated).
+// Returns a verified, shareable credential link.
+func (h *CertificateHandler) VerifiedShare(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		WriteAppError(w, pkg.BadRequest("invalid certificate id", nil))
+		return
+	}
+	vs, err := h.svc.VerifiedShare(r.Context(), actor.UserID, id)
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, vs, nil)
+}
+
 // Verify — GET /api/v1/certificates/verify?credential=NUV-000123. Public
 // verification by credential number.
 func (h *CertificateHandler) Verify(w http.ResponseWriter, r *http.Request) {

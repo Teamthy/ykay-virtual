@@ -80,7 +80,7 @@ func TestLearning_Assessment_TakeAndAutoGrade(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, start.Questions, 2)
 	// Answer 1 correct, 1 wrong → score 1/2 = 50% ≥ 0.5 threshold → passed
-	result, err := svc.SubmitAssessment(ctx, student, start.Attempt.ID, []AssessmentAnswer{
+	result, err := svc.SubmitAssessment(ctx, student, student, start.Attempt.ID, []AssessmentAnswer{
 		{QuestionID: start.Questions[0].ID, ChosenIndex: 1},
 		{QuestionID: start.Questions[1].ID, ChosenIndex: 0},
 	})
@@ -93,7 +93,7 @@ func TestLearning_Assessment_TakeAndAutoGrade(t *testing.T) {
 	s3 := uuid.New()
 	start3, err := svc.StartAssessment(ctx, s3, a.ID)
 	require.NoError(t, err)
-	res3, err := svc.SubmitAssessment(ctx, s3, start3.Attempt.ID, []AssessmentAnswer{
+	res3, err := svc.SubmitAssessment(ctx, s3, s3, start3.Attempt.ID, []AssessmentAnswer{
 		{QuestionID: start3.Questions[0].ID, ChosenIndex: 0},
 		{QuestionID: start3.Questions[1].ID, ChosenIndex: 0},
 	})
@@ -102,7 +102,7 @@ func TestLearning_Assessment_TakeAndAutoGrade(t *testing.T) {
 	assert.False(t, res3.Passed)
 
 	// Resubmit rejected (completed).
-	_, err = svc.SubmitAssessment(ctx, student, start.Attempt.ID, []AssessmentAnswer{
+	_, err = svc.SubmitAssessment(ctx, student, student, start.Attempt.ID, []AssessmentAnswer{
 		{QuestionID: start.Questions[0].ID, ChosenIndex: 1},
 		{QuestionID: start.Questions[1].ID, ChosenIndex: 1},
 	})
@@ -155,7 +155,7 @@ func TestLearning_Assessment_CrossQuestionRejected(t *testing.T) {
 	require.NoError(t, err)
 	otherQ, _ := svc.assessments.GetQuestions(ctx, other.ID)
 
-	_, err = svc.SubmitAssessment(ctx, student, start.Attempt.ID, []AssessmentAnswer{
+	_, err = svc.SubmitAssessment(ctx, student, student, start.Attempt.ID, []AssessmentAnswer{
 		{QuestionID: otherQ[0].ID, ChosenIndex: 1},
 	})
 	assert.ErrorIs(t, err, domain.ErrInvalidInput)
@@ -232,7 +232,7 @@ func TestLearning_SubmitByAssessmentID(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, start.Questions, 2)
 
-	res, err := svc.SubmitAssessmentForStudent(ctx, student, a.ID, []AssessmentAnswer{
+	res, err := svc.SubmitAssessmentForStudent(ctx, student, student, a.ID, []AssessmentAnswer{
 		{QuestionID: start.Questions[0].ID, ChosenIndex: 1},
 		{QuestionID: start.Questions[1].ID, ChosenIndex: 1},
 	})
@@ -242,11 +242,11 @@ func TestLearning_SubmitByAssessmentID(t *testing.T) {
 	assert.True(t, res.Passed)
 
 	// Submitting again is a conflict (single attempt).
-	_, err = svc.SubmitAssessmentForStudent(ctx, student, a.ID, []AssessmentAnswer{{QuestionID: uuid.New(), ChosenIndex: 0}})
+	_, err = svc.SubmitAssessmentForStudent(ctx, student, student, a.ID, []AssessmentAnswer{{QuestionID: uuid.New(), ChosenIndex: 0}})
 	assert.ErrorIs(t, err, domain.ErrConflict)
 
 	// Student who never started: not found.
-	_, err = svc.SubmitAssessmentForStudent(ctx, uuid.New(), a.ID, []AssessmentAnswer{{QuestionID: uuid.New(), ChosenIndex: 0}})
+	_, err = svc.SubmitAssessmentForStudent(ctx, uuid.New(), uuid.New(), a.ID, []AssessmentAnswer{{QuestionID: uuid.New(), ChosenIndex: 0}})
 	assert.ErrorIs(t, err, domain.ErrNotFound)
 }
 
@@ -330,8 +330,70 @@ func TestLearning_ExpireStaleAttempts(t *testing.T) {
 	assert.Equal(t, int64(1), n)
 
 	// Submit after expiry → conflict.
-	_, err = svc.SubmitAssessment(ctx, student, start.Attempt.ID, []AssessmentAnswer{
+	_, err = svc.SubmitAssessment(ctx, student, student, start.Attempt.ID, []AssessmentAnswer{
 		{QuestionID: start.Questions[0].ID, ChosenIndex: 0},
 	})
 	assert.ErrorIs(t, err, domain.ErrConflict)
+}
+
+func TestLearning_Diagnostic_TriggersPlanHook(t *testing.T) {
+	svc, _, _ := newLearningEnv(t)
+	ctx := context.Background()
+	parent := uuid.New()
+	student := uuid.New()
+
+	called := false
+	var hookSubject string
+	svc.WithDiagnosticPlanner(func(_ context.Context, parentID, sid uuid.UUID, subject string, score, total float64) error {
+		called = true
+		hookSubject = subject
+		return nil
+	})
+
+	// A diagnostic assessment.
+	a, err := svc.CreateAssessment(ctx, CreateAssessmentInput{
+		TutorProfileID: uuid.New(), Title: "Maths Diagnostic", IsDiagnostic: true,
+		Questions: []AssessmentQuestionInput{
+			{Question: "2+2?", Options: []string{"3", "4", "5"}, CorrectIndex: 1},
+			{Question: "3*3?", Options: []string{"6", "9", "12"}, CorrectIndex: 1},
+		},
+	})
+	require.NoError(t, err)
+
+	start, err := svc.StartAssessment(ctx, student, a.ID)
+	require.NoError(t, err)
+	_, err = svc.SubmitAssessment(ctx, parent, student, start.Attempt.ID, []AssessmentAnswer{
+		{QuestionID: start.Questions[0].ID, ChosenIndex: 1},
+		{QuestionID: start.Questions[1].ID, ChosenIndex: 0},
+	})
+	require.NoError(t, err)
+	assert.True(t, called, "diagnostic completion must fire the plan hook")
+	assert.Equal(t, "Maths Diagnostic", hookSubject)
+}
+
+func TestLearning_NonDiagnostic_NoPlanHook(t *testing.T) {
+	svc, _, _ := newLearningEnv(t)
+	ctx := context.Background()
+	student := uuid.New()
+
+	called := false
+	svc.WithDiagnosticPlanner(func(_ context.Context, _, _ uuid.UUID, _ string, _, _ float64) error {
+		called = true
+		return nil
+	})
+
+	a, err := svc.CreateAssessment(ctx, CreateAssessmentInput{
+		TutorProfileID: uuid.New(), Title: "Regular Quiz", IsDiagnostic: false,
+		Questions: []AssessmentQuestionInput{
+			{Question: "2+2?", Options: []string{"3", "4", "5"}, CorrectIndex: 1},
+		},
+	})
+	require.NoError(t, err)
+	start, err := svc.StartAssessment(ctx, student, a.ID)
+	require.NoError(t, err)
+	_, err = svc.SubmitAssessment(ctx, student, student, start.Attempt.ID, []AssessmentAnswer{
+		{QuestionID: start.Questions[0].ID, ChosenIndex: 1},
+	})
+	require.NoError(t, err)
+	assert.False(t, called, "non-diagnostic must not fire the plan hook")
 }

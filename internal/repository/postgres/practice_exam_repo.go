@@ -17,7 +17,7 @@ type PracticeExamRepo struct{ db TxQuerier }
 
 func NewPracticeExamRepo(db TxQuerier) *PracticeExamRepo { return &PracticeExamRepo{db: db} }
 
-const practiceExamColumns = `id, tutor_id, subject, title, description, duration_minutes, passing_score, cohort_id, status, created_at, updated_at`
+const practiceExamColumns = `id, tutor_id, subject, title, description, duration_minutes, passing_score, cohort_id, status, premium, created_at, updated_at`
 const practiceQuestionColumns = `id, exam_id, position, text, options, correct_index, explanation`
 const practiceAttemptColumns = `id, exam_id, student_id, started_at, expires_at, submitted_at, answers, score, passed`
 
@@ -25,7 +25,7 @@ func scanExam(row interface{ Scan(...any) error }) (*practice.Exam, error) {
 	var e practice.Exam
 	var cohortID uuidNull
 	if err := row.Scan(&e.ID, &e.TutorID, &e.Subject, &e.Title, &e.Description,
-		&e.DurationMinutes, &e.PassingScore, &cohortID, &e.Status, &e.CreatedAt, &e.UpdatedAt); err != nil {
+		&e.DurationMinutes, &e.PassingScore, &cohortID, &e.Status, &e.Premium, &e.CreatedAt, &e.UpdatedAt); err != nil {
 		return nil, err
 	}
 	if cohortID.Valid {
@@ -46,10 +46,10 @@ func (r *PracticeExamRepo) CreateExam(ctx context.Context, e *practice.Exam) err
 		cohortID = *e.CohortID
 	}
 	err := r.db.QueryRowContext(ctx, `
-		INSERT INTO practice_exams (id, tutor_id, subject, title, description, duration_minutes, passing_score, cohort_id, status, created_at, updated_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
+		INSERT INTO practice_exams (id, tutor_id, subject, title, description, duration_minutes, passing_score, cohort_id, status, premium, created_at, updated_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
 		e.ID, e.TutorID, e.Subject, e.Title, e.Description, e.DurationMinutes, e.PassingScore,
-		cohortID, e.Status, now, now).Scan(&e.ID)
+		cohortID, e.Status, e.Premium, now, now).Scan(&e.ID)
 	if err != nil {
 		return fmt.Errorf("create practice exam: %w", err)
 	}
@@ -78,9 +78,9 @@ func (r *PracticeExamRepo) UpdateExam(ctx context.Context, e *practice.Exam) err
 	}
 	res, err := r.db.ExecContext(ctx, `
 		UPDATE practice_exams SET subject=$2, title=$3, description=$4, duration_minutes=$5,
-		passing_score=$6, cohort_id=$7, status=$8, updated_at=$9 WHERE id=$1`,
+		passing_score=$6, cohort_id=$7, status=$8, premium=$9, updated_at=$10 WHERE id=$1`,
 		e.ID, e.Subject, e.Title, e.Description, e.DurationMinutes, e.PassingScore,
-		cohortID, e.Status, now)
+		cohortID, e.Status, e.Premium, now)
 	if err != nil {
 		return fmt.Errorf("update practice exam: %w", err)
 	}

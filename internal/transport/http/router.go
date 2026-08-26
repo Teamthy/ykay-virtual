@@ -209,6 +209,18 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/certificates", handlers.Certificates.IssueForCohort)
 	mux.HandleFunc("GET "+v1+"/me/certificates", handlers.Certificates.ListMine)
 	mux.HandleFunc("GET "+v1+"/me/certificates/{id}", handlers.Certificates.GetMine)
+	mux.HandleFunc("POST "+v1+"/me/certificates/{id}/verified", handlers.Certificates.VerifiedShare)
+	// NUVORA Plus premium tier: status/entitlements, activation, cancellation.
+	mux.HandleFunc("GET "+v1+"/me/plus", handlers.Plus.GetMyPlan)
+	mux.HandleFunc("POST "+v1+"/me/plus/activate", handlers.Plus.Activate)
+	mux.HandleFunc("POST "+v1+"/me/plus/cancel", handlers.Plus.Cancel)
+	mux.HandleFunc("POST "+v1+"/me/plus/purchase", handlers.Plus.Purchase)
+	// NUVORA Plus named Learning Advisor + learning plan (000067).
+	mux.HandleFunc("GET "+v1+"/me/advisor", handlers.Advisor.GetMyAdvisor)
+	mux.HandleFunc("GET "+v1+"/me/advisor/plan", handlers.Advisor.GetMyLearningPlan)
+	mux.HandleFunc("PUT "+v1+"/admin/plus/{userId}/advisor", handlers.Advisor.AssignAdvisor)
+	mux.HandleFunc("PUT "+v1+"/admin/plus/{userId}/plan", handlers.Advisor.SetLearningPlan)
+	mux.Handle("GET "+v1+"/plus/plans", cache60(handlers.Plus.ListPlans))
 	mux.HandleFunc("GET "+v1+"/certificates/verify", handlers.Certificates.Verify)
 	mux.HandleFunc("POST "+v1+"/admissions/apply", handlers.Admissions.Apply)
 	mux.HandleFunc("GET "+v1+"/admissions/me", handlers.Admissions.ListMine)
@@ -243,6 +255,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.Handle("GET "+v1+"/library/featured", cache60(handlers.Library.Featured))
 	mux.HandleFunc("GET "+v1+"/library/{lessonId}", handlers.Library.Get)
 	mux.HandleFunc("GET "+v1+"/admin/library", handlers.Library.ListAdmin)
+	mux.HandleFunc("POST "+v1+"/me/plus/library/{lessonId}/download", handlers.Library.Download)
 	mux.HandleFunc("PUT "+v1+"/admin/library/{lessonId}", handlers.Library.UpdateMeta)
 
 	mux.HandleFunc("POST "+v1+"/private-tuition/requests", handlers.Bookings.CreatePrivateRequest)
@@ -313,6 +326,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/learning/assessments", handlers.Learning.ListAssessments)
 	mux.HandleFunc("POST "+v1+"/learning/assessments/{id}/start", handlers.Learning.StartAssessment)
 	mux.HandleFunc("POST "+v1+"/learning/assessments/{id}/submit", handlers.Learning.SubmitAssessment)
+	mux.HandleFunc("POST "+v1+"/learning/assessments/{id}/diagnostic", handlers.Learning.SetDiagnostic)
 	mux.HandleFunc("GET "+v1+"/learning/assignments/{assignmentId}/submissions", handlers.Learning.ListSubmissions)
 	mux.HandleFunc("POST "+v1+"/learning/submissions/{submissionId}/grade", handlers.Learning.GradeSubmission)
 	mux.HandleFunc("POST "+v1+"/learning/progress-reports", handlers.Learning.CreateProgressReport)
@@ -368,6 +382,12 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/students", handlers.Institutions.ListStudents)
 	mux.HandleFunc("POST "+v1+"/me/institutions/{id}/students", handlers.Institutions.AddStudent)
 	mux.HandleFunc("DELETE "+v1+"/me/institutions/{id}/students/{studentId}", handlers.Institutions.RemoveStudent)
+	// NUVORA Plus Teams seat management (000069).
+	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/plus", handlers.PlusTeams.GetAllocation)
+	mux.HandleFunc("PUT "+v1+"/me/institutions/{id}/plus/seats", handlers.PlusTeams.SetSeats)
+	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/plus/seats", handlers.PlusTeams.ListSeats)
+	mux.HandleFunc("POST "+v1+"/me/institutions/{id}/plus/seats", handlers.PlusTeams.AssignSeat)
+	mux.HandleFunc("DELETE "+v1+"/me/institutions/{id}/plus/seats/{userId}", handlers.PlusTeams.ReleaseSeat)
 
 	// Support tickets (Phase 9 site)
 	mux.HandleFunc("POST "+v1+"/support/tickets", handlers.Support.CreateTicket)
@@ -523,6 +543,9 @@ type Handlers struct {
 	Admissions      *AdmissionsHandler
 	SchoolCalendar  *SchoolCalendarHandler
 	Library         *LibraryHandler
+	Plus            *PlusHandler
+	Advisor         *AdvisorHandler
+	PlusTeams       *PlusTeamsHandler
 	Payments        *PaymentHandler
 	Vetting         *VettingHandler
 	AdminVetting    *AdminVettingHandler

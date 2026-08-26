@@ -110,7 +110,7 @@ func TestCohortScopedEligibility(t *testing.T) {
 		t.Fatalf("seed enrollment: %v", err)
 	}
 
-	memberExams, err := svc.ListStudentExams(context.Background(), member)
+	memberExams, err := svc.ListStudentExams(context.Background(), member, uuid.New())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestCohortScopedEligibility(t *testing.T) {
 		t.Fatalf("member should see 2 exams (scoped + open), got %d", len(memberExams))
 	}
 
-	outExams, err := svc.ListStudentExams(context.Background(), outsider)
+	outExams, err := svc.ListStudentExams(context.Background(), outsider, uuid.New())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func TestAttemptLifecycleAndScoring(t *testing.T) {
 	start := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
 	svc.WithClock(func() time.Time { return start })
 
-	a, err := svc.StartAttempt(context.Background(), student, e.ID)
+	a, err := svc.StartAttempt(context.Background(), student, e.ID, uuid.New())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -190,7 +190,7 @@ func TestExpiryAutoSubmit(t *testing.T) {
 
 	start := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
 	svc.WithClock(func() time.Time { return start })
-	a, err := svc.StartAttempt(context.Background(), student, e.ID)
+	a, err := svc.StartAttempt(context.Background(), student, e.ID, uuid.New())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,7 +216,7 @@ func TestUnsubmittedReviewRejected(t *testing.T) {
 	tutor := uuid.New()
 	student := uuid.New()
 	e := seedExam(t, svc, tutor, baseInput())
-	a, err := svc.StartAttempt(context.Background(), student, e.ID)
+	a, err := svc.StartAttempt(context.Background(), student, e.ID, uuid.New())
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,12 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/booking"
 	"ykay-virtual/internal/domain/certificate"
 	"ykay-virtual/internal/domain/identity"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/repository"
 
 	"github.com/google/uuid"
@@ -28,11 +30,25 @@ type CertificateService struct {
 	studentByUserID func(ctx context.Context, userID uuid.UUID) (*identity.StudentProfile, error)
 	// learnersForParent returns the learner profiles a parent user is linked to.
 	learnersForParent func(ctx context.Context, parentUserID uuid.UUID) ([]identity.StudentProfile, error)
+	plus              *PlusService // verified-share gate (000066)
+	siteURL           string
 	now               func() time.Time
 }
 
 func NewCertificateService(uows repository.UnitOfWorkFactory) *CertificateService {
 	return &CertificateService{uows: uows, now: time.Now}
+}
+
+// WithPlus wires the NUVORA Plus gate for verified/shareable credentials.
+func (s *CertificateService) WithPlus(p *PlusService) *CertificateService {
+	s.plus = p
+	return s
+}
+
+// WithSiteURL sets the public origin used to build verified-share URLs.
+func (s *CertificateService) WithSiteURL(siteURL string) *CertificateService {
+	s.siteURL = siteURL
+	return s
 }
 
 // WithStudentReader wires a student-name resolver.
@@ -214,6 +230,43 @@ func (s *CertificateService) GetOwned(ctx context.Context, actorUserID, id uuid.
 		}
 	}
 	return nil, domain.ErrForbidden
+}
+
+// VerifiedShare returns the certificate plus a public verification URL for a
+// Plus-gated "verified shareable credential". Requires an active NUVORA Plus
+// plan. The public Verify endpoint (by credential number) is what the URL
+// resolves to, so the share works for any viewer.
+type VerifiedShare struct {
+	CredentialNumber string    `json:"credential_number"`
+	LearnerName      string    `json:"learner_name"`
+	Title            string    `json:"title"`
+	ProgrammeTitle   *string   `json:"programme_title,omitempty"`
+	IssuedBy         string    `json:"issued_by"`
+	IssuedAt         time.Time `json:"issued_at"`
+	VerifyURL        string    `json:"verify_url"`
+}
+
+func (s *CertificateService) VerifiedShare(ctx context.Context, actorUserID, id uuid.UUID) (*VerifiedShare, error) {
+	if s.plus == nil || !s.plus.HasActivePlan(ctx, actorUserID) {
+		return nil, plus.ErrPremiumRequired
+	}
+	c, err := s.GetOwned(ctx, actorUserID, id)
+	if err != nil {
+		return nil, err
+	}
+	base := strings.TrimRight(s.siteURL, "/")
+	if base == "" {
+		base = "https://nuvora.com"
+	}
+	return &VerifiedShare{
+		CredentialNumber: c.CredentialNumber,
+		LearnerName:      c.LearnerName,
+		Title:            c.Title,
+		ProgrammeTitle:   c.ProgrammeTitle,
+		IssuedBy:         c.IssuedBy,
+		IssuedAt:         c.IssuedAt,
+		VerifyURL:        base + "/certificates/verify?credential=" + c.CredentialNumber,
+	}, nil
 }
 
 // GetByCredential verifies a certificate by its public credential number.

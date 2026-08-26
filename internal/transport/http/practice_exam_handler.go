@@ -237,7 +237,7 @@ func (h *PracticeExamHandler) StudentList(w http.ResponseWriter, r *http.Request
 		WriteAppError(w, err)
 		return
 	}
-	exams, err := h.svc.ListStudentExams(r.Context(), studentID)
+	exams, err := h.svc.ListStudentExams(r.Context(), studentID, actor.UserID)
 	if err != nil {
 		writeExamError(w, err)
 		return
@@ -264,7 +264,7 @@ func (h *PracticeExamHandler) StudentGet(w http.ResponseWriter, r *http.Request)
 	if !ok {
 		return
 	}
-	e, err := h.svc.GetStudentExam(r.Context(), studentID, examID)
+	e, err := h.svc.GetStudentExam(r.Context(), studentID, examID, actor.UserID)
 	if err != nil {
 		writeExamError(w, err)
 		return
@@ -299,7 +299,7 @@ func (h *PracticeExamHandler) StartAttempt(w http.ResponseWriter, r *http.Reques
 	if !ok {
 		return
 	}
-	a, err := h.svc.StartAttempt(r.Context(), studentID, examID)
+	a, err := h.svc.StartAttempt(r.Context(), studentID, examID, actor.UserID)
 	if err != nil {
 		writeExamError(w, err)
 		return

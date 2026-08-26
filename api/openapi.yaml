@@ -1211,6 +1211,18 @@ paths:
         '200': { description: Certificate }
         '403': { description: Not owned by the caller }
 
+  /me/certificates/{id}/verified:
+    post:
+      tags: [plus]
+      summary: Get a verified, shareable credential link for a certificate (NUVORA Plus)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Verified share (credential number + verify_url) }
+        '402': { description: Requires an active NUVORA Plus plan }
+        '403': { description: Not owned by the caller }
+
   /certificates/verify:
     get:
       tags: [public]
@@ -2972,6 +2984,131 @@ paths:
       responses:
         '200': { description: Audit logs }
 
+  /plus/plans:
+    get:
+      tags: [plus]
+      summary: Public NUVORA Plus plan catalogue (pricing)
+      responses:
+        '200': { description: Plans }
+
+  /me/plus:
+    get:
+      tags: [plus]
+      summary: My NUVORA Plus status + entitlements
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Active flag, subscription, plan, entitlements }
+
+  /me/plus/activate:
+    post:
+      tags: [plus]
+      summary: Activate a NUVORA Plus plan (optional trial)
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_code]
+              properties:
+                plan_code: { type: string, enum: [PLUS, PLUS_FAMILY, PLUS_TEAMS] }
+                trial: { type: boolean }
+      responses:
+        '201': { description: Subscription created }
+        '400': { description: Unknown plan }
+
+  /me/plus/cancel:
+    post:
+      tags: [plus]
+      summary: Cancel my NUVORA Plus subscription (access revoked)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '204': { description: Cancelled }
+        '404': { description: No active subscription }
+
+  /me/plus/purchase:
+    post:
+      tags: [plus]
+      summary: Purchase a NUVORA Plus plan (order-backed) — pay through the normal payment flow, activated on settlement
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan_code]
+              properties:
+                plan_code: { type: string, enum: [PLUS, PLUS_FAMILY, PLUS_TEAMS] }
+      responses:
+        '201': { description: PENDING order created (route to payment) }
+        '400': { description: Unknown plan / billing not configured }
+
+  /me/advisor:
+    get:
+      tags: [plus]
+      summary: My NUVORA Plus named Learning Advisor
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Advisor assignment + contact }
+        '402': { description: No active Plus plan }
+        '404': { description: No advisor assigned }
+
+  /me/advisor/plan:
+    get:
+      tags: [plus]
+      summary: My NUVORA Plus learning plan for a learner
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Learning plan }
+        '404': { description: No plan yet }
+
+  /admin/plus/{userId}/advisor:
+    put:
+      tags: [admin]
+      summary: Assign a named Learning Advisor to a Plus user (admin)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [advisor_user_id]
+              properties:
+                advisor_user_id: { type: string, format: uuid }
+                note: { type: string }
+      responses:
+        '200': { description: Advisor assigned }
+        '409': { description: No active Plus plan }
+
+  /admin/plus/{userId}/plan:
+    put:
+      tags: [admin]
+      summary: Author a Plus user's learning plan (admin/advisor)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [student_profile_id]
+              properties:
+                student_profile_id: { type: string, format: uuid }
+                goals: { type: string }
+                focus_areas: { type: string }
+                recommendations: { type: string }
+      responses:
+        '200': { description: Learning plan saved }
+
   /admin/users:
     get:
       tags: [admin]
@@ -3376,6 +3513,72 @@ paths:
       responses:
         '204': { description: Removed }
 
+  /me/institutions/{id}/plus:
+    get:
+      tags: [plus]
+      summary: Get the institution's NUVORA Plus Teams seat allocation (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Allocation (total/used seats) }
+
+  /me/institutions/{id}/plus/seats:
+    get:
+      tags: [plus]
+      summary: List the institution's Plus Teams seat holders (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Seat holders (enriched with names) }
+    put:
+      tags: [plus]
+      summary: Set the institution's Plus Teams seat capacity (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [total_seats]
+              properties:
+                total_seats: { type: integer }
+      responses:
+        '200': { description: Updated allocation }
+    post:
+      tags: [plus]
+      summary: Assign a Plus Teams seat to a user (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id: { type: string, format: uuid }
+      responses:
+        '201': { description: Seat assigned }
+        '409': { description: No seat available or already assigned }
+
+  /me/institutions/{id}/plus/seats/{userId}:
+    delete:
+      tags: [plus]
+      summary: Release a Plus Teams seat (OWNER/ADMIN)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Released }
+
   /admin/institutions/{id}:
     put:
       tags: [admin]
@@ -3662,6 +3865,25 @@ paths:
                 properties:
                   data: { $ref: '#/components/schemas/AssessmentResult' }
         '409': { description: Already completed or expired }
+
+  /learning/assessments/{id}/diagnostic:
+    post:
+      tags: [learning]
+      summary: Mark an assessment as a diagnostic (tutor/admin) — completing it auto-authors a Plus learning plan
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [diagnostic]
+              properties:
+                diagnostic: { type: boolean }
+      responses:
+        '200': { description: is_diagnostic updated }
   /learning/assignments/{assignmentId}/submissions:
     get:
       tags: [learning]
@@ -3876,6 +4098,19 @@ paths:
       responses:
         '200': { description: Item with video_url/transcript only when entitled }
         '404': { description: Not found }
+
+  /me/plus/library/{lessonId}/download:
+    post:
+      tags: [plus]
+      summary: Get an authorized video URL to download a recorded lesson offline (NUVORA Plus)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: { video_url } for offline download }
+        '402': { description: Requires an active NUVORA Plus plan }
+        '403': { description: Not entitled to this lesson }
+        '404': { description: Lesson not found or has no video }
 
   /admin/library:
     get:

@@ -38,9 +38,12 @@ type Exam struct {
 	PassingScore    int // percent
 	CohortID        *uuid.UUID
 	Status          string
-	Questions       []Question
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	// Premium — part of the NUVORA Plus CBT vault (migration 000066). Premium
+	// exams are only accessible to users with an active Plus subscription.
+	Premium   bool
+	Questions []Question
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Question — one item with options and the correct answer.

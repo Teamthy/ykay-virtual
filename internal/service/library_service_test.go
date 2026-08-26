@@ -5,8 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"ykay-virtual/internal/domain"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/library"
+	"ykay-virtual/internal/domain/plus"
 	"ykay-virtual/internal/repository/memory"
 
 	"github.com/google/uuid"
@@ -134,4 +136,41 @@ func TestLibraryService_UpdateMeta_RejectsNegative(t *testing.T) {
 	neg := -5
 	err := svc.UpdateMeta(context.Background(), id, library.UpdateMetaInput{DurationSeconds: &neg})
 	require.Error(t, err)
+}
+
+func TestLibraryService_DownloadURL_RequiresPlus(t *testing.T) {
+	ctx := context.Background()
+	repo := memory.NewLibraryMemory()
+	student := uuid.New()
+	id := uuid.New()
+	repo.Seed(newLibraryItem(id, "Offline Lesson", true, false, "https://v/offline.mp4"))
+
+	participants := &stubParticipant{participating: map[uuid.UUID]map[uuid.UUID]bool{
+		id: {student: true},
+	}}
+	store := memory.NewMemoryStore()
+	plusSvc := NewPlusService(store.Plus, NewAuditService(store.AuditLogs))
+	plusSvc.EnsureDefaultPlans(ctx)
+	svc := NewLibraryService(repo, participants).WithPlus(plusSvc).WithStudentResolvers(
+		func(_ context.Context, uid uuid.UUID) (*identity.StudentProfile, error) {
+			if uid == student {
+				return &identity.StudentProfile{ID: student}, nil
+			}
+			return nil, nil
+		}, nil)
+
+	// Entitled but NOT Plus -> 402 (premium required).
+	_, err := svc.DownloadURL(ctx, false, student, id)
+	require.ErrorIs(t, err, plus.ErrPremiumRequired)
+
+	// Plus -> authorized URL.
+	_, _ = plusSvc.ActivatePlan(ctx, student, plus.PlanPlus, false)
+	url, err := svc.DownloadURL(ctx, false, student, id)
+	require.NoError(t, err)
+	require.NotNil(t, url)
+	assert.Equal(t, "https://v/offline.mp4", *url)
+
+	// Non-entitled viewer -> forbidden.
+	_, err = svc.DownloadURL(ctx, false, uuid.New(), id)
+	require.ErrorIs(t, err, domain.ErrForbidden)
 }

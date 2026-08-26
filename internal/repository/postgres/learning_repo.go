@@ -25,10 +25,10 @@ func NewAssessmentRepo(db TxQuerier) *AssessmentRepo { return &AssessmentRepo{db
 func (r *AssessmentRepo) CreateAssessment(ctx context.Context, a *learning.LearnerAssessment) error {
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO learner_assessments (cohort_id, lesson_id, tutor_profile_id, title, instructions,
-			pass_threshold, due_at, status, created_by, subject_id)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, created_at, updated_at`,
+			pass_threshold, due_at, status, created_by, subject_id, is_diagnostic)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, created_at, updated_at`,
 		a.CohortID, a.LessonID, a.TutorProfileID, a.Title, a.Instructions,
-		a.PassThreshold, a.DueAt, a.Status, a.CreatedBy, a.SubjectID,
+		a.PassThreshold, a.DueAt, a.Status, a.CreatedBy, a.SubjectID, a.IsDiagnostic,
 	).Scan(&a.ID, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("create assessment: %w", err)
@@ -53,7 +53,7 @@ func (r *AssessmentRepo) AddQuestion(ctx context.Context, q *learning.Assessment
 }
 
 const assessmentColumns = `id, cohort_id, lesson_id, tutor_profile_id, title, instructions,
-	pass_threshold, due_at, status, created_by, subject_id, created_at, updated_at`
+	pass_threshold, due_at, status, created_by, subject_id, is_diagnostic, created_at, updated_at`
 
 func scanAssessment(row interface{ Scan(...any) error }) (*learning.LearnerAssessment, error) {
 	var a learning.LearnerAssessment
@@ -61,7 +61,7 @@ func scanAssessment(row interface{ Scan(...any) error }) (*learning.LearnerAsses
 	var instructions sql.NullString
 	var dueAt sql.NullTime
 	if err := row.Scan(&a.ID, &cohortID, &lessonID, &a.TutorProfileID, &a.Title, &instructions,
-		&a.PassThreshold, &dueAt, &a.Status, &createdBy, &subjectID, &a.CreatedAt, &a.UpdatedAt); err != nil {
+		&a.PassThreshold, &dueAt, &a.Status, &createdBy, &subjectID, &a.IsDiagnostic, &a.CreatedAt, &a.UpdatedAt); err != nil {
 		return nil, err
 	}
 	if cohortID.Valid {
@@ -215,6 +215,14 @@ func (r *AssessmentRepo) SetStatus(ctx context.Context, id uuid.UUID, status lea
 	_, err := r.db.ExecContext(ctx, "UPDATE learner_assessments SET status = $1, updated_at = NOW() WHERE id = $2", status, id)
 	if err != nil {
 		return fmt.Errorf("set assessment status: %w", err)
+	}
+	return nil
+}
+
+func (r *AssessmentRepo) SetDiagnostic(ctx context.Context, id uuid.UUID, diagnostic bool) error {
+	_, err := r.db.ExecContext(ctx, "UPDATE learner_assessments SET is_diagnostic = $1, updated_at = NOW() WHERE id = $2", diagnostic, id)
+	if err != nil {
+		return fmt.Errorf("set assessment diagnostic: %w", err)
 	}
 	return nil
 }

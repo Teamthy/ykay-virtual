@@ -71,6 +71,7 @@ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Reques
 		Instructions   *string                           `json:"instructions"`
 		PassThreshold  float64                           `json:"pass_threshold"`
 		DueAt          *string                           `json:"due_at"`
+		IsDiagnostic   bool                              `json:"is_diagnostic"`
 		Questions      []service.AssessmentQuestionInput `json:"questions"`
 	}
 	if err := DecodeJSON(r, &req); err != nil {
@@ -118,6 +119,7 @@ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Reques
 		Instructions:   req.Instructions,
 		PassThreshold:  req.PassThreshold,
 		DueAt:          dueAt,
+		IsDiagnostic:   req.IsDiagnostic,
 		Questions:      req.Questions,
 	})
 	if err != nil {
@@ -125,6 +127,32 @@ func (h *LearningHandler) CreateAssessment(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusCreated, a, nil)
+}
+
+// SetDiagnostic — POST /learning/assessments/{id}/diagnostic { diagnostic } (tutor/admin).
+// Marks an assessment as a diagnostic so completing it auto-authors a Plus plan.
+func (h *LearningHandler) SetDiagnostic(w http.ResponseWriter, r *http.Request) {
+	actor := requireActor(w, r)
+	if actor == nil {
+		return
+	}
+	assessmentID, err := ParseUUID(r, "id")
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	var req struct {
+		Diagnostic bool `json:"diagnostic"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	if err := h.svc.SetDiagnostic(r.Context(), assessmentID, req.Diagnostic); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, map[string]bool{"is_diagnostic": req.Diagnostic}, nil)
 }
 
 // ListAssessments — GET /learning/assessments
@@ -229,7 +257,7 @@ func (h *LearningHandler) SubmitAssessment(w http.ResponseWriter, r *http.Reques
 		WriteAppError(w, err)
 		return
 	}
-	result, err := h.svc.SubmitAssessmentForStudent(r.Context(), studentID, assessmentID, req.Answers)
+	result, err := h.svc.SubmitAssessmentForStudent(r.Context(), actor.UserID, studentID, assessmentID, req.Answers)
 	if err != nil {
 		WriteAppError(w, err)
 		return
