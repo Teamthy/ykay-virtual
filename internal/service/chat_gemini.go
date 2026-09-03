@@ -33,6 +33,13 @@ const FallbackReply = "I'm briefly unavailable right now — a human from the NU
 // AIGuard — per-request token cap + daily budget tracker (G4.3).
 // The counter is process-local (fine for a single-instance pilot; move to
 // Redis/atomic when the API scales horizontally). Budget resets daily UTC.
+//
+// V-005 SCALE WARNING: under horizontal scaling each replica gets its own
+// budget, so the effective daily cap is budget x replica-count. Before
+// running more than one API instance, back this with an atomic shared
+// counter (Redis INCR with daily key expiry, or a Postgres update ... with a
+// check constraint) — and mirror the REDIS_URL requirement in cmd/api/main.go
+// (setupCache) which already refuses multi-instance-silent degradation.
 type AIGuard struct {
 	mu          sync.Mutex
 	day         string

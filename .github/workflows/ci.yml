@@ -369,10 +369,14 @@ jobs:
   all-green:
     name: All green (required status anchor)
     runs-on: ubuntu-latest
-    needs: [backend, prompt-evals, e2e-pg, frontend, mobile, lighthouse]
+    # V-003: the anchor must include EVERY safety job. It previously
+    # omitted migrations, observability, contract, browser-e2e and drill, so
+    # branch protection keyed on "All green" could pass while those failed.
+    needs:
+      [backend, prompt-evals, e2e-pg, frontend, mobile, lighthouse, drill, migrations, observability, contract, browser-e2e]
     if: always()
     steps:
       - name: Fail if any dependency failed or was skipped unexpectedly
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
         run: exit 1
-      - run: echo "backend+evals+e2e+web+mobile+lighthouse all passed"
+      - run: echo "backend+evals+e2e+web+mobile+lighthouse+drill+migrations+observability+contract+browser-e2e all passed"

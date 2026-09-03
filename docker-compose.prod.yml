@@ -85,7 +85,10 @@ services:
       TERMII_API_KEY: ${TERMII_API_KEY:-}
       TERMII_SENDER_ID: ${TERMII_SENDER_ID:-}
       TERMII_FROM: ${TERMII_FROM:-}
-      MEETING_PROVIDER: ${MEETING_PROVIDER:-stub}
+      # V-004: the API fatal-exits in production when the meeting provider
+      # resolves to the stub, so a silent default of "stub" just moves the
+      # outage to first boot. Require the operator to set a real provider.
+      MEETING_PROVIDER: ${MEETING_PROVIDER:?set MEETING_PROVIDER (jitsi or whereby)}
       WHEREBY_API_KEY: ${WHEREBY_API_KEY:-}
       AI_MAX_TOKENS_PER_REQUEST: ${AI_MAX_TOKENS_PER_REQUEST:-1024}
       AI_DAILY_BUDGET_TOKENS: ${AI_DAILY_BUDGET_TOKENS:-200000}

@@ -163,7 +163,7 @@ func main() {
 	telemetry.DefaultMetrics().MarkBuild(Version)
 
 	// --- Cache: Redis real â†’ InMemory fallback (AGENTS.md) ---
-	rawCache := setupCache(ctx, cfg.RedisURL)
+	rawCache := setupCache(ctx, cfg.RedisURL, cfg.IsProduction())
 
 	// --- Phase 5b realtime: SSE event broker. Redis pub/sub fans events
 	// across API instances; without Redis the hub is local-only (events
@@ -591,7 +591,7 @@ func main() {
 	_ = srv.Shutdown(ctxShutdown)
 }
 
-func setupCache(ctx context.Context, redisURL string) cache.Cache {
+func setupCache(ctx context.Context, redisURL string, isProduction bool) cache.Cache {
 	if rc, err := cache.NewRedis(redisURL); err == nil {
 		if err := rc.Ping(ctx); err == nil {
 			slog.Info("cache: redis connected", "url", redisURL)
@@ -603,6 +603,14 @@ func setupCache(ctx context.Context, redisURL string) cache.Cache {
 	// A-13: the in-memory fallback silently degrades rate limiting, session
 	// caching and the job queue to per-instance/direct behaviour â€” publish a
 	// metric so ops alerting can fire on it.
+	// V-002: an in-memory cache silently makes rate limiting, session
+	// caching and the job queue per-instance. That is acceptable only for a
+	// deliberately single-instance pilot — so in production we fail fast
+	// unless the operator has explicitly accepted the single-instance
+	// fallback via ALLOW_SINGLE_INSTANCE_MEMORY_FALLBACK=true.
+	if isProduction && os.Getenv("ALLOW_SINGLE_INSTANCE_MEMORY_FALLBACK") != "true" {
+		logx.Fatal("REDIS_URL is required in production: shared rate limits, session cache and job dispatch depend on it. For an explicitly accepted single-instance deployment set ALLOW_SINGLE_INSTANCE_MEMORY_FALLBACK=true.")
+	}
 	telemetry.RedisConnected(false)
 	slog.Warn("cache: redis unavailable â€” falling back to in-memory cache")
 	return cache.NewInMemoryCache()
