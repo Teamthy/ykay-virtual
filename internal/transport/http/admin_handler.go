@@ -787,7 +787,7 @@ func (h *AdminHandler) SetUserStatus(w http.ResponseWriter, r *http.Request) {
 
 // ConfirmManualPayment — admin confirms a manual/bank payment.
 func (h *AdminHandler) ConfirmManualPayment(w http.ResponseWriter, r *http.Request) {
-	adminID := h.requireAdmin(w, r)
+	adminID := h.requireSuperAdmin(w, r)
 	if adminID == nil {
 		return
 	}
@@ -846,7 +846,7 @@ func (h *AdminHandler) ListOrders(w http.ResponseWriter, r *http.Request) {
 
 // RefundOrder — POST /admin/orders/{orderId}/refund {reason}
 func (h *AdminHandler) RefundOrder(w http.ResponseWriter, r *http.Request) {
-	adminID := h.requireAdmin(w, r)
+	adminID := h.requireSuperAdmin(w, r)
 	if adminID == nil {
 		return
 	}
@@ -888,7 +888,7 @@ func (h *AdminHandler) ListPayouts(w http.ResponseWriter, r *http.Request) {
 // One-click bank transfer: returns needs_otp=true when the bank requires a
 // finalize OTP.
 func (h *AdminHandler) PayoutViaPaystack(w http.ResponseWriter, r *http.Request) {
-	adminID := h.requireAdmin(w, r)
+	adminID := h.requireSuperAdmin(w, r)
 	if adminID == nil {
 		return
 	}
@@ -912,7 +912,7 @@ func (h *AdminHandler) PayoutViaPaystack(w http.ResponseWriter, r *http.Request)
 // CompletePaystackTransfer — POST /admin/payouts/{payoutId}/paystack/otp
 // {otp} (admin). Finalizes the OTP-gated transfer.
 func (h *AdminHandler) CompletePaystackTransfer(w http.ResponseWriter, r *http.Request) {
-	adminID := h.requireAdmin(w, r)
+	adminID := h.requireSuperAdmin(w, r)
 	if adminID == nil {
 		return
 	}
@@ -954,7 +954,7 @@ func (h *AdminHandler) CompletePaystackTransfer(w http.ResponseWriter, r *http.R
 // ConfirmPayoutPaid — POST /admin/payouts/{payoutId}/paid {provider_reference}
 // (admin). Records the external bank transfer and notifies the tutor.
 func (h *AdminHandler) ConfirmPayoutPaid(w http.ResponseWriter, r *http.Request) {
-	adminID := h.requireAdmin(w, r)
+	adminID := h.requireSuperAdmin(w, r)
 	if adminID == nil {
 		return
 	}

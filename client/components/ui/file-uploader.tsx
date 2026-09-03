@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 // File uploader (24.1) - drag & drop / browse, file list with remove.
 // Controlled: parent owns the files array.
 
-export type UploadedFile = { name: string; size: number };
+export type UploadedFile = { name: string; size: number; type: string; file: File };
 
 export type FileUploaderProps = {
   files: UploadedFile[];
@@ -35,7 +35,7 @@ export function FileUploader({ files, onChange, accept, maxFiles = 5, hint, clas
     for (const f of Array.from(list)) {
       if (next.length >= maxFiles) break;
       if (!next.some((x) => x.name === f.name && x.size === f.size)) {
-        next.push({ name: f.name, size: f.size });
+        next.push({ name: f.name, size: f.size, type: f.type, file: f });
       }
     }
     onChange(next);

@@ -73,9 +73,11 @@ func newVettingEnv(t *testing.T) *vettingEnv {
 	// Teaching scope + 5 questions + a document for the happy path.
 	require.NoError(t, svc.AddSubject(context.Background(), actor, profile.ID, subject))
 	seedQuestions(t, store, subject, 5)
-	_, err = svc.RequestDocumentUpload(context.Background(), actor, profile.ID,
+	doc, err := svc.RequestDocumentUpload(context.Background(), actor, profile.ID,
 		vetting.DocGovtID, "id-card.jpg", "image/jpeg", intPtr(2048))
 	require.NoError(t, err)
+	require.NoError(t, svc.storage.Upload(context.Background(), storage.BucketPrivate,
+		doc.Document.FileKey, []byte("fake-jpeg"), "image/jpeg"))
 
 	return &vettingEnv{
 		store: store, svc: svc, actor: actor, admin: admin,

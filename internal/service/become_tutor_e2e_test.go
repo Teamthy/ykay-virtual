@@ -72,6 +72,8 @@ func TestBecomeTutor_E2E(t *testing.T) {
 	doc, err := vetSvc.RequestDocumentUpload(ctx, tutorUser, profile.ID,
 		vetting.DocGovtID, "national-id.jpg", "image/jpeg", intPtr(2048))
 	require.NoError(t, err)
+	require.NoError(t, vetSvc.storage.Upload(ctx, storage.BucketPrivate,
+		doc.Document.FileKey, []byte("fake-jpeg"), "image/jpeg"))
 
 	// ── 4. Assessment: start + pass the competency test ───────────────────
 	seedQuestions(t, store, subjectID, 5)

@@ -226,10 +226,15 @@ export function DocumentsStep({ profileId, onNext }: { profileId: string; onNext
     setError(null);
     try {
       for (const f of files) {
-        const res = await requestDocumentUpload(profileId, "GOVT_ID", f.name, "application/pdf");
-        if (res.upload_url) {
-          try { await fetch(res.upload_url, { method: "PUT", body: new Blob([`dev-upload:${f.name}`]) }); } catch { /* ignore */ }
-        }
+        const mime = f.file.type || f.type || "application/octet-stream";
+        const res = await requestDocumentUpload(profileId, "GOVT_ID", f.name, mime, f.file.size);
+        if (!res.upload_url) throw new Error("Upload URL was not generated");
+        const uploadRes = await fetch(res.upload_url, {
+          method: "PUT",
+          headers: { "Content-Type": mime },
+          body: f.file,
+        });
+        if (!uploadRes.ok) throw new Error(`Upload failed for ${f.name}`);
       }
       setConfirmOpen(false);
       onNext();

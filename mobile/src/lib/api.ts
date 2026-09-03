@@ -14,14 +14,22 @@ import { Platform } from "react-native";
 // EXPO_PUBLIC_API_URL targets localhost and fails fast, it never silently
 // ships traffic at the wrong backend.
 
-export const API_BASE =
-  process.env.EXPO_PUBLIC_API_URL ||
-  "http://localhost:8080/api/v1";
+const isProductionBuild = process.env.NODE_ENV === "production";
+const configuredApiURL = process.env.EXPO_PUBLIC_API_URL;
+const configuredSiteURL = process.env.EXPO_PUBLIC_SITE_URL;
+
+function requiredMobileURL(name: string, value: string | undefined, fallback: string): string {
+  if (value && value.trim()) return value.replace(/\/$/, "");
+  if (isProductionBuild) throw new Error(`${name} must be set for production mobile builds`);
+  return fallback;
+}
+
+export const API_BASE = requiredMobileURL("EXPO_PUBLIC_API_URL", configuredApiURL, "http://localhost:8080/api/v1");
 
 // SITE_URL — the WEB app origin (checkout/receipts live there). Commerce on
 // mobile deep-links out to the browser (store-safe for services; the gateway
 // round-trip needs web routes anyway).
-export const SITE_URL = (process.env.EXPO_PUBLIC_SITE_URL || "https://ykay-virtual-wtar.vercel.app").replace(/\/$/, "");
+export const SITE_URL = requiredMobileURL("EXPO_PUBLIC_SITE_URL", configuredSiteURL, "http://localhost:3000");
 
 const TOKEN_KEY = "nuvora_session_token";
 

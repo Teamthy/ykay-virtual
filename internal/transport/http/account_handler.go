@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"ykay-virtual/internal/middleware"
@@ -18,8 +19,9 @@ import (
 // AccountHandler — self-service /account (phase 37).
 
 type AccountHandler struct {
-	svc     *service.AccountService
-	storage storage.Storage
+	svc       *service.AccountService
+	storage   storage.Storage
+	cookieCfg middleware.CookieConfig
 	uploadGuard
 }
 
@@ -93,7 +95,14 @@ var resourceExts = map[string]string{
 }
 
 func NewAccountHandler(svc *service.AccountService) *AccountHandler {
-	return &AccountHandler{svc: svc}
+	cfg := middleware.DefaultCookieConfig(os.Getenv("ENVIRONMENT") == "production")
+	cfg.Domain = os.Getenv("COOKIE_DOMAIN")
+	return &AccountHandler{svc: svc, cookieCfg: cfg}
+}
+
+func (h *AccountHandler) WithCookieConfig(cfg middleware.CookieConfig) *AccountHandler {
+	h.cookieCfg = cfg
+	return h
 }
 
 // WithStorage wires the object store used for avatar uploads.
@@ -260,6 +269,6 @@ func (h *AccountHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	middleware.ClearSessionCookie(w, r, middleware.DefaultCookieConfig(false))
+	middleware.ClearSessionCookie(w, r, h.cookieCfg)
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"deleted": true}, nil)
 }

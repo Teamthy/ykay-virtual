@@ -103,9 +103,6 @@ func (g *GeminiProvider) Reply(ctx context.Context, history []chat.Message, grou
 	if g.apiKey == "" {
 		return "", fmt.Errorf("gemini: no API key configured")
 	}
-	if g.guard != nil && !g.guard.TrySpend(g.maxTokens) {
-		return FallbackReply, nil // budget exhausted → canned human-handoff reply
-	}
 
 	system := "You are Nuvora, the friendly AI assistant for NUVORA, a Nigerian/British " +
 		"curriculum learning platform (tutors, programmes, cohorts, exam prep). " +
@@ -115,6 +112,9 @@ func (g *GeminiProvider) Reply(ctx context.Context, history []chat.Message, grou
 		"politely say a human agent will help and suggest asking for a human."
 	if strings.TrimSpace(grounding) != "" {
 		system += "\n\nLIVE PLATFORM CONTEXT (use this, it is always current):\n" + grounding
+	}
+	if g.guard != nil && !g.guard.TrySpend(estimateGeminiTokens(system, history)+g.maxTokens) {
+		return FallbackReply, nil // budget exhausted → canned human-handoff reply
 	}
 
 	contents := make([]map[string]any, 0, len(history))
@@ -176,6 +176,20 @@ func (g *GeminiProvider) Reply(ctx context.Context, history []chat.Message, grou
 		return "", fmt.Errorf("gemini: empty response")
 	}
 	return strings.TrimSpace(out.Candidates[0].Content.Parts[0].Text), nil
+}
+
+func estimateGeminiTokens(system string, history []chat.Message) int {
+	chars := len(system)
+	for _, m := range history {
+		chars += len(m.Content)
+	}
+	if chars == 0 {
+		return 0
+	}
+	// Conservative approximation: one token per four bytes plus prompt/framing
+	// overhead. The previous guard counted only max output tokens, letting long
+	// histories and grounding consume unlimited input tokens.
+	return chars/4 + 64
 }
 
 func truncate(s string, n int) string {

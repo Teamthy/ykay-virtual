@@ -24,6 +24,8 @@ type Storage interface {
 	Upload(ctx context.Context, bucket BucketType, key string, data []byte, contentType string) error
 	Delete(ctx context.Context, bucket BucketType, key string) error
 	GeneratePresignedURL(ctx context.Context, bucket BucketType, key string, expiry time.Duration) (string, error)
+	GeneratePresignedUploadURL(ctx context.Context, bucket BucketType, key string, contentType string, expiry time.Duration) (string, error)
+	ObjectExists(ctx context.Context, bucket BucketType, key string) (bool, error)
 	GetPublicURL(bucket BucketType, key string) string
 }
 
@@ -131,6 +133,28 @@ func (s *LocalStorage) GeneratePresignedURL(_ context.Context, bucket BucketType
 		base = "http://localhost:8080"
 	}
 	return fmt.Sprintf("%s/objects/%s/%s?expires=%d&sig=%s", base, bucket, url.PathEscape(key), expires, sig), nil
+}
+
+func (s *LocalStorage) GeneratePresignedUploadURL(ctx context.Context, bucket BucketType, key string, contentType string, expiry time.Duration) (string, error) {
+	// Local dev reuses the deterministic signed URL route; production S3/R2 uses
+	// a true signed PUT. The object-serving route is dev-only, so this is not a
+	// production upload path.
+	return s.GeneratePresignedURL(ctx, bucket, key, expiry)
+}
+
+func (s *LocalStorage) ObjectExists(_ context.Context, bucket BucketType, key string) (bool, error) {
+	p, err := s.pathFor(bucket, key)
+	if err != nil {
+		return false, err
+	}
+	_, err = os.Stat(p)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func (s *LocalStorage) hasSecret() bool {

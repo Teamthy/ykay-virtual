@@ -74,11 +74,12 @@ export async function requestDocumentUpload(
   profileId: string,
   type: DocumentType,
   fileName: string,
-  mimeType: string
+  mimeType: string,
+  fileSize: number
 ): Promise<DocumentUploadResult> {
   const res = await apiFetch<DocumentUploadResult>(`/tutors/me/vetting/profiles/${profileId}/documents`, {
     method: "POST",
-    body: JSON.stringify({ type, file_name: fileName, mime_type: mimeType }),
+    body: JSON.stringify({ type, file_name: fileName, mime_type: mimeType, file_size: fileSize }),
   });
   return res.data;
 }

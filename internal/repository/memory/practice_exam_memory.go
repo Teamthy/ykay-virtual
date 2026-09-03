@@ -134,6 +134,9 @@ func (m *PracticeExamMemory) UpdateAttempt(_ context.Context, a *practice.Attemp
 	if !ok {
 		return practice.ErrAttemptNotFound
 	}
+	if cur.SubmittedAt != nil {
+		return practice.ErrAttemptSubmitted
+	}
 	cp := *a
 	cp.StartedAt = cur.StartedAt
 	cp.ExpiresAt = cur.ExpiresAt
@@ -152,6 +155,25 @@ func (m *PracticeExamMemory) GetAttempt(_ context.Context, id uuid.UUID) (*pract
 	cp := *a
 	cp.Answers = cloneAnswers(a.Answers)
 	return &cp, nil
+}
+
+func (m *PracticeExamMemory) GetOpenAttempt(_ context.Context, studentID, examID uuid.UUID) (*practice.Attempt, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var newest *practice.Attempt
+	for _, a := range m.attempts {
+		if a.StudentID == studentID && a.ExamID == examID && a.SubmittedAt == nil {
+			if newest == nil || a.StartedAt.After(newest.StartedAt) {
+				cp := *a
+				cp.Answers = cloneAnswers(a.Answers)
+				newest = &cp
+			}
+		}
+	}
+	if newest == nil {
+		return nil, practice.ErrAttemptNotFound
+	}
+	return newest, nil
 }
 
 func (m *PracticeExamMemory) ListAttemptsByStudent(_ context.Context, studentID uuid.UUID, limit int) ([]practice.Attempt, error) {

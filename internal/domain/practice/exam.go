@@ -83,6 +83,7 @@ type Repository interface {
 	CreateAttempt(ctx context.Context, a *Attempt) error
 	UpdateAttempt(ctx context.Context, a *Attempt) error
 	GetAttempt(ctx context.Context, id uuid.UUID) (*Attempt, error)
+	GetOpenAttempt(ctx context.Context, studentID, examID uuid.UUID) (*Attempt, error)
 	ListAttemptsByStudent(ctx context.Context, studentID uuid.UUID, limit int) ([]Attempt, error)
 	ListAttemptsByExam(ctx context.Context, examID uuid.UUID, limit int) ([]Attempt, error)
 }

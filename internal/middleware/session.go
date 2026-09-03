@@ -166,6 +166,7 @@ func ClearSessionCookie(w http.ResponseWriter, r *http.Request, cfg CookieConfig
 		HttpOnly: true,
 		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
+		Domain:   strings.TrimPrefix(cfg.Domain, "https://"),
 	})
 }
 

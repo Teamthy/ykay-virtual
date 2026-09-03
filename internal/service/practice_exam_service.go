@@ -253,6 +253,17 @@ func (s *PracticeExamService) StartAttempt(ctx context.Context, studentID, examI
 		return nil, err
 	}
 	now := s.now().UTC()
+	if open, err := s.repo.GetOpenAttempt(ctx, studentID, examID); err == nil {
+		// Idempotent start: double-clicks / mobile retries reuse the open sitting.
+		if open.ExpiresAt.After(now) {
+			return open, nil
+		}
+		// Expired but never submitted: auto-mark it so the DB partial-unique index
+		// can allow a fresh sitting.
+		_, _ = s.SubmitAttempt(ctx, studentID, open.ID, map[string]int{})
+	} else if !errors.Is(err, practice.ErrAttemptNotFound) {
+		return nil, err
+	}
 	a := &practice.Attempt{
 		ID:        uuid.New(),
 		ExamID:    e.ID,
@@ -261,6 +272,11 @@ func (s *PracticeExamService) StartAttempt(ctx context.Context, studentID, examI
 		ExpiresAt: now.Add(time.Duration(e.DurationMinutes) * time.Minute),
 	}
 	if err := s.repo.CreateAttempt(ctx, a); err != nil {
+		if errors.Is(err, practice.ErrAttemptSubmitted) {
+			if open, getErr := s.repo.GetOpenAttempt(ctx, studentID, examID); getErr == nil && open.ExpiresAt.After(now) {
+				return open, nil
+			}
+		}
 		return nil, err
 	}
 	return a, nil
@@ -301,7 +317,7 @@ func (s *PracticeExamService) SubmitAttempt(ctx context.Context, studentID, atte
 		return nil, practice.ErrAttemptNotFound
 	}
 	if a.SubmittedAt != nil {
-		return nil, practice.ErrAttemptSubmitted
+		return s.GetAttemptReview(ctx, studentID, attemptID)
 	}
 	e, err := s.repo.GetExam(ctx, a.ExamID)
 	if err != nil {
@@ -330,6 +346,9 @@ func (s *PracticeExamService) SubmitAttempt(ctx context.Context, studentID, atte
 	a.Score = &score
 	a.Passed = &passed
 	if err := s.repo.UpdateAttempt(ctx, a); err != nil {
+		if errors.Is(err, practice.ErrAttemptSubmitted) {
+			return s.GetAttemptReview(ctx, studentID, attemptID)
+		}
 		return nil, err
 	}
 	return buildResult(a, e, expired), nil

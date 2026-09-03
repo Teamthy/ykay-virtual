@@ -156,8 +156,12 @@ func TestAttemptLifecycleAndScoring(t *testing.T) {
 		t.Fatalf("bad result: %+v", res)
 	}
 
-	if _, err := svc.SubmitAttempt(context.Background(), student, a.ID, map[string]int{}); !errors.Is(err, practice.ErrAttemptSubmitted) {
-		t.Fatalf("expected ErrAttemptSubmitted, got %v", err)
+	dup, err := svc.SubmitAttempt(context.Background(), student, a.ID, map[string]int{})
+	if err != nil {
+		t.Fatalf("duplicate submit should replay marked review, got %v", err)
+	}
+	if dup.AttemptID != a.ID || dup.Score != res.Score || dup.Correct != res.Correct {
+		t.Fatalf("duplicate submit should replay original result: got %+v want score=%d correct=%d", dup, res.Score, res.Correct)
 	}
 
 	// review shows the marked paper

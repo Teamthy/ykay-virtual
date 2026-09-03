@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS practice_attempts_one_open_per_student_exam;

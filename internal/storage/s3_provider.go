@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -113,6 +113,33 @@ func (s *MinioStorage) GeneratePresignedURL(ctx context.Context, b BucketType, k
 		return "", fmt.Errorf("storage: presign %s/%s: %w", b, key, err)
 	}
 	return u.String(), nil
+}
+
+// GeneratePresignedUploadURL — real S3 presigned PUT for browser/mobile direct
+// uploads into the private bucket. Content-Type is signed so metadata spoofing
+// is harder, and expiry is kept short for identity documents.
+func (s *MinioStorage) GeneratePresignedUploadURL(ctx context.Context, b BucketType, key string, contentType string, expiry time.Duration) (string, error) {
+	if expiry > 15*time.Minute {
+		expiry = 15 * time.Minute
+	}
+	_ = strings.TrimSpace(contentType) // S3-compatible providers store the content type sent with the PUT.
+	u, err := s.client.PresignedPutObject(ctx, s.bucket(b), key, expiry)
+	if err != nil {
+		return "", fmt.Errorf("storage: presign upload %s/%s: %w", b, key, err)
+	}
+	return u.String(), nil
+}
+
+func (s *MinioStorage) ObjectExists(ctx context.Context, b BucketType, key string) (bool, error) {
+	_, err := s.client.StatObject(ctx, s.bucket(b), key, minio.StatObjectOptions{})
+	if err == nil {
+		return true, nil
+	}
+	resp := minio.ToErrorResponse(err)
+	if resp.Code == "NoSuchKey" || resp.Code == "NoSuchBucket" || resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+	return false, fmt.Errorf("storage: stat %s/%s: %w", b, key, err)
 }
 
 // GetPublicURL — stable public URL (S3 virtual-host style, or the custom
@@ -265,6 +292,18 @@ func (g *UploadGuard) Delete(ctx context.Context, b BucketType, key string) erro
 
 func (g *UploadGuard) GeneratePresignedURL(ctx context.Context, b BucketType, key string, expiry time.Duration) (string, error) {
 	return g.inner.GeneratePresignedURL(ctx, b, key, expiry)
+}
+
+func (g *UploadGuard) GeneratePresignedUploadURL(ctx context.Context, b BucketType, key string, contentType string, expiry time.Duration) (string, error) {
+	ct := strings.ToLower(strings.TrimSpace(contentType))
+	if !g.allowedMIMEs[ct] {
+		return "", fmt.Errorf("invalid input: file type %q is not accepted", ct)
+	}
+	return g.inner.GeneratePresignedUploadURL(ctx, b, key, ct, expiry)
+}
+
+func (g *UploadGuard) ObjectExists(ctx context.Context, b BucketType, key string) (bool, error) {
+	return g.inner.ObjectExists(ctx, b, key)
 }
 
 func (g *UploadGuard) GetPublicURL(b BucketType, key string) string {

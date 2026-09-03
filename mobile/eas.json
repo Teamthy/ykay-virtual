@@ -27,7 +27,11 @@
         "buildType": "app-bundle"
       },
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.virtual.ykaycollege.com/api/v1",
+        "EXPO_PUBLIC_SITE_URL": "https://virtual.ykaycollege.com"
+      }
     }
   },
   "submit": {

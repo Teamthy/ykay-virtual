@@ -239,8 +239,21 @@ func (s *VettingService) SubmitForReview(ctx context.Context, actorUserID, profi
 	if err != nil {
 		return err
 	}
-	if len(docs) == 0 {
-		return fmt.Errorf("%w: upload at least one identity document before submission", domain.ErrInvalidInput)
+	verifiedDocs := 0
+	for _, d := range docs {
+		if d.Type != vetting.DocGovtID || d.FileSize == nil || *d.FileSize <= 0 {
+			continue
+		}
+		exists, err := s.storage.ObjectExists(ctx, storage.BucketPrivate, d.FileKey)
+		if err != nil {
+			return fmt.Errorf("verify document upload: %w", err)
+		}
+		if exists {
+			verifiedDocs++
+		}
+	}
+	if verifiedDocs == 0 {
+		return fmt.Errorf("%w: upload at least one government ID document before submission", domain.ErrInvalidInput)
 	}
 
 	from := string(profile.Status)
@@ -610,7 +623,7 @@ func (s *VettingService) RequestDocumentUpload(ctx context.Context, actorUserID,
 	}
 
 	// Signed PUT URL: 15 minutes to upload, PRIVATE bucket only.
-	uploadURL, err := s.storage.GeneratePresignedURL(ctx, storage.BucketPrivate, key, 15*time.Minute)
+	uploadURL, err := s.storage.GeneratePresignedUploadURL(ctx, storage.BucketPrivate, key, mimeType, 15*time.Minute)
 	if err != nil {
 		return nil, fmt.Errorf("generate upload url: %w", err)
 	}

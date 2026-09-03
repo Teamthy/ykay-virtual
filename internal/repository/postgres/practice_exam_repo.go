@@ -261,6 +261,17 @@ func (r *PracticeExamRepo) GetAttempt(ctx context.Context, id uuid.UUID) (*pract
 	return a, nil
 }
 
+func (r *PracticeExamRepo) GetOpenAttempt(ctx context.Context, studentID, examID uuid.UUID) (*practice.Attempt, error) {
+	a, err := scanPracticeAttempt(r.db.QueryRowContext(ctx, `SELECT `+practiceAttemptColumns+` FROM practice_attempts WHERE student_id=$1 AND exam_id=$2 AND submitted_at IS NULL ORDER BY started_at DESC LIMIT 1`, studentID, examID))
+	if err != nil {
+		if isNoRows(err) {
+			return nil, practice.ErrAttemptNotFound
+		}
+		return nil, err
+	}
+	return a, nil
+}
+
 func (r *PracticeExamRepo) ListAttemptsByStudent(ctx context.Context, studentID uuid.UUID, limit int) ([]practice.Attempt, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT `+practiceAttemptColumns+` FROM practice_attempts WHERE student_id=$1 ORDER BY started_at DESC LIMIT $2`,

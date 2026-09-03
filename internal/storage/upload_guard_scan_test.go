@@ -21,6 +21,12 @@ func (m *memStore) Delete(_ context.Context, _ BucketType, _ string) error { ret
 func (m *memStore) GeneratePresignedURL(_ context.Context, _ BucketType, _ string, _ time.Duration) (string, error) {
 	return "", nil
 }
+func (m *memStore) GeneratePresignedUploadURL(_ context.Context, _ BucketType, _ string, _ string, _ time.Duration) (string, error) {
+	return "", nil
+}
+func (m *memStore) ObjectExists(_ context.Context, _ BucketType, _ string) (bool, error) {
+	return true, nil
+}
 func (m *memStore) GetPublicURL(_ BucketType, _ string) string { return "" }
 
 type errScanner struct{}

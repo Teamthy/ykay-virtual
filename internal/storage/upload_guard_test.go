@@ -22,6 +22,10 @@ func (f *fakeInner) Delete(context.Context, BucketType, string) error { return n
 func (f *fakeInner) GeneratePresignedURL(context.Context, BucketType, string, time.Duration) (string, error) {
 	return "http://fake/", nil
 }
+func (f *fakeInner) GeneratePresignedUploadURL(context.Context, BucketType, string, string, time.Duration) (string, error) {
+	return "http://fake/", nil
+}
+func (f *fakeInner) ObjectExists(context.Context, BucketType, string) (bool, error) { return true, nil }
 func (f *fakeInner) GetPublicURL(BucketType, string) string { return "http://fake/" }
 
 func TestUploadGuardRejectsBadMIMEAndOversize(t *testing.T) {
