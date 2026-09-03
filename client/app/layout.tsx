@@ -16,6 +16,7 @@ import { RegisterSW } from "@/components/register-sw";
 import { Toaster } from "@/components/toaster";
 import { Analytics } from "@/components/layout/Analytics";
 import { organizationJsonLd } from "@/lib/seo";
+import { MotionProvider } from "@/components/ui/motion";
 
 export const metadata: Metadata = {
   title: {
@@ -120,7 +121,7 @@ export default function RootLayout({
             tabIndex={-1}
             className="pb-16 outline-none lg:pb-0"
           >
-            {children}
+            <MotionProvider>{children}</MotionProvider>
           </div>
           {/* Footer appears ONLY on the marketing home page; the floating
               AI assistant (moveable launcher) is available on EVERY page. */}

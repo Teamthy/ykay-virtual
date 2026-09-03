@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { HeroIntro } from "@/components/ui/motion";
 
 // PageHero — the UNIFORM hero for every non-home page. Self-contained: the
 // background is an inline SVG grid (no remote asset) unless `cover` is set,
@@ -58,23 +59,50 @@ export function PageHero({
   const text = (
     <>
       {crumbs && crumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" className={cn("mb-6 text-xs", onPhoto ? "text-white/70" : "text-ink-500")}>
-          <ol className={cn("flex flex-wrap items-center gap-1.5", centered && !split && "justify-center")}>
+        <nav
+          aria-label="Breadcrumb"
+          className={cn(
+            "mb-6 text-xs",
+            onPhoto ? "text-white/70" : "text-ink-500",
+          )}
+        >
+          <ol
+            className={cn(
+              "flex flex-wrap items-center gap-1.5",
+              centered && !split && "justify-center",
+            )}
+          >
             {crumbs.map((c, i) => (
               <li key={c.name} className="flex items-center gap-1.5">
-                {i > 0 && <span aria-hidden="true" className={onPhoto ? "text-white/40" : "text-ink-300"}>/</span>}
+                {i > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className={onPhoto ? "text-white/40" : "text-ink-300"}
+                  >
+                    /
+                  </span>
+                )}
                 {c.href ? (
                   <Link
                     href={c.href}
                     className={cn(
                       "underline-offset-2 hover:underline",
-                      onPhoto ? "text-white/80 hover:text-white" : "hover:text-deep"
+                      onPhoto
+                        ? "text-white/80 hover:text-white"
+                        : "hover:text-deep",
                     )}
                   >
                     {c.name}
                   </Link>
                 ) : (
-                  <span className={cn("font-medium", onPhoto ? "text-white" : "text-ink-700")}>{c.name}</span>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      onPhoto ? "text-white" : "text-ink-700",
+                    )}
+                  >
+                    {c.name}
+                  </span>
                 )}
               </li>
             ))}
@@ -83,10 +111,14 @@ export function PageHero({
       )}
 
       {pill && (
-        <span className={cn(
-          "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em]",
-          onPhoto ? "border-white/30 bg-white/10 text-white" : "border-ink-200 bg-white text-deep"
-        )}>
+        <span
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em]",
+            onPhoto
+              ? "border-white/30 bg-white/10 text-white"
+              : "border-ink-200 bg-white text-deep",
+          )}
+        >
           <span className="size-1.5 rounded-full bg-primary" />
           {pill}
         </span>
@@ -96,20 +128,31 @@ export function PageHero({
         className={cn(
           "mt-6 font-display text-4xl leading-[1.08] tracking-[0.01em] md:text-6xl",
           onPhoto ? "text-white drop-shadow-sm" : "text-deep",
-          centered && !split && "mx-auto max-w-[850px]"
+          centered && !split && "mx-auto max-w-[850px]",
         )}
       >
         {title}
       </h1>
 
       {subtitle && (
-        <p className={cn("mt-5 max-w-2xl text-base leading-relaxed md:text-lg", onPhoto ? "text-white/85" : "text-ink-600", centered && !split && "mx-auto")}>
+        <p
+          className={cn(
+            "mt-5 max-w-2xl text-base leading-relaxed md:text-lg",
+            onPhoto ? "text-white/85" : "text-ink-600",
+            centered && !split && "mx-auto",
+          )}
+        >
           {subtitle}
         </p>
       )}
 
       {ctas && ctas.length > 0 && (
-        <div className={cn("mt-8 flex flex-wrap items-center gap-3", centered && !split && "justify-center")}>
+        <div
+          className={cn(
+            "mt-8 flex flex-wrap items-center gap-3",
+            centered && !split && "justify-center",
+          )}
+        >
           {ctas.map((cta) =>
             cta.primary ? (
               <Link
@@ -127,18 +170,24 @@ export function PageHero({
                   "rounded-full border px-7 py-3.5 text-sm font-bold transition",
                   onPhoto
                     ? "border-white/50 text-white hover:bg-white/10"
-                    : "border-ink-300 text-ink-800 hover:border-deep hover:bg-deep hover:text-white"
+                    : "border-ink-300 text-ink-800 hover:border-deep hover:bg-deep hover:text-white",
                 )}
               >
                 {cta.label}
               </Link>
-            )
+            ),
           )}
         </div>
       )}
 
       {children && (
-        <div className={cn("mt-7 flex flex-wrap gap-3", centered && !split && "justify-center", onPhoto && "[&_a]:text-inherit")}>
+        <div
+          className={cn(
+            "mt-7 flex flex-wrap gap-3",
+            centered && !split && "justify-center",
+            onPhoto && "[&_a]:text-inherit",
+          )}
+        >
           {children}
         </div>
       )}
@@ -149,14 +198,18 @@ export function PageHero({
     <section
       className={cn(
         "w-full border-b bg-no-repeat bg-cover bg-center",
-        onPhoto ? "border-white/10 text-white" : "border-ink-100 bg-surface text-ink-800",
-        className
+        onPhoto
+          ? "border-white/10 text-white"
+          : "border-ink-100 bg-surface text-ink-800",
+        className,
       )}
       style={{ backgroundImage }}
     >
       {split ? (
         <div className="mx-auto grid max-w-[1200px] items-center gap-10 px-6 pb-20 pt-16 md:pb-28 md:pt-24 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>{text}</div>
+          <div>
+            <HeroIntro>{text}</HeroIntro>
+          </div>
           <div className="relative">
             <div className="overflow-hidden rounded-3xl shadow-card ring-1 ring-ink-100">
               <Image
@@ -175,10 +228,10 @@ export function PageHero({
         <div
           className={cn(
             "mx-auto max-w-[1100px] px-6 pb-16 pt-14 md:pb-24 md:pt-20",
-            centered && "flex flex-col items-center text-center"
+            centered && "flex flex-col items-center text-center",
           )}
         >
-          {text}
+          <HeroIntro>{text}</HeroIntro>
         </div>
       )}
     </section>

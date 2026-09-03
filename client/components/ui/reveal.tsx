@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-// Reveal - lightweight scroll-reveal (IntersectionObserver + CSS transition,
-// no animation library). Fades + slides content up once as it enters the
-// viewport; respects prefers-reduced-motion.
+// Reveal - subtle scroll-reveal for sections and cards. Now powered by
+// framer-motion (whileInView, once). Fades + lifts content as it enters the
+// viewport; honours prefers-reduced-motion by rendering immediately.
 
 export type RevealProps = {
   children: React.ReactNode;
@@ -14,41 +15,32 @@ export type RevealProps = {
   as?: "div" | "section" | "li" | "span" | "p";
 };
 
-export function Reveal({ children, delay = 0, className, as = "div" }: RevealProps) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = React.useState(false);
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setVisible(true);
-            io.disconnect();
-          }
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  const Tag = as as React.ElementType;
-
+export function Reveal({
+  children,
+  delay = 0,
+  className,
+  as = "div",
+}: RevealProps) {
+  const reduce = useReducedMotion();
+  const Comp =
+    (motion as unknown as Record<string, typeof motion.div>)[as] ?? motion.div;
+  if (reduce) {
+    const Tag = as;
+    return <Tag className={className}>{children}</Tag>;
+  }
   return (
-    <Tag
-      ref={ref}
-      className={cn("reveal", visible && "reveal-visible", className)}
-      style={{ transitionDelay: delay ? `${delay}ms` : undefined }}
+    <Comp
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{
+        duration: 0.6,
+        delay: delay / 1000,
+        ease: [0.21, 0.47, 0.32, 0.98],
+      }}
     >
       {children}
-    </Tag>
+    </Comp>
   );
 }

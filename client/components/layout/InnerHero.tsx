@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { HeroIntro } from "@/components/ui/motion";
 
 // InnerHero — the inner-page hero wrapper with three deliberate variants
 // (design audit A5: no repetitive single template):
@@ -28,13 +29,21 @@ export function InnerHero({
 }: InnerHeroProps) {
   if (variant === "imageLeft" && image) {
     return (
-      <section className={cn("w-full border-b border-ink-100 bg-surface", className)}>
+      <section
+        className={cn("w-full border-b border-ink-100 bg-surface", className)}
+      >
         <div className="mx-auto grid max-w-[1400px] items-center gap-8 px-6 py-10 md:grid-cols-[0.85fr_1fr] md:px-10 md:py-14">
           <div className="overflow-hidden rounded-xl border border-ink-100 shadow-soft">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image.src} alt={image.alt} className="aspect-[4/3] w-full object-cover" />
+            <img
+              src={image.src}
+              alt={image.alt}
+              className="aspect-[4/3] w-full object-cover"
+            />
           </div>
-          <div>{children}</div>
+          <div>
+            <HeroIntro>{children}</HeroIntro>
+          </div>
         </div>
       </section>
     );
@@ -43,14 +52,19 @@ export function InnerHero({
   if (variant === "centered") {
     return (
       <section
-        className={cn("w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center", className)}
+        className={cn(
+          "w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center",
+          className,
+        )}
         style={{ backgroundImage: GRID_BG }}
       >
         <div className="mx-auto max-w-3xl px-6 pb-12 pt-14 text-center md:pb-16 md:pt-20">
           {eyebrow && (
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-primary-dark">{eyebrow}</p>
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-primary-dark">
+              {eyebrow}
+            </p>
           )}
-          {children}
+          <HeroIntro>{children}</HeroIntro>
         </div>
       </section>
     );
@@ -58,11 +72,14 @@ export function InnerHero({
 
   return (
     <section
-      className={cn("w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center", className)}
+      className={cn(
+        "w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center",
+        className,
+      )}
       style={{ backgroundImage: GRID_BG }}
     >
       <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-12 md:px-10 md:pb-14 md:pt-16">
-        {children}
+        <HeroIntro>{children}</HeroIntro>
       </div>
     </section>
   );
