@@ -13,11 +13,7 @@ import { useSession } from "@/hooks/useSession";
 import { homeForRoles } from "@/hooks/useDashboardRoute";
 import { changePassword, logout } from "@/features/auth/api";
 import { clearOnboardingDraft } from "@/lib/onboarding";
-import {
-  listDevices,
-  removeDevice,
-  type Device,
-} from "@/features/account/api";
+import { listDevices, removeDevice, type Device } from "@/features/account/api";
 import { ReferralCard } from "@/features/referrals/ReferralCard";
 import { listLearners, type Learner } from "@/features/onboarding/api";
 import { Camera, UserPlus } from "lucide-react";
@@ -36,7 +32,15 @@ type Profile = {
   status: string;
 };
 
-const ALL_TABS = ["Profile", "Learners", "Referrals", "Security", "Devices", "Preferences", "Data"] as const;
+const ALL_TABS = [
+  "Profile",
+  "Learners",
+  "Referrals",
+  "Security",
+  "Devices",
+  "Preferences",
+  "Data",
+] as const;
 type Tab = (typeof ALL_TABS)[number];
 
 function tabsForRoles(roles: string[]): readonly Tab[] {
@@ -56,8 +60,16 @@ export default function AccountPage() {
     if (!isLoading && !user) router.replace(loginWithReturn());
   }, [isLoading, user, router]);
 
-  const devices = useQuery({ queryKey: ["account", "devices"], queryFn: listDevices });
-  const learners = useQuery({ queryKey: ["onboarding", "learners"], queryFn: listLearners, enabled: !!user, staleTime: 30_000 });
+  const devices = useQuery({
+    queryKey: ["account", "devices"],
+    queryFn: listDevices,
+  });
+  const learners = useQuery({
+    queryKey: ["onboarding", "learners"],
+    queryFn: listLearners,
+    enabled: !!user,
+    staleTime: 30_000,
+  });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const uploadAvatar = async (file: File) => {
@@ -74,7 +86,10 @@ export default function AccountPage() {
         throw new Error(err?.error?.message || "Avatar upload failed");
       }
       const data = await res.json();
-      qc.setQueryData(["session"], (old2: unknown) => ({ ...(old2 as object), avatar_url: data.data?.avatar_url }));
+      qc.setQueryData(["session"], (old2: unknown) => ({
+        ...(old2 as object),
+        avatar_url: data.data?.avatar_url,
+      }));
       toast.success("Profile photo updated");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Avatar upload failed");
@@ -102,7 +117,7 @@ export default function AccountPage() {
   }, [user]);
 
   // Preferences (client-side; documented in the privacy policy)
-  const PREFS_KEY = "nuvora-email-prefs";
+  const PREFS_KEY = "yk-virtual-email-prefs";
   const [prefs, setPrefs] = useState<Record<string, boolean>>({});
   useEffect(() => {
     try {
@@ -126,10 +141,14 @@ export default function AccountPage() {
         }),
       }),
     onSuccess: (res) => {
-      qc.setQueryData(["session"], (old: unknown) => ({ ...(old as object), ...res.data }));
+      qc.setQueryData(["session"], (old: unknown) => ({
+        ...(old as object),
+        ...res.data,
+      }));
       toast.success("Profile saved");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save profile"),
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Could not save profile"),
   });
 
   const savePassword = useMutation({
@@ -141,7 +160,8 @@ export default function AccountPage() {
       setNewPw("");
       setNewPw2("");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not update password"),
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Could not update password"),
   });
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
@@ -153,28 +173,34 @@ export default function AccountPage() {
       toast.success("Device removed");
       qc.invalidateQueries({ queryKey: ["account", "devices"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not remove device"),
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Could not remove device"),
   });
 
   const doExport = async () => {
     try {
-      const res = await fetch("/api/v1/auth/me/export", { credentials: "include" });
+      const res = await fetch("/api/v1/auth/me/export", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Export failed");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "nuvora-export.json";
+      a.download = "yk-virtual-export.json";
       a.click();
       URL.revokeObjectURL(url);
       toast.success("Your data export is downloading");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not export your data");
+      toast.error(
+        e instanceof Error ? e.message : "Could not export your data",
+      );
     }
   };
 
   const doDelete = useMutation({
-    mutationFn: () => apiFetch<{ deleted: boolean }>("/auth/me/delete", { method: "POST" }),
+    mutationFn: () =>
+      apiFetch<{ deleted: boolean }>("/auth/me/delete", { method: "POST" }),
     onSuccess: async () => {
       await logout();
       clearOnboardingDraft();
@@ -182,7 +208,10 @@ export default function AccountPage() {
       qc.clear();
       router.replace("/");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not delete your account"),
+    onError: (e) =>
+      toast.error(
+        e instanceof Error ? e.message : "Could not delete your account",
+      ),
   });
   const [confirmDelete, setConfirmDelete] = useState("");
 
@@ -196,10 +225,14 @@ export default function AccountPage() {
     }
   };
 
-  if (isLoading || !user) return <p className="py-24 text-center text-ink-400">Loading…</p>;
+  if (isLoading || !user)
+    return <p className="py-24 text-center text-ink-400">Loading…</p>;
 
   return (
-    <DashboardPage title="Settings" subtitle={`${user.email}${user.first_name ? ` · ${user.first_name}` : ""}`}>
+    <DashboardPage
+      title="Settings"
+      subtitle={`${user.email}${user.first_name ? ` · ${user.first_name}` : ""}`}
+    >
       <div className="grid gap-6 lg:grid-cols-[200px_1fr]">
         {/* Tabs */}
         <aside className="h-fit rounded-2xl border border-ink-100 bg-white p-3 shadow-sm">
@@ -210,7 +243,9 @@ export default function AccountPage() {
               onClick={() => setTab(t)}
               className={cn(
                 "block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold",
-                tab === t ? "bg-primary text-ink-900" : "text-ink-600 hover:bg-ink-50"
+                tab === t
+                  ? "bg-primary text-ink-900"
+                  : "text-ink-600 hover:bg-ink-50",
               )}
             >
               {t}
@@ -226,13 +261,24 @@ export default function AccountPage() {
                 <div className="relative">
                   {user.avatar_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={user.avatar_url} alt="Your profile" className="size-20 rounded-full object-cover ring-2 ring-primary" />
+                    <img
+                      src={user.avatar_url}
+                      alt="Your profile"
+                      className="size-20 rounded-full object-cover ring-2 ring-primary"
+                    />
                   ) : (
                     <div className="grid size-20 place-items-center rounded-full bg-deep text-2xl font-bold text-white">
-                      {(user.first_name?.[0] ?? user.email[0] ?? "?").toUpperCase()}
+                      {(
+                        user.first_name?.[0] ??
+                        user.email[0] ??
+                        "?"
+                      ).toUpperCase()}
                     </div>
                   )}
-                  <label className="absolute -bottom-1 -right-1 grid size-8 cursor-pointer place-items-center rounded-full bg-primary text-ink-900 shadow-md transition-transform hover:scale-105" title="Upload photo">
+                  <label
+                    className="absolute -bottom-1 -right-1 grid size-8 cursor-pointer place-items-center rounded-full bg-primary text-ink-900 shadow-md transition-transform hover:scale-105"
+                    title="Upload photo"
+                  >
                     <Camera size={15} />
                     <input
                       type="file"
@@ -248,42 +294,124 @@ export default function AccountPage() {
                   </label>
                 </div>
                 <div className="text-sm text-ink-500">
-                  <p className="font-semibold text-ink-800">{uploadingAvatar ? "Uploading…" : "Profile photo"}</p>
+                  <p className="font-semibold text-ink-800">
+                    {uploadingAvatar ? "Uploading…" : "Profile photo"}
+                  </p>
                   <p>JPEG or PNG · up to 10 MB</p>
                 </div>
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="ac-first" className="mb-1.5 block text-sm font-medium text-ink-800">First name</label>
-                  <input id="ac-first" type="text" autoComplete="given-name" className={INPUT_CLS} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                  <label
+                    htmlFor="ac-first"
+                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                  >
+                    First name
+                  </label>
+                  <input
+                    id="ac-first"
+                    type="text"
+                    autoComplete="given-name"
+                    className={INPUT_CLS}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
                 </div>
                 <div>
-                  <label htmlFor="ac-last" className="mb-1.5 block text-sm font-medium text-ink-800">Last name</label>
-                  <input id="ac-last" type="text" autoComplete="family-name" className={INPUT_CLS} value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                  <label
+                    htmlFor="ac-last"
+                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                  >
+                    Last name
+                  </label>
+                  <input
+                    id="ac-last"
+                    type="text"
+                    autoComplete="family-name"
+                    className={INPUT_CLS}
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
                 </div>
                 <div>
-                  <label htmlFor="ac-phone" className="mb-1.5 block text-sm font-medium text-ink-800">Phone</label>
-                  <input id="ac-phone" type="tel" autoComplete="tel" className={INPUT_CLS} value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  <label
+                    htmlFor="ac-phone"
+                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                  >
+                    Phone
+                  </label>
+                  <input
+                    id="ac-phone"
+                    type="tel"
+                    autoComplete="tel"
+                    className={INPUT_CLS}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
                 </div>
                 <div>
-                  <label htmlFor="ac-tz" className="mb-1.5 block text-sm font-medium text-ink-800">Timezone</label>
-                  <select id="ac-tz" className={INPUT_CLS} value={timezone} onChange={(e) => setTimezone(e.target.value)}>
-                    {["Africa/Lagos", "Africa/Accra", "Africa/Nairobi", "Africa/Cairo", "Europe/London", "America/New_York", "UTC"].map((tz) => (
-                      <option key={tz} value={tz}>{tz}</option>
+                  <label
+                    htmlFor="ac-tz"
+                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                  >
+                    Timezone
+                  </label>
+                  <select
+                    id="ac-tz"
+                    className={INPUT_CLS}
+                    value={timezone}
+                    onChange={(e) => setTimezone(e.target.value)}
+                  >
+                    {[
+                      "Africa/Lagos",
+                      "Africa/Accra",
+                      "Africa/Nairobi",
+                      "Africa/Cairo",
+                      "Europe/London",
+                      "America/New_York",
+                      "UTC",
+                    ].map((tz) => (
+                      <option key={tz} value={tz}>
+                        {tz}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="ac-lang" className="mb-1.5 block text-sm font-medium text-ink-800">Preferred language</label>
-                  <select id="ac-lang" className={INPUT_CLS} value={preferredLanguage} onChange={(e) => setPreferredLanguage(e.target.value)}>
+                  <label
+                    htmlFor="ac-lang"
+                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                  >
+                    Preferred language
+                  </label>
+                  <select
+                    id="ac-lang"
+                    className={INPUT_CLS}
+                    value={preferredLanguage}
+                    onChange={(e) => setPreferredLanguage(e.target.value)}
+                  >
                     <option value="">Not set</option>
-                    {["English", "French", "Yoruba", "Igbo", "Hausa", "Pidgin"].map((l) => (
-                      <option key={l} value={l}>{l}</option>
+                    {[
+                      "English",
+                      "French",
+                      "Yoruba",
+                      "Igbo",
+                      "Hausa",
+                      "Pidgin",
+                    ].map((l) => (
+                      <option key={l} value={l}>
+                        {l}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label htmlFor="ac-bio" className="mb-1.5 block text-sm font-medium text-ink-800">About you</label>
+                  <label
+                    htmlFor="ac-bio"
+                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                  >
+                    About you
+                  </label>
                   <textarea
                     id="ac-bio"
                     rows={3}
@@ -309,13 +437,23 @@ export default function AccountPage() {
           {tab === "Learners" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-deep">Learners</h2>
-              <p className="mt-1 text-sm text-ink-500">Learners linked to your account (you book for them).</p>
+              <p className="mt-1 text-sm text-ink-500">
+                Learners linked to your account (you book for them).
+              </p>
               <ul className="mt-4 space-y-2">
                 {(learners.data ?? []).map((l: Learner) => (
-                  <li key={l.id} className="flex items-center justify-between rounded-xl border border-ink-100 bg-surface-muted px-4 py-3">
+                  <li
+                    key={l.id}
+                    className="flex items-center justify-between rounded-xl border border-ink-100 bg-surface-muted px-4 py-3"
+                  >
                     <div>
-                      <p className="font-semibold text-ink-800">{l.first_name} {l.last_name}</p>
-                      <p className="text-xs text-ink-500">{l.current_level || "Level not set"}{l.school_name ? ` · ${l.school_name}` : ""}</p>
+                      <p className="font-semibold text-ink-800">
+                        {l.first_name} {l.last_name}
+                      </p>
+                      <p className="text-xs text-ink-500">
+                        {l.current_level || "Level not set"}
+                        {l.school_name ? ` · ${l.school_name}` : ""}
+                      </p>
                     </div>
                   </li>
                 ))}
@@ -326,28 +464,57 @@ export default function AccountPage() {
                 )}
               </ul>
               {user.roles.includes("PARENT") && (
-              <Link href="/dashboard?section=learners" className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-primary">
-                <UserPlus size={15} /> Add a learner
-              </Link>
+                <Link
+                  href="/dashboard?section=learners"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-primary"
+                >
+                  <UserPlus size={15} /> Add a learner
+                </Link>
               )}
             </section>
           )}
 
-          {tab === "Referrals" && (
-            <ReferralCard userId={user.id} />
-          )}
+          {tab === "Referrals" && <ReferralCard userId={user.id} />}
 
           {tab === "Security" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-deep">Change password</h2>
               <div className="mt-4 max-w-md space-y-4">
-                <PasswordInput id="ac-current-pw" label="Current password" autoComplete="current-password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
-                <PasswordInput id="ac-pw" label="New password" autoComplete="new-password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
-                <PasswordInput id="ac-pw2" label="Confirm new password" autoComplete="new-password" value={newPw2} onChange={(e) => setNewPw2(e.target.value)} />
-                {newPw2 && newPw !== newPw2 && <p className="text-xs text-red-600">Passwords do not match.</p>}
+                <PasswordInput
+                  id="ac-current-pw"
+                  label="Current password"
+                  autoComplete="current-password"
+                  value={currentPw}
+                  onChange={(e) => setCurrentPw(e.target.value)}
+                />
+                <PasswordInput
+                  id="ac-pw"
+                  label="New password"
+                  autoComplete="new-password"
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                />
+                <PasswordInput
+                  id="ac-pw2"
+                  label="Confirm new password"
+                  autoComplete="new-password"
+                  value={newPw2}
+                  onChange={(e) => setNewPw2(e.target.value)}
+                />
+                {newPw2 && newPw !== newPw2 && (
+                  <p className="text-xs text-red-600">
+                    Passwords do not match.
+                  </p>
+                )}
                 <button
                   type="button"
-                  disabled={savePassword.isPending || !currentPw || !newPw || newPw.length < 8 || newPw !== newPw2}
+                  disabled={
+                    savePassword.isPending ||
+                    !currentPw ||
+                    !newPw ||
+                    newPw.length < 8 ||
+                    newPw !== newPw2
+                  }
                   onClick={() => savePassword.mutate({ currentPw, pw: newPw })}
                   className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
                 >
@@ -360,15 +527,31 @@ export default function AccountPage() {
           {tab === "Devices" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-deep">Push devices</h2>
-              <p className="mt-1 text-sm text-ink-500">Devices that receive notifications from NUVORA.</p>
+              <p className="mt-1 text-sm text-ink-500">
+                Devices that receive notifications from YK-Virtual.
+              </p>
               <div className="mt-4 space-y-2">
                 {(devices.data ?? []).map((d: Device) => (
-                  <div key={d.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3">
+                  <div
+                    key={d.id}
+                    className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3"
+                  >
                     <div className="flex items-center gap-3">
-                      <span className="text-xl">{d.platform === "ios" ? "🍎" : d.platform === "android" ? "🤖" : "🌐"}</span>
+                      <span className="text-xl">
+                        {d.platform === "ios"
+                          ? "🍎"
+                          : d.platform === "android"
+                            ? "🤖"
+                            : "🌐"}
+                      </span>
                       <div>
-                        <p className="text-sm font-semibold text-ink-800">{d.platform} · v{d.app_version ?? "?"}</p>
-                        <p className="text-xs text-ink-400">{d.token.slice(0, 24)}… · last seen {new Date(d.last_seen_at).toLocaleDateString()}</p>
+                        <p className="text-sm font-semibold text-ink-800">
+                          {d.platform} · v{d.app_version ?? "?"}
+                        </p>
+                        <p className="text-xs text-ink-400">
+                          {d.token.slice(0, 24)}… · last seen{" "}
+                          {new Date(d.last_seen_at).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     <button
@@ -382,7 +565,8 @@ export default function AccountPage() {
                 ))}
                 {(devices.data ?? []).length === 0 && (
                   <p className="rounded-xl border border-dashed border-ink-200 p-6 text-center text-sm text-ink-500">
-                    No devices registered yet — install the app or allow notifications to see them here.
+                    No devices registered yet — install the app or allow
+                    notifications to see them here.
                   </p>
                 )}
               </div>
@@ -392,14 +576,20 @@ export default function AccountPage() {
           {tab === "Preferences" && (
             <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-deep">Email preferences</h2>
-              <p className="mt-1 text-sm text-ink-500">Stored on this device for now — server-side preferences ship with the notification centre.</p>
+              <p className="mt-1 text-sm text-ink-500">
+                Stored on this device for now — server-side preferences ship
+                with the notification centre.
+              </p>
               <div className="mt-4 space-y-3">
                 {[
                   ["booking", "Booking confirmations & payment receipts"],
                   ["progress", "Progress reports & tutor feedback"],
                   ["promo", "Programme offers & study tips"],
                 ].map(([key, label]) => (
-                  <label key={key} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3 text-sm">
+                  <label
+                    key={key}
+                    className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3 text-sm"
+                  >
                     <span className="font-medium text-ink-700">{label}</span>
                     <input
                       type="checkbox"
@@ -416,11 +606,20 @@ export default function AccountPage() {
           {tab === "Data" && (
             <div className="space-y-6">
               <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-deep">Export your data</h2>
+                <h2 className="text-lg font-bold text-deep">
+                  Export your data
+                </h2>
                 <p className="mt-1 text-sm leading-6 text-ink-500">
-                  Download everything we hold on your account: profile, roles, learners, devices and chat
-                  history — as a JSON file. This fulfils the export right in our{" "}
-                  <Link href="/privacy" className="font-semibold text-primary-dark hover:underline">privacy policy</Link>.
+                  Download everything we hold on your account: profile, roles,
+                  learners, devices and chat history — as a JSON file. This
+                  fulfils the export right in our{" "}
+                  <Link
+                    href="/privacy"
+                    className="font-semibold text-primary-dark hover:underline"
+                  >
+                    privacy policy
+                  </Link>
+                  .
                 </p>
                 <button
                   type="button"
@@ -432,11 +631,14 @@ export default function AccountPage() {
               </section>
 
               <section className="rounded-2xl border border-red-200 bg-red-50 p-6">
-                <h2 className="text-lg font-bold text-red-700">Delete your account</h2>
+                <h2 className="text-lg font-bold text-red-700">
+                  Delete your account
+                </h2>
                 <p className="mt-1 text-sm leading-6 text-red-600/80">
-                  This permanently deletes your sign-in access, push devices and active sessions. Learners
-                  linked to you remain in the system for administrative records until purged. This cannot be
-                  undone — consider exporting your data first.
+                  This permanently deletes your sign-in access, push devices and
+                  active sessions. Learners linked to you remain in the system
+                  for administrative records until purged. This cannot be undone
+                  — consider exporting your data first.
                 </p>
                 <div className="mt-4 flex max-w-md gap-2">
                   <input

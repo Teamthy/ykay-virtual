@@ -1,4 +1,4 @@
-# NUVORA — Mobile App & AI Chatbot Plan
+# YK-Virtual — Mobile App & AI Chatbot Plan
 
 Status: PLAN (no code yet) · Owner: product/engineering
 Companion docs: `docs/SEEDS.md` (demo accounts), `docs/PHASE_32_DELIVERY.md`.
@@ -9,11 +9,11 @@ Companion docs: `docs/SEEDS.md` (demo accounts), `docs/PHASE_32_DELIVERY.md`.
 
 ### A1. Strategic choice
 
-| Option | Pros | Cons | Verdict |
-|---|---|---|---|
-| **PWA upgrade (current)** | Ships today, no store friction, reuses the Next.js codebase | Limited push reliability on iOS, no app-store presence | ✅ Phase 1 — cheap, immediate |
-| Expo (React Native) | True native feel, push, offline, stores | Parallel codebase; must share API only | ✅ Phase 2 — the real mobile app |
-| Flutter | Fast UI, single codebase | Dart team skills needed; not in repo today | ⏸ optional later |
+| Option                    | Pros                                                        | Cons                                                   | Verdict                          |
+| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ | -------------------------------- |
+| **PWA upgrade (current)** | Ships today, no store friction, reuses the Next.js codebase | Limited push reliability on iOS, no app-store presence | ✅ Phase 1 — cheap, immediate    |
+| Expo (React Native)       | True native feel, push, offline, stores                     | Parallel codebase; must share API only                 | ✅ Phase 2 — the real mobile app |
+| Flutter                   | Fast UI, single codebase                                    | Dart team skills needed; not in repo today             | ⏸ optional later                 |
 
 **Recommendation:** keep the PWA, then build the native app on **Expo
 (React Native + TypeScript)** against the same `/api/v1` REST API with
@@ -33,13 +33,13 @@ variant (token-based login for the app) is a small addition:
 
 ### A3. Mobile plan phases
 
-| Phase | Deliverable | Est. |
-|---|---|---|
-| M1 | PWA hardening: install manifest, offline shell, push via FCM/APNs service worker | 1–2 wks |
-| M2 | Expo app scaffold + auth + onboarding screens (shared API) | 2–3 wks |
-| M3 | Student LMS screens + quizzes + payments | 3 wks |
-| M4 | Tutor + parent apps; TestFlight + Play internal tracks | 3 wks |
-| M5 | Store launch (App Store + Play) with privacy policy (GDPR/NDPR) | 1–2 wks |
+| Phase | Deliverable                                                                      | Est.    |
+| ----- | -------------------------------------------------------------------------------- | ------- |
+| M1    | PWA hardening: install manifest, offline shell, push via FCM/APNs service worker | 1–2 wks |
+| M2    | Expo app scaffold + auth + onboarding screens (shared API)                       | 2–3 wks |
+| M3    | Student LMS screens + quizzes + payments                                         | 3 wks   |
+| M4    | Tutor + parent apps; TestFlight + Play internal tracks                           | 3 wks   |
+| M5    | Store launch (App Store + Play) with privacy policy (GDPR/NDPR)                  | 1–2 wks |
 
 **Foundations needed before M2:** token-based auth endpoint, refresh
 token rotation, mobile push token registry (`POST /me/devices`), analytics
@@ -51,7 +51,7 @@ events parity.
 
 ### B1. Product shape
 
-- **AI assistant ("Nuvora Bot")** — humanlike chat on web + mobile:
+- **AI assistant ("YK-Virtual Bot")** — humanlike chat on web + mobile:
   - Answers: programme/cohort/tutor questions, enrolment steps, fee info,
     session schedules, homework help (guarded), general support.
   - Does **not** handle: payments, account changes, refunds (hand off).
@@ -73,7 +73,7 @@ Chat Service (Go) — internal/service/chat_service.go (new)
    │     fees, tutor bios, FAQs) from the existing services
    │     → grounded answers, no hallucinated pricing
    └─ Gemini API (gemini-2.x-flash via google.generativeai SDK,
-        streaming) — system prompt = NUVORA brand + grounding data
+        streaming) — system prompt = YK-Virtual brand + grounding data
         + tool-calling for: lookup programme, lookup cohort, create ticket
    ▼
 Human handoff → existing messaging service → agent inbox (/support)
@@ -98,14 +98,14 @@ Human handoff → existing messaging service → agent inbox (/support)
 
 ### B4. Chatbot plan phases
 
-| Phase | Deliverable | Est. |
-|---|---|---|
-| C1 | `chat` API + thread store + Gemini SDK wiring + streaming | 1–2 wks |
-| C2 | Web chat widget (AuthShell FAB → chat panel), guardrails | 1 wk |
-| C3 | Grounding via function calling (catalogue, cohorts, tutors, FAQs) | 1–2 wks |
-| C4 | Human handoff + agent inbox on `/support`; ratings | 1 wk |
-| C5 | Mobile app chat + push notifications for agent replies | 1 wk |
-| C6 | Analytics: deflection rate, CSAT, cost per thread; prompt evals | 1 wk |
+| Phase | Deliverable                                                       | Est.    |
+| ----- | ----------------------------------------------------------------- | ------- |
+| C1    | `chat` API + thread store + Gemini SDK wiring + streaming         | 1–2 wks |
+| C2    | Web chat widget (AuthShell FAB → chat panel), guardrails          | 1 wk    |
+| C3    | Grounding via function calling (catalogue, cohorts, tutors, FAQs) | 1–2 wks |
+| C4    | Human handoff + agent inbox on `/support`; ratings                | 1 wk    |
+| C5    | Mobile app chat + push notifications for agent replies            | 1 wk    |
+| C6    | Analytics: deflection rate, CSAT, cost per thread; prompt evals   | 1 wk    |
 
 ### B5. Risks & mitigations
 

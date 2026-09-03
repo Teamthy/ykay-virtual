@@ -1,5 +1,5 @@
 -- =============================================================================
--- NUVORA — one-time data repair: un-corrupt mojibake'd em dashes (2026-08-16)
+-- YK-Virtual — one-time data repair: un-corrupt mojibake'd em dashes (2026-08-16)
 --
 -- WHAT HAPPENED
 --   scripts/seed-prod-demo.sql contains proper UTF-8 em dashes ("—") in four

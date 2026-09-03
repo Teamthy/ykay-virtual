@@ -57,11 +57,11 @@ type OnboardingStep struct {
 var OnboardingDripSteps = []OnboardingStep{
 	{
 		Step: 1, MinAge: 0, MaxAge: 24 * time.Hour,
-		Subject: "Welcome to NUVORA — here's how it works",
+		Subject: "Welcome to YK-Virtual — here's how it works",
 		CTA:     func(base string) string { return base + "/cohorts" },
 		Body: func(first, link string) string {
-			return `<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Welcome to NUVORA, ` + first + ` 👋</h1>` +
-				`<p style="margin:0 0 12px;">Your account is ready. The short version of how NUVORA works:</p>` +
+			return `<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Welcome to YK-Virtual, ` + first + ` 👋</h1>` +
+				`<p style="margin:0 0 12px;">Your account is ready. The short version of how YK-Virtual works:</p>` +
 				`<ul style="margin:0 0 16px;padding-left:20px;color:#333;line-height:1.7;">` +
 				`<li><b>Browse live cohorts</b> — small-group classes for WAEC/NECO/JAMB/IGCSE and more.</li>` +
 				`<li><b>Or pick a private tutor</b> — vetted, one-on-one, on your schedule.</li>` +
@@ -72,11 +72,11 @@ var OnboardingDripSteps = []OnboardingStep{
 	},
 	{
 		Step: 2, MinAge: 48 * time.Hour, MaxAge: 96 * time.Hour,
-		Subject: "Ready for your first NUVORA lesson?",
+		Subject: "Ready for your first YK-Virtual lesson?",
 		CTA:     func(base string) string { return base + "/tutors" },
 		Body: func(first, link string) string {
 			return `<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Your next step, ` + first + `</h1>` +
-				`<p style="margin:0 0 12px;">You created your NUVORA account a couple of days ago but haven't booked yet.` +
+				`<p style="margin:0 0 12px;">You created your YK-Virtual account a couple of days ago but haven't booked yet.` +
 				` Most families start with either:</p>` +
 				`<ul style="margin:0 0 16px;padding-left:20px;color:#333;line-height:1.7;">` +
 				`<li>a <b>private tutor</b> for a specific subject, or</li>` +
@@ -140,12 +140,12 @@ func (s *DripService) SendOnboardingStep(ctx context.Context, step OnboardingSte
 		}
 		base := s.siteURL
 		if base == "" {
-			base = "https://nuvora.com"
+			base = "https://virtual.ykaycollege.com"
 		}
 		link := step.CTA(base)
 		html := notification.BrandEmail(step.Body(first, link)) +
 			`<p style="margin:24px 0 0;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:12px;">` +
-			`You're receiving this because you created a NUVORA account. Reply to reach a human.</p>`
+			`You're receiving this because you created a YK-Virtual account. Reply to reach a human.</p>`
 		if err := s.mail.Send(ctx, u.Email, step.Subject, html); err != nil {
 			slog.Warn("drip: send failed", "user_id", u.ID, "step", step.Step, "error", err)
 			continue

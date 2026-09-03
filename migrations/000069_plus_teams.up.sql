@@ -1,4 +1,4 @@
--- 000069_plus_teams.up.sql — NUVORA Plus Teams: institution seat management.
+-- 000069_plus_teams.up.sql — YK-Virtual Plus Teams: institution seat management.
 --
 -- An institution with a PLUS_TEAMS plan allocates a number of seats; each seat
 -- is a user covered by the org's subscription. institution_plus tracks the

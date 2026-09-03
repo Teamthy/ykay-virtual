@@ -16,7 +16,7 @@ import (
 
 // AuthHandler — register / login / logout / me with httpOnly-cookie sessions:
 //   - POST /api/v1/auth/register   {email, password, roles[]}
-//   - POST /api/v1/auth/login      {email, password} → Set-Cookie nuvora_session
+//   - POST /api/v1/auth/login      {email, password} → Set-Cookie ykv_session
 //   - POST /api/v1/auth/logout     (clears cookie, revokes session)
 //   - GET  /api/v1/auth/me         current user + roles
 
@@ -33,7 +33,7 @@ func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string
 
 // NewAuthHandlerWithCookieDomain — like NewAuthHandler but also sets the
 // session cookie's Domain. Pass the registrable custom domain (e.g.
-// "nuvora.com"). Never use ".vercel.app": it is on the public suffix list
+// "virtual.ykaycollege.com"). Never use ".vercel.app": it is on the public suffix list
 // and would be rejected or dangerously shared.
 func NewAuthHandlerWithCookieDomain(svc *service.AuthService, secureCookies bool, siteURL, cookieDomain string, google *service.GoogleAuthService) *AuthHandler {
 	return newAuthHandlerWithCookieDomain(svc, secureCookies, siteURL, cookieDomain, google)

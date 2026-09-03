@@ -1,6 +1,6 @@
 -- 000036 — Backfill missing student_profile for the demo STUDENT (Postgres mode).
 --
--- 000034 seeded a login-able STUDENT account (student@nuvora.com) but only
+-- 000034 seeded a login-able STUDENT account (student@ykaycollege.com) but only
 -- created a user + role, NOT a student_profiles row. Every profile-scoped
 -- endpoint (e.g. GET /api/v1/me/lessons) resolves the actor's own profile via
 -- ProfileAuthorizer.ResolveStudent, which returns FORBIDDEN

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NUVORA — one-command production deploy (Phase 40).
+# YK-Virtual — one-command production deploy (Phase 40).
 # Usage:  bash scripts/deploy.sh [--skip-migrate]
 # Prereqs: docker + docker compose on the host; .env.production present.
 set -euo pipefail

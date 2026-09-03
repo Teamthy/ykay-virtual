@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 // PWA install prompt (M1): captures the beforeinstallprompt event and shows a
-// small banner so Android/Chrome users can add NUVORA to their home screen.
+// small banner so Android/Chrome users can add YK-Virtual to their home screen.
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -12,7 +12,9 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 export function InstallPrompt() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
+    null,
+  );
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -34,12 +36,17 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-24 left-4 z-40 flex max-w-xs items-center gap-3 rounded-2xl border border-ink-100 bg-white p-3 shadow-xl lg:bottom-8 lg:left-8">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-light text-xl" aria-hidden="true">
+      <span
+        className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-light text-xl"
+        aria-hidden="true"
+      >
         📲
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-deep">Install NUVORA</p>
-        <p className="text-xs text-ink-500">Add to your home screen for the app experience.</p>
+        <p className="text-sm font-bold text-deep">Install YK-Virtual</p>
+        <p className="text-xs text-ink-500">
+          Add to your home screen for the app experience.
+        </p>
         <div className="mt-1.5 flex gap-2">
           <button
             type="button"

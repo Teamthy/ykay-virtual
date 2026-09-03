@@ -7,7 +7,7 @@ type ReceiptItem = {
   total_price?: number;
 };
 
-export function NuvoraReceipt({
+export function YKVirtualReceipt({
   orderNumber,
   status,
   createdAt,
@@ -28,10 +28,10 @@ export function NuvoraReceipt({
 }) {
   const when = new Date(createdAt);
   return (
-    <article id="nuvora-receipt" className="mx-auto w-full max-w-[720px] rounded-3xl border border-ink-100 bg-white p-8 shadow-card print:shadow-none">
+    <article id="yk-virtual-receipt" className="mx-auto w-full max-w-[720px] rounded-3xl border border-ink-100 bg-white p-8 shadow-card print:shadow-none">
       <header className="flex items-start justify-between gap-4 border-b border-ink-100 pb-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary-dark">NUVORA</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary-dark">YK-Virtual</p>
           <h1 className="mt-1 font-display text-3xl text-deep">Payment receipt</h1>
           <p className="mt-1 text-sm text-ink-500">Learning beyond boundaries · Africa/Lagos</p>
         </div>
@@ -82,7 +82,7 @@ export function NuvoraReceipt({
         Total {currency} {total.toLocaleString()}
       </p>
       <p className="mt-6 text-xs leading-relaxed text-ink-500">
-        Fees are held in escrow and released to the tutor after lessons are delivered. This is an official NUVORA receipt.
+        Fees are held in escrow and released to the tutor after lessons are delivered. This is an official YK-Virtual receipt.
         Print this page or use your browser&apos;s Save as PDF.
       </p>
     </article>

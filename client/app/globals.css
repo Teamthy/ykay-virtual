@@ -6,11 +6,10 @@
 @layer base, components, utilities;
 
 /* ============================================================
-   NUVORA DESIGN SYSTEM
+   YK-Virtual DESIGN SYSTEM
    Green / Deep Green / Black / Peach
    Typography: Anton + DM Sans
    ============================================================ */
-
 
 /* ============================================================
    1. DESIGN TOKENS
@@ -24,39 +23,36 @@
   --font-display: "Anton", system-ui, sans-serif;
   --font-body: "DM Sans", system-ui, sans-serif;
 
-
   /* ----------------------------------------------------------
      Brand Colors
      ---------------------------------------------------------- */
 
-  --color-primary: #70F250;
-  --color-primary-hover: #5FE63F;
-  --color-primary-dark: #4CCB31;
-  --color-primary-light: #DFFFF2;
+  --color-primary: #70f250;
+  --color-primary-hover: #5fe63f;
+  --color-primary-dark: #4ccb31;
+  --color-primary-light: #dffff2;
 
   --color-deep-green: #013920;
-  --color-deep-green-light: #0A4D32;
-  --color-deep-green-dark: #002A18;
+  --color-deep-green-light: #0a4d32;
+  --color-deep-green-dark: #002a18;
 
   --color-black: #000000;
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
 
-  --color-peach: #FFF7E4;
-  --color-peach-dark: #F8EBCF;
-
+  --color-peach: #fff7e4;
+  --color-peach-dark: #f8ebcf;
 
   /* ----------------------------------------------------------
      Backgrounds
      ---------------------------------------------------------- */
 
-  --color-background: #FFF7E4;
-  --color-background-soft: #FFFFFF;
-  --color-background-muted: #F8EBCF;
+  --color-background: #fff7e4;
+  --color-background-soft: #ffffff;
+  --color-background-muted: #f8ebcf;
 
-  --color-surface: #FFFFFF;
-  --color-surface-muted: #F8EBCF;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8ebcf;
   --color-surface-dark: #013920;
-
 
   /* ----------------------------------------------------------
      Text
@@ -65,43 +61,40 @@
   --color-text: #000000;
   --color-text-primary: #000000;
   --color-text-secondary: #013920;
-  --color-text-muted: #52645B;
+  --color-text-muted: #52645b;
 
   --color-text-on-primary: #000000;
-  --color-text-on-dark: #FFFFFF;
-
+  --color-text-on-dark: #ffffff;
 
   /* ----------------------------------------------------------
      Borders
      ---------------------------------------------------------- */
 
-  --color-border: #DCE5DE;
-  --color-border-light: #EDE8DC;
+  --color-border: #dce5de;
+  --color-border-light: #ede8dc;
   --color-border-dark: #285442;
-
 
   /* ----------------------------------------------------------
      Semantic Colors
      ---------------------------------------------------------- */
 
-  --color-success: #4CCB31;
-  --color-success-light: #E6FFDE;
+  --color-success: #4ccb31;
+  --color-success-light: #e6ffde;
 
-  --color-error: #D83A3A;
-  --color-error-light: #FDECEC;
+  --color-error: #d83a3a;
+  --color-error-light: #fdecec;
 
-  --color-warning: #F4B400;
-  --color-warning-light: #FFF3C4;
+  --color-warning: #f4b400;
+  --color-warning-light: #fff3c4;
 
   --color-info: #013920;
-  --color-info-light: #DFFFF2;
-
+  --color-info-light: #dffff2;
 
   /* ----------------------------------------------------------
      Legacy aliases
      ----------------------------------------------------------
      These allow older components to continue working while
-     gradually migrating to the Nuvora naming convention.
+     gradually migrating to the YK-Virtual naming convention.
      ---------------------------------------------------------- */
 
   --text-primary: var(--color-text-primary);
@@ -110,23 +103,17 @@
   --text-link: var(--color-deep-green);
   --text-link-hover: var(--color-primary-dark);
 
-
   /* ----------------------------------------------------------
      Shadows
      ---------------------------------------------------------- */
 
-  --shadow-sm:
-    0 2px 8px rgba(1, 57, 32, 0.06);
+  --shadow-sm: 0 2px 8px rgba(1, 57, 32, 0.06);
 
-  --shadow-md:
-    0 8px 24px rgba(1, 57, 32, 0.10);
+  --shadow-md: 0 8px 24px rgba(1, 57, 32, 0.1);
 
-  --shadow-lg:
-    0 16px 40px rgba(1, 57, 32, 0.14);
+  --shadow-lg: 0 16px 40px rgba(1, 57, 32, 0.14);
 
-  --shadow-xl:
-    0 24px 60px rgba(1, 57, 32, 0.18);
-
+  --shadow-xl: 0 24px 60px rgba(1, 57, 32, 0.18);
 
   /* ----------------------------------------------------------
      Border Radius
@@ -138,7 +125,6 @@
   --radius-xl: 20px;
   --radius-full: 9999px;
 
-
   /* ----------------------------------------------------------
      Layout
      ---------------------------------------------------------- */
@@ -147,26 +133,22 @@
   --container-padding: 24px;
 }
 
-
 /* ============================================================
    2. BASE RESET
    ============================================================ */
 
 @layer base {
-
   *,
   *::before,
   *::after {
     box-sizing: border-box;
   }
 
-
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
   }
-
 
   body {
     margin: 0;
@@ -182,7 +164,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
 
   /* ----------------------------------------------------------
      Typography
@@ -210,36 +191,29 @@
     text-wrap: balance;
   }
 
-
   h1 {
     font-size: clamp(3rem, 7vw, 7rem);
   }
-
 
   h2 {
     font-size: clamp(2.5rem, 5vw, 5rem);
   }
 
-
   h3 {
     font-size: clamp(2rem, 3.5vw, 3.5rem);
   }
-
 
   h4 {
     font-size: clamp(1.5rem, 2.5vw, 2.25rem);
   }
 
-
   h5 {
     font-size: 1.5rem;
   }
 
-
   h6 {
     font-size: 1.25rem;
   }
-
 
   p {
     margin: 0;
@@ -250,12 +224,10 @@
     line-height: 1.7;
   }
 
-
   strong,
   b {
     font-weight: 700;
   }
-
 
   a {
     color: var(--color-deep-green);
@@ -265,7 +237,6 @@
       color 0.2s ease,
       opacity 0.2s ease;
   }
-
 
   a:hover {
     color: var(--color-primary-dark);
@@ -288,7 +259,6 @@
     color: var(--color-primary);
   }
 
-
   /* ----------------------------------------------------------
      Forms
      ---------------------------------------------------------- */
@@ -302,17 +272,14 @@
     font: inherit;
   }
 
-
   button {
     cursor: pointer;
   }
-
 
   button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }
-
 
   input,
   textarea,
@@ -320,11 +287,9 @@
     color: var(--color-text);
   }
 
-
   textarea {
     resize: vertical;
   }
-
 
   /* ----------------------------------------------------------
      Media
@@ -339,12 +304,10 @@
     max-width: 100%;
   }
 
-
   img,
   video {
     height: auto;
   }
-
 
   /* ----------------------------------------------------------
      Lists
@@ -357,7 +320,6 @@
     list-style: none;
   }
 
-
   /* ----------------------------------------------------------
      Selection
      ---------------------------------------------------------- */
@@ -366,7 +328,6 @@
     background: var(--color-primary);
     color: var(--color-black);
   }
-
 
   /* ----------------------------------------------------------
      Scrollbar
@@ -377,41 +338,34 @@
     height: 10px;
   }
 
-
   ::-webkit-scrollbar-track {
     background: var(--color-peach);
   }
-
 
   ::-webkit-scrollbar-thumb {
     background: var(--color-deep-green);
     border-radius: var(--radius-full);
   }
 
-
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-primary-dark);
   }
 }
-
 
 /* ============================================================
    3. TYPOGRAPHY UTILITIES
    ============================================================ */
 
 @layer utilities {
-
   .font-display {
     font-family: var(--font-display);
     font-weight: 400;
     font-synthesis: none;
   }
 
-
   .font-body {
     font-family: var(--font-body);
   }
-
 
   .text-display {
     font-family: var(--font-display);
@@ -420,24 +374,20 @@
     letter-spacing: -0.025em;
   }
 
-
   .text-balance {
     text-wrap: balance;
   }
-
 
   .text-pretty {
     text-wrap: pretty;
   }
 }
 
-
 /* ============================================================
    4. LAYOUT COMPONENTS
    ============================================================ */
 
 @layer components {
-
   .container-x {
     width: 100%;
     max-width: var(--container-width);
@@ -449,7 +399,6 @@
     padding-right: var(--container-padding);
   }
 
-
   /* ----------------------------------------------------------
      Section containers
      ---------------------------------------------------------- */
@@ -460,20 +409,17 @@
     padding-bottom: 96px;
   }
 
-
   .section-sm {
     width: 100%;
     padding-top: 64px;
     padding-bottom: 64px;
   }
 
-
   .section-lg {
     width: 100%;
     padding-top: 128px;
     padding-bottom: 128px;
   }
-
 
   /* ----------------------------------------------------------
      Page backgrounds
@@ -484,24 +430,20 @@
     color: var(--color-black);
   }
 
-
   .section-green {
     background: var(--color-primary);
     color: var(--color-black);
   }
-
 
   .section-dark-green {
     background: var(--color-deep-green);
     color: var(--color-white);
   }
 
-
   .section-black {
     background: var(--color-black);
     color: var(--color-white);
   }
-
 
   .section-white {
     background: var(--color-white);
@@ -509,13 +451,11 @@
   }
 }
 
-
 /* ============================================================
    5. BUTTON SYSTEM
    ============================================================ */
 
 @layer components {
-
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -542,7 +482,6 @@
       box-shadow 0.2s ease;
   }
 
-
   .btn-primary:hover {
     background: var(--color-primary-hover);
     border-color: var(--color-primary-hover);
@@ -552,11 +491,9 @@
     box-shadow: var(--shadow-md);
   }
 
-
   .btn-primary:active {
     transform: translateY(0);
   }
-
 
   /* ----------------------------------------------------------
      Deep Green
@@ -587,7 +524,6 @@
       box-shadow 0.2s ease;
   }
 
-
   .btn-dark:hover {
     background: var(--color-deep-green-light);
     border-color: var(--color-deep-green-light);
@@ -596,7 +532,6 @@
 
     box-shadow: var(--shadow-md);
   }
-
 
   /* ----------------------------------------------------------
      Black
@@ -627,7 +562,6 @@
       box-shadow 0.2s ease;
   }
 
-
   .btn-black:hover {
     background: #171717;
 
@@ -635,7 +569,6 @@
 
     box-shadow: var(--shadow-md);
   }
-
 
   /* ----------------------------------------------------------
      Outline
@@ -666,14 +599,12 @@
       transform 0.2s ease;
   }
 
-
   .btn-outline:hover {
     background: var(--color-black);
     color: var(--color-white);
 
     transform: translateY(-1px);
   }
-
 
   /* ----------------------------------------------------------
      White
@@ -703,12 +634,10 @@
       box-shadow 0.2s ease;
   }
 
-
   .btn-white:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
   }
-
 
   /* ----------------------------------------------------------
      White outline
@@ -739,7 +668,6 @@
       transform 0.2s ease;
   }
 
-
   .btn-outline-white:hover {
     background: var(--color-white);
     color: var(--color-black);
@@ -747,12 +675,11 @@
     transform: translateY(-1px);
   }
 
-
   /* ----------------------------------------------------------
      Legacy alias
      ----------------------------------------------------------
      Keep .btn-gold temporarily so existing components do not
-     break. It now uses Nuvora green.
+     break. It now uses YK-Virtual green.
      ---------------------------------------------------------- */
 
   .btn-gold {
@@ -776,7 +703,6 @@
     transition: all 0.2s ease;
   }
 
-
   .btn-gold:hover {
     background: var(--color-primary-hover);
     border-color: var(--color-primary-hover);
@@ -785,13 +711,11 @@
   }
 }
 
-
 /* ============================================================
    6. CARD SYSTEM
    ============================================================ */
 
 @layer components {
-
   .card {
     background: var(--color-white);
     color: var(--color-black);
@@ -802,7 +726,6 @@
     box-shadow: var(--shadow-sm);
   }
 
-
   .card-green {
     background: var(--color-primary);
     color: var(--color-black);
@@ -810,7 +733,6 @@
     border: 1px solid var(--color-primary);
     border-radius: var(--radius-lg);
   }
-
 
   .card-dark-green {
     background: var(--color-deep-green);
@@ -820,7 +742,6 @@
     border-radius: var(--radius-lg);
   }
 
-
   .card-black {
     background: var(--color-black);
     color: var(--color-white);
@@ -828,7 +749,6 @@
     border: 1px solid var(--color-black);
     border-radius: var(--radius-lg);
   }
-
 
   .card-peach {
     background: var(--color-peach);
@@ -838,13 +758,11 @@
     border-radius: var(--radius-lg);
   }
 
-
   .card-hover {
     transition:
       transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 0.3s ease;
   }
-
 
   .card-hover:hover {
     transform: translateY(-5px);
@@ -852,13 +770,11 @@
   }
 }
 
-
 /* ============================================================
    7. FORM SYSTEM
    ============================================================ */
 
 @layer components {
-
   .input {
     width: 100%;
 
@@ -880,45 +796,36 @@
       box-shadow 0.2s ease;
   }
 
-
   .input::placeholder {
     color: var(--color-text-muted);
   }
-
 
   .input:hover {
     border-color: var(--color-border-dark);
   }
 
-
   .input:focus {
     border-color: var(--color-primary-dark);
 
-    box-shadow:
-      0 0 0 3px rgba(112, 242, 80, 0.25);
+    box-shadow: 0 0 0 3px rgba(112, 242, 80, 0.25);
   }
-
 
   .input-error {
     border-color: var(--color-error);
   }
 
-
   .input-error:focus {
     border-color: var(--color-error);
 
-    box-shadow:
-      0 0 0 3px rgba(216, 58, 58, 0.15);
+    box-shadow: 0 0 0 3px rgba(216, 58, 58, 0.15);
   }
 }
-
 
 /* ============================================================
    8. BADGES / LABELS
    ============================================================ */
 
 @layer components {
-
   .badge {
     display: inline-flex;
     align-items: center;
@@ -934,30 +841,25 @@
     line-height: 1;
   }
 
-
   .badge-green {
     background: var(--color-primary);
     color: var(--color-black);
   }
-
 
   .badge-dark {
     background: var(--color-deep-green);
     color: var(--color-white);
   }
 
-
   .badge-black {
     background: var(--color-black);
     color: var(--color-white);
   }
 
-
   .badge-peach {
     background: var(--color-peach-dark);
     color: var(--color-deep-green);
   }
-
 
   .tag-handwritten {
     font-family: var(--font-body);
@@ -968,36 +870,41 @@
   }
 }
 
-
 /* ============================================================
    9. DECORATIVE UTILITIES
    ============================================================ */
 
 @layer components {
-
   .grid-dots {
     background-image:
-      radial-gradient(circle at 15% 25%,
+      radial-gradient(
+        circle at 15% 25%,
         rgba(255, 255, 255, 0.08) 2px,
-        transparent 2px),
-      radial-gradient(circle at 85% 75%,
+        transparent 2px
+      ),
+      radial-gradient(
+        circle at 85% 75%,
         rgba(255, 255, 255, 0.05) 3px,
-        transparent 3px);
+        transparent 3px
+      );
 
     background-size:
       80px 80px,
       100px 100px;
   }
 
-
   .grid-dots-dark {
     background-image:
-      radial-gradient(circle at 15% 25%,
+      radial-gradient(
+        circle at 15% 25%,
         rgba(1, 57, 32, 0.08) 2px,
-        transparent 2px),
-      radial-gradient(circle at 85% 75%,
+        transparent 2px
+      ),
+      radial-gradient(
+        circle at 85% 75%,
         rgba(1, 57, 32, 0.05) 3px,
-        transparent 3px);
+        transparent 3px
+      );
 
     background-size:
       80px 80px,
@@ -1005,13 +912,11 @@
   }
 }
 
-
 /* ============================================================
    10. MOTION SYSTEM
    ============================================================ */
 
 @layer utilities {
-
   .reveal {
     opacity: 0;
 
@@ -1024,29 +929,22 @@
     will-change: opacity, transform;
   }
 
-
   .reveal-visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-
   .animate-hero-in {
-    animation:
-      heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-
 
   .animate-hero-in-late {
-    animation:
-      heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+    animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
   }
-
 
   .animate-float {
     animation: floatY 5s ease-in-out infinite;
   }
-
 
   .hover-lift {
     transition:
@@ -1054,19 +952,16 @@
       box-shadow 0.35s ease;
   }
 
-
   .hover-lift:hover {
     transform: translateY(-4px);
   }
 }
-
 
 /* ============================================================
    11. KEYFRAMES
    ============================================================ */
 
 @keyframes heroIn {
-
   from {
     opacity: 0;
     transform: translateY(22px);
@@ -1076,12 +971,9 @@
     opacity: 1;
     transform: translateY(0);
   }
-
 }
 
-
 @keyframes floatY {
-
   0%,
   100% {
     transform: translateY(0);
@@ -1090,9 +982,7 @@
   50% {
     transform: translateY(-9px);
   }
-
 }
-
 
 /* ============================================================
    12. ACCESSIBILITY
@@ -1103,12 +993,11 @@
   outline-offset: 3px;
 }
 
-
 /* ============================================================
    13. DARK MODE
    ============================================================
    
-   Dark mode stays within the Nuvora brand system.
+   Dark mode stays within the YK-Virtual brand system.
    No blue/slate palette.
    ============================================================ */
 
@@ -1127,24 +1016,20 @@ html.dark {
   --color-border-light: #173b2a;
 }
 
-
 html.dark body {
   background: #07140e;
   color: #f4f7f5;
 }
 
-
 html.dark ::-webkit-scrollbar-track {
   background: #0d1f16;
 }
-
 
 html.dark header,
 html.dark footer {
   background-color: #0d1f16;
   border-color: #214c37;
 }
-
 
 html.dark .bg-white,
 html.dark .bg-surface,
@@ -1173,7 +1058,6 @@ html.dark .bg-brand-gold-light {
   color: #013920;
 }
 
-
 html.dark .bg-\[\#FFF7E4\],
 html.dark .bg-surface-muted,
 html.dark .bg-peach,
@@ -1183,14 +1067,12 @@ html.dark .section-white {
   color: #f4f7f5;
 }
 
-
 html.dark .card,
 html.dark .card-peach {
   background: #0d1f16;
   color: #f4f7f5;
   border-color: #214c37;
 }
-
 
 html.dark .text-brand-navy,
 html.dark .text-ink-950,
@@ -1199,38 +1081,31 @@ html.dark .text-ink-800 {
   color: #f8faf8;
 }
 
-
 html.dark .text-ink-700 {
   color: #d7e0db;
 }
-
 
 html.dark .text-ink-600 {
   color: #b1c0b8;
 }
 
-
 html.dark .text-ink-500 {
   color: #91a49a;
 }
 
-
 html.dark .text-ink-400 {
   color: #71857a;
 }
-
 
 html.dark .border-ink-50,
 html.dark .border-ink-100 {
   border-color: #173b2a;
 }
 
-
 html.dark .border-ink-200,
 html.dark .border-ink-300 {
   border-color: #2d6148;
 }
-
 
 html.dark .shadow-sm,
 html.dark .shadow-md,
@@ -1241,21 +1116,17 @@ html.dark .shadow-lift {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
-
 html.dark .bg-ink-50 {
   background-color: #10281c;
 }
-
 
 html.dark .bg-ink-100 {
   background-color: #173b2a;
 }
 
-
 html.dark .bg-ink-200 {
   background-color: #214c37;
 }
-
 
 html.dark input:not([type="checkbox"]):not([type="radio"]),
 html.dark textarea,
@@ -1265,46 +1136,38 @@ html.dark select {
   border-color: #2d6148;
 }
 
-
 html.dark input::placeholder,
 html.dark textarea::placeholder {
   color: #71857a;
 }
-
 
 html.dark .btn-outline {
   color: #f4f7f5;
   border-color: #c9d6ce;
 }
 
-
 html.dark a {
   color: #8ef56e;
 }
 
-
 html.dark a:hover {
   color: #70f250;
 }
-
 
 html.dark .text-white a,
 html.dark .bg-brand-navy a {
   color: inherit;
 }
 
-
 html.dark .text-brand-blue,
 html.dark .text-brand-blue-dark {
   color: #8ef56e;
 }
 
-
 html.dark .bg-brand-blue-light {
   background-color: #173b2a;
   color: #f4f7f5;
 }
-
 
 html.dark .bg-amber-50,
 html.dark .bg-red-50,
@@ -1312,23 +1175,19 @@ html.dark .bg-green-50 {
   background-color: #10281c;
 }
 
-
 html.dark .text-amber-800,
 html.dark .text-red-700 {
   color: #fde68a;
 }
-
 
 /* ============================================================
    14. REDUCED MOTION
    ============================================================ */
 
 @media (prefers-reduced-motion: reduce) {
-
   html {
     scroll-behavior: auto;
   }
-
 
   *,
   *::before,
@@ -1338,7 +1197,6 @@ html.dark .text-red-700 {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-
 
   .reveal,
   .animate-hero-in,
@@ -1351,54 +1209,42 @@ html.dark .text-red-700 {
   }
 }
 
-
 /* ============================================================
    15. RESPONSIVE ADJUSTMENTS
    ============================================================ */
 
 @media (min-width: 768px) {
-
   :root {
     --container-padding: 40px;
   }
-
 }
 
-
 @media (min-width: 1280px) {
-
   :root {
     --container-padding: 48px;
   }
-
 }
 
-
 @media (max-width: 767px) {
-
   .section {
     padding-top: 72px;
     padding-bottom: 72px;
   }
-
 
   .section-sm {
     padding-top: 48px;
     padding-bottom: 48px;
   }
 
-
   .section-lg {
     padding-top: 88px;
     padding-bottom: 88px;
   }
 
-
   .container-x {
     padding-left: 20px;
     padding-right: 20px;
   }
-
 }
 
 /* ============================================================
@@ -1427,5 +1273,10 @@ html.dark .text-red-700 {
 }
 
 /* Hide scrollbars on carousel rails (industry-standard clean look) */
-.scrollbar-none::-webkit-scrollbar { display: none; }
-.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

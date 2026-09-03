@@ -1,4 +1,4 @@
-// Package advisor — NUVORA Plus named Learning Advisor + personalised learning
+// Package advisor — YK-Virtual Plus named Learning Advisor + personalised learning
 // plan (migration 000067). A Plus family is assigned a staff advisor who owns
 // the learning journey; the Plus dashboard surfaces the advisor and a learning
 // plan (diagnostic-derived or advisor-authored).

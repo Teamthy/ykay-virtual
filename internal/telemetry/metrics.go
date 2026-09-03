@@ -1,6 +1,6 @@
 // Package telemetry — Prometheus metrics (G3.3, remediation plan).
 //
-// Every metric is namespaced nuvora_*. The default registry is wired into
+// Every metric is namespaced ykv_*. The default registry is wired into
 // the API and worker HTTP servers and exposed at GET /metrics (optionally
 // behind a bearer token via METRICS_TOKEN). Tests construct their own
 // Metrics instance with NewMetrics(prometheus.NewRegistry()) and swap it in
@@ -20,8 +20,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// Metrics bundles all NUVORA collectors. Names/labels are a contract with
-// deploy/prometheus/alerts.yml and deploy/grafana/dashboards/nuvora-api.json —
+// Metrics bundles all YK-Virtual collectors. Names/labels are a contract with
+// deploy/prometheus/alerts.yml and deploy/grafana/dashboards/yk-virtual-api.json —
 // change them in all three places.
 type Metrics struct {
 	BuildInfo             *prometheus.GaugeVec
@@ -40,7 +40,7 @@ type Metrics struct {
 	// dispatch) are silent without this — ops must be paged (A-13).
 	RedisConnected prometheus.Gauge
 	// MeetingProviderStub is 1 when the meeting provider resolved to the dev
-	// stub (fake meet.nuvora.local URLs) instead of a real provider (A-10).
+	// stub (fake meet.ykvirtual.local URLs) instead of a real provider (A-10).
 	MeetingProviderStub *prometheus.GaugeVec
 
 	registry *prometheus.Registry
@@ -51,56 +51,56 @@ type Metrics struct {
 func NewMetrics(registry *prometheus.Registry) *Metrics {
 	m := &Metrics{
 		BuildInfo: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Name: "nuvora_build_info",
-			Help: "NUVORA build metadata; 1 with the deployed version label.",
+			Name: "ykv_build_info",
+			Help: "YK-Virtual build metadata; 1 with the deployed version label.",
 		}, []string{"version"}),
 		HTTPRequestsTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Name: "nuvora_http_requests_total",
+			Name: "ykv_http_requests_total",
 			Help: "HTTP requests handled, by method, normalized route and status class.",
 		}, []string{"method", "route", "code"}),
 		HTTPRequestDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-			Name:    "nuvora_http_request_duration_seconds",
+			Name:    "ykv_http_request_duration_seconds",
 			Help:    "HTTP request latency by method and normalized route.",
 			Buckets: prometheus.DefBuckets,
 		}, []string{"method", "route"}),
 		JobsEnqueuedTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Name: "nuvora_jobs_enqueued_total",
+			Name: "ykv_jobs_enqueued_total",
 			Help: "Durable-queue jobs enqueued by type and backend (redis|memory).",
 		}, []string{"type", "backend"}),
 		JobsCompletedTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Name: "nuvora_jobs_completed_total",
+			Name: "ykv_jobs_completed_total",
 			Help: "Jobs that finished successfully by type and backend.",
 		}, []string{"type", "backend"}),
 		JobsRetriedTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Name: "nuvora_jobs_retried_total",
+			Name: "ykv_jobs_retried_total",
 			Help: "Job attempts that failed and were scheduled for retry, by type and backend.",
 		}, []string{"type", "backend"}),
 		JobsDeadLetteredTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Name: "nuvora_jobs_dead_lettered_total",
+			Name: "ykv_jobs_dead_lettered_total",
 			Help: "Jobs moved to the dead-letter list after exhausting attempts.",
 		}, []string{"type", "backend"}),
 		JobsDroppedTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Name: "nuvora_jobs_dropped_total",
+			Name: "ykv_jobs_dropped_total",
 			Help: "Jobs dropped without retry (malformed payload or unregistered type).",
 		}, []string{"type", "backend"}),
 		QueueDepth: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Name: "nuvora_queue_depth",
+			Name: "ykv_queue_depth",
 			Help: "Durable-queue depth by backend and state (ready|processing|delayed|dead).",
 		}, []string{"backend", "state"}),
 		CronRunsTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Name: "nuvora_worker_cron_runs_total",
+			Name: "ykv_worker_cron_runs_total",
 			Help: "Worker cron invocations by cron name and result (success|error).",
 		}, []string{"cron", "result"}),
 		CronLastSuccess: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Name: "nuvora_worker_cron_last_success_timestamp",
+			Name: "ykv_worker_cron_last_success_timestamp",
 			Help: "Unix timestamp of the last successful run per cron name.",
 		}, []string{"cron"}),
 		RedisConnected: prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: "nuvora_redis_connected",
+			Name: "ykv_redis_connected",
 			Help: "1 when Redis was reachable at process boot, 0 otherwise.",
 		}),
 		MeetingProviderStub: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Name: "nuvora_meeting_provider_stub",
+			Name: "ykv_meeting_provider_stub",
 			Help: "1 when the meeting provider resolved to the dev stub (fake URLs).",
 		}, []string{"provider"}),
 	}

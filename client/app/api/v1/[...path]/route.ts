@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-/** Same-origin API proxy so nuvora_session stays on the Vercel host. */
+/** Same-origin API proxy so ykv_session stays on the Vercel host. */
 
 function upstreamBase(): string {
   const proxy = process.env.API_PROXY_TARGET?.replace(/\/$/, "");
@@ -18,7 +18,8 @@ async function proxy(req: NextRequest, path: string[]): Promise<Response> {
   if (ct) headers.set("content-type", ct);
   const auth = req.headers.get("authorization");
   if (auth) headers.set("authorization", auth);
-  const trace = req.headers.get("x-trace-id") || req.headers.get("x-request-id");
+  const trace =
+    req.headers.get("x-trace-id") || req.headers.get("x-request-id");
   if (trace) {
     headers.set("x-trace-id", trace);
     headers.set("x-request-id", trace);

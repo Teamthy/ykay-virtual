@@ -43,7 +43,7 @@ export default function Welcome() {
       return () => {
         cancelled = true;
       };
-    }, [])
+    }, []),
   );
 
   useEffect(() => {
@@ -53,11 +53,16 @@ export default function Welcome() {
   }, []);
 
   if (checking) {
-    return <LoaderScreen label="Preparing NUVORA" />;
+    return <LoaderScreen label="Preparing YK-Virtual" />;
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.bg, paddingTop: insets.top + spacing.lg }]}>
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: colors.bg, paddingTop: insets.top + spacing.lg },
+      ]}
+    >
       <View style={styles.brand}>
         <BrandLogo stacked size={56} />
       </View>

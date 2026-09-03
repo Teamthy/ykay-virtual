@@ -1,6 +1,6 @@
-# PHASE 14 — NUVORA Polish: Icons, Auth, Email, Vetting UX — DELIVERY
+# PHASE 14 — YK-Virtual Polish: Icons, Auth, Email, Vetting UX — DELIVERY
 
-Branch: `feature/phase-14-nuvora-polish`
+Branch: `feature/phase-14-yk-virtual-polish`
 Base: `main` @ `8128489` (phase 13)
 Delivery method: git bundle `ykay-virtual-phase-14.bundle`
 
@@ -8,14 +8,14 @@ Delivery method: git bundle `ykay-virtual-phase-14.bundle`
 
 ## What was delivered (all four planned items)
 
-### 1. NUVORA brand assets — icons, favicon, logo, social card
+### 1. YK-Virtual brand assets — icons, favicon, logo, social card
 
 - **PWA icons regenerated** (`public/icons/icon-192.png`, `icon-512.png`):
-  NUVORA mark drawn programmatically — navy→blue gradient tile, white open-book
+  YK-Virtual mark drawn programmatically — navy→blue gradient tile, white open-book
   glyph, restrained gold dot with white ring (exact brand tokens; 512 version
   padded for maskable safe zone).
 - **`public/favicon.ico`** (16/32/48/64) + **`public/logo.png`** (mark).
-- **`public/og.png`** (1200×630): navy gradient, NUVORA wordmark, gold rule +
+- **`public/og.png`** (1200×630): navy gradient, YK-Virtual wordmark, gold rule +
   dot, tagline, positioning strip. Root metadata now sets `openGraph` +
   `twitter` images; `lib/seo.ts` defaults point at `/og.png` (previously
   referenced a **missing** `og-default.jpg` — broken share cards are fixed).
@@ -33,16 +33,16 @@ Delivery method: git bundle `ykay-virtual-phase-14.bundle`
 ### 3. Branded transactional email & platform identifiers
 
 - New **`notification.BrandEmail()`** HTML shell: navy gradient header with
-  NUVORA wordmark + gold tagline, body, footer — used by the verification and
-  password-reset emails; subjects now "Verify your NUVORA email" / "Reset your
-  NUVORA password" with styled CTA buttons.
-- Sender/from defaults → `no-reply@nuvora.com`, `verification@`/`security@nuvora.com`;
-  SMTP `From: NUVORA`.
-- Defaults rebranded: `SITE_URL` → `https://nuvora.com`, payment `redirect_url`,
+  YK-Virtual wordmark + gold tagline, body, footer — used by the verification and
+  password-reset emails; subjects now "Verify your YK-Virtual email" / "Reset your
+  YK-Virtual password" with styled CTA buttons.
+- Sender/from defaults → `no-reply@ykaycollege.com`, `verification@`/`security@ykaycollege.com`;
+  SMTP `From: YK-Virtual`.
+- Defaults rebranded: `SITE_URL` → `https://virtual.ykaycollege.com`, payment `redirect_url`,
   postgres/S3 bucket defaults, docker-compose services/db.
-- **Order numbers**: memory prefix `NUVORA-MEM-`; new migration
-  `000017_nuvora_order_prefix` rewrites the `generate_order_number()` function
-  so new Postgres orders are `NUVORA-YYYYMMDD-XXXXXXXX` (existing rows untouched).
+- **Order numbers**: memory prefix `YK-Virtual-MEM-`; new migration
+  `000017_ykv_order_prefix` rewrites the `generate_order_number()` function
+  so new Postgres orders are `YK-Virtual-YYYYMMDD-XXXXXXXX` (existing rows untouched).
 
 ### 4. Vetting document UX on the §24.1 kit
 

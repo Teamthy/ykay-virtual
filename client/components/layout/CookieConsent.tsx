@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 // Cookie consent banner (P2): shown until accepted; stored locally. Links to
 // the privacy policy (cookies section).
 
-const KEY = "nuvora-cookie-consent";
+const KEY = "yk-virtual-cookie-consent";
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
@@ -35,7 +35,10 @@ export function CookieConsent() {
       <p className="text-sm leading-6 text-ink-700 dark:text-ink-200">
         🍪 We use a session cookie to keep you signed in and a few preferences
         (theme, language).{" "}
-        <Link href="/privacy" className="font-semibold text-primary-dark hover:underline">
+        <Link
+          href="/privacy"
+          className="font-semibold text-primary-dark hover:underline"
+        >
           Learn more
         </Link>
       </p>

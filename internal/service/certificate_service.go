@@ -39,7 +39,7 @@ func NewCertificateService(uows repository.UnitOfWorkFactory) *CertificateServic
 	return &CertificateService{uows: uows, now: time.Now}
 }
 
-// WithPlus wires the NUVORA Plus gate for verified/shareable credentials.
+// WithPlus wires the YK-Virtual Plus gate for verified/shareable credentials.
 func (s *CertificateService) WithPlus(p *PlusService) *CertificateService {
 	s.plus = p
 	return s
@@ -75,7 +75,7 @@ func (s *CertificateService) WithOwnership(
 }
 
 // Issuer is the party listed as issuing the credential.
-const Issuer = "NUVORA Academy"
+const Issuer = "YK-Virtual Academy"
 
 // IssueForCohort issues a certificate to every CONFIRMED enrollment of a
 // completed cohort (idempotent: an existing certificate for a learner+cohort
@@ -233,7 +233,7 @@ func (s *CertificateService) GetOwned(ctx context.Context, actorUserID, id uuid.
 }
 
 // VerifiedShare returns the certificate plus a public verification URL for a
-// Plus-gated "verified shareable credential". Requires an active NUVORA Plus
+// Plus-gated "verified shareable credential". Requires an active YK-Virtual Plus
 // plan. The public Verify endpoint (by credential number) is what the URL
 // resolves to, so the share works for any viewer.
 type VerifiedShare struct {
@@ -256,7 +256,7 @@ func (s *CertificateService) VerifiedShare(ctx context.Context, actorUserID, id 
 	}
 	base := strings.TrimRight(s.siteURL, "/")
 	if base == "" {
-		base = "https://nuvora.com"
+		base = "https://virtual.ykaycollege.com"
 	}
 	return &VerifiedShare{
 		CredentialNumber: c.CredentialNumber,

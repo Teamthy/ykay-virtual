@@ -32,7 +32,7 @@ func TestPublicCache_AuthenticatedNeverCached(t *testing.T) {
 	}
 	// session cookie present
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/cohorts", nil)
-	req.AddCookie(&http.Cookie{Name: "nuvora_session", Value: "abc"})
+	req.AddCookie(&http.Cookie{Name: "ykv_session", Value: "abc"})
 	mk(req)
 	// Authorization header present
 	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/cohorts", nil)
@@ -56,7 +56,7 @@ func TestPublicCache_OverwritesPrivateDefault(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	// …and an authenticated user on the same path keeps no-store.
 	req2 := httptest.NewRequest(http.MethodGet, "/api/v1/cohorts", nil)
-	req2.AddCookie(&http.Cookie{Name: "nuvora_session", Value: "abc"})
+	req2.AddCookie(&http.Cookie{Name: "ykv_session", Value: "abc"})
 	rec2 := httptest.NewRecorder()
 	h2 := NewPrivateNoStore([]string{"/api/v1/cohorts"}).Middleware(
 		PublicCacheForAnonymous(60)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})),

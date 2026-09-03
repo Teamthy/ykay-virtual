@@ -219,12 +219,12 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/certificates", handlers.Certificates.ListMine)
 	mux.HandleFunc("GET "+v1+"/me/certificates/{id}", handlers.Certificates.GetMine)
 	mux.HandleFunc("POST "+v1+"/me/certificates/{id}/verified", handlers.Certificates.VerifiedShare)
-	// NUVORA Plus premium tier: status/entitlements, activation, cancellation.
+	// YK-Virtual Plus premium tier: status/entitlements, activation, cancellation.
 	mux.HandleFunc("GET "+v1+"/me/plus", handlers.Plus.GetMyPlan)
 	mux.HandleFunc("POST "+v1+"/me/plus/activate", handlers.Plus.Activate)
 	mux.HandleFunc("POST "+v1+"/me/plus/cancel", handlers.Plus.Cancel)
 	mux.HandleFunc("POST "+v1+"/me/plus/purchase", handlers.Plus.Purchase)
-	// NUVORA Plus named Learning Advisor + learning plan (000067).
+	// YK-Virtual Plus named Learning Advisor + learning plan (000067).
 	mux.HandleFunc("GET "+v1+"/me/advisor", handlers.Advisor.GetMyAdvisor)
 	mux.HandleFunc("GET "+v1+"/me/advisor/plan", handlers.Advisor.GetMyLearningPlan)
 	mux.HandleFunc("PUT "+v1+"/admin/plus/{userId}/advisor", handlers.Advisor.AssignAdvisor)
@@ -391,7 +391,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/students", handlers.Institutions.ListStudents)
 	mux.HandleFunc("POST "+v1+"/me/institutions/{id}/students", handlers.Institutions.AddStudent)
 	mux.HandleFunc("DELETE "+v1+"/me/institutions/{id}/students/{studentId}", handlers.Institutions.RemoveStudent)
-	// NUVORA Plus Teams seat management (000069).
+	// YK-Virtual Plus Teams seat management (000069).
 	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/plus", handlers.PlusTeams.GetAllocation)
 	mux.HandleFunc("PUT "+v1+"/me/institutions/{id}/plus/seats", handlers.PlusTeams.SetSeats)
 	mux.HandleFunc("GET "+v1+"/me/institutions/{id}/plus/seats", handlers.PlusTeams.ListSeats)
@@ -595,7 +595,7 @@ func RateLimitPerMinute() int {
 
 // AuthRateLimitPerMinute â€” per-IP rate limit for authentication endpoints.
 // Default 120/min: enough headroom for several users signing in from one
-// shared IP (households, school labs, offices behind NAT â€” a core NUVORA
+// shared IP (households, school labs, offices behind NAT â€” a core YK-Virtual
 // market) while still throttling credential stuffing (~2 auth attempts/sec).
 // The key is per-CLIENT-IP via TRUST_PROXY (clientIP); without TRUST_PROXY
 // every user behind the proxy shares one bucket and the limit collapses
@@ -626,5 +626,5 @@ func metricsToken() string {
 	if os.Getenv("ENVIRONMENT") == "production" {
 		return "" // unreachable: config.Validate already failed on boot
 	}
-	return "nuvora-dev-metrics"
+	return "yk-virtual-dev-metrics"
 }

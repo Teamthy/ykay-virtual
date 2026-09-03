@@ -1,4 +1,4 @@
--- 000068_diagnostic_plan.up.sql — NUVORA Plus diagnostic → learning-plan engine.
+-- 000068_diagnostic_plan.up.sql — YK-Virtual Plus diagnostic → learning-plan engine.
 --
 -- Marks learner assessments as "diagnostics": when a learner completes a
 -- diagnostic, the platform auto-authors a personalised Plus learning plan from

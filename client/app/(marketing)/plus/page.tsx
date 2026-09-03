@@ -9,18 +9,18 @@ import { Star, Crown, UserCheck, Award, Check, ShieldCheck, Sparkles, Clock } fr
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "NUVORA Plus - Premium Tutoring for International Learners | NUVORA",
+  title: "YK-Virtual Plus - Premium Tutoring for International Learners | YK-Virtual",
   description:
-    "Upgrade your child's learning with NUVORA Plus - priority matching with vetted specialist tutors and a dedicated advisor.",
-  path: "/nuvora-plus",
+    "Upgrade your child's learning with YK-Virtual Plus - priority matching with vetted specialist tutors and a dedicated advisor.",
+  path: "/plus",
 });
 
 const HERO_SLIDES = [
   {
-    eyebrow: "NUVORA Plus",
+    eyebrow: "YK-Virtual Plus",
     title: "Advisor-led premium tutoring",
     subtitle: "Priority matching with a vetted specialist, a named advisor, and weekly reports. Premium packaging — not invented rankings.",
-    cover: "/hero/nuvora-plus.jpg",
+    cover: "/hero/plus.jpg",
     ctas: [
       { label: "Unlock Premium Tutoring", href: "/pricing", primary: true },
       { label: "How it works", href: "#how" },
@@ -64,10 +64,10 @@ const TESTIMONIALS = [
   { quote: "Real vetted tutors and clear pricing — no invented rankings. Worth every naira.", name: "Parent · Port Harcourt" },
 ];
 
-export default function NuvoraPlusPage() {
+export default function YKVirtualPlusPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://nuvora.com/" },
-    { name: "NUVORA Plus", item: "https://nuvora.com/nuvora-plus" },
+    { name: "Home", item: "https://virtual.ykaycollege.com/" },
+    { name: "YK-Virtual Plus", item: "https://virtual.ykaycollege.com/plus" },
   ]);
 
   return (
@@ -87,7 +87,7 @@ export default function NuvoraPlusPage() {
               A complete premium learning experience
             </h2>
             <p className="mt-4 text-ink-600 leading-relaxed">
-              NUVORA Plus bundles the advisor-led matching, premium materials and progress visibility into one
+              YK-Virtual Plus bundles the advisor-led matching, premium materials and progress visibility into one
               subscription — designed for families who want white-glove support without an overseas price tag.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -139,7 +139,7 @@ export default function NuvoraPlusPage() {
       {/* How it works */}
       <section id="how" className="bg-surface-muted py-16 scroll-mt-24">
         <div className="container-x">
-          <h2 className="text-center font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">How NUVORA Plus works</h2>
+          <h2 className="text-center font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">How YK-Virtual Plus works</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((s) => (
               <div key={s.n} className="rounded-2xl border border-ink-100 bg-white p-7 text-center shadow-soft">

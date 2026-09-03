@@ -57,15 +57,15 @@ func (ConsoleSMSSender) Send(_ context.Context, to, message string) error {
 // sender IDs require registration; shortcodes are supported).
 type TermiiSMSSender struct {
 	APIKey   string
-	SenderID string // TERMII_SENDER_ID: registered alphanumeric sender, e.g. "Nuvora"
-	From     string // TERMII_FROM override (e.g. "234XXXXXXXXXX" or "Nuvora")
+	SenderID string // TERMII_SENDER_ID: registered alphanumeric sender, e.g. "YK-Virtual"
+	From     string // TERMII_FROM override (e.g. "234XXXXXXXXXX" or "YK-Virtual")
 	BaseURL  string
 	HTTP     *http.Client
 }
 
 func NewTermiiSMSSender(apiKey, senderID, from string) *TermiiSMSSender {
 	if senderID == "" && from == "" {
-		senderID = "Nuvora" // default: replace with the registered sender id
+		senderID = "YK-Virtual" // default: replace with the registered sender id
 	}
 	return &TermiiSMSSender{
 		APIKey:   apiKey,

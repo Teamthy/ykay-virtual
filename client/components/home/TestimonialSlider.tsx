@@ -8,9 +8,14 @@ import { TestimonialCarousel, type CarouselItem } from "./TestimonialCarousel";
 export async function TestimonialSlider() {
   let items: CarouselItem[] = [];
   try {
-    const res = await apiFetchSSR<{ id: string; author_name: string; author_location?: string; body: string }[]>(
-      "/content/testimonials"
-    );
+    const res = await apiFetchSSR<
+      {
+        id: string;
+        author_name: string;
+        author_location?: string;
+        body: string;
+      }[]
+    >("/content/testimonials");
     items = (res.data ?? []).map((t) => ({
       id: t.id,
       text: t.body,
@@ -26,7 +31,7 @@ export async function TestimonialSlider() {
       <section className="py-24 md:py-28 bg-brand-gold text-center">
         <div className="max-w-2xl mx-auto px-6">
           <h2 className="font-display mb-4 text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
-            Parents love NUVORA
+            Parents love YK-Virtual
           </h2>
           <p className="text-lg text-ink-900 leading-relaxed">
             Real parent stories appear here as families give their consent -{" "}

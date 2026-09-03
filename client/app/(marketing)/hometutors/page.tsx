@@ -9,7 +9,7 @@ import { TutorsShowcase } from "@/components/home/TutorsShowcase";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Home Tutoring - One-on-One Lessons with Vetted Tutors | NUVORA",
+  title: "Home Tutoring - One-on-One Lessons with Vetted Tutors | YK-Virtual",
   description:
     "Personalized home tutoring with vetted tutors - exam prep, confidence, and better school grades.",
   path: "/hometutors",
@@ -17,13 +17,19 @@ export const metadata: Metadata = buildMetadata({
 
 export default function HomeTutorsPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://nuvora.com/" },
-    { name: "Home Tutoring", item: "https://nuvora.com/hometutors" },
+    { name: "Home", item: "https://virtual.ykaycollege.com/" },
+    {
+      name: "Home Tutoring",
+      item: "https://virtual.ykaycollege.com/hometutors",
+    },
   ]);
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
 
       {/* Hero - background image cover */}
       <PageHero

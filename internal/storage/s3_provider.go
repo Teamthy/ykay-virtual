@@ -158,7 +158,7 @@ func (s *MinioStorage) GetPublicURL(b BucketType, key string) string {
 func (s *MinioStorage) MoveToQuarantine(ctx context.Context, b BucketType, key string, reason string) error {
 	q := os.Getenv("S3_QUARANTINE_BUCKET")
 	if q == "" {
-		q = "nuvora-quarantine"
+		q = "yk-virtual-quarantine"
 	}
 	qKey := fmt.Sprintf("%s/%s/%d-%s", string(b), key, time.Now().Unix(), sanitizeKey(reason))
 	src := minio.CopySrcOptions{Bucket: s.bucket(b), Object: key}
@@ -331,8 +331,8 @@ func NewStorageFromEnv() (Storage, error) {
 			getenv("S3_REGION", "us-east-1"),
 			os.Getenv("S3_ACCESS_KEY"),
 			os.Getenv("S3_SECRET_KEY"),
-			getenv("S3_PUBLIC_BUCKET", "nuvora-public"),
-			getenv("S3_PRIVATE_BUCKET", "nuvora-private"),
+			getenv("S3_PUBLIC_BUCKET", "yk-virtual-public"),
+			getenv("S3_PRIVATE_BUCKET", "yk-virtual-private"),
 		)
 	}
 	return NewLocalStorage(), nil

@@ -141,7 +141,7 @@ assignDone:
 		ID:                uuid.New(),
 		LessonID:          lessonID,
 		TutorProfileID:    tutorProfileID,
-		Content:           "Welcome to " + title + "! This note covers how live classes, recordings and homework work on NUVORA.",
+		Content:           "Welcome to " + title + "! This note covers how live classes, recordings and homework work on YK-Virtual.",
 		Homework:          strPtrOrNil("Complete the welcome worksheet before the first live session."),
 		IsVisibleToParent: true,
 	}); err != nil {

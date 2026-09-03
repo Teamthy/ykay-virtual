@@ -22,15 +22,16 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const article = getHelpArticle(slug);
   if (!article) {
     return buildMetadata({
-      title: "Help article not found | NUVORA",
+      title: "Help article not found | YK-Virtual",
       description: "This help article could not be found.",
       path: `/help/${slug}`,
       noIndex: true,
     });
   }
   return buildMetadata({
-    title: `${article.q} | NUVORA Help`,
-    description: article.a.length > 150 ? `${article.a.slice(0, 147)}…` : article.a,
+    title: `${article.q} | YK-Virtual Help`,
+    description:
+      article.a.length > 150 ? `${article.a.slice(0, 147)}…` : article.a,
     path: `/help/${article.slug}`,
   });
 }
@@ -41,7 +42,7 @@ export default async function HelpArticlePage(props: Props) {
   if (!article) return notFound();
 
   const related = getHelpArticles().filter(
-    (a) => a.category.id === article.category.id && a.slug !== article.slug
+    (a) => a.category.id === article.category.id && a.slug !== article.slug,
   );
 
   return (
@@ -54,8 +55,12 @@ export default async function HelpArticlePage(props: Props) {
             { name: article.q },
           ]}
         />
-        <div className="text-xs font-semibold uppercase text-brand-blue">{article.category.title}</div>
-        <h1 className="mt-2 max-w-2xl text-3xl font-extrabold leading-tight md:text-4xl">{article.q}</h1>
+        <div className="text-xs font-semibold uppercase text-brand-blue">
+          {article.category.title}
+        </div>
+        <h1 className="mt-2 max-w-2xl text-3xl font-extrabold leading-tight md:text-4xl">
+          {article.q}
+        </h1>
       </InnerHero>
 
       <article className="mx-auto mt-8 max-w-3xl">
@@ -72,7 +77,9 @@ export default async function HelpArticlePage(props: Props) {
 
       {related.length > 0 && (
         <section className="mx-auto mt-12 max-w-3xl">
-          <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">Related questions</h2>
+          <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            Related questions
+          </h2>
           <ul className="mt-4 divide-y divide-ink-100 rounded-2xl border border-ink-100 bg-white">
             {related.map((r) => (
               <li key={r.slug}>
@@ -91,7 +98,9 @@ export default async function HelpArticlePage(props: Props) {
 
       <section className="mx-auto mt-14 max-w-3xl rounded-3xl bg-brand-navy p-10 text-center text-white">
         <LifeBuoy size={28} className="mx-auto text-brand-gold" />
-        <h2 className="mt-4 font-display text-2xl tracking-[0.02em] text-white">Still need help?</h2>
+        <h2 className="mt-4 font-display text-2xl tracking-[0.02em] text-white">
+          Still need help?
+        </h2>
         <p className="mx-auto mt-2 max-w-md text-sm text-white/80">
           Our support team usually replies within one working day.
         </p>

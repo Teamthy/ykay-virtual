@@ -8,9 +8,9 @@ import { GraduationCap, Languages, FileCheck } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Test Prep - GMAT, GRE, SAT | NUVORA",
+  title: "Test Prep - GMAT, GRE, SAT | YK-Virtual",
   description:
-    "Structured prep for GMAT, GRE, SAT and ACT with vetted tutors. Same login as the rest of NUVORA - works on mobile.",
+    "Structured prep for GMAT, GRE, SAT and ACT with vetted tutors. Same login as the rest of YK-Virtual - works on mobile.",
   path: "/test-prep",
 });
 
@@ -23,22 +23,28 @@ const TESTS = [
 
 export default function TestPrepPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://nuvora.com/" },
-    { name: "Test Prep", item: "https://nuvora.com/test-prep" },
+    { name: "Home", item: "https://virtual.ykaycollege.com/" },
+    { name: "Test Prep", item: "https://virtual.ykaycollege.com/test-prep" },
   ]);
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       <PageHero
         announcement="Same login on phone and desktop"
         title="Get expert help to ace your exam"
-        subtitle="GMAT, GRE, SAT and ACT - structured sessions, mocks and weekly reports. Prep lives on nuvora.com, not a separate site."
+        subtitle="GMAT, GRE, SAT and ACT - structured sessions, mocks and weekly reports. Prep lives on virtual.ykaycollege.com, not a separate site."
         ctas={[
           { label: "Browse tests", href: "#tests", primary: true },
           { label: "GMAT prep", href: "/gmat" },
         ]}
-        image={{ src: "/hero/test-prep.jpg", alt: "Student preparing for an international test" }}
+        image={{
+          src: "/hero/test-prep.jpg",
+          alt: "Student preparing for an international test",
+        }}
       />
 
       <section id="tests" className="scroll-mt-28 bg-white py-16">
@@ -51,10 +57,20 @@ export default function TestPrepPage() {
                 className="group rounded-2xl border border-ink-100 bg-surface-muted p-6 text-center transition hover:-translate-y-1 hover:shadow-card"
               >
                 <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-brand-blue shadow-soft group-hover:bg-brand-navy group-hover:text-white">
-                  {t.code === "GMAT" || t.code === "GRE" ? <GraduationCap size={20} /> : t.code === "SAT" || t.code === "ACT" ? <FileCheck size={20} /> : <Languages size={20} />}
+                  {t.code === "GMAT" || t.code === "GRE" ? (
+                    <GraduationCap size={20} />
+                  ) : t.code === "SAT" || t.code === "ACT" ? (
+                    <FileCheck size={20} />
+                  ) : (
+                    <Languages size={20} />
+                  )}
                 </div>
-                <div className="mt-4 font-display text-2xl text-brand-navy">{t.code}</div>
-                <p className="mt-1 text-xs font-semibold text-ink-500">{t.name}</p>
+                <div className="mt-4 font-display text-2xl text-brand-navy">
+                  {t.code}
+                </div>
+                <p className="mt-1 text-xs font-semibold text-ink-500">
+                  {t.name}
+                </p>
               </Link>
             ))}
           </div>
@@ -63,9 +79,12 @@ export default function TestPrepPage() {
 
       <section className="bg-brand-navy py-14 text-white">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-          <h2 className="font-display text-3xl tracking-[0.02em]">How NUVORA prep works - on mobile too</h2>
+          <h2 className="font-display text-3xl tracking-[0.02em]">
+            How YK-Virtual prep works - on mobile too
+          </h2>
           <p className="mt-3 max-w-2xl text-white/75">
-            One account. Open this site on your phone for live lessons, recordings and reports - no extra subdomain or second login.
+            One account. Open this site on your phone for live lessons,
+            recordings and reports - no extra subdomain or second login.
           </p>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {[
@@ -79,7 +98,10 @@ export default function TestPrepPage() {
               </p>
             ))}
           </div>
-          <Link href="/private-tuition" className="mt-8 inline-block rounded-xl bg-brand-gold px-8 py-4 text-sm font-bold text-ink-900">
+          <Link
+            href="/private-tuition"
+            className="mt-8 inline-block rounded-xl bg-brand-gold px-8 py-4 text-sm font-bold text-ink-900"
+          >
             Request a test-prep tutor
           </Link>
         </div>

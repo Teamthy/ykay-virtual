@@ -12,7 +12,7 @@ export type WizardDraft = {
   goals: string[];
 };
 
-const KEY = "nuvora_wizard_draft";
+const KEY = "ykv_wizard_draft";
 
 export const LEVELS = [
   "Primary",
@@ -35,9 +35,17 @@ export const TUTOR_SUBJECTS = [
 ] as const;
 
 export const GOALS = [
-  { id: "exams", label: "Exam success (UTME · IGCSE · WAEC)", icon: "create-outline" },
+  {
+    id: "exams",
+    label: "Exam success (UTME · IGCSE · WAEC)",
+    icon: "create-outline",
+  },
   { id: "grades", label: "Better school grades", icon: "trending-up-outline" },
-  { id: "confidence", label: "Confidence & study habits", icon: "fitness-outline" },
+  {
+    id: "confidence",
+    label: "Confidence & study habits",
+    icon: "fitness-outline",
+  },
   { id: "abroad", label: "Studying abroad", icon: "airplane-outline" },
   { id: "digital", label: "Digital & tech skills", icon: "laptop-outline" },
 ] as const;

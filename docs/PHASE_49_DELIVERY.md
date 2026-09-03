@@ -46,7 +46,7 @@ levers, plus the remaining landing-page contrast nodes.
   chunks (idempotent across crashes); memory store no-ops.
 - cmd/worker: archive_audit_logs cron (24h) + durable-queue handler,
   AUDIT_RETENTION_DAYS env (default 180), telemetry heartbeats
-  (NuvoraCronStale alerts can cover it).
+  (YK-VirtualCronStale alerts can cover it).
 
 ## UI — landing contrast closure
 

@@ -1,8 +1,8 @@
-# NUVORA — Backup & Disaster Recovery Runbook (G3.4)
+# YK-Virtual — Backup & Disaster Recovery Runbook (G3.4)
 
 **Owner:** engineering on-call (primary), founder (escalation).
 **Targets (from docs/PRODUCTION_DEPLOY.md):** RPO ≤ 24h (backup every 24h; tighten to ≤6h for pilot), RTO ≈ 10–30 min (restore + migrate + deploy).
-**Alerting:** `NuvoraBackupStale` (page) and `NuvoraDrillOverdue` (ticket) fire automatically — see deploy/prometheus/alerts.yml.
+**Alerting:** `YK-VirtualBackupStale` (page) and `YK-VirtualDrillOverdue` (ticket) fire automatically — see deploy/prometheus/alerts.yml.
 
 ## 1. Routine backups
 
@@ -32,7 +32,7 @@ What the drill proves:
 - `--deep` adds md5 checksums of `users, tutor_profiles, student_profiles, orders, payments, escrow_holds`,
 - migration head (`schema_migrations`) matches the source.
 
-Pass → the drill writes `nuvora_dr_drill.prom` (keeps `NuvoraDrillOverdue` quiet). Fail → it exits 1 and the scratch DB is dropped automatically; use `--keep` to inspect.
+Pass → the drill writes `ykv_dr_drill.prom` (keeps `YK-VirtualDrillOverdue` quiet). Fail → it exits 1 and the scratch DB is dropped automatically; use `--keep` to inspect.
 
 **Drill log:** record date, dump used, result and any follow-ups in the ops journal. A failed drill is a page-worthy event: treat as “we have no backups”.
 
@@ -42,7 +42,7 @@ Pass → the drill writes `nuvora_dr_drill.prom` (keeps `NuvoraDrillOverdue` qui
 2. Restore the newest good dump into a scratch DB first (`dr-drill.sh --dump … --keep`) to confirm it is intact.
 3. Restore into production:
    ```bash
-   bash scripts/restore.sh --yes backups/nuvora-<ts>.dump "$DATABASE_URL"
+   bash scripts/restore.sh --yes backups/yk-virtual-<ts>.dump "$DATABASE_URL"
    ```
 4. Run migrations (`make migrate`) if the dump predates newer ones — the drill checks migration-head parity.
 5. Health-check (`/health/ready`), spot-check key screens, re-enable traffic.
@@ -50,7 +50,7 @@ Pass → the drill writes `nuvora_dr_drill.prom` (keeps `NuvoraDrillOverdue` qui
 
 **RTO clock starts at detection; target ≤30 min including verification.**
 
-## 4. Backup failure response (`NuvoraBackupStale`)
+## 4. Backup failure response (`YK-VirtualBackupStale`)
 
 1. Check the backup service logs: `docker compose -f docker-compose.prod.yml logs backup`.
 2. Common causes: disk full (`df -h` on the backups volume), DB down, credentials changed.

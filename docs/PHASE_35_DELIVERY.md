@@ -7,6 +7,7 @@ Delivery method: git bundle `ykay-virtual-phase-35.bundle`
 ---
 
 ## M3 — Mobile LMS screens (`mobile/`)
+
 - **`app/lms.tsx`** — "My Learning": courses via `GET /me/lessons`
   (Bearer), lesson counts + next lesson per cohort.
 - **`app/lms/[cohortId].tsx`** — course workspace: lessons with join info,
@@ -16,6 +17,7 @@ Delivery method: git bundle `ykay-virtual-phase-35.bundle`
 ## M4 — Token auth + push (backend + app)
 
 ### Token auth
+
 - **`POST /auth/login/mobile`** — email+password → raw session token in the
   body (native apps store it in SecureStore; no cookie needed).
 - **`POST /auth/login-code/mobile/confirm`** — 6-digit code variant.
@@ -25,13 +27,14 @@ Delivery method: git bundle `ykay-virtual-phase-35.bundle`
 - Logout revokes cookie and/or bearer session.
 
 ### Device registry + push
+
 - New domain `identity.Device` + repository (memory + postgres,
   migration `000022_devices`), unique per (user, token).
 - **`POST /me/devices`** (upsert + last-seen), **`GET /me/devices`**,
   **`DELETE /me/devices/{id}`** — session or bearer.
 - **`PushService`** + **`ExpoPushSender`** (exp.host v2 API, optional
   `EXPO_ACCESS_TOKEN`), **`LogPushSender`** for tests.
-- **Agent chat replies now push** to the user's devices ("NUVORA support
+- **Agent chat replies now push** to the user's devices ("YK-Virtual support
   replied 💬") — best-effort, never blocking.
 - App side: `registerDevice()` in `src/lib/api.ts` (expo-notifications →
   push token → `/me/devices`), wired after login and onboarding code-verify.
@@ -41,6 +44,7 @@ Delivery method: git bundle `ykay-virtual-phase-35.bundle`
 ## C5/C6 extras — prompt evals + CSAT
 
 ### Prompt evals (`internal/service/chat_evals.go` + tests)
+
 - Eval harness: 6 rubric cases (grounded pricing, **no invented prices**,
   defer unknown to team, grounded tutor list, payment refusal → human,
   concise warm identity) with `Want`/`Forbid` assertions.
@@ -51,6 +55,7 @@ Delivery method: git bundle `ykay-virtual-phase-35.bundle`
 - Run live: `GEMINI_API_KEY=… go test ./internal/service/ -run Live -v`
 
 ### CSAT reporting
+
 - `ChatAnalytics` extended: **`csat`** (% of rated threads ≥ 4★ among
   escalated/closed), `csat_responded`, `csat_total`.
 - **`GET /admin/chat/csat.csv`** — thread_id, title, status, rating,
@@ -59,6 +64,7 @@ Delivery method: git bundle `ykay-virtual-phase-35.bundle`
   comments on threads.
 
 ## Tests
+
 - `TestPushService_DeviceLifecycle` (upsert, notify tokens, remove).
 - `TestChatService_AgentReplyPushes` (agent reply → push to owner's devices).
 - `TestChatPromptEvals_CI` (6/6 rubric).
@@ -67,6 +73,7 @@ Delivery method: git bundle `ykay-virtual-phase-35.bundle`
   student 403), analytics csat field.
 
 ## Verification
+
 ```text
 gofmt / go build / go vet     PASS
 go test ./...                 PASS (push + evals + chat suites)

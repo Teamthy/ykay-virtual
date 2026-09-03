@@ -9,13 +9,32 @@ import { LoaderScreen } from "@/src/components/ui/LoaderScreen";
 import { Button } from "@/src/components/ui/Button";
 import { apiFetch, getToken } from "@/src/lib/api";
 
-// Recommendations — "NUVORA on the go" suggestions feed: cohorts, programmes
+// Recommendations — "YK-Virtual on the go" suggestions feed: cohorts, programmes
 // and tutors ranked against the session's learner profile (server-side).
 
-type RecCohort = { id: string; title: string; reason: string; enrolled_count: number; capacity: number };
+type RecCohort = {
+  id: string;
+  title: string;
+  reason: string;
+  enrolled_count: number;
+  capacity: number;
+};
 type RecProgramme = { id: string; title: string; slug: string; reason: string };
-type RecTutor = { profile: { id: string; slug: string; display_name: string; rating_avg: number }; subjects: string[] };
-type Recs = { cohorts: RecCohort[]; programmes: RecProgramme[]; tutors: RecTutor[]; basis: string };
+type RecTutor = {
+  profile: {
+    id: string;
+    slug: string;
+    display_name: string;
+    rating_avg: number;
+  };
+  subjects: string[];
+};
+type Recs = {
+  cohorts: RecCohort[];
+  programmes: RecProgramme[];
+  tutors: RecTutor[];
+  basis: string;
+};
 
 export default function Recommendations() {
   const { colors } = useTheme();
@@ -40,7 +59,8 @@ export default function Recommendations() {
       const res = await apiFetch<Recs>("/me/recommendations");
       setRecs(res.data ?? null);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Could not load recommendations";
+      const msg =
+        e instanceof Error ? e.message : "Could not load recommendations";
       if (/authentication|session|unauthorized/i.test(msg)) {
         setSignedOut(true);
       } else {
@@ -63,11 +83,18 @@ export default function Recommendations() {
       ) : signedOut ? (
         <View style={styles.signedOut}>
           <Ionicons name="sparkles-outline" size={44} color={colors.deep} />
-          <Text style={styles.signedOutTitle}>Recommendations made for you</Text>
-          <Text style={styles.signedOutBody}>
-            Log in and we&apos;ll tailor cohorts, programmes and tutors to your learner profile.
+          <Text style={styles.signedOutTitle}>
+            Recommendations made for you
           </Text>
-          <Button label="Log in" full onPress={() => router.push("/login" as never)} />
+          <Text style={styles.signedOutBody}>
+            Log in and we&apos;ll tailor cohorts, programmes and tutors to your
+            learner profile.
+          </Text>
+          <Button
+            label="Log in"
+            full
+            onPress={() => router.push("/login" as never)}
+          />
         </View>
       ) : error ? (
         <Text style={styles.error}>{error}</Text>
@@ -106,16 +133,22 @@ export default function Recommendations() {
                 <View key={t.profile.id} style={styles.card}>
                   <Text style={styles.cardTitle}>{t.profile.display_name}</Text>
                   <Text style={styles.cardDesc}>
-                    ★ {t.profile.rating_avg.toFixed(1)} · {t.subjects.slice(0, 2).join(", ")}
+                    ★ {t.profile.rating_avg.toFixed(1)} ·{" "}
+                    {t.subjects.slice(0, 2).join(", ")}
                   </Text>
                 </View>
               ))}
             </>
           )}
 
-          {recs && recs.cohorts.length === 0 && recs.programmes.length === 0 && recs.tutors.length === 0 && (
-            <Text style={styles.empty}>Add a learner to personalise your recommendations.</Text>
-          )}
+          {recs &&
+            recs.cohorts.length === 0 &&
+            recs.programmes.length === 0 &&
+            recs.tutors.length === 0 && (
+              <Text style={styles.empty}>
+                Add a learner to personalise your recommendations.
+              </Text>
+            )}
         </>
       )}
     </ScrollView>
@@ -124,34 +157,52 @@ export default function Recommendations() {
 
 const makeStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-  signedOut: {
-    alignItems: "center",
-    gap: spacing.md,
-    paddingVertical: spacing.huge,
-    paddingHorizontal: spacing.xl,
-  },
-  signedOutTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colors.navy,
-    textAlign: "center",
-  },
-  signedOutBody: {
-    fontSize: 14,
-    color: colors.ink[500],
-    textAlign: "center",
-    lineHeight: 21,
-    marginBottom: spacing.sm,
-  },
+    signedOut: {
+      alignItems: "center",
+      gap: spacing.md,
+      paddingVertical: spacing.huge,
+      paddingHorizontal: spacing.xl,
+    },
+    signedOutTitle: {
+      fontSize: 17,
+      fontWeight: "700",
+      color: colors.navy,
+      textAlign: "center",
+    },
+    signedOutBody: {
+      fontSize: 14,
+      color: colors.ink[500],
+      textAlign: "center",
+      lineHeight: 21,
+      marginBottom: spacing.sm,
+    },
 
-  root: { flex: 1, backgroundColor: colors.cream },
-  content: { padding: 24, paddingBottom: 48 },
-  title: { fontSize: 24, fontWeight: "800", color: colors.navy },
-  sub: { fontSize: 13, color: colors.ink[500], marginTop: 4, marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: "800", color: colors.navy, marginTop: 16, marginBottom: 10 },
-  card: { backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1, borderColor: "#E8E4DA", padding: 16, marginBottom: 10 },
-  cardTitle: { fontSize: 15, fontWeight: "700", color: colors.ink[900] },
-  cardDesc: { fontSize: 13, color: colors.ink[500], marginTop: 4 },
-  error: { color: colors.danger, marginTop: 24 },
-  empty: { color: colors.ink[500], marginTop: 24, lineHeight: 20 },
-});
+    root: { flex: 1, backgroundColor: colors.cream },
+    content: { padding: 24, paddingBottom: 48 },
+    title: { fontSize: 24, fontWeight: "800", color: colors.navy },
+    sub: {
+      fontSize: 13,
+      color: colors.ink[500],
+      marginTop: 4,
+      marginBottom: 16,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: "800",
+      color: colors.navy,
+      marginTop: 16,
+      marginBottom: 10,
+    },
+    card: {
+      backgroundColor: colors.white,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: "#E8E4DA",
+      padding: 16,
+      marginBottom: 10,
+    },
+    cardTitle: { fontSize: 15, fontWeight: "700", color: colors.ink[900] },
+    cardDesc: { fontSize: 13, color: colors.ink[500], marginTop: 4 },
+    error: { color: colors.danger, marginTop: 24 },
+    empty: { color: colors.ink[500], marginTop: 24, lineHeight: 20 },
+  });

@@ -12,6 +12,7 @@ New tutor-authoring + roster capabilities over the learning backend, plus
 the full chat assistant (below).
 
 ### Backend additions
+
 - `POST /cohorts/{id}/assignments` — create assignment (tutor/admin only).
 - `POST /cohorts/{id}/resources` — create resource / material link (tutor/admin).
 - `GET /cohorts/{id}/enrollments` — **class roster** with learner names
@@ -22,6 +23,7 @@ the full chat assistant (below).
   e2e-verified.
 
 ### Frontend
+
 - **Tutor teaching console** (`/lms/tutor/cohorts/[id]`) gained four
   sections: **class roster** (names/status/enrolled date), **quiz builder**
   (title, pass %, N questions × 4 options with correct-answer radio →
@@ -33,6 +35,7 @@ the full chat assistant (below).
 ## 2. AI chatbot — complete build (plan C1–C3 + handoff)
 
 ### Backend (`internal/domain/chat`, `internal/service/chat_*.go`)
+
 - **Thread model**: per-user threads, append-only messages, status
   OPEN/ESCALATED/CLOSED; memory repo (postgres migration noted as follow-up).
 - **Endpoints** (session-required):
@@ -45,7 +48,7 @@ the full chat assistant (below).
     ticket with full transcript** (via the existing support service)
 - **Gemini provider** (`chat_gemini.go`): direct REST to
   `generativelanguage.googleapis.com` (no SDK), `gemini-2.0-flash` default,
-  system prompt constrains to NUVORA topics, temperature 0.4, 500-token cap.
+  system prompt constrains to YK-Virtual topics, temperature 0.4, 500-token cap.
 - **Grounding** (`buildChatContext` in main): fresh programmes / cohorts /
   tutors snapshot injected into every call — the bot answers from live data,
   never from memory.
@@ -56,6 +59,7 @@ the full chat assistant (below).
 - Config: `GEMINI_API_KEY`, `GEMINI_MODEL`, `CHATBOT_ENABLED` (kill switch).
 
 ### Frontend
+
 - **`/chat`** — full assistant page: thread sidebar, conversation bubbles,
   typing indicator, 👤 Human handoff button, ESCALATED banner.
 - **`ChatWidget`** (root layout, every page) — upgraded from a dead bubble to
@@ -64,6 +68,7 @@ the full chat assistant (below).
 - `features/chat/api.ts` — typed client.
 
 ### Tests
+
 - `TestChatService_ThreadLifecycle`: greeting, canned reply (provider off),
   AI reply (fake provider), history, cross-user 404, escalation.
 - E2E grew **77 → 92**: chat create/list/send/escalate + cross-user 404 +

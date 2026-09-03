@@ -1,16 +1,35 @@
 export const siteConfig = {
-  name: "NUVORA",
-  brand: "nuvora",
+  name: "YK-Virtual",
+  brand: "ykvirtual",
   tagline: "Learning beyond boundaries",
-  description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
+  description:
+    "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
 };
 
 export const navServices = {
-  "British Curriculum": ["Year 7", "Year 8", "Year 9", "IGCSE Year 10", "IGCSE Year 11", "A Level"],
+  "British Curriculum": [
+    "Year 7",
+    "Year 8",
+    "Year 9",
+    "IGCSE Year 10",
+    "IGCSE Year 11",
+    "A Level",
+  ],
   "Nigerian Curriculum": ["JSS1", "JSS2", "JSS3", "SSS1", "SSS2", "SSS3"],
-  "Examinations": ["IGCSE", "WAEC", "NECO", "JAMB", "A Level"],
-  "Learning Modes": ["Private Tuition", "Small-group Cohort", "Revision Bootcamp", "Holiday Programme"],
-  "Digital Academy": ["Computer Science", "Python", "Artificial Intelligence", "Cybersecurity", "Microsoft Office"],
+  Examinations: ["IGCSE", "WAEC", "NECO", "JAMB", "A Level"],
+  "Learning Modes": [
+    "Private Tuition",
+    "Small-group Cohort",
+    "Revision Bootcamp",
+    "Holiday Programme",
+  ],
+  "Digital Academy": [
+    "Computer Science",
+    "Python",
+    "Artificial Intelligence",
+    "Cybersecurity",
+    "Microsoft Office",
+  ],
 };
 
 // Unused invented hero/stat fixtures removed (round 52).
@@ -44,11 +63,36 @@ export const tutorPositions = [
 ];
 
 export const accordionItems = [
-  { num: "1", title: "NUVORA Insights™ Assessment", content: "Comprehensive evaluation of your child's current academic level, learning style and knowledge gaps to build a strong foundation." },
-  { num: "2", title: "Adaptive Learning Plans", content: "Customised learning plans that adapt to your child's pace and preferences for maximum effectiveness and long-term retention." },
-  { num: "3", title: "Child-Centered Learning", content: "Every lesson is tailored to engage your child based on their interests, strengths and unique learning preferences." },
-  { num: "4", title: "Periodic Evaluation", content: "Regular structured assessments to track progress and refine the learning approach as your child grows." },
-  { num: "5", title: "Progress Reports & Reviews", content: "Detailed reports after every lesson so you always know exactly how your child is performing and where to focus next." },
+  {
+    num: "1",
+    title: "YK-Virtual Insights™ Assessment",
+    content:
+      "Comprehensive evaluation of your child's current academic level, learning style and knowledge gaps to build a strong foundation.",
+  },
+  {
+    num: "2",
+    title: "Adaptive Learning Plans",
+    content:
+      "Customised learning plans that adapt to your child's pace and preferences for maximum effectiveness and long-term retention.",
+  },
+  {
+    num: "3",
+    title: "Child-Centered Learning",
+    content:
+      "Every lesson is tailored to engage your child based on their interests, strengths and unique learning preferences.",
+  },
+  {
+    num: "4",
+    title: "Periodic Evaluation",
+    content:
+      "Regular structured assessments to track progress and refine the learning approach as your child grows.",
+  },
+  {
+    num: "5",
+    title: "Progress Reports & Reviews",
+    content:
+      "Detailed reports after every lesson so you always know exactly how your child is performing and where to focus next.",
+  },
 ];
 
 // Fixture testimonials removed (G5.3): the homepage carousel and the
@@ -63,4 +107,10 @@ export const examCards = [
   { title: "ACT Prep", href: "/sat" },
 ];
 
-export const trustLogos = ["MIT | SOLVE", "Forbes", "COBIS", "Cambridge Assessment", "Pearson Edexcel"];
+export const trustLogos = [
+  "MIT | SOLVE",
+  "Forbes",
+  "COBIS",
+  "Cambridge Assessment",
+  "Pearson Edexcel",
+];

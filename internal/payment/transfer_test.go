@@ -53,7 +53,7 @@ func TestPaystackTransferRecipientAndFlow(t *testing.T) {
 		t.Fatalf("recipient code = %q, want RCP_stub123", code)
 	}
 
-	res, err := p.InitiateTransfer(ctx, 30000, "NGN", code, "payout-ref", "NUVORA tutor payout")
+	res, err := p.InitiateTransfer(ctx, 30000, "NGN", code, "payout-ref", "YK-Virtual tutor payout")
 	if err != nil {
 		t.Fatalf("InitiateTransfer: %v", err)
 	}

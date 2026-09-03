@@ -34,7 +34,7 @@ var chatKB = []kbEntry{
 	{[]string{"pay", "payment", "escrow", "card", "paystack", "flutterwave", "refund", "fee", "price", "cost", "how much", "cohort"},
 		"Fees are listed on each programme/cohort page — I don't quote prices from memory. Pay with card or bank transfer via Paystack or Flutterwave. Money sits in escrow and is released to the tutor only after lessons are delivered. Never pay a tutor off-platform. Refunds follow the Cancellation & Refund policy."},
 	{[]string{"tutor", "apply", "teach", "vetting", "earn"},
-		"Start at Become a tutor: create your profile, choose subjects, upload a government-issued ID and pass a subject competency quiz (70% to pass). We review within 5–7 working days. You set your rates; NUVORA takes a platform fee and holds learner payments in escrow."},
+		"Start at Become a tutor: create your profile, choose subjects, upload a government-issued ID and pass a subject competency quiz (70% to pass). We review within 5–7 working days. You set your rates; YK-Virtual takes a platform fee and holds learner payments in escrow."},
 	{[]string{"safeguard", "child", "safety", "privacy", "report"},
 		"Minors are linked to parents or guardians, contact details are not exposed to tutors unless required, and messaging is booking-scoped. To report a concern, contact support immediately. You can export or delete your data from Account."},
 	{[]string{"login", "password", "sign in"},

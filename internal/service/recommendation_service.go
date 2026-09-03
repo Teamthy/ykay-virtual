@@ -172,7 +172,7 @@ func (s *RecommendationService) ForSession(ctx context.Context, userID uuid.UUID
 	case len(levels) > 0:
 		out.Basis = "Based on " + strings.Join(levels, ", ") + " learners in your family."
 	default:
-		out.Basis = "Popular right now across NUVORA."
+		out.Basis = "Popular right now across YK-Virtual."
 	}
 	return out, nil
 }

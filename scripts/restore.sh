@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NUVORA — restore a custom-format backup into a database.
+# YK-Virtual — restore a custom-format backup into a database.
 # Usage:  bash scripts/restore.sh [--yes] <dumpfile> [DATABASE_URL]
 #   --yes   skip the interactive confirmation (used by scripts/dr-drill.sh
 #           and CI; never pass it against production by hand).

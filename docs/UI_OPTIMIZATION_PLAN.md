@@ -1,4 +1,4 @@
-# NUVORA — Web UI Optimization Plan (all pages)
+# YK-Virtual — Web UI Optimization Plan (all pages)
 
 **Goal:** consistent, fast, accessible surfaces across the 30+ marketing
 pages and the app shell. **Status: planning + first wins shipped —
@@ -24,12 +24,12 @@ execution next tranche.**
 > The announcement band's award claims remain G5.3 register items
 > (press/award claims need founder sign-off before launch).
 
-| # | Finding | Source | Action |
-|---|---|---|---|
-| 1 | **52 color-contrast nodes** on the landing page (serious, axe) | e2e/axe.spec.ts | fix text/ink-on-gold combos OR formal acceptance register with dates (G6.2) |
-| 2 | Landing testimonial slider uses hard-coded `lib/site-data` | code review | switch to consent-gated `/content/testimonials` (G5.3) — fixtures must not ship in production |
-| 3 | Standalone server static assets were uncopied in CI boot | G6 fix | done (layout-tolerant boot + static copy) |
-| 4 | Audit remaining icon-only buttons across admin/tutor consoles | axe on 3 pages only | run axe on /admin/*, /lms/*, /tutor-dashboard, /checkout/* |
+| #   | Finding                                                        | Source              | Action                                                                                        |
+| --- | -------------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | **52 color-contrast nodes** on the landing page (serious, axe) | e2e/axe.spec.ts     | fix text/ink-on-gold combos OR formal acceptance register with dates (G6.2)                   |
+| 2   | Landing testimonial slider uses hard-coded `lib/site-data`     | code review         | switch to consent-gated `/content/testimonials` (G5.3) — fixtures must not ship in production |
+| 3   | Standalone server static assets were uncopied in CI boot       | G6 fix              | done (layout-tolerant boot + static copy)                                                     |
+| 4   | Audit remaining icon-only buttons across admin/tutor consoles  | axe on 3 pages only | run axe on /admin/_, /lms/_, /tutor-dashboard, /checkout/*                                    |
 
 ## Page-by-page pass (next tranche)
 

@@ -46,7 +46,7 @@ func newDripEnv(t *testing.T) *dripEnv {
 	store := memory.NewMemoryStore()
 	mail := &dripEmailLog{}
 	drips := memory.NewEmailDripMemory()
-	svc := NewDripService(store.Users, store.Roles, store.Orders, drips, mail, "https://nuvora.com")
+	svc := NewDripService(store.Users, store.Roles, store.Orders, drips, mail, "https://virtual.ykaycollege.com")
 	return &dripEnv{svc: svc, users: store.Users, roles: store.Roles, orders: store.Orders, drips: drips, mail: mail}
 }
 

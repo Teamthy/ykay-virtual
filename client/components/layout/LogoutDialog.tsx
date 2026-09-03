@@ -47,7 +47,12 @@ export function LogoutDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center px-4" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="logout-title"
+    >
       <button
         type="button"
         className="absolute inset-0 bg-ink-900/50"
@@ -56,9 +61,14 @@ export function LogoutDialog({
         onClick={onClose}
       />
       <div className="relative w-full max-w-md rounded-3xl border border-ink-100 bg-white p-8 shadow-lift">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-400">Session</p>
-        <h2 id="logout-title" className="mt-2 font-display text-3xl tracking-[0.02em] text-deep">
-          Log out of NUVORA?
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-400">
+          Session
+        </p>
+        <h2
+          id="logout-title"
+          className="mt-2 font-display text-3xl tracking-[0.02em] text-deep"
+        >
+          Log out of YK-Virtual?
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-ink-600">
           {isLoading
@@ -68,7 +78,10 @@ export function LogoutDialog({
               : "You are not signed in on this device."}
         </p>
         {err && (
-          <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+          <p
+            className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            role="alert"
+          >
             {err}
           </p>
         )}

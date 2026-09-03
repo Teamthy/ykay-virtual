@@ -1,4 +1,4 @@
--- Revert order-number prefix NUVORA- → YKAY- (phase 14 rollback).
+-- Revert order-number prefix YK-Virtual- → YKAY- (phase 14 rollback).
 
 CREATE OR REPLACE FUNCTION generate_order_number() RETURNS TEXT AS $$
 DECLARE

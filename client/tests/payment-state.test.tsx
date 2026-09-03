@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { statusKindFor } from "@/components/ui/status-badge";
-import { NuvoraReceipt } from "@/components/receipt/NuvoraReceipt";
+import { YKVirtualReceipt } from "@/components/receipt/YKVirtualReceipt";
 
 describe("statusKindFor — payment + enrollment states", () => {
   it("maps money/access states to distinct badge kinds", () => {
@@ -22,10 +22,10 @@ describe("statusKindFor — payment + enrollment states", () => {
   });
 });
 
-describe("NuvoraReceipt — branded, printable receipt", () => {
+describe("YKVirtualReceipt — branded, printable receipt", () => {
   it("renders order number, amount, items and the print target", () => {
     render(
-      <NuvoraReceipt
+      <YKVirtualReceipt
         orderNumber="NV-20260821-0001"
         status="PAID"
         createdAt="2026-08-21T10:00:00Z"
@@ -39,26 +39,26 @@ describe("NuvoraReceipt — branded, printable receipt", () => {
             total_price: 50000,
           },
         ]}
-      />
+      />,
     );
     expect(screen.getByText("NV-20260821-0001")).toBeInTheDocument();
     expect(screen.getByText(/IGCSE Maths — Sept/)).toBeInTheDocument();
     expect(screen.getAllByText(/50,000/).length).toBeGreaterThan(0);
     expect(screen.getByText(/PAID/i)).toBeInTheDocument();
     // Print target: the receipt carries the anchor used by the print CSS.
-    expect(document.getElementById("nuvora-receipt")).toBeInTheDocument();
+    expect(document.getElementById("yk-virtual-receipt")).toBeInTheDocument();
   });
 
   it("renders the paid-on date for record keeping", () => {
     render(
-      <NuvoraReceipt
+      <YKVirtualReceipt
         orderNumber="NV-1"
         status="PAID"
         createdAt="2026-08-21T10:00:00Z"
         currency="NGN"
         total={1000}
         items={[]}
-      />
+      />,
     );
     expect(screen.getByText(/21 Aug 2026/i)).toBeInTheDocument();
   });

@@ -9,15 +9,33 @@ import { useTheme } from "@/src/lib/theme-context";
 import { type ThemeColors } from "@/src/lib/theme";
 
 // Terms of Service — the section headings and key points. The full text lives
-// on the web (nuvora.com/terms).
+// on the web (virtual.ykaycollege.com/terms).
 
 const SECTIONS = [
-  { h: "The service", p: "NUVORA provides vetted tutoring, cohort programmes, exam preparation and progress reporting." },
-  { h: "Accounts", p: "Keep your login secure. One person per account; contact us if your account is compromised." },
-  { h: "Payments & escrow", p: "Fees are held in escrow and released to tutors only after lessons are delivered. Pay through the platform — never off-platform." },
-  { h: "Acceptable use", p: "No abuse, harassment, or sharing of learner data outside the platform's safeguards." },
-  { h: "Termination", p: "We may suspend or close accounts that breach these terms or endanger learners." },
-  { h: "Contact & law", p: "Questions go to support@nuvora.com. The service is provided by NUVORA." },
+  {
+    h: "The service",
+    p: "YK-Virtual provides vetted tutoring, cohort programmes, exam preparation and progress reporting.",
+  },
+  {
+    h: "Accounts",
+    p: "Keep your login secure. One person per account; contact us if your account is compromised.",
+  },
+  {
+    h: "Payments & escrow",
+    p: "Fees are held in escrow and released to tutors only after lessons are delivered. Pay through the platform — never off-platform.",
+  },
+  {
+    h: "Acceptable use",
+    p: "No abuse, harassment, or sharing of learner data outside the platform's safeguards.",
+  },
+  {
+    h: "Termination",
+    p: "We may suspend or close accounts that breach these terms or endanger learners.",
+  },
+  {
+    h: "Contact & law",
+    p: "Questions go to support@ykaycollege.com. The service is provided by YK-Virtual.",
+  },
 ] as const;
 
 export default function TermsScreen() {
@@ -33,11 +51,23 @@ export default function TermsScreen() {
       {SECTIONS.map((s) => (
         <Card key={s.h} padded style={{ marginBottom: 10 }}>
           <AppText variant="h3">{s.h}</AppText>
-          <AppText variant="bodySm" style={{ color: colors.ink[600], marginTop: 6, lineHeight: 19 }}>{s.p}</AppText>
+          <AppText
+            variant="bodySm"
+            style={{ color: colors.ink[600], marginTop: 6, lineHeight: 19 }}
+          >
+            {s.p}
+          </AppText>
         </Card>
       ))}
 
-      <Button label="Read the full terms" variant="secondary" full onPress={() => void Linking.openURL("https://nuvora.com/terms")} />
+      <Button
+        label="Read the full terms"
+        variant="secondary"
+        full
+        onPress={() =>
+          void Linking.openURL("https://virtual.ykaycollege.com/terms")
+        }
+      />
     </Screen>
   );
 }

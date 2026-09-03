@@ -84,13 +84,13 @@ Scope: remediation-plan gates **G1.2/G1.3 (all fixed identities eliminated + aut
 
 ## G2.1 — dependency remediation: 0 vulnerabilities (was 7: 1 critical, 5 high)
 
-| Change | Why |
-|---|---|
-| **Next.js 14.2.15 → 15.5.23** | 14.2.15 was inside the fix range of 20+ advisories incl. critical middleware authorization bypass (CVE-2025-29927, fixed 14.2.25) — moved to the maintained 15.x line |
-| `@tanstack/react-form` ^0.48 → ^1.x | 0.x pulled vulnerable `@remix-run/*`/`turbo-stream` chain (high) |
-| `uuid` dependency **removed** | moderate advisory; `crypto.randomUUID` + tiny RFC4122 fallback in `lib/api.ts` |
-| `overrides`: `postcss ^8.5.26`, `sharp ^0.35` | Next's pinned transitive copies carried high advisories |
-| Next 15 migration | official `next-async-request-api` codemod (async `params`/`searchParams` on 6 dynamic routes), `outputFileTracingRoot` set |
+| Change                                        | Why                                                                                                                                                                   |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Next.js 14.2.15 → 15.5.23**                 | 14.2.15 was inside the fix range of 20+ advisories incl. critical middleware authorization bypass (CVE-2025-29927, fixed 14.2.25) — moved to the maintained 15.x line |
+| `@tanstack/react-form` ^0.48 → ^1.x           | 0.x pulled vulnerable `@remix-run/*`/`turbo-stream` chain (high)                                                                                                      |
+| `uuid` dependency **removed**                 | moderate advisory; `crypto.randomUUID` + tiny RFC4122 fallback in `lib/api.ts`                                                                                        |
+| `overrides`: `postcss ^8.5.26`, `sharp ^0.35` | Next's pinned transitive copies carried high advisories                                                                                                               |
+| Next 15 migration                             | official `next-async-request-api` codemod (async `params`/`searchParams` on 6 dynamic routes), `outputFileTracingRoot` set                                            |
 
 `npm audit` → **found 0 vulnerabilities**. `tsc --noEmit` clean.
 `next build` → **83/83 routes** on Next 15.5.23. CI frontend job now gates on
@@ -100,7 +100,7 @@ Scope: remediation-plan gates **G1.2/G1.3 (all fixed identities eliminated + aut
 
 - **`internal/worker/queue.go`** (new): Redis-backed durable queue —
   `BRPOPLPUSH ready→processing`, exponential backoff (2s…5m cap),
-  `MaxAttempts=5`, **dead-letter list** (`nuvora:jobs:dead`) with operator
+  `MaxAttempts=5`, **dead-letter list** (`ykvirtual:jobs:dead`) with operator
   inspection (`DeadLetters`), delayed jobs via ZSET promotion, at-least-once
   delivery with idempotent-handler contract; `MemoryQueue` with identical
   semantics for dev/tests.

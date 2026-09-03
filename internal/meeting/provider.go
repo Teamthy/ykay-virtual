@@ -7,7 +7,7 @@
 // fetch a join link between (start - join_window) and (end + grace).
 //
 // Providers:
-//   - StubMeetingProvider — dev/fixtures (fake meet.nuvora.local — never prod)
+//   - StubMeetingProvider — dev/fixtures (fake meet.ykvirtual.local — never prod)
 //   - JitsiProvider       — public meet.jit.si rooms, no API key (free)
 //   - WherebyProvider     — https://api.whereby.dev/v1/meetings (real REST)
 package meeting
@@ -137,7 +137,7 @@ func (j *JitsiProvider) Create(_ context.Context, lessonID, title string, _, end
 	if base == "" {
 		base = "https://meet.jit.si"
 	}
-	room := "nuvora-" + lessonID
+	room := "yk-virtual-" + lessonID
 	url := strings.TrimRight(base, "/") + "/" + room
 	_ = title
 	return MeetingLink{
@@ -151,15 +151,15 @@ func (j *JitsiProvider) Create(_ context.Context, lessonID, title string, _, end
 // ---------------------------------------------------------------- Stub -----
 
 // StubMeetingProvider — deterministic dev provider (no network). Join URLs
-// are obviously fake (https://meet.nuvora.local/…) so nobody mistakes them
+// are obviously fake (https://meet.ykvirtual.local/…) so nobody mistakes them
 // for real rooms; the tutor dashboard renders them as disabled in dev.
 type StubMeetingProvider struct{}
 
 func (StubMeetingProvider) Create(_ context.Context, lessonID, _ string, _ time.Time, endAt time.Time) (MeetingLink, error) {
 	return MeetingLink{
 		ProviderRef: "stub-" + lessonID,
-		JoinURL:     fmt.Sprintf("https://meet.nuvora.local/room/%s", lessonID),
-		RoomURL:     fmt.Sprintf("https://meet.nuvora.local/room/%s", lessonID),
+		JoinURL:     fmt.Sprintf("https://meet.ykvirtual.local/room/%s", lessonID),
+		RoomURL:     fmt.Sprintf("https://meet.ykvirtual.local/room/%s", lessonID),
 		ExpiresAt:   endAt.Add(1 * time.Hour),
 	}, nil
 }

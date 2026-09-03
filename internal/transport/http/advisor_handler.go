@@ -9,7 +9,7 @@ import (
 	"ykay-virtual/pkg"
 )
 
-// AdvisorHandler — NUVORA Plus named Learning Advisor + learning plan.
+// AdvisorHandler — YK-Virtual Plus named Learning Advisor + learning plan.
 type AdvisorHandler struct {
 	svc *service.AdvisorService
 }

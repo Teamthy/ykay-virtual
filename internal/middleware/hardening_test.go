@@ -27,17 +27,17 @@ func TestCORS_FailClosed(t *testing.T) {
 	})
 
 	t.Run("allowed origin → headers with credentials", func(t *testing.T) {
-		h := CORS("https://app.nuvora.com, https://staging.nuvora.com")(http.HandlerFunc(ok))
+		h := CORS("https://app.virtual.ykaycollege.com, https://staging.virtual.ykaycollege.com")(http.HandlerFunc(ok))
 		rec := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/x", nil)
-		req.Header.Set("Origin", "https://app.nuvora.com")
+		req.Header.Set("Origin", "https://app.virtual.ykaycollege.com")
 		h.ServeHTTP(rec, req)
-		assert.Equal(t, "https://app.nuvora.com", rec.Header().Get("Access-Control-Allow-Origin"))
+		assert.Equal(t, "https://app.virtual.ykaycollege.com", rec.Header().Get("Access-Control-Allow-Origin"))
 		assert.Equal(t, "true", rec.Header().Get("Access-Control-Allow-Credentials"))
 	})
 
 	t.Run("unknown origin → no headers", func(t *testing.T) {
-		h := CORS("https://app.nuvora.com")(http.HandlerFunc(ok))
+		h := CORS("https://app.virtual.ykaycollege.com")(http.HandlerFunc(ok))
 		rec := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/x", nil)
 		req.Header.Set("Origin", "https://evil.example.com")
@@ -46,7 +46,7 @@ func TestCORS_FailClosed(t *testing.T) {
 	})
 
 	t.Run("preflight from unknown origin → 204 without CORS headers", func(t *testing.T) {
-		h := CORS("https://app.nuvora.com")(http.HandlerFunc(ok))
+		h := CORS("https://app.virtual.ykaycollege.com")(http.HandlerFunc(ok))
 		rec := httptest.NewRecorder()
 		req := httptest.NewRequest(http.MethodOptions, "/api/v1/x", nil)
 		req.Header.Set("Origin", "https://evil.example.com")

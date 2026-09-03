@@ -50,7 +50,12 @@ type ObState = {
   userId?: string;
   verified: boolean;
   role?: "PARENT" | "STUDENT" | "TUTOR" | "INSTITUTION";
-  parent?: { forWhom?: string; childName?: string; childLevel?: string; childDOB?: string };
+  parent?: {
+    forWhom?: string;
+    childName?: string;
+    childLevel?: string;
+    childDOB?: string;
+  };
   student?: { goals?: string[]; level?: string };
   tutor?: { subjects?: string[]; levels?: string[] };
   institution?: { kind?: string; city?: string };
@@ -62,19 +67,58 @@ type ObState = {
 };
 
 const ROLES = [
-  { value: "PARENT", label: "Parent", desc: "I book tutors & programmes for my child", icon: "👪" },
-  { value: "STUDENT", label: "Student", desc: "I learn with NUVORA tutors", icon: "🎓" },
-  { value: "TUTOR", label: "Tutor", desc: "I want to apply to teach and earn", icon: "✍️" },
-  { value: "INSTITUTION", label: "School / Company", desc: "I represent a school or organisation", icon: "🏫" },
+  {
+    value: "PARENT",
+    label: "Parent",
+    desc: "I book tutors & programmes for my child",
+    icon: "👪",
+  },
+  {
+    value: "STUDENT",
+    label: "Student",
+    desc: "I learn with YK-Virtual tutors",
+    icon: "🎓",
+  },
+  {
+    value: "TUTOR",
+    label: "Tutor",
+    desc: "I want to apply to teach and earn",
+    icon: "✍️",
+  },
+  {
+    value: "INSTITUTION",
+    label: "School / Company",
+    desc: "I represent a school or organisation",
+    icon: "🏫",
+  },
 ] as const;
 
 const STEP_META: Record<number, { title: string; subtitle: string }> = {
-  1: { title: "Create your account", subtitle: "Start with your name and email - it takes under 2 minutes." },
-  2: { title: "Verify your email", subtitle: "Enter the 6-digit code we emailed you." },
-  3: { title: "How are you planning to use NUVORA?", subtitle: "Select the role that best describes you." },
-  4: { title: "What's next for you?", subtitle: "Tell us a little more so we can point you in the right direction." },
-  5: { title: "Complete your profile", subtitle: "Add your contact details and secure your account." },
-  6: { title: "About you", subtitle: "Optional details to personalise your experience." },
+  1: {
+    title: "Create your account",
+    subtitle: "Start with your name and email - it takes under 2 minutes.",
+  },
+  2: {
+    title: "Verify your email",
+    subtitle: "Enter the 6-digit code we emailed you.",
+  },
+  3: {
+    title: "How are you planning to use YK-Virtual?",
+    subtitle: "Select the role that best describes you.",
+  },
+  4: {
+    title: "What's next for you?",
+    subtitle:
+      "Tell us a little more so we can point you in the right direction.",
+  },
+  5: {
+    title: "Complete your profile",
+    subtitle: "Add your contact details and secure your account.",
+  },
+  6: {
+    title: "About you",
+    subtitle: "Optional details to personalise your experience.",
+  },
   7: { title: "You're all set!", subtitle: "Your account is ready." },
 };
 
@@ -83,11 +127,15 @@ function dashboardFor(role?: string) {
 }
 
 function randomPassword(len = 24) {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";
+  const chars =
+    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";
   let s = "";
   const arr = new Uint32Array(len);
-  if (typeof crypto !== "undefined" && crypto.getRandomValues) crypto.getRandomValues(arr);
-  else for (let i = 0; i < len; i++) arr[i] = Math.floor(Math.random() * 0xffffffff);
+  if (typeof crypto !== "undefined" && crypto.getRandomValues)
+    crypto.getRandomValues(arr);
+  else
+    for (let i = 0; i < len; i++)
+      arr[i] = Math.floor(Math.random() * 0xffffffff);
   for (let i = 0; i < len; i++) s += chars[arr[i] % chars.length];
   return s;
 }
@@ -113,7 +161,7 @@ function Chip({
         selected
           ? "border-primary bg-primary-light text-deep"
           : "border-ink-200 bg-white text-ink-600 hover:border-ink-300 hover:text-ink-800",
-        className
+        className,
       )}
     >
       {children}
@@ -123,7 +171,15 @@ function Chip({
 
 // ── Shared bits ────────────────────────────────────────────────────────────
 
-function ContinueBtn({ onClick, label, disabled }: { onClick: () => void; label: string; disabled?: boolean }) {
+function ContinueBtn({
+  onClick,
+  label,
+  disabled,
+}: {
+  onClick: () => void;
+  label: string;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -139,7 +195,10 @@ function ContinueBtn({ onClick, label, disabled }: { onClick: () => void; label:
 function ErrorBox({ error }: { error: string | null }) {
   if (!error) return null;
   return (
-    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+    <div
+      className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+      role="alert"
+    >
       {error}
     </div>
   );
@@ -166,7 +225,10 @@ function Step1({
       </div>
       <div className="space-y-4">
         <div>
-          <label htmlFor="ob-name" className="mb-1.5 block text-sm font-medium text-ink-800">
+          <label
+            htmlFor="ob-name"
+            className="mb-1.5 block text-sm font-medium text-ink-800"
+          >
             Full name
           </label>
           <input
@@ -181,7 +243,10 @@ function Step1({
           />
         </div>
         <div>
-          <label htmlFor="ob-email" className="mb-1.5 block text-sm font-medium text-ink-800">
+          <label
+            htmlFor="ob-email"
+            className="mb-1.5 block text-sm font-medium text-ink-800"
+          >
             Email address
           </label>
           <input
@@ -205,12 +270,19 @@ function Step1({
         </button>
       </div>
       <p className="text-xs leading-5 text-ink-400">
-        We&apos;ll send a 6-digit code to your email to verify it. By continuing you agree to our{" "}
-        <Link href="/terms" className="font-medium text-primary-dark hover:underline">
+        We&apos;ll send a 6-digit code to your email to verify it. By continuing
+        you agree to our{" "}
+        <Link
+          href="/terms"
+          className="font-medium text-primary-dark hover:underline"
+        >
           Terms
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" className="font-medium text-primary-dark hover:underline">
+        <Link
+          href="/privacy"
+          className="font-medium text-primary-dark hover:underline"
+        >
           Privacy Policy
         </Link>
         .
@@ -243,11 +315,15 @@ function Step2({
   return (
     <div className="space-y-5">
       <div className="rounded-lg border border-ink-200 bg-surface-muted px-4 py-3 text-sm text-ink-600">
-        We emailed a 6-digit code to <span className="font-semibold text-deep">{email}</span>. Enter it below to
-        verify your email.
+        We emailed a 6-digit code to{" "}
+        <span className="font-semibold text-deep">{email}</span>. Enter it below
+        to verify your email.
       </div>
       <div>
-        <label htmlFor="ob-code" className="mb-1.5 block text-sm font-medium text-ink-800">
+        <label
+          htmlFor="ob-code"
+          className="mb-1.5 block text-sm font-medium text-ink-800"
+        >
           Verification code
         </label>
         <input
@@ -260,7 +336,9 @@ function Step2({
           className={cn(INPUT_CLS, "font-mono text-lg tracking-[0.35em]")}
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-          onKeyDown={(e) => e.key === "Enter" && code.length === 6 && void onVerify()}
+          onKeyDown={(e) =>
+            e.key === "Enter" && code.length === 6 && void onVerify()
+          }
         />
       </div>
       <div className="flex gap-3">
@@ -270,7 +348,11 @@ function Step2({
           disabled={submitting || countdown > 0}
           className="inline-flex h-11 flex-1 items-center justify-center rounded-lg border border-ink-300 bg-white px-4 text-sm font-semibold text-ink-700 transition-colors hover:border-ink-400 disabled:pointer-events-none disabled:opacity-50"
         >
-          {countdown > 0 ? `Resend in ${countdown}s` : codeSent ? "Resend code" : "Send code"}
+          {countdown > 0
+            ? `Resend in ${countdown}s`
+            : codeSent
+              ? "Resend code"
+              : "Send code"}
         </button>
         <button
           type="button"
@@ -282,7 +364,8 @@ function Step2({
         </button>
       </div>
       <p className="text-xs leading-5 text-ink-400">
-        The code expires in 10 minutes. Check your spam folder if it doesn&apos;t arrive.
+        The code expires in 10 minutes. Check your spam folder if it
+        doesn&apos;t arrive.
       </p>
     </div>
   );
@@ -311,7 +394,9 @@ function Step3({
           aria-pressed={selected === r.value}
           className={cn(
             "flex w-full items-start gap-4 rounded-xl border-2 p-4 text-left transition-colors",
-            selected === r.value ? "border-primary bg-primary-light" : "border-ink-200 bg-white hover:border-ink-300"
+            selected === r.value
+              ? "border-primary bg-primary-light"
+              : "border-ink-200 bg-white hover:border-ink-300",
           )}
         >
           <span className="text-2xl" aria-hidden="true">
@@ -324,12 +409,18 @@ function Step3({
           <span
             className={cn(
               "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2",
-              selected === r.value ? "border-primary bg-primary" : "border-ink-300"
+              selected === r.value
+                ? "border-primary bg-primary"
+                : "border-ink-300",
             )}
             aria-hidden="true"
           >
             {selected === r.value && (
-              <svg className="size-3 text-ink-900" viewBox="0 0 20 20" fill="currentColor">
+              <svg
+                className="size-3 text-ink-900"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path
                   fillRule="evenodd"
                   d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.8 3.8 6.8-6.8a1 1 0 011.4 0z"
@@ -340,23 +431,43 @@ function Step3({
           </span>
         </button>
       ))}
-      <ContinueBtn onClick={onContinue} label={submitting ? "Saving…" : "Continue"} disabled={!selected || submitting} />
+      <ContinueBtn
+        onClick={onContinue}
+        label={submitting ? "Saving…" : "Continue"}
+        disabled={!selected || submitting}
+      />
     </div>
   );
 }
 
 // ── Step 4: role-specific "what's next" ───────────────────────────────────
 
-function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObState>) => void; onNext: () => void }) {
+function Step4({
+  state,
+  save,
+  onNext,
+}: {
+  state: ObState;
+  save: (p: Partial<ObState>) => void;
+  onNext: () => void;
+}) {
   const r = state.role;
   if (r === "PARENT")
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">Who is learning with NUVORA?</span>
+          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+            Who is learning with YK-Virtual?
+          </span>
           <div className="flex flex-wrap gap-2">
             {["My child", "Myself", "Both"].map((o) => (
-              <Chip key={o} selected={state.parent?.forWhom === o} onClick={() => save({ parent: { ...state.parent, forWhom: o } })}>
+              <Chip
+                key={o}
+                selected={state.parent?.forWhom === o}
+                onClick={() =>
+                  save({ parent: { ...state.parent, forWhom: o } })
+                }
+              >
                 {o}
               </Chip>
             ))}
@@ -365,7 +476,10 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
         {state.parent?.forWhom && state.parent.forWhom !== "Myself" && (
           <>
             <div>
-              <label htmlFor="ob-child" className="mb-1.5 block text-sm font-medium text-ink-800">
+              <label
+                htmlFor="ob-child"
+                className="mb-1.5 block text-sm font-medium text-ink-800"
+              >
                 Learner&apos;s name
               </label>
               <input
@@ -374,17 +488,28 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
                 className={INPUT_CLS}
                 placeholder="e.g. Chidera Okonkwo"
                 value={state.parent?.childName ?? ""}
-                onChange={(e) => save({ parent: { ...state.parent, childName: e.target.value } })}
+                onChange={(e) =>
+                  save({
+                    parent: { ...state.parent, childName: e.target.value },
+                  })
+                }
               />
             </div>
             <div>
-              <span className="mb-1.5 block text-sm font-medium text-ink-800">Learner&apos;s level</span>
+              <span className="mb-1.5 block text-sm font-medium text-ink-800">
+                Learner&apos;s level
+              </span>
               <CurriculumLevelSelect
                 value={state.parent?.childLevel ?? ""}
-                onChange={(level) => save({ parent: { ...state.parent, childLevel: level } })}
+                onChange={(level) =>
+                  save({ parent: { ...state.parent, childLevel: level } })
+                }
               />
               <div className="mt-3">
-                <label htmlFor="ob-child-dob" className="mb-1.5 block text-sm font-medium text-ink-800">
+                <label
+                  htmlFor="ob-child-dob"
+                  className="mb-1.5 block text-sm font-medium text-ink-800"
+                >
                   Learner&apos;s date of birth
                 </label>
                 <input
@@ -393,10 +518,15 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
                   max={new Date().toISOString().split("T")[0]}
                   className={INPUT_CLS}
                   value={state.parent?.childDOB ?? ""}
-                  onChange={(e) => save({ parent: { ...state.parent, childDOB: e.target.value } })}
+                  onChange={(e) =>
+                    save({
+                      parent: { ...state.parent, childDOB: e.target.value },
+                    })
+                  }
                 />
                 <p className="mt-1 text-xs text-ink-400">
-                  Under 15? Their account stays parent-guided — you manage bookings and payments.
+                  Under 15? Their account stays parent-guided — you manage
+                  bookings and payments.
                 </p>
               </div>
             </div>
@@ -409,33 +539,42 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">What are you preparing for?</span>
+          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+            What are you preparing for?
+          </span>
           <div className="flex flex-wrap gap-2">
-            {["School exams", "SAT / ACT", "GMAT / GRE", "University admission"].map(
-              (g) => {
-                const on = state.student?.goals?.includes(g) ?? false;
-                return (
-                  <Chip
-                    key={g}
-                    selected={on}
-                    onClick={() =>
-                      save({
-                        student: {
-                          ...state.student,
-                          goals: on ? (state.student?.goals ?? []).filter((x) => x !== g) : [...(state.student?.goals ?? []), g],
-                        },
-                      })
-                    }
-                  >
-                    {g}
-                  </Chip>
-                );
-              }
-            )}
+            {[
+              "School exams",
+              "SAT / ACT",
+              "GMAT / GRE",
+              "University admission",
+            ].map((g) => {
+              const on = state.student?.goals?.includes(g) ?? false;
+              return (
+                <Chip
+                  key={g}
+                  selected={on}
+                  onClick={() =>
+                    save({
+                      student: {
+                        ...state.student,
+                        goals: on
+                          ? (state.student?.goals ?? []).filter((x) => x !== g)
+                          : [...(state.student?.goals ?? []), g],
+                      },
+                    })
+                  }
+                >
+                  {g}
+                </Chip>
+              );
+            })}
           </div>
         </div>
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">Your level</span>
+          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+            Your level
+          </span>
           <CurriculumLevelSelect
             value={state.student?.level ?? ""}
             onChange={(level) => save({ student: { ...state.student, level } })}
@@ -448,59 +587,78 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">What would you like to teach?</span>
+          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+            What would you like to teach?
+          </span>
           <div className="flex flex-wrap gap-2">
-            {["Mathematics", "English", "Sciences", "Languages", "Computer Science", "Business", "Test prep"].map(
-              (s) => {
-                const on = state.tutor?.subjects?.includes(s) ?? false;
-                return (
-                  <Chip
-                    key={s}
-                    selected={on}
-                    onClick={() =>
-                      save({
-                        tutor: {
-                          ...state.tutor,
-                          subjects: on ? (state.tutor?.subjects ?? []).filter((x) => x !== s) : [...(state.tutor?.subjects ?? []), s],
-                        },
-                      })
-                    }
-                  >
-                    {s}
-                  </Chip>
-                );
-              }
-            )}
-          </div>
-        </div>
-        <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">Levels</span>
-          <div className="flex flex-wrap gap-2">
-            {["Primary", "Secondary", "Undergraduate", "Professional"].map((l) => {
-              const on = state.tutor?.levels?.includes(l) ?? false;
+            {[
+              "Mathematics",
+              "English",
+              "Sciences",
+              "Languages",
+              "Computer Science",
+              "Business",
+              "Test prep",
+            ].map((s) => {
+              const on = state.tutor?.subjects?.includes(s) ?? false;
               return (
                 <Chip
-                  key={l}
+                  key={s}
                   selected={on}
                   onClick={() =>
                     save({
                       tutor: {
                         ...state.tutor,
-                        levels: on ? (state.tutor?.levels ?? []).filter((x) => x !== l) : [...(state.tutor?.levels ?? []), l],
+                        subjects: on
+                          ? (state.tutor?.subjects ?? []).filter((x) => x !== s)
+                          : [...(state.tutor?.subjects ?? []), s],
                       },
                     })
                   }
                 >
-                  {l}
+                  {s}
                 </Chip>
               );
             })}
           </div>
         </div>
+        <div>
+          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+            Levels
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {["Primary", "Secondary", "Undergraduate", "Professional"].map(
+              (l) => {
+                const on = state.tutor?.levels?.includes(l) ?? false;
+                return (
+                  <Chip
+                    key={l}
+                    selected={on}
+                    onClick={() =>
+                      save({
+                        tutor: {
+                          ...state.tutor,
+                          levels: on
+                            ? (state.tutor?.levels ?? []).filter((x) => x !== l)
+                            : [...(state.tutor?.levels ?? []), l],
+                        },
+                      })
+                    }
+                  >
+                    {l}
+                  </Chip>
+                );
+              },
+            )}
+          </div>
+        </div>
         <ContinueBtn onClick={onNext} label="Continue" />
         <p className="text-xs leading-5 text-ink-400">
-          Want to teach on NUVORA? Complete your profile, then{" "}
-          <Link href="/become-tutor/apply" className="font-semibold text-primary-dark hover:underline">
+          Want to teach on YK-Virtual? Complete your profile, then{" "}
+          <Link
+            href="/become-tutor/apply"
+            className="font-semibold text-primary-dark hover:underline"
+          >
             apply to become a tutor
           </Link>
           .
@@ -511,21 +669,30 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">What kind of institution?</span>
+          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+            What kind of institution?
+          </span>
           <div className="flex flex-wrap gap-2">
-            {["School", "Academy / Test-prep", "Agency / Consultancy"].map((k) => (
-              <Chip
-                key={k}
-                selected={state.institution?.kind === k}
-                onClick={() => save({ institution: { ...state.institution, kind: k } })}
-              >
-                {k}
-              </Chip>
-            ))}
+            {["School", "Academy / Test-prep", "Agency / Consultancy"].map(
+              (k) => (
+                <Chip
+                  key={k}
+                  selected={state.institution?.kind === k}
+                  onClick={() =>
+                    save({ institution: { ...state.institution, kind: k } })
+                  }
+                >
+                  {k}
+                </Chip>
+              ),
+            )}
           </div>
         </div>
         <div>
-          <label htmlFor="ob-city" className="mb-1.5 block text-sm font-medium text-ink-800">
+          <label
+            htmlFor="ob-city"
+            className="mb-1.5 block text-sm font-medium text-ink-800"
+          >
             City
           </label>
           <input
@@ -534,20 +701,31 @@ function Step4({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
             className={INPUT_CLS}
             placeholder="e.g. Lagos"
             value={state.institution?.city ?? ""}
-            onChange={(e) => save({ institution: { ...state.institution, city: e.target.value } })}
+            onChange={(e) =>
+              save({
+                institution: { ...state.institution, city: e.target.value },
+              })
+            }
           />
         </div>
         <ContinueBtn onClick={onNext} label="Continue" />
         <p className="text-xs leading-5 text-ink-400">
-          Want to set up your school on NUVORA?{" "}
-          <Link href="/for-schools" className="font-semibold text-primary-dark hover:underline">
-            Explore NUVORA for schools
+          Want to set up your school on YK-Virtual?{" "}
+          <Link
+            href="/for-schools"
+            className="font-semibold text-primary-dark hover:underline"
+          >
+            Explore YK-Virtual for schools
           </Link>
           .
         </p>
       </div>
     );
-  return <p className="text-sm text-ink-500">Pick a role on the previous step to continue.</p>;
+  return (
+    <p className="text-sm text-ink-500">
+      Pick a role on the previous step to continue.
+    </p>
+  );
 }
 
 // ── Step 5: phone + password (strength meter) ─────────────────────────────
@@ -565,18 +743,34 @@ function strength(pw: string) {
 function StrengthMeter({ pw }: { pw: string }) {
   const s = strength(pw);
   const labels = ["", "Weak", "Fair", "Good", "Strong"];
-  const colors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"];
+  const colors = [
+    "bg-red-500",
+    "bg-orange-500",
+    "bg-yellow-500",
+    "bg-green-500",
+  ];
   if (!pw) return null;
   return (
     <div className="mt-2">
       <div className="flex gap-1" aria-hidden="true">
         {[0, 1, 2, 3].map((i) => (
-          <span key={i} className={cn("h-1.5 flex-1 rounded-full", i < s ? colors[Math.max(s - 1, 0)] : "bg-ink-100")} />
+          <span
+            key={i}
+            className={cn(
+              "h-1.5 flex-1 rounded-full",
+              i < s ? colors[Math.max(s - 1, 0)] : "bg-ink-100",
+            )}
+          />
         ))}
       </div>
       <p className="mt-1 text-xs text-ink-500">
         Password strength: <span className="font-semibold">{labels[s]}</span>
-        {s < 3 && <span className="text-ink-400"> - aim for 8+ characters with mixed case, a number and a symbol.</span>}
+        {s < 3 && (
+          <span className="text-ink-400">
+            {" "}
+            - aim for 8+ characters with mixed case, a number and a symbol.
+          </span>
+        )}
       </p>
     </div>
   );
@@ -601,8 +795,12 @@ function Step5({
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="ob-phone" className="mb-1.5 block text-sm font-medium text-ink-800">
-          Phone number <span className="font-normal text-ink-400">(optional)</span>
+        <label
+          htmlFor="ob-phone"
+          className="mb-1.5 block text-sm font-medium text-ink-800"
+        >
+          Phone number{" "}
+          <span className="font-normal text-ink-400">(optional)</span>
         </label>
         <input
           id="ob-phone"
@@ -629,7 +827,9 @@ function Step5({
         value={pw2}
         onChange={(e) => setPw2(e.target.value)}
       />
-      {pw2 && pw !== pw2 && <p className="text-xs text-red-600">Passwords do not match.</p>}
+      {pw2 && pw !== pw2 && (
+        <p className="text-xs text-red-600">Passwords do not match.</p>
+      )}
       <ContinueBtn
         onClick={() => {
           save({ phone });
@@ -647,7 +847,8 @@ function Step5({
         disabled={submitting}
       />
       <p className="text-xs leading-5 text-ink-400">
-        Leave the password empty to keep using email codes to sign in - you can add one later.
+        Leave the password empty to keep using email codes to sign in - you can
+        add one later.
       </p>
     </div>
   );
@@ -655,12 +856,24 @@ function Step5({
 
 // ── Step 6: about you ─────────────────────────────────────────────────────
 
-function Step6({ state, save, onNext }: { state: ObState; save: (p: Partial<ObState>) => void; onNext: () => void }) {
+function Step6({
+  state,
+  save,
+  onNext,
+}: {
+  state: ObState;
+  save: (p: Partial<ObState>) => void;
+  onNext: () => void;
+}) {
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="ob-bio" className="mb-1.5 block text-sm font-medium text-ink-800">
-          Tell us about yourself <span className="font-normal text-ink-400">(optional)</span>
+        <label
+          htmlFor="ob-bio"
+          className="mb-1.5 block text-sm font-medium text-ink-800"
+        >
+          Tell us about yourself{" "}
+          <span className="font-normal text-ink-400">(optional)</span>
         </label>
         <textarea
           id="ob-bio"
@@ -672,13 +885,21 @@ function Step6({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
         />
       </div>
       <div>
-        <span className="mb-1.5 block text-sm font-medium text-ink-800">Preferred language</span>
+        <span className="mb-1.5 block text-sm font-medium text-ink-800">
+          Preferred language
+        </span>
         <div className="flex flex-wrap gap-2">
-          {["English", "French", "Yoruba", "Igbo", "Hausa", "Pidgin"].map((l) => (
-            <Chip key={l} selected={state.language === l} onClick={() => save({ language: l })}>
-              {l}
-            </Chip>
-          ))}
+          {["English", "French", "Yoruba", "Igbo", "Hausa", "Pidgin"].map(
+            (l) => (
+              <Chip
+                key={l}
+                selected={state.language === l}
+                onClick={() => save({ language: l })}
+              >
+                {l}
+              </Chip>
+            ),
+          )}
         </div>
       </div>
       <ContinueBtn onClick={onNext} label="Finish setup" />
@@ -690,16 +911,23 @@ function Step6({ state, save, onNext }: { state: ObState; save: (p: Partial<ObSt
 
 function Step7({ state, onDone }: { state: ObState; onDone: () => void }) {
   const first = (state.name || state.email).split(" ")[0] || "there";
-  const roleLabel = ROLES.find((r) => r.value === state.role)?.label.toLowerCase() ?? "account";
+  const roleLabel =
+    ROLES.find((r) => r.value === state.role)?.label.toLowerCase() ?? "account";
   return (
     <div className="space-y-5 text-center">
-      <div className="mx-auto grid size-16 place-items-center rounded-full bg-primary-light text-4xl" aria-hidden="true">
+      <div
+        className="mx-auto grid size-16 place-items-center rounded-full bg-primary-light text-4xl"
+        aria-hidden="true"
+      >
         🎉
       </div>
       <div>
-        <h3 className="text-xl font-extrabold text-deep">You&apos;re all set, {first}!</h3>
+        <h3 className="text-xl font-extrabold text-deep">
+          You&apos;re all set, {first}!
+        </h3>
         <p className="mt-1.5 text-sm leading-6 text-ink-500">
-          Your NUVORA account is ready. Head to your dashboard to explore programmes, cohorts and tutors.
+          Your YK-Virtual account is ready. Head to your dashboard to explore
+          programmes, cohorts and tutors.
         </p>
       </div>
       <button
@@ -709,7 +937,9 @@ function Step7({ state, onDone }: { state: ObState; onDone: () => void }) {
       >
         Go to my dashboard
       </button>
-      <p className="text-xs text-ink-400">You&apos;ll be taken to your {roleLabel} dashboard.</p>
+      <p className="text-xs text-ink-400">
+        You&apos;ll be taken to your {roleLabel} dashboard.
+      </p>
     </div>
   );
 }
@@ -736,7 +966,8 @@ function OnboardingInner() {
   }, []);
 
   const [state, setState] = useState<ObState>(() => {
-    if (typeof window === "undefined") return { name: "", email: "", verified: false };
+    if (typeof window === "undefined")
+      return { name: "", email: "", verified: false };
     try {
       const raw = window.localStorage.getItem(ONBOARDING_STORAGE_KEY);
       if (raw) return JSON.parse(raw) as ObState;
@@ -757,14 +988,17 @@ function OnboardingInner() {
   // verifier flags (refs are synchronous - they don't go through React's
   // render/batch cycle, so the recovery effect below can never race them).
   const verifyingRef = useRef(false); // a verify request is in flight
-  const verifiedRef = useRef(false);  // email verified in THIS mount
+  const verifiedRef = useRef(false); // email verified in THIS mount
   const generatedPwRef = useRef("");
 
   const save = (patch: Partial<ObState>) => {
     setState((prev) => {
       const next = { ...prev, ...patch };
       try {
-        window.localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(next));
+        window.localStorage.setItem(
+          ONBOARDING_STORAGE_KEY,
+          JSON.stringify(next),
+        );
       } catch {
         /* storage full/blocked - flow continues in memory */
       }
@@ -823,7 +1057,8 @@ function OnboardingInner() {
 
   useEffect(() => {
     if (timer.current) clearInterval(timer.current);
-    if (countdown > 0) timer.current = setInterval(() => setCountdown((c) => c - 1), 1000);
+    if (countdown > 0)
+      timer.current = setInterval(() => setCountdown((c) => c - 1), 1000);
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
@@ -874,7 +1109,7 @@ function OnboardingInner() {
       // re-rendered yet (A-26: "verified then redirected to login").
       verifiedRef.current = true;
       save({ verified: true, userId: user.id });
-      toast.success("Email verified - welcome to NUVORA!");
+      toast.success("Email verified - welcome to YK-Virtual!");
       go(3);
     } catch (err) {
       setError(err instanceof Error ? err.message : "That code didn't work");
@@ -895,13 +1130,18 @@ function OnboardingInner() {
   const reverify = async (reason: string) => {
     try {
       await requestLoginCode(state.email);
-      toast.error(reason + " — we emailed you a fresh code. Enter it to pick up where you left off.");
+      toast.error(
+        reason +
+          " — we emailed you a fresh code. Enter it to pick up where you left off.",
+      );
       setCode("");
       setCodeSent(true);
       setCountdown(30);
       go(2);
     } catch {
-      toast.error("We couldn't send a sign-in code right now — email delivery is down. Your progress is saved; please try again in a few minutes.");
+      toast.error(
+        "We couldn't send a sign-in code right now — email delivery is down. Your progress is saved; please try again in a few minutes.",
+      );
       router.replace("/login");
     }
   };
@@ -916,12 +1156,17 @@ function OnboardingInner() {
       toast.success("Role saved");
       go(4);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not save your role";
+      const msg =
+        err instanceof Error ? err.message : "Could not save your role";
       // A-28/A-29: if the session is missing/expired (401) the role can't be
       // saved. Recover IN-FLOW with a fresh emailed code (confirm re-creates
       // the session); /login is a dead end for a user who hasn't set a
       // password yet.
-      if (/authentication required|not authenticated|unauthorized|session expired/i.test(msg)) {
+      if (
+        /authentication required|not authenticated|unauthorized|session expired/i.test(
+          msg,
+        )
+      ) {
         await reverify("Your session expired");
         return;
       }
@@ -953,7 +1198,8 @@ function OnboardingInner() {
       save({ userId: created.id, verified: false });
       go(2);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not create your account";
+      const msg =
+        err instanceof Error ? err.message : "Could not create your account";
       if (/already registered|already exists/i.test(msg)) {
         // The account exists (most likely a PENDING_VERIFICATION account from
         // an earlier attempt that never got its email). Resend the 6-digit
@@ -963,10 +1209,16 @@ function OnboardingInner() {
         setError(null);
         try {
           await requestLoginCode(state.email);
-          toast.success("We found your account — a fresh verification code is on its way to your inbox.");
+          toast.success(
+            "We found your account — a fresh verification code is on its way to your inbox.",
+          );
           go(2);
         } catch (codeErr) {
-          setError(codeErr instanceof Error ? codeErr.message : "Could not send the code — try again.");
+          setError(
+            codeErr instanceof Error
+              ? codeErr.message
+              : "Could not send the code — try again.",
+          );
         }
         return;
       }
@@ -989,8 +1241,13 @@ function OnboardingInner() {
       toast.success("Password set - you can now log in with it anytime.");
       go(6);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not set your password";
-      if (/authentication required|not authenticated|unauthorized|session expired/i.test(msg)) {
+      const msg =
+        err instanceof Error ? err.message : "Could not set your password";
+      if (
+        /authentication required|not authenticated|unauthorized|session expired/i.test(
+          msg,
+        )
+      ) {
         await reverify("Your session expired before the password was saved");
         return;
       }
@@ -1037,7 +1294,10 @@ function OnboardingInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionLoading, user, step, staleDraft]);
 
-  if (staleDraft || (!sessionLoading && !user && !verifiedRef.current && step >= 3 && step <= 6)) {
+  if (
+    staleDraft ||
+    (!sessionLoading && !user && !verifiedRef.current && step >= 3 && step <= 6)
+  ) {
     return <Loading />;
   }
 
@@ -1062,7 +1322,11 @@ function OnboardingInner() {
 
   return (
     <AuthShell
-      title={step === 1 && onboardingAB === "b" ? "Join NUVORA free" : STEP_META[step].title}
+      title={
+        step === 1 && onboardingAB === "b"
+          ? "Join YK-Virtual free"
+          : STEP_META[step].title
+      }
       subtitle={
         step === 1 && onboardingAB === "b"
           ? "Under 2 minutes to unlock vetted tutors, escrow-protected payments and live cohorts."
@@ -1086,7 +1350,12 @@ function OnboardingInner() {
       <ErrorBox error={error} />
 
       {step === 1 && (
-        <Step1 state={state} save={save} submitting={submitting} onContinue={() => void continueStep1()} />
+        <Step1
+          state={state}
+          save={save}
+          submitting={submitting}
+          onContinue={() => void continueStep1()}
+        />
       )}
       {step === 2 && (
         <Step2
@@ -1100,9 +1369,24 @@ function OnboardingInner() {
           onVerify={() => void verifyCode()}
         />
       )}
-      {step === 3 && <Step3 selected={role} onSelect={setRole} submitting={submitting} onContinue={() => role && void pickRole(role)} />}
+      {step === 3 && (
+        <Step3
+          selected={role}
+          onSelect={setRole}
+          submitting={submitting}
+          onContinue={() => role && void pickRole(role)}
+        />
+      )}
       {step === 4 && <Step4 state={state} save={save} onNext={() => go(5)} />}
-      {step === 5 && <Step5 state={state} save={save} submitting={submitting} onDone={finishStep5} setError={setError} />}
+      {step === 5 && (
+        <Step5
+          state={state}
+          save={save}
+          submitting={submitting}
+          onDone={finishStep5}
+          setError={setError}
+        />
+      )}
       {step === 6 && <Step6 state={state} save={save} onNext={() => go(7)} />}
       {step === 7 && (
         <Step7
@@ -1112,7 +1396,10 @@ function OnboardingInner() {
             // goes straight to the dashboard (never the wizard again).
             try {
               const child = state.parent?.childName?.trim();
-              if ((state.role === "PARENT" || state.role === "INSTITUTION") && child) {
+              if (
+                (state.role === "PARENT" || state.role === "INSTITUTION") &&
+                child
+              ) {
                 const parts = child.split(/\s+/);
                 await createLearner({
                   first_name: parts[0] ?? child,
@@ -1139,11 +1426,17 @@ function OnboardingInner() {
               /* never trap the user on the finish line */
             }
             clearOnboardingDraft();
-            trackEvent("onboarding_completed", { ab: onboardingAB, role: state.role ?? "PARENT" });
+            trackEvent("onboarding_completed", {
+              ab: onboardingAB,
+              role: state.role ?? "PARENT",
+            });
             const dest =
               state.role === "TUTOR"
                 ? "/become-tutor/apply"
-                : safeNextPath(state.next) ?? dashboardFor(state.role === "INSTITUTION" ? "PARENT" : state.role);
+                : (safeNextPath(state.next) ??
+                  dashboardFor(
+                    state.role === "INSTITUTION" ? "PARENT" : state.role,
+                  ));
             router.push(dest);
           }}
         />

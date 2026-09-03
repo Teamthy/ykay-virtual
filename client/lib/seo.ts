@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://virtual.ykaycollege.com";
 
 export function absoluteUrl(path: string) {
   return `${SITE_URL}${path}`;
@@ -15,7 +16,14 @@ type MetaTemplate = {
   canonical?: string;
 };
 
-export function buildMetadata({ title, description, path, image, noIndex, canonical }: MetaTemplate): Metadata {
+export function buildMetadata({
+  title,
+  description,
+  path,
+  image,
+  noIndex,
+  canonical,
+}: MetaTemplate): Metadata {
   const url = absoluteUrl(path);
   const canonicalUrl = canonical || url;
   return {
@@ -25,13 +33,13 @@ export function buildMetadata({ title, description, path, image, noIndex, canoni
       canonical: canonicalUrl,
     },
     category: "education",
-    creator: "NUVORA",
-    publisher: "NUVORA",
+    creator: "YK-Virtual",
+    publisher: "YK-Virtual",
     openGraph: {
       title,
       description,
       url,
-      siteName: "NUVORA",
+      siteName: "YK-Virtual",
       locale: "en_NG",
       images: image ? [{ url: image }] : [{ url: absoluteUrl("/og.png") }],
       type: "website",
@@ -42,7 +50,7 @@ export function buildMetadata({ title, description, path, image, noIndex, canoni
       description,
       images: image ? [image] : [absoluteUrl("/og.png")],
     },
-    // Geo-targeting: NUVORA is based in Lagos, Nigeria. These tags help local
+    // Geo-targeting: YK-Virtual is based in Lagos, Nigeria. These tags help local
     // (Nigerian/African) search relevance while the English pages stay usable
     // for international audiences.
     other: {
@@ -52,7 +60,9 @@ export function buildMetadata({ title, description, path, image, noIndex, canoni
       ICBM: "6.5244, 3.3792",
       "og:locale": "en_NG",
     },
-    robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
+    robots: noIndex
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
   };
 }
 
@@ -62,15 +72,16 @@ export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "NUVORA",
+    name: "YK-Virtual",
     url: SITE_URL,
     logo: absoluteUrl("/logo.png"),
-    description: "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
+    description:
+      "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
     sameAs: [
-      "https://twitter.com/nuvora",
-      "https://facebook.com/nuvora",
-      "https://instagram.com/nuvora",
-      "https://linkedin.com/company/nuvora",
+      "https://twitter.com/ykvirtual",
+      "https://facebook.com/ykvirtual",
+      "https://instagram.com/ykvirtual",
+      "https://linkedin.com/company/ykvirtual",
     ],
   };
 }
@@ -88,7 +99,19 @@ export function breadcrumbJsonLd(items: { name: string; item: string }[]) {
   };
 }
 
-export function courseJsonLd({ name, description, provider, url, image }: { name: string; description: string; provider: string; url: string; image?: string }) {
+export function courseJsonLd({
+  name,
+  description,
+  provider,
+  url,
+  image,
+}: {
+  name: string;
+  description: string;
+  provider: string;
+  url: string;
+  image?: string;
+}) {
   return {
     "@context": "https://schema.org",
     "@type": "Course",
@@ -104,7 +127,21 @@ export function courseJsonLd({ name, description, provider, url, image }: { name
   };
 }
 
-export function personJsonLd({ name, description, image, ratingValue, ratingCount, url }: { name: string; description?: string; image?: string; ratingValue?: number; ratingCount?: number; url: string }) {
+export function personJsonLd({
+  name,
+  description,
+  image,
+  ratingValue,
+  ratingCount,
+  url,
+}: {
+  name: string;
+  description?: string;
+  image?: string;
+  ratingValue?: number;
+  ratingCount?: number;
+  url: string;
+}) {
   const base: any = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -140,7 +177,23 @@ export function faqJsonLd(faqs: { question: string; answer: string }[]) {
   };
 }
 
-export function articleJsonLd({ headline, description, datePublished, dateModified, author, image, url }: { headline: string; description: string; datePublished: string; dateModified?: string; author: string; image?: string; url: string }) {
+export function articleJsonLd({
+  headline,
+  description,
+  datePublished,
+  dateModified,
+  author,
+  image,
+  url,
+}: {
+  headline: string;
+  description: string;
+  datePublished: string;
+  dateModified?: string;
+  author: string;
+  image?: string;
+  url: string;
+}) {
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -148,14 +201,28 @@ export function articleJsonLd({ headline, description, datePublished, dateModifi
     description,
     image,
     author: { "@type": "Person", name: author },
-    publisher: { "@type": "Organization", name: "NUVORA", logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") } },
+    publisher: {
+      "@type": "Organization",
+      name: "YK-Virtual",
+      logo: { "@type": "ImageObject", url: absoluteUrl("/logo.png") },
+    },
     datePublished,
     dateModified: dateModified || datePublished,
     mainEntityOfPage: url,
   };
 }
 
-export function reviewJsonLd({ itemName, ratingValue, author, reviewBody }: { itemName: string; ratingValue: number; author: string; reviewBody: string }) {
+export function reviewJsonLd({
+  itemName,
+  ratingValue,
+  author,
+  reviewBody,
+}: {
+  itemName: string;
+  ratingValue: number;
+  author: string;
+  reviewBody: string;
+}) {
   return {
     "@context": "https://schema.org",
     "@type": "Review",

@@ -42,7 +42,7 @@ if [ "${E2E_KEEP_SERVER:-}" != "1" ]; then
   (cd "$ROOT" && rm -f "$BIN" && "${GO:-go}" build -o "$BIN" ./cmd/api) || { echo "build failed"; exit 1; }
 fi
 
-E2E_ADMIN_EMAIL="${E2E_ADMIN_EMAIL:-admin@nuvora.com}"
+E2E_ADMIN_EMAIL="${E2E_ADMIN_EMAIL:-admin@ykaycollege.com}"
 E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-password123}"
 
 # E2E_KEEP_SERVER=1: scripts/e2e-pg.sh already booted a Postgres-backed API.
@@ -164,7 +164,7 @@ c=$(req "$J_TUTOR" POST /auth/login '{"email":"e2e-tutor@test.com","password":"p
 assert_code "login tutor" 200 "$c"
 
 # Admin flows authenticate as the SEEDED demo admin (e2e.sh boots in-memory
-# SEED_DEMO_DATA=true mode, which creates admin@nuvora.com / password123 as
+# SEED_DEMO_DATA=true mode, which creates admin@ykaycollege.com / password123 as
 # SUPER_ADMIN). Self-registering an admin is deliberately impossible.
 c=$(req "$J_ADMIN" POST /auth/login "{\"email\":\"${E2E_ADMIN_EMAIL}\",\"password\":\"${E2E_ADMIN_PASSWORD}\"}")
 assert_code "login admin (${E2E_ADMIN_EMAIL})" 200 "$c"
@@ -434,7 +434,7 @@ THREAD=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
 
 c=$(req "$J_PARENT" GET "/chat/threads/$THREAD/messages")
 assert_code "chat list messages" 200 "$c"
-grep -q "Nuvora" /tmp/e2e-body.json && ok "chat greeting present" || fail "chat greeting missing"
+grep -q "YK-Virtual" /tmp/e2e-body.json && ok "chat greeting present" || fail "chat greeting missing"
 
 c=$(req "$J_PARENT" POST "/chat/threads/$THREAD/messages" '{"content":"How much is the UTME cohort?"}')
 assert_code "chat send message" 200 "$c"
@@ -473,9 +473,9 @@ grep -q "ESCALATED" /tmp/e2e-body.json && ok "inbox shows escalated thread" || f
 c=$(req "$J_ADMIN" GET "/admin/chat/threads/$THREAD/messages")
 assert_code "agent transcript" 200 "$c"
 
-c=$(req "$J_ADMIN" POST "/admin/chat/threads/$THREAD/reply" '{"content":"Hi! This is Ada from NUVORA support — how can I help?"}')
+c=$(req "$J_ADMIN" POST "/admin/chat/threads/$THREAD/reply" '{"content":"Hi! This is Ada from YK-Virtual support — how can I help?"}')
 assert_code "agent reply" 201 "$c"
-grep -q "Ada from NUVORA" /tmp/e2e-body.json && ok "agent reply stored" || fail "agent reply missing"
+grep -q "Ada from YK-Virtual" /tmp/e2e-body.json && ok "agent reply stored" || fail "agent reply missing"
 
 c=$(req "$J_STUDENT" POST "/admin/chat/threads/$THREAD/reply" '{"content":"hacked"}')
 assert_code "agent reply (student) → 403" 403 "$c"
@@ -539,7 +539,7 @@ grep -q '"first_name":"Ada"' /tmp/e2e-body.json && ok "me returns profile fields
 
 c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_PARENT" "$BASE/auth/me/export")
 assert_code "data export" 200 "$c"
-grep -q "nuvora-export" /dev/null 2>/dev/null; grep -q '"email"' /tmp/e2e-body.json && ok "export contains user" || fail "export malformed"
+grep -q "yk-virtual-export" /dev/null 2>/dev/null; grep -q '"email"' /tmp/e2e-body.json && ok "export contains user" || fail "export malformed"
 
 c=$(req "$J_PARENT" GET "/tutors/search?q=oluwatobi")
 assert_code "tutor free-text search" 200 "$c"
@@ -673,12 +673,12 @@ assert_code "mobile bearer /auth/me" 200 "$c"
 grep -q "sync-test@test.com" /tmp/e2e-body.json && ok "bearer resolves the same user" || fail "bearer user mismatch"
 
 # Same token as the WEB COOKIE value → identical session row.
-c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "nuvora_session=$TOKEN" "$BASE/auth/me")
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "ykv_session=$TOKEN" "$BASE/auth/me")
 assert_code "web cookie with mobile token" 200 "$c"
 grep -q "sync-test@test.com" /tmp/e2e-body.json && ok "cookie resolves the same user (one session row)" || fail "cookie user mismatch"
 
 # Logout on WEB revokes the row → the mobile bearer dies too.
-c=$(curl -s -o /dev/null -w '%{http_code}' -b "nuvora_session=$TOKEN" -X POST "$BASE/auth/logout")
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "ykv_session=$TOKEN" -X POST "$BASE/auth/logout")
 assert_code "web logout" 200 "$c"
 c=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$BASE/auth/me")
 assert_code "mobile bearer revoked after web logout" 401 "$c"

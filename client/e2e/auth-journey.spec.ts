@@ -38,33 +38,54 @@ async function readLoginCode(email: string): Promise<string> {
 }
 
 /** Registers + verifies + marks onboarded via API so UI tests can focus. */
-async function readyAccount(ctx: APIRequestContext, email: string, roles: string[] = ["PARENT"]) {
-  const reg = await ctx.post(`${API}/auth/register`, { data: { email, password: "password123", roles } });
+async function readyAccount(
+  ctx: APIRequestContext,
+  email: string,
+  roles: string[] = ["PARENT"],
+) {
+  const reg = await ctx.post(`${API}/auth/register`, {
+    data: { email, password: "password123", roles },
+  });
   expect(reg.status(), `register ${email}: ${await reg.text()}`).toBe(201);
-  const blocked = await ctx.post(`${API}/auth/login`, { data: { email, password: "password123" } });
+  const blocked = await ctx.post(`${API}/auth/login`, {
+    data: { email, password: "password123" },
+  });
   expect(blocked.status(), "password login before verify").toBe(403);
-  const vr = await ctx.post(`${API}/auth/verify-email/request`, { data: { email } });
+  const vr = await ctx.post(`${API}/auth/verify-email/request`, {
+    data: { email },
+  });
   expect(vr.status(), "verify request").toBe(200);
   const fs = await import("fs");
   const log = fs.readFileSync(LOG, "utf8");
   const matches = [...log.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
   expect(matches.length, "verification link in API log").toBeGreaterThan(0);
   const token = decodeURIComponent(matches[matches.length - 1][1]);
-  const vc = await ctx.post(`${API}/auth/verify-email/confirm`, { data: { token } });
+  const vc = await ctx.post(`${API}/auth/verify-email/confirm`, {
+    data: { token },
+  });
   expect(vc.status(), "verify confirm").toBe(200);
-  const login = await ctx.post(`${API}/auth/login`, { data: { email, password: "password123" } });
+  const login = await ctx.post(`${API}/auth/login`, {
+    data: { email, password: "password123" },
+  });
   expect(login.status(), "login").toBe(200);
   const ob = await ctx.post(`${API}/auth/me/onboarded`);
   expect(ob.status(), "mark onboarded").toBe(200);
 }
 
-async function uiLogin(page: import("@playwright/test").Page, email: string, password = "password123") {
+async function uiLogin(
+  page: import("@playwright/test").Page,
+  email: string,
+  password = "password123",
+) {
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(password);
   await page.locator('input[type="password"]').press("Enter");
 }
 
-test("login honors ?next= and already-signed-in visits skip the form", async ({ page, request }) => {
+test("login honors ?next= and already-signed-in visits skip the form", async ({
+  page,
+  request,
+}) => {
   const email = uniq("deep-link");
   await readyAccount(request, email);
 
@@ -79,7 +100,10 @@ test("login honors ?next= and already-signed-in visits skip the form", async ({ 
   await expect(page).toHaveURL(/\/cohorts/, { timeout: 20_000 });
 });
 
-test("open redirect is blocked and wrong passwords explain themselves", async ({ page, request }) => {
+test("open redirect is blocked and wrong passwords explain themselves", async ({
+  page,
+  request,
+}) => {
   const email = uniq("open-redirect");
   await readyAccount(request, email);
 
@@ -109,7 +133,9 @@ test("signup: full 7-step onboarding with the emailed code, back to ?next=", asy
   // pull it from the dev-logged email sender and let auto-verify fire.
   const code = await readLoginCode(email);
   await page.locator("#ob-code").fill(code);
-  await expect(page.getByText(/How are you planning to use NUVORA/)).toBeVisible({ timeout: 20_000 });
+  await expect(
+    page.getByText(/How are you planning to use YK-Virtual/),
+  ).toBeVisible({ timeout: 20_000 });
 
   // Step 3 - role.
   await page.getByRole("button", { name: /^Parent/ }).click();
@@ -140,8 +166,9 @@ test("signup: full 7-step onboarding with the emailed code, back to ?next=", asy
       cookies: [],
       origins: [
         {
-          origin: new URL(process.env.WEB_BASE_URL || "http://localhost:3000").origin,
-          localStorage: [{ name: "nuvora-cookie-consent", value: "e2e" }],
+          origin: new URL(process.env.WEB_BASE_URL || "http://localhost:3000")
+            .origin,
+          localStorage: [{ name: "yk-virtual-cookie-consent", value: "e2e" }],
         },
       ],
     },

@@ -12,7 +12,7 @@ export type SavedTutor = {
   rating: number;
 };
 
-const KEY = "nuvora-saved-tutors";
+const KEY = "yk-virtual-saved-tutors";
 
 function read(): SavedTutor[] {
   if (typeof window === "undefined") return [];
@@ -39,7 +39,10 @@ export function useWishlist() {
     setSaved(read());
   }, []);
 
-  const isSaved = useCallback((slug: string) => saved.some((t) => t.slug === slug), [saved]);
+  const isSaved = useCallback(
+    (slug: string) => saved.some((t) => t.slug === slug),
+    [saved],
+  );
 
   const toggle = useCallback((tutor: SavedTutor) => {
     setSaved((prev) => {

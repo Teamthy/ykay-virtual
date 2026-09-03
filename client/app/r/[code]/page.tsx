@@ -15,15 +15,18 @@ type ReferralLookup = {
 };
 
 export const metadata: Metadata = buildMetadata({
-  title: "You've been invited to NUVORA",
-  description: "Join Africa's trusted tutoring platform with a friend's referral.",
+  title: "You've been invited to YK-Virtual",
+  description:
+    "Join Africa's trusted tutoring platform with a friend's referral.",
   path: "/r",
   noIndex: true,
 });
 
 async function lookup(code: string): Promise<ReferralLookup | null> {
   try {
-    const res = await apiFetchSSR<ReferralLookup>(`/referrals/${encodeURIComponent(code)}`);
+    const res = await apiFetchSSR<ReferralLookup>(
+      `/referrals/${encodeURIComponent(code)}`,
+    );
     return res.data ?? null;
   } catch {
     return null;
@@ -48,10 +51,13 @@ export default async function ReferralLandingPage(props: Props) {
               <Gift size={28} />
             </span>
             <h1 className="mt-6 font-display text-3xl tracking-[0.02em] text-brand-navy md:text-5xl">
-              {info.referrer_name ? `${info.referrer_name} invited you to NUVORA` : "You've been invited to NUVORA"}
+              {info.referrer_name
+                ? `${info.referrer_name} invited you to YK-Virtual`
+                : "You've been invited to YK-Virtual"}
             </h1>
             <p className="mx-auto mt-4 max-w-md leading-relaxed text-ink-600">
-              Create an account with the referral code below and your friend earns{" "}
+              Create an account with the referral code below and your friend
+              earns{" "}
               <span className="font-bold text-brand-navy">
                 {info.currency} {info.reward.toLocaleString()}
               </span>{" "}
@@ -59,7 +65,9 @@ export default async function ReferralLandingPage(props: Props) {
             </p>
 
             <div className="mx-auto mt-7 flex items-center justify-center gap-3 rounded-2xl border border-dashed border-brand-gold bg-surface-muted px-6 py-4">
-              <span className="font-mono text-2xl font-extrabold tracking-[0.2em] text-brand-navy">{code}</span>
+              <span className="font-mono text-2xl font-extrabold tracking-[0.2em] text-brand-navy">
+                {code}
+              </span>
             </div>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -88,8 +96,8 @@ export default async function ReferralLandingPage(props: Props) {
               This invite link isn&apos;t valid
             </h1>
             <p className="mx-auto mt-4 max-w-md leading-relaxed text-ink-600">
-              The referral code may have expired or the link is incomplete. You can still join NUVORA
-              directly - no code needed.
+              The referral code may have expired or the link is incomplete. You
+              can still join YK-Virtual directly - no code needed.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -98,7 +106,10 @@ export default async function ReferralLandingPage(props: Props) {
               >
                 Create your account <ArrowRight size={15} />
               </Link>
-              <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+              >
                 Back to home
               </Link>
             </div>

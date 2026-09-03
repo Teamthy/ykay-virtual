@@ -20,10 +20,10 @@ const (
 	// JobExpirePendingEnrollments — seat-leak recovery: cancel PENDING cohort
 	// enrollments whose checkout was abandoned and release the reserved seat.
 	JobExpirePendingEnrollments JobType = "expire_stale_pending_enrollments"
-	// JobExpirePlusSubscriptions — marks ACTIVE/TRIAL NUVORA Plus subscriptions
+	// JobExpirePlusSubscriptions — marks ACTIVE/TRIAL YK-Virtual Plus subscriptions
 	// whose term has passed as EXPIRED (000066), so entitlements drop.
 	JobExpirePlusSubscriptions JobType = "expire_plus_subscriptions"
-	// JobSendPlusWeeklyReports — emails active NUVORA Plus subscribers their
+	// JobSendPlusWeeklyReports — emails active YK-Virtual Plus subscribers their
 	// weekly progress report (000067 / P4).
 	JobSendPlusWeeklyReports   JobType = "send_plus_weekly_reports"
 	JobComputeTutorRanking     JobType = "compute_tutor_ranking_score"

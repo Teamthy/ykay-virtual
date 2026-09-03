@@ -12,9 +12,13 @@ import { radius, spacing, type, type ThemeColors } from "@/src/lib/theme";
 import { useTheme } from "@/src/lib/theme-context";
 import { apiFetch, getPlusStatus, getPlusDownloadUrl } from "@/src/lib/api";
 import { VideoPlayer } from "@/src/components/VideoPlayer";
-import { cacheVideo, removeCachedVideo, isVideoCached } from "@/src/lib/offline-video";
+import {
+  cacheVideo,
+  removeCachedVideo,
+  isVideoCached,
+} from "@/src/lib/offline-video";
 
-// NUVORA course player — lessons (live + on-demand), resources, assignments.
+// YK-Virtual course player — lessons (live + on-demand), resources, assignments.
 // Premium UI kit + in-app expo-video playback for recorded lessons.
 
 type Lesson = {
@@ -26,8 +30,19 @@ type Lesson = {
   video_url?: string;
   status: string;
 };
-type Resource = { id: string; title: string; description?: string; file_url?: string };
-type Assignment = { id: string; title: string; instructions?: string; due_at?: string; max_score?: number };
+type Resource = {
+  id: string;
+  title: string;
+  description?: string;
+  file_url?: string;
+};
+type Assignment = {
+  id: string;
+  title: string;
+  instructions?: string;
+  due_at?: string;
+  max_score?: number;
+};
 type AttendanceRow = { student_profile_id: string; status: string };
 
 export default function CourseDetail() {
@@ -42,11 +57,13 @@ export default function CourseDetail() {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [playing, setPlaying] = useState<Lesson | null>(null);
-  const [offlineState, setOfflineState] = useState<Record<string, "idle" | "downloading" | "cached">>({});
+  const [offlineState, setOfflineState] = useState<
+    Record<string, "idle" | "downloading" | "cached">
+  >({});
   const [offlineChecked, setOfflineChecked] = useState(false);
   const [hasPlus, setHasPlus] = useState(false);
 
-  // Check NUVORA Plus (offline downloads are a Plus feature).
+  // Check YK-Virtual Plus (offline downloads are a Plus feature).
   useEffect(() => {
     getPlusStatus()
       .then((st) => setHasPlus(!!st.active))
@@ -94,7 +111,9 @@ export default function CourseDetail() {
         apiFetch<Lesson[]>(`/cohorts/${cohortId}/lessons`),
         apiFetch<Resource[]>(`/cohorts/${cohortId}/resources`),
         apiFetch<Assignment[]>(`/cohorts/${cohortId}/assignments`),
-        apiFetch<AttendanceRow[]>(`/cohorts/${cohortId}/enrollments`).catch(() => ({ data: [] })),
+        apiFetch<AttendanceRow[]>(`/cohorts/${cohortId}/enrollments`).catch(
+          () => ({ data: [] }),
+        ),
       ]);
       setLessons(l.data ?? []);
       setResources(r.data ?? []);
@@ -119,9 +138,13 @@ export default function CourseDetail() {
         body: JSON.stringify({ content }),
       });
       setDrafts((d) => ({ ...d, [assignmentId]: "" }));
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      void Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Success,
+      ).catch(() => {});
     } catch {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      void Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Error,
+      ).catch(() => {});
     } finally {
       setSubmitting(false);
     }
@@ -152,7 +175,10 @@ export default function CourseDetail() {
       />
 
       {playing?.video_url && (
-        <Animated.View entering={FadeIn.duration(240)} style={styles.playerBlock}>
+        <Animated.View
+          entering={FadeIn.duration(240)}
+          style={styles.playerBlock}
+        >
           <Card padded={false} style={styles.playerCard}>
             <VideoPlayer lessonId={playing.id} videoUrl={playing.video_url} />
             <View style={styles.playerMeta}>
@@ -167,30 +193,56 @@ export default function CourseDetail() {
                       offlineState[playing.id] === "cached"
                         ? "Remove offline copy"
                         : offlineState[playing.id] === "downloading"
-                        ? "Downloading…"
-                        : "Download for offline"
+                          ? "Downloading…"
+                          : "Download for offline"
                     }
-                    variant={offlineState[playing.id] === "cached" ? "secondary" : "dark"}
+                    variant={
+                      offlineState[playing.id] === "cached"
+                        ? "secondary"
+                        : "dark"
+                    }
                     onPress={() => void toggleOffline(playing)}
                     disabled={offlineState[playing.id] === "downloading"}
                   />
                 ) : (
-                  <Button label="Upgrade for offline · NUVORA Plus" variant="dark" onPress={() => Linking.openURL("https://nuvora.com/account/plus")} />
+                  <Button
+                    label="Upgrade for offline · YK-Virtual Plus"
+                    variant="dark"
+                    onPress={() =>
+                      Linking.openURL(
+                        "https://virtual.ykaycollege.com/account/plus",
+                      )
+                    }
+                  />
                 )}
               </View>
             </View>
           </Card>
-          <Button label="Close player" variant="ghost" style={{ marginTop: 8, alignSelf: "flex-start" }} onPress={() => setPlaying(null)} />
+          <Button
+            label="Close player"
+            variant="ghost"
+            style={{ marginTop: 8, alignSelf: "flex-start" }}
+            onPress={() => setPlaying(null)}
+          />
         </Animated.View>
       )}
 
       <Section title={`Lessons · ${lessons.length}`}>
         {lessons.map((l, i) => (
-          <Animated.View key={l.id} entering={FadeIn.delay(i * 40).duration(240)}>
+          <Animated.View
+            key={l.id}
+            entering={FadeIn.delay(i * 40).duration(240)}
+          >
             <Card style={styles.row}>
               <View style={styles.rowTop}>
                 <View style={styles.numBadge}>
-                  <AppText style={{ color: colors.white, fontWeight: "800", fontSize: type.bodySm }}>
+                  <AppText
+                    style={{
+                      color: colors.white,
+                      fontWeight: "800",
+                      fontSize: type.bodySm,
+                    }}
+                  >
                     {i + 1}
                   </AppText>
                 </View>
@@ -198,8 +250,11 @@ export default function CourseDetail() {
                   <AppText variant="h3">{l.title}</AppText>
                   <AppText variant="caption" style={{ marginTop: 2 }}>
                     {new Date(l.start_at).toLocaleDateString()} ·{" "}
-                    {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ·{" "}
-                    {l.timezone}
+                    {new Date(l.start_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    · {l.timezone}
                   </AppText>
                 </View>
               </View>
@@ -207,7 +262,9 @@ export default function CourseDetail() {
               <View style={styles.rowActions}>
                 {l.video_url ? (
                   <Button
-                    label={playing?.id === l.id ? "▶ Playing…" : "▶ Watch in app"}
+                    label={
+                      playing?.id === l.id ? "▶ Playing…" : "▶ Watch in app"
+                    }
                     variant="dark"
                     full
                     style={{ flex: 1 }}
@@ -219,7 +276,9 @@ export default function CourseDetail() {
                     variant="primary"
                     full
                     style={{ flex: 1 }}
-                    onPress={() => void Linking.openURL(l.meeting_url as string)}
+                    onPress={() =>
+                      void Linking.openURL(l.meeting_url as string)
+                    }
                   />
                 ) : null}
                 {l.status === "COMPLETED" && (
@@ -254,28 +313,48 @@ export default function CourseDetail() {
             <View style={{ flex: 1, marginLeft: 12 }}>
               <AppText variant="h3">{r.title}</AppText>
               {r.description ? (
-                <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 2 }}>
+                <AppText
+                  variant="bodySm"
+                  style={{ color: colors.ink[500], marginTop: 2 }}
+                >
                   {r.description}
                 </AppText>
               ) : null}
               {r.file_url ? (
-                <AppText variant="caption" style={{ color: colors.greenDark, marginTop: 4, fontWeight: "700" }}>
+                <AppText
+                  variant="caption"
+                  style={{
+                    color: colors.greenDark,
+                    marginTop: 4,
+                    fontWeight: "700",
+                  }}
+                >
                   OPEN MATERIAL ↗
                 </AppText>
               ) : null}
             </View>
           </Card>
         ))}
-        {resources.length === 0 && <Empty>No resources yet — your tutor's links (Google Drive, PDFs, slides) appear here.</Empty>}
+        {resources.length === 0 && (
+          <Empty>
+            No resources yet — your tutor's links (Google Drive, PDFs, slides)
+            appear here.
+          </Empty>
+        )}
       </Section>
 
       <Section title={`Assignments · ${assignments.length}`}>
         {assignments.map((a) => (
           <Card key={a.id} style={styles.row}>
             <AppText variant="h3">{a.title}</AppText>
-            <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 4 }}>
+            <AppText
+              variant="bodySm"
+              style={{ color: colors.ink[500], marginTop: 4 }}
+            >
               {a.instructions}
-              {a.due_at ? ` · Due ${new Date(a.due_at).toLocaleDateString()}` : ""}
+              {a.due_at
+                ? ` · Due ${new Date(a.due_at).toLocaleDateString()}`
+                : ""}
               {a.max_score ? ` · Max ${a.max_score}` : ""}
             </AppText>
             <View style={styles.assignRow}>
@@ -303,7 +382,13 @@ export default function CourseDetail() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
@@ -321,7 +406,10 @@ function Empty({ children }: { children: React.ReactNode }) {
   const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.emptyBox}>
-      <AppText variant="bodySm" style={{ color: colors.ink[400], textAlign: "center" }}>
+      <AppText
+        variant="bodySm"
+        style={{ color: colors.ink[400], textAlign: "center" }}
+      >
         {children}
       </AppText>
     </View>
@@ -330,50 +418,65 @@ function Empty({ children }: { children: React.ReactNode }) {
 
 const makeStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-  skeleton: { height: 96, borderRadius: radius.lg, backgroundColor: colors.ink[100], marginBottom: 12 },
-  playerBlock: { marginBottom: 8 },
-  playerCard: { overflow: "hidden" },
-  playerMeta: { padding: 14 },
-  section: { marginTop: 22 },
-  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, marginBottom: 10, fontSize: type.caption },
-  row: { padding: 16, flexDirection: "row", alignItems: "center" },
-  rowTop: { flexDirection: "row", alignItems: "center", flex: 1 },
-  numBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.navy,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rowActions: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 14 },
-  donePill: {
-    backgroundColor: colors.goldLight,
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  doneText: { color: colors.goldDark, fontWeight: "700" },
-  emptyBox: {
-    padding: 20,
-    borderRadius: radius.md,
-    backgroundColor: colors.ink[50],
-    borderWidth: 1,
-    borderColor: colors.ink[100],
-  },
-  assignRow: { flexDirection: "row", gap: 10, marginTop: 12 },
-  input: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.ink[100],
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: type.body,
-    color: colors.ink[900],
-    textAlignVertical: "top",
-    minHeight: 84,
-  },
-  submitBtn: { alignSelf: "flex-start" },
-});
+    skeleton: {
+      height: 96,
+      borderRadius: radius.lg,
+      backgroundColor: colors.ink[100],
+      marginBottom: 12,
+    },
+    playerBlock: { marginBottom: 8 },
+    playerCard: { overflow: "hidden" },
+    playerMeta: { padding: 14 },
+    section: { marginTop: 22 },
+    sectionTitle: {
+      color: colors.goldDark,
+      letterSpacing: 1.1,
+      marginBottom: 10,
+      fontSize: type.caption,
+    },
+    row: { padding: 16, flexDirection: "row", alignItems: "center" },
+    rowTop: { flexDirection: "row", alignItems: "center", flex: 1 },
+    numBadge: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: colors.navy,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    rowActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      marginTop: 14,
+    },
+    donePill: {
+      backgroundColor: colors.goldLight,
+      borderRadius: radius.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    doneText: { color: colors.goldDark, fontWeight: "700" },
+    emptyBox: {
+      padding: 20,
+      borderRadius: radius.md,
+      backgroundColor: colors.ink[50],
+      borderWidth: 1,
+      borderColor: colors.ink[100],
+    },
+    assignRow: { flexDirection: "row", gap: 10, marginTop: 12 },
+    input: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.ink[100],
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: type.body,
+      color: colors.ink[900],
+      textAlignVertical: "top",
+      minHeight: 84,
+    },
+    submitBtn: { alignSelf: "flex-start" },
+  });

@@ -44,7 +44,7 @@ const (
 	// interval per session).
 	sessionSlidingInterval = 24 * time.Hour
 	bcryptCost             = 10
-	SessionCookie          = "nuvora_session"
+	SessionCookie          = "ykv_session"
 )
 
 // selfAssignableRoles — the ONLY roles a user may grant themselves, either at
@@ -591,11 +591,11 @@ func (s *AuthService) issueMFAChallenge(ctx context.Context, user *identity.User
 	}
 	s.logOTP("MFA code for %s (admin): %s (expires in 10 minutes)", user.Email, code)
 	if s.email != nil {
-		if err := s.sendEmail(ctx, user.Email, "Your NUVORA admin verification code",
+		if err := s.sendEmail(ctx, user.Email, "Your YK-Virtual admin verification code",
 			notification.BrandEmail(
 				"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Admin sign-in verification</h1>"+
 					"<p style=\"margin:0 0 16px;\">Hi,</p>"+
-					"<p style=\"margin:0 0 20px;\">Enter this code to finish signing in to your NUVORA admin account. It expires in 10 minutes.</p>"+
+					"<p style=\"margin:0 0 20px;\">Enter this code to finish signing in to your YK-Virtual admin account. It expires in 10 minutes.</p>"+
 					"<p style=\"margin:0 0 20px;text-align:center;\"><span style=\"display:inline-block;background:#E9F0FF;color:#0A1F44;font-size:30px;font-weight:800;letter-spacing:0.35em;padding:14px 22px;border-radius:12px;font-family:monospace;\">"+code+"</span></p>"+
 					"<p style=\"margin:0 0 0;color:#8794AC;font-size:13px;\">If you didn't try to sign in, reset your password and contact support immediately.</p>")); err != nil {
 			return fmt.Errorf("could not send MFA code: %w", err)

@@ -1,12 +1,25 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://virtual.ykaycollege.com";
   return {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/subjects/", "/programmes/", "/tutors/", "/blog/", "/online-classes", "/for-schools", "/corporate-training", "/careers", "/become-tutor", "/help/"],
+        allow: [
+          "/",
+          "/subjects/",
+          "/programmes/",
+          "/tutors/",
+          "/blog/",
+          "/online-classes",
+          "/for-schools",
+          "/corporate-training",
+          "/careers",
+          "/become-tutor",
+          "/help/",
+        ],
         disallow: [
           "/admin",
           "/api",

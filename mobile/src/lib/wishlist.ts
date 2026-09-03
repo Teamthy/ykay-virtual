@@ -12,7 +12,7 @@ export type SavedTutor = {
   rating: number;
 };
 
-const KEY = "nuvora-saved-tutors";
+const KEY = "yk-virtual-saved-tutors";
 
 export async function readSaved(): Promise<SavedTutor[]> {
   try {

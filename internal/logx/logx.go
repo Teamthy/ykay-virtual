@@ -1,4 +1,4 @@
-// Package logx configures NUVORA's structured logging (log/slog, A-20).
+// Package logx configures YK-Virtual's structured logging (log/slog, A-20).
 //
 // Long-running services (API, worker) call Setup with their environment so
 // production emits machine-readable JSON to stdout while local dev keeps

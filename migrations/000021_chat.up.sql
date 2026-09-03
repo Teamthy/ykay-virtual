@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS chat_threads (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title           TEXT NOT NULL DEFAULT 'NUVORA support chat',
+    title           TEXT NOT NULL DEFAULT 'YK-Virtual support chat',
     status          TEXT NOT NULL DEFAULT 'OPEN',
     rating          INT CHECK (rating BETWEEN 1 AND 5),
     rating_comment  TEXT,

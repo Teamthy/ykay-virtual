@@ -23,7 +23,7 @@ export default defineConfig({
       origins: [
         {
           origin,
-          localStorage: [{ name: "nuvora-cookie-consent", value: "e2e" }],
+          localStorage: [{ name: "yk-virtual-cookie-consent", value: "e2e" }],
         },
       ],
     },

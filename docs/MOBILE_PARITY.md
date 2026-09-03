@@ -1,4 +1,4 @@
-# NUVORA Web ↔ Mobile Feature Parity
+# YK-Virtual Web ↔ Mobile Feature Parity
 
 > Scope: which web features exist on mobile, which are mobile-only, which are
 > intentionally web-only, and the roadmap to close remaining gaps.
@@ -17,37 +17,37 @@
 
 ## Matrix
 
-| Area | Web | Mobile | Status |
-|---|---|---|---|
-| Register / onboarding (parent, student, tutor, institution) | ✅ | ✅ 4-step compact | DONE |
-| Login (password, login-code, Google) | ✅ | ✅ password + code | DONE |
-| Admin MFA email code | ✅ | ⚠️ friendly redirect to web | DONE (documented) |
-| Home dashboard — command center (header → primary card → metrics → quick actions → activity → tools) | ✅ | ✅ role-aware rebuild per docs/MOBILE_DASHBOARD_DIRECTION.md | DONE |
-| **Unified dashboard shell** (one layout for all roles) | ✅ AppShell | ✅ TabLayout + TabBar on Home/LMS/Tutor/Account/Search | DONE |
-| Learner LMS (courses, lessons, videos, assignments, quizzes) | ✅ | ✅ role-aware LMS hub + course screens | DONE |
-| Tutor workspace (earnings, schedule, lessons, messages, availability, profile) | ✅ | ✅ tutor/* screens + exams console | DONE |
-| **CBT practice exams (student)** | ✅ assessments | ✅ NEW `practice` hub + timed player + marked-paper review | DONE (new) |
-| **Tutor-authored school exams** | ✅ assessments | ✅ NEW `tutor/exams` console (builder, results, delete) | DONE (new) |
-| Payments: orders, receipts, Paystack checkout | ✅ | ✅ payments + order detail + receipt; cohort detail deep-links "Enrol on web" to the browser checkout (escrow/coupons/gateway return all live on web) | DONE (deep-link) |
-| Escrow / refunds / disputes | ✅ | ✅ order detail surfaces status | DONE |
-| Tutor payouts + bank details | ✅ | ✅ via tutor earnings/profile (bank details entry on web) | PARTIAL |
-| Messaging (contacts, threads, unread) | ✅ | ✅ messages + tutor/messages | DONE |
-| Chat widget (AI + human handoff) | ✅ | ✅ chat screen | DONE |
-| Notifications hub + devices | ✅ | ✅ notifications + devices | DONE |
-| Leads funnel (exit intent, cart abandon, WhatsApp) | ✅ web-only (browsing UX) | n/a — mobile funnels into app | WEB-ONLY (by design) |
-| Admin console (overview, cohorts, programmes, tutors, vetting, leads, payouts, exports) | ✅ | ✅ read-only ops overview (escrow hero, queues, today's classes, audit); mutations stay web | PARTIAL (mobile read-only) |
-| Exam prep marketing pages (WAEC/NECO/JAMB/IGCSE) | ✅ | ✅ exam-prep + subject pages | DONE |
-| Programme pages + enrolment | ✅ | ✅ programmes/[slug] | DONE |
-| Tutor search, profiles, reviews, saved | ✅ | ✅ search/subjects/tutors/saved | DONE |
-| Referrals | ✅ | ✅ referrals screen | DONE |
-| Certificates | ✅ | ✅ via LMS progress | DONE |
-| Parent learner management (link, progress, approvals) | ✅ parent dashboard | ✅ learners + progress screens | DONE |
-| Progress reports + attendance | ✅ | ✅ progress + learning-progress | DONE |
-| Dark mode | ✅ (class strategy) | ✅ ThemeProvider: light/dark/system + header toggle + theme sweep across every screen | DONE (new) |
-| Brand system (tokens, fonts, logo) | ✅ | ✅ same tokens, Anton + DM Sans, web mark | DONE |
-| Offline banner / updates banner | ✅ | ✅ UpdateBanner + offline screen | DONE |
-| Onboarding carousel | ✅ marketing | ✅ 3 singular pages (no swipe carousel) | DONE |
-| Responsiveness | ✅ responsive web | ✅ content capped 560pt, centred, safe-area aware, tablet-consistent | DONE |
+| Area                                                                                                 | Web                       | Mobile                                                                                                                                                | Status                     |
+| ---------------------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Register / onboarding (parent, student, tutor, institution)                                          | ✅                        | ✅ 4-step compact                                                                                                                                     | DONE                       |
+| Login (password, login-code, Google)                                                                 | ✅                        | ✅ password + code                                                                                                                                    | DONE                       |
+| Admin MFA email code                                                                                 | ✅                        | ⚠️ friendly redirect to web                                                                                                                           | DONE (documented)          |
+| Home dashboard — command center (header → primary card → metrics → quick actions → activity → tools) | ✅                        | ✅ role-aware rebuild per docs/MOBILE_DASHBOARD_DIRECTION.md                                                                                          | DONE                       |
+| **Unified dashboard shell** (one layout for all roles)                                               | ✅ AppShell               | ✅ TabLayout + TabBar on Home/LMS/Tutor/Account/Search                                                                                                | DONE                       |
+| Learner LMS (courses, lessons, videos, assignments, quizzes)                                         | ✅                        | ✅ role-aware LMS hub + course screens                                                                                                                | DONE                       |
+| Tutor workspace (earnings, schedule, lessons, messages, availability, profile)                       | ✅                        | ✅ tutor/* screens + exams console                                                                                                                    | DONE                       |
+| **CBT practice exams (student)**                                                                     | ✅ assessments            | ✅ NEW `practice` hub + timed player + marked-paper review                                                                                            | DONE (new)                 |
+| **Tutor-authored school exams**                                                                      | ✅ assessments            | ✅ NEW `tutor/exams` console (builder, results, delete)                                                                                               | DONE (new)                 |
+| Payments: orders, receipts, Paystack checkout                                                        | ✅                        | ✅ payments + order detail + receipt; cohort detail deep-links "Enrol on web" to the browser checkout (escrow/coupons/gateway return all live on web) | DONE (deep-link)           |
+| Escrow / refunds / disputes                                                                          | ✅                        | ✅ order detail surfaces status                                                                                                                       | DONE                       |
+| Tutor payouts + bank details                                                                         | ✅                        | ✅ via tutor earnings/profile (bank details entry on web)                                                                                             | PARTIAL                    |
+| Messaging (contacts, threads, unread)                                                                | ✅                        | ✅ messages + tutor/messages                                                                                                                          | DONE                       |
+| Chat widget (AI + human handoff)                                                                     | ✅                        | ✅ chat screen                                                                                                                                        | DONE                       |
+| Notifications hub + devices                                                                          | ✅                        | ✅ notifications + devices                                                                                                                            | DONE                       |
+| Leads funnel (exit intent, cart abandon, WhatsApp)                                                   | ✅ web-only (browsing UX) | n/a — mobile funnels into app                                                                                                                         | WEB-ONLY (by design)       |
+| Admin console (overview, cohorts, programmes, tutors, vetting, leads, payouts, exports)              | ✅                        | ✅ read-only ops overview (escrow hero, queues, today's classes, audit); mutations stay web                                                           | PARTIAL (mobile read-only) |
+| Exam prep marketing pages (WAEC/NECO/JAMB/IGCSE)                                                     | ✅                        | ✅ exam-prep + subject pages                                                                                                                          | DONE                       |
+| Programme pages + enrolment                                                                          | ✅                        | ✅ programmes/[slug]                                                                                                                                  | DONE                       |
+| Tutor search, profiles, reviews, saved                                                               | ✅                        | ✅ search/subjects/tutors/saved                                                                                                                       | DONE                       |
+| Referrals                                                                                            | ✅                        | ✅ referrals screen                                                                                                                                   | DONE                       |
+| Certificates                                                                                         | ✅                        | ✅ via LMS progress                                                                                                                                   | DONE                       |
+| Parent learner management (link, progress, approvals)                                                | ✅ parent dashboard       | ✅ learners + progress screens                                                                                                                        | DONE                       |
+| Progress reports + attendance                                                                        | ✅                        | ✅ progress + learning-progress                                                                                                                       | DONE                       |
+| Dark mode                                                                                            | ✅ (class strategy)       | ✅ ThemeProvider: light/dark/system + header toggle + theme sweep across every screen                                                                 | DONE (new)                 |
+| Brand system (tokens, fonts, logo)                                                                   | ✅                        | ✅ same tokens, Anton + DM Sans, web mark                                                                                                             | DONE                       |
+| Offline banner / updates banner                                                                      | ✅                        | ✅ UpdateBanner + offline screen                                                                                                                      | DONE                       |
+| Onboarding carousel                                                                                  | ✅ marketing              | ✅ 3 singular pages (no swipe carousel)                                                                                                               | DONE                       |
+| Responsiveness                                                                                       | ✅ responsive web         | ✅ content capped 560pt, centred, safe-area aware, tablet-consistent                                                                                  | DONE                       |
 
 ## Mobile-only
 

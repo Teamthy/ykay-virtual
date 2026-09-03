@@ -123,7 +123,7 @@ func TestPaymentSettlement_ActivatesPlus(t *testing.T) {
 	planID := uuid.New()
 	plusRepo := store.Plus
 	require.NoError(t, plusRepo.UpsertPlan(ctx, &plus.Plan{
-		ID: planID, Code: "PLUS", Name: "NUVORA Plus", Billing: "MONTHLY",
+		ID: planID, Code: "PLUS", Name: "YK-Virtual Plus", Billing: "MONTHLY",
 		Price: 52500, Currency: "NGN", TrialDays: 7, IsActive: true,
 	}))
 	plusSvc := NewPlusService(plusRepo, audit)
@@ -140,7 +140,7 @@ func TestPaymentSettlement_ActivatesPlus(t *testing.T) {
 		Subtotal: 52500, TotalAmount: 52500, Currency: "NGN",
 	}
 	require.NoError(t, store.Orders.Create(ctx, order))
-	desc := "NUVORA Plus"
+	desc := "YK-Virtual Plus"
 	require.NoError(t, store.Orders.CreateItem(ctx, &payment.OrderItem{
 		OrderID: order.ID, ItemType: "PLUS_SUBSCRIPTION", ReferenceID: planID,
 		Description: &desc, Quantity: 1, UnitPrice: 52500, TotalPrice: 52500,

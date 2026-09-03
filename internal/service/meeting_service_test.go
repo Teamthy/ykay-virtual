@@ -85,7 +85,7 @@ func TestMeetingServiceRefreshesExpiredLink(t *testing.T) {
 	expired := time.Now().UTC().Add(-time.Hour)
 	repo.meeting = &booking.LessonMeeting{
 		LessonID: lesson.ID, ProviderRef: "old-room",
-		MeetingURL: "https://meet.nuvora.local/room/old", ExpiresAt: &expired,
+		MeetingURL: "https://meet.ykvirtual.local/room/old", ExpiresAt: &expired,
 	}
 	m, err := svc.GetOrCreateTutorLink(context.Background(), lesson.ID, tutor)
 	if err != nil {
@@ -110,7 +110,7 @@ func TestMeetingServiceStudentJoinWindow(t *testing.T) {
 	expiry := time.Now().UTC().Add(2 * time.Hour)
 	repo.meeting = &booking.LessonMeeting{
 		LessonID: lesson.ID, Provider: "stub",
-		MeetingURL: "https://meet.nuvora.local/room/x",
+		MeetingURL: "https://meet.ykvirtual.local/room/x",
 		ExpiresAt:  &expiry, JoinWindowMinutes: 15,
 	}
 

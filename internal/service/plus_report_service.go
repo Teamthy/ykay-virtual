@@ -11,7 +11,7 @@ import (
 	"ykay-virtual/internal/notification"
 )
 
-// PlusReportService — NUVORA Plus weekly report email (P4). Each week the
+// PlusReportService — YK-Virtual Plus weekly report email (P4). Each week the
 // worker emails active Plus subscribers a branded summary with a link to their
 // dashboard/progress. The report is an HTML email (print-to-PDF friendly), not
 // a binary attachment, so it needs no extra PDF dependency.
@@ -43,14 +43,14 @@ func (s *PlusReportService) SendWeeklyReports(ctx context.Context) (int, error) 
 			continue
 		}
 		sub, _ := s.plus.GetActiveByUser(ctx, uid, s.now().UTC())
-		planName := "NUVORA Plus"
+		planName := "YK-Virtual Plus"
 		if sub != nil {
 			if p, err := s.plus.GetPlanByCode(ctx, sub.PlanCode); err == nil && p != nil {
 				planName = p.Name
 			}
 		}
 		body := s.render(planName, u.FirstName, uid.String())
-		if err := s.mail.Send(ctx, u.Email, "Your NUVORA Plus weekly report", body); err != nil {
+		if err := s.mail.Send(ctx, u.Email, "Your YK-Virtual Plus weekly report", body); err != nil {
 			slog.Error("plus weekly report email failed", "user_id", uid, "error", err)
 			continue
 		}
@@ -62,7 +62,7 @@ func (s *PlusReportService) SendWeeklyReports(ctx context.Context) (int, error) 
 func (s *PlusReportService) render(planName, firstName, userID string) string {
 	base := strings.TrimRight(s.siteURL, "/")
 	if base == "" {
-		base = "https://nuvora.com"
+		base = "https://virtual.ykaycollege.com"
 	}
 	name := firstName
 	if strings.TrimSpace(name) == "" {

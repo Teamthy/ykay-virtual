@@ -63,11 +63,11 @@ func (s *AuthService) RequestLoginCode(ctx context.Context, email string) error 
 
 	s.logOTP("login code for %s: %s (expires in 10 minutes)", user.Email, code)
 	if s.email != nil {
-		if err := s.sendEmail(ctx, user.Email, "Your NUVORA login code",
+		if err := s.sendEmail(ctx, user.Email, "Your YK-Virtual login code",
 			notification.BrandEmail(
 				"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Your login code</h1>"+
 					"<p style=\"margin:0 0 16px;\">Hi,</p>"+
-					"<p style=\"margin:0 0 20px;\">Use this code to sign in to your NUVORA account. It expires in 10 minutes.</p>"+
+					"<p style=\"margin:0 0 20px;\">Use this code to sign in to your YK-Virtual account. It expires in 10 minutes.</p>"+
 					"<p style=\"margin:0 0 20px;text-align:center;\"><span style=\"display:inline-block;background:#E9F0FF;color:#0A1F44;font-size:30px;font-weight:800;letter-spacing:0.35em;padding:14px 22px;border-radius:12px;font-family:monospace;\">"+code+"</span></p>"+
 					"<p style=\"margin:0 0 0;color:#8794AC;font-size:13px;\">If you didn't request this code, you can safely ignore this email.</p>")); err != nil {
 			slog.Error("login code email failed", "to", user.Email, "error", err)

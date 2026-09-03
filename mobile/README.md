@@ -1,4 +1,4 @@
-# NUVORA Mobile (Expo)
+# YK-Virtual Mobile (Expo)
 
 Native app scaffold (Phase M2) sharing the `/api/v1` backend with the web app.
 
@@ -15,15 +15,15 @@ Point the app at your API via `app.json` → `extra.apiUrl`
 
 ## What's here (M3 + M4)
 
-| Screen | File | Notes |
-|---|---|---|
-| Welcome | `app/index.tsx` | Brand + CTAs |
-| Login | `app/login.tsx` | **M4**: `/auth/login/mobile` → bearer token in SecureStore → device registration |
-| Onboarding | `app/onboarding.tsx` | Compact 4-screen web flow; verify via `/auth/login-code/mobile/confirm` (token) |
-| Home | `app/home.tsx` | Quick links (chat, cohorts, tutors, LMS) |
-| Chat | `app/chat.tsx` | Thin client for the AI assistant |
-| **My Learning** | `app/lms.tsx` | **M3**: courses via `/me/lessons` (Bearer) |
-| **Course** | `app/lms/[cohortId].tsx` | **M3**: lessons, resources, assignments (submit), attendance |
+| Screen          | File                     | Notes                                                                            |
+| --------------- | ------------------------ | -------------------------------------------------------------------------------- |
+| Welcome         | `app/index.tsx`          | Brand + CTAs                                                                     |
+| Login           | `app/login.tsx`          | **M4**: `/auth/login/mobile` → bearer token in SecureStore → device registration |
+| Onboarding      | `app/onboarding.tsx`     | Compact 4-screen web flow; verify via `/auth/login-code/mobile/confirm` (token)  |
+| Home            | `app/home.tsx`           | Quick links (chat, cohorts, tutors, LMS)                                         |
+| Chat            | `app/chat.tsx`           | Thin client for the AI assistant                                                 |
+| **My Learning** | `app/lms.tsx`            | **M3**: courses via `/me/lessons` (Bearer)                                       |
+| **Course**      | `app/lms/[cohortId].tsx` | **M3**: lessons, resources, assignments (submit), attendance                     |
 
 Shared bits: `src/lib/api.ts` (envelope fetch + SecureStore bearer token +
 `registerDevice()` via expo-notifications, plus on-demand video lesson-progress

@@ -1,4 +1,4 @@
-# NUVORA Mobile — Store Release Runbook (M5)
+# YK-Virtual Mobile — Store Release Runbook (M5)
 
 Covers EAS builds, TestFlight, Play Console and the production checklist for
 `mobile/` (Expo SDK 51 + expo-router).
@@ -36,7 +36,7 @@ keystore password safe — it cannot be recovered later.
 1. `eas build:run` or upload via `eas submit --platform ios` (Xcode not needed).
 2. In App Store Connect → **TestFlight**: the build appears after processing
    (10–30 min). Add internal testers (up to 100) under **Internal Testing**.
-3. Fill the app record: name **NUVORA**, subtitle
+3. Fill the app record: name **YK-Virtual**, subtitle
    "Tutors, programmes & live cohorts", category **Education**,
    privacy policy URL (see §4), support URL, copyright.
 4. **Privacy answers** (App Privacy / Data Safety):
@@ -51,7 +51,7 @@ keystore password safe — it cannot be recovered later.
 
 1. `eas submit --platform android` to the **Internal testing** track;
    add testers (Google groups) and let them install via the opt-in link.
-2. Create the store listing: title **NUVORA**, short description
+2. Create the store listing: title **YK-Virtual**, short description
    ("British & Nigerian curricula, exam prep, private tuition and live
    cohorts"), screenshots (phone ≥2, tablet optional), feature graphic
    (1024×500), icon (512), app category **Education**.
@@ -65,9 +65,9 @@ keystore password safe — it cannot be recovered later.
 
 ## 4. Required legal pages (live before store review)
 
-- Privacy policy: https://app.nuvora.com/privacy  (shipped — see `client/app/(marketing)/privacy`)
-- Terms: https://app.nuvora.com/terms
-- Delete-account path: email privacy@nuvora.com from the registered address,
+- Privacy policy: https://app.virtual.ykaycollege.com/privacy (shipped — see `client/app/(marketing)/privacy`)
+- Terms: https://app.virtual.ykaycollege.com/terms
+- Delete-account path: email privacy@ykaycollege.com from the registered address,
   or in-app (account settings — add in M5.1). Respond within 30 days.
 
 ## 5. Pre-launch checklist

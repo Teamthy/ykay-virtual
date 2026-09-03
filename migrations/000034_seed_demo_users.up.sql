@@ -1,7 +1,7 @@
 -- 000034 — Seed login-able demo users for LOCAL DEV/STAGING convenience.
 --
 -- SECURITY (A-08): this migration must NEVER create a platform administrator.
--- The original version seeded admin@nuvora.com as a SUPER_ADMIN with a
+-- The original version seeded admin@ykaycollege.com as a SUPER_ADMIN with a
 -- password documented in the repository — a full platform takeover vector on
 -- any database where this chain is applied. That admin seed has been REMOVED;
 -- only non-privileged demo identities (PARENT / TUTOR / STUDENT) remain, and
@@ -11,9 +11,9 @@
 -- the old version of this migration.
 --
 -- Credentials (DEV/STAGING ONLY — never production): password123
---   parent@nuvora.com → PARENT        (lands on /dashboard)
---   tutor@nuvora.com  → TUTOR         (lands on /tutor-dashboard)
---   student@nuvora.com→ STUDENT       (lands on /student-dashboard)
+--   parent@ykaycollege.com → PARENT        (lands on /dashboard)
+--   tutor@ykaycollege.com  → TUTOR         (lands on /tutor-dashboard)
+--   student@ykaycollege.com→ STUDENT       (lands on /student-dashboard)
 --
 -- bcrypt hash below is for "password123" (same as the retired 000019 fixtures).
 
@@ -25,9 +25,9 @@ DECLARE
 BEGIN
   -- Insert each demo user if the email isn't already taken.
 
-  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'parent@nuvora.com' AND deleted_at IS NULL) THEN
+  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'parent@ykaycollege.com' AND deleted_at IS NULL) THEN
     INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
-    VALUES ('00000000-0000-0000-0000-0000000000b2', 'parent@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
+    VALUES ('00000000-0000-0000-0000-0000000000b2', 'parent@ykaycollege.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
     RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'PARENT';
     INSERT INTO student_profiles (id, user_id, first_name, last_name, timezone, guardian_consent, created_at, updated_at)
@@ -38,9 +38,9 @@ BEGIN
     FROM student_profiles WHERE id = '00000000-0000-0000-0000-0000000000c1';
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'tutor@nuvora.com' AND deleted_at IS NULL) THEN
+  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'tutor@ykaycollege.com' AND deleted_at IS NULL) THEN
     INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
-    VALUES ('00000000-0000-0000-0000-0000000000b3', 'tutor@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
+    VALUES ('00000000-0000-0000-0000-0000000000b3', 'tutor@ykaycollege.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
     RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
     INSERT INTO tutor_profiles (id, user_id, slug, display_name, bio, status, is_public, rating_avg, rating_count, created_at, updated_at)
@@ -50,9 +50,9 @@ BEGIN
     SELECT '00000000-0000-0000-0000-0000000000c2', id, true FROM subjects WHERE slug IN ('mathematics','physics') ON CONFLICT DO NOTHING;
   END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'student@nuvora.com' AND deleted_at IS NULL) THEN
+  IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'student@ykaycollege.com' AND deleted_at IS NULL) THEN
     INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)
-    VALUES ('00000000-0000-0000-0000-0000000000b4', 'student@nuvora.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
+    VALUES ('00000000-0000-0000-0000-0000000000b4', 'student@ykaycollege.com', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt, nowt, nowt)
     RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'STUDENT';
   END IF;

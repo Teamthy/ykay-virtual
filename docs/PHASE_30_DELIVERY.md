@@ -17,7 +17,7 @@ another port) that host is unreachable → `Failed to fetch`.
   override still honoured).
 - `next.config.js` — added a **rewrite** `/api/v1/:path*` →
   `http://localhost:8080/api/v1/:path*` (`API_PROXY_TARGET` env for prod).
-- Verified live: seed login (`parent@nuvora.com` / `password123`) through the
+- Verified live: seed login (`parent@ykaycollege.com` / `password123`) through the
   rewrite returns 200 + `ykay_session` cookie; `/auth/me` works with it.
 
 ## 2. Full image on the left panel
@@ -42,7 +42,7 @@ The old 30%-cream-with-inset-image layout is gone.
 ## 4. Stateful, role-specific onboarding — 7 steps
 
 `/onboarding?step=1..7` — state machine persisted to localStorage
-(`nuvora-onboarding`), URL carries the step, refresh-safe, role-specific:
+(`yk-virtual-onboarding`), URL carries the step, refresh-safe, role-specific:
 
 1. **Account** — full name + email (Google continue on top). Creates the
    account with a generated password (roles `PARENT` placeholder).
@@ -67,6 +67,7 @@ steps 4–6 → next step. A session guard bounces step 3+ without a session bac
 to verification.
 
 ### Related routing changes
+
 - `/register` → server 307 redirect to `/onboarding` (create account now lives
   in the stateful flow; header "Get started" + login footer link updated).
 - `/onboarding/learner` → 307 redirect to `/onboarding?step=4`.

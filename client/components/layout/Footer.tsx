@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 
-// NUVORA footer - full-width dark band, white brand copy, three link columns
+// YK-Virtual footer - full-width dark band, white brand copy, three link columns
 // and a copyright bar. No social icons (removed), no rounded inset card.
 
 const PRODUCTS = [
@@ -9,7 +9,7 @@ const PRODUCTS = [
   { href: "/private-tuition", label: "Private Tuition" },
   { href: "/online-classes", label: "Online Classes" },
   { href: "/utme-2026", label: "UTME 2026 Prep" },
-  { href: "/nuvora-plus", label: "NUVORA Plus" },
+  { href: "/plus", label: "YK-Virtual Plus" },
 ];
 
 const RESOURCES = [
@@ -70,7 +70,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div>
-            <Link href="/" aria-label="NUVORA home">
+            <Link href="/" aria-label="YK-Virtual home">
               <Logo dark className="text-2xl" />
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white">
@@ -86,7 +86,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 sm:flex-row">
-          <p className="text-sm text-white/60">© 2026 NUVORA</p>
+          <p className="text-sm text-white/60">© 2026 YK-Virtual</p>
           <p className="text-sm text-white/60">All rights reserved.</p>
         </div>
       </div>

@@ -50,7 +50,7 @@ instant. Bonus hardening in the same rewrite:
 
 ## 4. Working seed details — `docs/SEEDS.md`
 
-All four demo accounts (admin/parent/tutor/student @nuvora.com,
+All four demo accounts (admin/parent/tutor/student @ykaycollege.com,
 `password123`), profiles `…0001` / `…0102`, programmes, cohorts c010–c012,
 subjects, tutors and the new LMS demo content (assignments, quiz,
 attendance, graded submission, CONFIRMED enrollment). Every entry verified

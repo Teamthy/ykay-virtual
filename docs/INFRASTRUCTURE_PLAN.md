@@ -1,4 +1,4 @@
-# NUVORA Infrastructure Plan (₦50k / 3 months, domain included)
+# YK-Virtual Infrastructure Plan (₦50k / 3 months, domain included)
 
 > Answers: where the API/DB live, how the APK is hosted, how updates ship
 > without re-downloads, what to do about Cloudflare/Oracle/VPS, and the full
@@ -19,15 +19,15 @@
                        ClamAV (docker compose)
 ```
 
-| Layer | Host | Cost |
-|---|---|---|
-| Domain + DNS + CDN + SSL | Cloudflare (registrar or external .ng registrar, DNS on Cloudflare) | ₦6–8k / year |
-| Web app (Next.js) | Vercel (already live) | ₦0 |
-| API + DB + Redis + worker + antivirus | **One Oracle Cloud Always Free VM** (4 Arm cores / 24 GB RAM / 200 GB disk) running the existing `docker-compose.yml` | ₦0 |
-| APK hosting | GitHub Releases (primary) or Cloudflare R2 (10 GB free, no egress fees) | ₦0 |
-| OTA app updates | EAS Update (wired in `mobile/app.json` + `UpdateBanner`; CI publishes on every push) | ₦0 (free tier) |
-| CI | GitHub Actions (free) | ₦0 |
-| Monitoring | UptimeRobot free (50 monitors) + `GET /health` | ₦0 |
+| Layer                                 | Host                                                                                                                  | Cost           |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Domain + DNS + CDN + SSL              | Cloudflare (registrar or external .ng registrar, DNS on Cloudflare)                                                   | ₦6–8k / year   |
+| Web app (Next.js)                     | Vercel (already live)                                                                                                 | ₦0             |
+| API + DB + Redis + worker + antivirus | **One Oracle Cloud Always Free VM** (4 Arm cores / 24 GB RAM / 200 GB disk) running the existing `docker-compose.yml` | ₦0             |
+| APK hosting                           | GitHub Releases (primary) or Cloudflare R2 (10 GB free, no egress fees)                                               | ₦0             |
+| OTA app updates                       | EAS Update (wired in `mobile/app.json` + `UpdateBanner`; CI publishes on every push)                                  | ₦0 (free tier) |
+| CI                                    | GitHub Actions (free)                                                                                                 | ₦0             |
+| Monitoring                            | UptimeRobot free (50 monitors) + `GET /health`                                                                        | ₦0             |
 
 ## 2. Do we need a VPS if we use Cloudflare? — YES, exactly one (free)
 
@@ -70,11 +70,11 @@ enough for 10k users — only the VM's own Postgres qualifies.
   `NEXT_PUBLIC_APK_URL` — set it once in Vercel.
 - **Primary: GitHub Releases.** Upload the ~100 MB APK to a release on your
   existing repo. Free, no bandwidth limits for public repos, and the URL
-  (`https://github.com/Teamthy/ykay-virtual/releases/latest/download/nuvora.apk`)
+  (`https://github.com/Teamthy/ykay-virtual/releases/latest/download/ykvirtual.apk`)
   is permanent — users download directly.
 - **Scale-up: Cloudflare R2.** 10 GB storage + **zero egress fees** (GitHub
   is also fine, but R2 gives you your own branded URL like
-  `https://apk.nuvora.ng/nuvora.apk`). Both work with the same env var.
+  `https://apk.ykvirtual.ng/ykvirtual.apk`). Both work with the same env var.
 
 ## 5. Updates without re-download (item 4)
 
@@ -96,11 +96,11 @@ The app already ships this machinery:
 Teachers paste a Google Drive share link (or any https link) as a course
 resource; the backend normalises drive links to `/preview` and the mobile
 course player opens them in one tap. Drive links work because Drive hosts
-the file; NUVORA stores only the link.
+the file; YK-Virtual stores only the link.
 
 ## 7. Migration steps (Render → Oracle)
 
-1. Buy the domain (e.g. `nuvora.com.ng` at Whogohost/QServers/Web4Africa,
+1. Buy the domain (e.g. `virtual.ykaycollege.com.ng` at Whogohost/QServers/Web4Africa,
    ~₦5–8k/year) and add the domain to **Cloudflare** (free plan).
 2. Oracle Cloud → create account → **Create VM instance**: Ubuntu 22.04,
    shape **VM.Standard.A1.Flex**, 4 OCPU / 24 GB, region **Johannesburg**
@@ -111,18 +111,18 @@ the file; NUVORA stores only the link.
    `SITE_URL`, `API_BASE_URL`), then `docker compose up -d`.
 5. Migrate data: `pg_dump` on Render → `psql` on the VM
    (`docker compose exec postgres ...`).
-6. Cloudflare DNS: `A api.nuvora.com.ng → VM-IP` (proxied, orange cloud).
+6. Cloudflare DNS: `A api.ykaycollege.com.ng → VM-IP` (proxied, orange cloud).
 7. Point Vercel's `NEXT_PUBLIC_API_URL` (and mobile `EXPO_PUBLIC_API_URL`
-   in EAS) at `https://api.nuvora.com.ng/api/v1`.
-8. UptimeRobot on `https://api.nuvora.com.ng/health` + the Vercel site.
+   in EAS) at `https://api.ykaycollege.com.ng/api/v1`.
+8. UptimeRobot on `https://api.ykaycollege.com.ng/health` + the Vercel site.
 
 ## 8. Budget (₦50,000 for 3 months)
 
-| Line | ₦ |
-|---|---|
-| Domain `.com.ng` (year, covers 3 months easily) | 6,000 – 8,000 |
-| Oracle VM · Cloudflare · Vercel · GitHub · EAS Update · CI · UptimeRobot | 0 |
-| **Total** | **≈ ₦6–8k — ~₦42k remains as buffer** |
+| Line                                                                     | ₦                                     |
+| ------------------------------------------------------------------------ | ------------------------------------- |
+| Domain `.com.ng` (year, covers 3 months easily)                          | 6,000 – 8,000                         |
+| Oracle VM · Cloudflare · Vercel · GitHub · EAS Update · CI · UptimeRobot | 0                                     |
+| **Total**                                                                | **≈ ₦6–8k — ~₦42k remains as buffer** |
 
 The buffer covers: a one-month cheap VPS if Oracle verification fails, or a
 premium domain (.ng) if you prefer it. Paystack/WhatsApp costs are

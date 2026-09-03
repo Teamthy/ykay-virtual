@@ -1,6 +1,6 @@
 -- 000042 — Neutralize EVERY known demo identity (000019 a1–a4 AND 000034 b1–b4)
 -- by UUID and by documented emails. 000037 only targeted b1–b4, leaving
--- admin@nuvora.com (SUPER_ADMIN, password123) live after a full migrate.
+-- admin@ykaycollege.com (SUPER_ADMIN, password123) live after a full migrate.
 
 DO $$
 DECLARE
@@ -19,8 +19,8 @@ BEGIN
   WHERE user_id = ANY (v_ids)
      OR user_id IN (
         SELECT id FROM users WHERE lower(email) IN (
-          'admin@nuvora.com', 'parent@nuvora.com',
-          'tutor@nuvora.com', 'student@nuvora.com'
+          'admin@ykaycollege.com', 'parent@ykaycollege.com',
+          'tutor@ykaycollege.com', 'student@ykaycollege.com'
         )
      );
 
@@ -28,33 +28,33 @@ BEGIN
   WHERE user_id = ANY (v_ids)
      OR user_id IN (
         SELECT id FROM users WHERE lower(email) IN (
-          'admin@nuvora.com', 'parent@nuvora.com',
-          'tutor@nuvora.com', 'student@nuvora.com'
+          'admin@ykaycollege.com', 'parent@ykaycollege.com',
+          'tutor@ykaycollege.com', 'student@ykaycollege.com'
         )
      );
 
   DELETE FROM parent_student_links
   WHERE parent_user_id = ANY (v_ids)
-     OR parent_user_id IN (SELECT id FROM users WHERE lower(email) LIKE '%@nuvora.com'
-        AND email IN ('admin@nuvora.com','parent@nuvora.com','tutor@nuvora.com','student@nuvora.com'))
+     OR parent_user_id IN (SELECT id FROM users WHERE lower(email) LIKE '%@ykaycollege.com'
+        AND email IN ('admin@ykaycollege.com','parent@ykaycollege.com','tutor@ykaycollege.com','student@ykaycollege.com'))
      OR student_profile_id IN (
         SELECT id FROM student_profiles
         WHERE user_id = ANY (v_ids)
            OR user_id IN (SELECT id FROM users WHERE lower(email) IN (
-             'admin@nuvora.com','parent@nuvora.com','tutor@nuvora.com','student@nuvora.com'
+             'admin@ykaycollege.com','parent@ykaycollege.com','tutor@ykaycollege.com','student@ykaycollege.com'
            ))
      );
 
   DELETE FROM tutor_profiles
   WHERE user_id = ANY (v_ids)
      OR user_id IN (SELECT id FROM users WHERE lower(email) IN (
-       'admin@nuvora.com','parent@nuvora.com','tutor@nuvora.com','student@nuvora.com'
+       'admin@ykaycollege.com','parent@ykaycollege.com','tutor@ykaycollege.com','student@ykaycollege.com'
      ));
 
   DELETE FROM student_profiles
   WHERE user_id = ANY (v_ids)
      OR user_id IN (SELECT id FROM users WHERE lower(email) IN (
-       'admin@nuvora.com','parent@nuvora.com','tutor@nuvora.com','student@nuvora.com'
+       'admin@ykaycollege.com','parent@ykaycollege.com','tutor@ykaycollege.com','student@ykaycollege.com'
      ));
 
   UPDATE users
@@ -65,7 +65,7 @@ BEGIN
       onboarded_at = NULL
   WHERE id = ANY (v_ids)
      OR lower(email) IN (
-       'admin@nuvora.com', 'parent@nuvora.com',
-       'tutor@nuvora.com', 'student@nuvora.com'
+       'admin@ykaycollege.com', 'parent@ykaycollege.com',
+       'tutor@ykaycollege.com', 'student@ykaycollege.com'
      );
 END $$;

@@ -5,14 +5,14 @@ import { PageHero } from "@/components/layout/PageHero";
 export const metadata: Metadata = buildMetadata({
   title: "Terms of Service",
   description:
-    "The terms that govern your use of NUVORA's learning platform, payments and tutoring services.",
+    "The terms that govern your use of YK-Virtual's learning platform, payments and tutoring services.",
   path: "/terms",
 });
 
 const SECTIONS = [
   {
     h: "1. The service",
-    body: "NUVORA connects learners and parents with tutors and programmes (cohorts, private tuition, exam preparation). By creating an account or using the service you agree to these terms.",
+    body: "YK-Virtual connects learners and parents with tutors and programmes (cohorts, private tuition, exam preparation). By creating an account or using the service you agree to these terms.",
   },
   {
     h: "2. Accounts",
@@ -32,7 +32,7 @@ const SECTIONS = [
   },
   {
     h: "6. Intellectual property",
-    body: "NUVORA content (brand, lesson materials, platform) is owned by us or our licensors. You keep ownership of your submissions; you grant us a licence to store and display them for the purpose of the service.",
+    body: "YK-Virtual content (brand, lesson materials, platform) is owned by us or our licensors. You keep ownership of your submissions; you grant us a licence to store and display them for the purpose of the service.",
   },
   {
     h: "7. Liability",
@@ -48,7 +48,7 @@ const SECTIONS = [
   },
   {
     h: "10. Contact & law",
-    body: "Questions: legal@nuvora.com. These terms are governed by the laws of Nigeria; disputes are subject to the exclusive jurisdiction of the courts of Lagos, Nigeria.",
+    body: "Questions: legal@ykaycollege.com. These terms are governed by the laws of Nigeria; disputes are subject to the exclusive jurisdiction of the courts of Lagos, Nigeria.",
   },
 ];
 

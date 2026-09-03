@@ -26,7 +26,7 @@ func TestWhatsAppCloudSenderSuccess(t *testing.T) {
 	defer srv.Close()
 
 	s := &WhatsAppCloudSender{Token: "tok", PhoneID: "12345", BaseURL: srv.URL, HTTP: srv.Client()}
-	if err := s.Send(context.Background(), "+2348012345678", "hello nuvora"); err != nil {
+	if err := s.Send(context.Background(), "+2348012345678", "hello ykvirtual"); err != nil {
 		t.Fatalf("send: %v", err)
 	}
 	if gotPath != "/12345/messages" {
@@ -35,7 +35,7 @@ func TestWhatsAppCloudSenderSuccess(t *testing.T) {
 	if gotAuth != "Bearer tok" {
 		t.Fatalf("auth = %q, want Bearer tok", gotAuth)
 	}
-	if !strings.Contains(gotBody, `"to":"2348012345678"`) || !strings.Contains(gotBody, `"type":"text"`) || !strings.Contains(gotBody, "hello nuvora") {
+	if !strings.Contains(gotBody, `"to":"2348012345678"`) || !strings.Contains(gotBody, `"type":"text"`) || !strings.Contains(gotBody, "hello ykvirtual") {
 		t.Fatalf("body = %q", gotBody)
 	}
 }

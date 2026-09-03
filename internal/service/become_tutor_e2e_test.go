@@ -28,7 +28,7 @@ import (
 // This is the "become a tutor" acceptance test: a regression in ANY step of
 // this chain fails CI.
 func TestBecomeTutor_E2E(t *testing.T) {
-	t.Setenv("YKAY_STORAGE_SECRET", "nuvora-test-secret")
+	t.Setenv("YKAY_STORAGE_SECRET", "yk-virtual-test-secret")
 	ctx := context.Background()
 	store := memory.NewMemoryStore()
 	audit := NewAuditService(store.AuditLogs)

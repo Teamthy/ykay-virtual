@@ -14,7 +14,7 @@ import (
 	"ykay-virtual/internal/repository"
 )
 
-// PlusService — NUVORA Plus premium tier: plans, active-subscription
+// PlusService — YK-Virtual Plus premium tier: plans, active-subscription
 // entitlement, and per-feature daily usage gates (migration 000066).
 type PlusService struct {
 	repo  plus.Repository
@@ -42,9 +42,9 @@ func (s *PlusService) EnsureDefaultPlans(ctx context.Context) {
 		return
 	}
 	defs := []plus.Plan{
-		{Code: plus.PlanPlus, Name: "NUVORA Plus", Billing: "MONTHLY", Price: 52500, Currency: "NGN", TrialDays: 7, IsActive: true},
-		{Code: plus.PlanPlusFamily, Name: "NUVORA Plus Family", Billing: "MONTHLY", Price: 85000, Currency: "NGN", TrialDays: 7, IsActive: true},
-		{Code: plus.PlanPlusTeams, Name: "NUVORA Plus Teams", Billing: "ANNUAL", Price: 900000, Currency: "NGN", TrialDays: 0, IsActive: true},
+		{Code: plus.PlanPlus, Name: "YK-Virtual Plus", Billing: "MONTHLY", Price: 52500, Currency: "NGN", TrialDays: 7, IsActive: true},
+		{Code: plus.PlanPlusFamily, Name: "YK-Virtual Plus Family", Billing: "MONTHLY", Price: 85000, Currency: "NGN", TrialDays: 7, IsActive: true},
+		{Code: plus.PlanPlusTeams, Name: "YK-Virtual Plus Teams", Billing: "ANNUAL", Price: 900000, Currency: "NGN", TrialDays: 0, IsActive: true},
 	}
 	for i := range defs {
 		_ = s.repo.UpsertPlan(ctx, &defs[i])
@@ -251,7 +251,7 @@ func (s *PlusService) PurchasePlus(ctx context.Context, userID uuid.UUID, planCo
 		return nil, err
 	}
 	refID := plan.ID
-	desc := "NUVORA Plus: " + plan.Name
+	desc := "YK-Virtual Plus: " + plan.Name
 	if err := uow.Orders().CreateItem(ctx, &payment.OrderItem{
 		OrderID:     order.ID,
 		ItemType:    "PLUS_SUBSCRIPTION",

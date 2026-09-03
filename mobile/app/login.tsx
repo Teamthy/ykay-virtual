@@ -12,14 +12,23 @@ import { AppText } from "@/src/components/ui/AppText";
 import { BrandLogo } from "@/src/components/BrandLogo";
 import { useTheme } from "@/src/lib/theme-context";
 import { fonts, layout, radius, spacing } from "@/src/lib/theme";
-import { apiFetch, getGoogleAuthURL, setToken, registerDevice } from "@/src/lib/api";
+import {
+  apiFetch,
+  getGoogleAuthURL,
+  setToken,
+  registerDevice,
+} from "@/src/lib/api";
 
 // Login — password, login-code and Google (WebView OAuth). The Google flow:
 // backend consent URL → WebView → Google redirects to the API callback page →
 // that page posts the session token back via window.ReactNativeWebView.
 
 type LoginUser = { id: string; email: string; roles: string[] };
-type LoginResponse = { token?: string; mfa_required?: boolean; user: LoginUser };
+type LoginResponse = {
+  token?: string;
+  mfa_required?: boolean;
+  user: LoginUser;
+};
 
 // Google blocks OAuth in embedded webviews that present a webview UA;
 // a real browser UA string satisfies the check.
@@ -41,27 +50,36 @@ export default function Login() {
 
   const submit = async () => {
     if (!email || !password) {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      void Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Error,
+      ).catch(() => {});
       return Alert.alert("Missing details", "Enter your email and password.");
     }
     setBusy(true);
     void Haptics.selectionAsync().catch(() => {});
     try {
-      const res = await apiFetch<LoginResponse>(
-        "/auth/login/mobile",
-        { method: "POST", body: JSON.stringify({ email, password }) }
-      );
+      const res = await apiFetch<LoginResponse>("/auth/login/mobile", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
       if (res.data.mfa_required) {
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+        void Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
         return Alert.alert(
           "Check your email",
-          "This admin account requires an emailed verification code, which the mobile app doesn't handle yet. Finish the admin login on the web — or sign in here with a learner, parent or tutor account."
+          "This admin account requires an emailed verification code, which the mobile app doesn't handle yet. Finish the admin login on the web — or sign in here with a learner, parent or tutor account.",
         );
       }
       finishSession(res.data.token as string, res.data.user.roles);
     } catch (e) {
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      Alert.alert("Login failed", e instanceof Error ? e.message : "Please try again.");
+      void Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Error,
+      ).catch(() => {});
+      Alert.alert(
+        "Login failed",
+        e instanceof Error ? e.message : "Please try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -73,14 +91,20 @@ export default function Login() {
       const url = await getGoogleAuthURL();
       setGoogleURL(url);
     } catch (e) {
-      Alert.alert("Google sign-in unavailable", e instanceof Error ? e.message : "Try email login instead.");
+      Alert.alert(
+        "Google sign-in unavailable",
+        e instanceof Error ? e.message : "Try email login instead.",
+      );
     }
   };
 
   const onGoogleMessage = (ev: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(ev.nativeEvent.data) as { type?: string; token?: string };
-      if (data.type === "nuvora_google_auth" && data.token) {
+      const data = JSON.parse(ev.nativeEvent.data) as {
+        type?: string;
+        token?: string;
+      };
+      if (data.type === "ykv_google_auth" && data.token) {
         setGoogleURL(null);
         // Store the token first (apiFetch attaches it from SecureStore),
         // then fetch the profile to route correctly.
@@ -100,9 +124,15 @@ export default function Login() {
         <Animated.View entering={FadeIn.delay(40).duration(240)}>
           <BrandLogo stacked size={52} />
         </Animated.View>
-        <Animated.View entering={FadeIn.delay(80).duration(240)} style={styles.headingWrap}>
+        <Animated.View
+          entering={FadeIn.delay(80).duration(240)}
+          style={styles.headingWrap}
+        >
           <AppText variant="h1">Welcome back</AppText>
-          <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 6, marginBottom: 28 }}>
+          <AppText
+            variant="bodySm"
+            style={{ color: colors.ink[500], marginTop: 6, marginBottom: 28 }}
+          >
             Log in to continue your learning.
           </AppText>
         </Animated.View>
@@ -130,17 +160,31 @@ export default function Login() {
           />
         </Animated.View>
 
-        <Animated.View entering={FadeIn.delay(240).duration(240)} style={{ marginTop: 8 }}>
-          <Button label={busy ? "Logging in…" : "Log in"} onPress={() => void submit()} loading={busy} full />
+        <Animated.View
+          entering={FadeIn.delay(240).duration(240)}
+          style={{ marginTop: 8 }}
+        >
+          <Button
+            label={busy ? "Logging in…" : "Log in"}
+            onPress={() => void submit()}
+            loading={busy}
+            full
+          />
         </Animated.View>
 
         {/* Google sign-in (WebView OAuth) */}
-        <Animated.View entering={FadeIn.delay(280).duration(240)} style={{ marginTop: 12 }}>
+        <Animated.View
+          entering={FadeIn.delay(280).duration(240)}
+          style={{ marginTop: 12 }}
+        >
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Continue with Google"
             onPress={() => void startGoogle()}
-            style={[styles.googleBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[
+              styles.googleBtn,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
           >
             <Ionicons name="logo-google" size={18} color={colors.deep} />
             <AppText variant="label" style={{ color: colors.ink[700] }}>
@@ -149,10 +193,17 @@ export default function Login() {
           </Pressable>
         </Animated.View>
 
-        <Animated.View entering={FadeIn.delay(320).duration(240)} style={{ marginTop: 16, alignItems: "center" }}>
+        <Animated.View
+          entering={FadeIn.delay(320).duration(240)}
+          style={{ marginTop: 16, alignItems: "center" }}
+        >
           <AppText
             variant="bodySm"
-            style={{ color: colors.navy, fontFamily: fonts.bodyBold, fontWeight: "700" }}
+            style={{
+              color: colors.navy,
+              fontFamily: fonts.bodyBold,
+              fontWeight: "700",
+            }}
             onPress={() => router.push("/forgot-password" as never)}
           >
             Forgot password?
@@ -161,13 +212,34 @@ export default function Login() {
       </View>
 
       {/* Google OAuth WebView */}
-      <Modal visible={!!googleURL} animationType="slide" onRequestClose={() => setGoogleURL(null)}>
+      <Modal
+        visible={!!googleURL}
+        animationType="slide"
+        onRequestClose={() => setGoogleURL(null)}
+      >
         <View style={[styles.webRoot, { backgroundColor: colors.bg }]}>
           <View style={[styles.webBar, { backgroundColor: colors.deep }]}>
-            <Pressable onPress={() => setGoogleURL(null)} accessibilityRole="button" accessibilityLabel="Cancel Google sign-in" style={styles.webClose}>
-              <AppText style={{ color: colors.white, fontFamily: fonts.bodyBold, fontWeight: "700" }}>Cancel</AppText>
+            <Pressable
+              onPress={() => setGoogleURL(null)}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel Google sign-in"
+              style={styles.webClose}
+            >
+              <AppText
+                style={{
+                  color: colors.white,
+                  fontFamily: fonts.bodyBold,
+                  fontWeight: "700",
+                }}
+              >
+                Cancel
+              </AppText>
             </Pressable>
-            <AppText style={{ color: colors.white, fontFamily: fonts.bodyBold }}>Google sign-in</AppText>
+            <AppText
+              style={{ color: colors.white, fontFamily: fonts.bodyBold }}
+            >
+              Google sign-in
+            </AppText>
             <View style={{ width: 56 }} />
           </View>
           {googleURL ? (
@@ -180,7 +252,13 @@ export default function Login() {
               onMessage={onGoogleMessage}
               startInLoadingState
               renderLoading={() => (
-                <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <AppText variant="bodySm" style={{ color: colors.ink[500] }}>
                     Loading Google…
                   </AppText>
@@ -195,7 +273,13 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, justifyContent: "center", maxWidth: layout.contentMaxWidth, width: "100%", alignSelf: "center" },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    maxWidth: layout.contentMaxWidth,
+    width: "100%",
+    alignSelf: "center",
+  },
   headingWrap: { marginTop: 28 },
   googleBtn: {
     flexDirection: "row",

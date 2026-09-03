@@ -38,7 +38,7 @@ type Event struct {
 }
 
 // redisChannel — all instances subscribe here; each message is one Event.
-const redisChannel = "nuvora:events"
+const redisChannel = "ykvirtual:events"
 
 // subscriber buffer — a slow client must never block the publisher. On
 // overflow the oldest events are dropped: the client still has interval

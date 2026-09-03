@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, BookOpen, Check, GraduationCap, Target } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Check,
+  GraduationCap,
+  Target,
+} from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { InnerHero } from "@/components/layout/InnerHero";
 import { buildMetadata } from "@/lib/seo";
-import { getExam, getExamPrepPages, getSubject, type ExamSubject } from "@/lib/exam-prep-data";
+import {
+  getExam,
+  getExamPrepPages,
+  getSubject,
+  type ExamSubject,
+} from "@/lib/exam-prep-data";
 
 // Exam-prep subject pages — one indexable URL per exam × subject (from
 // lib/exam-prep-data.ts). Factual paper structure + board-agnostic syllabus
@@ -23,14 +34,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const subjectInfo = getSubject(subject);
   if (!examInfo || !subjectInfo) {
     return buildMetadata({
-      title: "Not found | NUVORA",
+      title: "Not found | YK-Virtual",
       description: "This exam subject page could not be found.",
       path: `/exam-prep/${exam}/${subject}`,
       noIndex: true,
     });
   }
   return buildMetadata({
-    title: `${subjectInfo.name} ${examInfo.code} Preparation | NUVORA`,
+    title: `${subjectInfo.name} ${examInfo.code} Preparation | YK-Virtual`,
     description: `${examInfo.name}: ${subjectInfo.overview}`,
     path: `/exam-prep/${examInfo.slug}/${subjectInfo.slug}`,
   });
@@ -40,7 +51,8 @@ export default async function ExamPrepSubjectPage(props: Props) {
   const { exam: examSlug, subject: subjectSlug } = await props.params;
   const exam = getExam(examSlug);
   const subject = getSubject(subjectSlug);
-  if (!exam || !subject || !exam.subjects.includes(subject.slug)) return notFound();
+  if (!exam || !subject || !exam.subjects.includes(subject.slug))
+    return notFound();
 
   const related = exam.subjects
     .filter((s) => s !== subject.slug)
@@ -51,7 +63,10 @@ export default async function ExamPrepSubjectPage(props: Props) {
     <main className="container-x pb-16">
       <InnerHero
         variant="imageLeft"
-        image={{ src: "/hero/exam-prep.jpg", alt: `${subject.name} — ${exam.code} exam preparation` }}
+        image={{
+          src: "/hero/exam-prep.jpg",
+          alt: `${subject.name} — ${exam.code} exam preparation`,
+        }}
       >
         <Breadcrumbs
           items={[
@@ -60,7 +75,9 @@ export default async function ExamPrepSubjectPage(props: Props) {
             { name: `${subject.name} — ${exam.code}` },
           ]}
         />
-        <div className="text-xs font-semibold uppercase text-brand-blue">{exam.name}</div>
+        <div className="text-xs font-semibold uppercase text-brand-blue">
+          {exam.name}
+        </div>
         <h1 className="mt-2 max-w-3xl text-3xl font-extrabold leading-tight md:text-4xl">
           {subject.name} — {exam.code} Preparation
         </h1>
@@ -72,7 +89,8 @@ export default async function ExamPrepSubjectPage(props: Props) {
           {/* Paper structure */}
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <h2 className="flex items-center gap-2 font-display text-lg tracking-[0.02em] text-brand-navy">
-              <BookOpen size={18} className="text-brand-green" /> About this paper
+              <BookOpen size={18} className="text-brand-green" /> About this
+              paper
             </h2>
             <p className="mt-2 text-sm text-ink-500">
               {exam.level} · {exam.format}
@@ -83,22 +101,32 @@ export default async function ExamPrepSubjectPage(props: Props) {
                   <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-gold-light text-brand-green">
                     <Check size={12} strokeWidth={3} />
                   </span>
-                  <span className="text-sm leading-relaxed text-ink-700">{line}</span>
+                  <span className="text-sm leading-relaxed text-ink-700">
+                    {line}
+                  </span>
                 </li>
               ))}
             </ul>
-            <p className="mt-4 rounded-xl bg-ink-50 p-4 text-sm leading-relaxed text-ink-700">{exam.grading}</p>
+            <p className="mt-4 rounded-xl bg-ink-50 p-4 text-sm leading-relaxed text-ink-700">
+              {exam.grading}
+            </p>
           </section>
 
           {/* What the subject covers */}
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <h2 className="flex items-center gap-2 font-display text-lg tracking-[0.02em] text-brand-navy">
-              <BookOpen size={18} className="text-brand-green" /> What {subject.name} covers
+              <BookOpen size={18} className="text-brand-green" /> What{" "}
+              {subject.name} covers
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-700">{subject.overview}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-700">
+              {subject.overview}
+            </p>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {subject.topics.map((topic) => (
-                <li key={topic} className="flex items-start gap-2 rounded-lg border border-ink-100 px-3 py-2 text-sm text-ink-700">
+                <li
+                  key={topic}
+                  className="flex items-start gap-2 rounded-lg border border-ink-100 px-3 py-2 text-sm text-ink-700"
+                >
                   <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand-green" />
                   {topic}
                 </li>
@@ -111,7 +139,8 @@ export default async function ExamPrepSubjectPage(props: Props) {
           {/* Skills */}
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <h2 className="flex items-center gap-2 font-display text-lg tracking-[0.02em] text-brand-navy">
-              <Target size={18} className="text-brand-green" /> Skills the paper rewards
+              <Target size={18} className="text-brand-green" /> Skills the paper
+              rewards
             </h2>
             <ul className="mt-4 space-y-3">
               {subject.skills.map((skill) => (
@@ -119,16 +148,19 @@ export default async function ExamPrepSubjectPage(props: Props) {
                   <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-gold-light text-brand-green">
                     <Check size={12} strokeWidth={3} />
                   </span>
-                  <span className="text-sm leading-relaxed text-ink-700">{skill}</span>
+                  <span className="text-sm leading-relaxed text-ink-700">
+                    {skill}
+                  </span>
                 </li>
               ))}
             </ul>
           </section>
 
-          {/* How NUVORA prepares you */}
+          {/* How YK-Virtual prepares you */}
           <section className="rounded-2xl bg-brand-navy p-6 text-white">
             <h2 className="flex items-center gap-2 font-display text-lg tracking-[0.02em] text-white">
-              <GraduationCap size={18} className="text-brand-gold" /> How NUVORA prepares you
+              <GraduationCap size={18} className="text-brand-gold" /> How
+              YK-Virtual prepares you
             </h2>
             <ul className="mt-4 space-y-2.5 text-sm text-white/85">
               <li>· Vetted subject specialists matched to your syllabus</li>

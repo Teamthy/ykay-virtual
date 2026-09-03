@@ -1,6 +1,6 @@
 -- 000063_academic_calendar.up.sql â€” virtual school, Pillar 1: academic
 -- sessions (school years) and terms. NULL institution_id = the platform-wide
--- NUVORA virtual school; a set institution_id scopes the calendar to one
+-- YK-Virtual virtual school; a set institution_id scopes the calendar to one
 -- partner school. Cohorts can optionally be scheduled against a term
 -- (cohorts.term_id), which is what later pillars (timetable, gradebook,
 -- transcripts) anchor to.

@@ -7,9 +7,9 @@ import { SubjectsClient } from "@/features/subjects/components/SubjectsClient";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "All Subjects & Exam Prep - British & Nigerian Curricula | NUVORA",
+  title: "All Subjects & Exam Prep - British & Nigerian Curricula | YK-Virtual",
   description:
-    "Browse every subject NUVORA teaches: Mathematics, English, Sciences, Digital skills, Languages, Music and exam preparation for WAEC, NECO, JAMB, IGCSE and A-Level.",
+    "Browse every subject YK-Virtual teaches: Mathematics, English, Sciences, Digital skills, Languages, Music and exam preparation for WAEC, NECO, JAMB, IGCSE and A-Level.",
   path: "/subjects",
 });
 

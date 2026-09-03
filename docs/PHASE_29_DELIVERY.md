@@ -9,6 +9,7 @@ Delivery method: git bundle `ykay-virtual-phase-29.bundle`
 ## What was delivered
 
 ### 1. Tidy forms + show/hide passwords
+
 - New **`PasswordInput`** component (eye/eye-off toggle, ARIA labels, consistent
   `h-11` sizing) — applied to **login, register (×2), reset-password (×2)**.
 - Shared `INPUT_CLS` standard: `h-11 rounded-lg border-ink-200 px-4 text-sm`,
@@ -18,7 +19,9 @@ Delivery method: git bundle `ykay-virtual-phase-29.bundle`
 - All auth forms now use gold pill CTAs (`h-11 w-full rounded-lg bg-brand-gold`).
 
 ### 2. Google auth (real OAuth)
+
 **Backend**
+
 - `GoogleAuthService`: `BuildAuthURL` (state nonce, 10-min TTL), `ExchangeCode`
   (token exchange → userinfo → **upsert user as email-verified ACTIVE** →
   session via the same path as password login). Google-sourced users get the
@@ -30,19 +33,21 @@ Delivery method: git bundle `ykay-virtual-phase-29.bundle`
   rejection).
 
 **Frontend**
+
 - `GoogleButton` ("Continue with Google" with official multi-colour G icon) on
   **login + register**; fetches the consent URL and redirects; graceful toast
   when unconfigured. `getGoogleAuthURL` client helper.
 
 ### 3. Stateful, role-specific onboarding (Preline split-panel template)
+
 - **`AuthShell` v2** — the template: left 30% cream panel (logo header +
   language chip + **education image** with caption + trusted strip), right 70%
   white panel (Skip link, form, chat button). The "simplest way to manage your
-  workforce" illustration is replaced with real NUVORA education imagery.
+  workforce" illustration is replaced with real YK-Virtual education imagery.
 - Applied to **login, register, forgot-password, reset-password, login-code,
   verify-email, onboarding, onboarding/learner** — brand-consistent everywhere.
 - **`/onboarding`** — Preline role-selection template: "How are you planning to
-  use NUVORA?" with role chips (Parent / Student / Tutor / School-Company),
+  use YK-Virtual?" with role chips (Parent / Student / Tutor / School-Company),
   choice persisted to localStorage (stateful across screens), Continue routes
   by role: TUTOR → `/become-tutor/apply`, INSTITUTION → `/for-schools`,
   PARENT/STUDENT → `/onboarding/learner`. Skip goes to the right dashboard.

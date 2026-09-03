@@ -72,7 +72,7 @@ var chatEvals = []EvalCase{
 	{
 		Name:   "concise and warm",
 		Prompt: "Hello! Who are you?",
-		Want:   []string{"Nuvora", "NUVORA"},
+		Want:   []string{"YK-Virtual", "YK-Virtual"},
 		Forbid: []string{"lorem", "as an AI language model", "I am a large language model"},
 	},
 }
@@ -113,7 +113,7 @@ type FakeEvalProvider struct{}
 
 func (f FakeEvalProvider) Reply(_ context.Context, history []chat.Message, grounding string) (string, error) {
 	if len(history) == 0 {
-		return "Hi! I'm Nuvora from NUVORA.", nil
+		return "Hi! I'm YK-Virtual from YK-Virtual.", nil
 	}
 	prompt := strings.ToLower(history[len(history)-1].Content)
 	switch {
@@ -122,7 +122,7 @@ func (f FakeEvalProvider) Reply(_ context.Context, history []chat.Message, groun
 	case strings.Contains(prompt, "music"), strings.Contains(prompt, "not offer"), strings.Contains(prompt, "do you offer"):
 		return "I don't see music lessons in our catalogue yet — let me check with the team for you.", nil
 	case strings.Contains(prompt, "hello"), strings.Contains(prompt, "who are you"):
-		return "Hi! I'm Nuvora, the NUVORA learning assistant.", nil
+		return "Hi! I'm YK-Virtual, the YK-Virtual learning assistant.", nil
 	case strings.Contains(prompt, "price"), strings.Contains(prompt, "cost"), strings.Contains(prompt, "how much"):
 		if strings.Contains(grounding, "SAT") {
 			return "There's no SAT programme in the catalogue right now — I won't guess a price. Let me check with the team.", nil

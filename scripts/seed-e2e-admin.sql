@@ -1,5 +1,5 @@
 -- Disposable SUPER_ADMIN for throwaway e2e databases only.
--- 000042 disables admin@nuvora.com; this account is NOT a production identity.
+-- 000042 disables admin@ykaycollege.com; this account is NOT a production identity.
 -- Password: password123 (same bcrypt as historical 000019 demo hash).
 
 INSERT INTO users (id, email, password_hash, status, timezone, email_verified_at, onboarded_at, created_at, updated_at)

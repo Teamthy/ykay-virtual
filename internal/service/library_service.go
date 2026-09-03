@@ -38,7 +38,7 @@ func NewLibraryService(repo library.Repository, participants LessonParticipantRe
 	return &LibraryService{repo: repo, participants: participants}
 }
 
-// WithPlus wires the NUVORA Plus gate: recorded-library transcripts are a
+// WithPlus wires the YK-Virtual Plus gate: recorded-library transcripts are a
 // Plus feature (000066). Video playback stays entitlement-gated by cohort
 // participation; transcripts additionally require an active Plus plan.
 func (s *LibraryService) WithPlus(p *PlusService) *LibraryService {
@@ -189,7 +189,7 @@ func (s *LibraryService) Get(ctx context.Context, lessonID uuid.UUID, isAdmin bo
 }
 
 // DownloadURL — offline/mobile download (P5). Returns the video URL for a
-// recorded lesson only when the viewer is entitled AND has an active NUVORA
+// recorded lesson only when the viewer is entitled AND has an active YK-Virtual
 // Plus plan (or is an admin). Downloads are a Plus feature, enforced server-side
 // so the mobile app can cache offline. Returns plus.ErrPremiumRequired (HTTP
 // 402) for entitled-but-not-Plus viewers.

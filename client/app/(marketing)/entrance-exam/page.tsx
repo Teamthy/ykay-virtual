@@ -8,7 +8,8 @@ import { Check } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Entrance Exams - Prepare for Top Schools in Nigeria & Abroad | NUVORA",
+  title:
+    "Entrance Exams - Prepare for Top Schools in Nigeria & Abroad | YK-Virtual",
   description:
     "Prep for WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT - past papers, mocks and weekly reports. We do not publish unverified success rates.",
   path: "/entrance-exam",
@@ -33,13 +34,19 @@ const EXAMS = [
 
 export default function EntranceExamPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://nuvora.com/" },
-    { name: "Entrance Exams", item: "https://nuvora.com/entrance-exam" },
+    { name: "Home", item: "https://virtual.ykaycollege.com/" },
+    {
+      name: "Entrance Exams",
+      item: "https://virtual.ykaycollege.com/entrance-exam",
+    },
   ]);
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
 
       <PageHero
         eyebrow="Entrance & board exams"
@@ -47,9 +54,14 @@ export default function EntranceExamPage() {
         subtitle="WAEC, IGCSE, GCSE, BECE, 11+, Common Entrance and SAT - past papers, mocks and weekly reports. We do not publish unverified success rates."
         crumbs={[{ name: "Home", href: "/" }, { name: "Entrance Exams" }]}
         align="center"
-        image={{ src: "/hero/entrance-exam.jpg", alt: "Young student preparing for entrance exams" }}
+        image={{
+          src: "/hero/entrance-exam.jpg",
+          alt: "Young student preparing for entrance exams",
+        }}
       >
-        <a href="#rates" className="btn-gold">Book a Slot</a>
+        <a href="#rates" className="btn-gold">
+          Book a Slot
+        </a>
       </PageHero>
 
       {/* Success rates */}
@@ -60,9 +72,10 @@ export default function EntranceExamPage() {
               Get top grades in tests &amp; exams
             </h2>
             <p className="mt-4 text-ink-600 leading-relaxed">
-              Prepare for entrance exams into top schools in Nigeria &amp; the UK - Loyola Jesuit,
-              Grange, St. Saviour&apos;s, King&apos;s College UK, CIS and federal schools - with
-              past-paper practice and mock examinations.
+              Prepare for entrance exams into top schools in Nigeria &amp; the
+              UK - Loyola Jesuit, Grange, St. Saviour&apos;s, King&apos;s
+              College UK, CIS and federal schools - with past-paper practice and
+              mock examinations.
             </p>
             <ul className="mt-6 space-y-3">
               {[
@@ -71,16 +84,28 @@ export default function EntranceExamPage() {
                 "Small-group revision cohorts",
                 "Weekly progress reports for parents",
               ].map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-ink-600">
-                  <Check size={15} className="mt-0.5 shrink-0 text-brand-green" /> {f}
+                <li
+                  key={f}
+                  className="flex items-start gap-2.5 text-sm text-ink-600"
+                >
+                  <Check
+                    size={15}
+                    className="mt-0.5 shrink-0 text-brand-green"
+                  />{" "}
+                  {f}
                 </li>
               ))}
             </ul>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             {TRACKS.map((r) => (
-              <div key={r.subject} className="rounded-2xl border border-ink-100 bg-surface-muted p-6">
-                <p className="font-display text-xl text-brand-navy">{r.subject}</p>
+              <div
+                key={r.subject}
+                className="rounded-2xl border border-ink-100 bg-surface-muted p-6"
+              >
+                <p className="font-display text-xl text-brand-navy">
+                  {r.subject}
+                </p>
                 <p className="mt-2 text-sm text-ink-500">{r.note}</p>
               </div>
             ))}
@@ -96,14 +121,24 @@ export default function EntranceExamPage() {
           </h2>
           <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-5">
             {EXAMS.map((e) => (
-              <div key={e.code} className="rounded-2xl border border-ink-100 bg-white p-6 text-center shadow-soft">
-                <div className="font-display text-3xl tracking-[0.02em] text-brand-blue">{e.code}</div>
-                <p className="mt-2 text-xs font-semibold text-ink-500 leading-snug">{e.name}</p>
+              <div
+                key={e.code}
+                className="rounded-2xl border border-ink-100 bg-white p-6 text-center shadow-soft"
+              >
+                <div className="font-display text-3xl tracking-[0.02em] text-brand-blue">
+                  {e.code}
+                </div>
+                <p className="mt-2 text-xs font-semibold text-ink-500 leading-snug">
+                  {e.name}
+                </p>
               </div>
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Link href="/exam-prep" className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5">
+            <Link
+              href="/exam-prep"
+              className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
+            >
               Explore exam prep programmes
             </Link>
           </div>

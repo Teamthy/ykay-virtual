@@ -8,7 +8,7 @@
 // user's partial state - pre-filled name/email or even a skipped step - which
 // looks like account bleed between users.
 
-export const ONBOARDING_STORAGE_KEY = "nuvora-onboarding";
+export const ONBOARDING_STORAGE_KEY = "yk-virtual-onboarding";
 
 export function clearOnboardingDraft(): void {
   try {

@@ -9,7 +9,8 @@ Delivery method: git bundle `ykay-virtual-phase-34.bundle`
 ## Part A — Mobile M1–M2
 
 ### M1 — PWA hardening (web app ships first)
-- **`public/manifest.json`** (new): NUVORA identity, `standalone` display,
+
+- **`public/manifest.json`** (new): YK-Virtual identity, `standalone` display,
   gold/cream/navy theme + background, 192/512 icons (any + maskable),
   portrait, `lang en-NG`, education category, **app shortcuts** (LMS, Chat,
   Tutors).
@@ -19,9 +20,10 @@ Delivery method: git bundle `ykay-virtual-phase-34.bundle`
   `/_next/static` assets**, network-first navigations with `/offline`
   fallback, stale-while-revalidate images, API never cached.
 - **`InstallPrompt`** component: captures `beforeinstallprompt`, shows an
-  "Install NUVORA" banner (dismissable) — wired into the root layout.
+  "Install YK-Virtual" banner (dismissable) — wired into the root layout.
 
 ### M2 — Expo (React Native) scaffold (`mobile/`)
+
 - `package.json` (Expo SDK 51 + expo-router + expo-secure-store),
   `app.json` (bundle ids, permissions, splash), tsconfig, babel, .gitignore.
 - Screens: **Welcome** (`index.tsx`), **Login** (shared auth),
@@ -35,28 +37,32 @@ Delivery method: git bundle `ykay-virtual-phase-34.bundle`
 ## Part B — Chatbot C4–C6
 
 ### C4 — Human handoff + agent inbox
+
 - Backend: `RoleAgent`; admin endpoints —
   `GET /admin/chat/threads`, `GET /admin/chat/threads/{id}/messages`,
   `POST /admin/chat/threads/{id}/reply` (agent message), `POST …/close`.
 - **`/admin/chat`** — polished agent inbox: thread list with status
   badges (ESCALATED/CLOSED/OPEN), full transcript with role labels
-  (STUDENT / NUVORA AI / YOU-AGENT), reply composer (Enter to send),
+  (STUDENT / YK-Virtual AI / YOU-AGENT), reply composer (Enter to send),
   close button, ratings visible per thread. Linked from the admin hub.
 - User-side `/chat` now shows a **"SUPPORT AGENT" badge** on agent replies
   and an escalated banner; admin guard verified (403 for students).
 
 ### C5 — Ratings
+
 - `POST /chat/threads/{id}/rating {score 1–5, comment?}` (owner only;
   invalid scores rejected), stored on the thread.
 - `/chat` shows a **⭐ 1–5 rating bar** after enough messages (once per
   thread), thanks + persists; ratings surface in the agent inbox.
 
 ### C6 — Analytics
+
 - `GET /admin/chat/analytics` → total/open/escalated/closed threads,
   total messages, avg rating, **escalation rate + deflection rate**.
 - `/admin/chat` renders six metric cards on top.
 
 ### Tests
+
 - `TestChatService_AgentInboxAndAnalytics`: agent reply role, admin
   transcript, close, rating bounds, analytics figures.
 - E2E grew **92 → 102**: rating, inbox list, transcript, agent reply,
@@ -77,6 +83,7 @@ Live:
 ```
 
 ## Notes
+
 - The sandbox lost its Go toolchain + node_modules mid-phase (snapshot
   cleanup); both were reinstalled and all gates re-ran green.
 - Native token auth (M4) remains the one documented gap for the mobile app.

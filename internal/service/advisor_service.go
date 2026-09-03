@@ -12,7 +12,7 @@ import (
 	"ykay-virtual/internal/domain/identity"
 )
 
-// AdvisorService — NUVORA Plus named Learning Advisor + learning plan (000067).
+// AdvisorService — YK-Virtual Plus named Learning Advisor + learning plan (000067).
 // Only active Plus users get an advisor or a learning plan.
 type AdvisorService struct {
 	repo  advisor.Repository
@@ -50,7 +50,7 @@ func (s *AdvisorService) AssignAdvisor(ctx context.Context, adminID, subscriberU
 		return nil, errorsAdvisorUnavailable()
 	}
 	if s.plus == nil || !s.plus.HasActivePlan(ctx, subscriberUserID) {
-		return nil, fmt.Errorf("%w: the user has no active NUVORA Plus plan to assign an advisor to", domain.ErrConflict)
+		return nil, fmt.Errorf("%w: the user has no active YK-Virtual Plus plan to assign an advisor to", domain.ErrConflict)
 	}
 	a := &advisor.Assignment{
 		UserID:        subscriberUserID,
@@ -72,7 +72,7 @@ func (s *AdvisorService) GetMyAdvisor(ctx context.Context, userID uuid.UUID) (*A
 		return nil, errorsAdvisorUnavailable()
 	}
 	if s.plus != nil && !s.plus.HasActivePlan(ctx, userID) {
-		return nil, fmt.Errorf("%w: assign a NUVORA Plus plan to get a named advisor", plusErrConflict())
+		return nil, fmt.Errorf("%w: assign a YK-Virtual Plus plan to get a named advisor", plusErrConflict())
 	}
 	a, err := s.repo.GetByUser(ctx, userID)
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *AdvisorService) SetLearningPlan(ctx context.Context, actorID, userID, s
 		return nil, errorsAdvisorUnavailable()
 	}
 	if s.plus != nil && !s.plus.HasActivePlan(ctx, userID) {
-		return nil, fmt.Errorf("%w: assign a NUVORA Plus plan to author a learning plan", plusErrConflict())
+		return nil, fmt.Errorf("%w: assign a YK-Virtual Plus plan to author a learning plan", plusErrConflict())
 	}
 	p := &advisor.LearningPlan{
 		UserID:           userID,
@@ -128,7 +128,7 @@ func (s *AdvisorService) GetMyLearningPlan(ctx context.Context, userID, studentP
 		return nil, errorsAdvisorUnavailable()
 	}
 	if s.plus != nil && !s.plus.HasActivePlan(ctx, userID) {
-		return nil, fmt.Errorf("%w: assign a NUVORA Plus plan to view a learning plan", plusErrConflict())
+		return nil, fmt.Errorf("%w: assign a YK-Virtual Plus plan to view a learning plan", plusErrConflict())
 	}
 	return s.repo.GetPlan(ctx, userID, studentProfileID)
 }

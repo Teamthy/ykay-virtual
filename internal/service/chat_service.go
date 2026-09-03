@@ -27,7 +27,7 @@ import (
 
 const (
 	chatHistoryWindow = 12
-	chatTitleFallback = "NUVORA support chat"
+	chatTitleFallback = "YK-Virtual support chat"
 )
 
 var (
@@ -70,7 +70,7 @@ func NewChatService(threads chat.ThreadRepository, support *SupportService, user
 
 // WithNotifier wires WhatsApp notification when a chat escalates to a human
 // (best-effort; failures never fail the escalation itself).
-// WithPlus wires the NUVORA Plus gate for the AI-assistant daily allowance.
+// WithPlus wires the YK-Virtual Plus gate for the AI-assistant daily allowance.
 func (s *ChatService) WithPlus(p *PlusService) *ChatService {
 	s.plus = p
 	return s
@@ -116,7 +116,7 @@ func (s *ChatService) CreateThread(ctx context.Context, userID uuid.UUID, title 
 		return nil, err
 	}
 	// Warm greeting.
-	_, _ = s.append(ctx, t.ID, chat.RoleAssistant, "Hi! 👋 I'm Nuvora — ask me about programmes, cohorts, tutors or fees. If you need a person, just say so and I'll hand you to our team.")
+	_, _ = s.append(ctx, t.ID, chat.RoleAssistant, "Hi! 👋 I'm YK-Virtual — ask me about programmes, cohorts, tutors or fees. If you need a person, just say so and I'll hand you to our team.")
 	return t, nil
 }
 
@@ -175,7 +175,7 @@ func (s *ChatService) SendMessage(ctx context.Context, userID, threadID uuid.UUI
 
 	reply := cannedReply(content)
 	if s.provider != nil {
-		// NUVORA Plus gate (000066): the AI assistant has a per-user daily
+		// YK-Virtual Plus gate (000066): the AI assistant has a per-user daily
 		// allowance. Plus accounts get a much higher allowance; free accounts
 		// that exhaust their quota get a premium nudge instead of an answer.
 		if s.plus != nil {
@@ -253,7 +253,7 @@ func (s *ChatService) EscalateToHuman(ctx context.Context, userID, threadID uuid
 		go func(subject, adminBody string) {
 			nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
-			if err := s.notifier.NotifyAdmin(nctx, "NUVORA chat escalated", adminBody); err != nil {
+			if err := s.notifier.NotifyAdmin(nctx, "YK-Virtual chat escalated", adminBody); err != nil {
 				slog.Error("whatsapp escalation notify failed", "thread", thread.ID, "error", err)
 			}
 		}("Chat escalated: "+thread.Title, adminBody)
@@ -307,7 +307,7 @@ func (s *ChatService) AgentReply(ctx context.Context, threadID uuid.UUID, conten
 	if s.pusher != nil {
 		if thread, err := s.threads.GetThread(ctx, threadID); err == nil {
 			_ = s.pusher.NotifyUser(ctx, thread.UserID,
-				"NUVORA support replied 💬", content, map[string]string{"thread_id": threadID.String()})
+				"YK-Virtual support replied 💬", content, map[string]string{"thread_id": threadID.String()})
 		}
 	}
 	return msg, nil
@@ -522,9 +522,9 @@ func redactPII(s string) string {
 // cannedReply lives in chat_kb.go — FAQ answers when Gemini is off.
 
 // premiumAINudge — shown to free users who exhaust their daily AI-assistant
-// allowance, directing them to the NUVORA Plus upgrade.
+// allowance, directing them to the YK-Virtual Plus upgrade.
 func premiumAINudge() string {
-	return "You've reached your free daily AI-tutor limit. Upgrade to NUVORA Plus for a much higher AI-tutor allowance, the full practice-exam vault, verified certificates and more — visit /nuvora-plus to unlock it."
+	return "You've reached your free daily AI-tutor limit. Upgrade to YK-Virtual Plus for a much higher AI-tutor allowance, the full practice-exam vault, verified certificates and more — visit /plus to unlock it."
 }
 
 func round1(v float64) float64 {

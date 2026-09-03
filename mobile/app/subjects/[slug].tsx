@@ -35,7 +35,10 @@ export default function SubjectDetailScreen() {
   if (loading) {
     return (
       <Screen scroll>
-        <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center", marginTop: 48 }}>
+        <AppText
+          variant="bodySm"
+          style={{ color: colors.ink[500], textAlign: "center", marginTop: 48 }}
+        >
           Loading subject…
         </AppText>
       </Screen>
@@ -45,8 +48,13 @@ export default function SubjectDetailScreen() {
   if (!subject) {
     return (
       <Screen scroll>
-        <AppText variant="h2" style={{ marginTop: 32 }}>Subject not found</AppText>
-        <AppText variant="bodySm" style={{ color: colors.ink[500], marginTop: 8 }}>
+        <AppText variant="h2" style={{ marginTop: 32 }}>
+          Subject not found
+        </AppText>
+        <AppText
+          variant="bodySm"
+          style={{ color: colors.ink[500], marginTop: 8 }}
+        >
           This subject may have been removed from the catalogue.
         </AppText>
       </Screen>
@@ -56,16 +64,23 @@ export default function SubjectDetailScreen() {
   return (
     <Screen scroll>
       <View style={styles.hero}>
-        <AppText variant="label" style={{ color: colors.goldDark }}>{subject.category.toUpperCase()}</AppText>
-        <AppText variant="h1" style={{ color: colors.white, marginTop: 6 }}>{subject.name}</AppText>
+        <AppText variant="label" style={{ color: colors.goldDark }}>
+          {subject.category.toUpperCase()}
+        </AppText>
+        <AppText variant="h1" style={{ color: colors.white, marginTop: 6 }}>
+          {subject.name}
+        </AppText>
       </View>
 
       <Card padded style={{ marginTop: 16 }}>
         <AppText variant="h3">About this subject</AppText>
-        <AppText variant="bodySm" style={{ color: colors.ink[600], marginTop: 8, lineHeight: 20 }}>
+        <AppText
+          variant="bodySm"
+          style={{ color: colors.ink[600], marginTop: 8, lineHeight: 20 }}
+        >
           {subject.description?.trim()
             ? subject.description
-            : "A catalogue subject taught by vetted NUVORA tutors. Find a specialist below."}
+            : "A catalogue subject taught by vetted YK-Virtual tutors. Find a specialist below."}
         </AppText>
       </Card>
 
@@ -73,7 +88,9 @@ export default function SubjectDetailScreen() {
         <Button
           label="Find tutors for this subject"
           full
-          onPress={() => router.push(`/search?subject=${subject.slug}` as never)}
+          onPress={() =>
+            router.push(`/search?subject=${subject.slug}` as never)
+          }
         />
         <View style={{ height: 10 }} />
         <Button
@@ -84,10 +101,21 @@ export default function SubjectDetailScreen() {
         />
       </View>
 
-      <Card padded style={{ marginTop: 8, flexDirection: "row", alignItems: "center" }}>
-        <Ionicons name="shield-checkmark-outline" size={18} color={colors.success} />
-        <AppText variant="caption" style={{ color: colors.ink[500], marginLeft: 10, flex: 1 }}>
-          Every tutor is vetted — identity, documents, interview and competency assessment.
+      <Card
+        padded
+        style={{ marginTop: 8, flexDirection: "row", alignItems: "center" }}
+      >
+        <Ionicons
+          name="shield-checkmark-outline"
+          size={18}
+          color={colors.success}
+        />
+        <AppText
+          variant="caption"
+          style={{ color: colors.ink[500], marginLeft: 10, flex: 1 }}
+        >
+          Every tutor is vetted — identity, documents, interview and competency
+          assessment.
         </AppText>
       </Card>
     </Screen>
@@ -96,10 +124,10 @@ export default function SubjectDetailScreen() {
 
 const makeStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-  hero: {
-    backgroundColor: colors.navy,
-    borderRadius: 20,
-    padding: 24,
-  },
-  cta: { marginTop: 20 },
-});
+    hero: {
+      backgroundColor: colors.navy,
+      borderRadius: 20,
+      padding: 24,
+    },
+    cta: { marginTop: 20 },
+  });

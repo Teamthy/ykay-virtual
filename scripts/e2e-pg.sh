@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NUVORA — E2E against REAL PostgreSQL (phase 41).
+# YK-Virtual — E2E against REAL PostgreSQL (phase 41).
 # Resets the target database (schema recreate), applies migrations, seeds
 # the reference rows the suite hardcodes, then runs scripts/e2e.sh against
 # an API booted in postgres mode.

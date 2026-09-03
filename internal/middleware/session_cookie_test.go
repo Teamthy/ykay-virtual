@@ -25,7 +25,7 @@ func TestRequestIsHTTPS(t *testing.T) {
 // http://localhost), the session cookie MUST NOT carry the Secure flag, or the
 // browser drops it and every authenticated call 401s.
 func TestSetSessionCookie_SecureFollowsRequest(t *testing.T) {
-	cfg := CookieConfig{Name: "nuvora_session", Secure: true, MaxAge: 60, Path: "/"}
+	cfg := CookieConfig{Name: "ykv_session", Secure: true, MaxAge: 60, Path: "/"}
 	rr := httptest.NewRecorder()
 	SetSessionCookie(rr, &http.Request{}, cfg, "tok")
 	assert.False(t, rr.Result().Cookies()[0].Secure, "plain-HTTP request must NOT set Secure")

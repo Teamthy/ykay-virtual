@@ -1,4 +1,4 @@
-// Package teamsteams — NUVORA Plus Teams: institution seat management
+// Package teamsteams — YK-Virtual Plus Teams: institution seat management
 // (migration 000069). An institution with a PLUS_TEAMS plan allocates seats;
 // each seat is a user covered by the org's subscription.
 package plusteams

@@ -2,9 +2,9 @@
 apiVersion: 1
 
 providers:
-  - name: nuvora
+  - name: ykvirtual
     orgId: 1
-    folder: NUVORA
+    folder: YK-Virtual
     type: file
     disableDeletion: true
     updateIntervalSeconds: 30

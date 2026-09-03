@@ -16,7 +16,10 @@ const resetSchema = z
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirm: z.string(),
   })
-  .refine((v) => v.password === v.confirm, { message: "Passwords do not match", path: ["confirm"] });
+  .refine((v) => v.password === v.confirm, {
+    message: "Passwords do not match",
+    path: ["confirm"],
+  });
 
 function ResetPasswordInner() {
   const router = useRouter();
@@ -32,7 +35,9 @@ function ResetPasswordInner() {
     validators: {
       onSubmit: ({ value }) => {
         const res = resetSchema.safeParse(value);
-        return res.success ? undefined : res.error.issues.map((i) => i.message).join("; ");
+        return res.success
+          ? undefined
+          : res.error.issues.map((i) => i.message).join("; ");
       },
     },
     onSubmit: async ({ value }) => {
@@ -58,8 +63,13 @@ function ResetPasswordInner() {
       <div className="text-center space-y-4 py-6">
         <div className="text-5xl">🔒</div>
         <h1 className="text-2xl font-extrabold">Password updated</h1>
-        <p className="text-ink-600 text-sm">Your password was changed. All other sessions were signed out.</p>
-        <Button variant="gold" onClick={() => router.push(withNext("/login", next))}>
+        <p className="text-ink-600 text-sm">
+          Your password was changed. All other sessions were signed out.
+        </p>
+        <Button
+          variant="gold"
+          onClick={() => router.push(withNext("/login", next))}
+        >
           Log in with your new password
         </Button>
       </div>
@@ -69,7 +79,9 @@ function ResetPasswordInner() {
   return (
     <div>
       <h1 className="text-3xl font-extrabold">Choose a new password</h1>
-      <p className="text-ink-500 text-sm mt-2">Minimum 8 characters. Signing in elsewhere will be required after this.</p>
+      <p className="text-ink-500 text-sm mt-2">
+        Minimum 8 characters. Signing in elsewhere will be required after this.
+      </p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -102,7 +114,9 @@ function ResetPasswordInner() {
           )}
         </form.Field>
         {error ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
         ) : null}
         <button
           type="submit"
@@ -111,7 +125,10 @@ function ResetPasswordInner() {
         >
           {submitting ? "Updating…" : "Update password"}
         </button>
-        <Link href={withNext("/login", next)} className="block text-center text-sm font-semibold text-brand-gold-dark hover:underline">
+        <Link
+          href={withNext("/login", next)}
+          className="block text-center text-sm font-semibold text-brand-gold-dark hover:underline"
+        >
           Back to login
         </Link>
       </form>
@@ -121,8 +138,13 @@ function ResetPasswordInner() {
 
 export default function ResetPasswordPage() {
   return (
-    <AuthShell title="Set a new password" subtitle="Choose a strong password to secure your NUVORA account.">
-      <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}>
+    <AuthShell
+      title="Set a new password"
+      subtitle="Choose a strong password to secure your YK-Virtual account."
+    >
+      <Suspense
+        fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}
+      >
         <ResetPasswordInner />
       </Suspense>
     </AuthShell>

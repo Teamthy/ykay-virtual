@@ -1,11 +1,12 @@
-# NUVORA / Ykay Virtual — End-to-End Repository Audit
+# YK-Virtual / Ykay Virtual — End-to-End Repository Audit
+
 **Audited:** 14 August 2026
 **Repository:** `Teamthy/ykay-virtual` (`main`, commit `fa5c8fa`)
 **Scope:** product intent, implementation coverage, launch readiness, engineering verification, and remaining work.
 
 ## 1. What is being built
 
-Despite the repository name and early documentation referring to **Ykay Virtual School**, the implemented product brand is **NUVORA**. It is a Nigeria-first, academically governed online-learning business designed to grow beyond a tutor directory:
+Despite the repository name and early documentation referring to **Ykay Virtual School**, the implemented product brand is **YK-Virtual**. It is a Nigeria-first, academically governed online-learning business designed to grow beyond a tutor directory:
 
 - public programme, curriculum, subject, cohort and tutor discovery;
 - private tuition and managed tutor matching;
@@ -22,14 +23,14 @@ The central promise remains: **British and Nigerian curricula, exam preparation,
 
 ## 2. Architecture understood
 
-| Area | Current implementation |
-|---|---|
-| Web | Next.js 14 App Router, TypeScript, Tailwind, React Query/Form, 83 generated routes, PWA shell. |
-| API | Go modular monolith under `/api/v1`; memory and PostgreSQL repositories; cookie sessions plus bearer tokens for mobile. |
-| Data | PostgreSQL migrations `000001`–`000026`; domains cover identity, academics, tutors/vetting, booking, payments, learning, chat, content and institutions. |
-| Commercial core | Orders/payment webhooks use idempotency controls; escrow/payout lifecycle and an admin finance console exist. |
-| Operations | Docker, production compose, migration runner, backup/restore/deploy scripts, Render blueprint and Vercel/Render deployment workflow. |
-| Quality gates | Go unit/service tests, HTTP E2E shell suite and CI PG job. Frontend currently has build/typecheck only. |
+| Area            | Current implementation                                                                                                                                   |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web             | Next.js 14 App Router, TypeScript, Tailwind, React Query/Form, 83 generated routes, PWA shell.                                                           |
+| API             | Go modular monolith under `/api/v1`; memory and PostgreSQL repositories; cookie sessions plus bearer tokens for mobile.                                  |
+| Data            | PostgreSQL migrations `000001`–`000026`; domains cover identity, academics, tutors/vetting, booking, payments, learning, chat, content and institutions. |
+| Commercial core | Orders/payment webhooks use idempotency controls; escrow/payout lifecycle and an admin finance console exist.                                            |
+| Operations      | Docker, production compose, migration runner, backup/restore/deploy scripts, Render blueprint and Vercel/Render deployment workflow.                     |
+| Quality gates   | Go unit/service tests, HTTP E2E shell suite and CI PG job. Frontend currently has build/typecheck only.                                                  |
 
 The implementation is substantially further along than the early `YKAY_BUILD_PLAN.md`; use recent phase delivery reports and current source as the authoritative status.
 
@@ -45,15 +46,18 @@ The implementation is substantially further along than the early `YKAY_BUILD_PLA
 ## 4. Evidence and verification performed
 
 ### Passed locally
+
 - `npm --prefix client ci` completed.
 - `npm --prefix client run build` completed successfully: Next.js compiled, typechecked and generated **83 routes**.
 - Git working tree was clean immediately after clone.
 
 ### Not executable in this environment
+
 - Go is not installed (`go: command not found`), so I could not independently run `go test`, API E2E, migrations or the real-Postgres gate here.
 - The project’s latest delivery record reports `go test ./...`, Go build/vet and its E2E suite passing; CI is configured to run the real PostgreSQL E2E gate.
 
 ### Dependency/security signal
+
 - `npm ci` reports **7 vulnerabilities: 1 moderate, 5 high, 1 critical**.
 - The installed **Next.js 14.2.15** emits a security-vulnerability warning. Treat dependency remediation as a release blocker, not cosmetic maintenance.
 
@@ -62,7 +66,7 @@ The implementation is substantially further along than the early `YKAY_BUILD_PLA
 ### P0 — must close before a real public launch
 
 1. **Remove demo identities and hard-coded production UI identities.**
-   - Migration `000019_demo_users.up.sql` inserts public, predictable role accounts with password `password123`, including `admin@nuvora.com`.
+   - Migration `000019_demo_users.up.sql` inserts public, predictable role accounts with password `password123`, including `admin@ykaycollege.com`.
    - Several live web screens use fixed UUIDs rather than resolving the authenticated user: `/student-dashboard`, `/tutor-dashboard`, `/lms`, tutor LMS, learning components, messages, admin vetting and mobile LMS.
    - Required: move demo seed data to a separately invoked development-only seed; delete it from production migration history or ensure production migration runner skips it; use `/auth/me` and role/profile resolution everywhere; add regression tests that prove one user never sees another user’s data.
 
@@ -115,7 +119,7 @@ The existing `docs/open-decisions.md` is stale relative to implementation but it
 - parent/minor account policy and tutor communication/recording policy;
 - launch catalogue, prices, cancellation/reschedule/refund terms;
 - storage vendor and retention policy; notification providers;
-- final public brand/domain: **Ykay Virtual School vs NUVORA**. This must be settled before public launch because code, documentation, email copy, domain and legal documents currently mix names.
+- final public brand/domain: **Ykay Virtual School vs YK-Virtual**. This must be settled before public launch because code, documentation, email copy, domain and legal documents currently mix names.
 
 ## 7. Recommended delivery order
 

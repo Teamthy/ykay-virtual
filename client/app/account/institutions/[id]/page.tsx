@@ -21,10 +21,30 @@ import {
   type MembershipRole,
 } from "@/features/institutions/console";
 import { listLearners } from "@/features/onboarding/api";
-import { getPlusTeamsAllocation, setPlusTeamsSeats, listPlusTeamsSeats, assignPlusTeamSeat, releasePlusTeamSeat, type PlusTeamsAllocation, type PlusTeamsSeat } from "@/features/plus/api";
+import {
+  getPlusTeamsAllocation,
+  setPlusTeamsSeats,
+  listPlusTeamsSeats,
+  assignPlusTeamSeat,
+  releasePlusTeamSeat,
+  type PlusTeamsAllocation,
+  type PlusTeamsSeat,
+} from "@/features/plus/api";
 
-const ROLES: MembershipRole[] = ["OWNER", "ADMIN", "TEACHER", "STUDENT", "BILLING"];
-const TYPES: InstitutionType[] = ["SCHOOL", "CORPORATE", "GOVERNMENT", "NGO", "OTHER"];
+const ROLES: MembershipRole[] = [
+  "OWNER",
+  "ADMIN",
+  "TEACHER",
+  "STUDENT",
+  "BILLING",
+];
+const TYPES: InstitutionType[] = [
+  "SCHOOL",
+  "CORPORATE",
+  "GOVERNMENT",
+  "NGO",
+  "OTHER",
+];
 
 type Tab = "profile" | "members" | "students" | "plusteams";
 
@@ -40,7 +60,13 @@ export default function InstitutionDetailPage() {
     staleTime: 30_000,
   });
 
-  const [form, setForm] = useState({ name: "", email: "", phone: "", website: "", description: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    website: "",
+    description: "",
+  });
   const [loaded, setLoaded] = useState(false);
 
   const save = useMutation({
@@ -52,7 +78,8 @@ export default function InstitutionDetailPage() {
         website: form.website || undefined,
         description: form.description || undefined,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "institution", id] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["me", "institution", id] }),
   });
 
   const data = inst.data;
@@ -80,7 +107,10 @@ export default function InstitutionDetailPage() {
     return (
       <div className="py-16 text-center text-ink-500">
         <p>Institution not found or you don&apos;t have access.</p>
-        <Link href="/account/institutions" className="mt-3 inline-block font-semibold text-brand-blue hover:underline">
+        <Link
+          href="/account/institutions"
+          className="mt-3 inline-block font-semibold text-brand-blue hover:underline"
+        >
           ← Back to my institutions
         </Link>
       </div>
@@ -90,14 +120,20 @@ export default function InstitutionDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/account/institutions" className="text-ink-400 hover:text-ink-600">←</Link>
+        <Link
+          href="/account/institutions"
+          className="text-ink-400 hover:text-ink-600"
+        >
+          ←
+        </Link>
         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-deep text-white">
           <Building2 size={20} />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-ink-900">{data.name}</h1>
           <p className="text-xs text-ink-500">
-            {data.type.toLowerCase()} {data.verified_at ? "· verified" : ""} {!data.is_active && "· inactive"}
+            {data.type.toLowerCase()} {data.verified_at ? "· verified" : ""}{" "}
+            {!data.is_active && "· inactive"}
           </p>
         </div>
       </div>
@@ -153,7 +189,9 @@ export default function InstitutionDetailPage() {
               <span className="font-medium text-ink-700">Description</span>
               <textarea
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
                 rows={3}
                 className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
@@ -199,13 +237,16 @@ function MembersPanel({ id }: { id: string }) {
   });
 
   const changeRole = useMutation({
-    mutationFn: (args: { uid: string; role: MembershipRole }) => setMemberRole(id, args.uid, args.role),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "institution", id, "members"] }),
+    mutationFn: (args: { uid: string; role: MembershipRole }) =>
+      setMemberRole(id, args.uid, args.role),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["me", "institution", id, "members"] }),
   });
 
   const remove = useMutation({
     mutationFn: (uid: string) => removeMember(id, uid),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "institution", id, "members"] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["me", "institution", id, "members"] }),
   });
 
   const rows = members.data ?? [];
@@ -226,30 +267,51 @@ function MembersPanel({ id }: { id: string }) {
           className="rounded-xl border border-ink-200 px-3 py-2.5 text-sm"
         >
           {ROLES.map((r) => (
-            <option key={r} value={r}>{r.toLowerCase()}</option>
+            <option key={r} value={r}>
+              {r.toLowerCase()}
+            </option>
           ))}
         </select>
-        <Button onClick={() => invite.mutate()} disabled={!userId.trim() || invite.isPending}>
+        <Button
+          onClick={() => invite.mutate()}
+          disabled={!userId.trim() || invite.isPending}
+        >
           <UserPlus size={16} className="mr-1.5" /> Invite
         </Button>
       </div>
 
       <div className="space-y-2">
-        {rows.length === 0 && <p className="text-sm text-ink-500">No members yet.</p>}
+        {rows.length === 0 && (
+          <p className="text-sm text-ink-500">No members yet.</p>
+        )}
         {rows.map((m) => (
-          <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5">
+          <div
+            key={m.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5"
+          >
             <div className="text-sm">
-              <span className="font-semibold text-ink-800">{m.user_id.slice(0, 8)}…</span>
-              <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-xs font-bold text-ink-600">{m.role}</span>
+              <span className="font-semibold text-ink-800">
+                {m.user_id.slice(0, 8)}…
+              </span>
+              <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-xs font-bold text-ink-600">
+                {m.role}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <select
                 value={m.role}
-                onChange={(e) => changeRole.mutate({ uid: m.user_id, role: e.target.value as MembershipRole })}
+                onChange={(e) =>
+                  changeRole.mutate({
+                    uid: m.user_id,
+                    role: e.target.value as MembershipRole,
+                  })
+                }
                 className="rounded-lg border border-ink-200 px-2 py-1 text-xs"
               >
                 {ROLES.map((r) => (
-                  <option key={r} value={r}>{r.toLowerCase()}</option>
+                  <option key={r} value={r}>
+                    {r.toLowerCase()}
+                  </option>
                 ))}
               </select>
               <button
@@ -269,7 +331,11 @@ function MembersPanel({ id }: { id: string }) {
 
 function StudentsPanel({ id }: { id: string }) {
   const qc = useQueryClient();
-  const learners = useQuery({ queryKey: ["onboarding", "learners"], queryFn: listLearners, staleTime: 30_000 });
+  const learners = useQuery({
+    queryKey: ["onboarding", "learners"],
+    queryFn: listLearners,
+    staleTime: 30_000,
+  });
   const students = useQuery({
     queryKey: ["me", "institution", id, "students"],
     queryFn: () => listStudents(id),
@@ -290,7 +356,8 @@ function StudentsPanel({ id }: { id: string }) {
 
   const remove = useMutation({
     mutationFn: (sid: string) => removeStudent(id, sid),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "institution", id, "students"] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["me", "institution", id, "students"] }),
   });
 
   const rows = students.data ?? [];
@@ -318,21 +385,43 @@ function StudentsPanel({ id }: { id: string }) {
           placeholder="Enrolment ref (optional)"
           className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
         />
-        <Button onClick={() => add.mutate()} disabled={!selected || add.isPending}>
+        <Button
+          onClick={() => add.mutate()}
+          disabled={!selected || add.isPending}
+        >
           <UserPlus size={16} className="mr-1.5" /> Link
         </Button>
       </div>
 
       <div className="space-y-2">
-        {rows.length === 0 && <p className="text-sm text-ink-500">No learners linked yet.</p>}
+        {rows.length === 0 && (
+          <p className="text-sm text-ink-500">No learners linked yet.</p>
+        )}
         {rows.map((s) => (
-          <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5">
+          <div
+            key={s.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5"
+          >
             <div className="text-sm">
-              <span className="font-semibold text-ink-800">{s.student_name || s.student_profile_id.slice(0, 8)}</span>
-              {s.student_level && <span className="ml-2 text-xs text-ink-500">{s.student_level}</span>}
-              {s.enrollment_ref && <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-xs font-bold text-ink-600">{s.enrollment_ref}</span>}
+              <span className="font-semibold text-ink-800">
+                {s.student_name || s.student_profile_id.slice(0, 8)}
+              </span>
+              {s.student_level && (
+                <span className="ml-2 text-xs text-ink-500">
+                  {s.student_level}
+                </span>
+              )}
+              {s.enrollment_ref && (
+                <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-xs font-bold text-ink-600">
+                  {s.enrollment_ref}
+                </span>
+              )}
             </div>
-            <button onClick={() => remove.mutate(s.student_profile_id)} className="text-ink-400 hover:text-red-600" title="Unlink learner">
+            <button
+              onClick={() => remove.mutate(s.student_profile_id)}
+              className="text-ink-400 hover:text-red-600"
+              title="Unlink learner"
+            >
               <X size={16} />
             </button>
           </div>
@@ -362,19 +451,26 @@ function PlusTeamsPanel({ id }: { id: string }) {
     mutationFn: () => setPlusTeamsSeats(id, Number(seatCount)),
     onSuccess: () => {
       setSeatCount("");
-      qc.invalidateQueries({ queryKey: ["me", "institution", id, "plusteams"] });
+      qc.invalidateQueries({
+        queryKey: ["me", "institution", id, "plusteams"],
+      });
     },
   });
   const assign = useMutation({
     mutationFn: () => assignPlusTeamSeat(id, userId),
     onSuccess: () => {
       setUserId("");
-      qc.invalidateQueries({ queryKey: ["me", "institution", id, "plusteams"] });
+      qc.invalidateQueries({
+        queryKey: ["me", "institution", id, "plusteams"],
+      });
     },
   });
   const release = useMutation({
     mutationFn: (uid: string) => releasePlusTeamSeat(id, uid),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "institution", id, "plusteams"] }),
+    onSuccess: () =>
+      qc.invalidateQueries({
+        queryKey: ["me", "institution", id, "plusteams"],
+      }),
   });
 
   const a = alloc.data;
@@ -383,7 +479,7 @@ function PlusTeamsPanel({ id }: { id: string }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-ink-900">NUVORA Plus Teams</h2>
+        <h2 className="font-bold text-ink-900">YK-Virtual Plus Teams</h2>
         <span className="rounded-full bg-brand-gold px-3 py-1 text-xs font-bold text-deep">
           {a ? `${a.used_seats} / ${a.total_seats} seats` : "No seats yet"}
         </span>
@@ -401,7 +497,10 @@ function PlusTeamsPanel({ id }: { id: string }) {
           placeholder="Total seats"
           className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
         />
-        <Button onClick={() => saveSeats.mutate()} disabled={!seatCount || saveSeats.isPending}>
+        <Button
+          onClick={() => saveSeats.mutate()}
+          disabled={!seatCount || saveSeats.isPending}
+        >
           {saveSeats.isPending ? "Saving…" : "Set seat capacity"}
         </Button>
       </div>
@@ -413,20 +512,39 @@ function PlusTeamsPanel({ id }: { id: string }) {
           placeholder="User ID to cover (uuid)"
           className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
         />
-        <Button onClick={() => assign.mutate()} disabled={!userId.trim() || assign.isPending} variant="outline">
+        <Button
+          onClick={() => assign.mutate()}
+          disabled={!userId.trim() || assign.isPending}
+          variant="outline"
+        >
           Assign seat
         </Button>
       </div>
 
       <div className="mt-5 space-y-2">
-        {rows.length === 0 && <p className="text-sm text-ink-500">No seats assigned yet.</p>}
+        {rows.length === 0 && (
+          <p className="text-sm text-ink-500">No seats assigned yet.</p>
+        )}
         {rows.map((s) => (
-          <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5">
+          <div
+            key={s.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5"
+          >
             <div className="text-sm">
-              <span className="font-semibold text-ink-800">{s.user_name || s.user_id.slice(0, 8)}</span>
-              {s.user_email && <span className="ml-2 text-xs text-ink-500">{s.user_email}</span>}
+              <span className="font-semibold text-ink-800">
+                {s.user_name || s.user_id.slice(0, 8)}
+              </span>
+              {s.user_email && (
+                <span className="ml-2 text-xs text-ink-500">
+                  {s.user_email}
+                </span>
+              )}
             </div>
-            <button onClick={() => release.mutate(s.user_id)} className="text-ink-400 hover:text-red-600" title="Release seat">
+            <button
+              onClick={() => release.mutate(s.user_id)}
+              className="text-ink-400 hover:text-red-600"
+              title="Release seat"
+            >
               Release
             </button>
           </div>

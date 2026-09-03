@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: NUVORA API
+  title: YK-Virtual API
   version: 1.0.0
   description: |
     Full commercial, SEO-first, curriculum-governed tutoring marketplace and virtual school.
@@ -8,7 +8,7 @@ info:
 servers:
   - url: http://localhost:8080/api/v1
     description: Local
-  - url: https://api.nuvora.com/api/v1
+  - url: https://api.ykaycollege.com/api/v1
     description: Production
 
 tags:
@@ -735,7 +735,7 @@ paths:
       tags: [identity]
       summary: >-
         Log in with email + password. Verifies bcrypt hash, creates a session
-        and returns an httpOnly `nuvora_session` cookie (raw token never leaves
+        and returns an httpOnly `ykv_session` cookie (raw token never leaves
         the cookie; only its SHA-256 hash is stored).
       requestBody:
         required: true
@@ -749,7 +749,7 @@ paths:
                 password: { type: string }
       responses:
         '200':
-          description: Logged in â€” sets httpOnly nuvora_session cookie
+          description: Logged in â€” sets httpOnly ykv_session cookie
           content:
             application/json:
               schema:
@@ -1214,13 +1214,13 @@ paths:
   /me/certificates/{id}/verified:
     post:
       tags: [plus]
-      summary: Get a verified, shareable credential link for a certificate (NUVORA Plus)
+      summary: Get a verified, shareable credential link for a certificate (YK-Virtual Plus)
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
         '200': { description: Verified share (credential number + verify_url) }
-        '402': { description: Requires an active NUVORA Plus plan }
+        '402': { description: Requires an active YK-Virtual Plus plan }
         '403': { description: Not owned by the caller }
 
   /certificates/verify:
@@ -1384,7 +1384,7 @@ paths:
               type: object
               required: [name, starts_on, ends_on]
               properties:
-                institution_id: { type: string, format: uuid, description: Omit for the platform-wide NUVORA school }
+                institution_id: { type: string, format: uuid, description: Omit for the platform-wide YK-Virtual school }
                 name: { type: string, example: "2026/2027" }
                 starts_on: { type: string, format: date }
                 ends_on: { type: string, format: date }
@@ -3070,14 +3070,14 @@ paths:
   /plus/plans:
     get:
       tags: [plus]
-      summary: Public NUVORA Plus plan catalogue (pricing)
+      summary: Public YK-Virtual Plus plan catalogue (pricing)
       responses:
         '200': { description: Plans }
 
   /me/plus:
     get:
       tags: [plus]
-      summary: My NUVORA Plus status + entitlements
+      summary: My YK-Virtual Plus status + entitlements
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: Active flag, subscription, plan, entitlements }
@@ -3085,7 +3085,7 @@ paths:
   /me/plus/activate:
     post:
       tags: [plus]
-      summary: Activate a NUVORA Plus plan (optional trial)
+      summary: Activate a YK-Virtual Plus plan (optional trial)
       security: [{ sessionCookie: [] }]
       requestBody:
         required: true
@@ -3104,7 +3104,7 @@ paths:
   /me/plus/cancel:
     post:
       tags: [plus]
-      summary: Cancel my NUVORA Plus subscription (access revoked)
+      summary: Cancel my YK-Virtual Plus subscription (access revoked)
       security: [{ sessionCookie: [] }]
       responses:
         '204': { description: Cancelled }
@@ -3113,7 +3113,7 @@ paths:
   /me/plus/purchase:
     post:
       tags: [plus]
-      summary: Purchase a NUVORA Plus plan (order-backed) — pay through the normal payment flow, activated on settlement
+      summary: Purchase a YK-Virtual Plus plan (order-backed) — pay through the normal payment flow, activated on settlement
       security: [{ sessionCookie: [] }]
       requestBody:
         required: true
@@ -3131,7 +3131,7 @@ paths:
   /me/advisor:
     get:
       tags: [plus]
-      summary: My NUVORA Plus named Learning Advisor
+      summary: My YK-Virtual Plus named Learning Advisor
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: Advisor assignment + contact }
@@ -3141,7 +3141,7 @@ paths:
   /me/advisor/plan:
     get:
       tags: [plus]
-      summary: My NUVORA Plus learning plan for a learner
+      summary: My YK-Virtual Plus learning plan for a learner
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: student_profile_id, in: query, required: true, schema: { type: string, format: uuid } }
@@ -3599,7 +3599,7 @@ paths:
   /me/institutions/{id}/plus:
     get:
       tags: [plus]
-      summary: Get the institution's NUVORA Plus Teams seat allocation (OWNER/ADMIN)
+      summary: Get the institution's YK-Virtual Plus Teams seat allocation (OWNER/ADMIN)
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
@@ -4185,13 +4185,13 @@ paths:
   /me/plus/library/{lessonId}/download:
     post:
       tags: [plus]
-      summary: Get an authorized video URL to download a recorded lesson offline (NUVORA Plus)
+      summary: Get an authorized video URL to download a recorded lesson offline (YK-Virtual Plus)
       security: [{ sessionCookie: [] }]
       parameters:
         - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
         '200': { description: { video_url } for offline download }
-        '402': { description: Requires an active NUVORA Plus plan }
+        '402': { description: Requires an active YK-Virtual Plus plan }
         '403': { description: Not entitled to this lesson }
         '404': { description: Lesson not found or has no video }
 
@@ -4240,7 +4240,7 @@ components:
     sessionCookie:
       type: apiKey
       in: cookie
-      name: nuvora_session
+      name: ykv_session
       description: httpOnly session cookie set by /auth/login.
   schemas:
     User:

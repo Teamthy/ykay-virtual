@@ -1,4 +1,4 @@
-# NUVORA — Production Deployment Runbook (Phase 40)
+# YK-Virtual — Production Deployment Runbook (Phase 40)
 
 The complete "what if the developer disappears" guide: architecture,
 one-command deploy, rollback, backups/DR, scaling and operational checks.
@@ -12,7 +12,7 @@ one-command deploy, rollback, backups/DR, scaling and operational checks.
   Browser / PWA / App → │  Reverse proxy (TLS)       │
                          │  Caddy / Traefik / Nginx   │
                          └─────────────┬──────────────┘
-                                       │ https://app.nuvora.com
+                                       │ https://app.virtual.ykaycollege.com
                     ┌──────────────────┴───────────────────┐
                     │  web (Next.js standalone, :3000)      │
                     │  • SSR + static + ISR                │
@@ -53,7 +53,7 @@ $EDITOR .env.production                    # fill EVERY value (fail-fast validat
 
 # 3. TLS in front
 #    Caddy one-liner (recommended): Caddyfile →
-#      app.nuvora.com { reverse_proxy 127.0.0.1:3000 }
+#      app.virtual.ykaycollege.com { reverse_proxy 127.0.0.1:3000 }
 #    or Traefik/Nginx with certbot. Ports: web binds 127.0.0.1:3000 only.
 
 # 4. Deploy
@@ -71,7 +71,7 @@ DATABASE_URL="postgres://…" bash scripts/e2e-pg.sh   # release gate: full E2E 
 bash scripts/deploy.sh  # deploy (migrations included)
 bash scripts/deploy.sh --skip-migrate   # code-only deploy
 bash scripts/backup.sh  # manual backup → ./backups/
-bash scripts/restore.sh backups/nuvora-<ts>.dump   # DR restore (asks to confirm)
+bash scripts/restore.sh backups/yk-virtual-<ts>.dump   # DR restore (asks to confirm)
 docker compose -f docker-compose.prod.yml logs -f api web   # logs
 docker compose -f docker-compose.prod.yml ps                # status
 ```
@@ -90,6 +90,7 @@ git checkout <previous-tag> && bash scripts/deploy.sh --skip-migrate
 ```
 
 Rules:
+
 - **Never roll back migrations.** Migrations are forward-only (up/down
   files exist for dev, but in prod prefer "migrate forward" over "down").
   If a release needs a schema change, ship the code that tolerates both
@@ -100,19 +101,20 @@ Rules:
 
 ## 5. Backups & DR
 
-| Item | Value |
-|---|---|
-| Cadence | `backup` service runs pg_dump every `BACKUP_INTERVAL_HOURS` (24h) |
-| Format | custom (`-Fc`) → `./backups/nuvora-<ts>.dump` |
-| Retention | `BACKUP_RETENTION_DAYS` (14) |
-| RPO | ≤ 24h (tighten to 6h or hourly by lowering the interval) |
-| RTO | ≈ 10–30 min (restore + migrate + deploy) |
-| Off-site | copy `./backups/` to object storage nightly (rclone/restic) — **required for real DR** |
+| Item      | Value                                                                                  |
+| --------- | -------------------------------------------------------------------------------------- |
+| Cadence   | `backup` service runs pg_dump every `BACKUP_INTERVAL_HOURS` (24h)                      |
+| Format    | custom (`-Fc`) → `./backups/yk-virtual-<ts>.dump`                                      |
+| Retention | `BACKUP_RETENTION_DAYS` (14)                                                           |
+| RPO       | ≤ 24h (tighten to 6h or hourly by lowering the interval)                               |
+| RTO       | ≈ 10–30 min (restore + migrate + deploy)                                               |
+| Off-site  | copy `./backups/` to object storage nightly (rclone/restic) — **required for real DR** |
 
 Restore drill (do this quarterly):
+
 ```bash
 docker compose -f docker-compose.prod.yml stop api web
-bash scripts/restore.sh backups/nuvora-<ts>.dump
+bash scripts/restore.sh backups/yk-virtual-<ts>.dump
 docker compose -f docker-compose.prod.yml up -d api web
 ```
 

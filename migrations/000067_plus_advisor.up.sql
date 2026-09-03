@@ -1,4 +1,4 @@
--- 000067_plus_advisor.up.sql — NUVORA Plus: named Learning Advisor + learning plan.
+-- 000067_plus_advisor.up.sql — YK-Virtual Plus: named Learning Advisor + learning plan.
 --
 -- Plus families get a named advisor (a staff member) who manages their learning
 -- journey and is the routing target for Plus support. Each Plus user can also

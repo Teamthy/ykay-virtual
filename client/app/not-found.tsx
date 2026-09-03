@@ -23,19 +23,22 @@ export default function NotFound() {
   return (
     <main className="container-x py-16">
       <div className="mx-auto max-w-3xl text-center">
-        <div className="font-display text-7xl font-extrabold tracking-[0.02em] text-brand-blue">404</div>
+        <div className="font-display text-7xl font-extrabold tracking-[0.02em] text-brand-blue">
+          404
+        </div>
         <h1 className="mt-4 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">
           Page not found
         </h1>
         <p className="mx-auto mt-3 max-w-md text-ink-500">
-          The page you&apos;re looking for doesn&apos;t exist or has moved. Try one of these instead.
+          The page you&apos;re looking for doesn&apos;t exist or has moved. Try
+          one of these instead.
         </p>
 
         <Link
           href="/search"
           className="mt-7 inline-flex items-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
         >
-          <Search size={16} /> Search NUVORA
+          <Search size={16} /> Search YK-Virtual
         </Link>
 
         <div className="mt-10 grid gap-3 text-left sm:grid-cols-2">
@@ -71,10 +74,16 @@ export default function NotFound() {
         </div>
 
         <div className="mt-6 flex flex-wrap justify-center gap-6 text-sm text-ink-500">
-          <Link href="/help" className="inline-flex items-center gap-1.5 font-semibold hover:text-brand-blue">
+          <Link
+            href="/help"
+            className="inline-flex items-center gap-1.5 font-semibold hover:text-brand-blue"
+          >
             <LifeBuoy size={15} /> Help Center
           </Link>
-          <Link href="/contact" className="inline-flex items-center gap-1.5 font-semibold hover:text-brand-blue">
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-1.5 font-semibold hover:text-brand-blue"
+          >
             <MessageSquare size={15} /> Contact support
           </Link>
         </div>

@@ -133,7 +133,7 @@ func TestAdmissions_Documents(t *testing.T) {
 	require.NoError(t, err)
 
 	// Parent attaches a document.
-	doc, err := svc.AddDocument(ctx, parent, app.ID, "Birth certificate", "https://cdn.nuvora.com/docs/birth.pdf", "application/pdf", 1200)
+	doc, err := svc.AddDocument(ctx, parent, app.ID, "Birth certificate", "https://cdn.virtual.ykaycollege.com/docs/birth.pdf", "application/pdf", 1200)
 	require.NoError(t, err)
 	require.Equal(t, "Birth certificate", doc.Name)
 

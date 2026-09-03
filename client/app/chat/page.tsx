@@ -34,7 +34,10 @@ export default function ChatPage() {
   const [ratingSaved, setRatingSaved] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const threads = useQuery({ queryKey: ["chat", "threads"], queryFn: listChatThreads });
+  const threads = useQuery({
+    queryKey: ["chat", "threads"],
+    queryFn: listChatThreads,
+  });
 
   useEffect(() => {
     if (!isLoading && !user) router.replace(loginWithReturn());
@@ -78,7 +81,10 @@ export default function ChatPage() {
       content: text,
       created_at: new Date().toISOString(),
     };
-    qc.setQueryData<ChatMessage[]>(["chat", "messages", activeId], (old) => [...(old ?? []), optimistic]);
+    qc.setQueryData<ChatMessage[]>(["chat", "messages", activeId], (old) => [
+      ...(old ?? []),
+      optimistic,
+    ]);
     try {
       const { reply } = await sendChatMessage(activeId, text);
       qc.setQueryData<ChatMessage[]>(["chat", "messages", activeId], (old) => [
@@ -94,9 +100,11 @@ export default function ChatPage() {
       ]);
     } catch (e) {
       qc.setQueryData<ChatMessage[]>(["chat", "messages", activeId], (old) =>
-        (old ?? []).filter((m) => m.id !== optimistic.id)
+        (old ?? []).filter((m) => m.id !== optimistic.id),
       );
-      toast.error(e instanceof Error ? e.message : "Could not send the message");
+      toast.error(
+        e instanceof Error ? e.message : "Could not send the message",
+      );
     } finally {
       setSending(false);
     }
@@ -137,13 +145,17 @@ export default function ChatPage() {
       <header className="flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/" className="hover:text-primary-dark">NUVORA</Link> / Assistant
+            <Link href="/" className="hover:text-primary-dark">
+              YK-Virtual
+            </Link>{" "}
+            / Assistant
           </p>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-deep">
-            Chat with Nuvora ✨
+            Chat with YK-Virtual ✨
           </h1>
           <p className="text-sm text-ink-500">
-            Ask about programmes, cohorts, tutors or fees - or ask for a human anytime.
+            Ask about programmes, cohorts, tutors or fees - or ask for a human
+            anytime.
           </p>
         </div>
         <button
@@ -173,12 +185,23 @@ export default function ChatPage() {
                   onClick={() => setActiveId(t.id)}
                   className={cn(
                     "block w-full rounded-xl px-3 py-2.5 text-left text-sm",
-                    activeId === t.id ? "bg-primary-light font-semibold text-deep" : "text-ink-700 hover:bg-ink-50"
+                    activeId === t.id
+                      ? "bg-primary-light font-semibold text-deep"
+                      : "text-ink-700 hover:bg-ink-50",
                   )}
                 >
                   <span className="block truncate">{t.title}</span>
-                  <span className={cn("mt-0.5 block text-[11px]", escalated && t.id === activeId ? "font-bold text-primary-dark" : "text-ink-400")}>
-                    {t.status === "ESCALATED" ? "👤 With a human agent" : new Date(t.updated_at).toLocaleDateString()}
+                  <span
+                    className={cn(
+                      "mt-0.5 block text-[11px]",
+                      escalated && t.id === activeId
+                        ? "font-bold text-primary-dark"
+                        : "text-ink-400",
+                    )}
+                  >
+                    {t.status === "ESCALATED"
+                      ? "👤 With a human agent"
+                      : new Date(t.updated_at).toLocaleDateString()}
                   </span>
                 </button>
               ))}
@@ -193,18 +216,33 @@ export default function ChatPage() {
               <div className="grid flex-1 place-items-center text-center">
                 <div>
                   <p className="text-4xl">💬</p>
-                  <p className="mt-2 font-semibold text-ink-700">Start a conversation</p>
-                  <p className="mt-1 text-sm text-ink-500">Ask about programmes, cohorts, tutors or anything NUVORA.</p>
+                  <p className="mt-2 font-semibold text-ink-700">
+                    Start a conversation
+                  </p>
+                  <p className="mt-1 text-sm text-ink-500">
+                    Ask about programmes, cohorts, tutors or anything
+                    YK-Virtual.
+                  </p>
                 </div>
               </div>
             ) : messages.isLoading ? (
-              <p className="py-10 text-center text-sm text-ink-400">Loading messages…</p>
+              <p className="py-10 text-center text-sm text-ink-400">
+                Loading messages…
+              </p>
             ) : (
               <>
                 {(messages.data ?? []).map((m) => (
-                  <div key={m.id} className={cn("flex flex-col", m.role === "user" ? "items-end" : "items-start")}>
+                  <div
+                    key={m.id}
+                    className={cn(
+                      "flex flex-col",
+                      m.role === "user" ? "items-end" : "items-start",
+                    )}
+                  >
                     {m.role === "agent" && (
-                      <span className="mb-0.5 rounded-full bg-deep px-2 py-0.5 text-[10px] font-bold text-white">SUPPORT AGENT</span>
+                      <span className="mb-0.5 rounded-full bg-deep px-2 py-0.5 text-[10px] font-bold text-white">
+                        SUPPORT AGENT
+                      </span>
                     )}
                     <div
                       className={cn(
@@ -212,8 +250,8 @@ export default function ChatPage() {
                         m.role === "user"
                           ? "rounded-br-md bg-deep text-white"
                           : m.role === "agent"
-                          ? "rounded-bl-md border-2 border-primary bg-white text-ink-800"
-                          : "rounded-bl-md border border-ink-100 bg-[#F8EBCF] text-ink-800"
+                            ? "rounded-bl-md border-2 border-primary bg-white text-ink-800"
+                            : "rounded-bl-md border border-ink-100 bg-[#F8EBCF] text-ink-800",
                       )}
                     >
                       {m.content}
@@ -237,25 +275,36 @@ export default function ChatPage() {
           </div>
 
           <div className="border-t border-ink-100 p-4">
-            {activeId && !escalated && (messages.data?.length ?? 0) >= 4 && !ratingSaved && (
-              <div className="mb-3 flex items-center gap-2 rounded-xl bg-surface-muted px-4 py-2.5">
-                <span className="text-xs font-semibold text-ink-600">Rate this chat:</span>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => void saveRating(n)}
-                    className={cn("text-lg transition-transform hover:scale-125", rating !== null && rating >= n ? "" : "grayscale opacity-50")}
-                    aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
-                  >
-                    ⭐
-                  </button>
-                ))}
-              </div>
-            )}
+            {activeId &&
+              !escalated &&
+              (messages.data?.length ?? 0) >= 4 &&
+              !ratingSaved && (
+                <div className="mb-3 flex items-center gap-2 rounded-xl bg-surface-muted px-4 py-2.5">
+                  <span className="text-xs font-semibold text-ink-600">
+                    Rate this chat:
+                  </span>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => void saveRating(n)}
+                      className={cn(
+                        "text-lg transition-transform hover:scale-125",
+                        rating !== null && rating >= n
+                          ? ""
+                          : "grayscale opacity-50",
+                      )}
+                      aria-label={`Rate ${n} star${n > 1 ? "s" : ""}`}
+                    >
+                      ⭐
+                    </button>
+                  ))}
+                </div>
+              )}
             {escalated && (
               <p className="mb-3 rounded-xl bg-primary-light px-4 py-2.5 text-xs font-semibold text-deep">
-                👤 A human agent is on this thread - they&apos;ll reply here. You can keep messaging.
+                👤 A human agent is on this thread - they&apos;ll reply here.
+                You can keep messaging.
               </p>
             )}
             <div className="flex gap-2">
@@ -273,7 +322,9 @@ export default function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && void send()}
-                placeholder={activeId ? "Type your message…" : "Start a new chat first"}
+                placeholder={
+                  activeId ? "Type your message…" : "Start a new chat first"
+                }
                 disabled={!activeId || sending}
                 className="h-11 flex-1 rounded-lg border border-ink-200 px-4 text-sm focus:border-primary focus:outline-none disabled:opacity-50"
               />

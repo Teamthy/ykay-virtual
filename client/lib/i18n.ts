@@ -79,8 +79,12 @@ const DICTS = {
 export type DictKey = keyof typeof DICTS.en;
 export type Dict = Record<DictKey, string>;
 
-const LANG_KEY = "nuvora-lang";
-const LANG_LABELS: Record<Lang, string> = { en: "English", fr: "Français", yo: "Yorùbá" };
+const LANG_KEY = "yk-virtual-lang";
+const LANG_LABELS: Record<Lang, string> = {
+  en: "English",
+  fr: "Français",
+  yo: "Yorùbá",
+};
 
 export function getStoredLang(): Lang {
   if (typeof window === "undefined") return "en";
@@ -100,4 +104,7 @@ export function getDict(lang: Lang): Dict {
   return DICTS[lang];
 }
 
-export const LANG_LABELS_OPTIONS = Object.entries(LANG_LABELS) as [Lang, string][];
+export const LANG_LABELS_OPTIONS = Object.entries(LANG_LABELS) as [
+  Lang,
+  string,
+][];

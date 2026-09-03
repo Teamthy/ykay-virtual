@@ -1,8 +1,8 @@
-// Package plus — the NUVORA Plus premium tier (migration 000066): subscription
+// Package plus — the YK-Virtual Plus premium tier (migration 000066): subscription
 // plans, active-subscription entitlements, and per-feature daily usage counters
 // that gate the already-built premium features (verified certificates, the full
 // practice-exam vault, recorded-library transcripts, and a higher AI-assistant
-// allowance). Marketing page: client/app/(marketing)/nuvora-plus.
+// allowance). Marketing page: client/app/(marketing)/plus.
 package plus
 
 import (
@@ -80,7 +80,7 @@ type Usage struct {
 }
 
 // EntitlementError — returned when an action requires an active Plus plan.
-var ErrPremiumRequired = errors.New("this feature requires an active NUVORA Plus plan")
+var ErrPremiumRequired = errors.New("this feature requires an active YK-Virtual Plus plan")
 
 // Repository — persistence for plans, subscriptions and usage.
 type Repository interface {

@@ -1,16 +1,16 @@
-# NUVORA — Cancellation & Refund Policy (G5.2)
+# YK-Virtual — Cancellation & Refund Policy (G5.2)
 
 > **Status: DRAFT for finance/legal sign-off (decision #7).** The admin
 > console enforces these flows (`refund` + `confirm-payment` endpoints).
 
 ## 1. Cohort programmes
 
-| When | Outcome |
-|---|---|
-| Before cohort start (≥ 7 days) | 100% refund, no question |
-| Before cohort start (< 7 days) | 100% refund minus ₦______ admin fee |
-| After start, within first 2 sessions | pro-rata refund of unattended sessions |
-| After first 2 sessions | no refund; credit toward a future cohort at ops discretion |
+| When                                 | Outcome                                                    |
+| ------------------------------------ | ---------------------------------------------------------- |
+| Before cohort start (≥ 7 days)       | 100% refund, no question                                   |
+| Before cohort start (< 7 days)       | 100% refund minus ₦______ admin fee                        |
+| After start, within first 2 sessions | pro-rata refund of unattended sessions                     |
+| After first 2 sessions               | no refund; credit toward a future cohort at ops discretion |
 
 ## 2. Private tuition
 

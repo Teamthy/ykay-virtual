@@ -14,7 +14,7 @@ func TestJitsiCreate_PublicRoomURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.HasPrefix(link.JoinURL, "https://meet.jit.si/nuvora-") {
+	if !strings.HasPrefix(link.JoinURL, "https://meet.jit.si/yk-virtual-") {
 		t.Fatalf("join URL = %q", link.JoinURL)
 	}
 	if link.ProviderRef == "" || link.ProviderRef == "stub-" {

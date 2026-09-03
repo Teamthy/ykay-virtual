@@ -1,4 +1,4 @@
-# NUVORA — production compose stack (Phase 40) with observability stack
+# YK-Virtual — production compose stack (Phase 40) with observability stack
 # (Prometheus + Grafana + node-exporter, G3.3) and a durable worker service
 # (G3.1).
 #
@@ -10,20 +10,24 @@
 # `web:3000` terminates TLS and forwards /api/v1 via the web container's
 # rewrite — the browser only ever talks to the web origin.
 
-name: nuvora-prod
+name: yk-virtual-prod
 
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-nuvora}
-      POSTGRES_USER: ${POSTGRES_USER:-nuvora}
+      POSTGRES_DB: ${POSTGRES_DB:-ykvirtual}
+      POSTGRES_USER: ${POSTGRES_USER:-ykvirtual}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nuvora} -d ${POSTGRES_DB:-nuvora}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-ykvirtual} -d ${POSTGRES_DB:-ykvirtual}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -64,7 +68,7 @@ services:
     environment: &api_env
       ENVIRONMENT: production
       PORT: "8080"
-      DATABASE_URL: postgres://${POSTGRES_USER:-nuvora}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nuvora}?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER:-ykvirtual}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ykvirtual}?sslmode=disable
       REDIS_URL: redis://redis:6379/0
       SITE_URL: ${SITE_URL:?set SITE_URL}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
@@ -81,7 +85,7 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
-      EMAIL_FROM: ${EMAIL_FROM:-no-reply@nuvora.com}
+      EMAIL_FROM: ${EMAIL_FROM:-no-reply@ykaycollege.com}
       TERMII_API_KEY: ${TERMII_API_KEY:-}
       TERMII_SENDER_ID: ${TERMII_SENDER_ID:-}
       TERMII_FROM: ${TERMII_FROM:-}
@@ -94,11 +98,11 @@ services:
       AI_DAILY_BUDGET_TOKENS: ${AI_DAILY_BUDGET_TOKENS:-200000}
       STORAGE_MAX_UPLOAD_BYTES: ${STORAGE_MAX_UPLOAD_BYTES:-10485760}
       STORAGE_ALLOWED_MIME: ${STORAGE_ALLOWED_MIME:-}
-      S3_QUARANTINE_BUCKET: ${S3_QUARANTINE_BUCKET:-nuvora-quarantine}
+      S3_QUARANTINE_BUCKET: ${S3_QUARANTINE_BUCKET:-yk-virtual-quarantine}
       METRICS_TOKEN: ${METRICS_TOKEN:-}
       S3_ENDPOINT: ${S3_ENDPOINT:-}
-      S3_PUBLIC_BUCKET: ${S3_PUBLIC_BUCKET:-nuvora-public}
-      S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-nuvora-private}
+      S3_PUBLIC_BUCKET: ${S3_PUBLIC_BUCKET:-yk-virtual-public}
+      S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-yk-virtual-private}
       S3_REGION: ${S3_REGION:-us-east-1}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-}
@@ -172,14 +176,14 @@ services:
       /bin/sh -c '
       while true; do
         ts=$$(date -u +%Y%m%dT%H%M%SZ);
-        out=/backups/nuvora-$$ts.dump;
-        if pg_dump -h postgres -U ${POSTGRES_USER:-nuvora} -d ${POSTGRES_DB:-nuvora} -Fc > $$out; then
-          printf "nuvora_backup_last_success_timestamp %s\nnuvora_backup_size_bytes %s\n" \
-            "$$(date +%s)" "$$(stat -c%s $$out)" > /metrics-textfile/nuvora_backup.prom;
+        out=/backups/yk-virtual-$$ts.dump;
+        if pg_dump -h postgres -U ${POSTGRES_USER:-ykvirtual} -d ${POSTGRES_DB:-ykvirtual} -Fc > $$out; then
+          printf "ykv_backup_last_success_timestamp %s\nykv_backup_size_bytes %s\n" \
+            "$$(date +%s)" "$$(stat -c%s $$out)" > /metrics-textfile/ykv_backup.prom;
         else
-          printf "nuvora_backup_last_failure_timestamp %s\n" "$$(date +%s)" > /metrics-textfile/nuvora_backup.prom.fail;
+          printf "ykv_backup_last_failure_timestamp %s\n" "$$(date +%s)" > /metrics-textfile/ykv_backup.prom.fail;
         fi;
-        find /backups -name "nuvora-*.dump" -mtime +${BACKUP_RETENTION_DAYS:-14} -delete;
+        find /backups -name "yk-virtual-*.dump" -mtime +${BACKUP_RETENTION_DAYS:-14} -delete;
         sleep ${BACKUP_INTERVAL_HOURS:-24}h;
       done'
     volumes:

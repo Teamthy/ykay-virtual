@@ -39,7 +39,7 @@ func newVettingEnv(t *testing.T) *vettingEnv {
 	t.Helper()
 	// The storage layer now refuses to issue presigned URLs without a signing
 	// secret (CF-2). Provide one so document-upload flows work under test.
-	t.Setenv("YKAY_STORAGE_SECRET", "nuvora-test-secret")
+	t.Setenv("YKAY_STORAGE_SECRET", "yk-virtual-test-secret")
 	store := memory.NewMemoryStore()
 	audit := NewAuditService(store.AuditLogs)
 	actor := uuid.New()

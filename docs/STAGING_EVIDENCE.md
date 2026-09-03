@@ -1,4 +1,4 @@
-# NUVORA — Staging Evidence Pack (G4)
+# YK-Virtual — Staging Evidence Pack (G4)
 
 **Status:** engineering complete — live-provider runs are credential-gated.
 **How to use:** `bash scripts/staging-evidence.sh` proves every scenario that
@@ -8,18 +8,18 @@ row names the exact script/endpoint and the expected evidence to record.
 
 ## Automated (no live keys) — `scripts/staging-evidence.sh`
 
-| # | Scenario | Proves |
-|---|---|---|
-| 1 | Paystack webhook: valid HMAC-SHA512 signature settles the payment | real signature code path |
-| 2 | Replayed webhook → `duplicate: true`, no double settlement | idempotency (UNIQUE provider_reference) |
-| 3 | Bad signature → 401 | forge-proof settlement |
-| 4 | Unknown reference → 404 | no phantom payments |
-| 5 | Flutterwave shape (verif-hash + tx_ref) accepted | both gateway adapters |
-| 6 | Tutor opens meeting room; second call reuses the room | meeting-link lifecycle + idempotent refresh |
-| 7 | Foreign tutor → 403 | object-level authz on rooms |
-| 8 | Push device register/list | device registry |
-| 9 | Vetting document presign + signature-verified serving | signed-URL storage contract |
-| 10 | AI budget guard | `go test ./internal/service -run TestAIGuard` |
+| #   | Scenario                                                          | Proves                                        |
+| --- | ----------------------------------------------------------------- | --------------------------------------------- |
+| 1   | Paystack webhook: valid HMAC-SHA512 signature settles the payment | real signature code path                      |
+| 2   | Replayed webhook → `duplicate: true`, no double settlement        | idempotency (UNIQUE provider_reference)       |
+| 3   | Bad signature → 401                                               | forge-proof settlement                        |
+| 4   | Unknown reference → 404                                           | no phantom payments                           |
+| 5   | Flutterwave shape (verif-hash + tx_ref) accepted                  | both gateway adapters                         |
+| 6   | Tutor opens meeting room; second call reuses the room             | meeting-link lifecycle + idempotent refresh   |
+| 7   | Foreign tutor → 403                                               | object-level authz on rooms                   |
+| 8   | Push device register/list                                         | device registry                               |
+| 9   | Vetting document presign + signature-verified serving             | signed-URL storage contract                   |
+| 10  | AI budget guard                                                   | `go test ./internal/service -run TestAIGuard` |
 
 ## Live-key checklist (G4.1 payments — Paystack/Flutterwave)
 
@@ -47,7 +47,7 @@ keys**, then record each row:
       received on a real number; delivery-report failures surface in worker
       logs (job retry → dead-letter if persistent).
 - [ ] S3 (`S3_ENDPOINT`, public/private/quarantine buckets): tutor uploads a
-      GOVT_ID → object lands in `nuvora-private`; presigned GET expires;
+      GOVT_ID → object lands in `yk-virtual-private`; presigned GET expires;
       anonymous fetch → 403; a renamed `.exe` upload → 400 (MIME allowlist);
       a test EICAR file → quarantined via `MoveToQuarantine`.
 - [ ] Whereby (`MEETING_PROVIDER=whereby` + `WHEREBY_API_KEY`): tutor opens
@@ -66,8 +66,8 @@ keys**, then record each row:
 
 ## Known gaps (carried forward)
 
-| Gap | Note |
-|---|---|
-| Direct-to-S3 presigned **PUT** uploads | Document upload currently issues a presigned URL but the client upload path expects an API-mediated PUT; with MinioStorage the URL is a real S3 GET presign. Implement presigned PUTs (minio PresignedPutObject) in the vetting upload flow before the live S3 run. |
-| Webhook alerting on `signature_valid=false` | 401s are recorded; add the Prometheus counter + alert (tracked in G6 hardening). |
-| In-memory rate limiter at scale | Single-instance pilot is fine; Redis-backed limiter planned for multi-instance (G7). |
+| Gap                                         | Note                                                                                                                                                                                                                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Direct-to-S3 presigned **PUT** uploads      | Document upload currently issues a presigned URL but the client upload path expects an API-mediated PUT; with MinioStorage the URL is a real S3 GET presign. Implement presigned PUTs (minio PresignedPutObject) in the vetting upload flow before the live S3 run. |
+| Webhook alerting on `signature_valid=false` | 401s are recorded; add the Prometheus counter + alert (tracked in G6 hardening).                                                                                                                                                                                    |
+| In-memory rate limiter at scale             | Single-instance pilot is fine; Redis-backed limiter planned for multi-instance (G7).                                                                                                                                                                                |

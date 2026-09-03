@@ -71,17 +71,17 @@ func (h *AuthHandler) GoogleMobileCallback(w http.ResponseWriter, r *http.Reques
 	}
 	_ = user
 	payload, _ := json.Marshal(map[string]any{
-		"type":  "nuvora_google_auth",
+		"type":  "ykv_google_auth",
 		"token": token,
 	})
 	page := `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NUVORA sign-in</title><style>
+<title>YK-Virtual sign-in</title><style>
 body{font-family:system-ui,sans-serif;background:#013920;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:16px;box-sizing:border-box}
 .card{max-width:420px;width:100%;background:#0A4D32;border-radius:16px;padding:28px;text-align:center}
 h1{font-size:20px;margin:0 0 8px;color:#70F250}.p{font-size:14px;color:#dfe8e2;line-height:1.5;margin:0 0 16px}
 code{display:block;background:#013920;border:1px solid #1a5b3f;border-radius:10px;padding:12px;word-break:break-all;font-size:12px;color:#DFFFF2;text-align:left}
 </style></head><body><div class="card"><h1>Sign-in successful</h1>
-<p class="p">You're signed in to NUVORA. Return to the app — it will continue automatically.</p>
+<p class="p">You're signed in to YK-Virtual. Return to the app — it will continue automatically.</p>
 <code>%s</code></div>
 <script>window.ReactNativeWebView && window.ReactNativeWebView.postMessage(%s);</script>
 </body></html>`

@@ -1,19 +1,19 @@
-# NUVORA — Operating Decisions Register (G5.1)
+# YK-Virtual — Operating Decisions Register (G5.1)
 
 **Owner:** Founder (decision maker) · Engineering keeps this file current.
 **Status:** every row blocks a production launch until it has an owner,
 an output, and a date. Fill in and commit — no launch without sign-off.
 
-| # | Decision | Required owner/output | Status |
-|---|---|---|---|
-| 1 | Launch market/geography | founder: Nigeria-only vs international; timezone (Africa/Lagos), currency (NGN), tax and support implications | ☐ open |
-| 2 | Account/minor model | safeguarding/legal: age threshold, parent verification/linking, consent and support rules | ☐ open |
-| 3 | Tutor communication | academic/safeguarding: direct-chat permissions, moderation/escalation, contact-data visibility | ☐ open |
-| 4 | Video/recordings | safeguarding/legal: recording consent, retention, access, deletion and incident workflow | ☐ open |
-| 5 | Tutor commercial model | finance/legal: contractor terms, vetting evidence, payout terms, tax responsibility | ☐ open |
-| 6 | Programme/pricing | academic/commercial: launch catalogue, capacity, tutor assignment, prices, enrolment windows | ☐ open |
-| 7 | Cancellations/refunds | finance/ops: policy, authority limits, automated/manual flows | ☐ open |
-| 8 | Data retention | legal/engineering: data classes, retention/deletion/export requirements, processor list | ☐ open |
+| #   | Decision                | Required owner/output                                                                                         | Status |
+| --- | ----------------------- | ------------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | Launch market/geography | founder: Nigeria-only vs international; timezone (Africa/Lagos), currency (NGN), tax and support implications | ☐ open |
+| 2   | Account/minor model     | safeguarding/legal: age threshold, parent verification/linking, consent and support rules                     | ☐ open |
+| 3   | Tutor communication     | academic/safeguarding: direct-chat permissions, moderation/escalation, contact-data visibility                | ☐ open |
+| 4   | Video/recordings        | safeguarding/legal: recording consent, retention, access, deletion and incident workflow                      | ☐ open |
+| 5   | Tutor commercial model  | finance/legal: contractor terms, vetting evidence, payout terms, tax responsibility                           | ☐ open |
+| 6   | Programme/pricing       | academic/commercial: launch catalogue, capacity, tutor assignment, prices, enrolment windows                  | ☐ open |
+| 7   | Cancellations/refunds   | finance/ops: policy, authority limits, automated/manual flows                                                 | ☐ open |
+| 8   | Data retention          | legal/engineering: data classes, retention/deletion/export requirements, processor list                       | ☐ open |
 
 ## Engineering-visible consequences
 

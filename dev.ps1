@@ -1,4 +1,4 @@
-# NUVORA — Windows PowerShell dev helper.
+# YK-Virtual — Windows PowerShell dev helper.
 # Same workflows as the Makefile, for machines without make.
 #
 # Usage:
@@ -48,7 +48,7 @@ switch ($Task) {
   "build"   { Build }
   default {
     Write-Host @"
-NUVORA dev helper — usage:
+YK-Virtual dev helper — usage:
   .\dev.ps1 infra       start Postgres + Redis (Docker)
   .\dev.ps1 migrate     apply migrations
   .\dev.ps1 api         run the API (http://localhost:8080)

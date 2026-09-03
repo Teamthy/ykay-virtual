@@ -52,7 +52,7 @@ type PaymentService struct {
 	plus           *PlusService // activates Plus subscriptions on payment (000066)
 }
 
-// WithPlus wires the NUVORA Plus service so a paid PLUS_SUBSCRIPTION order
+// WithPlus wires the YK-Virtual Plus service so a paid PLUS_SUBSCRIPTION order
 // item activates the subscription in the same settlement transaction.
 func (s *PaymentService) WithPlus(p *PlusService) *PaymentService {
 	s.plus = p
@@ -120,19 +120,19 @@ func (s *PaymentService) emailReceipt(ctx context.Context, order *payment.Order)
 	}
 	base := strings.TrimRight(s.siteURL, "/")
 	if base == "" {
-		base = "https://nuvora.com"
+		base = "https://virtual.ykaycollege.com"
 	}
 	link := base + "/receipts/" + order.ID.String()
 	amount := fmt.Sprintf("%.2f %s", order.TotalAmount, order.Currency)
 	body := notification.BrandEmail(
 		`<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Payment received</h1>` +
-			`<p style="margin:0 0 16px;">Thank you. Your NUVORA payment is confirmed.</p>` +
+			`<p style="margin:0 0 16px;">Thank you. Your YK-Virtual payment is confirmed.</p>` +
 			`<p style="margin:0 0 8px;"><strong>Order</strong> ` + order.OrderNumber + `</p>` +
 			`<p style="margin:0 0 20px;"><strong>Amount</strong> ` + amount + `</p>` +
 			`<p><a href="` + link + `" style="display:inline-block;background:#70F250;color:#013920;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;">View / print receipt</a></p>` +
 			`<p style="margin:20px 0 0;color:#8794AC;font-size:13px;">Keep this email for your records. You can print or save a PDF from the receipt page.</p>`,
 	)
-	if err := s.mail.Send(ctx, user.Email, "Your NUVORA receipt — "+order.OrderNumber, body); err != nil {
+	if err := s.mail.Send(ctx, user.Email, "Your YK-Virtual receipt — "+order.OrderNumber, body); err != nil {
 		slog.Error("receipt email failed", "order_id", order.ID, "error", err)
 	}
 }
@@ -164,7 +164,7 @@ func (s *PaymentService) whatsappConfirmation(ctx context.Context, order *paymen
 	if s.users != nil {
 		if user, err := s.users.FindByID(ctx, order.ParentUserID); err == nil && user != nil {
 			userID := user.ID
-			msg := "🎉 NUVORA: your payment is confirmed!\nOrder " + order.OrderNumber +
+			msg := "🎉 YK-Virtual: your payment is confirmed!\nOrder " + order.OrderNumber +
 				"\nAmount: " + amount +
 				"\nYour enrollment is now active — see your dashboard for classes."
 			if err := s.notifier.NotifyUser(ctx, user.Phone, &userID, msg); err != nil {
@@ -175,7 +175,7 @@ func (s *PaymentService) whatsappConfirmation(ctx context.Context, order *paymen
 
 	// Admin alert.
 	if WhatsAppAdminNumber() != "" {
-		adminMsg := "💰 NUVORA: payment received\nOrder " + order.OrderNumber + "\nAmount: " + amount
+		adminMsg := "💰 YK-Virtual: payment received\nOrder " + order.OrderNumber + "\nAmount: " + amount
 		go func() {
 			nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
@@ -493,7 +493,7 @@ func (s *PaymentService) settleSuccessInUOW(ctx context.Context, uow repository.
 	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
 		return uuid.Nil, err
 	}
-	// NUVORA Plus: a paid PLUS_SUBSCRIPTION order item activates (or renews)
+	// YK-Virtual Plus: a paid PLUS_SUBSCRIPTION order item activates (or renews)
 	// the user's subscription in the same settlement transaction — access is
 	// granted only after the money actually clears.
 	if err := s.activatePlusOnPaid(ctx, uow, order); err != nil {
@@ -595,7 +595,7 @@ func (s *PaymentService) activatePrivatePackages(ctx context.Context, uow reposi
 }
 
 // activatePlusOnPaid — a PLUS_SUBSCRIPTION order item activates (or renews)
-// the payer's NUVORA Plus subscription only once the order is PAID, inside the
+// the payer's YK-Virtual Plus subscription only once the order is PAID, inside the
 // same transaction that records the payment. The plan_code is carried in the
 // item's reference. Idempotent for a given term (a new subscription row is
 // created per paid term; the entitlement check just needs one active row).

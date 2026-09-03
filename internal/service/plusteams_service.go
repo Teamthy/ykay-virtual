@@ -11,7 +11,7 @@ import (
 	"ykay-virtual/internal/domain/plusteams"
 )
 
-// PlusTeamsService — NUVORA Plus Teams (000069): an institution allocates a
+// PlusTeamsService — YK-Virtual Plus Teams (000069): an institution allocates a
 // number of seats; each seat is a user covered by the org's subscription.
 // Institution OWNER/ADMIN (or a platform admin) manages seats.
 type PlusTeamsService struct {

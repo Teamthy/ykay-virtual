@@ -1,4 +1,4 @@
-# NUVORA architecture
+# YK-Virtual architecture
 
 Implemented as a Go modular monolith (`/api/v1`) + Next.js 15 App Router + Expo mobile, PostgreSQL source of truth, Redis for cache/queue/rate-limit. Payment provider: Paystack (primary) / Flutterwave. See `docs/SECURITY.md` for authz.
 

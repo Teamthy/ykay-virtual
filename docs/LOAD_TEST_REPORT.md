@@ -1,4 +1,4 @@
-# NUVORA — Load Test Report (G6.1 item 5 · G7 capacity evidence)
+# YK-Virtual — Load Test Report (G6.1 item 5 · G7 capacity evidence)
 
 **Run:** 2026-08-14 · single API instance, dev sandbox, real PostgreSQL 17
 **Harness:** scripts/loadtest.sh + hey · **Method:** 2,000 requests per
@@ -8,14 +8,14 @@ raw-throughput measurement (default 300/min unchanged in production).
 
 ## Results
 
-| Scenario | Req/s | Avg | Notes |
-|---|---|---|---|
-| GET /programmes (cached catalogue) | **~5,000** | 3.7 ms | Redis/in-memory cached path |
-| GET /subjects | ~2,900 | 6.6 ms | |
-| GET /tutors?search= (cached) | ~2,800 | 7.0 ms | |
-| POST /auth/login (rate-limited) | 2,040 | 2.3 ms | **42 of 80 throttled (429)** — the 40/min auth limiter engages correctly |
-| GET /me/lessons (session+DB) | **~440** | 44.7 ms | session resolution + queries per request |
-| Webhook storm (50 parallel duplicates) | — | — | **50×200 · exactly 1 settlement** — idempotency holds under concurrency |
+| Scenario                               | Req/s      | Avg     | Notes                                                                    |
+| -------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------ |
+| GET /programmes (cached catalogue)     | **~5,000** | 3.7 ms  | Redis/in-memory cached path                                              |
+| GET /subjects                          | ~2,900     | 6.6 ms  |                                                                          |
+| GET /tutors?search= (cached)           | ~2,800     | 7.0 ms  |                                                                          |
+| POST /auth/login (rate-limited)        | 2,040      | 2.3 ms  | **42 of 80 throttled (429)** — the 40/min auth limiter engages correctly |
+| GET /me/lessons (session+DB)           | **~440**   | 44.7 ms | session resolution + queries per request                                 |
+| Webhook storm (50 parallel duplicates) | —          | —       | **50×200 · exactly 1 settlement** — idempotency holds under concurrency  |
 
 ## Capacity conclusions (vs the 10k-user model)
 

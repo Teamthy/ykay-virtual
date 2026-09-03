@@ -257,12 +257,12 @@ func main() {
 	// ops team follows up on WhatsApp (public capture + enrollment-started +
 	// auto-CONVERTED on settlement).
 	leadsSvc := service.NewLeadService(repos.Leads, notifierSvc, repos.Users, audit)
-	// NUVORA Plus premium tier (000066): subscription entitlements + usage gates.
+	// YK-Virtual Plus premium tier (000066): subscription entitlements + usage gates.
 	plusSvc := service.NewPlusService(repos.Plus, audit).WithUnitOfWork(repos.UoWFactory)
 	plusSvc.EnsureDefaultPlans(ctx)
-	// NUVORA Plus named Learning Advisor + learning plan (000067).
+	// YK-Virtual Plus named Learning Advisor + learning plan (000067).
 	advisorSvc := service.NewAdvisorService(repos.Advisor, audit).WithPlus(plusSvc).WithUsers(repos.Users)
-	// NUVORA Plus Teams (000069): institution seat management. Managers are the
+	// YK-Virtual Plus Teams (000069): institution seat management. Managers are the
 	// institution OWNER/ADMIN (reusing the membership check) or a platform admin.
 	// Student dashboard insights (000070): quote, gradebook, review queue,
 	// leaderboard, feedback, prefs.
@@ -320,7 +320,7 @@ func main() {
 	// resolver (logout invalidates the exact token immediately).
 	sessionCache := middleware.NewCachingSessionResolver(sessionResolverAdapter{svc: authSvc}, cacheBackend)
 	middleware.SetSessionCache(sessionCache)
-	sessionAuth := middleware.SessionAuth(sessionCache, "nuvora_session")
+	sessionAuth := middleware.SessionAuth(sessionCache, "ykv_session")
 
 	tutorSvc := service.NewTutorService(repos.TutorRepo, cacheBackend)
 	couponSvc := service.NewCouponService(repos.Coupons)
@@ -492,7 +492,7 @@ func main() {
 		meetingProvider = meeting.NewJitsi()
 		meetingStub = false
 	}
-	// A-10: stub emits fake meet.nuvora.local URLs. Forbidden in production.
+	// A-10: stub emits fake meet.ykvirtual.local URLs. Forbidden in production.
 	// Free path: MEETING_PROVIDER=jitsi (public meet.jit.si rooms).
 	telemetry.MeetingProviderStub(strings.ToLower(cfg.MeetingProvider), meetingStub)
 	if meetingStub && cfg.IsProduction() {
@@ -1131,10 +1131,10 @@ func seedDemoUsers(store *memory.MemoryStore, demoPassword string) {
 		email string
 		role  string
 	}{
-		{uuid.MustParse("00000000-0000-0000-0000-0000000000a1"), "admin@nuvora.com", "SUPER_ADMIN"},
-		{uuid.MustParse("00000000-0000-0000-0000-0000000000a2"), "parent@nuvora.com", "PARENT"},
-		{uuid.MustParse("00000000-0000-0000-0000-0000000000a3"), "tutor@nuvora.com", "TUTOR"},
-		{uuid.MustParse("00000000-0000-0000-0000-0000000000a4"), "student@nuvora.com", "STUDENT"},
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a1"), "admin@ykaycollege.com", "SUPER_ADMIN"},
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a2"), "parent@ykaycollege.com", "PARENT"},
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a3"), "tutor@ykaycollege.com", "TUTOR"},
+		{uuid.MustParse("00000000-0000-0000-0000-0000000000a4"), "student@ykaycollege.com", "STUDENT"},
 	}
 	for _, u := range users {
 		if _, err := store.Users.FindByEmail(context.Background(), u.email); err == nil {

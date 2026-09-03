@@ -36,7 +36,7 @@ export function UtmeCallbackForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: "utme-2026@callback.nuvora",
+          email: "utme-2026@callback.ykvirtual",
           subject: `UTME 2026 enrolment - ${form.name.trim()} (${form.level})`,
           message: `UTME lead: ${form.name.trim()} · ${form.phone.trim()} · ${form.level}.`,
         }),

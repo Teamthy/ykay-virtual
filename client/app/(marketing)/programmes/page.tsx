@@ -7,7 +7,7 @@ import { ProgrammesHub } from "@/features/programmes/components/ProgrammesHub";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Programmes - Cohorts, Bootcamps & Exam Prep | NUVORA",
+  title: "Programmes - Cohorts, Bootcamps & Exam Prep | YK-Virtual",
   description:
     "Structured learning programmes: live cohort classes, holiday bootcamps and online classes for IGCSE, WAEC, NECO, JAMB, A-Level - with escrow-protected enrollment.",
   path: "/programmes",
@@ -25,7 +25,13 @@ export default function ProgrammesPage() {
       />
 
       <div className="container-x mt-10 pb-16">
-        <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading programmes…</p>}>
+        <Suspense
+          fallback={
+            <p className="text-center text-ink-500 py-10">
+              Loading programmes…
+            </p>
+          }
+        >
           <ProgrammesHub />
         </Suspense>
       </div>

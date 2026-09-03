@@ -17,9 +17,9 @@ import {
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "UTME 2026 prep - live class, mocks, reports | NUVORA",
+  title: "UTME 2026 prep - live class, mocks, reports | YK-Virtual",
   description:
-    "JAMB/UTME prep on nuvora.com: live lessons, recordings, timed mocks and parent notes. Same login on mobile. No 320+ guarantee.",
+    "JAMB/UTME prep on virtual.ykaycollege.com: live lessons, recordings, timed mocks and parent notes. Same login on mobile. No 320+ guarantee.",
   path: "/utme-2026",
 });
 
@@ -80,15 +80,18 @@ const PACKAGES = [
 
 export default function Utme2026Page() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://nuvora.com/" },
-    { name: "UTME 2026 Prep", item: "https://nuvora.com/utme-2026" },
+    { name: "Home", item: "https://virtual.ykaycollege.com/" },
+    {
+      name: "UTME 2026 Prep",
+      item: "https://virtual.ykaycollege.com/utme-2026",
+    },
   ]);
   const course = courseJsonLd({
-    name: "NUVORA JAMB 2026 Preparation Programme",
+    name: "YK-Virtual JAMB 2026 Preparation Programme",
     description:
-      "UTME prep on nuvora.com: live lessons, recordings, timed mocks and parent notes. No score guarantee.",
-    provider: "NUVORA",
-    url: "https://nuvora.com/utme-2026",
+      "UTME prep on virtual.ykaycollege.com: live lessons, recordings, timed mocks and parent notes. No score guarantee.",
+    provider: "YK-Virtual",
+    url: "https://virtual.ykaycollege.com/utme-2026",
   });
 
   return (
@@ -203,7 +206,7 @@ export default function Utme2026Page() {
       <section className="bg-white py-16">
         <div className="mx-auto max-w-[1400px] px-6 md:px-10">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-gold-dark">
-            On nuvora.com - including your phone
+            On virtual.ykaycollege.com - including your phone
           </p>
           <h2 className="mt-2 font-display text-3xl text-brand-navy">
             What this prep includes

@@ -46,7 +46,7 @@ type LocalStorage struct {
 // production file-read exposure. A non-empty secret keeps presigned-URL
 // issuance working in dev and CI without an explicit env var. Operators who
 // want additional isolation can still set YKAY_STORAGE_SECRET explicitly.
-const devStorageSecret = "nuvora-local-dev-secret"
+const devStorageSecret = "yk-virtual-local-dev-secret"
 
 func NewLocalStorage() *LocalStorage {
 	root := os.Getenv("YKAY_STORAGE_ROOT")

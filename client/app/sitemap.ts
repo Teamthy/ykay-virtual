@@ -3,7 +3,8 @@ import { getExamPrepPages } from "@/lib/exam-prep-data";
 import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import { getHelpArticles } from "@/lib/help-data";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com";
+const SITE =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://virtual.ykaycollege.com";
 const now = new Date();
 
 // Dynamic sitemap - static pages + live tutors/subjects/programmes/blog,

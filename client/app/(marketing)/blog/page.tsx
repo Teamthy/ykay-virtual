@@ -7,9 +7,9 @@ import Link from "next/link";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildMetadata({
-  title: "Blog - Study Guides, Exam Tips & Learning Insights | NUVORA",
+  title: "Blog - Study Guides, Exam Tips & Learning Insights | YK-Virtual",
   description:
-    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB and A-Level - from the NUVORA academic team.",
+    "Subject/exam-tagged study guides and exam prep insights: IGCSE, WAEC, NECO, JAMB and A-Level - from the YK-Virtual academic team.",
   path: "/blog",
 });
 
@@ -29,7 +29,8 @@ const fallbackPosts: BlogPostDTO[] = [
     id: "2",
     slug: "jamb-2026-biology-topics",
     title: "JAMB 2026 Biology: Most-Predicted Topics",
-    excerpt: "Fifteen years of past questions analysed to find the highest-yield topics.",
+    excerpt:
+      "Fifteen years of past questions analysed to find the highest-yield topics.",
     subject_slugs: ["biology"],
     exam_slugs: ["JAMB"],
     published_at: "2026-07-28",
@@ -38,7 +39,8 @@ const fallbackPosts: BlogPostDTO[] = [
     id: "3",
     slug: "british-vs-nigerian-curriculum",
     title: "British vs Nigerian Curriculum: Which Path for Your Child?",
-    excerpt: "A parent guide to IGCSE vs WAEC, with assessment differences and how to choose.",
+    excerpt:
+      "A parent guide to IGCSE vs WAEC, with assessment differences and how to choose.",
     subject_slugs: ["english-language"],
     exam_slugs: ["IGCSE"],
     published_at: "2026-07-20",
@@ -48,7 +50,9 @@ const fallbackPosts: BlogPostDTO[] = [
 export default async function BlogPage() {
   let posts: BlogPostDTO[] = fallbackPosts;
   try {
-    const res = await apiFetchSSR<BlogPostDTO[]>("/content/blog?page=1&page_size=50");
+    const res = await apiFetchSSR<BlogPostDTO[]>(
+      "/content/blog?page=1&page_size=50",
+    );
     if (res.data && res.data.length > 0) posts = res.data;
   } catch {
     // API down → fallback list (still SEO-safe, no fake claims)
@@ -56,7 +60,6 @@ export default async function BlogPage() {
 
   return (
     <main>
-      
       <PageHero
         eyebrow="From the academic team"
         title="Resources & Blog"
@@ -66,24 +69,33 @@ export default async function BlogPage() {
       />
 
       <div className="container-x py-12">
-
-      <div className="mt-10 grid md:grid-cols-3 gap-6">
-        {posts.map((p) => (
-          <Link
-            key={p.id}
-            href={`/blog/${p.slug}`}
-            className="border rounded-2xl p-6 hover:shadow-lift hover:border-brand-blue/40 transition-all bg-white"
-          >
-            <div className="text-xs font-semibold uppercase text-brand-blue">
-              {(p.exam_slugs ?? []).join(" • ") || (p.subject_slugs ?? []).join(" • ")}
-            </div>
-            <h3 className="mt-2 font-bold leading-tight line-clamp-3">{p.title}</h3>
-            {p.excerpt && <p className="mt-2 text-sm text-ink-600 line-clamp-3">{p.excerpt}</p>}
-            {p.published_at && <div className="mt-3 text-xs text-ink-400">{p.published_at.slice(0, 10)}</div>}
-          </Link>
-        ))}
-      </div>
-    
+        <div className="mt-10 grid md:grid-cols-3 gap-6">
+          {posts.map((p) => (
+            <Link
+              key={p.id}
+              href={`/blog/${p.slug}`}
+              className="border rounded-2xl p-6 hover:shadow-lift hover:border-brand-blue/40 transition-all bg-white"
+            >
+              <div className="text-xs font-semibold uppercase text-brand-blue">
+                {(p.exam_slugs ?? []).join(" • ") ||
+                  (p.subject_slugs ?? []).join(" • ")}
+              </div>
+              <h3 className="mt-2 font-bold leading-tight line-clamp-3">
+                {p.title}
+              </h3>
+              {p.excerpt && (
+                <p className="mt-2 text-sm text-ink-600 line-clamp-3">
+                  {p.excerpt}
+                </p>
+              )}
+              {p.published_at && (
+                <div className="mt-3 text-xs text-ink-400">
+                  {p.published_at.slice(0, 10)}
+                </div>
+              )}
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   );

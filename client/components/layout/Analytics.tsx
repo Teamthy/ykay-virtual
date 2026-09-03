@@ -1,7 +1,7 @@
 import Script from "next/script";
 
 // Analytics — privacy-friendly, cookieless, and OFF until configured.
-// Set NEXT_PUBLIC_PLAUSIBLE_DOMAIN (e.g. nuvora.com) in the client env and
+// Set NEXT_PUBLIC_PLAUSIBLE_DOMAIN (e.g. virtual.ykaycollege.com) in the client env and
 // page views + outbound link clicks are measured. Without the env var this
 // renders nothing (no scripts, no requests, no layout shift).
 //

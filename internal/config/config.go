@@ -11,8 +11,8 @@ import (
 // zero configuration. Validate() refuses to start in production unless the
 // risky defaults are explicitly overridden (fail-fast, per hardening audit).
 const (
-	DevDatabaseURL = "postgres://nuvora:nuvora@localhost:5432/nuvora?sslmode=disable"
-	DevSiteURL     = "https://nuvora.com"
+	DevDatabaseURL = "postgres://ykvirtual:ykvirtual@localhost:5432/ykvirtual?sslmode=disable"
+	DevSiteURL     = "https://virtual.ykaycollege.com"
 	DevPort        = "8080"
 )
 
@@ -35,7 +35,7 @@ type Config struct {
 	AllowedOrigins    string
 	// CookieDomain — the session-cookie domain, if any. When the web app and
 	// API live on different hosts, set this to the custom registrable domain
-	// ("nuvora.com"). Never ".vercel.app" (public suffix). Empty = host-only.
+	// ("virtual.ykaycollege.com"). Never ".vercel.app" (public suffix). Empty = host-only.
 	CookieDomain       string
 	GoogleClientID     string
 	GoogleClientSecret string
@@ -76,8 +76,8 @@ func Load() Config {
 		DatabaseURL:       getEnv("DATABASE_URL", DevDatabaseURL),
 		RedisURL:          getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		S3Endpoint:        getEnv("S3_ENDPOINT", ""),
-		S3PublicBucket:    getEnv("S3_PUBLIC_BUCKET", "nuvora-public"),
-		S3PrivateBucket:   getEnv("S3_PRIVATE_BUCKET", "nuvora-private"),
+		S3PublicBucket:    getEnv("S3_PUBLIC_BUCKET", "yk-virtual-public"),
+		S3PrivateBucket:   getEnv("S3_PRIVATE_BUCKET", "yk-virtual-private"),
 		S3Region:          getEnv("S3_REGION", "us-east-1"),
 		S3AccessKey:       getEnv("S3_ACCESS_KEY", ""),
 		S3SecretKey:       getEnv("S3_SECRET_KEY", ""),

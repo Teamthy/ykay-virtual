@@ -30,8 +30,12 @@ export type VerifiedCertificate = {
 };
 
 /** Public verification of a certificate by its credential number. */
-export async function verifyCertificate(credential: string): Promise<VerifiedCertificate> {
-  const res = await apiFetch<VerifiedCertificate>(`/certificates/verify?credential=${encodeURIComponent(credential)}`);
+export async function verifyCertificate(
+  credential: string,
+): Promise<VerifiedCertificate> {
+  const res = await apiFetch<VerifiedCertificate>(
+    `/certificates/verify?credential=${encodeURIComponent(credential)}`,
+  );
   return res.data;
 }
 
@@ -45,8 +49,11 @@ export type VerifiedShare = {
   verify_url: string;
 };
 
-/** NUVORA Plus: generate a verified, shareable credential link. 402 if not subscribed. */
+/** YK-Virtual Plus: generate a verified, shareable credential link. 402 if not subscribed. */
 export async function verifiedShare(certId: string): Promise<VerifiedShare> {
-  const res = await apiFetch<VerifiedShare>(`/me/certificates/${certId}/verified`, { method: "POST" });
+  const res = await apiFetch<VerifiedShare>(
+    `/me/certificates/${certId}/verified`,
+    { method: "POST" },
+  );
   return res.data;
 }

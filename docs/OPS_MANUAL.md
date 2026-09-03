@@ -1,4 +1,4 @@
-# NUVORA — Operations Manual (G5.2)
+# YK-Virtual — Operations Manual (G5.2)
 
 **Audience:** admin/support/safeguarding staff. Every procedure maps to an
 API surface that already enforces it; this is the human side.

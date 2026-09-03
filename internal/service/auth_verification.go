@@ -22,8 +22,8 @@ import (
 
 const (
 	authTokenTTL    = 24 * time.Hour
-	verifyEmailFrom = "verification@nuvora.com"
-	resetFrom       = "security@nuvora.com"
+	verifyEmailFrom = "verification@ykaycollege.com"
+	resetFrom       = "security@ykaycollege.com"
 )
 
 // RequestEmailVerification — creates a VERIFY_EMAIL token and emails the
@@ -59,11 +59,11 @@ func (s *AuthService) RequestEmailVerification(ctx context.Context, email string
 	}
 	link := fmt.Sprintf("%s/verify-email?token=%s", stringsTrimSlash(siteURL), url.QueryEscape(raw))
 	s.logDev("verify-email link for %s: %s", user.Email, link)
-	return s.sendEmail(ctx, user.Email, "Verify your NUVORA email",
+	return s.sendEmail(ctx, user.Email, "Verify your YK-Virtual email",
 		notification.BrandEmail(
-			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#111111;\">Welcome to NUVORA</h1>"+
+			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#111111;\">Welcome to YK-Virtual</h1>"+
 				"<p style=\"margin:0 0 16px;\">Hi,</p>"+
-				"<p style=\"margin:0 0 20px;\">Click the button below to verify your email and activate your NUVORA account:</p>"+
+				"<p style=\"margin:0 0 20px;\">Click the button below to verify your email and activate your YK-Virtual account:</p>"+
 				"<p><a href=\""+link+"\" style=\"display:inline-block;background:#F4B400;color:#111111;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;\">Verify email</a></p>"+
 				"<p style=\"margin:20px 0 0;color:#8794AC;font-size:13px;\">This link expires in 24 hours. If you didn't create an account, ignore this email.</p>"))
 }
@@ -140,11 +140,11 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email, siteURL s
 	}
 	link := fmt.Sprintf("%s/reset-password?token=%s", stringsTrimSlash(siteURL), url.QueryEscape(raw))
 	s.logDev("reset-password link for %s: %s", user.Email, link)
-	return s.sendEmail(ctx, user.Email, "Reset your NUVORA password",
+	return s.sendEmail(ctx, user.Email, "Reset your YK-Virtual password",
 		notification.BrandEmail(
 			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#111111;\">Reset your password</h1>"+
 				"<p style=\"margin:0 0 16px;\">Hi,</p>"+
-				"<p style=\"margin:0 0 20px;\">We received a request to reset your NUVORA password. Click the button below to choose a new one:</p>"+
+				"<p style=\"margin:0 0 20px;\">We received a request to reset your YK-Virtual password. Click the button below to choose a new one:</p>"+
 				"<p><a href=\""+link+"\" style=\"display:inline-block;background:#F4B400;color:#111111;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:700;\">Reset password</a></p>"+
 				"<p style=\"margin:20px 0 0;color:#8794AC;font-size:13px;\">This link expires in 24 hours. If you didn't request this, you can safely ignore this email.</p>"))
 }

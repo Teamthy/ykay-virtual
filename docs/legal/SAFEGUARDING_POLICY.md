@@ -1,11 +1,11 @@
-# NUVORA — Safeguarding Policy (G5.2)
+# YK-Virtual — Safeguarding Policy (G5.2)
 
 > **Status: DRAFT for legal/safeguarding review — do not launch without sign-off.**
 > Named safeguarding owner: ________________ (appointed before pilot).
 
 ## 1. Purpose
 
-NUVORA connects minors with tutors. Every adult working with or talking to a
+YK-Virtual connects minors with tutors. Every adult working with or talking to a
 learner through the platform is bound by this policy. A learner's safety
 outranks convenience, revenue, and confidentiality of the person reported.
 

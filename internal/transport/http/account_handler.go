@@ -255,7 +255,7 @@ func (h *AccountHandler) ExportData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Content-Disposition", `attachment; filename="nuvora-export.json"`)
+	w.Header().Set("Content-Disposition", `attachment; filename="yk-virtual-export.json"`)
 	_ = json.NewEncoder(w).Encode(data)
 }
 

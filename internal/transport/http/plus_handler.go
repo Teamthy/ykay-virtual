@@ -7,7 +7,7 @@ import (
 	"ykay-virtual/pkg"
 )
 
-// PlusHandler — NUVORA Plus premium tier: status, activation, cancellation.
+// PlusHandler — YK-Virtual Plus premium tier: status, activation, cancellation.
 type PlusHandler struct {
 	svc *service.PlusService
 }

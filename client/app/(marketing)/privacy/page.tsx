@@ -5,14 +5,14 @@ import { PageHero } from "@/components/layout/PageHero";
 export const metadata: Metadata = buildMetadata({
   title: "Privacy Policy",
   description:
-    "How NUVORA collects, uses and protects your data - and the rights you have over it.",
+    "How YK-Virtual collects, uses and protects your data - and the rights you have over it.",
   path: "/privacy",
 });
 
 const SECTIONS = [
   {
     h: "1. Who we are",
-    body: "NUVORA ('we', 'us') is an online learning platform connecting learners, parents and tutors across British and Nigerian curricula, exam preparation and private tuition. This policy explains what personal data we collect, why, and the choices you have. It applies to our website, mobile app and services.",
+    body: "YK-Virtual ('we', 'us') is an online learning platform connecting learners, parents and tutors across British and Nigerian curricula, exam preparation and private tuition. This policy explains what personal data we collect, why, and the choices you have. It applies to our website, mobile app and services.",
   },
   {
     h: "2. What we collect",
@@ -24,7 +24,7 @@ const SECTIONS = [
   },
   {
     h: "4. Children's data",
-    body: "Learner profiles for children under 13 are created and managed by a parent or guardian. We collect date-of-birth level information only with a guardian's consent (recorded on the profile). Guardians can request access or deletion of a child's data at any time via privacy@nuvora.com.",
+    body: "Learner profiles for children under 13 are created and managed by a parent or guardian. We collect date-of-birth level information only with a guardian's consent (recorded on the profile). Guardians can request access or deletion of a child's data at any time via privacy@ykaycollege.com.",
   },
   {
     h: "5. AI assistant",
@@ -40,7 +40,7 @@ const SECTIONS = [
   },
   {
     h: "8. Your rights",
-    body: "You may request a copy of your data, correct it, delete your account, withdraw consent, or object to processing. Email privacy@nuvora.com. We respond within 30 days. This policy also respects the Nigerian Data Protection Regulation (NDPR) and, where applicable, the GDPR.",
+    body: "You may request a copy of your data, correct it, delete your account, withdraw consent, or object to processing. Email privacy@ykaycollege.com. We respond within 30 days. This policy also respects the Nigerian Data Protection Regulation (NDPR) and, where applicable, the GDPR.",
   },
   {
     h: "9. Retention & deletion",
@@ -52,7 +52,7 @@ const SECTIONS = [
   },
   {
     h: "11. Changes & contact",
-    body: "We may update this policy; material changes will be announced on the site. Questions: privacy@nuvora.com.",
+    body: "We may update this policy; material changes will be announced on the site. Questions: privacy@ykaycollege.com.",
   },
 ];
 

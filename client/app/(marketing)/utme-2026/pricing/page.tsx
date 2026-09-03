@@ -7,9 +7,9 @@ import { Check } from "lucide-react";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "UTME 2026 Pricing - Mastery & Plus | NUVORA",
+  title: "UTME 2026 Pricing - Mastery & Plus | YK-Virtual",
   description:
-    "Indicative UTME prep packages on nuvora.com - live classes, recordings, mocks and parent reports. Same login on mobile.",
+    "Indicative UTME prep packages on virtual.ykaycollege.com - live classes, recordings, mocks and parent reports. Same login on mobile.",
   path: "/utme-2026/pricing",
 });
 
@@ -41,21 +41,33 @@ const PACKAGES = [
 
 export default function UtmePricingPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://nuvora.com/" },
-    { name: "UTME 2026", item: "https://nuvora.com/utme-2026" },
-    { name: "Pricing", item: "https://nuvora.com/utme-2026/pricing" },
+    { name: "Home", item: "https://virtual.ykaycollege.com/" },
+    { name: "UTME 2026", item: "https://virtual.ykaycollege.com/utme-2026" },
+    {
+      name: "Pricing",
+      item: "https://virtual.ykaycollege.com/utme-2026/pricing",
+    },
   ]);
 
   return (
     <div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       <PageHero
         eyebrow="Same login on mobile"
         title="UTME 2026 pricing"
-        subtitle="Packages sit on nuvora.com - one wallet, one account. Figures below are indicative until you enrol."
-        crumbs={[{ name: "Home", href: "/" }, { name: "UTME 2026", href: "/utme-2026" }, { name: "Pricing" }]}
+        subtitle="Packages sit on virtual.ykaycollege.com - one wallet, one account. Figures below are indicative until you enrol."
+        crumbs={[
+          { name: "Home", href: "/" },
+          { name: "UTME 2026", href: "/utme-2026" },
+          { name: "Pricing" },
+        ]}
         image={{ src: "/hero/utme.jpg", alt: "Student preparing for UTME" }}
-        ctas={[{ label: "Request a callback", href: "/utme-2026", primary: true }]}
+        ctas={[
+          { label: "Request a callback", href: "/utme-2026", primary: true },
+        ]}
       />
       <section className="container-x pb-20 pt-16 md:pt-20">
         <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
@@ -68,17 +80,33 @@ export default function UtmePricingPage() {
                   : "rounded-3xl border border-ink-100 bg-white p-8 shadow-soft"
               }
             >
-              <h2 className="font-display text-2xl text-brand-navy">{p.name}</h2>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-ink-400">{p.note}</p>
-              <p className="mt-4 font-display text-4xl text-brand-navy">{p.price}</p>
+              <h2 className="font-display text-2xl text-brand-navy">
+                {p.name}
+              </h2>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-ink-400">
+                {p.note}
+              </p>
+              <p className="mt-4 font-display text-4xl text-brand-navy">
+                {p.price}
+              </p>
               <ul className="mt-6 space-y-2.5">
                 {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-ink-600">
-                    <Check size={15} className="mt-0.5 shrink-0 text-brand-green" /> {f}
+                  <li
+                    key={f}
+                    className="flex items-start gap-2.5 text-sm text-ink-600"
+                  >
+                    <Check
+                      size={15}
+                      className="mt-0.5 shrink-0 text-brand-green"
+                    />{" "}
+                    {f}
                   </li>
                 ))}
               </ul>
-              <Link href="/utme-2026" className="mt-8 block rounded-xl bg-brand-navy px-8 py-4 text-center text-sm font-bold text-white">
+              <Link
+                href="/utme-2026"
+                className="mt-8 block rounded-xl bg-brand-navy px-8 py-4 text-center text-sm font-bold text-white"
+              >
                 Get started
               </Link>
             </div>

@@ -24,7 +24,8 @@ export default function CertificatesPage() {
           <Award className="text-primary" /> My certificates
         </h1>
         <p className="text-ink-500 text-sm mt-1">
-          Credentials you earn when you complete a cohort. Each has a unique, verifiable number.
+          Credentials you earn when you complete a cohort. Each has a unique,
+          verifiable number.
         </p>
       </div>
 
@@ -55,15 +56,30 @@ export default function CertificatesPage() {
                   <ShieldCheck size={11} /> Verified
                 </span>
               </div>
-              <h2 className="mt-3 font-display text-lg font-bold text-deep">{c.title}</h2>
+              <h2 className="mt-3 font-display text-lg font-bold text-deep">
+                {c.title}
+              </h2>
               <p className="text-sm text-ink-600">
-                This certifies that <strong className="text-ink-800">{c.learner_name}</strong>{" "}
-                {c.programme_title ? <>completed <strong className="text-ink-800">{c.programme_title}</strong></> : "completed the programme"}
+                This certifies that{" "}
+                <strong className="text-ink-800">{c.learner_name}</strong>{" "}
+                {c.programme_title ? (
+                  <>
+                    completed{" "}
+                    <strong className="text-ink-800">
+                      {c.programme_title}
+                    </strong>
+                  </>
+                ) : (
+                  "completed the programme"
+                )}
               </p>
               <p className="mt-3 text-xs text-ink-500">
-                Issued by {c.issued_by} · {new Date(c.issued_at).toLocaleDateString()}
+                Issued by {c.issued_by} ·{" "}
+                {new Date(c.issued_at).toLocaleDateString()}
               </p>
-              <p className="mt-1 font-mono text-[11px] text-ink-400">#{c.credential_number}</p>
+              <p className="mt-1 font-mono text-[11px] text-ink-400">
+                #{c.credential_number}
+              </p>
               <VerifiedButton certId={c.id} />
             </div>
           ))}
@@ -72,7 +88,6 @@ export default function CertificatesPage() {
     </div>
   );
 }
-
 
 function VerifiedButton({ certId }: { certId: string }) {
   const [link, setLink] = useState<string | null>(null);
@@ -90,21 +105,36 @@ function VerifiedButton({ certId }: { certId: string }) {
 
   if (blocked) {
     return (
-      <Link href="/account/plus" className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-3 py-1.5 text-xs font-bold text-deep hover:bg-brand-gold-hover">
-        <Crown size={13} /> Unlock verified share — NUVORA Plus
+      <Link
+        href="/account/plus"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-3 py-1.5 text-xs font-bold text-deep hover:bg-brand-gold-hover"
+      >
+        <Crown size={13} /> Unlock verified share — YK-Virtual Plus
       </Link>
     );
   }
   if (link) {
     return (
       <div className="mt-3">
-        <input readOnly value={link} className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-1.5 text-[11px] text-ink-600" onFocus={(e) => e.target.select()} />
+        <input
+          readOnly
+          value={link}
+          className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-1.5 text-[11px] text-ink-600"
+          onFocus={(e) => e.target.select()}
+        />
       </div>
     );
   }
   return (
-    <Button size="sm" variant="outline" className="mt-3" onClick={() => share.mutate()} disabled={share.isPending}>
-      <Share2 size={14} className="mr-1.5" /> {share.isPending ? "Generating…" : "Verified share link"}
+    <Button
+      size="sm"
+      variant="outline"
+      className="mt-3"
+      onClick={() => share.mutate()}
+      disabled={share.isPending}
+    >
+      <Share2 size={14} className="mr-1.5" />{" "}
+      {share.isPending ? "Generating…" : "Verified share link"}
     </Button>
   );
 }

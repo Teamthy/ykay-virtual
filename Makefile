@@ -1,4 +1,4 @@
-# NUVORA — developer workflow
+# YK-Virtual — developer workflow
 
 GO ?= go
 NPM ?= npm
@@ -63,7 +63,7 @@ deploy: ## One-command production deploy (docker compose + migrate + health)
 backup: ## Manual database backup (custom format)
 	bash scripts/backup.sh
 
-restore: ## Restore a backup: make restore DUMP=backups/nuvora-<ts>.dump
+restore: ## Restore a backup: make restore DUMP=backups/yk-virtual-<ts>.dump
 	bash scripts/restore.sh "$(DUMP)"
 
 drill: ## Automated backup/restore drill (G3.4): make drill [DEEP=1]
@@ -73,7 +73,7 @@ prod-infra: ## Bring up the full production stack
 	docker compose -f docker-compose.prod.yml up -d --build
 
 obs-validate: ## Validate Prometheus config/rules + Grafana dashboard JSON (G3.3)
-	python3 -m json.tool deploy/grafana/dashboards/nuvora-api.json >/dev/null && echo "dashboard JSON valid"
+	python3 -m json.tool deploy/grafana/dashboards/yk-virtual-api.json >/dev/null && echo "dashboard JSON valid"
 	@if command -v docker >/dev/null 2>&1; then \
 		docker run --rm -v "$$PWD/deploy/prometheus:/p:ro" prom/prometheus:v2.53.0 \
 			promtool check config /p/prometheus.yml && \

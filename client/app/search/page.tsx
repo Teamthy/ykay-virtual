@@ -75,7 +75,8 @@ function SearchInner() {
   const tutorCount = tutors.data?.data?.length ?? 0;
   const programmeCount = programmes.data?.data?.length ?? 0;
   const subjectCount = subjects.data?.data?.length ?? 0;
-  const anyLoading = tutors.isFetching || programmes.isFetching || subjects.isFetching;
+  const anyLoading =
+    tutors.isFetching || programmes.isFetching || subjects.isFetching;
 
   const groups: { key: ResultGroup; label: string; count: number }[] = [
     { key: "tutors", label: "Tutors", count: tutorCount },
@@ -88,10 +89,13 @@ function SearchInner() {
       <header className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/" className="hover:text-brand-gold-dark">NUVORA</Link> / Search
+            <Link href="/" className="hover:text-brand-gold-dark">
+              YK-Virtual
+            </Link>{" "}
+            / Search
           </p>
           <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">
-            Search NUVORA
+            Search YK-Virtual
           </h1>
           <form onSubmit={submit} className="mt-4 flex max-w-2xl gap-2">
             <input
@@ -129,13 +133,17 @@ function SearchInner() {
                   type="button"
                   onClick={() => setActiveGroup(g.key)}
                   className={`rounded-full px-4 py-1.5 text-xs font-bold ${
-                    activeGroup === g.key ? "bg-brand-gold text-ink-900" : "bg-ink-100 text-ink-500 hover:bg-ink-200"
+                    activeGroup === g.key
+                      ? "bg-brand-gold text-ink-900"
+                      : "bg-ink-100 text-ink-500 hover:bg-ink-200"
                   }`}
                 >
                   {g.label} ({g.count})
                 </button>
               ))}
-              {anyLoading && <Loader2 size={15} className="animate-spin text-ink-400" />}
+              {anyLoading && (
+                <Loader2 size={15} className="animate-spin text-ink-400" />
+              )}
             </div>
 
             {/* Tutor filters */}
@@ -151,7 +159,9 @@ function SearchInner() {
                   >
                     <option value="">All subjects</option>
                     {(allSubjects.data?.data ?? []).map((s: Subject) => (
-                      <option key={s.id} value={s.slug}>{s.name}</option>
+                      <option key={s.id} value={s.slug}>
+                        {s.name}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -173,16 +183,28 @@ function SearchInner() {
                   {(tutors.data?.data ?? []).map((t: Tutor) => {
                     const saved = isSaved(t.slug);
                     return (
-                      <div key={t.id} className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-                        <Link href={`/tutors/${t.slug}`} className="flex min-w-0 flex-1 items-center gap-4">
+                      <div
+                        key={t.id}
+                        className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                      >
+                        <Link
+                          href={`/tutors/${t.slug}`}
+                          className="flex min-w-0 flex-1 items-center gap-4"
+                        >
                           <span className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-gold-light font-bold text-brand-navy">
                             {t.display_name.slice(0, 1)}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block font-bold text-brand-navy">{t.display_name}</span>
+                            <span className="block font-bold text-brand-navy">
+                              {t.display_name}
+                            </span>
                             <span className="block truncate text-sm text-ink-500">
-                              {(t.subjects ?? []).map((s) => s.name).join(" · ") || "Tutor"}
-                              {t.rating_avg > 0 ? ` · ★ ${t.rating_avg.toFixed(1)}` : ""}
+                              {(t.subjects ?? [])
+                                .map((s) => s.name)
+                                .join(" · ") || "Tutor"}
+                              {t.rating_avg > 0
+                                ? ` · ★ ${t.rating_avg.toFixed(1)}`
+                                : ""}
                             </span>
                           </span>
                         </Link>
@@ -196,11 +218,22 @@ function SearchInner() {
                               rating: t.rating_avg,
                             })
                           }
-                          aria-label={saved ? `Remove ${t.display_name} from saved` : `Save ${t.display_name}`}
+                          aria-label={
+                            saved
+                              ? `Remove ${t.display_name} from saved`
+                              : `Save ${t.display_name}`
+                          }
                           aria-pressed={saved}
                           className={`grid size-9 shrink-0 place-items-center rounded-full transition-transform hover:scale-110 ${saved ? "bg-red-50" : "bg-ink-50"}`}
                         >
-                          <Heart size={17} className={saved ? "fill-red-500 text-red-500" : "text-ink-400"} />
+                          <Heart
+                            size={17}
+                            className={
+                              saved
+                                ? "fill-red-500 text-red-500"
+                                : "text-ink-400"
+                            }
+                          />
                         </button>
                       </div>
                     );
@@ -208,7 +241,8 @@ function SearchInner() {
                   {tutorCount === 0 && !anyLoading && (
                     <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
                       No tutors match “{activeQ}”
-                      {subject || onlineOnly ? " with those filters" : ""}. Try a broader term.
+                      {subject || onlineOnly ? " with those filters" : ""}. Try
+                      a broader term.
                     </p>
                   )}
                 </div>
@@ -224,9 +258,13 @@ function SearchInner() {
                     >
                       <div>
                         <p className="font-bold text-brand-navy">{p.title}</p>
-                        <p className="text-sm text-ink-500">{p.format} programme</p>
+                        <p className="text-sm text-ink-500">
+                          {p.format} programme
+                        </p>
                       </div>
-                      <span className="text-xs font-bold text-brand-gold-dark">View →</span>
+                      <span className="text-xs font-bold text-brand-gold-dark">
+                        View →
+                      </span>
                     </Link>
                   ))}
                   {programmeCount === 0 && !anyLoading && (
@@ -265,7 +303,9 @@ function SearchInner() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<p className="py-24 text-center text-ink-400">Loading…</p>}>
+    <Suspense
+      fallback={<p className="py-24 text-center text-ink-400">Loading…</p>}
+    >
       <SearchInner />
     </Suspense>
   );

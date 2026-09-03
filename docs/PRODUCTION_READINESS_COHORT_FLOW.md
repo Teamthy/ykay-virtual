@@ -1,4 +1,4 @@
-# NUVORA — Cohort → Enrolment → Payment → Student/Tutor: Production Readiness Audit
+# YK-Virtual — Cohort → Enrolment → Payment → Student/Tutor: Production Readiness Audit
 
 Date: 2026-08-23 · Scope: full end-to-end money path, repository-wide review.
 Verdict summary at the bottom.
@@ -44,12 +44,14 @@ full `next build` all pass.
 ## 2. Defects found and FIXED in this pass
 
 ### 🔴 P1 — Seat leak: abandoned checkouts blocked cohort seats forever
+
 `CreateCohortBooking` increments `enrolled_count` when the PENDING enrollment
 is created, but **nothing ever decremented it**. Every visitor who reached
 checkout and never paid consumed a seat permanently; a 20-seat cohort could
 show "full" with zero paid students, and `CanEnroll()` would reject real buyers.
 
 **Fix (shipped):**
+
 - New cron `expire_stale_pending_enrollments` (worker, 15-min tick + boot
   recovery, Redis leader lock): cancels PENDING enrollments older than 2h whose
   order is still unpaid, cancels the order, releases the seat, writes audit.
@@ -63,14 +65,16 @@ show "full" with zero paid students, and `CanEnroll()` would reject real buyers.
   skip, rebook-revive, late-webhook seat re-take.
 
 ### 🔴 P1 — Payer stranded on the gateway after paying
-The API validated and *stored* `callback_url` but **never sent it to
+
+The API validated and _stored_ `callback_url` but **never sent it to
 Paystack** (`/transaction/initialize` body had no `callback_url`), and the
-Flutterwave adapter hardcoded `https://nuvora.com/checkout/verify` — a route
+Flutterwave adapter hardcoded `https://virtual.ykaycollege.com/checkout/verify` — a route
 that does not exist. After paying, users were left on the gateway's generic
 success page with no route back into the app — the top driver of "I paid but
 nothing happened" support tickets.
 
 **Fix (shipped):**
+
 - New `CallbackLinkCreator` capability on both providers; Paystack initialize
   now carries `callback_url`, Flutterwave uses it as `redirect_url`.
 - Handler defaults the callback to `/receipts/{orderId}` and resolves it
@@ -83,6 +87,7 @@ nothing happened" support tickets.
   gateway APIs (and kobo conversion).
 
 ### 🟠 P2 — Webhook accepted any currency
+
 Amount was reconciled but currency was not: a signed success event for
 **1,000 USD** would settle a **1,000 NGN** order (numeric match). Added a
 currency guard (mismatch → audit `currency_mismatch`, webhook consumed,
@@ -104,17 +109,17 @@ payment stays PENDING) + tests for reject and accept paths.
 
 ## 4. What's left / should be added (not blockers for the cohort loop)
 
-| Priority | Item | Notes |
-|---|---|---|
-| ~~P2~~ ✅ | ~~Private-tuition E2E purchase journey~~ | DONE (2026-08-23): self-serve flow (tutor profile → package → pay) hardened — request is born MATCHED to the chosen tutor, payer returns to the in-app receipt after the gateway. |
-| ~~P2~~ ✅ | ~~Gateway refunds~~ | DONE (2026-08-23): refund flow certified — state checks before the gateway call (double-refund + refund-after-payout blocked), partial dispute refunds hit the gateway too, reconciliation logging; enable with `PAYMENT_REFUNDS_ENABLED=true` after the refund drill. |
-| ~~P2~~ ✅ | ~~Lesson double-booking guard (FR-10)~~ | Verified already fully implemented (`HasOverlappingLessons` in ScheduleLesson + postgres/memory + tests) — GAP_ANALYSIS was stale. |
-| ~~P3~~ ✅ | ~~MFA for admin accounts~~ | Verified already fully enforced in code (`requiresMFA` for all admin roles + emailed second factor + frontend flow) — GAP_ANALYSIS was stale. |
-| ~~P3~~ ✅ | ~~Enrolment windows (FR-25)~~ | DONE (2026-08-23): migration 000060 adds optional `enrollment_opens_at/closes_at`; server gate + checkout UI + admin form; enrolment always closes at `end_date`. |
-| ~~P3~~ ✅ | ~~Reschedule/cancellation self-service (FR-23)~~ | DONE (2026-08-23): `POST /lessons/{id}/reschedule` + `/cancel` (tutor own lesson or admin, double-booking guarded, COMPLETED/CANCELLED immutable) + tutor console UI; cancelled lessons free the calendar slot. |
-| ~~P3~~ ✅ | ~~Upload malware scanning~~ | DONE (2026-08-23): scanner (signatures + zip-bomb + fail-closed ClamAV via `CLAMAV_ADDR`) already existed but only covered avatars — now every upload through UploadGuard is scanned BEFORE storing, fail-closed. |
-| P3 | Recorded-lesson library & transcripts | Future virtual-school phase (already in the roadmap docs). |
-| ~~P3~~ ✅ | ~~Payment-abandon nudge~~ | DONE (2026-08-23): `send_payment_nudges` worker cron — one WhatsApp per stalled checkout (45 min–24 h), lead flips NEW→CONTACTED, never double-sends. **2026-08-24: email fallback** — leads WhatsApp can't reach (no phone/user, or a send failure) get one branded email instead (`RESEND_API_KEY`/`SMTP_*` on the worker); channel recorded in the lead audit trail. |
+| Priority  | Item                                             | Notes                                                                                                                                                                                                                                                                                                                                                                   |
+| --------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~P2~~ ✅ | ~~Private-tuition E2E purchase journey~~         | DONE (2026-08-23): self-serve flow (tutor profile → package → pay) hardened — request is born MATCHED to the chosen tutor, payer returns to the in-app receipt after the gateway.                                                                                                                                                                                       |
+| ~~P2~~ ✅ | ~~Gateway refunds~~                              | DONE (2026-08-23): refund flow certified — state checks before the gateway call (double-refund + refund-after-payout blocked), partial dispute refunds hit the gateway too, reconciliation logging; enable with `PAYMENT_REFUNDS_ENABLED=true` after the refund drill.                                                                                                  |
+| ~~P2~~ ✅ | ~~Lesson double-booking guard (FR-10)~~          | Verified already fully implemented (`HasOverlappingLessons` in ScheduleLesson + postgres/memory + tests) — GAP_ANALYSIS was stale.                                                                                                                                                                                                                                      |
+| ~~P3~~ ✅ | ~~MFA for admin accounts~~                       | Verified already fully enforced in code (`requiresMFA` for all admin roles + emailed second factor + frontend flow) — GAP_ANALYSIS was stale.                                                                                                                                                                                                                           |
+| ~~P3~~ ✅ | ~~Enrolment windows (FR-25)~~                    | DONE (2026-08-23): migration 000060 adds optional `enrollment_opens_at/closes_at`; server gate + checkout UI + admin form; enrolment always closes at `end_date`.                                                                                                                                                                                                       |
+| ~~P3~~ ✅ | ~~Reschedule/cancellation self-service (FR-23)~~ | DONE (2026-08-23): `POST /lessons/{id}/reschedule` + `/cancel` (tutor own lesson or admin, double-booking guarded, COMPLETED/CANCELLED immutable) + tutor console UI; cancelled lessons free the calendar slot.                                                                                                                                                         |
+| ~~P3~~ ✅ | ~~Upload malware scanning~~                      | DONE (2026-08-23): scanner (signatures + zip-bomb + fail-closed ClamAV via `CLAMAV_ADDR`) already existed but only covered avatars — now every upload through UploadGuard is scanned BEFORE storing, fail-closed.                                                                                                                                                       |
+| P3        | Recorded-lesson library & transcripts            | Future virtual-school phase (already in the roadmap docs).                                                                                                                                                                                                                                                                                                              |
+| ~~P3~~ ✅ | ~~Payment-abandon nudge~~                        | DONE (2026-08-23): `send_payment_nudges` worker cron — one WhatsApp per stalled checkout (45 min–24 h), lead flips NEW→CONTACTED, never double-sends. **2026-08-24: email fallback** — leads WhatsApp can't reach (no phone/user, or a send failure) get one branded email instead (`RESEND_API_KEY`/`SMTP_*` on the worker); channel recorded in the lead audit trail. |
 
 ## 5. Production-readiness verdict — cohort → enrolment → payment → student/tutor
 
@@ -132,6 +137,7 @@ the following runbook items confirmed live (all documented in
       → transfer) per the runbook before announcing.
 
 Invariants verified by the test suite after the changes:
+
 - A seat is held only while a checkout is live (≤2h) or paid — never leaked.
 - No duplicate charge on duplicate webhook delivery; wrong amount **or wrong
   currency** never settles an order.
@@ -144,20 +150,21 @@ Invariants verified by the test suite after the changes:
 
 Wait-time / dead-end fixes layered on top of the payment-safety work:
 
-| # | Fix | Where |
-|---|---|---|
-| F-2 | Logged-out visitor at `/cohorts/{id}/enroll` gets a **sign-in/register step with a return trip back to checkout** (was: empty learner select + forever-disabled Pay button) | `client/features/bookings/components/CheckoutClient.tsx` |
-| F-3 | **`POST /me/orders/{orderId}/verify`** — server asks Paystack/Flutterwave to confirm the transaction and settles through the *same* path as the webhook (`settleSuccessInUOW`). The web receipt auto-verifies on landing and offers "Confirm payment now"; checkout's payment-link card auto-checks 6s after return. A lost webhook can no longer strand a paid seat. | `internal/payment/provider.go`, `internal/service/payment_service.go`, `internal/transport/http/payment_handler.go` |
-| F-4a | **gzip** on compressible API responses (3–6× smaller JSON on mobile data; images excluded, tiny bodies excluded, `Vary: Accept-Encoding`) | `internal/middleware/gzip.go` |
-| F-4b | **60s anonymous browser cache + 5min stale-while-revalidate** on public catalogue GETs (cohorts list/detail, tutors search, programmes) — authenticated requests are never cached | `internal/middleware/public_cache.go`, router |
-| F-5 | Home page hero PNG **2.56 MB → 104 KB JPEG** served via `next/image` (was the single biggest first-load cost) | `client/public/hero/african-student.jpg` |
-| F-6 | SEO metadata for the 7 naked routes (pricing, contact, 5 become-tutor steps) via server layouts | `client/app/(marketing)/**/layout.tsx` |
-| F-7 | Optional privacy-friendly analytics (`NEXT_PUBLIC_PLAUSIBLE_DOMAIN`; inert when unset) | `client/components/layout/Analytics.tsx` |
+| #    | Fix                                                                                                                                                                                                                                                                                                                                                                   | Where                                                                                                               |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| F-2  | Logged-out visitor at `/cohorts/{id}/enroll` gets a **sign-in/register step with a return trip back to checkout** (was: empty learner select + forever-disabled Pay button)                                                                                                                                                                                           | `client/features/bookings/components/CheckoutClient.tsx`                                                            |
+| F-3  | **`POST /me/orders/{orderId}/verify`** — server asks Paystack/Flutterwave to confirm the transaction and settles through the _same_ path as the webhook (`settleSuccessInUOW`). The web receipt auto-verifies on landing and offers "Confirm payment now"; checkout's payment-link card auto-checks 6s after return. A lost webhook can no longer strand a paid seat. | `internal/payment/provider.go`, `internal/service/payment_service.go`, `internal/transport/http/payment_handler.go` |
+| F-4a | **gzip** on compressible API responses (3–6× smaller JSON on mobile data; images excluded, tiny bodies excluded, `Vary: Accept-Encoding`)                                                                                                                                                                                                                             | `internal/middleware/gzip.go`                                                                                       |
+| F-4b | **60s anonymous browser cache + 5min stale-while-revalidate** on public catalogue GETs (cohorts list/detail, tutors search, programmes) — authenticated requests are never cached                                                                                                                                                                                     | `internal/middleware/public_cache.go`, router                                                                       |
+| F-5  | Home page hero PNG **2.56 MB → 104 KB JPEG** served via `next/image` (was the single biggest first-load cost)                                                                                                                                                                                                                                                         | `client/public/hero/african-student.jpg`                                                                            |
+| F-6  | SEO metadata for the 7 naked routes (pricing, contact, 5 become-tutor steps) via server layouts                                                                                                                                                                                                                                                                       | `client/app/(marketing)/**/layout.tsx`                                                                              |
+| F-7  | Optional privacy-friendly analytics (`NEXT_PUBLIC_PLAUSIBLE_DOMAIN`; inert when unset)                                                                                                                                                                                                                                                                                | `client/components/layout/Analytics.tsx`                                                                            |
 
 New env vars: **none required**. Optional: `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`
 (web analytics), `EXPO_PUBLIC_SITE_URL` (mobile → web checkout origin).
 
 Verify-path invariants (all test-covered in `payment_verify_test.go`):
+
 - Idempotent: non-PENDING order → no gateway call; SUCCESS payment → no re-settle.
 - Owner/admin only (`ErrForbidden` otherwise; anonymous rejected outright).
 - Amount **and** currency reconciliation identical to the webhook guards.
@@ -172,15 +179,16 @@ instant: `GET /api/v1/me/events` streams per-user **poke events**
 TanStack caches and refetch through the normal REST endpoints — realtime
 never carries data, so there is exactly one source of truth.
 
-| Piece | Where |
-|---|---|
-| Broker (per-instance hub + optional Redis pub/sub cross-instance fan-out) | `internal/realtime/broker.go` |
-| Publish point (recipient + sender's other tabs) | `internal/service/messaging_service.go` `SendMessage` |
-| SSE endpoint (25 s heartbeats, ~9 min recycle, session auth) | `internal/transport/http/events_handler.go` |
+| Piece                                                                             | Where                                                 |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Broker (per-instance hub + optional Redis pub/sub cross-instance fan-out)         | `internal/realtime/broker.go`                         |
+| Publish point (recipient + sender's other tabs)                                   | `internal/service/messaging_service.go` `SendMessage` |
+| SSE endpoint (25 s heartbeats, ~9 min recycle, session auth)                      | `internal/transport/http/events_handler.go`           |
 | Client (one EventSource per signed-in tab; auto-reconnect; poll fallback 30–45 s) | `client/hooks/useRealtimeEvents.ts`, `RealtimeBridge` |
-| gzip exclusion for `text/event-stream` | `internal/middleware/gzip.go` |
+| gzip exclusion for `text/event-stream`                                            | `internal/middleware/gzip.go`                         |
 
 Invariants (test-covered):
+
 - Events never cross users (recipient-scoped hub, verified in broker + handler tests).
 - A slow subscriber can never block a publisher (non-blocking sends, drop-oldest).
 - Without Redis the hub is local-only — everything still works, polling covers other instances.
@@ -216,7 +224,7 @@ Root cause chain + fixes:
    → now a typed `ErrEmailDelivery` → **503 `EMAIL_UNAVAILABLE`** with the
    message "we couldn't send your code right now – please try again in a few
    minutes". Provider detail stays in the server log (`login code email
-   failed … error=…`).
+failed … error=…`).
 2. **Session-lost mid-wizard was a dead end**: steps ≥3 need the session born
    in step 2; losing it bounced to `/login` — impossible for a user who
    hasn't set a password.

@@ -34,7 +34,7 @@ func PublicCacheForAnonymous(maxAgeSec int) func(http.Handler) http.Handler {
 
 func sessionCookie(r *http.Request) string {
 	for _, c := range r.Cookies() {
-		if c.Name == "nuvora_session" {
+		if c.Name == "ykv_session" {
 			return c.Value
 		}
 	}

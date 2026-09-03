@@ -52,14 +52,19 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
     subtitle: "Bookings, payments and your family's progress",
     chip: "Family",
     main: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      {
+        href: "/dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        exact: true,
+      },
       { href: "/lms", label: "My courses", icon: BookOpen },
       { href: "/lms/recorded", label: "LMS", icon: Play },
       { href: "/messages", label: "Community", icon: MessageSquare },
     ],
     more: [
       { href: "/notifications", label: "Notifications", icon: Bell },
-      { href: "/account/plus", label: "NUVORA Plus", icon: Crown },
+      { href: "/account/plus", label: "YK-Virtual Plus", icon: Crown },
       { href: "/account", label: "Settings", icon: Settings },
       { href: "/help", label: "Help Center", icon: LifeBuoy },
     ],
@@ -70,14 +75,19 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
     subtitle: "Your lessons, assignments and progress",
     chip: "Learner",
     main: [
-      { href: "/student-dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      {
+        href: "/student-dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        exact: true,
+      },
       { href: "/lms", label: "My courses", icon: BookOpen },
       { href: "/lms/recorded", label: "LMS", icon: Play },
       { href: "/messages", label: "Community", icon: MessageSquare },
     ],
     more: [
       { href: "/notifications", label: "Notifications", icon: Bell },
-      { href: "/account/plus", label: "NUVORA Plus", icon: Crown },
+      { href: "/account/plus", label: "YK-Virtual Plus", icon: Crown },
       { href: "/account", label: "Settings", icon: Settings },
       { href: "/help", label: "Help Center", icon: LifeBuoy },
     ],
@@ -88,7 +98,12 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
     subtitle: "Teaching, roster and earnings",
     chip: "Tutor",
     main: [
-      { href: "/tutor-dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      {
+        href: "/tutor-dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        exact: true,
+      },
       { href: "/lms/tutor", label: "Teaching", icon: ClipboardCheck },
       { href: "/messages", label: "Community", icon: MessageSquare },
     ],
@@ -104,18 +119,36 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
     subtitle: "Platform operations",
     chip: "Console",
     main: [
-      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-      { href: "/admin/super", label: "Super admin", icon: ShieldCheck, superAdminOnly: true },
+      {
+        href: "/admin",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        exact: true,
+      },
+      {
+        href: "/admin/super",
+        label: "Super admin",
+        icon: ShieldCheck,
+        superAdminOnly: true,
+      },
       { href: "/admin/users", label: "Users", icon: Users },
       { href: "/admin/vetting", label: "Tutor vetting", icon: BadgeCheck },
       { href: "/admin/tutors", label: "Tutors", icon: UserPlus },
       { href: "/admin/cohorts", label: "Cohorts", icon: CalendarDays },
       { href: "/admin/programmes", label: "Programmes", icon: BookOpen },
       { href: "/admin/admissions", label: "Admissions", icon: GraduationCap },
-      { href: "/admin/dashboard", label: "Student dashboard", icon: LayoutDashboard },
+      {
+        href: "/admin/dashboard",
+        label: "Student dashboard",
+        icon: LayoutDashboard,
+      },
     ],
     more: [
-      { href: "/admin/private-tuition", label: "Private tuition", icon: UserPlus },
+      {
+        href: "/admin/private-tuition",
+        label: "Private tuition",
+        icon: UserPlus,
+      },
       { href: "/admin/lessons", label: "Today's classes", icon: Users },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
       { href: "/admin/leads", label: "Leads", icon: PhoneCall },
@@ -132,9 +165,9 @@ export const APP_NAV: Record<AppShellVariant, AppNavSpec> = {
 };
 
 export function variantForRoles(roles: string[]): AppShellVariant {
-  if (roles.some((r) => r === "SUPER_ADMIN" || r === "ACADEMIC_ADMIN")) return "admin";
+  if (roles.some((r) => r === "SUPER_ADMIN" || r === "ACADEMIC_ADMIN"))
+    return "admin";
   if (roles.includes("TUTOR")) return "tutor";
   if (roles.includes("STUDENT")) return "student";
   return "parent";
 }
-

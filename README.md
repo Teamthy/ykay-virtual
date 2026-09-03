@@ -1,4 +1,4 @@
-# NUVORA — Learning beyond boundaries
+# YK-Virtual — Learning beyond boundaries
 
 British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.
 
@@ -8,12 +8,12 @@ Developed by Olusanya Timothy (DevTeamthy).
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js 15 App Router · React 18 · TypeScript · TanStack Query · Tailwind |
-| Backend | Go 1.22 modular monolith · REST `/api/v1` · PostgreSQL · Redis |
-| Infra | Docker Compose · S3-compatible storage · OpenTelemetry · Prometheus/Grafana |
-| Testing | Go tests · Vitest · Playwright · k6 |
+| Layer    | Technology                                                                  |
+| -------- | --------------------------------------------------------------------------- |
+| Frontend | Next.js 15 App Router · React 18 · TypeScript · TanStack Query · Tailwind   |
+| Backend  | Go 1.22 modular monolith · REST `/api/v1` · PostgreSQL · Redis              |
+| Infra    | Docker Compose · S3-compatible storage · OpenTelemetry · Prometheus/Grafana |
+| Testing  | Go tests · Vitest · Playwright · k6                                         |
 
 See `docs/architecture.md` and `docs/SECURITY.md`.
 

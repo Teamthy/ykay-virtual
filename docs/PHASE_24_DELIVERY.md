@@ -9,14 +9,16 @@ Delivery method: git bundle `ykay-virtual-phase-24.bundle`
 ## What was delivered
 
 ### 1. Brand assets regenerated in the gold/cream palette
+
 - **PWA icons** (`icon-192`, `icon-512`), **`logo.png`**, **`favicon.ico`** —
   gold tile (`#F4B400`) with dark open-book glyph and cream dot (white ring
   on dark for the maskable variant).
 - **`og.png`** (1200×630) — cream gradient background, gold glow + rule,
-  dark NUVORA wordmark, tagline + positioning strip, gold dot accent.
+  dark YK-Virtual wordmark, tagline + positioning strip, gold dot accent.
 - All served 200 on the built site.
 
 ### 2. Surface coherence (per spec: gold primary, #111 dark sections, cream bg)
+
 - **Footer** → `#111` (section-dark) with gold social hover + gold advisor
   band retained.
 - **AuthShell** brand panel → dark `#111` with gold glows + gold trust icons.
@@ -29,7 +31,7 @@ Delivery method: git bundle `ykay-virtual-phase-24.bundle`
 - **Home dark sections** (Partner, Results, Testimonials, Announcement,
   TutorCommunityStats, TravelAndCareBands, GuaranteeBand) → `#111` /
   gold accent bands.
-- **Primary CTAs** across 10 files (nuvora-plus, study-abroad, entrance-exam,
+- **Primary CTAs** across 10 files (plus, study-abroad, entrance-exam,
   dashboard, hero, success-rate, travel bands, tutor card, cohort card,
   checkout) → gold pill buttons with hover lift.
 - **Stepper** active step → gold; **all form focus rings** audited to gold

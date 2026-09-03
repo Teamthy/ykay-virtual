@@ -49,14 +49,30 @@ export function TestimonialCarousel({ items }: { items: CarouselItem[] }) {
       )}
 
       <div className="max-w-[920px] mx-auto px-6 md:px-10">
-        <div className="text-[100px] text-ink-900/15 leading-[0.6] mb-5 font-serif">&ldquo;</div>
-        <h2 className="font-display mb-11 text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">Parents love NUVORA</h2>
-        <p key={current.id} className="text-lg md:text-xl leading-relaxed mb-11 text-ink-900 animate-fade-in">
+        <div className="text-[100px] text-ink-900/15 leading-[0.6] mb-5 font-serif">
+          &ldquo;
+        </div>
+        <h2 className="font-display mb-11 text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
+          Parents love YK-Virtual
+        </h2>
+        <p
+          key={current.id}
+          className="text-lg md:text-xl leading-relaxed mb-11 text-ink-900 animate-fade-in"
+        >
           {current.text}
         </p>
-        <div className="text-ink-900 text-xl mb-6 tracking-[2px]" aria-hidden="true">★★★★★</div>
-        <div className="text-lg font-bold text-brand-navy mb-1">{current.name}</div>
-        {current.location ? <div className="text-sm text-ink-700">{current.location}</div> : null}
+        <div
+          className="text-ink-900 text-xl mb-6 tracking-[2px]"
+          aria-hidden="true"
+        >
+          ★★★★★
+        </div>
+        <div className="text-lg font-bold text-brand-navy mb-1">
+          {current.name}
+        </div>
+        {current.location ? (
+          <div className="text-sm text-ink-700">{current.location}</div>
+        ) : null}
 
         {items.length > 1 && (
           <div className="flex justify-center gap-2 mt-11">
@@ -68,7 +84,7 @@ export function TestimonialCarousel({ items }: { items: CarouselItem[] }) {
                 aria-current={i === active ? "true" : undefined}
                 className={cn(
                   "h-2 rounded-full transition-all cursor-pointer",
-                  i === active ? "w-6 bg-white" : "w-2 bg-white/40"
+                  i === active ? "w-6 bg-white" : "w-2 bg-white/40",
                 )}
               />
             ))}

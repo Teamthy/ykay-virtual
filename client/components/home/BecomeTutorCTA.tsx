@@ -10,7 +10,7 @@ export function BecomeTutorCTA() {
   return (
     <section className="relative overflow-hidden">
       <Image
-        src="/hero/nuvora-plus.jpg"
+        src="/hero/plus.jpg"
         alt=""
         fill
         priority={false}
@@ -39,9 +39,9 @@ export function BecomeTutorCTA() {
           </h2>
 
           <p className="mx-auto mt-6 max-w-2xl text-white/80 md:text-base">
-            Join NUVORA&apos;s community of vetted tutors. Set your own rates and schedule,
-            teach online or in person, and get paid weekly - while we handle the
-            bookings, payments and students for you.
+            Join YK-Virtual&apos;s community of vetted tutors. Set your own
+            rates and schedule, teach online or in person, and get paid weekly -
+            while we handle the bookings, payments and students for you.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

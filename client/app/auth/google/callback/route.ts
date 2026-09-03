@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // 1. Browser is redirected here by Google with ?code=&state=
 // 2. We exchange code+state with the API server-side (never expose the
 //    token to the browser), getting the raw session token back.
-// 3. We set the nuvora_session httpOnly cookie on this host and send the user
+// 3. We set the ykv_session httpOnly cookie on this host and send the user
 //    to their dashboard (or onboarding for fresh accounts).
 
 const API_BASE =
@@ -19,7 +19,10 @@ export async function GET(request: Request) {
 
   const fail = (reason: string) =>
     NextResponse.redirect(
-      new URL(`/auth/google/error?reason=${encodeURIComponent(reason)}`, url.origin)
+      new URL(
+        `/auth/google/error?reason=${encodeURIComponent(reason)}`,
+        url.origin,
+      ),
     );
 
   if (error || !code || !state) {
@@ -35,9 +38,13 @@ export async function GET(request: Request) {
     });
     if (!res.ok) {
       const body = await res.json().catch(() => null);
-      return fail(body?.error?.message || "Google sign-in could not be completed");
+      return fail(
+        body?.error?.message || "Google sign-in could not be completed",
+      );
     }
-    const body = (await res.json()) as { data?: { token?: string; user?: { onboarded?: boolean } } };
+    const body = (await res.json()) as {
+      data?: { token?: string; user?: { onboarded?: boolean } };
+    };
     const token = body.data?.token;
     const user = body.data?.user;
     if (!token) {
@@ -46,7 +53,7 @@ export async function GET(request: Request) {
 
     const dest = user?.onboarded ? "/dashboard" : "/onboarding?step=3";
     const response = NextResponse.redirect(new URL(dest, url.origin));
-    response.cookies.set("nuvora_session", token, {
+    response.cookies.set("ykv_session", token, {
       httpOnly: true,
       sameSite: "lax",
       secure: true,

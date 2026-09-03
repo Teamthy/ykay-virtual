@@ -1,7 +1,7 @@
 // Package school â€” virtual-school domain. Pillar 1 is the academic calendar:
 // sessions (school years) and terms, which cohorts, timetables, gradebooks
 // and transcripts all anchor to. A nil InstitutionID marks the platform-wide
-// NUVORA virtual school; a set InstitutionID scopes the calendar to one
+// YK-Virtual virtual school; a set InstitutionID scopes the calendar to one
 // partner school (B2B).
 package school
 

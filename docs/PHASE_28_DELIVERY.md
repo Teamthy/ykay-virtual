@@ -9,6 +9,7 @@ Delivery method: git bundle `ykay-virtual-phase-28.bundle`
 ## What was delivered
 
 ### 1. All programmes/cohorts pages built & routing end-to-end
+
 The full user journey now works with real data in dev mode (and any env):
 
 - **Home Popular programmes / Upcoming cohorts** → **`/programmes`** list →
@@ -30,20 +31,22 @@ The full user journey now works with real data in dev mode (and any env):
   helpers moved to a new server-safe `lib/server-api.ts`.
 
 ### 2. All roles seeded — one account per dashboard
+
 Password for all: **`password123`**
 
-| Email | Role | Dashboard |
-|---|---|---|
-| `admin@nuvora.com` | SUPER_ADMIN | `/admin/vetting` |
-| `parent@nuvora.com` | PARENT (+ learner Ada Bello) | `/dashboard` |
-| `tutor@nuvora.com` | TUTOR | `/tutor-dashboard` |
-| `student@nuvora.com` | STUDENT | `/student-dashboard` |
+| Email                     | Role                         | Dashboard            |
+| ------------------------- | ---------------------------- | -------------------- |
+| `admin@ykaycollege.com`   | SUPER_ADMIN                  | `/admin/vetting`     |
+| `parent@ykaycollege.com`  | PARENT (+ learner Ada Bello) | `/dashboard`         |
+| `tutor@ykaycollege.com`   | TUTOR                        | `/tutor-dashboard`   |
+| `student@ykaycollege.com` | STUDENT                      | `/student-dashboard` |
 
 Seeded in memory mode (`seedDemoUsers`) **and** in Postgres via migration
 `000019_demo_users` (bcrypt-hashed, email-verified, role-assigned; down
 migration provided). All four verified logging in with correct roles.
 
 ### 3. Hero unification — top-left h1, no blue bg
+
 - `PageHero` rebuilt: plain cream surface, **top-left aligned** breadcrumbs +
   Anton h1 + subtitle + optional CTAs — no navy/blue band, no centred layout.
 - Applied automatically to **every page using PageHero** (programmes, cohorts,
@@ -52,14 +55,16 @@ migration provided). All four verified logging in with correct roles.
   online-classes…). The how-it-works blue background is gone.
 
 ### 4. "Meet our tutors" → Preline Team template
+
 `TutorsShowcase` (home-tutoring + hometutors) rebuilt on the team grid:
 avatar + name + **verified chip** + role + gold-star rating rows in a
 2–3 column grid, ending with a **"Browse all tutors → /tutors"** card (the
 "We are hiring!" treatment).
 
 ### 5. "We deliver the best results, period." → Preline Approach template
+
 `ResultsSection` + old icon-grid merged into one `ApproachSection`: left
-16:9 image, right **numbered timeline** (NUVORA Insights™ Assessment →
+16:9 image, right **numbered timeline** (YK-Virtual Insights™ Assessment →
 Progress Reports & Reviews) with connector line, gold **"Get started today"**
 CTA. Home section order preserved.
 

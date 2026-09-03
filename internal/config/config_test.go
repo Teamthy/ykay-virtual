@@ -30,9 +30,9 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 	prodOK := map[string]string{
 		"ENVIRONMENT":          "production",
 		"PORT":                 "443",
-		"DATABASE_URL":         "postgres://u:p@prod.example.com:5432/nuvora?sslmode=require",
-		"SITE_URL":             "https://app.nuvora.com",
-		"ALLOWED_ORIGINS":      "https://app.nuvora.com",
+		"DATABASE_URL":         "postgres://u:p@prod.example.com:5432/ykvirtual?sslmode=require",
+		"SITE_URL":             "https://app.virtual.ykaycollege.com",
+		"ALLOWED_ORIGINS":      "https://app.virtual.ykaycollege.com",
 		"GOOGLE_CLIENT_ID":     "id",
 		"GOOGLE_CLIENT_SECRET": "secret",
 		"PAYMENT_PROVIDER":     "PAYSTACK",

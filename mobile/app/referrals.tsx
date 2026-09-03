@@ -47,11 +47,12 @@ export default function ReferralsScreen() {
 
   const share = async () => {
     if (!code) return;
-    const site = process.env.EXPO_PUBLIC_SITE_URL ?? "https://nuvora.com";
+    const site =
+      process.env.EXPO_PUBLIC_SITE_URL ?? "https://virtual.ykaycollege.com";
     const link = `${site}${code.share_link}`;
     try {
       await Share.share({
-        message: `Join NUVORA with my invite code ${code.code} — ${link}`,
+        message: `Join YK-Virtual with my invite code ${code.code} — ${link}`,
       });
     } catch {
       // user dismissed share sheet
@@ -67,7 +68,10 @@ export default function ReferralsScreen() {
       Alert.alert("Applied", "Referral code applied to your account.");
       setApplyInput("");
     } catch (e) {
-      Alert.alert("Could not apply", e instanceof Error ? e.message : "Check the code and try again.");
+      Alert.alert(
+        "Could not apply",
+        e instanceof Error ? e.message : "Check the code and try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -85,11 +89,22 @@ export default function ReferralsScreen() {
         <AppText variant="label" style={{ color: colors.white, opacity: 0.7 }}>
           YOUR INVITE CODE
         </AppText>
-        <AppText style={{ fontSize: 34, fontWeight: "800", color: colors.gold, letterSpacing: 2, marginTop: 6 }}>
+        <AppText
+          style={{
+            fontSize: 34,
+            fontWeight: "800",
+            color: colors.gold,
+            letterSpacing: 2,
+            marginTop: 6,
+          }}
+        >
           {code?.code ?? "———"}
         </AppText>
         {code ? (
-          <AppText variant="bodySm" style={{ color: colors.white, opacity: 0.9, marginTop: 6 }}>
+          <AppText
+            variant="bodySm"
+            style={{ color: colors.white, opacity: 0.9, marginTop: 6 }}
+          >
             Reward: {formatNaira(code.reward)} {code.currency}
             {code.is_active ? "" : " · inactive"}
           </AppText>
@@ -100,7 +115,10 @@ export default function ReferralsScreen() {
 
       <Card padded style={{ marginTop: 14 }}>
         <AppText variant="h3">Have a friend's code?</AppText>
-        <AppText variant="bodySm" style={{ color: colors.ink[600], marginTop: 4, lineHeight: 19 }}>
+        <AppText
+          variant="bodySm"
+          style={{ color: colors.ink[600], marginTop: 4, lineHeight: 19 }}
+        >
           Apply it to your account.
         </AppText>
         <View style={{ height: 8 }} />
@@ -123,7 +141,10 @@ export default function ReferralsScreen() {
       </AppText>
       {refs.length === 0 ? (
         <Card padded>
-          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center" }}>
+          <AppText
+            variant="bodySm"
+            style={{ color: colors.ink[500], textAlign: "center" }}
+          >
             No referrals yet. Share your invite code to start earning.
           </AppText>
         </Card>
@@ -132,8 +153,12 @@ export default function ReferralsScreen() {
           <Card key={r.id} padded style={styles.row}>
             <View style={{ flex: 1 }}>
               <AppText variant="h3">{formatNaira(r.reward_amount)}</AppText>
-              <AppText variant="caption" style={{ color: colors.ink[400], marginTop: 2 }}>
-                {r.status} · {new Date(r.created_at).toLocaleDateString("en-NG")}
+              <AppText
+                variant="caption"
+                style={{ color: colors.ink[400], marginTop: 2 }}
+              >
+                {r.status} ·{" "}
+                {new Date(r.created_at).toLocaleDateString("en-NG")}
               </AppText>
             </View>
             <Ionicons
@@ -150,7 +175,13 @@ export default function ReferralsScreen() {
 
 const makeStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-  heroCard: { backgroundColor: colors.navy },
-  sectionTitle: { color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginTop: 24, marginBottom: 10 },
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-});
+    heroCard: { backgroundColor: colors.navy },
+    sectionTitle: {
+      color: colors.goldDark,
+      letterSpacing: 1.1,
+      fontSize: 12,
+      marginTop: 24,
+      marginBottom: 10,
+    },
+    row: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  });

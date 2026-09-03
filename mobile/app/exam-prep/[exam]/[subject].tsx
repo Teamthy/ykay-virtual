@@ -29,19 +29,29 @@ export default function ExamPrepSubjectScreen() {
 
   const exam = getExam(examSlug ?? "");
   const subject = getSubject(subjectSlug ?? "");
-  const valid = Boolean(exam && subject && exam.subjects.includes(subject.slug));
+  const valid = Boolean(
+    exam && subject && exam.subjects.includes(subject.slug),
+  );
 
   if (!valid) {
     return (
       <Screen scroll>
         <ScreenHeader eyebrow="Exam preparation" title="Not found" />
         <Card padded>
-          <AppText variant="bodySm" style={{ color: colors.ink[500], textAlign: "center" }}>
+          <AppText
+            variant="bodySm"
+            style={{ color: colors.ink[500], textAlign: "center" }}
+          >
             This exam subject combination isn't in the catalogue.
           </AppText>
         </Card>
         <View style={{ marginTop: 16 }}>
-          <Button label="Back to exam preparation" variant="secondary" full onPress={() => router.replace("/exam-prep" as never)} />
+          <Button
+            label="Back to exam preparation"
+            variant="secondary"
+            full
+            onPress={() => router.replace("/exam-prep" as never)}
+          />
         </View>
       </Screen>
     );
@@ -62,35 +72,67 @@ export default function ExamPrepSubjectScreen() {
 
       {/* About this paper */}
       <Card padded style={styles.card}>
-        <AppText variant="h3" style={styles.cardTitle}>About this paper</AppText>
-        <AppText variant="caption" style={{ color: colors.ink[500], marginTop: 4 }}>
+        <AppText variant="h3" style={styles.cardTitle}>
+          About this paper
+        </AppText>
+        <AppText
+          variant="caption"
+          style={{ color: colors.ink[500], marginTop: 4 }}
+        >
           {exam!.level} · {exam!.format}
         </AppText>
         <View style={{ height: 10 }} />
         {exam!.structure.map((line) => (
           <View key={line} style={styles.checkRow}>
-            <Ionicons name="checkmark-circle" size={16} color={colors.success} />
-            <AppText variant="bodySm" style={{ color: colors.ink[700], marginLeft: 8, flex: 1, lineHeight: 19 }}>
+            <Ionicons
+              name="checkmark-circle"
+              size={16}
+              color={colors.success}
+            />
+            <AppText
+              variant="bodySm"
+              style={{
+                color: colors.ink[700],
+                marginLeft: 8,
+                flex: 1,
+                lineHeight: 19,
+              }}
+            >
               {line}
             </AppText>
           </View>
         ))}
         <View style={styles.gradingBox}>
-          <AppText variant="bodySm" style={{ color: colors.ink[700], lineHeight: 19 }}>{exam!.grading}</AppText>
+          <AppText
+            variant="bodySm"
+            style={{ color: colors.ink[700], lineHeight: 19 }}
+          >
+            {exam!.grading}
+          </AppText>
         </View>
       </Card>
 
       {/* What the subject covers */}
       <Card padded style={styles.card}>
-        <AppText variant="h3" style={styles.cardTitle}>What {subject!.name} covers</AppText>
-        <AppText variant="bodySm" style={{ color: colors.ink[700], marginTop: 6, lineHeight: 20 }}>
+        <AppText variant="h3" style={styles.cardTitle}>
+          What {subject!.name} covers
+        </AppText>
+        <AppText
+          variant="bodySm"
+          style={{ color: colors.ink[700], marginTop: 6, lineHeight: 20 }}
+        >
           {subject!.overview}
         </AppText>
         <View style={styles.topics}>
           {subject!.topics.map((topic) => (
             <View key={topic} style={styles.topicChip}>
               <View style={styles.topicDot} />
-              <AppText variant="caption" style={{ color: colors.ink[700], fontWeight: "600" }}>{topic}</AppText>
+              <AppText
+                variant="caption"
+                style={{ color: colors.ink[700], fontWeight: "600" }}
+              >
+                {topic}
+              </AppText>
             </View>
           ))}
         </View>
@@ -98,12 +140,26 @@ export default function ExamPrepSubjectScreen() {
 
       {/* Skills */}
       <Card padded style={styles.card}>
-        <AppText variant="h3" style={styles.cardTitle}>Skills the paper rewards</AppText>
+        <AppText variant="h3" style={styles.cardTitle}>
+          Skills the paper rewards
+        </AppText>
         <View style={{ marginTop: 6 }}>
           {subject!.skills.map((skill) => (
             <View key={skill} style={styles.checkRow}>
-              <Ionicons name="checkmark-circle" size={16} color={colors.success} />
-              <AppText variant="bodySm" style={{ color: colors.ink[700], marginLeft: 8, flex: 1, lineHeight: 19 }}>
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color={colors.success}
+              />
+              <AppText
+                variant="bodySm"
+                style={{
+                  color: colors.ink[700],
+                  marginLeft: 8,
+                  flex: 1,
+                  lineHeight: 19,
+                }}
+              >
                 {skill}
               </AppText>
             </View>
@@ -111,9 +167,11 @@ export default function ExamPrepSubjectScreen() {
         </View>
       </Card>
 
-      {/* How NUVORA prepares you */}
+      {/* How YK-Virtual prepares you */}
       <Card padded style={styles.navyCard}>
-        <AppText variant="h3" style={{ color: colors.white }}>How NUVORA prepares you</AppText>
+        <AppText variant="h3" style={{ color: colors.white }}>
+          How YK-Virtual prepares you
+        </AppText>
         <View style={{ marginTop: 10 }}>
           {[
             "Vetted subject specialists matched to your syllabus",
@@ -121,37 +179,68 @@ export default function ExamPrepSubjectScreen() {
             "Timed mocks with feedback and a predicted-grade view",
             "Weekly progress reports for parents",
           ].map((line) => (
-            <AppText key={line} variant="bodySm" style={{ color: "rgba(255,255,255,0.85)", marginTop: 6, lineHeight: 19 }}>
+            <AppText
+              key={line}
+              variant="bodySm"
+              style={{
+                color: "rgba(255,255,255,0.85)",
+                marginTop: 6,
+                lineHeight: 19,
+              }}
+            >
               · {line}
             </AppText>
           ))}
         </View>
         <View style={{ height: 14 }} />
-        <Button label={`Explore ${subject!.name} tutors`} full onPress={() => router.push(`/subjects/${subject!.catalogueSlug}` as never)} />
+        <Button
+          label={`Explore ${subject!.name} tutors`}
+          full
+          onPress={() =>
+            router.push(`/subjects/${subject!.catalogueSlug}` as never)
+          }
+        />
         <View style={{ height: 10 }} />
         <Button
           label="Join a revision cohort"
           variant="secondary"
           full
-          onPress={() => void Linking.openURL("https://nuvora.com/programmes")}
+          onPress={() =>
+            void Linking.openURL("https://virtual.ykaycollege.com/programmes")
+          }
         />
       </Card>
 
       {/* Other subjects */}
       {related.length > 0 && (
         <View style={styles.related}>
-          <AppText variant="label" style={{ color: colors.goldDark, letterSpacing: 1.1, fontSize: 12, marginBottom: 10 }}>
+          <AppText
+            variant="label"
+            style={{
+              color: colors.goldDark,
+              letterSpacing: 1.1,
+              fontSize: 12,
+              marginBottom: 10,
+            }}
+          >
             OTHER {exam!.code} SUBJECTS
           </AppText>
           <View style={styles.topics}>
             {related.map((r) => (
               <Card
                 key={r.slug}
-                onPress={() => router.push(`/exam-prep/${exam!.slug}/${r.slug}` as never)}
+                onPress={() =>
+                  router.push(`/exam-prep/${exam!.slug}/${r.slug}` as never)
+                }
                 padded
                 style={styles.relChip}
               >
-                <AppText variant="caption" style={{ color: colors.navy, fontWeight: "700" }}>{r.name}</AppText>
+                <AppText
+                  variant="caption"
+                  style={{ color: colors.navy, fontWeight: "700" }}
+                >
+                  {r.name}
+                </AppText>
               </Card>
             ))}
           </View>
@@ -170,29 +259,38 @@ export default function ExamPrepSubjectScreen() {
 
 const makeStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-  card: { marginBottom: 12 },
-  cardTitle: { color: colors.navy },
-  checkRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 8 },
-  gradingBox: {
-    backgroundColor: colors.ink[50],
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 6,
-  },
-  topics: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  topicChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.ink[100],
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: colors.white,
-  },
-  topicDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.goldDark },
-  navyCard: { backgroundColor: colors.navy, marginBottom: 12 },
-  related: { marginTop: 8 },
-  relChip: { paddingVertical: 8, paddingHorizontal: 12 },
-});
+    card: { marginBottom: 12 },
+    cardTitle: { color: colors.navy },
+    checkRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      marginBottom: 8,
+    },
+    gradingBox: {
+      backgroundColor: colors.ink[50],
+      borderRadius: 12,
+      padding: 12,
+      marginTop: 6,
+    },
+    topics: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+    topicChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      borderWidth: 1,
+      borderColor: colors.ink[100],
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: colors.white,
+    },
+    topicDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.goldDark,
+    },
+    navyCard: { backgroundColor: colors.navy, marginBottom: 12 },
+    related: { marginTop: 8 },
+    relChip: { paddingVertical: 8, paddingHorizontal: 12 },
+  });

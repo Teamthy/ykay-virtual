@@ -120,7 +120,7 @@ func (s *OnboardingService) EnsureOwnProfile(ctx context.Context, userID uuid.UU
 		firstName = "Learner"
 	}
 	if strings.TrimSpace(lastName) == "" {
-		lastName = "NUVORA"
+		lastName = "YK-Virtual"
 	}
 	uid := userID
 	p := &identity.StudentProfile{

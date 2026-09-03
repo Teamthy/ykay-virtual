@@ -6,7 +6,7 @@ Scope: the full production-polish tranche — every dashboard brought to an
 industry-standard shell, all known runtime errors fixed (plus two new
 production bugs found and fixed), role-routed/synced dashboards, the
 suggestions engine, the first-time 3-page wizard (web + mobile), and
-"NUVORA on the go" mobile completeness.
+"YK-Virtual on the go" mobile completeness.
 
 ## Runtime errors — found and fixed
 
@@ -16,7 +16,7 @@ suggestions engine, the first-time 3-page wizard (web + mobile), and
    `(res.data?.data ?? [])`; MessageCenter's optimistic update now uses
    the correct unwrapped query shape.
 2. **Recommendations shelf crash** (`Cannot read properties of undefined
-   (reading 'slug')` → then `null.slice`): the raw tutor DTO leaked
+(reading 'slug')` → then `null.slice`): the raw tutor DTO leaked
    `subjects: null` from the PG search path. Fixed server-side
    (RecommendationService now maps a clean API DTO, never null) +
    client-side defaults.
@@ -69,7 +69,7 @@ suggestions engine, the first-time 3-page wizard (web + mobile), and
   wizard or home automatically.
 - Playwright: dedicated wizard test walks all 3 steps to the dashboard.
 
-## Mobile — "NUVORA on the go" completeness
+## Mobile — "YK-Virtual on the go" completeness
 
 - New `recommendations.tsx` screen + "For you" hub card; wizard; session-
   aware welcome; all routes registered. `tsc --noEmit` clean.

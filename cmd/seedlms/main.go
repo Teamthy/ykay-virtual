@@ -26,8 +26,8 @@ import (
 )
 
 const (
-	defaultTutorEmail = "local.tutor@nuvora.test"
-	demoStudentEmail  = "local.student@nuvora.test"
+	defaultTutorEmail = "local.tutor@ykvirtual.test"
+	demoStudentEmail  = "local.student@ykvirtual.test"
 	progSlug          = "utme-mastery-lms"
 	cohortSlug        = "utme-2026-lms-demo"
 	lessonTitle       = "Algebra foundations (recorded)"
@@ -61,7 +61,7 @@ func main() {
 
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://nuvora:nuvora@localhost:5432/nuvora?sslmode=disable"
+		dsn = "postgres://ykvirtual:ykvirtual@localhost:5432/ykvirtual?sslmode=disable"
 	}
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -121,8 +121,8 @@ func main() {
 			user_id, slug, display_name, bio, headline, years_experience,
 			status, is_public, timezone, accepts_online, accepts_in_person, currency
 		)
-		SELECT $1::uuid, 'vetted-tutor', 'Vetted NUVORA Tutor',
-			'Vetted NUVORA tutor — fully functional LMS fixture (demo lesson, study material, assignments, homework notes).',
+		SELECT $1::uuid, 'vetted-tutor', 'Vetted YK-Virtual Tutor',
+			'Vetted YK-Virtual tutor — fully functional LMS fixture (demo lesson, study material, assignments, homework notes).',
 			'Mathematics · UTME', 5, 'APPROVED', TRUE, 'Africa/Lagos', TRUE, TRUE, 'NGN'
 		WHERE NOT EXISTS (SELECT 1 FROM tutor_profiles WHERE user_id = $1::uuid)
 		RETURNING id::text`, userID).Scan(&tutorID)
@@ -140,7 +140,7 @@ func main() {
 			approved_at = COALESCE(approved_at, NOW()),
 			updated_at = NOW()
 		WHERE id = $1::uuid`, tutorID,
-		"Vetted NUVORA tutor — fully functional LMS fixture (demo lesson, study material, assignments, homework notes).",
+		"Vetted YK-Virtual tutor — fully functional LMS fixture (demo lesson, study material, assignments, homework notes).",
 		"Mathematics · UTME")
 
 	// Teaching scope: Mathematics (create the subject if the local DB lacks it).
@@ -213,7 +213,7 @@ func main() {
 		if spID == "" {
 			err = db.QueryRow(`
 				INSERT INTO student_profiles (user_id, first_name, last_name, current_level, school_name, guardian_consent, timezone)
-				VALUES ($1::uuid, 'Demo', 'Student', 'SSS2', 'NUVORA Demo School', TRUE, 'Africa/Lagos')
+				VALUES ($1::uuid, 'Demo', 'Student', 'SSS2', 'YK-Virtual Demo School', TRUE, 'Africa/Lagos')
 				RETURNING id::text`, studentUserID).Scan(&spID)
 			if err != nil {
 				log.Fatalf("demo student profile: %v", err)
@@ -294,7 +294,7 @@ func main() {
 		seedPaymentTestCohort(db, tutorID)
 	}
 
-	fmt.Println("NUVORA vetted-tutor LMS pack seeded")
+	fmt.Println("YK-Virtual vetted-tutor LMS pack seeded")
 	fmt.Println("database:", dsn)
 	fmt.Println("tutor login:", email)
 	if password != "" {

@@ -567,7 +567,7 @@ func (s *SupportService) OpenTicketWithMeta(ctx context.Context, userID *uuid.UU
 			nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			body := "From: " + email + "\nCategory: " + category + " / " + severity + "\n\n" + message
-			if err := s.notifier.NotifyAdmin(nctx, "NUVORA support: "+subject, body); err != nil {
+			if err := s.notifier.NotifyAdmin(nctx, "YK-Virtual support: "+subject, body); err != nil {
 				slog.Error("whatsapp ticket notify failed", "subject", subject, "error", err)
 			}
 		}(ticket.Subject, ticket.Email, ticket.Category, ticket.Severity, ticket.Message)
@@ -1458,7 +1458,7 @@ func (s *AdminService) PayoutViaPaystack(ctx context.Context, adminID, payoutID 
 		}
 	}
 
-	reason := "NUVORA tutor payout " + p.ID.String()
+	reason := "YK-Virtual tutor payout " + p.ID.String()
 	res, err := s.transfers.InitiateTransfer(ctx, p.Amount, p.Currency, recipientCode, p.ID.String(), reason)
 	if err != nil {
 		return false, err

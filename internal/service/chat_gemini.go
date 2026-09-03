@@ -20,7 +20,7 @@ import (
 //
 // Safety notes:
 //   - PII is redacted by ChatService before it reaches this provider.
-//   - The system prompt constrains the bot to NUVORA topics and instructs it
+//   - The system prompt constrains the bot to YK-Virtual topics and instructs it
 //     to defer to a human for payments/refunds/account actions.
 //   - Generation is capped (temperature 0.4, maxOutputTokens 500).
 
@@ -28,7 +28,7 @@ const geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/
 
 // FallbackReply — canned assistant message when the AI budget is exhausted
 // or the provider is unavailable (G4.3: degrade, never fail the chat).
-const FallbackReply = "I'm briefly unavailable right now — a human from the NUVORA team will pick this up shortly. You can also email support@nuvora.com."
+const FallbackReply = "I'm briefly unavailable right now — a human from the YK-Virtual team will pick this up shortly. You can also email support@ykaycollege.com."
 
 // AIGuard — per-request token cap + daily budget tracker (G4.3).
 // The counter is process-local (fine for a single-instance pilot; move to
@@ -111,7 +111,7 @@ func (g *GeminiProvider) Reply(ctx context.Context, history []chat.Message, grou
 		return "", fmt.Errorf("gemini: no API key configured")
 	}
 
-	system := "You are Nuvora, the friendly AI assistant for NUVORA, a Nigerian/British " +
+	system := "You are YK-Virtual, the friendly AI assistant for YK-Virtual, a Nigerian/British " +
 		"curriculum learning platform (tutors, programmes, cohorts, exam prep). " +
 		"Be warm, concise and accurate. Answer ONLY from the provided context; if the " +
 		"answer is not in the context, say you'll check with the team. Never invent " +

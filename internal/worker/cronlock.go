@@ -29,7 +29,7 @@ func (l *CronLock) TryLock(ctx context.Context, name string, ttl time.Duration) 
 	if l == nil || l.client == nil {
 		return func() {}, true
 	}
-	key := "nuvora:cron:lock:" + name
+	key := "ykvirtual:cron:lock:" + name
 	got, err := l.client.SetNX(ctx, key, "1", ttl).Result()
 	if err != nil || !got {
 		return func() {}, false

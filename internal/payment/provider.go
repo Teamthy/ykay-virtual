@@ -345,7 +345,7 @@ func (p *FlutterwaveProvider) CreatePaymentLinkWithCallback(amount float64, curr
 		if site := strings.TrimRight(os.Getenv("SITE_URL"), "/"); site != "" {
 			redirect = site + "/dashboard"
 		} else {
-			redirect = "https://nuvora.com/dashboard"
+			redirect = "https://virtual.ykaycollege.com/dashboard"
 		}
 	}
 	body, _ := json.Marshal(map[string]any{

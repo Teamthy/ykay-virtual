@@ -45,7 +45,7 @@ func scanOrder(row interface{ Scan(...any) error }) (*payment.Order, error) {
 
 func (r *OrderRepo) Create(ctx context.Context, o *payment.Order) error {
 	if o.OrderNumber == "" {
-		// generate_order_number() → 'NUVORA-YYYYMMDD-XXXXXXXX' (migrations 000007 + 000017)
+		// generate_order_number() → 'YK-Virtual-YYYYMMDD-XXXXXXXX' (migrations 000007 + 000017)
 		if err := r.db.QueryRowContext(ctx, "SELECT generate_order_number()").Scan(&o.OrderNumber); err != nil {
 			return fmt.Errorf("generate order number: %w", err)
 		}

@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColorScheme } from "react-native";
 import { colors, darkColors, type ThemeColors } from "@/src/lib/theme";
@@ -19,7 +26,7 @@ type ThemeContextValue = {
   setMode: (m: ThemeMode) => void;
 };
 
-const STORAGE_KEY = "nuvora_theme_mode";
+const STORAGE_KEY = "ykv_theme_mode";
 
 const ThemeContext = createContext<ThemeContextValue>({
   colors,
@@ -48,10 +55,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const isDark = mode === "dark" || (mode === "system" && system === "dark");
   const value = useMemo<ThemeContextValue>(
     () => ({ colors: isDark ? darkColors : colors, isDark, mode, setMode }),
-    [isDark, mode]
+    [isDark, mode],
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme(): ThemeContextValue {

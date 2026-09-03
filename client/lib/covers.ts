@@ -15,13 +15,14 @@ export const COVERS = [
   "/hero/utme.jpg",
   "/hero/test-prep.jpg",
   "/hero/international.jpg",
-  "/hero/nuvora-plus.jpg",
+  "/hero/plus.jpg",
   "/hero/entrance-exam.jpg",
 ] as const;
 
 export function coverFor(key: string): string {
   let h = 0;
-  for (let i = 0; i < key.length; i++) h = (h + key.charCodeAt(i) * (i + 1)) % COVERS.length;
+  for (let i = 0; i < key.length; i++)
+    h = (h + key.charCodeAt(i) * (i + 1)) % COVERS.length;
   return COVERS[h];
 }
 

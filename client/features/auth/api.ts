@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 
-// Auth API - session-cookie based (httpOnly `nuvora_session` cookie).
+// Auth API - session-cookie based (httpOnly `ykv_session` cookie).
 // The cookie is set/cleared by the server; the client never touches the raw
 // token. `credentials: "include"` is set by apiFetch so cookies flow on
 // same-origin and cross-origin (dev) requests.
@@ -65,7 +65,11 @@ export type LoginResult =
  * Platform admins get `{ mfa_required: true, email, user }` — they must then
  * confirm the emailed code via `confirmMFA` before a session is issued.
  */
-export async function login(email: string, password: string, rememberMe = true): Promise<LoginResult> {
+export async function login(
+  email: string,
+  password: string,
+  rememberMe = true,
+): Promise<LoginResult> {
   const res = await apiFetch<LoginResult>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password, remember_me: rememberMe }),
@@ -74,7 +78,11 @@ export async function login(email: string, password: string, rememberMe = true):
 }
 
 /** Confirm the emailed MFA code for an admin login (issues the session). */
-export async function confirmMFA(email: string, code: string, rememberMe = true): Promise<CurrentUser> {
+export async function confirmMFA(
+  email: string,
+  code: string,
+  rememberMe = true,
+): Promise<CurrentUser> {
   const res = await apiFetch<CurrentUser>("/auth/mfa/confirm", {
     method: "POST",
     body: JSON.stringify({ email, code, remember_me: rememberMe }),
@@ -97,7 +105,9 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 }
 
 export function isAdmin(user: CurrentUser | null): boolean {
-  return !!user?.roles?.some((r) => r === "SUPER_ADMIN" || r === "ACADEMIC_ADMIN");
+  return !!user?.roles?.some(
+    (r) => r === "SUPER_ADMIN" || r === "ACADEMIC_ADMIN",
+  );
 }
 
 export function isTutor(user: CurrentUser | null): boolean {
@@ -113,11 +123,16 @@ export async function resendVerificationEmail(email: string): Promise<void> {
   });
 }
 
-export async function confirmVerification(token: string): Promise<{ verified: boolean; status: string }> {
-  const res = await apiFetch<{ verified: boolean; status: string }>("/auth/verify-email/confirm", {
-    method: "POST",
-    body: JSON.stringify({ token }),
-  });
+export async function confirmVerification(
+  token: string,
+): Promise<{ verified: boolean; status: string }> {
+  const res = await apiFetch<{ verified: boolean; status: string }>(
+    "/auth/verify-email/confirm",
+    {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    },
+  );
   return res.data;
 }
 
@@ -128,7 +143,10 @@ export async function requestPasswordReset(email: string): Promise<void> {
   });
 }
 
-export async function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+export async function confirmPasswordReset(
+  token: string,
+  newPassword: string,
+): Promise<void> {
   await apiFetch("/auth/password-reset/confirm", {
     method: "POST",
     body: JSON.stringify({ token, new_password: newPassword }),
@@ -138,10 +156,16 @@ export async function confirmPasswordReset(token: string, newPassword: string): 
 // --- Magic-link login (phase 18) ---
 
 export async function requestLoginCode(email: string): Promise<void> {
-  await apiFetch("/auth/login-code/request", { method: "POST", body: JSON.stringify({ email }) });
+  await apiFetch("/auth/login-code/request", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
 }
 
-export async function confirmLoginCode(email: string, code: string): Promise<CurrentUser> {
+export async function confirmLoginCode(
+  email: string,
+  code: string,
+): Promise<CurrentUser> {
   const res = await apiFetch<CurrentUser>("/auth/login-code/confirm", {
     method: "POST",
     body: JSON.stringify({ email, code }),
@@ -151,8 +175,13 @@ export async function confirmLoginCode(email: string, code: string): Promise<Cur
 
 // --- Google OAuth (phase 29) ---
 
-export async function getGoogleAuthURL(): Promise<{ url: string; state: string }> {
-  const res = await apiFetch<{ url: string; state: string }>("/auth/google/url");
+export async function getGoogleAuthURL(): Promise<{
+  url: string;
+  state: string;
+}> {
+  const res = await apiFetch<{ url: string; state: string }>(
+    "/auth/google/url",
+  );
   return res.data;
 }
 
@@ -166,10 +195,16 @@ export async function setPrimaryRole(role: string): Promise<string[]> {
   return res.data.roles;
 }
 
-export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
   await apiFetch("/auth/me/password", {
     method: "POST",
-    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
   });
 }
 
@@ -197,7 +232,9 @@ export type SessionContext = {
 
 export async function getSessionContext(): Promise<SessionContext | null> {
   try {
-    const res = await apiFetch<SessionContext>("/auth/me/context", { cache: "no-store" });
+    const res = await apiFetch<SessionContext>("/auth/me/context", {
+      cache: "no-store",
+    });
     return res.data;
   } catch {
     return null;

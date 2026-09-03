@@ -14,7 +14,12 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "Segoe UI, Helvetica, Arial, sans-serif" }}>
+      <body
+        style={{
+          margin: 0,
+          fontFamily: "Segoe UI, Helvetica, Arial, sans-serif",
+        }}
+      >
         <main
           style={{
             minHeight: "100vh",
@@ -26,8 +31,15 @@ export default function GlobalError({
           }}
         >
           <div style={{ maxWidth: 480, textAlign: "center" }}>
-            <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: 4, color: "#013920" }}>
-              NUVORA
+            <div
+              style={{
+                fontSize: 28,
+                fontWeight: 800,
+                letterSpacing: 4,
+                color: "#013920",
+              }}
+            >
+              YK-Virtual
             </div>
             <h1 style={{ fontSize: 22, color: "#111111", marginTop: 24 }}>
               Something went wrong
@@ -36,7 +48,14 @@ export default function GlobalError({
               A page update may have been released while you were browsing.
               Reloading usually fixes this.
             </p>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                justifyContent: "center",
+                marginTop: 24,
+              }}
+            >
               <button
                 onClick={() => window.location.reload()}
                 style={{
@@ -65,7 +84,9 @@ export default function GlobalError({
               </button>
             </div>
             {error.digest ? (
-              <p style={{ color: "#999999", fontSize: 12, marginTop: 24 }}>Reference: {error.digest}</p>
+              <p style={{ color: "#999999", fontSize: 12, marginTop: 24 }}>
+                Reference: {error.digest}
+              </p>
             ) : null}
           </div>
         </main>

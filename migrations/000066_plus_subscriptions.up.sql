@@ -1,6 +1,6 @@
--- 000066_plus_subscriptions.up.sql — NUVORA Plus premium tier.
+-- 000066_plus_subscriptions.up.sql — YK-Virtual Plus premium tier.
 --
--- Turns the marketing-only "NUVORA Plus" page into a real, sellable premium
+-- Turns the marketing-only "YK-Virtual Plus" page into a real, sellable premium
 -- tier: subscription plans + active-subscription entitlements that gate the
 -- already-built premium features (verified certificates, full CBT practice-exam
 -- vault, recorded-library transcripts, and a higher AI-assistant allowance).
@@ -57,7 +57,7 @@ ALTER TABLE practice_exams ADD COLUMN IF NOT EXISTS premium BOOLEAN NOT NULL DEF
 -- family, Plus Teams = institutions/orgs.
 INSERT INTO subscription_plans (code, name, billing, price, currency, trial_days)
 VALUES
-    ('PLUS', 'NUVORA Plus', 'MONTHLY', 52500, 'NGN', 7),
-    ('PLUS_FAMILY', 'NUVORA Plus Family', 'MONTHLY', 85000, 'NGN', 7),
-    ('PLUS_TEAMS', 'NUVORA Plus Teams', 'ANNUAL', 900000, 'NGN', 0)
+    ('PLUS', 'YK-Virtual Plus', 'MONTHLY', 52500, 'NGN', 7),
+    ('PLUS_FAMILY', 'YK-Virtual Plus Family', 'MONTHLY', 85000, 'NGN', 7),
+    ('PLUS_TEAMS', 'YK-Virtual Plus Teams', 'ANNUAL', 900000, 'NGN', 0)
 ON CONFLICT (code) DO NOTHING;

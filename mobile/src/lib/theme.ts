@@ -1,4 +1,4 @@
-// NUVORA Mobile — premium design system tokens.
+// YK-Virtual Mobile — premium design system tokens.
 // Single source of truth for colour, typography, spacing, radius, elevation.
 //
 // BRAND ALIGNMENT (B): tokens mirror the web design system (docs/DESIGN_SYSTEM.md)
@@ -24,22 +24,22 @@ export const fonts = {
 } as const;
 
 // ── Brand / accent palette ────────────────────────────────────────────────
-// Primary = NUVORA lime (#70F250) on deep green (#013920), exactly as the web.
+// Primary = YK-Virtual lime (#70F250) on deep green (#013920), exactly as the web.
 export const palette = {
-  green: "#70F250",        // primary accent (actions, emphasis) — web primary.DEFAULT
-  greenHover: "#5FE63F",   // pressed / active — web primary.hover
-  greenDark: "#4CCB31",    // accessible accent on light surfaces — web primary.dark
-  greenLight: "#DFFFF2",   // tint backgrounds / selected — web primary.light
-  deep: "#013920",         // brand deep green (headings, dark surfaces) — web deep.DEFAULT
-  deepLight: "#0A4D32",    // web deep.light
-  deepDark: "#002A18",     // web deep.dark
-  peach: "#FFF7E4",        // warm accent surface — web peach.DEFAULT
+  green: "#70F250", // primary accent (actions, emphasis) — web primary.DEFAULT
+  greenHover: "#5FE63F", // pressed / active — web primary.hover
+  greenDark: "#4CCB31", // accessible accent on light surfaces — web primary.dark
+  greenLight: "#DFFFF2", // tint backgrounds / selected — web primary.light
+  deep: "#013920", // brand deep green (headings, dark surfaces) — web deep.DEFAULT
+  deepLight: "#0A4D32", // web deep.light
+  deepDark: "#002A18", // web deep.dark
+  peach: "#FFF7E4", // warm accent surface — web peach.DEFAULT
   white: "#FFFFFF",
   // Neutrals (web ink scale)
-  bg: "#F8F7F2",           // app background — web ink.50
-  surface: "#FFFFFF",      // cards / sheets
-  surfaceAlt: "#EDE8DC",   // subtle section background — web ink.100
-  border: "#DCE5DE",       // hairline borders — web border.DEFAULT
+  bg: "#F8F7F2", // app background — web ink.50
+  surface: "#FFFFFF", // cards / sheets
+  surfaceAlt: "#EDE8DC", // subtle section background — web ink.100
+  border: "#DCE5DE", // hairline borders — web border.DEFAULT
   // Semantic (web tokens)
   danger: "#D83A3A",
   success: "#4CCB31",
@@ -67,14 +67,14 @@ export const colors = {
   // ── Backward-compatible aliases (existing screens) ─────────────────────
   // Legacy names map to the web-aligned tokens so every screen re-brands
   // automatically. New code should use the tokens above.
-  gold: palette.green,        // legacy primary accent
+  gold: palette.green, // legacy primary accent
   goldHover: palette.greenHover,
   goldDark: palette.greenDark,
   goldLight: palette.greenLight,
-  cream: palette.bg,          // legacy light background
+  cream: palette.bg, // legacy light background
   creamAlt: palette.surfaceAlt,
-  surface: palette.surface,   // card surface (white)
-  navy: palette.deep,         // legacy "navy" → brand deep green
+  surface: palette.surface, // card surface (white)
+  navy: palette.deep, // legacy "navy" → brand deep green
   navyDark: palette.deepDark,
 } as const;
 
@@ -86,14 +86,14 @@ export const darkPalette = {
   green: "#70F250",
   greenHover: "#5FE63F",
   greenDark: "#4CCB31",
-  greenLight: "#122A1C",      // dark tint for selected states
+  greenLight: "#122A1C", // dark tint for selected states
   deep: "#013920",
   deepLight: "#0A4D32",
   deepDark: "#002A18",
   peach: "#1C2617",
   white: "#FFFFFF",
-  bg: "#0B1310",              // app background (deep neutral)
-  surface: "#111D16",         // cards
+  bg: "#0B1310", // app background (deep neutral)
+  surface: "#111D16", // cards
   surfaceAlt: "#16241B",
   border: "#22362A",
   danger: "#F87171",
@@ -131,13 +131,32 @@ export const darkColors = {
 } as const;
 
 export type ThemeColors = {
-  green: string; greenHover: string; greenDark: string; greenLight: string;
-  deep: string; deepLight: string; deepDark: string; peach: string; white: string;
-  bg: string; surface: string; surfaceAlt: string; border: string;
-  danger: string; success: string; warning: string; info: string;
+  green: string;
+  greenHover: string;
+  greenDark: string;
+  greenLight: string;
+  deep: string;
+  deepLight: string;
+  deepDark: string;
+  peach: string;
+  white: string;
+  bg: string;
+  surface: string;
+  surfaceAlt: string;
+  border: string;
+  danger: string;
+  success: string;
+  warning: string;
+  info: string;
   ink: Record<keyof typeof ink, string>;
-  gold: string; goldHover: string; goldDark: string; goldLight: string;
-  cream: string; creamAlt: string; navy: string; navyDark: string;
+  gold: string;
+  goldHover: string;
+  goldDark: string;
+  goldLight: string;
+  cream: string;
+  creamAlt: string;
+  navy: string;
+  navyDark: string;
 };
 
 // ── Typography ────────────────────────────────────────────────────────────
@@ -220,11 +239,11 @@ export type ShadowKey = keyof typeof shadow;
 // ── Layout ────────────────────────────────────────────────────────────────
 // Shared screen padding. Safe-area is handled at screen level.
 export const layout = {
-  pagePadding: 20,       // horizontal screen margin
-  cardPadding: 16,       // inner card padding
-  sectionGap: 24,        // vertical gap between sections
-  listGap: 12,           // vertical gap between list items
-  buttonGap: 12,         // gap between stacked buttons
+  pagePadding: 20, // horizontal screen margin
+  cardPadding: 16, // inner card padding
+  sectionGap: 24, // vertical gap between sections
+  listGap: 12, // vertical gap between list items
+  buttonGap: 12, // gap between stacked buttons
   contentMaxWidth: 560,
   // Recommended touch target (min 44pt).
   touchTarget: 44,

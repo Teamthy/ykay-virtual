@@ -1,4 +1,4 @@
-# NUVORA Web — multi-stage production image (Next.js standalone, non-root).
+# YK-Virtual Web — multi-stage production image (Next.js standalone, non-root).
 
 # ── Stage 1: deps + build ──────────────────────────────────────────────────
 FROM node:20-alpine AS deps

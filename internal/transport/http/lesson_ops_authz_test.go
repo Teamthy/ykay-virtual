@@ -34,8 +34,8 @@ func containsStr(s, needle string) bool {
 //     authentication; the handler must return 401, not data.
 
 func TestPublicLessonView_RedactsPrivateURLs(t *testing.T) {
-	vid := "https://cdn.nuvora.com/videos/lesson1.mp4"
-	meet := "https://whereby.com/nuvora/room-abc"
+	vid := "https://cdn.virtual.ykaycollege.com/videos/lesson1.mp4"
+	meet := "https://whereby.com/ykvirtual/room-abc"
 	ls := []booking.Lesson{
 		{
 			ID:              uuid.New(),

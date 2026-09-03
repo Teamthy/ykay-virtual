@@ -5,6 +5,7 @@ Base: `main` @ `c2728c5` (phase 18)
 Delivery method: git bundle `ykay-virtual-phase-19.bundle`
 
 Reference (live, fetched + palette-extracted):
+
 - https://v2.tuteria.com/ · /hometutors · https://tuteriaprep.com/utme
 - https://www.tuteria.com/users/bookings/ · https://tutors.tuteria.com/steps/personal-info
 
@@ -12,17 +13,17 @@ Reference (live, fetched + palette-extracted):
 
 ## 1. Tuteria colour scheme (extracted from live CSS)
 
-| Token | Value | Role |
-|---|---|---|
-| `brand.navy` | `#194F82` | Primary (Tuteria navy) |
-| `brand.blue` | `#056FD2` | Bright blue accent |
-| `brand.blue-light` | `#E6F0FA` | Light blue surface |
-| `brand.sky` | `#56ACE0` | Sky |
-| `brand.gold` | `#FFC10D` | Ratings/accent |
-| `brand.orange` | `#ED6D20` (+ `#FDF0E8` light) | Secondary accent |
-| `brand.green` | `#009A49` (+ `#F2F9EE` light) | Success |
-| `brand.purple` / `brand.prep-orange` | `#0A033C` / `#FF6636` | tuteriaprep hero + CTA |
-| ink scale | `#001028`→`#F7FAFC` | Text/surfaces |
+| Token                                | Value                         | Role                   |
+| ------------------------------------ | ----------------------------- | ---------------------- |
+| `brand.navy`                         | `#194F82`                     | Primary (Tuteria navy) |
+| `brand.blue`                         | `#056FD2`                     | Bright blue accent     |
+| `brand.blue-light`                   | `#E6F0FA`                     | Light blue surface     |
+| `brand.sky`                          | `#56ACE0`                     | Sky                    |
+| `brand.gold`                         | `#FFC10D`                     | Ratings/accent         |
+| `brand.orange`                       | `#ED6D20` (+ `#FDF0E8` light) | Secondary accent       |
+| `brand.green`                        | `#009A49` (+ `#F2F9EE` light) | Success                |
+| `brand.purple` / `brand.prep-orange` | `#0A033C` / `#FF6636`         | tuteriaprep hero + CTA |
+| ink scale                            | `#001028`→`#F7FAFC`           | Text/surfaces          |
 
 All token names preserved → the whole platform (header, PageHero, cards,
 badges, dashboards) re-skins automatically.
@@ -44,14 +45,14 @@ badges, dashboards) re-skins automatically.
   Kids."** (Anton) → personalized home tutoring copy → **Get Started** +
   **Learn how it works** + image with floating rating/verified chips.
 - **Popular services** rail (6 tiles: Home Tutoring, International, UTME 2026,
-  Test Prep, NUVORA Plus, Entrance Exam — real v2 copy, tinted surfaces).
+  Test Prep, YK-Virtual Plus, Entrance Exam — real v2 copy, tinted surfaces).
 - **Stats**: "Learn From The Largest Community Of Professional Tutors In
   Africa" — 10k+ / 280k+ / 38k+ / 98% + "We are backed by" press strip.
 - **"We do home tutoring the right way"** partner band (real bullets).
 - **"We deliver the best results, period."** 3x chart + **5-step innovative
   approach** (Insights Assessment → Adaptive Plans → Child-Centered →
   Periodic Evaluation → Progress Reports, real copy).
-- **"Parents love NUVORA"** — real v2 testimonials (Mrs. Soetan, Mrs. Alice,
+- **"Parents love YK-Virtual"** — real v2 testimonials (Mrs. Soetan, Mrs. Alice,
   Mrs Ayowunmi, Pamilerin, Daniel).
 - Hero slides re-cut to v2 real copy/palette (International 4 continents,
   UTME 345, Test Prep 95%, Plus, Entrance Exams 95%).
@@ -69,11 +70,12 @@ approach + testimonials + guarantee.
 Deep-purple `#0A033C` + orange `#FF6636` prep branding: "ONLINE PREP ·
 JAN–APR 2026" → **"JAMB 2026 SUCCESS"** (Anton) → "Guarantees 320+ Score",
 Science/Arts/Commercial chips, **Start My UTME Prep**, "Join 10,000+ students"
-+ **phone capture** → **real champions** (Eghosa 341/400, Chinonso 338/400,
-Princess 317/400 + real quotes) → **AI-powered prep** (20,000 questions /
-15 years) → what's included (4 cards) → **₦20M scholarships** prize list →
-**packages** (Mastery ₦50,000→₦35,000 · Plus ₦75,000→₦52,500, 30% discount,
-featured Plus) → guarantee.
+
+- **phone capture** → **real champions** (Eghosa 341/400, Chinonso 338/400,
+  Princess 317/400 + real quotes) → **AI-powered prep** (20,000 questions /
+  15 years) → what's included (4 cards) → **₦20M scholarships** prize list →
+  **packages** (Mastery ₦50,000→₦35,000 · Plus ₦75,000→₦52,500, 30% discount,
+  featured Plus) → guarantee.
 
 ## 6. Tutor application — "You belong here!"
 

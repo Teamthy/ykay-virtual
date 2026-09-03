@@ -9,6 +9,7 @@ Delivery method: git bundle `ykay-virtual-phase-36.bundle`
 ## M5 — Store launch prep
 
 ### Legal pages (web) — fixes dead links
+
 - **`/privacy`** — full privacy policy (NDPR + GDPR-aligned): data
   collected, children's data with guardian consent, AI-assistant disclosure,
   third parties (Paystack/Flutterwave/Expo/Gemini), security, rights,
@@ -21,15 +22,17 @@ Delivery method: git bundle `ykay-virtual-phase-36.bundle`
   links).
 
 ### App assets (`mobile/assets/`)
+
 - **`icon.png`** (1024×1024) — navy rounded-square with gold graduation-cap
-  + "N" monogram (generated, brand tokens).
+  - "N" monogram (generated, brand tokens).
 - **`adaptive-icon.png`** (1024×1024) — Android adaptive foreground.
-- **`splash.png`** (1290×2796) — cream splash with navy NUVORA wordmark +
+- **`splash.png`** (1290×2796) — cream splash with navy YK-Virtual wordmark +
   tagline.
 - `app.json` wired: `icon`, `splash.image`, `android.adaptiveIcon`
   (foreground + navy bg) — validated JSON.
 
 ### Release runbook
+
 - **`docs/MOBILE_RELEASE.md`** — EAS builds, TestFlight flow (internal →
   external, privacy answers), Play Console (internal → closed → staged
   production), required legal URLs, pre-launch checklist (API prod config,
@@ -39,11 +42,13 @@ Delivery method: git bundle `ykay-virtual-phase-36.bundle`
 ## C5 extras
 
 ### Prompt-eval CI job
+
 - `.github/workflows/ci.yml` — new **`prompt-evals`** job: runs the CI
   rubric (`TestChatPromptEvals_CI` + chat/push suites) on every push/PR;
   runs **live Gemini evals** when the `GEMINI_API_KEY` repo secret is set.
 
 ### CSAT trend reporting
+
 - **`GET /admin/chat/analytics/trends?days=N`** (≤90, default 14) → daily
   series: `{date, threads, escalated, rated, avg_rating, csat%}` computed
   from thread timestamps (created/rated days).
@@ -53,6 +58,7 @@ Delivery method: git bundle `ykay-virtual-phase-36.bundle`
   bounds: 0→14, 30 ok).
 
 ## Website gap analysis
+
 - **`docs/WEBSITE_GAP_ANALYSIS.md`** — verified, ranked: 4 P0 (real
   payment round-trip on checkout, `/account` settings hub, parent learner
   management UI, site search), 6 P1 (admin payments/refunds/payouts UI,
@@ -62,6 +68,7 @@ Delivery method: git bundle `ykay-virtual-phase-36.bundle`
   See the doc for details — summary also given in chat.
 
 ## Verification
+
 ```text
 gofmt / go build / go vet     PASS
 go test ./...                 PASS (trends + evals + push + chat)

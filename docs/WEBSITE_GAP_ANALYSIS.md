@@ -1,4 +1,4 @@
-# NUVORA Website — What's Left to Build (gap analysis, Aug 2026)
+# YK-Virtual Website — What's Left to Build (gap analysis, Aug 2026)
 
 Honest, ranked view of the public web app against a production tutoring
 marketplace. Everything not listed here is considered **shipped and working**
@@ -90,7 +90,7 @@ global rate limit raised 100→300 req/min (suite + real-user headroom).
 14. **Dark mode** — ✅ `.dark` class + CSS-variable/utility overrides in
     globals.css (cards, text, borders, backgrounds), **ThemeToggle** in
     header (desktop + mobile), persisted + system default, `darkMode:
-    "class"`.
+"class"`.
 15. **SEO scaling** — ✅ new landing pages `/sat`, `/ielts-toefl`, `/gre`
     (metadata + JSON-LD course/FAQ + CTAs) + sitemap entries.
 16. **Accessibility** — ✅ skip-link, focus-visible ring, reduced-motion

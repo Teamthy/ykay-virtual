@@ -1,6 +1,6 @@
 {
-  "name": "NUVORA \u2014 Learning beyond boundaries",
-  "short_name": "NUVORA",
+  "name": "YK-Virtual \u2014 Learning beyond boundaries",
+  "short_name": "YK-Virtual",
   "description": "British & Nigerian curricula, exam preparation, private tuition and live cohorts \u2014 learn anywhere.",
   "id": "/",
   "start_url": "/",
@@ -10,10 +10,7 @@
   "background_color": "#FFF7E4",
   "theme_color": "#013920",
   "lang": "en-NG",
-  "categories": [
-    "education",
-    "productivity"
-  ],
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -47,7 +44,7 @@
       ]
     },
     {
-      "name": "Chat with Nuvora",
+      "name": "Chat with YK-Virtual",
       "short_name": "Chat",
       "url": "/chat",
       "icons": [

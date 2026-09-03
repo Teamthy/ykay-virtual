@@ -14,21 +14,21 @@ DELETE FROM user_roles
 WHERE user_id IN (
   SELECT id FROM users
   WHERE email IN (
-    'tutor.chinasa@nuvora.test',
-    'tutor.oluwatobi@nuvora.test',
-    'tutor.olanike@nuvora.test',
-    'tutor.adewale@nuvora.test',
-    'tutor.judith@nuvora.test',
-    'tutor.demilola@nuvora.test'
+    'tutor.chinasa@ykvirtual.test',
+    'tutor.oluwatobi@ykvirtual.test',
+    'tutor.olanike@ykvirtual.test',
+    'tutor.adewale@ykvirtual.test',
+    'tutor.judith@ykvirtual.test',
+    'tutor.demilola@ykvirtual.test'
   )
 );
 
 DELETE FROM users
 WHERE email IN (
-  'tutor.chinasa@nuvora.test',
-  'tutor.oluwatobi@nuvora.test',
-  'tutor.olanike@nuvora.test',
-  'tutor.adewale@nuvora.test',
-  'tutor.judith@nuvora.test',
-  'tutor.demilola@nuvora.test'
+  'tutor.chinasa@ykvirtual.test',
+  'tutor.oluwatobi@ykvirtual.test',
+  'tutor.olanike@ykvirtual.test',
+  'tutor.adewale@ykvirtual.test',
+  'tutor.judith@ykvirtual.test',
+  'tutor.demilola@ykvirtual.test'
 );

@@ -941,7 +941,7 @@ func (h *AdminHandler) CompletePaystackTransfer(w http.ResponseWriter, r *http.R
 			go func(phone string, amount float64, currency string) {
 				nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 				defer cancel()
-				msg := fmt.Sprintf("💸 NUVORA: your payout of %.2f %s has been sent to your bank account via Paystack.", amount, currency)
+				msg := fmt.Sprintf("💸 YK-Virtual: your payout of %.2f %s has been sent to your bank account via Paystack.", amount, currency)
 				if err := h.notifier.SendWhatsAppTo(nctx, phone, msg); err != nil {
 					slog.Error("whatsapp payout notify failed", "payout", payoutID, "error", err)
 				}
@@ -983,7 +983,7 @@ func (h *AdminHandler) ConfirmPayoutPaid(w http.ResponseWriter, r *http.Request)
 	if h.notifier != nil && p != nil {
 		name, phone, _, cerr := h.svc.PayoutTutorContact(r.Context(), payoutID)
 		if cerr == nil && phone != "" {
-			msg := "💸 NUVORA: your payout of " + fmt.Sprintf("%.2f", p.Amount) + " " + p.Currency +
+			msg := "💸 YK-Virtual: your payout of " + fmt.Sprintf("%.2f", p.Amount) + " " + p.Currency +
 				" has been sent to your bank account."
 			_ = name
 			go func(phone, msg string) {
@@ -1405,10 +1405,10 @@ func (h *AdminHandler) SendTestEmail(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, pkg.Conflict("could not resolve the admin email address"))
 		return
 	}
-	if err := h.mail.Send(r.Context(), email, "NUVORA email delivery test",
+	if err := h.mail.Send(r.Context(), email, "YK-Virtual email delivery test",
 		notification.BrandEmail(
 			"<h1 style=\"margin:0 0 12px;font-size:20px;color:#0A1F44;\">Email delivery works ✅</h1>"+
-				"<p style=\"margin:0 0 16px;\">This is a test email from your NUVORA platform.</p>"+
+				"<p style=\"margin:0 0 16px;\">This is a test email from your YK-Virtual platform.</p>"+
 				"<p style=\"margin:0;\">If you can read this, login codes, verification links and payment receipts will reach your users.</p>")); err != nil {
 		WriteAppError(w, err)
 		return

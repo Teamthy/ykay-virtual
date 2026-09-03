@@ -45,7 +45,7 @@
       "targets": [
         {
           "refId": "1A",
-          "expr": "sum(rate(nuvora_http_requests_total[5m]))",
+          "expr": "sum(rate(ykv_http_requests_total[5m]))",
           "legendFormat": "req/s",
           "instant": false,
           "range": true
@@ -92,7 +92,7 @@
       "targets": [
         {
           "refId": "2A",
-          "expr": "sum(rate(nuvora_http_requests_total{code=~\"5..\"}[5m])) / clamp_min(sum(rate(nuvora_http_requests_total[5m])), 0.001) * 100",
+          "expr": "sum(rate(ykv_http_requests_total{code=~\"5..\"}[5m])) / clamp_min(sum(rate(ykv_http_requests_total[5m])), 0.001) * 100",
           "legendFormat": "5xx %",
           "instant": false,
           "range": true
@@ -139,21 +139,21 @@
       "targets": [
         {
           "refId": "3A",
-          "expr": "histogram_quantile(0.50, sum(rate(nuvora_http_request_duration_seconds_bucket[10m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(ykv_http_request_duration_seconds_bucket[10m])) by (le))",
           "legendFormat": "p50",
           "instant": false,
           "range": true
         },
         {
           "refId": "3A",
-          "expr": "histogram_quantile(0.95, sum(rate(nuvora_http_request_duration_seconds_bucket[10m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(ykv_http_request_duration_seconds_bucket[10m])) by (le))",
           "legendFormat": "p95",
           "instant": false,
           "range": true
         },
         {
           "refId": "3A",
-          "expr": "histogram_quantile(0.99, sum(rate(nuvora_http_request_duration_seconds_bucket[10m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(ykv_http_request_duration_seconds_bucket[10m])) by (le))",
           "legendFormat": "p99",
           "instant": false,
           "range": true
@@ -193,7 +193,7 @@
       "targets": [
         {
           "refId": "4A",
-          "expr": "up{job=~\"nuvora-api|nuvora-worker\"}",
+          "expr": "up{job=~\"yk-virtual-api|yk-virtual-worker\"}",
           "legendFormat": "{{job}}",
           "instant": true,
           "range": false
@@ -240,7 +240,7 @@
       "targets": [
         {
           "refId": "5A",
-          "expr": "nuvora_queue_depth",
+          "expr": "ykv_queue_depth",
           "legendFormat": "{{backend}}/{{state}}",
           "instant": false,
           "range": true
@@ -287,14 +287,14 @@
       "targets": [
         {
           "refId": "6A",
-          "expr": "sum by (type) (rate(nuvora_jobs_enqueued_total[10m]))",
+          "expr": "sum by (type) (rate(ykv_jobs_enqueued_total[10m]))",
           "legendFormat": "enq {{type}}",
           "instant": false,
           "range": true
         },
         {
           "refId": "6A",
-          "expr": "sum by (type) (rate(nuvora_jobs_completed_total[10m]))",
+          "expr": "sum by (type) (rate(ykv_jobs_completed_total[10m]))",
           "legendFormat": "ok {{type}}",
           "instant": false,
           "range": true
@@ -341,14 +341,14 @@
       "targets": [
         {
           "refId": "7A",
-          "expr": "sum by (type) (increase(nuvora_jobs_dead_lettered_total[10m]))",
+          "expr": "sum by (type) (increase(ykv_jobs_dead_lettered_total[10m]))",
           "legendFormat": "dead {{type}}",
           "instant": false,
           "range": true
         },
         {
           "refId": "7A",
-          "expr": "sum by (type) (increase(nuvora_jobs_retried_total[10m]))",
+          "expr": "sum by (type) (increase(ykv_jobs_retried_total[10m]))",
           "legendFormat": "retry {{type}}",
           "instant": false,
           "range": true
@@ -395,7 +395,7 @@
       "targets": [
         {
           "refId": "8A",
-          "expr": "topk(10, sum by (route) (rate(nuvora_http_requests_total[5m])))",
+          "expr": "topk(10, sum by (route) (rate(ykv_http_requests_total[5m])))",
           "legendFormat": "{{route}}",
           "instant": false,
           "range": true
@@ -430,7 +430,7 @@
       "targets": [
         {
           "refId": "9A",
-          "expr": "time() - nuvora_worker_cron_last_success_timestamp",
+          "expr": "time() - ykv_worker_cron_last_success_timestamp",
           "format": "table",
           "instant": true
         }
@@ -476,7 +476,7 @@
       "targets": [
         {
           "refId": "10A",
-          "expr": "time() - nuvora_backup_last_success_timestamp",
+          "expr": "time() - ykv_backup_last_success_timestamp",
           "legendFormat": "",
           "instant": true,
           "range": false
@@ -517,7 +517,7 @@
       "targets": [
         {
           "refId": "11A",
-          "expr": "time() - nuvora_dr_drill_last_success_timestamp",
+          "expr": "time() - ykv_dr_drill_last_success_timestamp",
           "legendFormat": "",
           "instant": true,
           "range": false
@@ -557,7 +557,7 @@
       "targets": [
         {
           "refId": "12A",
-          "expr": "nuvora_build_info",
+          "expr": "ykv_build_info",
           "legendFormat": "",
           "instant": true,
           "range": false
@@ -567,7 +567,7 @@
   ],
   "schemaVersion": 39,
   "tags": [
-    "nuvora",
+    "ykvirtual",
     "production"
   ],
   "templating": {
@@ -578,8 +578,8 @@
     "to": "now"
   },
   "timezone": "utc",
-  "title": "NUVORA \u2014 API & Jobs",
-  "uid": "nuvora-api",
+  "title": "YK-Virtual \u2014 API & Jobs",
+  "uid": "yk-virtual-api",
   "version": 1,
   "refresh": "30s"
 }

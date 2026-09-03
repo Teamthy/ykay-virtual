@@ -118,7 +118,7 @@ func main() {
 		r.users,
 	)
 
-	// NUVORA Plus weekly report email (000067 / P4). The plus repo comes from
+	// YK-Virtual Plus weekly report email (000067 / P4). The plus repo comes from
 	// the UoW (it shares the same store); nil when the UoW can't provide it.
 	var plusReportSvc *service.PlusReportService
 	if uow, err := r.uowFactory.Begin(ctx); err == nil {
@@ -327,7 +327,7 @@ func main() {
 					}
 					release()
 				}
-				// NUVORA Plus: expire subscriptions whose term passed, so the
+				// YK-Virtual Plus: expire subscriptions whose term passed, so the
 				// entitlement gate stops granting access after the period.
 				if release, ok := cronLock.TryLock(ctx, "expire_plus_subscriptions", 14*time.Minute); ok {
 					uow, uerr := r.uowFactory.Begin(ctx)
@@ -372,7 +372,7 @@ func main() {
 					}
 					release()
 				}
-				// NUVORA Plus weekly report email (P4).
+				// YK-Virtual Plus weekly report email (P4).
 				if plusReportSvc != nil {
 					if release, ok := cronLock.TryLock(ctx, "send_plus_weekly_reports", 6*24*time.Hour); ok {
 						n, rerr := plusReportSvc.SendWeeklyReports(ctx)

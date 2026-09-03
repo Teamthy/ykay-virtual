@@ -1,4 +1,4 @@
-// NUVORA service worker — PWA offline shell (M1 hardening).
+// YK-Virtual service worker — PWA offline shell (M1 hardening).
 // Strategy:
 //   - App shell (/ , /offline)  → precached at install
 //   - Hashed static assets      → cache-first (immutable, safe)
@@ -6,7 +6,7 @@
 //   - API calls                 → never cached (money/data safety)
 //   - Unsplash images           → stale-while-revalidate
 
-const CACHE = "nuvora-v3";
+const CACHE = "yk-virtual-v3";
 // App shell — core routes precached at install so the LMS, chat
 // and dashboards open offline (data still streams from the API when online).
 const SHELL = ["/", "/offline", "/lms", "/chat", "/dashboard", "/login"];
@@ -17,7 +17,7 @@ self.addEventListener("install", (event) => {
     caches
       .open(CACHE)
       .then((cache) => cache.addAll(SHELL))
-      .then(() => self.skipWaiting())
+      .then(() => self.skipWaiting()),
   );
 });
 
@@ -25,8 +25,12 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+        ),
+      )
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -51,8 +55,8 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() =>
-          caches.match(req).then((hit) => hit || caches.match("/offline"))
-        )
+          caches.match(req).then((hit) => hit || caches.match("/offline")),
+        ),
     );
     return;
   }
@@ -69,8 +73,8 @@ self.addEventListener("fetch", (event) => {
               caches.open(CACHE).then((cache) => cache.put(req, copy));
             }
             return res;
-          })
-      )
+          }),
+      ),
     );
     return;
   }
@@ -88,6 +92,6 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => hit);
       return hit || network;
-    })
+    }),
   );
 });

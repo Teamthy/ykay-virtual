@@ -1,4 +1,4 @@
-# NUVORA Virtual School â€” Build Plan
+# YK-Virtual Virtual School â€” Build Plan
 
 Status: living document Â· Started 2026-08-25 Â· Companion to `docs/GAP_ANALYSIS.md` and `docs/WORKING_DOCUMENT.md`.
 
@@ -10,22 +10,22 @@ builds on the same foundation instead of forking concepts.
 
 ## 1. Vision
 
-NUVORA grows from a tutoring marketplace into a **full virtual school**: structured
+YK-Virtual grows from a tutoring marketplace into a **full virtual school**: structured
 academic years, subject registration, timetabled classes, continuous assessment,
 report cards and transcripts â€” for both the platform's own school and partner
-schools (B2B) that want NUVORA's vetting, payments and delivery infrastructure.
+schools (B2B) that want YK-Virtual's vetting, payments and delivery infrastructure.
 
 ## 2. Architecture decision (locked)
 
 **Extend, don't fork.** The school is built on the existing `institutions` +
 `cohorts` spine rather than a parallel "school org" entity:
 
-| Decision | Why |
-|---|---|
-| `institution_id NULL` = platform school | One calendar concept serves NUVORA's own school and each partner school; no duplicate tables per tenancy model. |
-| Cohorts stay the unit of delivery | Lessons, attendance, enrolments, payments already hang off cohorts. `cohorts.term_id` (migration 000063) anchors a cohort to a term, giving schools timetable structure for free. |
-| New `internal/domain/school` package | A single home for school-only concepts (calendar now; gradebook, transcripts, registration next) so marketplace domains stay unpolluted. |
-| Lifecycle via linear status machines + DB partial-unique backstops | Same fail-closed culture as payments: service checks produce friendly errors; constraints decide races. |
+| Decision                                                           | Why                                                                                                                                                                               |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `institution_id NULL` = platform school                            | One calendar concept serves YK-Virtual's own school and each partner school; no duplicate tables per tenancy model.                                                               |
+| Cohorts stay the unit of delivery                                  | Lessons, attendance, enrolments, payments already hang off cohorts. `cohorts.term_id` (migration 000063) anchors a cohort to a term, giving schools timetable structure for free. |
+| New `internal/domain/school` package                               | A single home for school-only concepts (calendar now; gradebook, transcripts, registration next) so marketplace domains stay unpolluted.                                          |
+| Lifecycle via linear status machines + DB partial-unique backstops | Same fail-closed culture as payments: service checks produce friendly errors; constraints decide races.                                                                           |
 
 Trade-off accepted: a dedicated `schools` table would be slightly cleaner for very
 large B2B deployments, at the cost of re-implementing members, cohorts and billing
@@ -34,15 +34,15 @@ the institutions model.
 
 ## 3. Pillar roadmap
 
-| # | Pillar | Status | Anchor |
-|---|--------|--------|--------|
-| 1 | **Academic calendar: sessions & terms** | âœ… Backend shipped (2026-08-25) Â· ðŸ”² Admin UI Â· ðŸ”² Mobile/web surfaces | migration 000063, `internal/domain/school`, `SchoolCalendarService`, 9 routes |
-| 2 | Subject registration & timetable | ðŸ”² | `term_subject_registrations`, `timetable_entries` (class slots per term/level/subject, tutor + meeting link + room) |
-| 3 | Gradebook & termly report cards | ðŸ”² | CA + exam scores per registration, weighted, PDF report card per term |
-| 4 | Transcripts (cumulative record) | ðŸ”² | Rolls up report cards across sessions; printable, verifiable |
-| 5 | Homeroom, pastoral & assemblies | ðŸ”² | Homeroom groups per level, pastoral notes/flags, assembly events on the calendar |
-| 6 | Admissions v2 & B2B school console | ðŸ”² | Document uploads, offer/acceptance fees wiring, institution self-serve terms/branding |
-| 7 | Accreditation & compliance pack | ðŸ”² | Inspection-ready exports (attendance, safeguarding, results), data-retention policy |
+| #   | Pillar                                  | Status                                                                        | Anchor                                                                                                              |
+| --- | --------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Academic calendar: sessions & terms** | âœ… Backend shipped (2026-08-25) Â· ðŸ”² Admin UI Â· ðŸ”² Mobile/web surfaces | migration 000063, `internal/domain/school`, `SchoolCalendarService`, 9 routes                                       |
+| 2   | Subject registration & timetable        | ðŸ”²                                                                          | `term_subject_registrations`, `timetable_entries` (class slots per term/level/subject, tutor + meeting link + room) |
+| 3   | Gradebook & termly report cards         | ðŸ”²                                                                          | CA + exam scores per registration, weighted, PDF report card per term                                               |
+| 4   | Transcripts (cumulative record)         | ðŸ”²                                                                          | Rolls up report cards across sessions; printable, verifiable                                                        |
+| 5   | Homeroom, pastoral & assemblies         | ðŸ”²                                                                          | Homeroom groups per level, pastoral notes/flags, assembly events on the calendar                                    |
+| 6   | Admissions v2 & B2B school console      | ðŸ”²                                                                          | Document uploads, offer/acceptance fees wiring, institution self-serve terms/branding                               |
+| 7   | Accreditation & compliance pack         | ðŸ”²                                                                          | Inspection-ready exports (attendance, safeguarding, results), data-retention policy                                 |
 
 Pillars are sequenced so each one only depends on what shipped before it.
 
@@ -102,9 +102,9 @@ and covered by service tests in `school_calendar_service_test.go`.
 ## 5. Notes for the next pillars (design sketches)
 
 - **Pillar 2 (registration & timetable):** `term_subject_registrations
-  (term_id, student_profile_id, subject_id, level_id, status, UNIQUE(term,student,subject))`;
+(term_id, student_profile_id, subject_id, level_id, status, UNIQUE(term,student,subject))`;
   `timetable_entries (term_id, level_id, subject_id, tutor_profile_id, weekday,
-  starts_at, ends_at, cohort_id NULL)`; conflict checks reuse the booking
+starts_at, ends_at, cohort_id NULL)`; conflict checks reuse the booking
   double-booking rule (FR-10 gets completed here).
 - **Pillar 3 (gradebook):** score components per registration with weights that
   must sum to 100 per subject/term; report card materialised view per
@@ -194,7 +194,7 @@ extend-don't-fork:
 
 - **`migration 000065`** adds `admissions_documents` (name, url/object-key,
   mime, size, uploaded_by) and `admissions_applications.offer_fee /
-  offer_currency / offer_message`.
+offer_currency / offer_message`.
 - **Documents** — a parent attaches supporting documents to their application
   (birth certificate, prior transcripts); the admin queue can read them. Routes:
   - `GET/POST /me/admissions/{id}/documents` · `DELETE /me/admissions/{id}/documents/{docId}` (parent)
@@ -222,10 +222,10 @@ extend-don't-fork:
 currently keyed by an already-hosted URL/object key), an application detail
 route for large document sets, and admissions fee discounts/coupons.
 
-## 10. NUVORA Plus — premium tier engine + gates (shipped 2026-08-26)
+## 10. YK-Virtual Plus — premium tier engine + gates (shipped 2026-08-26)
 
 Turns the marketing-only Plus page into a real, sellable premium tier. Companion
-plan: `docs/NUVORA_PLUS_PREMIUM_PLAN.md` (industry-benchmarked feature set).
+plan: `docs/YK-Virtual_PLUS_PREMIUM_PLAN.md` (industry-benchmarked feature set).
 
 - **`migration 000066`** — `subscription_plans` (PLUS / PLUS_FAMILY / PLUS_TEAMS,
   seeded), `subscriptions` (per-user active/trial/cancelled), `plus_usage`
@@ -266,7 +266,7 @@ drops access. The `/account/plus` page offers order-backed "Subscribe & pay"
 **Still open:** PLUS_TEAMS admin console, offline/mobile downloads, and a
 diagnostic→learning-plan engine.
 
-## 11. NUVORA Plus P3–P4 — named Learning Advisor + weekly report (shipped 2026-08-26)
+## 11. YK-Virtual Plus P3–P4 — named Learning Advisor + weekly report (shipped 2026-08-26)
 
 - **`migration 000067`** — `plus_advisors` (named Learning Advisor per Plus
   user) and `plus_learning_plans` (personalised plan per Plus user + learner).
@@ -285,7 +285,7 @@ diagnostic→learning-plan engine.
 - Tests: `TestAdvisorService_AssignAndGet`, `TestAdvisorService_LearningPlan`,
   `TestPlusReportService_SendWeeklyReports`. OpenAPI contract (246/251).
 
-## 12. NUVORA Plus P5 — diagnostic → learning-plan engine (shipped 2026-08-26)
+## 12. YK-Virtual Plus P5 — diagnostic → learning-plan engine (shipped 2026-08-26)
 
 - **`migration 000068`** — `learner_assessments.is_diagnostic` and
   `plus_learning_plans.source` (MANUAL | DIAGNOSTIC).
@@ -303,7 +303,7 @@ diagnostic→learning-plan engine.
   `TestLearning_NonDiagnostic_NoPlanHook`,
   `TestAdvisorService_GeneratePlanFromScore`. OpenAPI contract (247/252).
 
-## 13. NUVORA Plus P5 — offline downloads + Plus Teams console (shipped 2026-08-26)
+## 13. YK-Virtual Plus P5 — offline downloads + Plus Teams console (shipped 2026-08-26)
 
 - **Offline/mobile downloads (Plus-gated)** — `POST /me/plus/library/{lessonId}/download`
   returns an authorized `video_url` only for entitled **and** Plus viewers (402
@@ -318,7 +318,7 @@ diagnostic→learning-plan engine.
   Institution OWNER/ADMIN (or platform admin) manage seats. The `/account/institutions/{id}`
   page gains a **Plus Teams** tab. Tests: `TestPlusTeams_AllocationAndSeats`.
 
-With this, the Nuvora Plus premium tier is **complete through P5**: subscription
+With this, the YK-Virtual Plus premium tier is **complete through P5**: subscription
 engine, feature gates, order-backed billing, named advisor, weekly report,
 diagnostic→learning-plan, offline downloads, and the Plus Teams console.
 

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "NUVORA",
-    "slug": "nuvora",
+    "name": "YK-Virtual",
+    "slug": "ykvirtual",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "nuvora",
+    "scheme": "ykvirtual",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "icon": "./assets/icon.png",
@@ -15,27 +15,23 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.nuvora.app",
+      "bundleIdentifier": "com.ykvirtual.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "NUVORA uses the camera for document uploads during tutor vetting.",
-        "NSPhotoLibraryUsageDescription": "NUVORA lets you attach photos to assignments and support chats."
+        "NSCameraUsageDescription": "YK-Virtual uses the camera for document uploads during tutor vetting.",
+        "NSPhotoLibraryUsageDescription": "YK-Virtual lets you attach photos to assignments and support chats."
       }
     },
     "android": {
-      "package": "com.nuvora.app",
+      "package": "com.ykvirtual.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#013920"
       },
-      "permissions": [
-        "INTERNET",
-        "CAMERA",
-        "READ_MEDIA_IMAGES"
-      ]
+      "permissions": ["INTERNET", "CAMERA", "READ_MEDIA_IMAGES"]
     },
     "web": {
       "bundler": "metro",
-      "name": "NUVORA"
+      "name": "YK-Virtual"
     },
     "updates": {
       "url": "https://u.expo.dev/9b9f036a-4492-4726-a6af-389b5e2d8d6b",
@@ -47,7 +43,7 @@
       "policy": "sdkVersion"
     },
     "extra": {
-      "projectId": "nuvora-prod",
+      "projectId": "yk-virtual-prod",
       "eas": {
         "projectId": "9b9f036a-4492-4726-a6af-389b5e2d8d6b"
       }

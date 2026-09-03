@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-// NUVORA mobile API client — talks to the same /api/v1 backend as the web
+// YK-Virtual mobile API client — talks to the same /api/v1 backend as the web
 // app. The web uses httpOnly session cookies; the native app uses a bearer
 // token stored in the OS keychain (SecureStore).
 //
@@ -18,20 +18,33 @@ const isProductionBuild = process.env.NODE_ENV === "production";
 const configuredApiURL = process.env.EXPO_PUBLIC_API_URL;
 const configuredSiteURL = process.env.EXPO_PUBLIC_SITE_URL;
 
-function requiredMobileURL(name: string, value: string | undefined, fallback: string): string {
+function requiredMobileURL(
+  name: string,
+  value: string | undefined,
+  fallback: string,
+): string {
   if (value && value.trim()) return value.replace(/\/$/, "");
-  if (isProductionBuild) throw new Error(`${name} must be set for production mobile builds`);
+  if (isProductionBuild)
+    throw new Error(`${name} must be set for production mobile builds`);
   return fallback;
 }
 
-export const API_BASE = requiredMobileURL("EXPO_PUBLIC_API_URL", configuredApiURL, "http://localhost:8080/api/v1");
+export const API_BASE = requiredMobileURL(
+  "EXPO_PUBLIC_API_URL",
+  configuredApiURL,
+  "http://localhost:8080/api/v1",
+);
 
 // SITE_URL — the WEB app origin (checkout/receipts live there). Commerce on
 // mobile deep-links out to the browser (store-safe for services; the gateway
 // round-trip needs web routes anyway).
-export const SITE_URL = requiredMobileURL("EXPO_PUBLIC_SITE_URL", configuredSiteURL, "http://localhost:3000");
+export const SITE_URL = requiredMobileURL(
+  "EXPO_PUBLIC_SITE_URL",
+  configuredSiteURL,
+  "http://localhost:3000",
+);
 
-const TOKEN_KEY = "nuvora_session_token";
+const TOKEN_KEY = "ykv_session_token";
 
 const DEFAULT_TIMEOUT_MS = 20000;
 
@@ -63,7 +76,11 @@ function fireUnauthorized() {
 }
 
 // fetch with a hard timeout (AbortController).
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<Response> {
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+): Promise<Response> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -84,7 +101,9 @@ export async function registerDevice(): Promise<void> {
     const Notifications = await import("expo-notifications");
     const perms = await Notifications.requestPermissionsAsync();
     if (!perms.granted) return;
-    const token = await Notifications.getExpoPushTokenAsync({ projectId: Constants.expoConfig?.extra?.projectId });
+    const token = await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig?.extra?.projectId,
+    });
     await apiFetch("/me/devices", {
       method: "POST",
       body: JSON.stringify({
@@ -101,11 +120,11 @@ export async function registerDevice(): Promise<void> {
 export async function apiFetch<T>(
   path: string,
   init: RequestInit = {},
-  opts: { retries?: number } = {}
+  opts: { retries?: number } = {},
 ): Promise<Envelope<T>> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "X-Client": "nuvora-mobile",
+    "X-Client": "yk-virtual-mobile",
   };
   const token = await getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -115,27 +134,43 @@ export async function apiFetch<T>(
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const res = await fetchWithTimeout(`${API_BASE}${path}`, { ...init, headers });
+      const res = await fetchWithTimeout(`${API_BASE}${path}`, {
+        ...init,
+        headers,
+      });
       if (res.status === 401) {
         // Only treat 401 as "your session died" when we actually attached a
         // token. Public screens sometimes call protected endpoints while
         // signed out (e.g. LMS before login) — that 401 must NOT clear a
         // session or bounce the user to /login.
         if (token) fireUnauthorized();
-        const err = (await res.json().catch(() => null)) as ErrorEnvelope | null;
-        throw new Error(err?.error?.message || (token ? "Session expired. Please log in again." : "Authentication required"));
+        const err = (await res
+          .json()
+          .catch(() => null)) as ErrorEnvelope | null;
+        throw new Error(
+          err?.error?.message ||
+            (token
+              ? "Session expired. Please log in again."
+              : "Authentication required"),
+        );
       }
       if (!res.ok) {
-        const err = (await res.json().catch(() => null)) as ErrorEnvelope | null;
+        const err = (await res
+          .json()
+          .catch(() => null)) as ErrorEnvelope | null;
         throw new Error(err?.error?.message || `Request failed ${res.status}`);
       }
       return (await res.json()) as Envelope<T>;
     } catch (e) {
       const isTimeout = e instanceof Error && e.name === "AbortError";
-      const retriable = isTimeout || (e instanceof Error && /network|fetch|failed to fetch/i.test(e.message));
+      const retriable =
+        isTimeout ||
+        (e instanceof Error &&
+          /network|fetch|failed to fetch/i.test(e.message));
       lastErr = e instanceof Error ? e : new Error(String(e));
       if (!retriable || attempt >= maxRetries) {
-        if (isTimeout) throw new Error("Request timed out. Check your connection.");
+        if (isTimeout)
+          throw new Error("Request timed out. Check your connection.");
         throw lastErr;
       }
       // small backoff before retry
@@ -161,32 +196,41 @@ export type LessonProgress = {
 
 export async function recordLessonProgress(
   lessonId: string,
-  input: { watched: boolean; position_seconds: number }
+  input: { watched: boolean; position_seconds: number },
 ): Promise<LessonProgress> {
-  const res = await apiFetch<LessonProgress>(`/learning/lessons/${lessonId}/progress`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
+  const res = await apiFetch<LessonProgress>(
+    `/learning/lessons/${lessonId}/progress`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
   return res.data;
 }
 
 export async function getLessonProgress(
-  lessonId: string
+  lessonId: string,
 ): Promise<LessonProgress | null> {
-  const res = await apiFetch<LessonProgress | { watched: boolean; position_seconds: number }>(
-    `/learning/lessons/${lessonId}/progress`
-  );
+  const res = await apiFetch<
+    LessonProgress | { watched: boolean; position_seconds: number }
+  >(`/learning/lessons/${lessonId}/progress`);
   return res.data as LessonProgress;
 }
 
 // learnerQuery — appends the parent's pinned learner to learner-scoped
 // endpoints (backend ResolveStudent accepts ?student_profile_id=).
 export function learnerQuery(studentProfileId?: string | null): string {
-  return studentProfileId ? `?student_profile_id=${encodeURIComponent(studentProfileId)}` : "";
+  return studentProfileId
+    ? `?student_profile_id=${encodeURIComponent(studentProfileId)}`
+    : "";
 }
 
-export async function getMyLessonProgress(studentProfileId?: string | null): Promise<LessonProgress[]> {
-  const res = await apiFetch<LessonProgress[]>(`/me/learning/progress${learnerQuery(studentProfileId)}`);
+export async function getMyLessonProgress(
+  studentProfileId?: string | null,
+): Promise<LessonProgress[]> {
+  const res = await apiFetch<LessonProgress[]>(
+    `/me/learning/progress${learnerQuery(studentProfileId)}`,
+  );
   return res.data ?? [];
 }
 
@@ -207,7 +251,12 @@ export type PracticeExamSummary = {
   created_at: string;
 };
 
-export type PracticePaperQuestion = { id: string; position: number; text: string; options: string[] };
+export type PracticePaperQuestion = {
+  id: string;
+  position: number;
+  text: string;
+  options: string[];
+};
 
 export type PracticePaper = {
   id: string;
@@ -262,7 +311,12 @@ export type PracticeExamInput = {
   description?: string;
   duration_minutes: number;
   passing_score: number;
-  questions: { text: string; options: string[]; correct_index: number; explanation?: string }[];
+  questions: {
+    text: string;
+    options: string[];
+    correct_index: number;
+    explanation?: string;
+  }[];
 };
 
 export async function listPracticeExams(): Promise<PracticeExamSummary[]> {
@@ -275,20 +329,37 @@ export async function getPracticePaper(id: string): Promise<PracticePaper> {
   return res.data;
 }
 
-export async function startPracticeAttempt(examId: string): Promise<{ attempt_id: string; started_at: string; expires_at: string }> {
-  const res = await apiFetch<{ attempt_id: string; started_at: string; expires_at: string }>(
-    `/learning/exams/${examId}/attempts`,
-    { method: "POST" }
-  );
+export async function startPracticeAttempt(
+  examId: string,
+): Promise<{ attempt_id: string; started_at: string; expires_at: string }> {
+  const res = await apiFetch<{
+    attempt_id: string;
+    started_at: string;
+    expires_at: string;
+  }>(`/learning/exams/${examId}/attempts`, { method: "POST" });
   return res.data;
 }
 
 export async function submitPracticeAttempt(
   attemptId: string,
-  answers: Record<string, number>
-): Promise<{ attempt_id: string; score: number; passed: boolean; correct: number; total: number; expired: boolean; submitted_at: string }> {
+  answers: Record<string, number>,
+): Promise<{
+  attempt_id: string;
+  score: number;
+  passed: boolean;
+  correct: number;
+  total: number;
+  expired: boolean;
+  submitted_at: string;
+}> {
   const res = await apiFetch<{
-    attempt_id: string; score: number; passed: boolean; correct: number; total: number; expired: boolean; submitted_at: string;
+    attempt_id: string;
+    score: number;
+    passed: boolean;
+    correct: number;
+    total: number;
+    expired: boolean;
+    submitted_at: string;
   }>(`/learning/exams/attempts/${attemptId}/submit`, {
     method: "POST",
     body: JSON.stringify({ answers }),
@@ -301,8 +372,12 @@ export async function listMyAttempts(): Promise<PracticeAttemptItem[]> {
   return res.data ?? [];
 }
 
-export async function getAttemptReview(attemptId: string): Promise<AttemptReview> {
-  const res = await apiFetch<AttemptReview>(`/learning/exams/attempts/${attemptId}`);
+export async function getAttemptReview(
+  attemptId: string,
+): Promise<AttemptReview> {
+  const res = await apiFetch<AttemptReview>(
+    `/learning/exams/attempts/${attemptId}`,
+  );
   return res.data;
 }
 
@@ -311,7 +386,9 @@ export async function listTutorExams(): Promise<PracticeExamSummary[]> {
   return res.data ?? [];
 }
 
-export async function createTutorExam(input: PracticeExamInput): Promise<PracticeExamSummary> {
+export async function createTutorExam(
+  input: PracticeExamInput,
+): Promise<PracticeExamSummary> {
   const res = await apiFetch<PracticeExamSummary>("/tutor/exams", {
     method: "POST",
     body: JSON.stringify(input),
@@ -325,11 +402,17 @@ export async function getTutorExam(id: string): Promise<PracticeExamSummary> {
 }
 
 export async function deleteTutorExam(id: string): Promise<void> {
-  await apiFetch<{ deleted: boolean }>(`/tutor/exams/${id}`, { method: "DELETE" });
+  await apiFetch<{ deleted: boolean }>(`/tutor/exams/${id}`, {
+    method: "DELETE",
+  });
 }
 
-export async function listExamAttempts(examId: string): Promise<PracticeAttemptItem[]> {
-  const res = await apiFetch<PracticeAttemptItem[]>(`/tutor/exams/${examId}/attempts`);
+export async function listExamAttempts(
+  examId: string,
+): Promise<PracticeAttemptItem[]> {
+  const res = await apiFetch<PracticeAttemptItem[]>(
+    `/tutor/exams/${examId}/attempts`,
+  );
   return res.data ?? [];
 }
 
@@ -362,8 +445,18 @@ export type AdminOverview = {
   vetting_submitted: number;
   joins_pending: number;
   tickets_open: number;
-  lessons_today: { id: string; title: string; start_at: string; meeting_url?: string | null }[];
-  recent_audit: { id: string; action: string; target_type: string; created_at: string }[];
+  lessons_today: {
+    id: string;
+    title: string;
+    start_at: string;
+    meeting_url?: string | null;
+  }[];
+  recent_audit: {
+    id: string;
+    action: string;
+    target_type: string;
+    created_at: string;
+  }[];
 };
 
 export async function getAdminOverview(): Promise<AdminOverview> {
@@ -371,8 +464,15 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   return res.data;
 }
 
-export async function sendAdminTestEmail(): Promise<{ sent: boolean; to: string; provider: string }> {
-  const res = await apiFetch<{ sent: boolean; to: string; provider: string }>("/admin/email/test", { method: "POST" });
+export async function sendAdminTestEmail(): Promise<{
+  sent: boolean;
+  to: string;
+  provider: string;
+}> {
+  const res = await apiFetch<{ sent: boolean; to: string; provider: string }>(
+    "/admin/email/test",
+    { method: "POST" },
+  );
   return res.data;
 }
 
@@ -382,7 +482,9 @@ export async function sendAdminTestEmail(): Promise<{ sent: boolean; to: string;
 // WebView. Requires the API callback registered in Google Console.
 
 export async function getGoogleAuthURL(): Promise<string> {
-  const res = await apiFetch<{ url: string; state: string }>("/auth/google/url?mobile=1");
+  const res = await apiFetch<{ url: string; state: string }>(
+    "/auth/google/url?mobile=1",
+  );
   return res.data.url;
 }
 
@@ -397,16 +499,22 @@ export async function listBanks(): Promise<Bank[]> {
 
 export async function resolveBankAccount(
   accountNumber: string,
-  bankCode: string
+  bankCode: string,
 ): Promise<string> {
-  const res = await apiFetch<{ account_name: string }>("/tutors/banks/resolve", {
-    method: "POST",
-    body: JSON.stringify({ account_number: accountNumber, bank_code: bankCode }),
-  });
+  const res = await apiFetch<{ account_name: string }>(
+    "/tutors/banks/resolve",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        account_number: accountNumber,
+        bank_code: bankCode,
+      }),
+    },
+  );
   return res.data.account_name;
 }
 
-// --- NUVORA Plus ---
+// --- YK-Virtual Plus ---
 
 export type PlusStatus = {
   active: boolean;
@@ -419,17 +527,19 @@ export type PlusStatus = {
   };
 };
 
-/** The caller's NUVORA Plus status (for gating offline downloads etc.). */
+/** The caller's YK-Virtual Plus status (for gating offline downloads etc.). */
 export async function getPlusStatus(): Promise<PlusStatus> {
   const res = await apiFetch<PlusStatus>("/me/plus");
   return res.data;
 }
 
 /** Get an authorized video URL to download a recorded lesson offline (Plus). */
-export async function getPlusDownloadUrl(lessonId: string): Promise<string | null> {
+export async function getPlusDownloadUrl(
+  lessonId: string,
+): Promise<string | null> {
   const res = await apiFetch<{ video_url: string | null }>(
     `/me/plus/library/${lessonId}/download`,
-    { method: "POST" }
+    { method: "POST" },
   );
   return res.data.video_url ?? null;
 }

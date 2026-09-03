@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NUVORA — G4 staging evidence pack (self-contained scenarios, no live keys).
+# YK-Virtual — G4 staging evidence pack (self-contained scenarios, no live keys).
 #
 # Boots the API (in-memory mode, seeded demo fixtures) and proves the
 # provider-facing contracts that CAN be proven without real credentials:
@@ -172,7 +172,7 @@ assert_code "flutterwave webhook accepted" 200 "$c"
 
 # ====================================================== 2. MEETINGS (G4.2) ===
 note "G4.2 MEETING LINKS"
-c=$(req "$J_D" POST /auth/login '{"email":"tutor@nuvora.com","password":"password123"}')
+c=$(req "$J_D" POST /auth/login '{"email":"tutor@ykaycollege.com","password":"password123"}')
 assert_code "login demo tutor" 200 "$c"
 # Fetch the demo tutor's first scheduled lesson (session-resolved, G1.2).
 c=$(req "$J_D" GET /me/tutor-lessons)

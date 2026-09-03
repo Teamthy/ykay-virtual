@@ -19,7 +19,7 @@ const config: Config = {
       colors: {
         /*
          * --------------------------------------------------------
-         * NUVORA BRAND
+         * YK-Virtual BRAND
          * --------------------------------------------------------
          */
 
@@ -51,7 +51,6 @@ const config: Config = {
         black: "#000000",
         white: "#FFFFFF",
 
-
         /*
          * --------------------------------------------------------
          * TEXT / INK
@@ -72,7 +71,6 @@ const config: Config = {
           50: "#F8F7F2",
         },
 
-
         /*
          * --------------------------------------------------------
          * SURFACES
@@ -88,7 +86,6 @@ const config: Config = {
           black: "#000000",
         },
 
-
         /*
          * --------------------------------------------------------
          * BORDERS
@@ -100,7 +97,6 @@ const config: Config = {
           light: "#EDE8DC",
           dark: "#285442",
         },
-
 
         /*
          * --------------------------------------------------------
@@ -127,7 +123,6 @@ const config: Config = {
           DEFAULT: "#013920",
           light: "#DFFFF2",
         },
-
 
         /*
          * --------------------------------------------------------
@@ -190,18 +185,12 @@ const config: Config = {
         },
       },
 
-
       /* ==========================================================
          TYPOGRAPHY
          ========================================================== */
 
       fontFamily: {
-        display: [
-          "var(--font-display)",
-          "Anton",
-          "system-ui",
-          "sans-serif",
-        ],
+        display: ["var(--font-display)", "Anton", "system-ui", "sans-serif"],
 
         body: [
           "var(--font-body)",
@@ -221,7 +210,6 @@ const config: Config = {
           "sans-serif",
         ],
       },
-
 
       /*
        * ==========================================================
@@ -279,7 +267,6 @@ const config: Config = {
         ],
       },
 
-
       /* ==========================================================
          BORDER RADIUS
          ========================================================== */
@@ -292,7 +279,6 @@ const config: Config = {
         "4xl": "2rem",
         full: "9999px",
       },
-
 
       /* ==========================================================
          BOX SHADOWS
@@ -312,7 +298,6 @@ const config: Config = {
         "brand-lg": "0 20px 50px rgba(112, 242, 80, 0.22)",
       },
 
-
       /* ==========================================================
          ANIMATIONS
          ========================================================== */
@@ -324,15 +309,12 @@ const config: Config = {
 
         "scale-in": "scaleIn 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
 
-        "hero-in":
-          "heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "hero-in": "heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
 
-        "hero-in-late":
-          "heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both",
+        "hero-in-late": "heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both",
 
         float: "floatY 5s ease-in-out infinite",
       },
-
 
       /* ==========================================================
          KEYFRAMES
@@ -408,13 +390,12 @@ const config: Config = {
         },
       },
 
-
       /* ==========================================================
          TRANSITIONS
          ========================================================== */
 
       transitionTimingFunction: {
-        "brand": "cubic-bezier(0.22, 1, 0.36, 1)",
+        brand: "cubic-bezier(0.22, 1, 0.36, 1)",
       },
     },
   },

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NUVORA — automated backup/restore drill (G3.4, remediation plan).
+# YK-Virtual — automated backup/restore drill (G3.4, remediation plan).
 #
 # Proves restores actually work: takes the newest backup, restores it into a
 # throwaway database on the same server, verifies that EVERY public table's
@@ -13,7 +13,7 @@
 #
 # Env: DATABASE_URL (source), BACKUP_DIR (default ./backups),
 #      BACKUP_MAX_AGE_HOURS (default 26), BACKUP_METRICS_DIR (optional —
-#      writes nuvora_dr_drill.prom heartbeat for Prometheus alerting).
+#      writes ykv_dr_drill.prom heartbeat for Prometheus alerting).
 set -euo pipefail
 
 cd "$(cd "$(dirname "$0")/.." && pwd)"
@@ -40,7 +40,7 @@ MAX_AGE_HOURS="${BACKUP_MAX_AGE_HOURS:-26}"
 
 # ── 1. Pick the newest backup and check freshness ──────────────────────────
 if [ -z "$DUMP" ]; then
-  DUMP=$(ls -t "$BACKUP_DIR"/nuvora-*.dump 2>/dev/null | head -1 || true)
+  DUMP=$(ls -t "$BACKUP_DIR"/yk-virtual-*.dump 2>/dev/null | head -1 || true)
 fi
 [ -n "$DUMP" ] || { echo "✗ no backup found in $BACKUP_DIR — run scripts/backup.sh first"; exit 1; }
 [ -f "$DUMP" ] || { echo "✗ dump not found: $DUMP"; exit 1; }
@@ -52,7 +52,7 @@ fi
 echo "== Drill target: $DUMP ($(du -h "$DUMP" | cut -f1), $(find "$DUMP" -mmin -60 | grep -q . && echo fresh)) =="
 
 # ── 2. Create a scratch database on the same server ────────────────────────
-DRILL="nuvora_drill_$(date -u +%Y%m%dT%H%M%SZ | tr -d 'T:' | tr '[:upper:]' '[:lower:]')"
+DRILL="ykv_drill_$(date -u +%Y%m%dT%H%M%SZ | tr -d 'T:' | tr '[:upper:]' '[:lower:]')"
 DRILL_URL=$(printf '%s' "$SOURCE" | sed -E 's#^(postgres://[^/]+/)[^/?]*#\1'"$DRILL"'#')
 
 echo "== Creating scratch database $DRILL =="
@@ -107,10 +107,10 @@ if psql "$SOURCE" -tAc "SELECT 1 FROM pg_tables WHERE schemaname='public' AND ta
   [ "$SRC_V" = "$DST_V" ] || FAIL=1
 fi
 
-# ── 7. Heartbeat for alerting (NuvoraDrillOverdue) ─────────────────────────
+# ── 7. Heartbeat for alerting (YK-VirtualDrillOverdue) ─────────────────────────
 if [ "$FAIL" = "0" ] && [ -n "${BACKUP_METRICS_DIR:-}" ]; then
   mkdir -p "$BACKUP_METRICS_DIR"
-  printf "nuvora_dr_drill_last_success_timestamp %s\n" "$(date +%s)" > "$BACKUP_METRICS_DIR/nuvora_dr_drill.prom"
+  printf "ykv_dr_drill_last_success_timestamp %s\n" "$(date +%s)" > "$BACKUP_METRICS_DIR/ykv_dr_drill.prom"
   echo "== Drill heartbeat written to $BACKUP_METRICS_DIR =="
 fi
 

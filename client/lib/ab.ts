@@ -9,7 +9,7 @@
 //   - Assignment is exposed to Plausible as an event prop so results are
 //     readable as a goal conversion split (see lib/analytics.ts).
 
-const PREFIX = "nuvora:ab:";
+const PREFIX = "ykvirtual:ab:";
 
 export type ABVariant = "control" | "b";
 

@@ -86,7 +86,7 @@ func TestPlusReportService_SendWeeklyReports(t *testing.T) {
 	_, _ = plusSvc.ActivatePlan(ctx, subscriber, plus.PlanPlus, false)
 
 	mail := &stubEmailSender{}
-	svc := NewPlusReportService(store.Plus, store.Users, mail, "https://nuvora.com")
+	svc := NewPlusReportService(store.Plus, store.Users, mail, "https://virtual.ykaycollege.com")
 	n, err := svc.SendWeeklyReports(ctx)
 	require.NoError(t, err)
 	assert.Equal(t, 1, n)

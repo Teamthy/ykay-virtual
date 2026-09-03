@@ -1,9 +1,9 @@
-# NUVORA — Local fixture data (development only)
+# YK-Virtual — Local fixture data (development only)
 
 ## Local operator seed (Postgres)
 
 Creates **new** local users with **random passwords** (printed once, not in git).
-Does not use `admin@nuvora.com` / published hashes.
+Does not use `admin@ykaycollege.com` / published hashes.
 
 ```bash
 docker compose up -d postgres redis
@@ -13,13 +13,13 @@ go run ./cmd/seedusers
 
 Accounts:
 
-| Email | Role |
-|---|---|
-| `local.super@nuvora.test` | SUPER_ADMIN (MFA on login) |
-| `local.academic@nuvora.test` | ACADEMIC_ADMIN (MFA on login) |
-| `local.parent@nuvora.test` | PARENT |
-| `local.tutor@nuvora.test` | TUTOR |
-| `local.student@nuvora.test` | STUDENT |
+| Email                           | Role                          |
+| ------------------------------- | ----------------------------- |
+| `local.super@ykvirtual.test`    | SUPER_ADMIN (MFA on login)    |
+| `local.academic@ykvirtual.test` | ACADEMIC_ADMIN (MFA on login) |
+| `local.parent@ykvirtual.test`   | PARENT                        |
+| `local.tutor@ykvirtual.test`    | TUTOR                         |
+| `local.student@ykvirtual.test`  | STUDENT                       |
 
 Passwords are written to `seed-local-users.once.txt` (gitignored). Delete that file after you copy them.
 
@@ -33,21 +33,20 @@ Password is **only** from the environment. Never commit it.
 # local Postgres
 export SEED_OPERATOR_PASSWORD='your-password-here'
 go run ./cmd/seedusers --ops-only \
-  --academic nuvorayk@gmail.com \
+  --academic ykvirtualyk@gmail.com \
   --super olusanyatimothy54@gmail.com
 ```
 
-| Email | Role | After MFA |
-|---|---|---|
-| `nuvorayk@gmail.com` | ACADEMIC_ADMIN | `/admin` |
-| `olusanyatimothy54@gmail.com` | SUPER_ADMIN | `/admin` and `/admin/super` |
+| Email                         | Role           | After MFA                   |
+| ----------------------------- | -------------- | --------------------------- |
+| `ykvirtualyk@gmail.com`       | ACADEMIC_ADMIN | `/admin`                    |
+| `olusanyatimothy54@gmail.com` | SUPER_ADMIN    | `/admin` and `/admin/super` |
 
 Both roles require **MFA** after the password. Local/dev: code is in the API log. Hosted: the API must be able to email that address.
 
 The API must use the **same** `DATABASE_URL`. Vercel frontend alone cannot create these users.
 
 Production hosted DB (Render etc.): set `DATABASE_URL` to that database and add `--allow-prod`. Do not enable `SEED_DEMO_DATA`.
-
 
 > **Never use these accounts in a shared environment.** Fixture data is now
 > disabled by default, including when the API uses its in-memory development
@@ -66,12 +65,12 @@ Migrations `000019` / `000034` used to insert these rows into Postgres.
 valid on a migrated database or in production. Use them only in the
 in-memory store after explicitly setting `SEED_DEMO_DATA=true`.
 
-| Role    | Email              | Password     | Dashboard                          | User ID (suffix) |
-|---------|--------------------|--------------|------------------------------------|------------------|
-| Admin   | `admin@nuvora.com` | `DEMO_PASSWORD` | `/admin` | `…00a1` |
-| Parent  | `parent@nuvora.com`| `DEMO_PASSWORD` | `/dashboard` | `…00a2` |
-| Tutor   | `tutor@nuvora.com` | `DEMO_PASSWORD` | `/tutor-dashboard` | `…00a3` |
-| Student | `student@nuvora.com`| `DEMO_PASSWORD` | `/student-dashboard` | `…00a4` |
+| Role    | Email                     | Password        | Dashboard            | User ID (suffix) |
+| ------- | ------------------------- | --------------- | -------------------- | ---------------- |
+| Admin   | `admin@ykaycollege.com`   | `DEMO_PASSWORD` | `/admin`             | `…00a1`          |
+| Parent  | `parent@ykaycollege.com`  | `DEMO_PASSWORD` | `/dashboard`         | `…00a2`          |
+| Tutor   | `tutor@ykaycollege.com`   | `DEMO_PASSWORD` | `/tutor-dashboard`   | `…00a3`          |
+| Student | `student@ykaycollege.com` | `DEMO_PASSWORD` | `/student-dashboard` | `…00a4`          |
 
 > Note: sign-in by **6-digit email code** (`/login-code`) also works for any
 > registered email — codes appear in the API log (`/tmp/api32.log` in this
@@ -79,23 +78,23 @@ in-memory store after explicitly setting `SEED_DEMO_DATA=true`.
 
 ## Learner & tutor profiles (used by the LMS)
 
-| Profile            | ID (suffix) | Used by                                             |
-|--------------------|-------------|-----------------------------------------------------|
-| Student profile    | `…0001`     | `/lms`, assignments, quizzes, attendance, grades    |
-| Tutor profile (Oluwatobi) | `…0102` | `/lms/tutor`, teaching console, availability        |
+| Profile                   | ID (suffix) | Used by                                          |
+| ------------------------- | ----------- | ------------------------------------------------ |
+| Student profile           | `…0001`     | `/lms`, assignments, quizzes, attendance, grades |
+| Tutor profile (Oluwatobi) | `…0102`     | `/lms/tutor`, teaching console, availability     |
 
 ## Catalogue & LMS demo content (seeded)
 
-| Item | Slug / ID | Details |
-|------|-----------|---------|
-| Programme — Nigerian Curriculum (Core Maths) | `/programmes/nigerian-curriculum` | Format: cohort |
-| Programme — British Curriculum (IGCSE Prep) | `/programmes/british-curriculum` | Format: cohort |
-| Cohort — UTME 2026 Mastery (320+) | `/cohorts/utme-2026-mastery` (`…c010`) | 3 lessons, **2 assignments**, **1 auto-graded quiz (3 Qs)**, attendance + graded submission for learner `…0001`, enrollment CONFIRMED |
-| Cohort — IGCSE Computer Science | `/cohorts/igcse-computer-science` (`…c011`) | 3 lessons |
-| Cohort — WAEC Mathematics Intensive | `/cohorts/waec-mathematics-intensive` (`…c012`) | 3 lessons |
-| Subjects | `/subjects` | Mathematics, English, Physics |
-| Tutors | `/tutors` | Chinasa, Oluwatobi (mock profiles) |
-| Lessons | `/cohorts/…c010/lessons` | Intro + diagnostic · Algebra foundations · Comprehension strategies (Google Meet) |
+| Item                                         | Slug / ID                                       | Details                                                                                                                               |
+| -------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Programme — Nigerian Curriculum (Core Maths) | `/programmes/nigerian-curriculum`               | Format: cohort                                                                                                                        |
+| Programme — British Curriculum (IGCSE Prep)  | `/programmes/british-curriculum`                | Format: cohort                                                                                                                        |
+| Cohort — UTME 2026 Mastery (320+)            | `/cohorts/utme-2026-mastery` (`…c010`)          | 3 lessons, **2 assignments**, **1 auto-graded quiz (3 Qs)**, attendance + graded submission for learner `…0001`, enrollment CONFIRMED |
+| Cohort — IGCSE Computer Science              | `/cohorts/igcse-computer-science` (`…c011`)     | 3 lessons                                                                                                                             |
+| Cohort — WAEC Mathematics Intensive          | `/cohorts/waec-mathematics-intensive` (`…c012`) | 3 lessons                                                                                                                             |
+| Subjects                                     | `/subjects`                                     | Mathematics, English, Physics                                                                                                         |
+| Tutors                                       | `/tutors`                                       | Chinasa, Oluwatobi (mock profiles)                                                                                                    |
+| Lessons                                      | `/cohorts/…c010/lessons`                        | Intro + diagnostic · Algebra foundations · Comprehension strategies (Google Meet)                                                     |
 
 ## Demo quiz answers
 
@@ -121,7 +120,7 @@ screen → authorized redirect URIs).
 ```bash
 # login (returns ykay_session cookie)
 curl -c jar -X POST localhost:8080/api/v1/auth/login -H 'Content-Type: application/json' \
-  -d '{"email":"student@nuvora.com","password":"password123"}'
+  -d '{"email":"student@ykaycollege.com","password":"password123"}'
 
 # LMS surface
 curl -b jar "localhost:8080/api/v1/me/lessons?student_profile_id=00000000-0000-0000-0000-000000000001"

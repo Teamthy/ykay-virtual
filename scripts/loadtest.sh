@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NUVORA — load-test harness (G6.1 item 5 + G7 capacity evidence).
+# YK-Virtual — load-test harness (G6.1 item 5 + G7 capacity evidence).
 #
 # Boots the API (real Postgres when reachable, else memory demo) and runs
 # hey against the five riskiest paths:
@@ -93,7 +93,7 @@ curl -s -c "$COOKIE" -X POST "$BASE/auth/login" -H 'Content-Type: application/js
   -d "{\"email\":\"$PARENT_EMAIL\",\"password\":\"password123\"}" >/dev/null
 
 echo ""
-echo "═══════════════════════════ NUVORA LOAD TEST ($MODE) ═══════════════════════════"
+echo "═══════════════════════════ YK-Virtual LOAD TEST ($MODE) ═══════════════════════════"
 echo ""
 
 # 1. Catalogue browse (cached)
@@ -132,7 +132,7 @@ if [ -n "$OID" ]; then
 fi
 
 # 5. Authenticated lessons
-run "me/lessons (session)" 20 2000 GET "/me/lessons" "" "Cookie: $(grep nuvora_session "$COOKIE" | awk '{print $6"="$7}')"
+run "me/lessons (session)" 20 2000 GET "/me/lessons" "" "Cookie: $(grep ykv_session "$COOKIE" | awk '{print $6"="$7}')"
 
 echo ""
 echo "════════════════════════════════════════════════════════════════════════════════"

@@ -18,7 +18,7 @@ import {
   whatsAppHref,
 } from "@/components/layout/WhatsAppButton";
 
-const SHOWN_KEY = "nuvora-lead-shown";
+const SHOWN_KEY = "yk-virtual-lead-shown";
 
 function leadShownThisSession(): boolean {
   try {
@@ -189,7 +189,7 @@ export function LeadCapture({
                   <a
                     href={whatsAppHref(
                       whatsapp.link,
-                      `Hello NUVORA! I'm ${name} (${phone}). I was browsing ${source} and I'd like to talk.`,
+                      `Hello YK-Virtual! I'm ${name} (${phone}). I was browsing ${source} and I'd like to talk.`,
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -302,8 +302,8 @@ export function LeadCapture({
                   <Phone size={15} /> {busy ? "Sending…" : "Call me back"}
                 </button>
                 <p className="text-center text-[11px] text-ink-400">
-                  We only use these details to call you about NUVORA — no spam,
-                  ever.
+                  We only use these details to call you about YK-Virtual — no
+                  spam, ever.
                 </p>
               </form>
             )}

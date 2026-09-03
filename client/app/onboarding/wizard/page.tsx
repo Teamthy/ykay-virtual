@@ -58,7 +58,11 @@ function WizardInner() {
     const bd = new Date(dob);
     const now = new Date();
     let age = now.getFullYear() - bd.getFullYear();
-    if (now.getMonth() < bd.getMonth() || (now.getMonth() === bd.getMonth() && now.getDate() < bd.getDate())) age--;
+    if (
+      now.getMonth() < bd.getMonth() ||
+      (now.getMonth() === bd.getMonth() && now.getDate() < bd.getDate())
+    )
+      age--;
     return age < 15;
   })();
 
@@ -66,7 +70,7 @@ function WizardInner() {
     mutationFn: markOnboarded,
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["session"] });
-      toast.success("You're all set - welcome to NUVORA!");
+      toast.success("You're all set - welcome to YK-Virtual!");
       router.replace(next ?? homeForRoles(user?.roles ?? []));
     },
     onError: () => toast.error("Could not save - please try again"),
@@ -84,8 +88,13 @@ function WizardInner() {
       }
       if (isStudent) {
         await ensureOwnLearner({
-          first_name: (user?.first_name || firstName || user?.email.split("@")[0] || "Learner").trim(),
-          last_name: (user?.last_name || "NUVORA").trim(),
+          first_name: (
+            user?.first_name ||
+            firstName ||
+            user?.email.split("@")[0] ||
+            "Learner"
+          ).trim(),
+          last_name: (user?.last_name || "YK-Virtual").trim(),
           current_level: level || undefined,
           date_of_birth: dob || undefined,
         });
@@ -107,11 +116,26 @@ function WizardInner() {
     <main className="min-h-screen bg-surface flex items-center justify-center p-6">
       <div className="w-full max-w-lg rounded-3xl border border-ink-200 bg-white p-8 shadow-card">
         {/* Stepper */}
-        <ol className="flex items-center gap-2 mb-8" aria-label="Wizard progress">
-          {["Welcome", isParent ? "Your learner" : isStudent ? "Your level" : "Your subjects", "Goals"].map((label, i) => (
+        <ol
+          className="flex items-center gap-2 mb-8"
+          aria-label="Wizard progress"
+        >
+          {[
+            "Welcome",
+            isParent
+              ? "Your learner"
+              : isStudent
+                ? "Your level"
+                : "Your subjects",
+            "Goals",
+          ].map((label, i) => (
             <li key={label} className="flex-1">
-              <div className={`h-1.5 rounded-full ${i <= step ? "bg-primary" : "bg-ink-100"}`} />
-              <p className={`mt-2 text-[11px] font-bold uppercase tracking-wide ${i <= step ? "text-ink-900" : "text-ink-400"}`}>
+              <div
+                className={`h-1.5 rounded-full ${i <= step ? "bg-primary" : "bg-ink-100"}`}
+              />
+              <p
+                className={`mt-2 text-[11px] font-bold uppercase tracking-wide ${i <= step ? "text-ink-900" : "text-ink-400"}`}
+              >
                 {i + 1}. {label}
               </p>
             </li>
@@ -121,13 +145,20 @@ function WizardInner() {
         {step === 0 && (
           <section>
             <p className="tag-handwritten mb-2">Welcome</p>
-            <h1 className="font-display text-3xl text-deep">Let&apos;s set you up, {user.first_name || user.email.split("@")[0]}</h1>
+            <h1 className="font-display text-3xl text-deep">
+              Let&apos;s set you up,{" "}
+              {user.first_name || user.email.split("@")[0]}
+            </h1>
             <p className="mt-3 text-sm text-ink-600 leading-relaxed">
-              You&apos;re signed in as a <strong>{roleLabel}</strong>. In two quick steps we&apos;ll
-              personalise your dashboard, recommendations and notifications.
+              You&apos;re signed in as a <strong>{roleLabel}</strong>. In two
+              quick steps we&apos;ll personalise your dashboard, recommendations
+              and notifications.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-              <Link href="/onboarding?step=3" className="text-sm font-semibold text-deep hover:underline">
+              <Link
+                href="/onboarding?step=3"
+                className="text-sm font-semibold text-deep hover:underline"
+              >
                 Choose a different role
               </Link>
               <Button onClick={() => setStep(1)}>Continue</Button>
@@ -137,9 +168,15 @@ function WizardInner() {
 
         {step === 1 && isParent && (
           <section>
-            <h2 className="font-display text-2xl text-deep">Add your first learner</h2>
-            <p className="mt-2 text-sm text-ink-600">We use their level to recommend cohorts, programmes and tutors.</p>
-            <label className="mt-6 block text-xs font-bold uppercase tracking-wide text-ink-500">First name</label>
+            <h2 className="font-display text-2xl text-deep">
+              Add your first learner
+            </h2>
+            <p className="mt-2 text-sm text-ink-600">
+              We use their level to recommend cohorts, programmes and tutors.
+            </p>
+            <label className="mt-6 block text-xs font-bold uppercase tracking-wide text-ink-500">
+              First name
+            </label>
             <input
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
@@ -150,16 +187,24 @@ function WizardInner() {
               <CurriculumLevelSelect value={level} onChange={setLevel} />
             </div>
             <div className="mt-8 flex justify-between">
-              <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
-              <Button onClick={() => setStep(2)} disabled={!firstName.trim()}>Continue</Button>
+              <Button variant="ghost" onClick={() => setStep(0)}>
+                Back
+              </Button>
+              <Button onClick={() => setStep(2)} disabled={!firstName.trim()}>
+                Continue
+              </Button>
             </div>
           </section>
         )}
 
         {step === 1 && isStudent && (
           <section>
-            <h2 className="font-display text-2xl text-deep">What level are you at?</h2>
-            <p className="mt-2 text-sm text-ink-600">Recommendations and quizzes tune to your level.</p>
+            <h2 className="font-display text-2xl text-deep">
+              What level are you at?
+            </h2>
+            <p className="mt-2 text-sm text-ink-600">
+              Recommendations and quizzes tune to your level.
+            </p>
             <div className="mt-6">
               <CurriculumLevelSelect value={level} onChange={setLevel} />
             </div>
@@ -175,11 +220,16 @@ function WizardInner() {
             />
             {dob && isMinor && (
               <p className="mt-2 rounded-xl bg-primary-light px-4 py-3 text-xs font-semibold text-deep">
-                🛡️ You&apos;re under 15, so this will be a <strong>parent-guided account</strong> — a parent or guardian manages bookings and payments for you. Everything you see here still works.
+                🛡️ You&apos;re under 15, so this will be a{" "}
+                <strong>parent-guided account</strong> — a parent or guardian
+                manages bookings and payments for you. Everything you see here
+                still works.
               </p>
             )}
             <div className="mt-8 flex justify-between">
-              <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
+              <Button variant="ghost" onClick={() => setStep(0)}>
+                Back
+              </Button>
               <Button onClick={() => setStep(2)}>Continue</Button>
             </div>
           </section>
@@ -187,18 +237,28 @@ function WizardInner() {
 
         {step === 1 && isTutor && (
           <section>
-            <h2 className="font-display text-2xl text-deep">What do you teach?</h2>
+            <h2 className="font-display text-2xl text-deep">
+              What do you teach?
+            </h2>
             <p className="mt-2 text-sm text-ink-600">
-              You&apos;ll pick subjects during vetting - for now, tell us your strongest area so we can
-              order your onboarding.
+              You&apos;ll pick subjects during vetting - for now, tell us your
+              strongest area so we can order your onboarding.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              {["Mathematics", "English", "Sciences", "Computer Science", "Exam Prep"].map((s) => (
+              {[
+                "Mathematics",
+                "English",
+                "Sciences",
+                "Computer Science",
+                "Exam Prep",
+              ].map((s) => (
                 <button
                   key={s}
                   onClick={() => setLevel(s)}
                   className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
-                    level === s ? "bg-primary text-ink-900" : "border border-ink-200 text-ink-600 hover:bg-ink-50"
+                    level === s
+                      ? "bg-primary text-ink-900"
+                      : "border border-ink-200 text-ink-600 hover:bg-ink-50"
                   }`}
                 >
                   {s}
@@ -206,7 +266,9 @@ function WizardInner() {
               ))}
             </div>
             <div className="mt-8 flex justify-between">
-              <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
+              <Button variant="ghost" onClick={() => setStep(0)}>
+                Back
+              </Button>
               <Button onClick={() => setStep(2)}>Continue</Button>
             </div>
           </section>
@@ -219,7 +281,9 @@ function WizardInner() {
               Your admin console is ready - pick your goals to finish setup.
             </p>
             <div className="mt-8 flex justify-between">
-              <Button variant="ghost" onClick={() => setStep(0)}>Back</Button>
+              <Button variant="ghost" onClick={() => setStep(0)}>
+                Back
+              </Button>
               <Button onClick={() => setStep(2)}>Continue</Button>
             </div>
           </section>
@@ -227,8 +291,12 @@ function WizardInner() {
 
         {step === 2 && (
           <section>
-            <h2 className="font-display text-2xl text-deep">What are your goals?</h2>
-            <p className="mt-2 text-sm text-ink-600">Pick as many as you like - they shape your “For you” feed.</p>
+            <h2 className="font-display text-2xl text-deep">
+              What are your goals?
+            </h2>
+            <p className="mt-2 text-sm text-ink-600">
+              Pick as many as you like - they shape your “For you” feed.
+            </p>
             <div className="mt-6 space-y-2">
               {GOALS.map((g) => {
                 const active = goals.includes(g.id);
@@ -236,10 +304,16 @@ function WizardInner() {
                   <button
                     key={g.id}
                     onClick={() =>
-                      setGoals((prev) => (active ? prev.filter((x) => x !== g.id) : [...prev, g.id]))
+                      setGoals((prev) =>
+                        active
+                          ? prev.filter((x) => x !== g.id)
+                          : [...prev, g.id],
+                      )
                     }
                     className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
-                      active ? "border-primary bg-primary/10 text-ink-900" : "border-ink-200 text-ink-600 hover:bg-ink-50"
+                      active
+                        ? "border-primary bg-primary/10 text-ink-900"
+                        : "border-ink-200 text-ink-600 hover:bg-ink-50"
                     }`}
                   >
                     <span aria-hidden>{g.icon}</span> {g.label}
@@ -248,7 +322,9 @@ function WizardInner() {
               })}
             </div>
             <div className="mt-8 flex justify-between">
-              <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
+              <Button variant="ghost" onClick={() => setStep(1)}>
+                Back
+              </Button>
               <Button onClick={() => void finish()} disabled={saving}>
                 {saving ? "Saving…" : "Finish - take me to my dashboard"}
               </Button>

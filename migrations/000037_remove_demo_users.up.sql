@@ -2,7 +2,7 @@
 --
 -- SECURITY (YK-001): migrations/000034 seeded login-able demo users whose
 -- credentials are documented in the repo (password123), including a
--- SUPER_ADMIN (admin@nuvora.com). If that migration ran against a production
+-- SUPER_ADMIN (admin@ykaycollege.com). If that migration ran against a production
 -- database, any attacker who knows the documented password can take over the
 -- platform. This migration neutralises every demo identity in ANY environment
 -- it runs in:
@@ -23,10 +23,10 @@
 DO $$
 DECLARE
   v_demo_user_ids UUID[] := ARRAY[
-    '00000000-0000-0000-0000-0000000000b1', -- admin@nuvora.com  (SUPER_ADMIN)
-    '00000000-0000-0000-0000-0000000000b2', -- parent@nuvora.com
-    '00000000-0000-0000-0000-0000000000b3', -- tutor@nuvora.com
-    '00000000-0000-0000-0000-0000000000b4'  -- student@nuvora.com
+    '00000000-0000-0000-0000-0000000000b1', -- admin@ykaycollege.com  (SUPER_ADMIN)
+    '00000000-0000-0000-0000-0000000000b2', -- parent@ykaycollege.com
+    '00000000-0000-0000-0000-0000000000b3', -- tutor@ykaycollege.com
+    '00000000-0000-0000-0000-0000000000b4'  -- student@ykaycollege.com
   ];
 BEGIN
   -- 1) Revoke every session belonging to a demo user.

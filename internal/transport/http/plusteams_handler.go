@@ -9,7 +9,7 @@ import (
 	"ykay-virtual/pkg"
 )
 
-// PlusTeamsHandler — NUVORA Plus Teams seat management (000069). Institution
+// PlusTeamsHandler — YK-Virtual Plus Teams seat management (000069). Institution
 // OWNER/ADMIN (or platform admin) manage seats; the institution console shows
 // allocation + holders.
 type PlusTeamsHandler struct {

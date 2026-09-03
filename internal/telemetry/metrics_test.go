@@ -42,11 +42,11 @@ func TestMiddlewareRecordsHTTP(t *testing.T) {
 	handler.ServeHTTP(httptest.NewRecorder(), req)
 
 	want := `
-# HELP nuvora_http_requests_total HTTP requests handled, by method, normalized route and status class.
-# TYPE nuvora_http_requests_total counter
-nuvora_http_requests_total{code="201",method="POST",route="/api/v1/tutors/:id"} 1
+# HELP ykv_http_requests_total HTTP requests handled, by method, normalized route and status class.
+# TYPE ykv_http_requests_total counter
+ykv_http_requests_total{code="201",method="POST",route="/api/v1/tutors/:id"} 1
 `
-	if err := testutil.CollectAndCompare(m.HTTPRequestsTotal, strings.NewReader(want), "nuvora_http_requests_total"); err != nil {
+	if err := testutil.CollectAndCompare(m.HTTPRequestsTotal, strings.NewReader(want), "ykv_http_requests_total"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -58,7 +58,7 @@ func TestMiddlewareSkipsMetricsScrape(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
 	handler.ServeHTTP(httptest.NewRecorder(), req)
 
-	if got := testutil.CollectAndCount(m.HTTPRequestsTotal, "nuvora_http_requests_total"); got != 0 {
+	if got := testutil.CollectAndCount(m.HTTPRequestsTotal, "ykv_http_requests_total"); got != 0 {
 		t.Fatalf("scrape path must not be self-instrumented, got %d series", got)
 	}
 }
@@ -92,7 +92,7 @@ func TestHandlerWithToken(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected 200 with token, got %d", rr.Code)
 	}
-	if !strings.Contains(rr.Body.String(), `nuvora_build_info{version="test-version"} 1`) {
+	if !strings.Contains(rr.Body.String(), `ykv_build_info{version="test-version"} 1`) {
 		t.Fatalf("build info missing from scrape:\n%s", rr.Body.String())
 	}
 }

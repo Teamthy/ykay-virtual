@@ -3,7 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookOpen, ChevronRight, Home, MessageSquare, Search, Send, Star, X } from "lucide-react";
+import {
+  BookOpen,
+  ChevronRight,
+  Home,
+  MessageSquare,
+  Search,
+  Send,
+  Star,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   createChatThread,
@@ -60,7 +69,10 @@ export function ChatWidget() {
 
   useEffect(() => {
     if (anchor === null && typeof window !== "undefined") {
-      setAnchor({ x: window.innerWidth - 32 - 56, y: window.innerHeight - 32 - 56 });
+      setAnchor({
+        x: window.innerWidth - 32 - 56,
+        y: window.innerHeight - 32 - 56,
+      });
     }
   }, [anchor]);
 
@@ -80,7 +92,11 @@ export function ChatWidget() {
   const launcherMove = (e: React.PointerEvent<HTMLButtonElement>) => {
     const d = drag.current;
     if (!d || !d.active || typeof window === "undefined") return;
-    if (Math.abs(e.clientX - d.startX) > 4 || Math.abs(e.clientY - d.startY) > 4) d.moved = true;
+    if (
+      Math.abs(e.clientX - d.startX) > 4 ||
+      Math.abs(e.clientY - d.startY) > 4
+    )
+      d.moved = true;
     if (!d.moved) return;
     const size = 56;
     setAnchor({
@@ -101,7 +117,8 @@ export function ChatWidget() {
   });
 
   useEffect(() => {
-    if (open && user && !threadId && threads.data?.length) setThreadId(threads.data[0].id);
+    if (open && user && !threadId && threads.data?.length)
+      setThreadId(threads.data[0].id);
   }, [open, user, threads.data, threadId]);
 
   const messages = useQuery({
@@ -118,12 +135,16 @@ export function ChatWidget() {
     const all = getHelpArticles();
     const q = kbQuery.trim().toLowerCase();
     if (!q) return all.slice(0, 8);
-    return all.filter((a) => a.q.toLowerCase().includes(q) || a.a.toLowerCase().includes(q)).slice(0, 12);
+    return all
+      .filter(
+        (a) => a.q.toLowerCase().includes(q) || a.a.toLowerCase().includes(q),
+      )
+      .slice(0, 12);
   }, [kbQuery]);
 
   const ensureThread = async () => {
     if (threadId) return threadId;
-    const t = await createChatThread("NUVORA guide");
+    const t = await createChatThread("YK-Virtual guide");
     setThreadId(t.id);
     qc.invalidateQueries({ queryKey: ["chat", "widget-threads"] });
     return t.id;
@@ -157,8 +178,20 @@ export function ChatWidget() {
         const list = (old as ChatMessage[] | undefined) ?? [];
         return [
           ...list,
-          { id: `u-${Date.now()}`, thread_id: tId, role: "user", content: text, created_at: new Date().toISOString() },
-          { id: `a-${Date.now()}`, thread_id: tId, role: "assistant", content: reply, created_at: new Date().toISOString() },
+          {
+            id: `u-${Date.now()}`,
+            thread_id: tId,
+            role: "user",
+            content: text,
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: `a-${Date.now()}`,
+            thread_id: tId,
+            role: "assistant",
+            content: reply,
+            created_at: new Date().toISOString(),
+          },
         ];
       });
       qc.invalidateQueries({ queryKey: ["chat", "widget-messages", tId] });
@@ -184,7 +217,9 @@ export function ChatWidget() {
       setEscalated(true);
       qc.invalidateQueries({ queryKey: ["chat", "widget-messages", tId] });
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : "Could not reach support");
+      setSendError(
+        err instanceof Error ? err.message : "Could not reach support",
+      );
     } finally {
       setSending(false);
     }
@@ -202,7 +237,11 @@ export function ChatWidget() {
   };
 
   const liveMsgs: Bubble[] = user
-    ? (messages.data ?? []).map((m) => ({ id: m.id, role: m.role, content: m.content }))
+    ? (messages.data ?? []).map((m) => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+      }))
     : guestMsgs;
   const showWelcome = liveMsgs.length === 0;
 
@@ -221,12 +260,25 @@ export function ChatWidget() {
               </span>
               <div>
                 <p className="text-sm font-bold leading-tight">
-                  {tab === "kb" ? "Knowledge Base" : tab === "conversation" ? "Conversation" : "Nuvora"}
+                  {tab === "kb"
+                    ? "Knowledge Base"
+                    : tab === "conversation"
+                      ? "Conversation"
+                      : "YK-Virtual"}
                 </p>
-                <p className="text-[11px] text-white/70">{user ? "Signed in · replies saved" : "Ask anything · no login needed"}</p>
+                <p className="text-[11px] text-white/70">
+                  {user
+                    ? "Signed in · replies saved"
+                    : "Ask anything · no login needed"}
+                </p>
               </div>
             </div>
-            <button type="button" onClick={() => setOpen(false)} className="grid size-8 place-items-center rounded-full bg-white/10" aria-label="Close chat">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="grid size-8 place-items-center rounded-full bg-white/10"
+              aria-label="Close chat"
+            >
               <X size={16} />
             </button>
           </div>
@@ -239,51 +291,76 @@ export function ChatWidget() {
                   onClick={() => setTab("conversation")}
                   className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-soft"
                 >
-                  <span className="grid size-12 place-items-center rounded-full bg-primary text-lg font-bold text-ink-900">N</span>
+                  <span className="grid size-12 place-items-center rounded-full bg-primary text-lg font-bold text-ink-900">
+                    N
+                  </span>
                   <span className="flex-1">
-                    <span className="block text-sm font-bold text-ink-900">Chat with Nuvora</span>
-                    <span className="block text-xs text-ink-500">Lessons, payments, accounts — ask now</span>
+                    <span className="block text-sm font-bold text-ink-900">
+                      Chat with YK-Virtual
+                    </span>
+                    <span className="block text-xs text-ink-500">
+                      Lessons, payments, accounts — ask now
+                    </span>
                   </span>
                   <ChevronRight size={16} className="text-ink-400" />
                 </button>
 
-                <WhatsAppHomeCard prefill="Hello NUVORA! I'd like to chat with your team on WhatsApp." />
+                <WhatsAppHomeCard prefill="Hello YK-Virtual! I'd like to chat with your team on WhatsApp." />
 
                 <div className="overflow-hidden rounded-2xl bg-white shadow-soft">
-                  <p className="px-4 pt-3 text-sm font-bold text-ink-900">Articles</p>
+                  <p className="px-4 pt-3 text-sm font-bold text-ink-900">
+                    Articles
+                  </p>
                   <ul className="mt-1">
-                    {getHelpArticles().slice(0, 3).map((a) => (
-                      <li key={a.slug}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOpenFaq(a.q);
-                            setTab("kb");
-                          }}
-                          className="flex w-full items-center justify-between gap-2 border-t border-ink-50 px-4 py-3 text-left text-sm text-ink-800 hover:bg-ink-50"
-                        >
-                          {a.q}
-                          <ChevronRight size={14} className="shrink-0 text-ink-400" />
-                        </button>
-                      </li>
-                    ))}
+                    {getHelpArticles()
+                      .slice(0, 3)
+                      .map((a) => (
+                        <li key={a.slug}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenFaq(a.q);
+                              setTab("kb");
+                            }}
+                            className="flex w-full items-center justify-between gap-2 border-t border-ink-50 px-4 py-3 text-left text-sm text-ink-800 hover:bg-ink-50"
+                          >
+                            {a.q}
+                            <ChevronRight
+                              size={14}
+                              className="shrink-0 text-ink-400"
+                            />
+                          </button>
+                        </li>
+                      ))}
                   </ul>
-                  <button type="button" onClick={() => setTab("kb")} className="w-full border-t border-ink-50 py-3 text-center text-sm font-semibold text-ink-700">
+                  <button
+                    type="button"
+                    onClick={() => setTab("kb")}
+                    className="w-full border-t border-ink-50 py-3 text-center text-sm font-semibold text-ink-700"
+                  >
                     View all
                   </button>
                 </div>
 
                 <div className="rounded-2xl bg-white p-4 shadow-soft">
-                  <p className="text-sm font-bold text-ink-900">Previous conversations</p>
+                  <p className="text-sm font-bold text-ink-900">
+                    Previous conversations
+                  </p>
                   {!user ? (
                     <p className="mt-3 text-center text-sm text-ink-400">
-                      <button type="button" onClick={() => router.push(loginWithReturn())} className="font-semibold text-primary-dark hover:underline">
+                      <button
+                        type="button"
+                        onClick={() => router.push(loginWithReturn())}
+                        className="font-semibold text-primary-dark hover:underline"
+                      >
                         Log in
                       </button>{" "}
                       to keep a history
                     </p>
                   ) : (threads.data ?? []).length === 0 ? (
-                    <p className="mt-3 text-center text-sm text-ink-400">No previous conversation</p>
+                    <p className="mt-3 text-center text-sm text-ink-400">
+                      No previous conversation
+                    </p>
                   ) : (
                     <ul className="mt-2 space-y-1">
                       {(threads.data ?? []).slice(0, 4).map((t) => (
@@ -311,37 +388,62 @@ export function ChatWidget() {
                 <div className="flex-1 space-y-3 pb-3">
                   {showWelcome && (
                     <div className="flex items-start gap-2">
-                      <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">N</span>
+                      <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">
+                        N
+                      </span>
                       <div className="rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-800 shadow-sm">
-                        Hi, I&apos;m Nuvora. I help with courses, assignments, payments and what to do next. What can I help with?
+                        Hi, I&apos;m YK-Virtual. I help with courses,
+                        assignments, payments and what to do next. What can I
+                        help with?
                       </div>
                     </div>
                   )}
                   {liveMsgs.map((m) => (
-                    <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "items-start gap-2")}>
+                    <div
+                      key={m.id}
+                      className={cn(
+                        "flex",
+                        m.role === "user" ? "justify-end" : "items-start gap-2",
+                      )}
+                    >
                       {m.role !== "user" && (
-                        <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">N</span>
+                        <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">
+                          N
+                        </span>
                       )}
                       <div
                         className={cn(
                           "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
-                          m.role === "user" ? "rounded-br-md bg-deep text-white" : "rounded-tl-md bg-white text-ink-800 shadow-sm"
+                          m.role === "user"
+                            ? "rounded-br-md bg-deep text-white"
+                            : "rounded-tl-md bg-white text-ink-800 shadow-sm",
                         )}
                       >
                         {m.content}
                       </div>
                     </div>
                   ))}
-                  {sending && <p className="pl-9 text-xs text-ink-400">Nuvora is typing…</p>}
-                  {sendError && <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">{sendError}</p>}
+                  {sending && (
+                    <p className="pl-9 text-xs text-ink-400">
+                      YK-Virtual is typing…
+                    </p>
+                  )}
+                  {sendError && (
+                    <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">
+                      {sendError}
+                    </p>
+                  )}
                   {escalated && (
                     <p className="rounded-xl bg-primary-light px-3 py-2 text-xs font-semibold text-deep">
-                      A human on the NUVORA team will pick this up. Watch your inbox and Notifications.
+                      A human on the YK-Virtual team will pick this up. Watch
+                      your inbox and Notifications.
                     </p>
                   )}
                   {showWelcome && (
                     <div>
-                      <p className="mb-2 text-xs font-semibold text-ink-500">Suggested questions</p>
+                      <p className="mb-2 text-xs font-semibold text-ink-500">
+                        Suggested questions
+                      </p>
                       <div className="space-y-2">
                         {SUGGESTED.map((s) => (
                           <button
@@ -358,7 +460,9 @@ export function ChatWidget() {
                   )}
                   {user && liveMsgs.length >= 2 && !rated && (
                     <div className="rounded-2xl bg-white px-3 py-2.5 shadow-sm">
-                      <p className="text-[11px] font-semibold text-ink-500">Was this helpful?</p>
+                      <p className="text-[11px] font-semibold text-ink-500">
+                        Was this helpful?
+                      </p>
                       <div className="mt-1 flex gap-1">
                         {[1, 2, 3, 4, 5].map((n) => (
                           <button
@@ -368,13 +472,21 @@ export function ChatWidget() {
                             className="p-1 text-ink-300 hover:text-primary"
                             aria-label={`${n} stars`}
                           >
-                            <Star size={16} fill={rating >= n ? "currentColor" : "none"} className={rating >= n ? "text-primary" : ""} />
+                            <Star
+                              size={16}
+                              fill={rating >= n ? "currentColor" : "none"}
+                              className={rating >= n ? "text-primary" : ""}
+                            />
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
-                  {rated && <p className="text-center text-[11px] text-ink-400">Thanks for the rating.</p>}
+                  {rated && (
+                    <p className="text-center text-[11px] text-ink-400">
+                      Thanks for the rating.
+                    </p>
+                  )}
                   <div ref={bottomRef} />
                 </div>
               </div>
@@ -383,7 +495,10 @@ export function ChatWidget() {
             {tab === "kb" && (
               <div className="space-y-3">
                 <div className="relative">
-                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <Search
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
+                  />
                   <input
                     value={kbQuery}
                     onChange={(e) => setKbQuery(e.target.value)}
@@ -391,22 +506,32 @@ export function ChatWidget() {
                     className="h-10 w-full rounded-full border border-ink-200 bg-white pl-9 pr-3 text-sm text-ink-900"
                   />
                 </div>
-                <p className="text-sm font-bold text-ink-900">Frequently asked</p>
+                <p className="text-sm font-bold text-ink-900">
+                  Frequently asked
+                </p>
                 <div className="space-y-2">
                   {articles.map((a: HelpArticle) => (
                     <details
                       key={a.slug}
                       open={openFaq === a.q}
-                      onToggle={(e) => setOpenFaq((e.target as HTMLDetailsElement).open ? a.q : null)}
+                      onToggle={(e) =>
+                        setOpenFaq(
+                          (e.target as HTMLDetailsElement).open ? a.q : null,
+                        )
+                      }
                       className="rounded-2xl bg-white p-3 shadow-soft"
                     >
                       <summary className="cursor-pointer list-none">
                         <span className="inline-block rounded-md bg-primary-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-deep">
                           {a.category.title}
                         </span>
-                        <span className="mt-1 block text-sm font-semibold text-ink-900">{a.q}</span>
+                        <span className="mt-1 block text-sm font-semibold text-ink-900">
+                          {a.q}
+                        </span>
                       </summary>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-600">{a.a}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                        {a.a}
+                      </p>
                     </details>
                   ))}
                 </div>
@@ -431,7 +556,7 @@ export function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && void send()}
-                  placeholder="Ask Nuvora anything…"
+                  placeholder="Ask YK-Virtual anything…"
                   className="h-11 flex-1 rounded-full border border-ink-200 px-4 text-sm text-ink-900"
                 />
                 <button
@@ -445,7 +570,7 @@ export function ChatWidget() {
                 </button>
               </div>
               <p className="mt-2 text-center text-[10px] text-ink-400">
-                Nuvora can be wrong — check fees and dates on the page.
+                YK-Virtual can be wrong — check fees and dates on the page.
               </p>
             </div>
           )}
@@ -464,12 +589,14 @@ export function ChatWidget() {
                 onClick={() => setTab(id)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold",
-                  tab === id ? "text-deep" : "text-ink-400"
+                  tab === id ? "text-deep" : "text-ink-400",
                 )}
               >
                 <Icon size={18} />
                 {label}
-                {tab === id && <span className="mt-0.5 h-0.5 w-8 rounded-full bg-deep" />}
+                {tab === id && (
+                  <span className="mt-0.5 h-0.5 w-8 rounded-full bg-deep" />
+                )}
               </button>
             ))}
           </nav>

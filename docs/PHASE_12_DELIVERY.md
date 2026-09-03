@@ -1,6 +1,6 @@
-# PHASE 12 — NUVORA Brand & Design System — DELIVERY
+# PHASE 12 — YK-Virtual Brand & Design System — DELIVERY
 
-Branch: `feature/phase-12-nuvora-brand`
+Branch: `feature/phase-12-yk-virtual-brand`
 Base: `main` @ `0e073ff` (phases 3–11c + E2E suite)
 Delivery method: git bundle `ykay-virtual-phase-12.bundle`
 
@@ -8,22 +8,22 @@ Delivery method: git bundle `ykay-virtual-phase-12.bundle`
 
 ## What was delivered
 
-### 1. Brand — NUVORA · "Learning beyond boundaries"
+### 1. Brand — YK-Virtual · "Learning beyond boundaries"
 
 Positioning line applied across the platform:
 
 > British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts
 
-| Surface | Change |
-|---|---|
-| Marketing site (all pages) | `YKAY` / `YKAY Virtual School` → `NUVORA` (118 occurrences swept in `app/`, plus `components/`, `lib/` — zero left) |
-| `lib/site-data.ts` | `siteConfig`: name `NUVORA`, brand `nuvora`, tagline **Learning beyond boundaries**, new description; `NUVORA Plus`, `NUVORA Insights™ Assessment`, testimonials updated |
-| `lib/seo.ts` | siteName/organization/social handles → NUVORA, default domain `https://nuvora.com` (override via `NEXT_PUBLIC_SITE_URL`) |
-| `app/layout.tsx` | Metadata: "NUVORA — Learning beyond boundaries…", template `%s | NUVORA` |
-| `app/manifest.ts` (PWA) | name/short_name NUVORA, `theme_color` deep navy `#0A1F44` |
-| `client/public/sw.js` | cache `nuvora-v1` |
-| Header / Footer | New `Logo` mark (navy→blue monogram tile + restrained gold dot), wordmark in tracked uppercase; footer tagline + gold brand line; © 2026 NUVORA |
-| API | Server banner **NUVORA API v0.4.0**; README retitled |
+| Surface                    | Change                                                                                                                                                                                  |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Marketing site (all pages) | `YKAY` / `YKAY Virtual School` → `YK-Virtual` (118 occurrences swept in `app/`, plus `components/`, `lib/` — zero left)                                                                 |
+| `lib/site-data.ts`         | `siteConfig`: name `YK-Virtual`, brand `ykvirtual`, tagline **Learning beyond boundaries**, new description; `YK-Virtual Plus`, `YK-Virtual Insights™ Assessment`, testimonials updated |
+| `lib/seo.ts`               | siteName/organization/social handles → YK-Virtual, default domain `https://virtual.ykaycollege.com` (override via `NEXT_PUBLIC_SITE_URL`)                                               |
+| `app/layout.tsx`           | Metadata: "YK-Virtual — Learning beyond boundaries…", template `%s                                                                                                                      | YK-Virtual` |
+| `app/manifest.ts` (PWA)    | name/short_name YK-Virtual, `theme_color` deep navy `#0A1F44`                                                                                                                           |
+| `client/public/sw.js`      | cache `yk-virtual-v1`                                                                                                                                                                   |
+| Header / Footer            | New `Logo` mark (navy→blue monogram tile + restrained gold dot), wordmark in tracked uppercase; footer tagline + gold brand line; © 2026 YK-Virtual                                     |
+| API                        | Server banner **YK-Virtual API v0.4.0**; README retitled                                                                                                                                |
 
 Kept as functional identifiers (must stay for client/server session & storage continuity):
 `ykay_session` cookie, `ykay-tutor-onboarding` localStorage key, `@ykay/web` npm name,
@@ -40,18 +40,18 @@ Go module path `ykay-virtual`. Renaming these is a follow-up infra task if desir
 
 New in `client/components/ui/`:
 
-| Component | Purpose |
-|---|---|
-| `Logo` (layout) | Brand mark — header (light) / footer (dark) variants |
-| `empty-state.tsx` | Icon + title + description + action; never a bare "no data" line |
-| `alert.tsx` | Info/success/warning/error banners — **text + icon + colour, never colour alone** |
-| `modal.tsx` | Accessible dialog (Esc, backdrop, focus, scroll lock) + right-drawer variant |
-| `data-table.tsx` | Typed columns, loading skeletons, empty state, hover rows |
-| `stepper.tsx` | Progress steps with done/active states — wired into the 5-page tutor onboarding |
-| `progress.tsx` | Labelled progress bar with value text |
-| `stat-card.tsx` | KPI tile with trend — wired into admin analytics |
-| `status-badge.tsx` | Text + icon + colour status chips + `statusKindFor` domain mapping |
-| `file-uploader.tsx` | Drag & drop / browse, file list with remove |
+| Component           | Purpose                                                                           |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `Logo` (layout)     | Brand mark — header (light) / footer (dark) variants                              |
+| `empty-state.tsx`   | Icon + title + description + action; never a bare "no data" line                  |
+| `alert.tsx`         | Info/success/warning/error banners — **text + icon + colour, never colour alone** |
+| `modal.tsx`         | Accessible dialog (Esc, backdrop, focus, scroll lock) + right-drawer variant      |
+| `data-table.tsx`    | Typed columns, loading skeletons, empty state, hover rows                         |
+| `stepper.tsx`       | Progress steps with done/active states — wired into the 5-page tutor onboarding   |
+| `progress.tsx`      | Labelled progress bar with value text                                             |
+| `stat-card.tsx`     | KPI tile with trend — wired into admin analytics                                  |
+| `status-badge.tsx`  | Text + icon + colour status chips + `statusKindFor` domain mapping                |
+| `file-uploader.tsx` | Drag & drop / browse, file list with remove                                       |
 
 Already present and retained: Breadcrumbs (URL fixed), notification centre, search/filter
 bar, header/footer. Domain cards (programme/cohort/tutor/pricing/lesson) remain

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NUVORA — G6 browser E2E orchestration (Playwright + axe).
+# YK-Virtual — G6 browser E2E orchestration (Playwright + axe).
 #
 # Boots, in ONE script (CI kills children between steps otherwise):
 #   1. a local payment-gateway sandbox (initiate links only; settlement

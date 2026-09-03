@@ -21,7 +21,7 @@ import (
 // ── Bank details ──────────────────────────────────────────────────────────
 
 func TestUpdateBankDetails_SaveClearValidate(t *testing.T) {
-	t.Setenv("YKAY_STORAGE_SECRET", "nuvora-test-secret")
+	t.Setenv("YKAY_STORAGE_SECRET", "yk-virtual-test-secret")
 	ctx := context.Background()
 	store := memory.NewMemoryStore()
 	svc := NewVettingService(

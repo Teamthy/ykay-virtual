@@ -19,22 +19,35 @@ import { organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {
-    default: "NUVORA - Learning beyond boundaries. British & Nigerian curricula, exam preparation, private tuition and live cohorts.",
-    template: "%s | NUVORA",
+    default:
+      "YK-Virtual - Learning beyond boundaries. British & Nigerian curricula, exam preparation, private tuition and live cohorts.",
+    template: "%s | YK-Virtual",
   },
-  description: "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://nuvora.com"),
+  description:
+    "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://virtual.ykaycollege.com",
+  ),
   openGraph: {
     type: "website",
-    siteName: "NUVORA",
-    title: "NUVORA - Learning beyond boundaries",
-    description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "NUVORA - Learning beyond boundaries" }],
+    siteName: "YK-Virtual",
+    title: "YK-Virtual - Learning beyond boundaries",
+    description:
+      "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "YK-Virtual - Learning beyond boundaries",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NUVORA - Learning beyond boundaries",
-    description: "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
+    title: "YK-Virtual - Learning beyond boundaries",
+    description:
+      "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
     images: ["/og.png"],
   },
   // PWA (M1 hardening): installable on Android/iOS.
@@ -46,7 +59,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "NUVORA",
+    title: "YK-Virtual",
   },
   other: {
     "theme-color": "#013920",
@@ -74,12 +87,22 @@ const poppins = Poppins({
   display: "swap",
 });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const orgLd = organizationJsonLd();
   return (
-    <html lang="en" className={`${anton.variable} ${dmSans.variable} ${poppins.variable}`}>
+    <html
+      lang="en"
+      className={`${anton.variable} ${dmSans.variable} ${poppins.variable}`}
+    >
       <head>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
+        />
         {/* Analytics loads after hydration when (and only when)
             NEXT_PUBLIC_PLAUSIBLE_DOMAIN is configured. */}
         <Analytics />
@@ -92,7 +115,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
             <MobileNav />
           </ShellVisibility>
-          <div id="main-content" tabIndex={-1} className="pb-16 outline-none lg:pb-0">{children}</div>
+          <div
+            id="main-content"
+            tabIndex={-1}
+            className="pb-16 outline-none lg:pb-0"
+          >
+            {children}
+          </div>
           {/* Footer appears ONLY on the marketing home page; the floating
               AI assistant (moveable launcher) is available on EVERY page. */}
           <HomeOnly>

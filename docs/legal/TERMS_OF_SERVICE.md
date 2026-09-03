@@ -1,10 +1,10 @@
-# NUVORA — Terms of Service (G5.2)
+# YK-Virtual — Terms of Service (G5.2)
 
 > **Status: DRAFT for legal review.** Entity details are placeholders.
 
 ## 1. The service
 
-NUVORA ("we") operates a learning platform: tutor discovery, vetting,
+YK-Virtual ("we") operates a learning platform: tutor discovery, vetting,
 cohort and private tuition booking, payments with escrow, live lessons,
 assignments, quizzes and progress reports. These terms govern your use of
 the website and mobile app.
@@ -18,7 +18,7 @@ the website and mobile app.
 
 ## 3. Tutoring relationship
 
-- Tutors listed on NUVORA are vetted but are **independent contractors**;
+- Tutors listed on YK-Virtual are vetted but are **independent contractors**;
   tuition contracts are between the family and the tutor. We operate the
   marketplace, booking, payment and delivery infrastructure.
 - Lesson quality disputes follow the complaint process in

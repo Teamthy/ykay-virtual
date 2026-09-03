@@ -1,4 +1,4 @@
-# NUVORA — Tutor Agreement (G5.2)
+# YK-Virtual — Tutor Agreement (G5.2)
 
 > **Status: DRAFT for legal review (decision #5).** This is the contract
 > tutors accept at onboarding; store the accepted version + date per tutor
@@ -8,7 +8,7 @@
 
 You are an independent contractor, not an employee. You control your
 availability, subjects and (within curriculum rules) teaching approach.
-NUVORA provides vetting, discovery, booking, escrow payment and delivery
+YK-Virtual provides vetting, discovery, booking, escrow payment and delivery
 infrastructure in exchange for a platform commission (current: ____%).
 
 ## 2. Vetting and identity
@@ -48,7 +48,7 @@ financial arrangements with families outside the platform.
 
 ## 6. Intellectual property
 
-Materials you create for lessons remain yours; you grant NUVORA a
+Materials you create for lessons remain yours; you grant YK-Virtual a
 non-exclusive licence to distribute them within the cohorts you teach.
 Learner work and data remain the family's.
 

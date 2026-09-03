@@ -179,11 +179,11 @@ func EmailProviderActive() string {
 	return "none"
 }
 
-// parseFrom accepts "you@domain" or "NUVORA <you@domain>" without double-wrapping.
+// parseFrom accepts "you@domain" or "YK-Virtual <you@domain>" without double-wrapping.
 func parseFrom(from string) (header, addr string) {
 	from = strings.TrimSpace(from)
 	if from == "" {
-		return "NUVORA <beth.t@example.com>", "beth.t@example.com"
+		return "YK-Virtual <beth.t@example.com>", "beth.t@example.com"
 	}
 	if i := strings.Index(from, "<"); i >= 0 {
 		j := strings.Index(from, ">")
@@ -194,7 +194,7 @@ func parseFrom(from string) (header, addr string) {
 			}
 		}
 	}
-	return "NUVORA <" + from + ">", from
+	return "YK-Virtual <" + from + ">", from
 }
 
 func truncate(s string, n int) string {
@@ -213,7 +213,7 @@ func truncate(s string, n int) string {
 	return s[:head] + " …[truncated]… " + s[len(s)-(n-head):]
 }
 
-// BrandEmail — wraps an HTML body in the NUVORA email shell (navy header,
+// BrandEmail — wraps an HTML body in the YK-Virtual email shell (navy header,
 // gold accent, footer). Used by every outbound template so transactional
 // emails carry the brand.
 func BrandEmail(bodyHTML string) string {
@@ -223,13 +223,13 @@ func BrandEmail(bodyHTML string) string {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #F0ECE3;box-shadow:0 8px 24px rgba(0,0,0,.06);">
         <tr><td style="background:#F4B400;padding:24px 32px;">
-          <div style="color:#111111;font-size:22px;font-weight:800;letter-spacing:0.14em;">NUVORA</div>
+          <div style="color:#111111;font-size:22px;font-weight:800;letter-spacing:0.14em;">YK-Virtual</div>
           <div style="color:#111111;font-size:12px;margin-top:4px;letter-spacing:0.08em;opacity:.65;">LEARNING BEYOND BOUNDARIES</div>
         </td></tr>
         <tr><td style="padding:32px;color:#333333;font-size:15px;line-height:1.6;">` + bodyHTML + `</td></tr>
         <tr><td style="padding:24px 32px;border-top:1px solid #F0ECE3;color:#777777;font-size:12px;">
           British &amp; Nigerian curricula &middot; Exam preparation &middot; Private tuition &middot; Live cohorts<br/>
-          &copy; 2026 NUVORA. If this email wasn&rsquo;t expected, you can safely ignore it.
+          &copy; 2026 YK-Virtual. If this email wasn&rsquo;t expected, you can safely ignore it.
         </td></tr>
       </table>
     </td></tr>

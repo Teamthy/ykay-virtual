@@ -7,10 +7,13 @@ import { Moon, Sun } from "lucide-react";
 // to the system preference. CSS variables + targeted overrides in globals.css
 // handle the visual switch.
 
-const KEY = "nuvora-theme";
+const KEY = "yk-virtual-theme";
 
 function systemPrefersDark() {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-color-scheme: dark)")?.matches
+  );
 }
 
 export function applyTheme(theme: "light" | "dark") {

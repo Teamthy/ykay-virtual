@@ -278,7 +278,7 @@ func (s *LeadService) notifyAdmin(l *leads.Lead, subject string) {
 	go func(body string) {
 		nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if err := s.notifier.NotifyAdmin(nctx, "NUVORA: "+subject, body); err != nil {
+		if err := s.notifier.NotifyAdmin(nctx, "YK-Virtual: "+subject, body); err != nil {
 			slog.Error("whatsapp lead notify failed", "lead_id", l.ID, "error", err)
 		}
 	}(body)
@@ -341,7 +341,7 @@ func (s *LeadService) SendPaymentNudges(ctx context.Context, siteURL string, min
 		var sendErr error
 		whatsappReachable := (l.Phone != nil && strings.TrimSpace(*l.Phone) != "") || l.UserID != nil
 		if whatsappReachable {
-			body := "Hi " + first + " 👋 — your NUVORA enrolment is one step from done. " +
+			body := "Hi " + first + " 👋 — your YK-Virtual enrolment is one step from done. " +
 				"Your seat is reserved but unpaid; complete payment here to secure it:\n" + link +
 				"\n\nNeed help or a different payment method? Just reply to this message."
 			if err := s.notifier.NotifyUser(ctx, l.Phone, l.UserID, body); err != nil {
@@ -352,16 +352,16 @@ func (s *LeadService) SendPaymentNudges(ctx context.Context, siteURL string, min
 			}
 		}
 		if channel == "" && s.mail != nil && l.Email != nil && strings.TrimSpace(*l.Email) != "" {
-			subject := first + ", your NUVORA seat is waiting 🎓"
+			subject := first + ", your YK-Virtual seat is waiting 🎓"
 			body := notification.BrandEmail(
 				`<h1 style="margin:0 0 12px;font-size:20px;color:#013920;">Your seat is one step from secured</h1>` +
 					`<p style="margin:0 0 12px;">Hi ` + first + `,</p>` +
-					`<p style="margin:0 0 16px;">You started enrolling in a NUVORA cohort but the payment step is still open. ` +
+					`<p style="margin:0 0 16px;">You started enrolling in a YK-Virtual cohort but the payment step is still open. ` +
 					`Your seat is reserved for a short while — complete payment to secure it:</p>` +
 					`<p style="margin:0 0 16px;"><a href="` + link + `" style="display:inline-block;background:#013920;color:#f7d774;` +
 					`padding:12px 24px;border-radius:9999px;font-weight:700;text-decoration:none;">Complete my enrolment</a></p>` +
 					`<p style="margin:0 0 6px;color:#555;">Questions, or prefer a different payment method? Just reply to this email.</p>` +
-					`<p style="margin:0;color:#555;">— the NUVORA team</p>`)
+					`<p style="margin:0;color:#555;">— the YK-Virtual team</p>`)
 			if err := s.mail.Send(ctx, strings.TrimSpace(*l.Email), subject, body); err != nil {
 				sendErr = err
 				slog.Error("payment nudge email failed", "lead_id", l.ID, "error", err)

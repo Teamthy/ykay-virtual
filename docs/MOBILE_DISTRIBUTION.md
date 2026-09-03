@@ -1,4 +1,4 @@
-# NUVORA Mobile — Local Distribution (no Play Store / App Store)
+# YK-Virtual Mobile — Local Distribution (no Play Store / App Store)
 
 We are NOT listing on Google Play or the Apple App Store. Users install the app
 directly from the download page (`/download`) and get updates over-the-air.
@@ -21,7 +21,7 @@ directly from the download page (`/download`) and get updates over-the-air.
    - **TestFlight** (internal testing, not publicly "listed") — needs a paid
      Apple Developer account.
    - **Web app** (fully supported) for iOS users meanwhile.
-   We default to the web app for iOS and note it on the download page.
+     We default to the web app for iOS and note it on the download page.
 
 ---
 
@@ -43,8 +43,8 @@ npx eas build -p android --profile preview
 Then point the download page at it:
 
 ```bash
-# on the web host (Vercel env var) — or drop the file at client/public/nuvora-app.apk
-NEXT_PUBLIC_APK_URL=https://your-host.com/nuvora-app.apk
+# on the web host (Vercel env var) — or drop the file at client/public/yk-virtual-app.apk
+NEXT_PUBLIC_APK_URL=https://your-host.com/yk-virtual-app.apk
 ```
 
 ---
@@ -65,6 +65,7 @@ That's it. Installed APKs check for updates on launch (configured
 ---
 
 ## Versioning
+
 - `mobile/package.json` `version` — bump on significant releases.
 - `eas.json` uses `autoIncrement` on preview/production builds.
 - The download page reads `NEXT_PUBLIC_APK_URL` so you never hardcode a URL.
@@ -72,6 +73,7 @@ That's it. Installed APKs check for updates on launch (configured
 ---
 
 ## Security note
+
 Direct-APK distribution means users must trust the source. Keep the APK on a
 host you control (not a random file host), and consider signing the release so
 Android's "Play Protect" doesn't warn. iOS users should use the web app or

@@ -9,19 +9,19 @@
 
 ## What the API already guarantees (no CDN config needed to be SAFE)
 
-| Behaviour | Where |
-|---|---|
-| Public catalogue GETs send `Cache-Control: public, max-age=60, stale-while-revalidate=300` — but ONLY for anonymous requests | `internal/middleware/public_cache.go` |
+| Behaviour                                                                                                                                | Where                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Public catalogue GETs send `Cache-Control: public, max-age=60, stale-while-revalidate=300` — but ONLY for anonymous requests             | `internal/middleware/public_cache.go`                                                    |
 | Every private/authenticated prefix sends `Cache-Control: no-store` — even a misconfigured "Cache Everything" rule cannot store user data | `internal/middleware/no_store.go`, prefix list in `router.go` (`privateNoStorePrefixes`) |
-| SSE (`/api/v1/me/events`) sends `no-cache, no-transform` and is never buffered by our gzip layer | `events_handler.go`, `gzip.go` |
-| Rate limiting keys on the TRUE client IP, preferring unforgeable `CF-Connecting-IP` when enabled | `ratelimit.go clientIP` |
-| Webhooks: Paystack/Flutterwave sign the raw request body — CDNs do not modify bodies; responses are `no-store` | `payment_handler.go` |
+| SSE (`/api/v1/me/events`) sends `no-cache, no-transform` and is never buffered by our gzip layer                                         | `events_handler.go`, `gzip.go`                                                           |
+| Rate limiting keys on the TRUE client IP, preferring unforgeable `CF-Connecting-IP` when enabled                                         | `ratelimit.go clientIP`                                                                  |
+| Webhooks: Paystack/Flutterwave sign the raw request body — CDNs do not modify bodies; responses are `no-store`                           | `payment_handler.go`                                                                     |
 
 ## Setup (Cloudflare)
 
 1. **DNS**: add the API hostname (e.g. `api.yourdomain.com`) pointing at the
    Render API service, **proxied** (orange cloud).
-2. **SSL/TLS mode: Full (strict)** — Render serves a valid cert. *Never*
+2. **SSL/TLS mode: Full (strict)** — Render serves a valid cert. _Never_
    "Flexible" (redirect loops + insecure hop).
 3. **Caching level: Standard** — Cloudflare respects our origin
    `Cache-Control` headers as-is. No "Cache Everything" page rules needed.
@@ -51,11 +51,11 @@ curl -sI https://api.yourdomain.com/api/v1/cohorts | grep -i "cache-control\|cf-
 # → Cache-Control: public, max-age=60, stale-while-revalidate=300
 
 # authenticated (any /me route with a session cookie) → no-store
-curl -sI -H "Cookie: nuvora_session=…" https://api.yourdomain.com/api/v1/me/orders | grep -i cache-control
+curl -sI -H "Cookie: ykv_session=…" https://api.yourdomain.com/api/v1/me/orders | grep -i cache-control
 # → Cache-Control: no-store
 
 # SSE still streams (no buffering)
-curl -N -H "Cookie: nuvora_session=…" https://api.yourdomain.com/api/v1/me/events
+curl -N -H "Cookie: ykv_session=…" https://api.yourdomain.com/api/v1/me/events
 # → ": connected" then 25s heartbeats
 ```
 

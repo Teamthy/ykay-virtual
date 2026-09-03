@@ -1,16 +1,16 @@
-# NUVORA — Run It Locally (Windows / macOS / Linux)
+# YK-Virtual — Run It Locally (Windows / macOS / Linux)
 
 Everything you need to develop and run the full stack on your machine.
 
 ## 1. Prerequisites
 
-| Tool | Version | Notes |
-|---|---|---|
-| Docker Desktop | latest | Postgres 16 + Redis 7 (one command) |
-| Go | 1.22+ | API + worker + migrations |
-| Node.js | 20 LTS | Next.js client |
-| npm | 9+ | |
-| (optional) psql | 16 | inspecting the DB |
+| Tool            | Version | Notes                               |
+| --------------- | ------- | ----------------------------------- |
+| Docker Desktop  | latest  | Postgres 16 + Redis 7 (one command) |
+| Go              | 1.22+   | API + worker + migrations           |
+| Node.js         | 20 LTS  | Next.js client                      |
+| npm             | 9+      |                                     |
+| (optional) psql | 16      | inspecting the DB                   |
 
 ## 2. Clone + boot
 
@@ -35,7 +35,7 @@ make migrate      # or: go run ./cmd/migrate --cmd=up
 ```
 
 **Zero-config mode:** `go run ./cmd/api` alone uses an in-memory store.
-Demo logins (`admin@nuvora.com` / …) are **off unless** you set
+Demo logins (`admin@ykaycollege.com` / …) are **off unless** you set
 `SEED_DEMO_DATA=true` (and `DEMO_PASSWORD`). Postgres after `000042` does
 **not** contain those accounts. Do not use them on Render.
 
@@ -81,7 +81,7 @@ cd client; npm install; npm run dev   # Terminal 3
 - **No Go yet?** Install Go 1.22+ from https://go.dev/dl/ (the API,
   worker and migrations are Go binaries).
 - Ports: API 8080 · web 3000 · worker metrics 8081 · PG 5432 · Redis 6379.
-- The dev compose already provisions `nuvora/nuvora/nuvora`, which is
+- The dev compose already provisions `ykvirtual/ykvirtual/ykvirtual`, which is
   exactly the API's dev default `DATABASE_URL` — zero configuration
   needed.
 

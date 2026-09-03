@@ -1,11 +1,11 @@
 # Render Blueprint (phase 42, expanded for the Vercel + Render split) —
-# one-click setup of the NUVORA production backend:
-#   nuvora-api      Docker API (migrations run at boot via readyCheck gate)
-#   nuvora-worker   Docker worker (Redis-backed dispatch queue — outbound
+# one-click setup of the YK-Virtual production backend:
+#   yk-virtual-api      Docker API (migrations run at boot via readyCheck gate)
+#   yk-virtual-worker   Docker worker (Redis-backed dispatch queue — outbound
 #                   email is routed through it in production)
-#   nuvora-redis    Redis 7 (rate limiting, session cache, catalogue cache,
+#   yk-virtual-redis    Redis 7 (rate limiting, session cache, catalogue cache,
 #                   job queue)
-#   nuvora-db       PostgreSQL (managed)
+#   yk-virtual-db       PostgreSQL (managed)
 #
 #   https://dashboard.render.com/blueprints → "New Blueprint Instance" →
 #   this file.
@@ -20,7 +20,7 @@
 
 services:
   - type: web
-    name: nuvora-api
+    name: yk-virtual-api
     runtime: docker
     repo: https://github.com/Teamthy/ykay-virtual
     plan: free # or: starter
@@ -32,7 +32,7 @@ services:
       - key: PORT
         value: "8080"
       # ── Public surface ────────────────────────────────────────────────
-      # SITE_URL is the WEB origin (the Vercel app, e.g. https://nuvora.vercel.app):
+      # SITE_URL is the WEB origin (the Vercel app, e.g. https://ykvirtual.vercel.app):
       # it drives the session-cookie Domain and the links inside emails.
       - key: SITE_URL
         sync: false
@@ -40,18 +40,18 @@ services:
       - key: ALLOWED_ORIGINS
         sync: false
       # Session-cookie domain: shared parent domain so the cookie reaches the
-      # web origin through the proxy (e.g. ".vercel.app" or "nuvora.com").
+      # web origin through the proxy (e.g. ".vercel.app" or "virtual.ykaycollege.com").
       # Empty = host-only cookie. Required for Vercel(frontend)+Render(API).
       - key: COOKIE_DOMAIN
         sync: false
       # ── Data ───────────────────────────────────────────────────────────
       - key: DATABASE_URL
         fromDatabase:
-          name: nuvora-db
+          name: yk-virtual-db
           property: connectionString
       - key: REDIS_URL
         fromService:
-          name: nuvora-redis
+          name: yk-virtual-redis
           type: redis
           property: connectionString
       # ── Rate limiting ──────────────────────────────────────────────────
@@ -97,7 +97,7 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: EMAIL_FROM
-        sync: false # e.g. NUVORA <no-reply@yourdomain.com>
+        sync: false # e.g. YK-Virtual <no-reply@yourdomain.com>
       # Recommended: Resend REST API (no SMTP relay needed) — one key from
       # resend.com. When set, it takes precedence over SMTP.
       - key: RESEND_API_KEY
@@ -118,7 +118,7 @@ services:
       - key: WHATSAPP_BUSINESS_NUMBER
         sync: false
       - key: TERMII_SENDER_ID
-        value: Nuvora
+        value: YK-Virtual
       # ── Meetings (Whereby) ─────────────────────────────────────────────
       - key: MEETING_PROVIDER
         value: jitsi # free meet.jit.si; switch to whereby when you have a key
@@ -144,7 +144,7 @@ services:
         sync: false # bearer required to scrape /metrics
 
   - type: web
-    name: nuvora-worker
+    name: yk-virtual-worker
     runtime: docker
     repo: https://github.com/Teamthy/ykay-virtual
     plan: free # or: starter
@@ -159,11 +159,11 @@ services:
         value: production
       - key: DATABASE_URL
         fromDatabase:
-          name: nuvora-db
+          name: yk-virtual-db
           property: connectionString
       - key: REDIS_URL
         fromService:
-          name: nuvora-redis
+          name: yk-virtual-redis
           type: redis
           property: connectionString
       - key: SMTP_HOST
@@ -190,10 +190,10 @@ services:
         sync: false
 
   - type: redis
-    name: nuvora-redis
+    name: yk-virtual-redis
     plan: free
     ipAllowList: [] # Render-internal only
 
 databases:
-  - name: nuvora-db
+  - name: yk-virtual-db
     plan: free # or: starter (free expires after 30 days)

@@ -5,9 +5,9 @@ import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 export const revalidate = 600;
 
 export const metadata: Metadata = buildMetadata({
-  title: "UTME 2026 FAQ - NUVORA Prep | NUVORA",
+  title: "UTME 2026 FAQ - YK-Virtual Prep | YK-Virtual",
   description:
-    "Frequently asked questions about NUVORA UTME 2026 prep: lessons, schedules, instalments, scholarships, exam boards and more.",
+    "Frequently asked questions about YK-Virtual UTME 2026 prep: lessons, schedules, instalments, scholarships, exam boards and more.",
   path: "/utme-2026/faq",
   noIndex: true,
 });
@@ -57,9 +57,9 @@ const FAQS = [
 
 export default function UtmeFaqPage() {
   const breadcrumb = breadcrumbJsonLd([
-    { name: "Home", item: "https://nuvora.com/" },
-    { name: "UTME 2026", item: "https://nuvora.com/utme-2026" },
-    { name: "FAQ", item: "https://nuvora.com/utme-2026/faq" },
+    { name: "Home", item: "https://virtual.ykaycollege.com/" },
+    { name: "UTME 2026", item: "https://virtual.ykaycollege.com/utme-2026" },
+    { name: "FAQ", item: "https://virtual.ykaycollege.com/utme-2026/faq" },
   ]);
   const faq = faqJsonLd(FAQS);
 
@@ -82,7 +82,7 @@ export default function UtmeFaqPage() {
               href="/utme-2026"
               className="font-display text-xl tracking-[0.02em] text-[#013920]"
             >
-              NUVORA <span className="text-[#4CCB31]">Prep</span>
+              YK-Virtual <span className="text-[#4CCB31]">Prep</span>
             </Link>
             <div className="flex items-center gap-5 text-sm font-bold">
               <Link

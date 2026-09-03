@@ -1,4 +1,4 @@
-# NUVORA — Acceptable Use Policy (G5.2)
+# YK-Virtual — Acceptable Use Policy (G5.2)
 
 > **Status: DRAFT for legal review.**
 
@@ -12,7 +12,7 @@
    unauthorized access).
 
 3. **Honest identity.** One account per person; no impersonation of
-   parents, tutors, institutions or NUVORA staff.
+   parents, tutors, institutions or YK-Virtual staff.
 
 4. **No contact harvesting.** Do not collect or reuse other users' contact
    details outside the platform's intended flows.

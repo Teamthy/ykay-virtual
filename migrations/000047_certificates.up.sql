@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS certificates (
     title VARCHAR(255) NOT NULL,
     programme_title VARCHAR(255),
     credential_number VARCHAR(64) NOT NULL UNIQUE,
-    issued_by VARCHAR(255) NOT NULL DEFAULT 'NUVORA Academy',
+    issued_by VARCHAR(255) NOT NULL DEFAULT 'YK-Virtual Academy',
     issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

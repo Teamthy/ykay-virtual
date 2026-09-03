@@ -31,7 +31,7 @@ func NewPracticeExamService(repo practice.Repository, enrollments booking.Cohort
 	return &PracticeExamService{repo: repo, enrollments: enrollments, now: time.Now}
 }
 
-// WithPlus wires the NUVORA Plus entitlement gate (premium CBT vault).
+// WithPlus wires the YK-Virtual Plus entitlement gate (premium CBT vault).
 func (s *PracticeExamService) WithPlus(p *PlusService) *PracticeExamService {
 	s.plus = p
 	return s
@@ -204,7 +204,7 @@ func (s *PracticeExamService) eligible(ctx context.Context, e *practice.Exam, st
 	if e.Status != practice.StatusActive {
 		return practice.ErrNotAvailable
 	}
-	// NUVORA Plus gate (000066): premium-vault exams require an active plan.
+	// YK-Virtual Plus gate (000066): premium-vault exams require an active plan.
 	if e.Premium && (s.plus == nil || !s.plus.HasActivePlan(ctx, userID)) {
 		return plus.ErrPremiumRequired
 	}

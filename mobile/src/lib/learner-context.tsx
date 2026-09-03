@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { listLearners, type Learner } from "@/src/lib/account";
 
@@ -14,7 +22,7 @@ type LearnerContextValue = {
   ready: boolean;
 };
 
-const STORAGE_KEY = "nuvora_selected_learner";
+const STORAGE_KEY = "ykv_selected_learner";
 
 const LearnerContext = createContext<LearnerContextValue>({
   learners: [],
@@ -34,8 +42,12 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
         const list = await listLearners();
         setLearners(list);
         if (list.length > 0) {
-          const saved = await AsyncStorage.getItem(STORAGE_KEY).catch(() => null);
-          setSelectedIdState(saved && list.some((l) => l.id === saved) ? saved : list[0].id);
+          const saved = await AsyncStorage.getItem(STORAGE_KEY).catch(
+            () => null,
+          );
+          setSelectedIdState(
+            saved && list.some((l) => l.id === saved) ? saved : list[0].id,
+          );
         }
       } catch {
         // no session / no learners — parent switcher simply won't render
@@ -52,10 +64,12 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ learners, selectedId, setSelectedId, ready }),
-    [learners, selectedId, setSelectedId, ready]
+    [learners, selectedId, setSelectedId, ready],
   );
 
-  return <LearnerContext.Provider value={value}>{children}</LearnerContext.Provider>;
+  return (
+    <LearnerContext.Provider value={value}>{children}</LearnerContext.Provider>
+  );
 }
 
 export function useLearner(): LearnerContextValue {

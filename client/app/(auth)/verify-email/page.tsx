@@ -6,7 +6,10 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/layout/AuthShell";
-import { confirmVerification, resendVerificationEmail } from "@/features/auth/api";
+import {
+  confirmVerification,
+  resendVerificationEmail,
+} from "@/features/auth/api";
 import { safeNextPath, withNext } from "@/lib/safe-next";
 
 type State =
@@ -35,12 +38,17 @@ function VerifyEmailInner() {
         setState({ phase: "success" });
       })
       .catch((err) =>
-        setState({ phase: "error", message: err instanceof Error ? err.message : "Verification failed" })
+        setState({
+          phase: "error",
+          message: err instanceof Error ? err.message : "Verification failed",
+        }),
       );
   }, [token, qc]);
 
   if (state.phase === "working") {
-    return <p className="text-center text-ink-500 py-10">Verifying your email…</p>;
+    return (
+      <p className="text-center text-ink-500 py-10">Verifying your email…</p>
+    );
   }
 
   if (state.phase === "success") {
@@ -48,8 +56,13 @@ function VerifyEmailInner() {
       <div className="text-center space-y-4 py-6">
         <div className="text-5xl">✅</div>
         <h1 className="text-2xl font-extrabold">Email verified!</h1>
-        <p className="text-ink-600">Your account is now active. Welcome to NUVORA.</p>
-        <Button variant="gold" onClick={() => router.push(next ?? "/dashboard")}>
+        <p className="text-ink-600">
+          Your account is now active. Welcome to YK-Virtual.
+        </p>
+        <Button
+          variant="gold"
+          onClick={() => router.push(next ?? "/dashboard")}
+        >
           Go to dashboard
         </Button>
       </div>
@@ -59,9 +72,13 @@ function VerifyEmailInner() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="text-5xl">{state.phase === "resend-sent" ? "📬" : "⚠️"}</div>
+        <div className="text-5xl">
+          {state.phase === "resend-sent" ? "📬" : "⚠️"}
+        </div>
         <h1 className="text-2xl font-extrabold mt-4">
-          {state.phase === "resend-sent" ? "Check your inbox" : "Verification failed"}
+          {state.phase === "resend-sent"
+            ? "Check your inbox"
+            : "Verification failed"}
         </h1>
         <p className="text-ink-600 mt-2 text-sm">
           {state.phase === "resend-sent"
@@ -70,7 +87,9 @@ function VerifyEmailInner() {
         </p>
       </div>
       <div className="border rounded-2xl p-6 space-y-3">
-        <p className="text-sm font-medium">Didn&apos;t get the email? Resend it:</p>
+        <p className="text-sm font-medium">
+          Didn&apos;t get the email? Resend it:
+        </p>
         <input
           type="email"
           value={email}
@@ -89,7 +108,10 @@ function VerifyEmailInner() {
         >
           Resend verification email
         </Button>
-        <Link href={withNext("/login", next)} className="block text-center text-sm text-brand-blue font-semibold hover:underline">
+        <Link
+          href={withNext("/login", next)}
+          className="block text-center text-sm text-brand-blue font-semibold hover:underline"
+        >
           Back to login
         </Link>
       </div>
@@ -99,8 +121,13 @@ function VerifyEmailInner() {
 
 export default function VerifyEmailPage() {
   return (
-    <AuthShell title="Verify your email" subtitle="Confirm your address to activate your NUVORA account.">
-      <Suspense fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}>
+    <AuthShell
+      title="Verify your email"
+      subtitle="Confirm your address to activate your YK-Virtual account."
+    >
+      <Suspense
+        fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}
+      >
         <VerifyEmailInner />
       </Suspense>
     </AuthShell>

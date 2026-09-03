@@ -8,12 +8,17 @@ import { Bell, LogOut, Menu, X } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { unreadCount } from "@/features/messaging/api";
 import { cn } from "@/lib/utils";
-import { APP_NAV, type AppNavItem, type AppShellVariant, variantForRoles } from "@/lib/app-nav";
+import {
+  APP_NAV,
+  type AppNavItem,
+  type AppShellVariant,
+  variantForRoles,
+} from "@/lib/app-nav";
 import { LogoutDialog } from "@/components/layout/LogoutDialog";
 import { Logo } from "@/components/layout/Logo";
 
 // AppShell — Incubator-style frame (full-height sidebar + greeting header)
-// with NUVORA brand: deep green, neon gold, peach surfaces.
+// with YK-Virtual brand: deep green, neon gold, peach surfaces.
 
 function greetingWord(d = new Date()) {
   const h = d.getHours();
@@ -38,7 +43,9 @@ function NavList({
   return (
     <div className="flex flex-col gap-0.5">
       {items
-        .filter((item) => !item.superAdminOnly || userRoles.includes("SUPER_ADMIN"))
+        .filter(
+          (item) => !item.superAdminOnly || userRoles.includes("SUPER_ADMIN"),
+        )
         .map((item) => {
           const active = item.exact
             ? pathname === item.href
@@ -51,10 +58,13 @@ function NavList({
               onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
-                active ? "bg-deep text-white" : "text-ink-700 hover:bg-ink-50"
+                active ? "bg-deep text-white" : "text-ink-700 hover:bg-ink-50",
               )}
             >
-              <Icon size={16} className={active ? "text-primary" : "text-ink-500"} />
+              <Icon
+                size={16}
+                className={active ? "text-primary" : "text-ink-500"}
+              />
               {item.label}
               {item.href === "/notifications" && unreadN > 0 && (
                 <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-ink-900">
@@ -90,25 +100,51 @@ export function AppShell({
     refetchInterval: 60_000,
   });
   const unreadN = unread.data ?? 0;
-  const name = user?.first_name?.trim() || user?.email?.split("@")[0] || "there";
+  const name =
+    user?.first_name?.trim() || user?.email?.split("@")[0] || "there";
 
   const sidebar = (
     <>
-      <Link href={spec.home} className="block px-5 pb-4 pt-6" onClick={() => setOpen(false)}>
+      <Link
+        href={spec.home}
+        className="block px-5 pb-4 pt-6"
+        onClick={() => setOpen(false)}
+      >
         <Logo markClassName="size-8" />
       </Link>
       <div className="mx-4 mb-6 rounded-xl bg-primary-light px-3 py-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-deep/70">Enrolled as</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-deep/70">
+          Enrolled as
+        </p>
         <p className="text-sm font-bold text-deep">{spec.chip}</p>
       </div>
-      <nav className="flex flex-1 flex-col gap-6 px-3 pb-6" aria-label={`${spec.title} navigation`}>
+      <nav
+        className="flex flex-1 flex-col gap-6 px-3 pb-6"
+        aria-label={`${spec.title} navigation`}
+      >
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">Main</p>
-          <NavList items={spec.main} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">
+            Main
+          </p>
+          <NavList
+            items={spec.main}
+            pathname={pathname}
+            userRoles={user?.roles ?? []}
+            unreadN={unreadN}
+            onNavigate={() => setOpen(false)}
+          />
         </div>
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">More</p>
-          <NavList items={spec.more} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">
+            More
+          </p>
+          <NavList
+            items={spec.more}
+            pathname={pathname}
+            userRoles={user?.roles ?? []}
+            unreadN={unreadN}
+            onNavigate={() => setOpen(false)}
+          />
         </div>
       </nav>
     </>
@@ -135,7 +171,9 @@ export function AppShell({
               <h1 className="truncate text-lg font-bold text-ink-900 md:text-xl">
                 {greetingWord()}, {isLoading ? "…" : name}
               </h1>
-              <p className="hidden truncate text-sm text-ink-500 sm:block">{spec.subtitle}</p>
+              <p className="hidden truncate text-sm text-ink-500 sm:block">
+                {spec.subtitle}
+              </p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -158,7 +196,11 @@ export function AppShell({
             >
               {user?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.avatar_url} alt="" className="size-full object-cover" />
+                <img
+                  src={user.avatar_url}
+                  alt=""
+                  className="size-full object-cover"
+                />
               ) : (
                 name.charAt(0).toUpperCase()
               )}
@@ -176,8 +218,17 @@ export function AppShell({
         </header>
 
         {open && (
-          <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true">
-            <button type="button" className="absolute inset-0 bg-ink-900/40" aria-label="Close menu" onClick={() => setOpen(false)} />
+          <div
+            className="fixed inset-0 z-40 lg:hidden"
+            role="dialog"
+            aria-modal="true"
+          >
+            <button
+              type="button"
+              className="absolute inset-0 bg-ink-900/40"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+            />
             <aside className="absolute left-0 top-0 flex h-full w-[min(280px,88vw)] flex-col overflow-y-auto bg-white shadow-lift">
               {sidebar}
             </aside>

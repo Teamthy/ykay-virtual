@@ -18,22 +18,28 @@ export function DownloadHero() {
     <section className="w-full border-b border-ink-100 bg-surface py-14 md:py-20">
       <div className="container-x grid items-center gap-10 lg:grid-cols-2">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">NUVORA mobile</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+            YK-Virtual mobile
+          </p>
           <h1 className="mt-4 font-display text-4xl leading-tight tracking-[0.02em] text-deep md:text-6xl">
-            Download NUVORA on the go
+            Download YK-Virtual on the go
           </h1>
           <p className="mt-5 max-w-md leading-relaxed text-ink-600">
-            Learn anywhere - tutors, live cohorts, quizzes, progress reports and the AI assistant in one app.
+            Learn anywhere - tutors, live cohorts, quizzes, progress reports and
+            the AI assistant in one app.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <GooglePlayBadge href="/nuvora-app.apk" />
+            <GooglePlayBadge href="/yk-virtual-app.apk" />
             <GooglePlayBadge disabled />
           </div>
 
           <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-6">
             {PERKS.map((p) => (
-              <li key={p.text} className="flex items-center gap-2 text-sm font-semibold text-ink-700">
+              <li
+                key={p.text}
+                className="flex items-center gap-2 text-sm font-semibold text-ink-700"
+              >
                 <p.icon size={16} className="text-primary" />
                 {p.text}
               </li>
@@ -44,7 +50,7 @@ export function DownloadHero() {
         <div className="mx-auto w-full max-w-sm">
           <Image
             src="/hero/african-student.jpg"
-            alt="African student learning on the NUVORA app"
+            alt="African student learning on the YK-Virtual app"
             width={768}
             height={1376}
             sizes="(max-width: 768px) 90vw, 384px"

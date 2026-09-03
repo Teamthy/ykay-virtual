@@ -27,10 +27,10 @@ DECLARE
   tp   UUID;
 BEGIN
   -- ── Chinasa — Mathematics & English ──────────────────────────────────────
-  SELECT id INTO uid FROM users WHERE email = 'tutor.chinasa@nuvora.test' AND deleted_at IS NULL;
+  SELECT id INTO uid FROM users WHERE email = 'tutor.chinasa@ykvirtual.test' AND deleted_at IS NULL;
   IF uid IS NULL THEN
     INSERT INTO users (email, password_hash, status, timezone, created_at, updated_at)
-    VALUES ('tutor.chinasa@nuvora.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
+    VALUES ('tutor.chinasa@ykvirtual.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
   END IF;
   INSERT INTO tutor_profiles
@@ -49,10 +49,10 @@ BEGIN
   END IF;
 
   -- ── Oluwatobi — Mathematics & Physics ────────────────────────────────────
-  SELECT id INTO uid FROM users WHERE email = 'tutor.oluwatobi@nuvora.test' AND deleted_at IS NULL;
+  SELECT id INTO uid FROM users WHERE email = 'tutor.oluwatobi@ykvirtual.test' AND deleted_at IS NULL;
   IF uid IS NULL THEN
     INSERT INTO users (email, password_hash, status, timezone, created_at, updated_at)
-    VALUES ('tutor.oluwatobi@nuvora.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
+    VALUES ('tutor.oluwatobi@ykvirtual.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
   END IF;
   INSERT INTO tutor_profiles
@@ -71,10 +71,10 @@ BEGIN
   END IF;
 
   -- ── Olanike — English & Literature ───────────────────────────────────────
-  SELECT id INTO uid FROM users WHERE email = 'tutor.olanike@nuvora.test' AND deleted_at IS NULL;
+  SELECT id INTO uid FROM users WHERE email = 'tutor.olanike@ykvirtual.test' AND deleted_at IS NULL;
   IF uid IS NULL THEN
     INSERT INTO users (email, password_hash, status, timezone, created_at, updated_at)
-    VALUES ('tutor.olanike@nuvora.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
+    VALUES ('tutor.olanike@ykvirtual.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
   END IF;
   INSERT INTO tutor_profiles
@@ -93,10 +93,10 @@ BEGIN
   END IF;
 
   -- ── Adewale — Computer Science & Python ──────────────────────────────────
-  SELECT id INTO uid FROM users WHERE email = 'tutor.adewale@nuvora.test' AND deleted_at IS NULL;
+  SELECT id INTO uid FROM users WHERE email = 'tutor.adewale@ykvirtual.test' AND deleted_at IS NULL;
   IF uid IS NULL THEN
     INSERT INTO users (email, password_hash, status, timezone, created_at, updated_at)
-    VALUES ('tutor.adewale@nuvora.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
+    VALUES ('tutor.adewale@ykvirtual.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
   END IF;
   INSERT INTO tutor_profiles
@@ -115,10 +115,10 @@ BEGIN
   END IF;
 
   -- ── Judith — Chemistry & Biology ─────────────────────────────────────────
-  SELECT id INTO uid FROM users WHERE email = 'tutor.judith@nuvora.test' AND deleted_at IS NULL;
+  SELECT id INTO uid FROM users WHERE email = 'tutor.judith@ykvirtual.test' AND deleted_at IS NULL;
   IF uid IS NULL THEN
     INSERT INTO users (email, password_hash, status, timezone, created_at, updated_at)
-    VALUES ('tutor.judith@nuvora.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
+    VALUES ('tutor.judith@ykvirtual.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
   END IF;
   INSERT INTO tutor_profiles
@@ -137,10 +137,10 @@ BEGIN
   END IF;
 
   -- ── Demilola — Economics & Business Studies ──────────────────────────────
-  SELECT id INTO uid FROM users WHERE email = 'tutor.demilola@nuvora.test' AND deleted_at IS NULL;
+  SELECT id INTO uid FROM users WHERE email = 'tutor.demilola@ykvirtual.test' AND deleted_at IS NULL;
   IF uid IS NULL THEN
     INSERT INTO users (email, password_hash, status, timezone, created_at, updated_at)
-    VALUES ('tutor.demilola@nuvora.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
+    VALUES ('tutor.demilola@ykvirtual.test', pwd, 'ACTIVE', 'Africa/Lagos', nowt, nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id, role_id) SELECT uid, id FROM roles WHERE name = 'TUTOR';
   END IF;
   INSERT INTO tutor_profiles

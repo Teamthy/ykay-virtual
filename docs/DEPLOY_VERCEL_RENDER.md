@@ -1,4 +1,4 @@
-# NUVORA Production Deploy — Vercel (web) + Render (API/data)
+# YK-Virtual Production Deploy — Vercel (web) + Render (API/data)
 
 Pilot target architecture. Everything below was verified against the local
 production-shaped stack (Dockerfile image, production config validation,
@@ -19,13 +19,13 @@ ykay-virtual/
 
 Each platform builds ONLY its slice — you configure which slice once:
 
-| | Vercel | Render |
-|---|---|---|
-| What it builds | `client/` only | Go backend only |
-| How it knows | **Root Directory = `client`** (set in the Vercel UI during import) | Blueprint at repo root reads `render.yaml`; each Docker service builds the root `Dockerfile` (the image compiles the Go binaries — nothing else) |
-| Config files | `client/vercel.json` (regions, install cmd, deploys on `main` only) | `render.yaml` (services + databases) |
+|                          | Vercel                                                                                                                                               | Render                                                                                                                                                               |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What it builds           | `client/` only                                                                                                                                       | Go backend only                                                                                                                                                      |
+| How it knows             | **Root Directory = `client`** (set in the Vercel UI during import)                                                                                   | Blueprint at repo root reads `render.yaml`; each Docker service builds the root `Dockerfile` (the image compiles the Go binaries — nothing else)                     |
+| Config files             | `client/vercel.json` (regions, install cmd, deploys on `main` only)                                                                                  | `render.yaml` (services + databases)                                                                                                                                 |
 | Monorepo gotchas handled | `next.config.js` auto-detects Vercel (`process.env.VERCEL`) and skips the standalone-output + single-CPU workarounds that exist for low-memory hosts | `.dockerignore` keeps `client/node_modules`, `.next`, mobile, `.env*` out of the build context; migrations are EMBEDDED in the binaries (scratch image has no files) |
-| Deploy trigger | auto on push to `main` | auto on push to `main` |
+| Deploy trigger           | auto on push to `main`                                                                                                                               | auto on push to `main`                                                                                                                                               |
 
 **Why the client uses a proxy instead of calling the API directly:**
 session cookies. The browser only talks to the web origin (Vercel);
@@ -39,39 +39,39 @@ required in production) lists the web origin.
 ```
                          ┌──────────────────────────────┐
    Browser (Lagos …) ───▶│  VERCEL — Next.js client     │
-                         │  nuvora.vercel.app (or your  │
+                         │  ykvirtual.vercel.app (or your  │
                          │  domain)  Root Directory:    │
                          │  client/                    │
                          └──────────────┬───────────────┘
                                         │ rewrite /api/v1/* → API_PROXY_TARGET
                                         ▼
                          ┌──────────────────────────────┐
-                         │  RENDER — nuvora-api (Docker)│
+                         │  RENDER — yk-virtual-api (Docker)│
                          │  Go API :8080                │
                          └──────┬──────────────┬────────┘
                                 │              │
                  ┌──────────────▼──┐    ┌──────▼───────────────┐
-                 │ nuvora-db       │    │ nuvora-redis         │
+                 │ yk-virtual-db       │    │ yk-virtual-redis         │
                  │ PostgreSQL      │    │ sessions/cache/queue │
                  └─────────────────┘    └──────────┬───────────┘
                                                    │ BRPOPLPUSH
                                     ┌──────────────▼───────────┐
-                                    │ nuvora-worker (Docker)   │
+                                    │ yk-virtual-worker (Docker)   │
                                     │ outbound email/SMS/push  │
                                     └──────────────────────────┘
 
-   Mobile app (Expo) ── bearer token ──▶ nuvora-api directly
+   Mobile app (Expo) ── bearer token ──▶ yk-virtual-api directly
 ```
 
 Key wiring facts (why the config below is shaped this way):
 
-- **Session cookies**: the browser only ever talks to the *web origin*
+- **Session cookies**: the browser only ever talks to the _web origin_
   (Vercel); `/api/v1` is proxied server-side. `SITE_URL` must therefore be
   the WEB origin — it sets the cookie Domain and the links inside emails.
 - **ALLOWED_ORIGINS** is fail-closed and REQUIRED in production: list the
   web origin (and the API host if you call it directly from a browser).
 - **Worker**: in production, outbound email is routed through the
-  Redis-backed dispatch queue — deploy `nuvora-worker` or receipts,
+  Redis-backed dispatch queue — deploy `yk-virtual-worker` or receipts,
   reminders and invite emails will never leave the queue.
 - **Migrations**: the chain is embedded in both the `migrate` and `api`
   binaries. `render.yaml` ships `MIGRATE_ON_BOOT=true`, so the FIRST API
@@ -81,18 +81,18 @@ Key wiring facts (why the config below is shaped this way):
 
 ## 0. Prerequisites — secrets to create BEFORE you start
 
-| Secret | Where to get it | Notes |
-|---|---|---|
-| Paystack keys | dashboard.paystack.com → Settings → API Keys | **Use TEST keys first** (sk_test_…). The pilot gate requires a real test-key transaction before live keys. |
-| Flutterwave keys | dashboard.flutterwave.com → Settings → API | Test keys first (FLWSECK_TEST-…). |
-| SMTP (Postmark/Brevo/Resend) | e.g. account.postmarkapp.com | Free tiers are fine for pilot volume. |
-| Termii API key | termii.com → dashboard | SMS provider; optional but configured. |
-| Whereby | whereby.com → developer | Meetings; optional — `MEETING_PROVIDER=stub` works without it. |
-| Google OAuth | console.cloud.google.com → OAuth client | Optional. Redirect URL: `https://<web origin>/auth/google/callback`. |
-| Gemini API key | aistudio.google.com | Optional (chat assistant). |
-| EXPO_ACCESS_TOKEN | expo.dev → Access tokens | Optional (push notifications). |
-| METRICS_TOKEN | generate: `openssl rand -hex 32` | Bearer token required to scrape `/metrics`. |
-| PAYSTACK_SECRET / FLUTTERWAVE_SECRET | your gateway secret keys | Double as the webhook HMAC secret — must match the live/test key on the gateway. |
+| Secret                               | Where to get it                              | Notes                                                                                                      |
+| ------------------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Paystack keys                        | dashboard.paystack.com → Settings → API Keys | **Use TEST keys first** (sk_test_…). The pilot gate requires a real test-key transaction before live keys. |
+| Flutterwave keys                     | dashboard.flutterwave.com → Settings → API   | Test keys first (FLWSECK_TEST-…).                                                                          |
+| SMTP (Postmark/Brevo/Resend)         | e.g. account.postmarkapp.com                 | Free tiers are fine for pilot volume.                                                                      |
+| Termii API key                       | termii.com → dashboard                       | SMS provider; optional but configured.                                                                     |
+| Whereby                              | whereby.com → developer                      | Meetings; optional — `MEETING_PROVIDER=stub` works without it.                                             |
+| Google OAuth                         | console.cloud.google.com → OAuth client      | Optional. Redirect URL: `https://<web origin>/auth/google/callback`.                                       |
+| Gemini API key                       | aistudio.google.com                          | Optional (chat assistant).                                                                                 |
+| EXPO_ACCESS_TOKEN                    | expo.dev → Access tokens                     | Optional (push notifications).                                                                             |
+| METRICS_TOKEN                        | generate: `openssl rand -hex 32`             | Bearer token required to scrape `/metrics`.                                                                |
+| PAYSTACK_SECRET / FLUTTERWAVE_SECRET | your gateway secret keys                     | Double as the webhook HMAC secret — must match the live/test key on the gateway.                           |
 
 ---
 
@@ -101,25 +101,25 @@ Key wiring facts (why the config below is shaped this way):
 1. Push `main` to GitHub (the CI run must be green first — see the
    checklist gates).
 2. Render → **New → Blueprint** → select the repo → it reads `render.yaml`
-   and creates: `nuvora-db`, `nuvora-redis`, `nuvora-api`, `nuvora-worker`.
+   and creates: `yk-virtual-db`, `yk-virtual-redis`, `yk-virtual-api`, `yk-virtual-worker`.
    - If you forked the repo, edit the `repo:` lines in `render.yaml` to your
      GitHub path.
-3. Open `nuvora-api` → **Environment** and fill every `sync:false` value:
-   - `SITE_URL` = `https://nuvora.vercel.app` (use the *actual* Vercel URL
+3. Open `yk-virtual-api` → **Environment** and fill every `sync:false` value:
+   - `SITE_URL` = `https://ykvirtual.vercel.app` (use the _actual_ Vercel URL
      from step 2 — you can update it after the first deploy)
-   - `ALLOWED_ORIGINS` = `https://nuvora.vercel.app`
+   - `ALLOWED_ORIGINS` = `https://ykvirtual.vercel.app`
    - the payment/email/SMS/webhook secrets from the table above.
 4. Migrations — automatic on the first deploy: `render.yaml` ships
-   `MIGRATE_ON_BOOT=true`, so the first `nuvora-api` boot applies the
+   `MIGRATE_ON_BOOT=true`, so the first `yk-virtual-api` boot applies the
    embedded chain and creates the schema. After the first successful
    deploy, set it to `false` in the dashboard (prevents concurrent-boot
    races if you ever scale to multiple replicas).
-   - Manual fallback (any time): Render → `nuvora-api` → **Shell** →
+   - Manual fallback (any time): Render → `yk-virtual-api` → **Shell** →
      `/usr/local/bin/migrate --cmd=up` (the chain is embedded in the
      binary; no filesystem needed).
 5. Health checks:
-   - `https://nuvora-api.onrender.com/health` → `200 ok`
-   - `https://nuvora-api.onrender.com/health/ready` → `200` (Postgres
+   - `https://yk-virtual-api.onrender.com/health` → `200 ok`
+   - `https://yk-virtual-api.onrender.com/health/ready` → `200` (Postgres
      reachable). First hit may take 30–60s if the free instance slept.
 
 > Upgrade path for the pilot: Postgres `starter` ($7/mo) before day 30 of
@@ -136,12 +136,12 @@ Key wiring facts (why the config below is shaped this way):
      region — Frankfurt, best latency to Lagos).
 3. **Environment Variables** (Project → Settings → Environment Variables,
    apply to Production):
-   | Key | Value |
-   |---|---|
-   | `API_PROXY_TARGET` | `https://nuvora-api.onrender.com` |
-   | `NEXT_PUBLIC_API_URL` | `https://nuvora-api.onrender.com/api/v1` |
-   These are read at BUILD time (rewrites + SSR fetches) — changing them
-   triggers a redeploy.
+   | Key                                                                   | Value                                        |
+   | --------------------------------------------------------------------- | -------------------------------------------- |
+   | `API_PROXY_TARGET`                                                    | `https://yk-virtual-api.onrender.com`        |
+   | `NEXT_PUBLIC_API_URL`                                                 | `https://yk-virtual-api.onrender.com/api/v1` |
+   | These are read at BUILD time (rewrites + SSR fetches) — changing them |
+   | triggers a redeploy.                                                  |
 4. Deploy. Then **update Render** `SITE_URL` + `ALLOWED_ORIGINS` to the
    real `https://<project>.vercel.app` URL and let the API redeploy.
 
@@ -150,7 +150,7 @@ Key wiring facts (why the config below is shaped this way):
 ## 3. Post-deploy smoke tests (run every one — 10 minutes)
 
 ```bash
-API=https://nuvora-api.onrender.com
+API=https://yk-virtual-api.onrender.com
 WEB=https://<project>.vercel.app
 
 # 1. liveness + readiness
@@ -182,7 +182,7 @@ curl -s -X POST $API/api/v1/auth/login-code/confirm -H 'Content-Type: applicatio
 1. **Vercel** → Project → Settings → Domains → add `www.yourdomain.com`
    (+ root). Update your DNS CNAME/ALIAS as Vercel instructs. SSL is
    automatic.
-2. **Render** → `nuvora-api` → Settings → Custom Domain → add
+2. **Render** → `yk-virtual-api` → Settings → Custom Domain → add
    `api.yourdomain.com` → CNAME in your DNS → SSL auto-provisions.
 3. Update EVERYTHING that references the old origins, then redeploy both:
    - Render: `SITE_URL`, `ALLOWED_ORIGINS`, `GOOGLE_REDIRECT_URL`
@@ -191,7 +191,7 @@ curl -s -X POST $API/api/v1/auth/login-code/confirm -H 'Content-Type: applicatio
 
 ---
 
-## 5. Mobile app (NUVORA on the go)
+## 5. Mobile app (YK-Virtual on the go)
 
 The app reads its API base from Expo config
 (`mobile/app.json` → `expo.extra.apiUrl`):
@@ -208,24 +208,24 @@ CORS/origin work needed; no cookie involved.
 
 ## 6. Rollback + day-2 ops
 
-- **Vercel**: Deployments tab → ⋯ → *Promote/Rollback* (instant).
-- **Render**: `nuvora-api` → Manual Deploy → *Deploy latest commit* or pick
+- **Vercel**: Deployments tab → ⋯ → _Promote/Rollback_ (instant).
+- **Render**: `yk-virtual-api` → Manual Deploy → _Deploy latest commit_ or pick
   a previous successful deploy.
 - **Database**: Render PG takes automatic daily snapshots; restore from
   the dashboard (or use the repo's `scripts/backup.sh` against
   `BACKUP_METRICS_DIR`-style paths if self-hosting ops).
-- **Monitor**: `nuvora-api` logs + `/metrics` (bearer = `METRICS_TOKEN`).
+- **Monitor**: `yk-virtual-api` logs + `/metrics` (bearer = `METRICS_TOKEN`).
   Grafana/Prometheus are in `docker-compose.prod.yml` if you later move to
   a VPS.
 
 ## 7. Pilot cost (free/cheap tiers)
 
-| Item | Plan | Cost |
-|---|---|---|
-| Vercel | Hobby | $0 |
-| Render API + worker + Redis | Free (sleeps) | $0 |
-| Render Postgres | Starter (before day 30) | ~$7/mo |
-| SMTP (Postmark) | Free tier | $0 |
+| Item                        | Plan                    | Cost   |
+| --------------------------- | ----------------------- | ------ |
+| Vercel                      | Hobby                   | $0     |
+| Render API + worker + Redis | Free (sleeps)           | $0     |
+| Render Postgres             | Starter (before day 30) | ~$7/mo |
+| SMTP (Postmark)             | Free tier               | $0     |
 
 Total ≈ **$7/mo** for the pilot. Upgrade API to `starter` ($7/mo) when
 cold starts annoy real users; move to the VPS compose stack

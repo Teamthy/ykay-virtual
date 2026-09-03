@@ -38,7 +38,7 @@ type Exam struct {
 	PassingScore    int // percent
 	CohortID        *uuid.UUID
 	Status          string
-	// Premium — part of the NUVORA Plus CBT vault (migration 000066). Premium
+	// Premium — part of the YK-Virtual Plus CBT vault (migration 000066). Premium
 	// exams are only accessible to users with an active Plus subscription.
 	Premium   bool
 	Questions []Question

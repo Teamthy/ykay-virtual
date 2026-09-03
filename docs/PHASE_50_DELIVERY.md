@@ -8,22 +8,24 @@ best-fit hero imagery, and the Windows `next dev` OOM.
 ## CI repairs (both failures root-caused from the run on main)
 
 ### Metrics + alerts config validation (G3.3) — promtool
+
 - Root cause: `deploy/prometheus/prometheus.yml` references its rules at
   `/etc/prometheus/alerts.yml` — the mount path used INSIDE the compose
   service. The CI validation container mounted the directory at `/p`, so
   promtool failed with `"/etc/prometheus/alerts.yml" does not point to an
-  existing file`. The rules themselves were always valid (11/11).
+existing file`. The rules themselves were always valid (11/11).
 - Fix: CI now mounts at `/etc/prometheus` and validates both
   `check config` and `check rules` at that path. Verified locally with
   promtool 2.53: `SUCCESS: 1 rule files found`.
 
 ### Lighthouse CI — exit 127
+
 - Root cause: `lhci` was installed globally in an earlier step; after
   the runner's Node 20→24 migration the global bin isn't reliably on
   PATH in later steps → `lhci: command not found` (127). Secondary risk:
   the API boot health-wait was racing a cold `go run` compile.
 - Fix: the boot step now pre-builds the API binary (`go build -o
-  /tmp/nuvora-api`), boots it directly, installs lhci IN-STEP with an
+/tmp/yk-virtual-api`), boots it directly, installs lhci IN-STEP with an
   explicit `PATH="$(npm config get prefix)/bin:$PATH"` export, and falls
   back to `npx --yes @lhci/cli` if `lhci` is still missing. Health waits
   widened 30s → 60s. Same hardening applied to the observability smoke.
@@ -31,6 +33,7 @@ best-fit hero imagery, and the Windows `next dev` OOM.
 ## Dev experience
 
 ### Plain-text codes/links in the terminal (development only)
+
 - AuthService.WithDevLogging(enabled) — wired from
   `cfg.Environment != "production"`. Login codes, verify-email links and
   reset-password links now print as:
@@ -39,6 +42,7 @@ best-fit hero imagery, and the Windows `next dev` OOM.
   Never enabled in production (verified live against a booted API).
 
 ### Windows `next dev` OOM ("Array buffer allocation failed")
+
 - Root cause: webpack's dev pack-file cache serializes via very large
   gzip buffers; on a RAM-constrained machine (Docker + API + browser
   running) the allocation fails and Node dies.
@@ -52,7 +56,7 @@ best-fit hero imagery, and the Windows `next dev` OOM.
 - 6 new on-brand hero photographs generated for the homepage slider
   (1376×768, ~200 KB each) in `client/public/hero/`:
   `home-tutoring.jpg · international.jpg · utme.jpg · test-prep.jpg ·
-  nuvora-plus.jpg · entrance-exam.jpg`
+plus.jpg · entrance-exam.jpg`
 - Wired into BOTH hero components (HeroSlider 5 slides + HeroCarousel
   via site-data.ts) with per-slide best-fit mapping. No more Unsplash
   hotlinks on the homepage — faster, CSP-safe, no remote dependency,

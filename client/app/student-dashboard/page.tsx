@@ -2,19 +2,47 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { BookOpen, CheckCircle2, CircleHelp, Clock, Play, UserRound, Trophy, Award, Flame } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  CircleHelp,
+  Clock,
+  Play,
+  UserRound,
+  Trophy,
+  Award,
+  Flame,
+} from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
-import { listMyAssignments, listMySubmissions, getAttendanceSummary } from "@/features/portal/api";
+import {
+  listMyAssignments,
+  listMySubmissions,
+  getAttendanceSummary,
+} from "@/features/portal/api";
 import { getMyLessonProgress } from "@/features/lms/api";
-import { getGradebook, getReviewQueue, getLeaderboard, submitLessonFeedback } from "@/features/dashboard/api";
+import {
+  getGradebook,
+  getReviewQueue,
+  getLeaderboard,
+  submitLessonFeedback,
+} from "@/features/dashboard/api";
 import { CalendarWidget } from "@/components/dashboard/CalendarWidget";
 import { ResumeRail } from "@/components/dashboard/ResumeRail";
 import { WelcomeQuote } from "@/components/dashboard/WelcomeQuote";
 import { WeeklyGoal } from "@/components/dashboard/WeeklyGoal";
-import { GradebookWidget, ReviewQueueWidget, LeaderboardWidget, FeedbackPrompt } from "@/components/dashboard/InsightWidgets";
+import {
+  GradebookWidget,
+  ReviewQueueWidget,
+  LeaderboardWidget,
+  FeedbackPrompt,
+} from "@/components/dashboard/InsightWidgets";
 import { listMyCertificates } from "@/features/certificates/api";
-import { groupByCohort, computeStats, achievements } from "@/lib/learning-stats";
+import {
+  groupByCohort,
+  computeStats,
+  achievements,
+} from "@/lib/learning-stats";
 import { Progress } from "@/components/ui/progress";
 import { StatCard } from "@/components/ui/stat-card";
 import { RoleGate } from "@/components/dashboard/RoleGate";
@@ -55,13 +83,19 @@ function CheckRow({
           done ? "bg-primary text-ink-900" : "bg-ink-50 text-ink-400"
         }`}
       >
-        {done ? <CheckCircle2 size={18} /> : <span className="size-2.5 rounded-full bg-ink-300" />}
+        {done ? (
+          <CheckCircle2 size={18} />
+        ) : (
+          <span className="size-2.5 rounded-full bg-ink-300" />
+        )}
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-bold text-ink-900">{title}</span>
         <span className="block text-xs text-ink-500">{hint}</span>
       </span>
-      <span className={`text-xs font-bold ${done ? "text-primary-dark" : "text-ink-400"}`}>
+      <span
+        className={`text-xs font-bold ${done ? "text-primary-dark" : "text-ink-400"}`}
+      >
         {done ? "Done" : "To do"}
       </span>
     </Link>
@@ -111,15 +145,34 @@ export default function StudentDashboardPage() {
     enabled: !!user,
     staleTime: 60_000,
   });
-  const gradebook = useQuery({ queryKey: ["dashboard", "gradebook"], queryFn: () => getGradebook(me?.id), enabled: !!user && !!me?.id, staleTime: 60_000 });
-  const reviewQueue = useQuery({ queryKey: ["dashboard", "review"], queryFn: () => getReviewQueue(me?.id), enabled: !!user && !!me?.id, staleTime: 60_000 });
-  const leaderboard = useQuery({ queryKey: ["dashboard", "leaderboard"], queryFn: () => getLeaderboard(me?.id), enabled: !!user && !!me?.id, staleTime: 60_000 });
+  const gradebook = useQuery({
+    queryKey: ["dashboard", "gradebook"],
+    queryFn: () => getGradebook(me?.id),
+    enabled: !!user && !!me?.id,
+    staleTime: 60_000,
+  });
+  const reviewQueue = useQuery({
+    queryKey: ["dashboard", "review"],
+    queryFn: () => getReviewQueue(me?.id),
+    enabled: !!user && !!me?.id,
+    staleTime: 60_000,
+  });
+  const leaderboard = useQuery({
+    queryKey: ["dashboard", "leaderboard"],
+    queryFn: () => getLeaderboard(me?.id),
+    enabled: !!user && !!me?.id,
+    staleTime: 60_000,
+  });
 
   const upcoming = (lessons.data ?? [])
     .filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING")
-    .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+    .sort(
+      (a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
+    );
   const next = upcoming[0];
-  const submittedIds = new Set((submissions.data ?? []).map((s) => s.assignment_id));
+  const submittedIds = new Set(
+    (submissions.data ?? []).map((s) => s.assignment_id),
+  );
   const enrolled = (lessons.data ?? []).length > 0;
 
   // Udemy-style aggregates (pure helpers — unit tested).
@@ -137,9 +190,10 @@ export default function StudentDashboardPage() {
   });
   const myAchievements = achievements(myStats);
 
-
   const profileDone = !!(user?.first_name && user?.last_name);
-  const checksDone = [profileDone, true, false, enrolled].filter(Boolean).length;
+  const checksDone = [profileDone, true, false, enrolled].filter(
+    Boolean,
+  ).length;
 
   return (
     <DashboardPage>
@@ -150,22 +204,33 @@ export default function StudentDashboardPage() {
         items={(lessons.data ?? [])
           .filter((l) => l.video_url && l.status !== "CANCELLED")
           .slice(0, 3)
-          .map((l) => ({ id: l.id, title: l.title, href: "/lms/recorded", subtitle: "Recorded lesson" }))}
+          .map((l) => ({
+            id: l.id,
+            title: l.title,
+            href: "/lms/recorded",
+            subtitle: "Recorded lesson",
+          }))}
       />
 
       {me?.is_minor && (
         <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary bg-primary-light px-5 py-4">
           <div className="flex items-start gap-3">
-            <span className="text-xl" aria-hidden="true">🛡️</span>
+            <span className="text-xl" aria-hidden="true">
+              🛡️
+            </span>
             <div>
               <p className="font-bold text-deep">Parent-guided account</p>
               <p className="text-sm text-ink-600">
-                You&apos;re under 15, so a parent or guardian manages bookings and payments for you.
-                Your lessons, assignments and progress all work right here.
+                You&apos;re under 15, so a parent or guardian manages bookings
+                and payments for you. Your lessons, assignments and progress all
+                work right here.
               </p>
             </div>
           </div>
-          <Link href="/account" className="text-sm font-bold text-primary-dark hover:underline">
+          <Link
+            href="/account"
+            className="text-sm font-bold text-primary-dark hover:underline"
+          >
             View settings
           </Link>
         </section>
@@ -184,12 +249,12 @@ export default function StudentDashboardPage() {
                   {me?.is_minor && !enrolled
                     ? `Hi ${me?.first_name ?? "there"} — your parent manages your classes`
                     : me
-                    ? enrolled
-                      ? `Welcome back, ${me.first_name}`
-                      : `Hi ${me.first_name} — find your next class`
-                    : enrolled
-                      ? "You're enrolled — class starts soon!"
-                      : "Find your next class"}
+                      ? enrolled
+                        ? `Welcome back, ${me.first_name}`
+                        : `Hi ${me.first_name} — find your next class`
+                      : enrolled
+                        ? "You're enrolled — class starts soon!"
+                        : "Find your next class"}
                 </h2>
                 <p className="mt-2 text-sm text-white/75">
                   {me?.current_level ? `${me.current_level} · ` : ""}
@@ -202,7 +267,12 @@ export default function StudentDashboardPage() {
                 <Clock size={18} className="mx-auto text-primary" />
                 <p className="mt-1 text-sm font-bold">
                   {next
-                    ? new Date(next.start_at).toLocaleString([], { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                    ? new Date(next.start_at).toLocaleString([], {
+                        weekday: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                     : "Starting soon"}
                 </p>
                 <p className="text-[11px] text-white/60">Class starts</p>
@@ -214,8 +284,12 @@ export default function StudentDashboardPage() {
                   <Play size={14} />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold">Watch your instructor&apos;s intro</p>
-                  <p className="text-xs text-white/60">A welcome message before the first class</p>
+                  <p className="text-sm font-semibold">
+                    Watch your instructor&apos;s intro
+                  </p>
+                  <p className="text-xs text-white/60">
+                    A welcome message before the first class
+                  </p>
                 </div>
               </div>
               {next?.meeting_url || next?.video_url ? (
@@ -242,15 +316,39 @@ export default function StudentDashboardPage() {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-ink-900">Before class begins</h3>
-                <p className="text-sm text-ink-500">Get yourself set up and ready</p>
+                <p className="text-sm text-ink-500">
+                  Get yourself set up and ready
+                </p>
               </div>
-              <span className="text-sm font-bold text-ink-400">{checksDone}/4</span>
+              <span className="text-sm font-bold text-ink-400">
+                {checksDone}/4
+              </span>
             </div>
             <div className="space-y-2">
-              <CheckRow done={profileDone} title="Complete your profile" hint="Add your name and a photo" href="/account" />
-              <CheckRow done={true} title="Enable notifications" hint="So you never miss a class or assignment" href="/notifications" />
-              <CheckRow done={false} title="Join the community" hint="Connect with your cohort before class begins" href="/messages" />
-              <CheckRow done={enrolled} title="Open your first course" hint="Materials, live classes and quizzes in the LMS" href="/lms" />
+              <CheckRow
+                done={profileDone}
+                title="Complete your profile"
+                hint="Add your name and a photo"
+                href="/account"
+              />
+              <CheckRow
+                done={true}
+                title="Enable notifications"
+                hint="So you never miss a class or assignment"
+                href="/notifications"
+              />
+              <CheckRow
+                done={false}
+                title="Join the community"
+                hint="Connect with your cohort before class begins"
+                href="/messages"
+              />
+              <CheckRow
+                done={enrolled}
+                title="Open your first course"
+                hint="Materials, live classes and quizzes in the LMS"
+                href="/lms"
+              />
             </div>
           </section>
 
@@ -261,15 +359,32 @@ export default function StudentDashboardPage() {
               <h3 className="font-bold text-ink-900">Upcoming classes</h3>
               <ul className="mt-3 divide-y divide-ink-100">
                 {upcoming.slice(0, 4).map((l) => (
-                  <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <li
+                    key={l.id}
+                    className="flex flex-wrap items-center justify-between gap-3 py-3"
+                  >
                     <div>
-                      <p className="text-sm font-bold text-ink-800">{l.title}</p>
+                      <p className="text-sm font-bold text-ink-800">
+                        {l.title}
+                      </p>
                       <p className="text-xs text-ink-500">
-                        {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                        {new Date(l.start_at).toLocaleString([], {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        · {l.timezone}
                       </p>
                     </div>
                     {l.meeting_url ? (
-                      <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white">
+                      <a
+                        href={l.meeting_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white"
+                      >
                         Join class
                       </a>
                     ) : (
@@ -288,15 +403,46 @@ export default function StudentDashboardPage() {
                 <h3 className="font-bold text-ink-900">My learning</h3>
                 <p className="text-sm text-ink-500">Keep your streak going</p>
               </div>
-              <Link href="/lms" className="text-sm font-bold text-primary-dark hover:underline">
+              <Link
+                href="/lms"
+                className="text-sm font-bold text-primary-dark hover:underline"
+              >
                 View all →
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatCard label="Course progress" value={`${myStats.overallPct}%`} hint={`${myStats.watchedLessons}/${myStats.totalLessons} lessons watched`} icon={<Flame size={16} />} />
-              <StatCard label="Attendance" value={myStats.attendancePct != null ? `${myStats.attendancePct.toFixed(0)}%` : "–"} hint="live classes" icon={<Clock size={16} />} />
-              <StatCard label="Assignments" value={`${myStats.submitted}/${myStats.assignmentsTotal}`} hint={myStats.avgScore != null ? `avg score ${myStats.avgScore}` : "submitted"} icon={<CheckCircle2 size={16} />} />
-              <StatCard label="Certificates" value={myStats.certificates} hint="earned" icon={<Trophy size={16} />} />
+              <StatCard
+                label="Course progress"
+                value={`${myStats.overallPct}%`}
+                hint={`${myStats.watchedLessons}/${myStats.totalLessons} lessons watched`}
+                icon={<Flame size={16} />}
+              />
+              <StatCard
+                label="Attendance"
+                value={
+                  myStats.attendancePct != null
+                    ? `${myStats.attendancePct.toFixed(0)}%`
+                    : "–"
+                }
+                hint="live classes"
+                icon={<Clock size={16} />}
+              />
+              <StatCard
+                label="Assignments"
+                value={`${myStats.submitted}/${myStats.assignmentsTotal}`}
+                hint={
+                  myStats.avgScore != null
+                    ? `avg score ${myStats.avgScore}`
+                    : "submitted"
+                }
+                icon={<CheckCircle2 size={16} />}
+              />
+              <StatCard
+                label="Certificates"
+                value={myStats.certificates}
+                hint="earned"
+                icon={<Trophy size={16} />}
+              />
             </div>
           </section>
 
@@ -305,20 +451,33 @@ export default function StudentDashboardPage() {
               <h3 className="font-bold text-ink-900">My courses</h3>
               <div className="mt-3 space-y-4">
                 {myCourses.map((c) => (
-                  <div key={c.cohortId} className="rounded-2xl border border-ink-100 p-4 transition-colors hover:border-primary/50">
+                  <div
+                    key={c.cohortId}
+                    className="rounded-2xl border border-ink-100 p-4 transition-colors hover:border-primary/50"
+                  >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <p className="font-bold text-ink-800">{c.title}</p>
-                        <p className="text-xs text-ink-500">{c.watched}/{c.total} lessons completed</p>
+                        <p className="text-xs text-ink-500">
+                          {c.watched}/{c.total} lessons completed
+                        </p>
                       </div>
                       <Link
                         href={c.nextUnwatchedId ? "/lms" : "/lms"}
                         className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light"
                       >
-                        {c.pct >= 100 ? "Review course" : c.watched > 0 ? "Resume" : "Start course"}
+                        {c.pct >= 100
+                          ? "Review course"
+                          : c.watched > 0
+                            ? "Resume"
+                            : "Start course"}
                       </Link>
                     </div>
-                    <Progress value={c.pct} showValue={false} className="mt-3" />
+                    <Progress
+                      value={c.pct}
+                      showValue={false}
+                      className="mt-3"
+                    />
                   </div>
                 ))}
               </div>
@@ -349,11 +508,22 @@ export default function StudentDashboardPage() {
 
           <div className="grid gap-4 lg:grid-cols-2">
             <CalendarWidget lessons={(lessons.data ?? []) as any[]} />
-            <WeeklyGoal done={(progress.data ?? []).filter((p) => p.watched).length} goal={3} />
+            <WeeklyGoal
+              done={(progress.data ?? []).filter((p) => p.watched).length}
+              goal={3}
+            />
             <GradebookWidget rows={gradebook.data ?? []} />
             <ReviewQueueWidget items={reviewQueue.data ?? []} />
             <LeaderboardWidget rows={leaderboard.data ?? []} />
-            <FeedbackPrompt onRate={(rating) => { const next = (lessons.data ?? []).find((l) => l.status !== "CANCELLED"); if (next) void submitLessonFeedback(next.id, rating, undefined, me?.id); }} />
+            <FeedbackPrompt
+              onRate={(rating) => {
+                const next = (lessons.data ?? []).find(
+                  (l) => l.status !== "CANCELLED",
+                );
+                if (next)
+                  void submitLessonFeedback(next.id, rating, undefined, me?.id);
+              }}
+            />
           </div>
         </div>
 
@@ -363,8 +533,13 @@ export default function StudentDashboardPage() {
               <CircleHelp size={18} />
             </div>
             <h3 className="font-bold text-ink-900">Have a question?</h3>
-            <p className="mt-1 text-sm text-ink-500">Support is happy to help you get settled in before class begins.</p>
-            <Link href="/help" className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline">
+            <p className="mt-1 text-sm text-ink-500">
+              Support is happy to help you get settled in before class begins.
+            </p>
+            <Link
+              href="/help"
+              className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline"
+            >
               Contact support →
             </Link>
           </div>
@@ -373,27 +548,47 @@ export default function StudentDashboardPage() {
               <UserRound size={18} />
             </div>
             <h3 className="font-bold text-ink-900">New to the platform?</h3>
-            <p className="mt-1 text-sm text-ink-500">Watch how NUVORA lessons, assignments and live classes work.</p>
-            <Link href="/help" className="mt-3 inline-block text-sm font-bold text-deep hover:underline">
+            <p className="mt-1 text-sm text-ink-500">
+              Watch how YK-Virtual lessons, assignments and live classes work.
+            </p>
+            <Link
+              href="/help"
+              className="mt-3 inline-block text-sm font-bold text-deep hover:underline"
+            >
               Watch guide →
             </Link>
           </div>
           {me && (
             <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
-              <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Your learner profile</p>
-              <p className="mt-2 font-bold text-ink-900">{me.first_name} {me.last_name}</p>
-              <p className="text-sm text-ink-500">{me.current_level || "Level from onboarding"}</p>
-              <Link href="/account" className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline">
+              <p className="text-xs font-bold uppercase tracking-wide text-ink-400">
+                Your learner profile
+              </p>
+              <p className="mt-2 font-bold text-ink-900">
+                {me.first_name} {me.last_name}
+              </p>
+              <p className="text-sm text-ink-500">
+                {me.current_level || "Level from onboarding"}
+              </p>
+              <Link
+                href="/account"
+                className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline"
+              >
                 Edit in settings →
               </Link>
             </div>
           )}
           <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
-            <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Snapshot</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-ink-400">
+              Snapshot
+            </p>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-ink-500">Attendance</dt>
-                <dd className="font-bold text-ink-900">{attendance.data ? `${attendance.data.rate.toFixed(0)}%` : "–"}</dd>
+                <dd className="font-bold text-ink-900">
+                  {attendance.data
+                    ? `${attendance.data.rate.toFixed(0)}%`
+                    : "–"}
+                </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-ink-500">Assignments</dt>
@@ -402,10 +597,16 @@ export default function StudentDashboardPage() {
                 </dd>
               </div>
             </dl>
-            <Link href="/lms" className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-deep py-2.5 text-sm font-bold text-white hover:bg-deep-light">
+            <Link
+              href="/lms"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-deep py-2.5 text-sm font-bold text-white hover:bg-deep-light"
+            >
               Continue learning
             </Link>
-            <Link href="/account" className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-ink-200 py-2.5 text-sm font-bold text-ink-800">
+            <Link
+              href="/account"
+              className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-ink-200 py-2.5 text-sm font-bold text-ink-800"
+            >
               Receipts &amp; settings
             </Link>
           </div>

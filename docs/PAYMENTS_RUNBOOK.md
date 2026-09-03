@@ -14,6 +14,7 @@
 ## 1. Paystack (payments in AND out)
 
 ### 1a. Keys
+
 1. Log in at dashboard.paystack.com → Settings → API Keys & Webhooks.
 2. Copy the **Live Secret Key** (`sk_live_...`) — never the public key for the
    API.
@@ -28,6 +29,7 @@
    verifies every webhook signature with `PAYSTACK_SECRET`.
 
 ### 1b. Payouts (money out)
+
 1. Render env: `PAYSTACK_TRANSFER_ENABLED=false` → **`true`** once you want
    real transfers (it is fail-closed by design: false = payouts refuse to run).
 2. Paystack: Settings → Transfers. Add your bank/balance; if the dashboard
@@ -35,9 +37,10 @@
    `PAYSTACK_TRANSFER_OTP` flow in the admin payouts console handles
    entering it (one-click transfers with OTP finalize were built in).
 3. Tutor side: tutor saves bank details (mobile `Tutor → Earnings → Bank
-   details`, or web) → admin approves payouts in the web console.
+details`, or web) → admin approves payouts in the web console.
 
 ### 1c. The ₦1,000 test cohort (this batch)
+
 `go run ./cmd/seedlms --tutor-email samaliu333@gmail.com --test-cohort` seeds
 a **PUBLISHED "Payment test cohort — N1,000"** (code `NV-PAYTEST`, fee
 ₦1,000, 50 seats, one scheduled lesson, attached to your tutor). Money loop:
@@ -67,7 +70,7 @@ service conversations/month**.
    the **Phone number ID**. Render:
    - `WHATSAPP_CLOUD_TOKEN` = the token
    - `WHATSAPP_CLOUD_PHONE_ID` = the phone number id
-   (boot log shows `whatsapp provider active: meta-cloud`.)
+     (boot log shows `whatsapp provider active: meta-cloud`.)
 3. **Numbers** (both paths):
    - `WHATSAPP_BUSINESS_NUMBER` = the number advertised on the site — the
      wa.me chat button needs ONLY this, no API at all (free).
@@ -89,7 +92,7 @@ service conversations/month**.
    into Cloudflare — 3 TXT/CNAME records).
 3. Render env:
    - `RESEND_API_KEY` = `re_...`
-   - `EMAIL_FROM` = `NUVORA <no-reply@yourdomain.com>`
+   - `EMAIL_FROM` = `YK-Virtual <no-reply@yourdomain.com>`
    - `EMAIL_PROVIDER` = `resend`
    - (clear `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS` if they were set)
 4. Verify: boot logs print `email provider active: resend`; then log in as
@@ -98,12 +101,12 @@ service conversations/month**.
 
 ## 4. "If I use Oracle, do I still need a VPS?"
 
-**No — Oracle IS your VPS.** The Oracle Cloud *Always Free* tier gives you a
+**No — Oracle IS your VPS.** The Oracle Cloud _Always Free_ tier gives you a
 permanent virtual machine (4 Arm cores / 24 GB RAM / 200 GB disk). That one
 VM runs your API, Postgres, Redis, worker and ClamAV via your existing
 `docker-compose.yml`. You never rent a second server.
 
-What Cloudflare adds is the *edge* in front of it (DNS, CDN, SSL, DDoS
+What Cloudflare adds is the _edge_ in front of it (DNS, CDN, SSL, DDoS
 protection) — it doesn't replace the VM, because a Postgres database and a
 long-running Go API need a real server behind the proxy.
 
@@ -142,14 +145,14 @@ days.
 
 ## 6. Checklist summary
 
-| Step | Where | Cost |
-|---|---|---|
-| Paystack live key + webhook + transfers | dashboard.paystack.com + Render | ₦0 (fees only per transaction) |
-| ₦1,000 test cohort | `go run ./cmd/seedlms --tutor-email samaliu333@gmail.com --test-cohort` (local or via Render shell) | ₦1,000 (your own test money, paid out back to you) |
-| Termii key + WhatsApp sender + 2 numbers | termii.com + Render | ₦0 (per-message fees) |
-| Resend key + verified domain + provider=resend | resend.com + Render | ₦0 (free tier 100/day, 3k/month) |
-| Oracle VM | cloud.oracle.com → Always Free A1.Flex | ₦0 |
-| Cloudflare front + .com domain | cloudflare.com | ~₦6–8k/year |
-| UptimeRobot | uptimerobot.com free | ₦0 |
+| Step                                           | Where                                                                                               | Cost                                               |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Paystack live key + webhook + transfers        | dashboard.paystack.com + Render                                                                     | ₦0 (fees only per transaction)                     |
+| ₦1,000 test cohort                             | `go run ./cmd/seedlms --tutor-email samaliu333@gmail.com --test-cohort` (local or via Render shell) | ₦1,000 (your own test money, paid out back to you) |
+| Termii key + WhatsApp sender + 2 numbers       | termii.com + Render                                                                                 | ₦0 (per-message fees)                              |
+| Resend key + verified domain + provider=resend | resend.com + Render                                                                                 | ₦0 (free tier 100/day, 3k/month)                   |
+| Oracle VM                                      | cloud.oracle.com → Always Free A1.Flex                                                              | ₦0                                                 |
+| Cloudflare front + .com domain                 | cloudflare.com                                                                                      | ~₦6–8k/year                                        |
+| UptimeRobot                                    | uptimerobot.com free                                                                                | ₦0                                                 |
 
 All of this lands inside the ₦50k/3-month budget with ~₦42k to spare.

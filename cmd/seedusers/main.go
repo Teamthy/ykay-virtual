@@ -26,7 +26,7 @@ type account struct {
 
 func main() {
 	allowProd := flag.Bool("allow-prod", false, "allow seeding when ENVIRONMENT=production")
-	opsOnly := flag.Bool("ops-only", false, "skip @nuvora.test fixtures; only --academic/--super")
+	opsOnly := flag.Bool("ops-only", false, "skip @ykvirtual.test fixtures; only --academic/--super")
 	academic := flag.String("academic", strings.TrimSpace(os.Getenv("SEED_ACADEMIC_EMAIL")), "ACADEMIC_ADMIN email")
 	super := flag.String("super", strings.TrimSpace(os.Getenv("SEED_SUPER_EMAIL")), "SUPER_ADMIN email")
 	flag.Parse()
@@ -38,7 +38,7 @@ func main() {
 
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://nuvora:nuvora@localhost:5432/nuvora?sslmode=disable"
+		dsn = "postgres://ykvirtual:ykvirtual@localhost:5432/ykvirtual?sslmode=disable"
 	}
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -56,11 +56,11 @@ func main() {
 	var accounts []account
 	if !*opsOnly {
 		accounts = append(accounts,
-			account{Email: "local.super@nuvora.test", Role: "SUPER_ADMIN"},
-			account{Email: "local.academic@nuvora.test", Role: "ACADEMIC_ADMIN"},
-			account{Email: "local.parent@nuvora.test", Role: "PARENT"},
-			account{Email: "local.tutor@nuvora.test", Role: "TUTOR"},
-			account{Email: "local.student@nuvora.test", Role: "STUDENT"},
+			account{Email: "local.super@ykvirtual.test", Role: "SUPER_ADMIN"},
+			account{Email: "local.academic@ykvirtual.test", Role: "ACADEMIC_ADMIN"},
+			account{Email: "local.parent@ykvirtual.test", Role: "PARENT"},
+			account{Email: "local.tutor@ykvirtual.test", Role: "TUTOR"},
+			account{Email: "local.student@ykvirtual.test", Role: "STUDENT"},
 		)
 	}
 	acad := strings.ToLower(strings.TrimSpace(*academic))
@@ -83,7 +83,7 @@ func main() {
 		log.Fatal("nothing to seed: omit --ops-only, or pass --academic / --super")
 	}
 
-	fmt.Println("NUVORA seed — operator passwords are not written to git")
+	fmt.Println("YK-Virtual seed — operator passwords are not written to git")
 	fmt.Println("database:", dsn)
 	fmt.Println("These logins ONLY work against an API using THIS same DATABASE_URL.")
 	fmt.Println("If the API log says \"in-memory store\", restart the API after Postgres is up.")
@@ -92,7 +92,7 @@ func main() {
 	fmt.Println("email\trole\tpassword")
 
 	var dump strings.Builder
-	dump.WriteString("# NUVORA local seed credentials (gitignored). Delete after copying.\n")
+	dump.WriteString("# YK-Virtual local seed credentials (gitignored). Delete after copying.\n")
 
 	for _, a := range accounts {
 		pw := a.Password

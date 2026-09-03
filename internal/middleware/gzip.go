@@ -9,7 +9,7 @@ import (
 // Gzip — response compression for the JSON API (F-4 wait-time fix).
 //
 // Why: catalogue/dashboard payloads (cohort listings, tutor search, programme
-// data) are verbose JSON; on the mobile networks most NUVORA learners use,
+// data) are verbose JSON; on the mobile networks most YK-Virtual learners use,
 // an uncompressed body is often 3–6× the transfer time of a gzipped one.
 //
 // Behaviour:

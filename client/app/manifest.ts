@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "NUVORA",
-    short_name: "NUVORA",
+    name: "YK-Virtual",
+    short_name: "YK-Virtual",
     description:
       "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
     start_url: "/",
@@ -13,11 +13,24 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      {
+        src: "/icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
     ],
     shortcuts: [
-      { name: "Find a programme", url: "/programmes", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
-      { name: "Book private tuition", url: "/private-tuition", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+      {
+        name: "Find a programme",
+        url: "/programmes",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
+      {
+        name: "Book private tuition",
+        url: "/private-tuition",
+        icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+      },
     ],
   };
 }

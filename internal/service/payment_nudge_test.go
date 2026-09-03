@@ -63,13 +63,13 @@ func TestPaymentNudge_SendsOnceAndMarksContacted(t *testing.T) {
 	cohortID := uuid.New()
 	l := seedLead(t, repo, "2348012345678", 90*time.Minute, &cohortID)
 
-	n, err := svc.SendPaymentNudges(ctx, "https://nuvora.com", 45*time.Minute, 24*time.Hour, 100)
+	n, err := svc.SendPaymentNudges(ctx, "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 100)
 	require.NoError(t, err)
 	assert.Equal(t, 1, n)
 
 	require.Len(t, wa.sends, 1)
 	assert.Equal(t, "2348012345678", wa.sends[0].To)
-	assert.Contains(t, wa.sends[0].Body, "https://nuvora.com/checkout/"+cohortID.String())
+	assert.Contains(t, wa.sends[0].Body, "https://virtual.ykaycollege.com/checkout/"+cohortID.String())
 	assert.Contains(t, wa.sends[0].Body, "Ada")
 
 	got, err := repo.GetByID(ctx, l.ID)
@@ -77,7 +77,7 @@ func TestPaymentNudge_SendsOnceAndMarksContacted(t *testing.T) {
 	assert.Equal(t, leads.StatusContacted, got.Status)
 
 	// Second sweep: nothing left to nudge.
-	n, err = svc.SendPaymentNudges(ctx, "https://nuvora.com", 45*time.Minute, 24*time.Hour, 100)
+	n, err = svc.SendPaymentNudges(ctx, "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 100)
 	require.NoError(t, err)
 	assert.Equal(t, 0, n)
 	assert.Len(t, wa.sends, 1)
@@ -91,7 +91,7 @@ func TestPaymentNudge_RespectsAgeWindow(t *testing.T) {
 	seedLead(t, repo, "2348000000001", 10*time.Minute, &cohortID) // too fresh
 	seedLead(t, repo, "2348000000002", 48*time.Hour, &cohortID)   // too cold
 
-	n, err := svc.SendPaymentNudges(ctx, "https://nuvora.com", 45*time.Minute, 24*time.Hour, 100)
+	n, err := svc.SendPaymentNudges(ctx, "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 100)
 	require.NoError(t, err)
 	assert.Equal(t, 0, n)
 	assert.Empty(t, wa.sends)
@@ -109,7 +109,7 @@ func TestPaymentNudge_SkipsUnreachableLeads(t *testing.T) {
 	require.NoError(t, repo.Create(ctx, l))
 	repo.Backdate(l.ID, time.Now().UTC().Add(-2*time.Hour))
 
-	n, err := svc.SendPaymentNudges(ctx, "https://nuvora.com", 45*time.Minute, 24*time.Hour, 100)
+	n, err := svc.SendPaymentNudges(ctx, "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 100)
 	require.NoError(t, err)
 	assert.Equal(t, 0, n)
 	assert.Empty(t, wa.sends)

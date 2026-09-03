@@ -1,14 +1,14 @@
-# NUVORA — Cookie Policy (G5.2)
+# YK-Virtual — Cookie Policy (G5.2)
 
 > **Status: DRAFT for legal review.**
 
 ## Cookies we set
 
-| Cookie | Purpose | Lifespan |
-|---|---|---|
-| `nuvora_session` | signed-in session (HttpOnly, Secure in production, SameSite=Lax) | session |
-| `theme` / `locale` | UI preferences (dark mode, language) | 1 year |
-| `cookie_consent` | records your banner choice | 1 year |
+| Cookie             | Purpose                                                          | Lifespan |
+| ------------------ | ---------------------------------------------------------------- | -------- |
+| `ykv_session`      | signed-in session (HttpOnly, Secure in production, SameSite=Lax) | session  |
+| `theme` / `locale` | UI preferences (dark mode, language)                             | 1 year   |
+| `cookie_consent`   | records your banner choice                                       | 1 year   |
 
 ## Third-party
 

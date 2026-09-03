@@ -19,14 +19,14 @@ export function DownloadAppCTA() {
         {/* Copy + store buttons */}
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
-            NUVORA on the go
+            YK-Virtual on the go
           </p>
           <h2 className="mt-4 font-display text-4xl leading-tight tracking-[0.02em] text-brand-navy md:text-5xl">
             Your classroom, in your pocket.
           </h2>
           <p className="mt-5 max-w-md leading-relaxed text-ink-600">
-            Attend live lessons, take quizzes, submit assignments and track progress from your
-            phone - even offline.
+            Attend live lessons, take quizzes, submit assignments and track
+            progress from your phone - even offline.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
@@ -49,7 +49,10 @@ export function DownloadAppCTA() {
 
           <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-6">
             {PERKS.map((p) => (
-              <li key={p.text} className="flex items-center gap-2 text-sm font-semibold text-ink-700">
+              <li
+                key={p.text}
+                className="flex items-center gap-2 text-sm font-semibold text-ink-700"
+              >
                 <p.icon size={16} className="text-brand-green" />
                 {p.text}
               </li>
@@ -62,7 +65,7 @@ export function DownloadAppCTA() {
         <div className="mx-auto w-full max-w-md">
           <Image
             src="/hero/african-student.jpg"
-            alt="African student learning on the NUVORA app"
+            alt="African student learning on the YK-Virtual app"
             width={768}
             height={1376}
             sizes="(max-width: 768px) 92vw, 448px"

@@ -5,7 +5,7 @@
 -- │ Re-running inserts duplicate rows (no upserts). Snapshot/backup first.   │
 -- └─────────────────────────────────────────────────────────────────────────┘
 -- =============================================================================
--- NUVORA — PRODUCTION COHORT SEED
+-- YK-Virtual — PRODUCTION COHORT SEED
 -- =============================================================================
 -- Creates REAL, named programmes + cohorts for the launch catalogue:
 --   GCE (A-Level) · IGCSE · UTME (JAMB) · NECO · WASSCE (WAEC) · British

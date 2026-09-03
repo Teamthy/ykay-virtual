@@ -21,7 +21,7 @@ import (
 // InitTracer configures the global tracer provider. Returns a shutdown
 // function that flushes pending spans; always safe to call.
 func InitTracer(ctx context.Context, endpoint string) func() {
-	return InitTracerWithService(ctx, endpoint, "nuvora-api", "")
+	return InitTracerWithService(ctx, endpoint, "yk-virtual-api", "")
 }
 
 // InitTracerWithService — like InitTracer but with explicit service metadata.

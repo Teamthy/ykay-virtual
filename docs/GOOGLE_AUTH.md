@@ -2,7 +2,7 @@
 
 The login and onboarding pages already have **Continue with Google**.
 The API exchanges the code and the Next.js route
-`/auth/google/callback` sets `nuvora_session`.
+`/auth/google/callback` sets `ykv_session`.
 
 A bug (handler never stored the Google service) is fixed in the same
 commit as this doc. After you deploy that commit **and** set the three
@@ -11,9 +11,9 @@ Render env vars, the button works.
 ## 1. Google Cloud project
 
 1. Open [https://console.cloud.google.com](https://console.cloud.google.com).
-2. Sign in with the Google account that will own NUVORA.
+2. Sign in with the Google account that will own YK-Virtual.
 3. Top bar → **Select a project** → **New project**.
-   - Name: `NUVORA`
+   - Name: `YK-Virtual`
    - Create.
 4. Wait until the project is selected (name shows in the top bar).
 
@@ -22,7 +22,7 @@ Render env vars, the button works.
 1. Left menu → **APIs & Services** → **OAuth consent screen**.
 2. If asked for **Google Auth platform** / **Branding**:
    - User type: **External**
-   - App name: `NUVORA`
+   - App name: `YK-Virtual`
    - User support email: your Gmail
    - Developer contact: same email
 3. **Save**.
@@ -44,14 +44,14 @@ own tests.
 1. **APIs & Services** → **Credentials** → **+ Create credentials** →
    **OAuth client ID**.
 2. Application type: **Web application**.
-3. Name: `NUVORA web`.
+3. Name: `YK-Virtual web`.
 4. **Authorized JavaScript origins** (no path, no trailing slash):
 
    ```
    https://ykay-virtual-wtar.vercel.app
    ```
 
-   Later add `https://nuvora.com.ng` when the domain is live.
+   Later add `https://virtual.ykaycollege.com.ng` when the domain is live.
 
 5. **Authorized redirect URIs** — must match **exactly**:
 
@@ -59,7 +59,7 @@ own tests.
    https://ykay-virtual-wtar.vercel.app/auth/google/callback
    ```
 
-   Later add `https://nuvora.com.ng/auth/google/callback`.
+   Later add `https://virtual.ykaycollege.com.ng/auth/google/callback`.
 
    Do **not** use the Render API host here. Google must send the browser
    back to **Vercel**, where the cookie is set.
@@ -72,11 +72,11 @@ own tests.
 
 Dashboard → **ykay-virtual** → **Environment** → add:
 
-| Key | Value |
-|---|---|
-| `GOOGLE_CLIENT_ID` | the client ID |
-| `GOOGLE_CLIENT_SECRET` | the client secret |
-| `GOOGLE_REDIRECT_URL` | `https://ykay-virtual-wtar.vercel.app/auth/google/callback` |
+| Key                    | Value                                                       |
+| ---------------------- | ----------------------------------------------------------- |
+| `GOOGLE_CLIENT_ID`     | the client ID                                               |
+| `GOOGLE_CLIENT_SECRET` | the client secret                                           |
+| `GOOGLE_REDIRECT_URL`  | `https://ykay-virtual-wtar.vercel.app/auth/google/callback` |
 
 Same string as the Authorized redirect URI. No trailing slash, `https`.
 
@@ -102,11 +102,11 @@ If you see `invalid or expired oauth state`, Redis is down **and** the
 API process restarted between the click and the callback. Retry once;
 for reliability add Upstash `REDIS_URL` (state is stored in cache).
 
-## 6. After you buy nuvora.com.ng
+## 6. After you buy virtual.ykaycollege.com.ng
 
-1. Add the new origin + redirect URI in Google Cloud.  
+1. Add the new origin + redirect URI in Google Cloud.
 2. Change Render `GOOGLE_REDIRECT_URL` to
-   `https://nuvora.com.ng/auth/google/callback`.  
+   `https://virtual.ykaycollege.com.ng/auth/google/callback`.
 3. Change `SITE_URL` / `ALLOWED_ORIGINS` / Vercel `NEXT_PUBLIC_SITE_URL`
-   to the same host.  
+   to the same host.
 4. Redeploy Render + Vercel.

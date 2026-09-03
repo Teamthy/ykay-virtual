@@ -19,12 +19,19 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   try {
     const cohort = await getCohortSSR(params.id);
     return buildMetadata({
-      title: `${cohort.title} - Cohort Sessions & Enrolment | NUVORA`,
-      description: cohort.schedule_description ?? `Join the ${cohort.title} cohort - ${cohort.capacity} seats, ${cohort.timezone}, ${cohort.currency} ${cohort.fee.toLocaleString()}. Escrow-protected.`,
+      title: `${cohort.title} - Cohort Sessions & Enrolment | YK-Virtual`,
+      description:
+        cohort.schedule_description ??
+        `Join the ${cohort.title} cohort - ${cohort.capacity} seats, ${cohort.timezone}, ${cohort.currency} ${cohort.fee.toLocaleString()}. Escrow-protected.`,
       path: `/cohorts/${params.id}`,
     });
   } catch {
-    return buildMetadata({ title: "Cohort Not Found", description: "Cohort not found", path: `/cohorts/${params.id}`, noIndex: true });
+    return buildMetadata({
+      title: "Cohort Not Found",
+      description: "Cohort not found",
+      path: `/cohorts/${params.id}`,
+      noIndex: true,
+    });
   }
 }
 
@@ -49,22 +56,42 @@ export default async function CohortDetailPage(props: Props) {
   const full = seatsLeft === 0;
   const course = courseJsonLd({
     name: cohort.title,
-    description: cohort.schedule_description ?? `${cohort.title} cohort at NUVORA.`,
-    provider: "NUVORA",
-    url: `https://nuvora.com/cohorts/${cohort.id}`,
+    description:
+      cohort.schedule_description ?? `${cohort.title} cohort at YK-Virtual.`,
+    provider: "YK-Virtual",
+    url: `https://virtual.ykaycollege.com/cohorts/${cohort.id}`,
   });
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(course) }}
+      />
       <PageHero
         cover="/hero/cohorts.jpg"
         announcement={`${cohort.location_mode.replace(/_/g, " ").toLowerCase()} · ${cohort.timezone}`}
         title={cohort.title}
-        subtitle={cohort.schedule_description ?? "A structured small-group learning cohort led by a vetted NUVORA tutor."}
-        crumbs={[{ name: "Home", href: "/" }, { name: "Cohorts", href: "/cohorts" }, { name: cohort.title }]}
-        ctas={[{ label: "Enrol in this cohort", href: `/cohorts/${cohort.id}/enroll`, primary: true }]}
-        image={{ src: "/hero/utme.jpg", alt: "Small-group live class with a NUVORA tutor" }}
+        subtitle={
+          cohort.schedule_description ??
+          "A structured small-group learning cohort led by a vetted YK-Virtual tutor."
+        }
+        crumbs={[
+          { name: "Home", href: "/" },
+          { name: "Cohorts", href: "/cohorts" },
+          { name: cohort.title },
+        ]}
+        ctas={[
+          {
+            label: "Enrol in this cohort",
+            href: `/cohorts/${cohort.id}/enroll`,
+            primary: true,
+          },
+        ]}
+        image={{
+          src: "/hero/utme.jpg",
+          alt: "Small-group live class with a YK-Virtual tutor",
+        }}
       />
 
       <div className="container-x grid items-start gap-10 pb-20 pt-16 md:pt-20 lg:grid-cols-[1.1fr_0.9fr]">
@@ -72,12 +99,31 @@ export default async function CohortDetailPage(props: Props) {
         <div>
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Starts", value: new Date(cohort.start_date).toLocaleDateString() },
-              { icon: <CalendarDays size={14} className="text-brand-gold-dark" />, label: "Ends", value: new Date(cohort.end_date).toLocaleDateString() },
-              { icon: <Users size={14} className="text-brand-gold-dark" />, label: "Seats", value: `${cohort.enrolled_count}/${cohort.capacity} taken` },
+              {
+                icon: (
+                  <CalendarDays size={14} className="text-brand-gold-dark" />
+                ),
+                label: "Starts",
+                value: new Date(cohort.start_date).toLocaleDateString(),
+              },
+              {
+                icon: (
+                  <CalendarDays size={14} className="text-brand-gold-dark" />
+                ),
+                label: "Ends",
+                value: new Date(cohort.end_date).toLocaleDateString(),
+              },
+              {
+                icon: <Users size={14} className="text-brand-gold-dark" />,
+                label: "Seats",
+                value: `${cohort.enrolled_count}/${cohort.capacity} taken`,
+              },
             ].map((st) => (
               <div key={st.label} className="card p-4 text-center">
-                <div className="flex items-center justify-center gap-1.5 text-xs text-ink-500">{st.icon}{st.label}</div>
+                <div className="flex items-center justify-center gap-1.5 text-xs text-ink-500">
+                  {st.icon}
+                  {st.label}
+                </div>
                 <div className="font-bold mt-0.5">{st.value}</div>
               </div>
             ))}
@@ -88,24 +134,40 @@ export default async function CohortDetailPage(props: Props) {
             <h2 className="text-xl font-extrabold mb-4">Session schedule</h2>
             {lessons.length === 0 ? (
               <p className="text-sm text-ink-500 border border-dashed border-ink-200 rounded-xl p-6 text-center">
-                The full session schedule is released to enrolled families shortly before the cohort begins.
+                The full session schedule is released to enrolled families
+                shortly before the cohort begins.
               </p>
             ) : (
               <ul className="space-y-3">
                 {lessons.map((l, i) => (
-                  <li key={l.id} className="border rounded-2xl p-4 flex items-center justify-between gap-3">
+                  <li
+                    key={l.id}
+                    className="border rounded-2xl p-4 flex items-center justify-between gap-3"
+                  >
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-blue text-white text-xs font-bold">
                         {i + 1}
                       </span>
                       <div className="min-w-0">
-                        <div className="font-semibold text-sm truncate">{l.title}</div>
+                        <div className="font-semibold text-sm truncate">
+                          {l.title}
+                        </div>
                         <div className="text-xs text-ink-500">
-                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                          {new Date(l.start_at).toLocaleString([], {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
+                          · {l.timezone}
                         </div>
                       </div>
                     </div>
-                    <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
+                    <StatusBadge
+                      label={l.status}
+                      kind={statusKindFor(l.status)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -117,51 +179,96 @@ export default async function CohortDetailPage(props: Props) {
         <div>
           <div className="card space-y-4 p-6">
             <div className="flex items-baseline justify-between gap-3">
-              <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">Enrol in this cohort</h2>
+              <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">
+                Enrol in this cohort
+              </h2>
               <span className="font-display text-2xl tracking-[0.02em] text-brand-navy">
                 {cohort.currency} {cohort.fee.toLocaleString()}
               </span>
             </div>
-            <p className={`text-sm font-semibold ${full ? "text-brand-error" : "text-brand-green"}`}>
-              {full ? "Cohort is full" : `${seatsLeft} of ${cohort.capacity} seats available`}
+            <p
+              className={`text-sm font-semibold ${full ? "text-brand-error" : "text-brand-green"}`}
+            >
+              {full
+                ? "Cohort is full"
+                : `${seatsLeft} of ${cohort.capacity} seats available`}
             </p>
             <Progress
-              value={cohort.capacity ? Math.min((cohort.enrolled_count / cohort.capacity) * 100, 100) : 0}
+              value={
+                cohort.capacity
+                  ? Math.min(
+                      (cohort.enrolled_count / cohort.capacity) * 100,
+                      100,
+                    )
+                  : 0
+              }
               size="sm"
               showValue={false}
               barClassName={full ? "!bg-red-500" : undefined}
             />
             <ul className="space-y-2 text-sm text-ink-600">
-              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Live lessons with a vetted tutor</li>
-              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Recordings, resources and homework</li>
-              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Weekly progress reports for parents</li>
-              <li className="flex gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">✓</span>Escrow-protected payment</li>
+              <li className="flex gap-2">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                  ✓
+                </span>
+                Live lessons with a vetted tutor
+              </li>
+              <li className="flex gap-2">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                  ✓
+                </span>
+                Recordings, resources and homework
+              </li>
+              <li className="flex gap-2">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                  ✓
+                </span>
+                Weekly progress reports for parents
+              </li>
+              <li className="flex gap-2">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                  ✓
+                </span>
+                Escrow-protected payment
+              </li>
             </ul>
             {full ? (
-              <button disabled className="btn-gold w-full opacity-50 cursor-not-allowed">Cohort full</button>
+              <button
+                disabled
+                className="btn-gold w-full opacity-50 cursor-not-allowed"
+              >
+                Cohort full
+              </button>
             ) : (
-              <Link href={`/cohorts/${cohort.id}/enroll`} className="btn-gold w-full inline-flex items-center justify-center">
+              <Link
+                href={`/cohorts/${cohort.id}/enroll`}
+                className="btn-gold w-full inline-flex items-center justify-center"
+              >
                 Enrol now - pay securely
               </Link>
             )}
             <p className="text-[11px] text-ink-400 text-center">
-              Payment is held in escrow until lessons are delivered (or refunded per policy).
+              Payment is held in escrow until lessons are delivered (or refunded
+              per policy).
             </p>
           </div>
         </div>
       </div>
-          {/* Conversion follow-up: questions before enrolling → ops calls back */}
+      {/* Conversion follow-up: questions before enrolling → ops calls back */}
       <div className="container-x pb-20">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-gold bg-brand-gold-light p-6">
           <div>
-            <p className="font-display text-xl font-bold text-brand-navy">Not sure yet? Talk to us first.</p>
+            <p className="font-display text-xl font-bold text-brand-navy">
+              Not sure yet? Talk to us first.
+            </p>
             <p className="mt-1 max-w-md text-sm text-ink-600">
-              Leave your number and a NUVORA advisor will call you back to answer questions about this cohort — no pressure, no spam.
+              Leave your number and a YK-Virtual advisor will call you back to
+              answer questions about this cohort — no pressure, no spam.
             </p>
           </div>
           <LeadCapture source={`/cohorts/${cohort.id}`} />
         </div>
       </div>
-</main>
+    </main>
   );
 }

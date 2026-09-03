@@ -419,7 +419,7 @@ func (s *AdmissionsService) notifyStatus(ctx context.Context, a *admissions.Appl
 	}
 	base := strings.TrimRight(s.siteURL, "/")
 	if base == "" {
-		base = "https://nuvora.com"
+		base = "https://virtual.ykaycollege.com"
 	}
 	link := base + "/account/admissions"
 

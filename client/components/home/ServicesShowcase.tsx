@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { Home, Globe2, GraduationCap, BookOpenCheck, Star, FileCheck } from "lucide-react";
+import {
+  Home,
+  Globe2,
+  GraduationCap,
+  BookOpenCheck,
+  Star,
+  FileCheck,
+} from "lucide-react";
 
 // Services showcase - Tuteria v2 "Popular services" rail: six flagship
 // offers with real reference copy.
@@ -35,10 +42,10 @@ const SERVICES = [
   },
   {
     icon: <Star size={20} />,
-    label: "NUVORA Plus",
+    label: "YK-Virtual Plus",
     desc: "Priority matching with vetted specialist tutors",
     href: "/pricing",
-    photo: "/hero/nuvora-plus.jpg",
+    photo: "/hero/plus.jpg",
   },
   {
     icon: <FileCheck size={20} />,
@@ -57,7 +64,10 @@ export function ServicesShowcase() {
           <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
             Popular services
           </h2>
-          <Link href="/programmes" className="text-sm font-bold text-brand-blue hover:text-brand-navy">
+          <Link
+            href="/programmes"
+            className="text-sm font-bold text-brand-blue hover:text-brand-navy"
+          >
             See all →
           </Link>
         </div>
@@ -74,8 +84,12 @@ export function ServicesShowcase() {
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">
                 {s.icon}
               </div>
-              <p className="mt-3 font-bold leading-tight text-white">{s.label}</p>
-              <p className="mt-1 text-xs leading-relaxed text-white/80">{s.desc}</p>
+              <p className="mt-3 font-bold leading-tight text-white">
+                {s.label}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-white/80">
+                {s.desc}
+              </p>
             </Link>
           ))}
         </div>

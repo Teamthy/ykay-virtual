@@ -77,13 +77,13 @@ func TestPaymentNudge_EmailFallbackWhenWhatsAppUnreachable(t *testing.T) {
 	svc := NewLeadService(repo, NewNotifierService(nil, wa), nil, nil).WithEmail(mail)
 
 	l := seedEmailLead(t, repo, "Bola Ade", "bola@example.com", "", false, time.Hour)
-	sent, err := svc.SendPaymentNudges(context.Background(), "https://nuvora.com", 45*time.Minute, 24*time.Hour, 50)
+	sent, err := svc.SendPaymentNudges(context.Background(), "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 50)
 	require.NoError(t, err)
 	assert.Equal(t, 1, sent)
 	assert.Equal(t, 1, mail.count(), "email-only lead is nudged by email")
 	assert.Equal(t, "bola@example.com", mail.sends[0].To)
 	assert.Contains(t, mail.sends[0].Subject, "seat is waiting")
-	assert.Contains(t, mail.sends[0].Body, "https://nuvora.com/cohorts", "branded email carries the checkout link")
+	assert.Contains(t, mail.sends[0].Body, "https://virtual.ykaycollege.com/cohorts", "branded email carries the checkout link")
 	assert.Zero(t, len(wa.sends), "whatsapp untouched when there is no phone/user")
 
 	got, _ := repo.GetByID(context.Background(), l.ID)
@@ -97,7 +97,7 @@ func TestPaymentNudge_WhatsAppTakesPrecedence(t *testing.T) {
 	svc := NewLeadService(repo, NewNotifierService(nil, wa), nil, nil).WithEmail(mail)
 
 	seedEmailLead(t, repo, "Ada Obi", "ada@example.com", "+2348012345678", false, time.Hour)
-	sent, err := svc.SendPaymentNudges(context.Background(), "https://nuvora.com", 45*time.Minute, 24*time.Hour, 50)
+	sent, err := svc.SendPaymentNudges(context.Background(), "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 50)
 	require.NoError(t, err)
 	assert.Equal(t, 1, sent)
 	assert.Equal(t, 1, len(wa.sends), "whatsapp is the primary channel")
@@ -111,7 +111,7 @@ func TestPaymentNudge_EmailSavesLeadWhenWhatsAppFails(t *testing.T) {
 	svc := NewLeadService(repo, NewNotifierService(nil, wa), nil, nil).WithEmail(mail)
 
 	l := seedEmailLead(t, repo, "Chika Eze", "chika@example.com", "+2348000000000", false, time.Hour)
-	sent, err := svc.SendPaymentNudges(context.Background(), "https://nuvora.com", 45*time.Minute, 24*time.Hour, 50)
+	sent, err := svc.SendPaymentNudges(context.Background(), "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 50)
 	require.NoError(t, err)
 	assert.Equal(t, 1, sent, "email rescues the nudge when whatsapp errors")
 	assert.Equal(t, 1, mail.count())
@@ -127,7 +127,7 @@ func TestPaymentNudge_NoChannelStaysNew(t *testing.T) {
 	svc := NewLeadService(repo, NewNotifierService(nil, wa), nil, nil).WithEmail(mail)
 
 	l := seedEmailLead(t, repo, "Ghost Lead", "", "", false, time.Hour)
-	sent, err := svc.SendPaymentNudges(context.Background(), "https://nuvora.com", 45*time.Minute, 24*time.Hour, 50)
+	sent, err := svc.SendPaymentNudges(context.Background(), "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 50)
 	require.NoError(t, err)
 	assert.Zero(t, sent, "unreachable lead is skipped without error")
 	got, _ := repo.GetByID(context.Background(), l.ID)
@@ -141,7 +141,7 @@ func TestPaymentNudge_AllChannelsFailStaysNew(t *testing.T) {
 	svc := NewLeadService(repo, NewNotifierService(nil, wa), nil, nil).WithEmail(mail)
 
 	l := seedEmailLead(t, repo, "Dual Fail", "dual@example.com", "+2348099999999", false, time.Hour)
-	sent, err := svc.SendPaymentNudges(context.Background(), "https://nuvora.com", 45*time.Minute, 24*time.Hour, 50)
+	sent, err := svc.SendPaymentNudges(context.Background(), "https://virtual.ykaycollege.com", 45*time.Minute, 24*time.Hour, 50)
 	require.NoError(t, err)
 	assert.Zero(t, sent)
 	got, _ := repo.GetByID(context.Background(), l.ID)

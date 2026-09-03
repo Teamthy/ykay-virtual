@@ -3,7 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search, ChevronDown, Menu, X, GraduationCap, BookOpen, MonitorPlay, Star, ArrowRight } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  Menu,
+  X,
+  GraduationCap,
+  BookOpen,
+  MonitorPlay,
+  Star,
+  ArrowRight,
+} from "lucide-react";
 import { AuthNav } from "@/components/layout/AuthNav";
 import { useSession } from "@/hooks/useSession";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -11,7 +21,7 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/utils";
 
-// NUVORA header — clean Preline-style: brand · inline links · Services
+// YK-Virtual header — clean Preline-style: brand · inline links · Services
 // mega-menu (grouped + customer story) · divider · Sign in · Get started.
 
 const SERVICE_GROUPS = [
@@ -47,7 +57,7 @@ const SERVICE_GROUPS = [
     title: "Premium & More",
     icon: <Star size={15} />,
     items: [
-      { label: "NUVORA Plus", href: "/nuvora-plus" },
+      { label: "YK-Virtual Plus", href: "/plus" },
       { label: "Pricing", href: "/pricing" },
       { label: "Programmes", href: "/programmes" },
       { label: "Subjects", href: "/subjects" },
@@ -85,7 +95,12 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-ink-200 bg-white dark:border-[#214c37] dark:bg-[#0d1f16]">
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-6 py-3 md:px-10">
         {/* Brand */}
-        <Link href="/" onClick={closeAll} className="flex-none" aria-label="NUVORA home">
+        <Link
+          href="/"
+          onClick={closeAll}
+          className="flex-none"
+          aria-label="YK-Virtual home"
+        >
           <Logo />
         </Link>
 
@@ -108,13 +123,19 @@ export function Header() {
               onClick={() => setServicesOpen(!servicesOpen)}
               className={cn(
                 "flex items-center gap-1 rounded-lg p-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900",
-                servicesOpen && "bg-ink-100"
+                servicesOpen && "bg-ink-100",
               )}
               aria-haspopup="menu"
               aria-expanded={servicesOpen}
             >
               Services
-              <ChevronDown size={14} className={cn("transition-transform duration-300", servicesOpen && "rotate-180")} />
+              <ChevronDown
+                size={14}
+                className={cn(
+                  "transition-transform duration-300",
+                  servicesOpen && "rotate-180",
+                )}
+              />
             </button>
 
             {servicesOpen && (
@@ -134,7 +155,9 @@ export function Header() {
                             onClick={closeAll}
                             className="flex items-center gap-3 rounded-lg p-2 text-sm font-medium text-ink-800 transition-colors hover:bg-ink-100"
                           >
-                            <span className="shrink-0 text-primary-dark">{g.icon}</span>
+                            <span className="shrink-0 text-primary-dark">
+                              {g.icon}
+                            </span>
                             {it.label}
                           </Link>
                         ))}
@@ -149,12 +172,13 @@ export function Header() {
                     </span>
                     <img
                       src="/hero/home-tutoring.jpg"
-                      alt="Student learning with a NUVORA tutor"
+                      alt="Student learning with a YK-Virtual tutor"
                       className="h-24 w-full rounded-lg object-cover"
                       loading="lazy"
                     />
                     <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                      Real families, real results — read parent stories published with explicit consent.
+                      Real families, real results — read parent stories
+                      published with explicit consent.
                     </p>
                     <a
                       href="/success-stories"
@@ -192,7 +216,10 @@ export function Header() {
         {/* Search (mobile-accessible) + toggle */}
         <div className="flex items-center gap-2 lg:hidden">
           <form onSubmit={submitSearch} className="relative hidden sm:block">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
+            />
             <input
               type="text"
               value={q}
@@ -219,15 +246,27 @@ export function Header() {
         <div className="max-h-[75vh] overflow-y-auto border-t border-ink-100 bg-white px-6 py-4 lg:hidden">
           <div className="space-y-0.5">
             {NAV_LINKS.map((l) => (
-              <Link key={l.href} href={l.href} onClick={closeAll} className="block rounded-lg px-2 py-2 text-sm font-medium text-ink-800 hover:bg-ink-100">
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={closeAll}
+                className="block rounded-lg px-2 py-2 text-sm font-medium text-ink-800 hover:bg-ink-100"
+              >
                 {l.label}
               </Link>
             ))}
             {SERVICE_GROUPS.map((g) => (
               <div key={g.title} className="pt-2">
-                <span className="ms-2 block pb-1 text-xs font-semibold uppercase tracking-wide text-ink-400">{g.title}</span>
+                <span className="ms-2 block pb-1 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                  {g.title}
+                </span>
                 {g.items.map((it) => (
-                  <Link key={it.label} href={it.href} onClick={closeAll} className="block rounded-lg px-2 py-2 text-sm font-medium text-ink-800 hover:bg-ink-100">
+                  <Link
+                    key={it.label}
+                    href={it.href}
+                    onClick={closeAll}
+                    className="block rounded-lg px-2 py-2 text-sm font-medium text-ink-800 hover:bg-ink-100"
+                  >
                     {it.label}
                   </Link>
                 ))}

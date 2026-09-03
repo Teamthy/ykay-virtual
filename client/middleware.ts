@@ -38,10 +38,14 @@ const PROTECTED_PREFIXES = [
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const hasSession = req.cookies.has("nuvora_session");
+  const hasSession = req.cookies.has("ykv_session");
 
   // Protect authenticated surfaces: no session → /login with a return target.
-  if (PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+  if (
+    PROTECTED_PREFIXES.some(
+      (p) => pathname === p || pathname.startsWith(p + "/"),
+    )
+  ) {
     if (!hasSession) {
       const url = req.nextUrl.clone();
       url.pathname = "/login";

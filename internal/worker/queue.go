@@ -17,20 +17,20 @@ import (
 
 // Durable job queue (G3.1, remediation plan).
 //
-// Production: Redis-backed — jobs are LPUSHed to nuvora:jobs:ready and moved
-// atomically (BRPOPLPUSH) to nuvora:jobs:processing while a handler runs.
+// Production: Redis-backed — jobs are LPUSHed to ykvirtual:jobs:ready and moved
+// atomically (BRPOPLPUSH) to ykvirtual:jobs:processing while a handler runs.
 // Failures are retried with exponential backoff up to MaxAttempts, then moved
-// to nuvora:jobs:dead (the dead-letter list) for operator inspection/replay.
+// to ykvirtual:jobs:dead (the dead-letter list) for operator inspection/replay.
 // Dev/tests: an in-memory queue with identical semantics.
 //
 // Handlers MUST be idempotent: delivery is at-least-once (a crash between
 // handler success and LREM can redeliver the job).
 
 const (
-	keyReady      = "nuvora:jobs:ready"
-	keyProcessing = "nuvora:jobs:processing"
-	keyDelayed    = "nuvora:jobs:delayed" // ZSET score = run-at unix
-	keyDead       = "nuvora:jobs:dead"
+	keyReady      = "ykvirtual:jobs:ready"
+	keyProcessing = "ykvirtual:jobs:processing"
+	keyDelayed    = "ykvirtual:jobs:delayed" // ZSET score = run-at unix
+	keyDead       = "ykvirtual:jobs:dead"
 
 	DefaultMaxAttempts = 5
 

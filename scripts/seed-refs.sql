@@ -1,4 +1,4 @@
--- NUVORA — reference seed rows for real-PostgreSQL e2e (phase 41).
+-- YK-Virtual — reference seed rows for real-PostgreSQL e2e (phase 41).
 -- Mirrors the in-memory dev seeds (seedMemoryCatalogue / seedMemoryTutors /
 -- seedLMSDemo) so the E2E suite's hardcoded IDs resolve FKs.
 -- Run after `make migrate` on a fresh database, before scripts/e2e.sh.

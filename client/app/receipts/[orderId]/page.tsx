@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { getOrderReceipt, verifyOrder } from "@/features/portal/api";
 import { trackEvent } from "@/lib/analytics";
-import { NuvoraReceipt } from "@/components/receipt/NuvoraReceipt";
+import { YKVirtualReceipt } from "@/components/receipt/YKVirtualReceipt";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 
 export default function ReceiptPage() {
@@ -47,7 +47,9 @@ export default function ReceiptPage() {
     void (async () => {
       try {
         await verifyOrder(params.orderId);
-        await queryClient.invalidateQueries({ queryKey: ["receipt", params.orderId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["receipt", params.orderId],
+        });
       } catch {
         /* gateway hiccup — 4s polling continues as the fallback */
       }
@@ -59,7 +61,9 @@ export default function ReceiptPage() {
     setVerifying(true);
     try {
       await verifyOrder(params.orderId);
-      await queryClient.invalidateQueries({ queryKey: ["receipt", params.orderId] });
+      await queryClient.invalidateQueries({
+        queryKey: ["receipt", params.orderId],
+      });
     } catch {
       /* network hiccup — polling continues; the user can retry */
     } finally {
@@ -70,13 +74,18 @@ export default function ReceiptPage() {
   return (
     <DashboardPage>
       {q.isLoading && <p className="text-ink-500">Loading receipt…</p>}
-      {q.error && <p className="text-red-600">This receipt is not available on your account.</p>}
+      {q.error && (
+        <p className="text-red-600">
+          This receipt is not available on your account.
+        </p>
+      )}
       {q.data && (
         <>
           {status === "PENDING" && (
             <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
-              ⏳ Waiting for payment confirmation… this page refreshes automatically.
-              If you completed payment, your seat will be confirmed in a moment.
+              ⏳ Waiting for payment confirmation… this page refreshes
+              automatically. If you completed payment, your seat will be
+              confirmed in a moment.
               <span className="mt-2 block font-normal">
                 Paid and still waiting?{" "}
                 <button
@@ -85,27 +94,35 @@ export default function ReceiptPage() {
                   disabled={verifying}
                   className="font-bold text-brand-navy underline disabled:opacity-50"
                 >
-                  {verifying ? "Checking with the gateway…" : "Confirm payment now"}
+                  {verifying
+                    ? "Checking with the gateway…"
+                    : "Confirm payment now"}
                 </button>
               </span>
             </div>
           )}
           {(status === "PAID" || status === "COMPLETED") && (
             <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-              ✅ Payment confirmed — your enrolment is secured. See it in your dashboard.
+              ✅ Payment confirmed — your enrolment is secured. See it in your
+              dashboard.
             </div>
           )}
           {status === "CANCELLED" && (
             <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-              This order was cancelled. If you were charged, contact support and we will resolve it.
+              This order was cancelled. If you were charged, contact support and
+              we will resolve it.
             </div>
           )}
           <div className="mb-4 flex justify-end print:hidden">
-            <button type="button" onClick={() => window.print()} className="rounded-full bg-deep px-5 py-2 text-sm font-bold text-white">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="rounded-full bg-deep px-5 py-2 text-sm font-bold text-white"
+            >
               Print / Save PDF
             </button>
           </div>
-          <NuvoraReceipt
+          <YKVirtualReceipt
             orderNumber={q.data.order.order_number}
             status={q.data.order.status}
             createdAt={q.data.order.created_at}

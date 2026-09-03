@@ -46,7 +46,7 @@ export function AuthShell({
 
           {/* Header over image */}
           <div className="absolute inset-x-0 top-0 flex items-center justify-between p-8">
-            <Link href="/" aria-label="NUVORA home" className="drop-shadow">
+            <Link href="/" aria-label="YK-Virtual home" className="drop-shadow">
               <Logo dark />
             </Link>
             <span className="inline-flex h-9 items-center gap-x-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-medium text-white shadow-sm backdrop-blur-sm">
@@ -60,7 +60,7 @@ export function AuthShell({
               Learning beyond boundaries
             </h1>
             <p className="mt-3 max-w-xs text-sm leading-6 text-white/80">
-              Join 30,000+ families learning with NUVORA tutors.
+              Join 30,000+ families learning with YK-Virtual tutors.
             </p>
 
             {/* Trusted strip */}
@@ -80,7 +80,12 @@ export function AuthShell({
             href="/"
             className="absolute left-6 top-8 inline-flex items-center gap-x-1.5 text-sm font-medium text-ink-500 transition-colors hover:text-deep"
           >
-            <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg
+              className="size-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path
                 fillRule="evenodd"
                 d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
@@ -97,7 +102,12 @@ export function AuthShell({
               className="absolute right-6 top-8 inline-flex items-center gap-x-1 text-sm text-ink-500 transition-colors hover:text-ink-700"
             >
               {skip.label ?? "Skip"}
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <svg
+                className="size-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path
                   fillRule="evenodd"
                   d="M7.21 14.77a.75.75 0 01.02-1.06L10.94 10 7.23 6.29a.75.75 0 111.06-1.06l4.24 4.24a.75.75 0 010 1.06l-4.24 4.24a.75.75 0 01-1.08 0z"
@@ -109,13 +119,23 @@ export function AuthShell({
 
           <div className="w-full max-w-md px-6 py-16">
             <div className="text-left">
-              <h2 className="text-2xl font-semibold tracking-tight text-deep">{title}</h2>
-              {subtitle && <p className="mt-1 text-sm leading-5 text-ink-500">{subtitle}</p>}
+              <h2 className="text-2xl font-semibold tracking-tight text-deep">
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="mt-1 text-sm leading-5 text-ink-500">
+                  {subtitle}
+                </p>
+              )}
             </div>
 
             <div className="mt-6">{children}</div>
 
-            {footer && <div className="mt-6 border-t border-ink-100 pt-5 text-center text-sm text-ink-500">{footer}</div>}
+            {footer && (
+              <div className="mt-6 border-t border-ink-100 pt-5 text-center text-sm text-ink-500">
+                {footer}
+              </div>
+            )}
           </div>
 
           {/* Chat button */}
@@ -124,7 +144,12 @@ export function AuthShell({
             aria-label="Chat with support"
             className="absolute -bottom-1 -right-2 hidden size-11 items-center justify-center rounded-full bg-primary shadow-lg transition-colors hover:bg-primary-hover lg:flex"
           >
-            <svg className="size-5 text-ink-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg
+              className="size-5 text-ink-900"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path d="M20 11.5a8.5 8.5 0 01-9 8.48 9.7 9.7 0 01-3.8-.77L3 20l1.08-3.8A8.48 8.48 0 013 11.5 8.5 8.5 0 0111.5 3h.01A8.5 8.5 0 0120 11.5z" />
             </svg>
           </a>

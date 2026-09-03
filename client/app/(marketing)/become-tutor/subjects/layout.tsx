@@ -6,10 +6,14 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildMetadata({
   title: "Choose Your Subjects - Tutor Application",
   description:
-    "Select the subjects and curricula (British, Nigerian, exam prep) you are qualified to teach on NUVORA. Each subject is assessed before your profile is published.",
+    "Select the subjects and curricula (British, Nigerian, exam prep) you are qualified to teach on YK-Virtual. Each subject is assessed before your profile is published.",
   path: "/become-tutor/subjects",
 });
 
-export default function BecomeTutorSubjectsLayout({ children }: { children: React.ReactNode }) {
+export default function BecomeTutorSubjectsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return children;
 }

@@ -1,6 +1,6 @@
-# NUVORA API — multi-stage production image (non-root).
+# YK-Virtual API — multi-stage production image (non-root).
 #
-# Build:   docker build -f Dockerfile -t nuvora-api:latest .
+# Build:   docker build -f Dockerfile -t yk-virtual-api:latest .
 # Run:     see docker-compose.prod.yml
 
 # ── Stage 1: build ─────────────────────────────────────────────────────────

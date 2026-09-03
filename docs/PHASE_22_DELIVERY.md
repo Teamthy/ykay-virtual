@@ -9,14 +9,17 @@ Delivery method: git bundle `ykay-virtual-phase-22.bundle`
 ## What was delivered (all four requested)
 
 ### 1. v2 "How it works" video section (home)
+
 New `HowItWorksVideo` component on the homepage: "Learn how it works — How
-NUVORA works" with a **video thumbnail + large play button** (hover zoom +
+YK-Virtual works" with a **video thumbnail + large play button** (hover zoom +
 scale), and the 3 how-it-works steps beside it (tell us what your child needs
 → get matched with a vetted tutor → watch progress in real time).
 
 ### 2. Tuteria Prep dedicated pricing & FAQ sub-pages
-Prep-branded sub-site (NUVORA **Prep** header nav: Overview · Pricing · FAQ ·
+
+Prep-branded sub-site (YK-Virtual **Prep** header nav: Overview · Pricing · FAQ ·
 Get Started, purple `#0A033C` + orange `#FF6636`):
+
 - **`/utme-2026/pricing`** — "Choose your package": Mastery Plan
   ₦50,000→₦35,000 · Plus Plan ₦75,000→₦52,500 (30% discount ends soon,
   featured Plus), full feature lists, **instalment table** (3 monthly
@@ -27,6 +30,7 @@ Get Started, purple `#0A033C` + orange `#FF6636`):
   band.
 
 ### 3. v2 card treatments for /programmes + /cohorts
+
 - **ProgrammeCard v2**: tinted format banner (colour-coded per format:
   Cohort/Private/Bootcamp/Holiday/Online/Hybrid), display-font title,
   curriculum·level·exam line, subject pills, next-start + price footer with
@@ -37,6 +41,7 @@ Get Started, purple `#0A033C` + orange `#FF6636`):
   used on home "Upcoming cohorts" and `/cohorts`.
 
 ### 4. Checkout → Tuteria payment-flow style
+
 `CheckoutClient` upgraded: **navy gradient order-summary header** (display
 price), order details panel, **Details → Pay → Confirmation step indicator**,
 provider selection (Card·Paystack / Bank·Flutterwave), gold "Pay securely

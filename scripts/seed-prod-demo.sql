@@ -5,7 +5,7 @@
 -- │ Re-running inserts duplicate rows (no upserts). Snapshot/backup first.   │
 -- └─────────────────────────────────────────────────────────────────────────┘
 -- =============================================================================
--- NUVORA — PRODUCTION-SAFE DEMO SEED
+-- YK-Virtual — PRODUCTION-SAFE DEMO SEED
 --  20 programmes · 20 tutors · 20 cohorts (+ lessons) · blog · testimonials
 --
 -- This is a SAFE reference seed: it creates realistic marketing content and
@@ -52,19 +52,19 @@ DECLARE
   i INT;
 BEGIN
   -- Demo base users
-  IF NOT EXISTS (SELECT 1 FROM users WHERE email='demo.admin@nuvora.test') THEN
+  IF NOT EXISTS (SELECT 1 FROM users WHERE email='demo.admin@ykvirtual.test') THEN
     INSERT INTO users (email,password_hash,status,timezone,email_verified_at,onboarded_at,created_at,updated_at)
-    VALUES ('demo.admin@nuvora.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt,nowt,nowt) RETURNING id INTO uid;
+    VALUES ('demo.admin@ykvirtual.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt,nowt,nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id,role_id) SELECT uid,id FROM roles WHERE name='SUPER_ADMIN';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM users WHERE email='demo.parent@nuvora.test') THEN
+  IF NOT EXISTS (SELECT 1 FROM users WHERE email='demo.parent@ykvirtual.test') THEN
     INSERT INTO users (email,password_hash,status,timezone,email_verified_at,onboarded_at,created_at,updated_at)
-    VALUES ('demo.parent@nuvora.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt,nowt,nowt) RETURNING id INTO uid;
+    VALUES ('demo.parent@ykvirtual.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt,nowt,nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id,role_id) SELECT uid,id FROM roles WHERE name='PARENT';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM users WHERE email='demo.student@nuvora.test') THEN
+  IF NOT EXISTS (SELECT 1 FROM users WHERE email='demo.student@ykvirtual.test') THEN
     INSERT INTO users (email,password_hash,status,timezone,email_verified_at,onboarded_at,created_at,updated_at)
-    VALUES ('demo.student@nuvora.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt,nowt,nowt) RETURNING id INTO uid;
+    VALUES ('demo.student@ykvirtual.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt,nowt,nowt) RETURNING id INTO uid;
     INSERT INTO user_roles (user_id,role_id) SELECT uid,id FROM roles WHERE name='STUDENT';
   END IF;
 
@@ -83,7 +83,7 @@ BEGIN
           ELSE 'GRE Quantitative Crash — Cohort '||i
         END,
         'demo-programme-'||i,
-        'Structured small-group live learning with a vetted NUVORA tutor.',
+        'Structured small-group live learning with a vetted YK-Virtual tutor.',
         'Weekly live lessons, recorded resources, assignments and progress reports for parents.',
         'COHORT','PUBLISHED', 8 + (i%4)*2, 35000 + (i%5)*5000, 65000 + (i%3)*10000, 'NGN',
         (i%4=0), nowt, nowt, nowt
@@ -97,7 +97,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM tutor_profiles WHERE slug='demo-tutor-'||i) THEN
       -- create the user (can't login; profile is public)
       INSERT INTO users (email,password_hash,status,timezone,created_at,updated_at)
-      VALUES ('tutor'||i||'@nuvora.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt) RETURNING id INTO tutor_user;
+      VALUES ('tutor'||i||'@ykvirtual.test', pwd,'ACTIVE','Africa/Lagos',nowt,nowt) RETURNING id INTO tutor_user;
       INSERT INTO user_roles (user_id,role_id) SELECT tutor_user,id FROM roles WHERE name='TUTOR';
       INSERT INTO tutor_profiles (user_id,slug,display_name,headline,bio,hourly_rate_min,hourly_rate_max,status,is_public,verified_at,rating_avg,rating_count,created_at,updated_at)
       VALUES (
@@ -154,9 +154,9 @@ INSERT INTO blog_posts (title,slug,excerpt,content,status,seo_title,seo_descript
 SELECT
   'Post '||g||' — How to ace your exams',
   'demo-post-'||g,
-  'Practical study strategies from NUVORA tutors.',
+  'Practical study strategies from YK-Virtual tutors.',
   'Full article: build a study plan, use past papers, and book a vetted tutor for live support.',
-  'PUBLISHED', 'Ace your exams | NUVORA', 'Exam prep guidance', NOW(), NOW()
+  'PUBLISHED', 'Ace your exams | YK-Virtual', 'Exam prep guidance', NOW(), NOW()
 FROM generate_series(1,10) g
 ON CONFLICT (slug) DO NOTHING;
 
@@ -169,8 +169,8 @@ COMMIT;
 -- Passwords are RANDOM. To log in, reset each password via the app's
 -- forgot-password flow (you own these emails) or set them with bcrypt.
 -- Demo emails:
---   demo.admin@nuvora.test    (SUPER_ADMIN)
---   demo.parent@nuvora.test   (PARENT)
---   demo.student@nuvora.test  (STUDENT)
+--   demo.admin@ykvirtual.test    (SUPER_ADMIN)
+--   demo.parent@ykvirtual.test   (PARENT)
+--   demo.student@ykvirtual.test  (STUDENT)
 -- Marketing content (programmes, cohorts, tutors, blog, testimonials) is
 -- fully visible to the public without any login.

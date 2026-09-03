@@ -15,7 +15,7 @@ const COLLEGE_URL =
   process.env.NEXT_PUBLIC_COLLEGE_URL || "https://ykaycollege.edu.ng";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Ykay College — Our Campus School | NUVORA",
+  title: "Ykay College — Our Campus School | YK-Virtual",
   description:
     "Ykay College & Leadership Academy is the campus school of the Ykay family in Sango Ota, Ogun State — premium day secondary education, WAEC/NECO/JAMB excellence and a digital skills academy.",
   path: "/college",
@@ -46,7 +46,7 @@ const PILLARS = [
 
 const DIFFERENCE = [
   {
-    label: "NUVORA",
+    label: "YK-Virtual",
     tag: "This site — 100% online",
     points: [
       "Live online classes and group cohorts",
@@ -75,7 +75,7 @@ export default function CollegePage() {
       <PageHero
         eyebrow="THE YKAY FAMILY"
         title="Ykay College & Leadership Academy"
-        subtitle="The campus arm of the Ykay family. If NUVORA is our virtual classroom, Ykay College is where it all began — a physical secondary school in Sango Ota, Ogun State, combining academic excellence with leadership and digital skills."
+        subtitle="The campus arm of the Ykay family. If YK-Virtual is our virtual classroom, Ykay College is where it all began — a physical secondary school in Sango Ota, Ogun State, combining academic excellence with leadership and digital skills."
       >
         <div className="flex flex-wrap items-center gap-3">
           <a
@@ -119,7 +119,7 @@ export default function CollegePage() {
               Two schools · one family
             </p>
             <h2 className="font-display text-3xl text-ink-950 md:text-4xl">
-              Learn online with NUVORA, or on campus with Ykay College
+              Learn online with YK-Virtual, or on campus with Ykay College
             </h2>
           </div>
           <div className="grid gap-6 lg:grid-cols-2">
