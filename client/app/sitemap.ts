@@ -11,27 +11,108 @@ const now = new Date();
 // Fixes Tuteria's soft-404 sitemap bug and keeps search indexes clean.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
-    { url: `${SITE}/`, lastModified: now, changeFrequency: "hourly", priority: 1 },
-    { url: `${SITE}/tutors`, lastModified: now, changeFrequency: "hourly", priority: 0.9 },
-    { url: `${SITE}/subjects`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${SITE}/programmes`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${SITE}/online-classes`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-    { url: `${SITE}/for-schools`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${SITE}/corporate-training`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${SITE}/careers`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
-    { url: `${SITE}/help`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${SITE}/become-tutor`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${SITE}/blog`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-    { url: `${SITE}/sat`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${SITE}/gre`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    {
+      url: `${SITE}/`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 1,
+    },
+    {
+      url: `${SITE}/tutors`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE}/subjects`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE}/programmes`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE}/online-classes`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE}/for-schools`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE}/corporate-training`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE}/careers`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.5,
+    },
+    {
+      url: `${SITE}/college`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${SITE}/help`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    },
+    {
+      url: `${SITE}/become-tutor`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE}/blog`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE}/sat`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${SITE}/gre`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
   ];
 
-  for (const page of getExamPrepPages()) entries.push({ url: `${SITE}/exam-prep/${page.exam}/${page.subject}`, lastModified: now, changeFrequency: "monthly", priority: 0.6 });
+  for (const page of getExamPrepPages())
+    entries.push({
+      url: `${SITE}/exam-prep/${page.exam}/${page.subject}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
 
   const fetchType = async (path: string, key: string): Promise<string[]> => {
     try {
-      const res = await apiFetchSSR<Record<string, unknown>[]>(`${path}?page=1&page_size=100`);
-      return (res.data ?? []).map((d) => String((d as Record<string, unknown>)[key])).filter(Boolean);
+      const res = await apiFetchSSR<Record<string, unknown>[]>(
+        `${path}?page=1&page_size=100`,
+      );
+      return (res.data ?? [])
+        .map((d) => String((d as Record<string, unknown>)[key]))
+        .filter(Boolean);
     } catch {
       return [];
     }
@@ -44,11 +125,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     fetchType("/content/blog", "slug"),
   ]);
 
-  for (const slug of tutors) entries.push({ url: `${SITE}/tutors/${slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.8 });
-  for (const slug of subjects) entries.push({ url: `${SITE}/subjects/${slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.7 });
-  for (const slug of programmes) entries.push({ url: `${SITE}/programmes/${slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.8 });
-  for (const slug of posts) entries.push({ url: `${SITE}/blog/${slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.6 });
-  for (const article of getHelpArticles()) entries.push({ url: `${SITE}/help/${article.slug}`, lastModified: now, changeFrequency: "monthly", priority: 0.5 });
+  for (const slug of tutors)
+    entries.push({
+      url: `${SITE}/tutors/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    });
+  for (const slug of subjects)
+    entries.push({
+      url: `${SITE}/subjects/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
+  for (const slug of programmes)
+    entries.push({
+      url: `${SITE}/programmes/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    });
+  for (const slug of posts)
+    entries.push({
+      url: `${SITE}/blog/${slug}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    });
+  for (const article of getHelpArticles())
+    entries.push({
+      url: `${SITE}/help/${article.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    });
 
   return entries;
 }

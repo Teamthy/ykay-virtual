@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 const FIELD =
   "mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-[#4CCB31] focus:outline-none focus:ring-2 focus:ring-[#4CCB31]/30";
 
@@ -56,7 +57,11 @@ export function UtmeCallbackForm() {
         <p className="mt-2 text-sm text-ink-600">
           We will text <b>{form.phone}</b> to confirm.
         </p>
-        <button type="button" onClick={() => setDone(false)} className="mt-4 text-sm font-semibold text-[#4CCB31] hover:underline">
+        <button
+          type="button"
+          onClick={() => setDone(false)}
+          className="mt-4 text-sm font-semibold text-[#4CCB31] hover:underline"
+        >
           Submit another request
         </button>
       </div>
@@ -73,7 +78,9 @@ export function UtmeCallbackForm() {
     >
       <div className="text-center">
         <h3 className="text-2xl font-bold text-[#013920]">Start UTME prep</h3>
-        <p className="mt-2 text-sm text-ink-600">We will text on SMS or WhatsApp to confirm your number.</p>
+        <p className="mt-2 text-sm text-ink-600">
+          We will text on SMS or WhatsApp to confirm your number.
+        </p>
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -89,7 +96,11 @@ export function UtmeCallbackForm() {
         </label>
         <label className="block text-sm font-medium text-ink-800">
           Current level
-          <select className={FIELD} value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })}>
+          <select
+            className={FIELD}
+            value={form.level}
+            onChange={(e) => setForm({ ...form, level: e.target.value })}
+          >
             <option>SSS3</option>
             <option>SSS2</option>
             <option>SSS1</option>
@@ -118,7 +129,10 @@ export function UtmeCallbackForm() {
         />
         <span>
           I accept the{" "}
-          <Link href="/terms" className="font-medium text-[#4CCB31] hover:underline">
+          <Link
+            href="/terms"
+            className="font-medium text-[#4CCB31] hover:underline"
+          >
             Terms
           </Link>
         </span>
@@ -129,7 +143,7 @@ export function UtmeCallbackForm() {
       <button
         type="submit"
         disabled={busy}
-        className="mt-5 w-full rounded-lg bg-[#4CCB31] py-3 text-sm font-bold text-white hover:bg-[#5FE63F] disabled:opacity-50"
+        className="mt-5 w-full rounded-lg bg-[#4CCB31] py-3 text-sm font-bold text-[#013920] hover:bg-[#5FE63F] disabled:opacity-50"
       >
         {busy ? "Submitting…" : "Get started"}
       </button>

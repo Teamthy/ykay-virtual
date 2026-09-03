@@ -26,6 +26,7 @@ const COMPANY = [
   { href: "/how-it-works", label: "How It Works" },
   { href: "/success-stories", label: "Success Stories" },
   { href: "/become-tutor", label: "Become a Tutor" },
+  { href: "/college", label: "Ykay College" },
   { href: "/careers", label: "Careers" },
   { href: "/privacy", label: "Privacy Policy" },
   { href: "/contact", label: "Contact Us" },
@@ -41,10 +42,18 @@ function FooterLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function Column({ title, links }: { title: string; links: { href: string; label: string }[] }) {
+function Column({
+  title,
+  links,
+}: {
+  title: string;
+  links: { href: string; label: string }[];
+}) {
   return (
     <div>
-      <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-white">{title}</h3>
+      <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-white">
+        {title}
+      </h3>
       <ul className="space-y-3 text-sm">
         {links.map((l) => (
           <FooterLink key={l.href} {...l} />
@@ -65,8 +74,9 @@ export function Footer() {
               <Logo dark className="text-2xl" />
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-white">
-              Africa&apos;s trusted tutoring platform - British &amp; Nigerian curricula, exam
-              preparation, private tuition and live cohorts. Learning beyond boundaries.
+              Africa&apos;s trusted tutoring platform - British &amp; Nigerian
+              curricula, exam preparation, private tuition and live cohorts.
+              Learning beyond boundaries.
             </p>
           </div>
 
