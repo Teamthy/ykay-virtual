@@ -122,7 +122,7 @@ export default async function SuccessStoriesPage() {
 
           {testimonials.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
-              <Quote size={24} className="mx-auto text-ink-300" />
+              <Quote size={24} className="mx-auto text-ink-600" />
               <p className="mt-4 text-sm text-ink-600">
                 Parent stories are published here as soon as families give their
                 consent.

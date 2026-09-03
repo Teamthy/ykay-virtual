@@ -254,7 +254,7 @@ export default function PricingPage() {
                     {row.v[pi] ? (
                       <Check size={16} className="text-brand-gold-dark" />
                     ) : (
-                      <Minus size={16} className="text-ink-300" />
+                      <Minus size={16} className="text-ink-600" />
                     )}
                   </li>
                 ))}
