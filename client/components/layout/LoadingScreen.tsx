@@ -114,7 +114,7 @@ export function LoadingScreen() {
               transition={{ delay: 0.3 }}
               className="text-6xl tabular-nums sm:text-7xl"
             >
-              {count}
+              {String(count).padStart(3, "0")}
             </motion.span>
           </div>
 

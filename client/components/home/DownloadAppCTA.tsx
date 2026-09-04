@@ -1,14 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Smartphone, Apple, WifiOff, Bell, FileCheck2 } from "lucide-react";
+import { Apple, Play, WifiOff, Bell, FileCheck2 } from "lucide-react";
 
 import { AnimatedText } from "@/components/ui/animated-text";
 
-// Download-app section — PWA-first.
-//
-// The installable web app IS the mobile build now: the same screens, offline
-// support and full-screen experience, installable straight from the browser on
-// BOTH Android and iPhone — no store, no APK warnings. The Android APK stays
-// available on /download as the fallback for parents who prefer a file.
+// Download-app section — premium split: copy + install actions on the left,
+// a real phone mock on the right running a photo of the product. The PWA is
+// the app: install straight from the site on Android and iPhone.
 
 const PERKS = [
   { icon: WifiOff, text: "Learn offline" },
@@ -21,43 +19,42 @@ export function DownloadAppCTA() {
     <section className="relative overflow-hidden bg-deep-green">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-primary/15 blur-3xl"
+        className="pointer-events-none absolute -left-24 top-0 h-80 w-80 rounded-full bg-primary/15 blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-primary-light/10 blur-3xl"
+        className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-full bg-primary-light/10 blur-3xl"
       />
-      <div className="container-x relative grid items-center gap-10 py-16 md:py-20 lg:grid-cols-2">
-        {/* Copy + install buttons */}
+
+      <div className="relative mx-auto grid w-full max-w-[1400px] items-center gap-12 px-6 py-16 md:px-10 md:py-24 lg:grid-cols-2">
+        {/* Copy + install */}
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
             YK-Virtual on the go
           </p>
           <AnimatedText
             as="h2"
-            className="mt-4 font-display text-4xl leading-tight tracking-[0.02em] text-white md:text-5xl"
+            className="mt-4 font-display text-4xl leading-[0.95] tracking-[0.02em] text-white md:text-6xl"
             text="Your classroom, in your pocket."
           />
           <p className="mt-5 max-w-md leading-relaxed text-white/80">
-            The full mobile app — live lessons, quizzes, assignments and progress —
-            installed straight from this website in seconds. Works offline, updates
-            itself, and no app store is needed.
+            Live lessons, quizzes, assignments and progress — installed straight
+            from this website in seconds. Works offline, updates itself, and no
+            app store is needed.
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/download"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-ink-900 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-hover"
+              className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-bold text-ink-900 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-hover"
             >
-              <Smartphone size={16} />
-              Install — Android
+              <Play size={16} fill="currentColor" /> Install — Android
             </Link>
             <Link
               href="/download"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20"
             >
-              <Apple size={16} />
-              Install — iPhone
+              <Apple size={16} /> Install — iPhone
             </Link>
           </div>
 
@@ -74,35 +71,41 @@ export function DownloadAppCTA() {
           </ul>
         </div>
 
-        {/* Phone mock — brand tile framing the install steps */}
+        {/* Phone mock */}
         <div className="justify-self-center">
-          <div className="w-fit rounded-[2rem] border border-white/15 bg-black/25 p-6 backdrop-blur-sm sm:p-8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary">
-              Install in 3 steps
-            </p>
-            <ol className="mt-4 space-y-3">
-              {[
-                ["Android", "Open the site in Chrome, tap Install."],
-                ["iPhone", "Open in Safari, tap Share, then Add to Home Screen."],
-                ["Open", "Launch from your home screen — full screen, no browser bar."],
-              ].map(([k, v], i) => (
-                <li key={k} className="flex items-start gap-3">
-                  <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary font-display text-xs text-ink-900">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm leading-relaxed text-white/85">
-                    <b className="text-white">{k}:</b> {v}
-                  </p>
-                </li>
-              ))}
-            </ol>
-            <Link
-              href="/download"
-              className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary hover:text-primary-hover"
-            >
-              Full install guide →
-            </Link>
+          <div className="relative w-64 rounded-[2.8rem] border border-white/20 bg-black/40 p-3 shadow-2xl backdrop-blur-sm sm:w-72">
+            {/* notch */}
+            <div className="absolute left-1/2 top-3 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-black/70" />
+            <div className="relative aspect-[9/19] overflow-hidden rounded-[2.2rem]">
+              <Image
+                src="/hero/african-student.jpg"
+                alt="A student learning on the YK-Virtual app"
+                fill
+                sizes="288px"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-deep-green/95 via-deep-green/20 to-transparent" />
+              {/* faux app chrome */}
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                  YK-Virtual
+                </p>
+                <p className="mt-1 font-display text-xl leading-tight text-white">
+                  Lesson 12 · Algebra
+                </p>
+                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/15">
+                  <div className="h-full w-2/3 rounded-full bg-primary" />
+                </div>
+                <p className="mt-1.5 text-[10px] font-semibold text-white/70">
+                  Progress · 68% complete
+                </p>
+              </div>
+            </div>
           </div>
+          <p className="mx-auto mt-5 max-w-xs text-center text-xs leading-relaxed text-white/60">
+            The installed app runs full screen — no browser bar, feels native on
+            both platforms.
+          </p>
         </div>
       </div>
     </section>

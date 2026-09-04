@@ -1,45 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { AnimatedText } from "@/components/ui/animated-text";
+import { useRef } from "react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
-// Homepage hero — full-bleed editorial (reference language: madeinevolve.com).
+// Homepage hero — evolve-accurate editorial (reference: madeinevolve.com).
 //
-// One full-viewport image stage: real photography crossfades behind a deep
-// brand-green scrim so EVERY line of type keeps premium contrast (no light on
-// light, ever). The headline reveals letter by letter on load; the slide
-// Ken-Burns slowly; the whole content parallax-fades on scroll. Below the
-// headline: indexed meta marks (01–04), manual slide control, and the trust
-// row. Images are local (public/hero) — fast on Nigerian mobile data.
+// The inspo's language: a LIGHT canvas, one enormous display headline whose
+// letters introduce themselves on load and unstitch on the way out, then a
+// drifting reel of image covers beneath. Ours: light peach canvas in light
+// mode / deep green in dark mode, LEARN / ANYWHERE. in Anton-style caps,
+// per-letter spring intro + per-letter scroll outro, and an auto-drifting
+// reel of real photography (pause on hover). Type is always ink-on-light or
+// white-on-deep — contrast is structural, never accidental.
 
-const SLIDES = [
+const REEL = [
   {
-    label: "Home Tutoring",
-    href: "/hometutors",
     img: "/hero/home-tutoring.jpg",
     alt: "Tutor helping a young student at home",
   },
-  {
-    label: "Live Cohorts",
-    href: "/cohorts",
-    img: "/hero/cohorts.jpg",
-    alt: "Students in a live online class together",
-  },
-  {
-    label: "UTME 2026",
-    href: "/utme-2026",
-    img: "/hero/utme.jpg",
-    alt: "Student writing answers during exam preparation",
-  },
-  {
-    label: "International",
-    href: "/plus",
-    img: "/hero/international.jpg",
-    alt: "Graduates celebrating international success",
-  },
+  { img: "/hero/cohorts.jpg", alt: "Students in a live online class" },
+  { img: "/hero/utme.jpg", alt: "Student writing during exam preparation" },
+  { img: "/hero/international.jpg", alt: "Graduates celebrating success" },
+  { img: "/hero/test-prep.jpg", alt: "Student taking notes" },
+  { img: "/hero/plus.jpg", alt: "Tutor guiding a learner one-on-one" },
 ];
 
 const MARKS = [
@@ -49,7 +40,82 @@ const MARKS = [
   { n: "04", label: "Parent progress reports" },
 ];
 
-const DURATION = 6000;
+/** One headline letter: heavy spring intro, per-letter scroll outro. */
+function HeroLetter({
+  char,
+  index,
+  progress,
+}: {
+  char: string;
+  index: number;
+  progress: MotionValue<number>;
+}) {
+  const reduce = useReducedMotion();
+  const start = 0.08 + index * 0.028;
+  const y = useTransform(
+    progress,
+    [start, start + 0.3],
+    [0, -(90 + index * 7)],
+  );
+  const opacity = useTransform(progress, [start, start + 0.22], [1, 0]);
+  const rotate = useTransform(
+    progress,
+    [start, start + 0.3],
+    [0, index % 2 ? 6 : -6],
+  );
+
+  if (reduce) return <span>{char}</span>;
+
+  return (
+    <motion.span style={{ display: "inline-block", y, opacity, rotate }}>
+      <motion.span
+        style={{ display: "inline-block", willChange: "transform" }}
+        initial={{
+          opacity: 0,
+          y: "1.05em",
+          rotate: -12,
+          scale: 0.7,
+          filter: "blur(8px)",
+        }}
+        animate={{ opacity: 1, y: 0, rotate: 0, scale: 1, filter: "blur(0px)" }}
+        transition={{
+          type: "spring",
+          stiffness: 240,
+          damping: 16,
+          mass: 0.9,
+          delay: 0.35 + index * 0.03,
+        }}
+      >
+        {char}
+      </motion.span>
+    </motion.span>
+  );
+}
+
+function HeroWord({
+  word,
+  progress,
+  className,
+}: {
+  word: string;
+  progress: MotionValue<number>;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+  if (reduce) return <span className={className}>{word}</span>;
+  return (
+    <span className={className} aria-label={word} role="text">
+      {Array.from(word).map((char, i) => (
+        <HeroLetter
+          key={`${char}-${i}`}
+          char={char}
+          index={i}
+          progress={progress}
+        />
+      ))}
+    </span>
+  );
+}
 
 export function HeroSplit() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -57,165 +123,113 @@ export function HeroSplit() {
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, 110]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.12]);
-  const [active, setActive] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setActive((p) => (p + 1) % SLIDES.length), DURATION);
-    return () => clearInterval(t);
-  }, []);
-
-  const go = (dir: 1 | -1) =>
-    setActive((p) => (p + dir + SLIDES.length) % SLIDES.length);
-
-  const slide = SLIDES[active];
+  const metaY = useTransform(scrollYProgress, [0, 1], [0, 80]);
+  const metaOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const reelY = useTransform(scrollYProgress, [0, 1], [0, -60]);
 
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-[92svh] w-full flex-col justify-end overflow-hidden bg-deep-green"
+      className="relative flex w-full flex-col overflow-hidden bg-peach dark:bg-deep-green"
     >
-      {/* ── The image stage: crossfade + slow Ken-Burns, best-fit cover ── */}
-      <div className="absolute inset-0">
-        {SLIDES.map((s, i) => (
-          <motion.div
-            key={s.img}
-            initial={false}
-            animate={{ opacity: i === active ? 1 : 0 }}
-            transition={{ duration: 1.1, ease: "easeInOut" }}
-            className="absolute inset-0"
-          >
-            <motion.div
-              initial={{ scale: 1 }}
-              animate={{ scale: i === active ? 1.07 : 1 }}
-              transition={{
-                duration: DURATION / 1000 + 1.2,
-                ease: "linear",
-              }}
-              style={{ originX: 0.5, originY: 0.6 }}
-              className="h-full w-full"
-            >
-              <Image
-                src={s.img}
-                alt={s.alt}
-                fill
-                priority={i === 0}
-                sizes="100vw"
-                className="object-cover"
-              />
-            </motion.div>
-          </motion.div>
-        ))}
-        {/* Deep scrim, top→bottom and edges — guarantees text contrast on
-            every photograph, light or dark. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-deep-green/85 via-deep-green/55 to-deep-green/90" />
-        <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_20%_100%,rgba(1,57,32,0.85)_0%,transparent_60%)]" />
-      </div>
-
-      {/* ── Content ── */}
-      <motion.div
-        style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col justify-end px-6 pb-10 pt-32 md:px-10 md:pb-14"
-      >
-        <p className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-black/25 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-white backdrop-blur-sm">
-          <span className="size-1.5 rounded-full bg-primary" />
+      {/* ── The headline canvas ── */}
+      <div className="mx-auto w-full max-w-[1400px] px-6 pb-10 pt-28 md:px-10 md:pt-36">
+        <motion.p
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white/70 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-ink-600 dark:border-white/20 dark:bg-white/10 dark:text-white/80"
+        >
+          <span className="size-1.5 rounded-full bg-brand-green" />
           Ykay family · Online school
-        </p>
+        </motion.p>
 
-        <h1 className="font-display text-[clamp(3.25rem,11vw,10rem)] leading-[0.84] tracking-[-0.015em] text-white [container-type:inline-size]">
-          <AnimatedText
-            heavy
-            stagger={0.035}
-            text="LEARN"
-            delay={0.15}
-            animateOnLoad
-            className="block"
+        <h1 className="font-display text-[clamp(3.5rem,12.5vw,11.5rem)] leading-[0.84] tracking-[-0.02em] text-ink-950 dark:text-white [container-type:inline-size]">
+          <HeroWord
+            word="LEARN"
+            progress={scrollYProgress}
+            className="block whitespace-nowrap"
           />
-          <span className="block text-primary">
-            <AnimatedText
-              heavy
-              stagger={0.035}
-              text="ANYWHERE."
-              delay={0.35}
-              animateOnLoad
+          <span className="block text-deep-green dark:text-primary">
+            <HeroWord
+              word="ANYWHERE."
+              progress={scrollYProgress}
+              className="block whitespace-nowrap"
             />
           </span>
         </h1>
 
-        <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        {/* Meta row: copy + CTAs + indexed marks */}
+        <motion.div
+          style={{ y: metaY, opacity: metaOpacity }}
+          className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between"
+        >
           <div className="max-w-xl">
-            <p className="text-base leading-relaxed text-white/85 md:text-lg">
-              Live online classes, private 1-on-1 tuition and UTME / WAEC / IELTS
-              preparation — with the same teachers and standards as the campus school,
-              on any device, anywhere in Nigeria.
+            <p className="text-base leading-relaxed text-ink-600 dark:text-white/80 md:text-lg">
+              Live online classes, private 1-on-1 tuition and UTME / WAEC /
+              IELTS preparation — the same teachers and standards as the campus
+              school, on any device, anywhere in Nigeria.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a
                 href="/programmes"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-ink-900 shadow-lg transition-all duration-300 hover:scale-[1.03] hover:bg-primary-hover active:scale-[0.97]"
+                className="inline-flex items-center gap-2 rounded-full bg-deep-green px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-300 hover:scale-[1.03] hover:bg-deep-green-light active:scale-[0.97] dark:bg-primary dark:text-ink-900 dark:hover:bg-primary-hover"
               >
                 Find a programme <ArrowRight size={14} />
               </a>
               <a
                 href="/private-tuition"
-                className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-white backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:bg-white/20 active:scale-[0.97]"
+                className="inline-flex items-center gap-2 rounded-full border border-ink-300 bg-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-ink-900 backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:bg-white active:scale-[0.97] dark:border-white/30 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
               >
-                Book private tuition
+                Book private tuition <ArrowUpRight size={14} />
               </a>
             </div>
           </div>
 
-          {/* Indexed meta marks — the editorial signature */}
-          <ul className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4 lg:w-[34rem] lg:grid-cols-2">
-            {MARKS.map((m) => (
-              <li key={m.n} className="border-l border-white/25 pl-3">
-                <span className="font-display text-sm tracking-widest text-primary">
+          <ul className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4 lg:w-[32rem] lg:grid-cols-2">
+            {MARKS.map((m, i) => (
+              <motion.li
+                key={m.n}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 + i * 0.1, duration: 0.5 }}
+                className="border-l-2 border-ink-200 pl-3 dark:border-white/25"
+              >
+                <span className="font-display text-sm tracking-widest text-deep dark:text-primary">
                   ({m.n})
                 </span>
-                <p className="mt-1 text-xs font-semibold leading-snug text-white/85">
+                <p className="mt-1 text-xs font-semibold leading-snug text-ink-700 dark:text-white/85">
                   {m.label}
                 </p>
-              </li>
+              </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
+      </div>
 
-        {/* ── Slide control row ── */}
-        <div className="mt-10 flex items-center justify-between border-t border-white/15 pt-5">
-          <a
-            href={slide.href}
-            className="group inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em] text-white/70 transition-colors hover:text-white"
-          >
-            <span className="tabular-nums text-primary">
-              {String(active + 1).padStart(2, "0")}/{String(SLIDES.length).padStart(2, "0")}
-            </span>
-            <span className="border-b border-transparent pb-0.5 transition-colors group-hover:border-white/60">
-              {slide.label}
-            </span>
-            <ArrowRight
-              size={12}
-              className="transition-transform group-hover:translate-x-1"
-            />
-          </a>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => go(-1)}
-              aria-label="Previous slide"
-              className="grid size-9 place-items-center rounded-full border border-white/25 text-white/80 transition-colors hover:border-white/60 hover:text-white"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => go(1)}
-              aria-label="Next slide"
-              className="grid size-9 place-items-center rounded-full border border-white/25 text-white/80 transition-colors hover:border-white/60 hover:text-white"
-            >
-              <ChevronRight size={16} />
-            </button>
+      {/* ── The drifting image reel (pause on hover) ── */}
+      <motion.div style={{ y: reelY }} className="relative w-full pb-14 pt-4">
+        <div className="group relative flex w-full overflow-hidden">
+          <div className="animate-[hero-reel_46s_linear_infinite] flex w-max gap-4 pl-4 group-hover:[animation-play-state:paused] md:gap-6 md:pl-6">
+            {[...REEL, ...REEL].map((s, i) => (
+              <div
+                key={`${s.img}-${i}`}
+                className="relative h-52 w-80 shrink-0 overflow-hidden rounded-2xl shadow-soft md:h-72 md:w-[28rem]"
+              >
+                <Image
+                  src={s.img}
+                  alt={s.alt}
+                  fill
+                  sizes="(max-width: 768px) 320px, 448px"
+                  priority={i < 2}
+                  className="object-cover transition-transform duration-700 hover:scale-105"
+                />
+              </div>
+            ))}
           </div>
+          {/* edge fades so the reel reads as infinite */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-peach to-transparent dark:from-deep-green" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-peach to-transparent dark:from-deep-green" />
         </div>
       </motion.div>
     </section>

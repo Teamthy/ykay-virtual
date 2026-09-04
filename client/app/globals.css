@@ -1373,3 +1373,136 @@ html.dark .ambient-grid {
     animation: none;
   }
 }
+
+/* ── Premium ambient backdrop v2 ─────────────────────────────────────────
+   Layered depth: twin brand glows + a slow aurora sweep + a fine dot field
+   + edge vignette. Transform-only animations; disabled for reduced motion. */
+
+@keyframes hero-reel {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ambient2-glow-a,
+.ambient2-glow-b {
+  position: absolute;
+  width: 46vw;
+  height: 46vw;
+  border-radius: 9999px;
+  filter: blur(90px);
+  will-change: transform;
+}
+
+.ambient2-glow-a {
+  top: -12vw;
+  left: -10vw;
+  background: radial-gradient(
+    circle at center,
+    rgba(76, 203, 49, 0.2) 0%,
+    transparent 65%
+  );
+  animation: ambient-drift-a 52s ease-in-out infinite alternate;
+}
+
+.ambient2-glow-b {
+  bottom: -14vw;
+  right: -12vw;
+  background: radial-gradient(
+    circle at center,
+    rgba(112, 242, 80, 0.14) 0%,
+    transparent 65%
+  );
+  animation: ambient-drift-b 64s ease-in-out infinite alternate;
+}
+
+html.dark .ambient2-glow-a {
+  background: radial-gradient(
+    circle at center,
+    rgba(76, 203, 49, 0.13) 0%,
+    transparent 65%
+  );
+}
+
+html.dark .ambient2-glow-b {
+  background: radial-gradient(
+    circle at center,
+    rgba(112, 242, 80, 0.09) 0%,
+    transparent 65%
+  );
+}
+
+.ambient2-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120vw;
+  height: 120vw;
+  margin: -60vw 0 0 -60vw;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(76, 203, 49, 0.06) 70deg,
+    transparent 140deg,
+    rgba(112, 242, 80, 0.05) 250deg,
+    transparent 320deg
+  );
+  animation: ambient2-rotate 110s linear infinite;
+  will-change: transform;
+}
+
+@keyframes ambient2-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ambient2-dots {
+  position: absolute;
+  inset: -70px;
+  background-image: radial-gradient(rgba(1, 56, 32, 0.1) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.55;
+  animation: ambient-grid-pan 160s linear infinite;
+  will-change: transform;
+}
+
+html.dark .ambient2-dots {
+  background-image: radial-gradient(
+    rgba(76, 203, 49, 0.1) 1px,
+    transparent 1px
+  );
+}
+
+.ambient2-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 90% at 50% 40%,
+    transparent 55%,
+    rgba(1, 56, 32, 0.06) 100%
+  );
+}
+
+html.dark .ambient2-vignette {
+  background: radial-gradient(
+    120% 90% at 50% 40%,
+    transparent 55%,
+    rgba(0, 22, 12, 0.35) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient2-glow-a,
+  .ambient2-glow-b,
+  .ambient2-sweep,
+  .ambient2-dots {
+    animation: none;
+  }
+}

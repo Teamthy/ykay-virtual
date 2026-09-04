@@ -8,7 +8,14 @@ import { isAdmin } from "@/features/auth/api";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Search, ShieldCheck, Lock, UserX, UserCheck, RefreshCw } from "lucide-react";
+import {
+  Search,
+  ShieldCheck,
+  Lock,
+  UserX,
+  UserCheck,
+  RefreshCw,
+} from "lucide-react";
 import {
   listAdminUsers,
   listAdminRoles,
@@ -38,14 +45,21 @@ export default function AdminUsersPage() {
 
   // Platform staff roles (admin accounts).
   const isStaffRole = (roles: string[]) =>
-    roles.some((r) => ["SUPER_ADMIN", "ACADEMIC_ADMIN", "INSTITUTION_ADMIN"].includes(r));
+    roles.some((r) =>
+      ["SUPER_ADMIN", "ACADEMIC_ADMIN", "INSTITUTION_ADMIN"].includes(r),
+    );
 
   const pageSize = 25;
 
   const usersQ = useQuery({
     queryKey: ["admin", "users", debouncedSearch, statusFilter, page],
     queryFn: () =>
-      listAdminUsers({ search: debouncedSearch, status: statusFilter, page, pageSize }),
+      listAdminUsers({
+        search: debouncedSearch,
+        status: statusFilter,
+        page,
+        pageSize,
+      }),
     enabled: !!user && isPlatformAdmin,
     placeholderData: (prev) => prev,
   });
@@ -58,24 +72,34 @@ export default function AdminUsersPage() {
   });
 
   const roleMut = useMutation({
-    mutationFn: ({ userId, role, grant }: { userId: string; role: string; grant: boolean }) =>
-      setUserRole(userId, role, grant),
+    mutationFn: ({
+      userId,
+      role,
+      grant,
+    }: {
+      userId: string;
+      role: string;
+      grant: boolean;
+    }) => setUserRole(userId, role, grant),
     onSuccess: () => {
       toast.success("Role updated");
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
       qc.invalidateQueries({ queryKey: ["admin", "stats2"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to update role"),
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Failed to update role"),
   });
 
   const statusMut = useMutation({
-    mutationFn: ({ userId, status }: { userId: string; status: string }) => setUserStatus(userId, status),
+    mutationFn: ({ userId, status }: { userId: string; status: string }) =>
+      setUserStatus(userId, status),
     onSuccess: () => {
       toast.success("Account status updated");
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
       qc.invalidateQueries({ queryKey: ["admin", "stats2"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to update status"),
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Failed to update status"),
   });
 
   const applySearch = () => {
@@ -83,7 +107,10 @@ export default function AdminUsersPage() {
     setPage(1);
   };
 
-  const totalPages = Math.max(1, Math.ceil((usersQ.data?.total ?? 0) / pageSize));
+  const totalPages = Math.max(
+    1,
+    Math.ceil((usersQ.data?.total ?? 0) / pageSize),
+  );
 
   if (!isPlatformAdmin) {
     return (
@@ -93,7 +120,9 @@ export default function AdminUsersPage() {
           <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-deep">
             <Lock size={26} />
           </div>
-          <h2 className="mt-4 text-lg font-extrabold text-deep">Admin access required</h2>
+          <h2 className="mt-4 text-lg font-extrabold text-deep">
+            Admin access required
+          </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
             You need a platform admin account to view the user list.
           </p>
@@ -113,15 +142,22 @@ export default function AdminUsersPage() {
 
       {/* Tab filter */}
       <div className="flex gap-2">
-        {([
-          { id: "all", label: "All users" },
-          { id: "admins", label: "Admins & staff" },
-        ] as const).map((t) => (
+        {(
+          [
+            { id: "all", label: "All users" },
+            { id: "admins", label: "Admins & staff" },
+          ] as const
+        ).map((t) => (
           <button
             key={t.id}
-            onClick={() => { setTab(t.id); setPage(1); }}
+            onClick={() => {
+              setTab(t.id);
+              setPage(1);
+            }}
             className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
-              tab === t.id ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              tab === t.id
+                ? "bg-deep text-white"
+                : "bg-ink-100 text-ink-600 hover:bg-ink-200"
             }`}
           >
             {t.label}
@@ -142,14 +178,20 @@ export default function AdminUsersPage() {
             aria-label="Search users"
           />
           {search && (
-            <button onClick={applySearch} className="text-xs font-bold text-deep hover:underline">
+            <button
+              onClick={applySearch}
+              className="text-xs font-bold text-deep hover:underline"
+            >
               Go
             </button>
           )}
         </div>
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
           className="h-10 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-700 outline-none focus:border-primary"
           aria-label="Filter by status"
         >
@@ -159,7 +201,12 @@ export default function AdminUsersPage() {
           <option value="SUSPENDED">Suspended</option>
         </select>
         <button
-          onClick={() => { setSearch(""); setDebouncedSearch(""); setStatusFilter(""); setPage(1); }}
+          onClick={() => {
+            setSearch("");
+            setDebouncedSearch("");
+            setStatusFilter("");
+            setPage(1);
+          }}
           className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-600 hover:border-ink-300"
         >
           <RefreshCw size={14} /> Reset
@@ -169,7 +216,9 @@ export default function AdminUsersPage() {
       {/* Table */}
       {usersQ.isLoading && !usersQ.data ? (
         <div className="space-y-2">
-          {[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-14 rounded-xl" />
+          ))}
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white">
@@ -189,7 +238,10 @@ export default function AdminUsersPage() {
                   // Defense in depth: a non-SUPER_ADMIN admin must never see
                   // SUPER_ADMIN accounts or the SUPER_ADMIN role, even if a
                   // stale payload ever contained them. Server already filters.
-                  .filter((u) => superAdmin || !(u.roles ?? []).includes("SUPER_ADMIN"))
+                  .filter(
+                    (u) =>
+                      superAdmin || !(u.roles ?? []).includes("SUPER_ADMIN"),
+                  )
                   .filter((u) => tab === "all" || isStaffRole(u.roles ?? []))
                   .map((u) => (
                     <UserRow
@@ -207,7 +259,9 @@ export default function AdminUsersPage() {
             </table>
           </div>
           {(usersQ.data?.users ?? []).length === 0 && (
-            <p className="p-10 text-center text-sm text-ink-400">No users match your filters.</p>
+            <p className="p-10 text-center text-sm text-ink-400">
+              No users match your filters.
+            </p>
           )}
         </div>
       )}
@@ -235,11 +289,17 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {detailFor && <UserDetailDialog userId={detailFor} onClose={() => setDetailFor(null)} />}
+      {detailFor && (
+        <UserDetailDialog
+          userId={detailFor}
+          onClose={() => setDetailFor(null)}
+        />
+      )}
 
       <p className="flex items-center gap-1.5 text-xs text-ink-400">
-        <ShieldCheck size={13} /> Role grants &amp; status changes are enforced server-side and audited. You cannot
-        remove the last SUPER_ADMIN or suspend your own account.
+        <ShieldCheck size={13} /> Role grants &amp; status changes are enforced
+        server-side and audited. You cannot remove the last SUPER_ADMIN or
+        suspend your own account.
       </p>
     </div>
   );
@@ -258,13 +318,26 @@ function UserRow({
   roles: AdminRole[];
   selfId?: string;
   canManage: boolean;
-  roleMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; role: string; grant: boolean }>>;
-  statusMut: ReturnType<typeof useMutation<unknown, Error, { userId: string; status: string }>>;
+  roleMut: ReturnType<
+    typeof useMutation<
+      unknown,
+      Error,
+      { userId: string; role: string; grant: boolean }
+    >
+  >;
+  statusMut: ReturnType<
+    typeof useMutation<unknown, Error, { userId: string; status: string }>
+  >;
   onView: () => void;
 }) {
   const isSelf = u.id === selfId;
   const busy = roleMut.isPending || statusMut.isPending;
-  const statusKind = u.status === "ACTIVE" ? "success" : u.status === "SUSPENDED" ? "error" : "pending";
+  const statusKind =
+    u.status === "ACTIVE"
+      ? "success"
+      : u.status === "SUSPENDED"
+        ? "error"
+        : "pending";
 
   const toggleRole = (role: string, grant: boolean) => {
     if (u.id && role) roleMut.mutate({ userId: u.id, role, grant });
@@ -280,7 +353,11 @@ function UserRow({
           <div className="min-w-0">
             <p className="truncate font-semibold text-ink-800">
               {u.first_name || u.email} {u.last_name || ""}
-              {isSelf && <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-ink-900">you</span>}
+              {isSelf && (
+                <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-ink-900">
+                  you
+                </span>
+              )}
             </p>
             <p className="truncate text-xs text-ink-400">{u.email}</p>
           </div>
@@ -292,19 +369,32 @@ function UserRow({
       <td className="px-4 py-3">
         <div className="flex flex-wrap gap-1">
           {(u.roles ?? []).map((r) => (
-            <span key={r} className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-600">
+            <span
+              key={r}
+              className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-600"
+            >
               {r}
             </span>
           ))}
-          {(u.roles ?? []).length === 0 && <span className="text-xs text-ink-400">no roles</span>}
+          {(u.roles ?? []).length === 0 && (
+            <span className="text-xs text-ink-400">no roles</span>
+          )}
         </div>
       </td>
       <td className="px-4 py-3 text-xs text-ink-500">
-        {u.created_at ? new Date(u.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
+        {u.created_at
+          ? new Date(u.created_at).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : "-"}
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center justify-end gap-2">
-          {!canManage && <span className="text-[11px] text-ink-400">View only</span>}
+          {!canManage && (
+            <span className="text-[11px] text-ink-400">View only</span>
+          )}
           <button
             onClick={onView}
             className="inline-flex items-center gap-1 rounded-lg border border-ink-200 px-2.5 py-1.5 text-[11px] font-bold text-ink-700 hover:border-ink-300"
@@ -323,33 +413,53 @@ function UserRow({
             {roles
               .filter((r) => !(u.roles ?? []).includes(r.name))
               .map((r) => (
-                <option key={r.name} value={r.name}>{r.name}</option>
+                <option key={r.name} value={r.name}>
+                  {r.name}
+                </option>
               ))}
           </select>
-          {(u.roles ?? []).filter((r) => r !== "STUDENT" && r !== "PARENT").map((r) => (
-            <button
-              key={r}
-              onClick={() => toggleRole(r, false)}
-              disabled={busy || !canManage || (r === "SUPER_ADMIN" && isSelf)}
-              title={!canManage ? "SUPER_ADMIN required" : r === "SUPER_ADMIN" && isSelf ? "Cannot remove your own SUPER_ADMIN" : `Remove ${r}`}
-              className="rounded-lg border border-ink-200 px-2 py-1.5 text-[11px] font-bold text-red-500 hover:bg-red-50 disabled:opacity-40"
-            >
-              −{r}
-            </button>
-          ))}
+          {(u.roles ?? [])
+            .filter((r) => r !== "STUDENT" && r !== "PARENT")
+            .map((r) => (
+              <button
+                key={r}
+                onClick={() => toggleRole(r, false)}
+                disabled={busy || !canManage || (r === "SUPER_ADMIN" && isSelf)}
+                title={
+                  !canManage
+                    ? "SUPER_ADMIN required"
+                    : r === "SUPER_ADMIN" && isSelf
+                      ? "Cannot remove your own SUPER_ADMIN"
+                      : `Remove ${r}`
+                }
+                className="rounded-lg border border-ink-200 px-2 py-1.5 text-[11px] font-bold text-red-500 hover:bg-red-50 disabled:opacity-40"
+              >
+                −{r}
+              </button>
+            ))}
           {u.status === "SUSPENDED" ? (
             <button
-              onClick={() => u.id && statusMut.mutate({ userId: u.id, status: "ACTIVE" })}
+              onClick={() =>
+                u.id && statusMut.mutate({ userId: u.id, status: "ACTIVE" })
+              }
               disabled={busy || !canManage}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-[11px] font-bold text-white hover:opacity-90 disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-[11px] font-bold text-ink-900 hover:opacity-90 disabled:opacity-40"
             >
               <UserCheck size={12} /> Reactivate
             </button>
           ) : (
             <button
-              onClick={() => u.id && statusMut.mutate({ userId: u.id, status: "SUSPENDED" })}
+              onClick={() =>
+                u.id && statusMut.mutate({ userId: u.id, status: "SUSPENDED" })
+              }
               disabled={busy || !canManage || isSelf}
-              title={!canManage ? "SUPER_ADMIN required" : isSelf ? "You cannot suspend your own account" : "Suspend account"}
+              title={
+                !canManage
+                  ? "SUPER_ADMIN required"
+                  : isSelf
+                    ? "You cannot suspend your own account"
+                    : "Suspend account"
+              }
               className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-50 disabled:opacity-40"
             >
               <UserX size={12} /> Suspend
@@ -361,43 +471,104 @@ function UserRow({
   );
 }
 
-
 // UserDetailDialog — full profile view. ANY platform admin can view; edits
 // remain on the row actions (SUPER_ADMIN-only, enforced server-side).
-function UserDetailDialog({ userId, onClose }: { userId: string; onClose: () => void }) {
-  const q = useQuery({ queryKey: ["admin", "user-detail", userId], queryFn: () => getUserDetail(userId) });
+function UserDetailDialog({
+  userId,
+  onClose,
+}: {
+  userId: string;
+  onClose: () => void;
+}) {
+  const q = useQuery({
+    queryKey: ["admin", "user-detail", userId],
+    queryFn: () => getUserDetail(userId),
+  });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label="User profile details">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="User profile details"
+    >
       <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <h3 className="text-lg font-extrabold text-deep">Profile details</h3>
-          <button onClick={onClose} className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold text-ink-600 hover:border-ink-300">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold text-ink-600 hover:border-ink-300"
+          >
             Close
           </button>
         </div>
 
         {q.isLoading && <Skeleton className="mt-4 h-40 w-full rounded-xl" />}
-        {q.error && <p className="mt-4 text-sm text-red-600">Could not load the profile.</p>}
+        {q.error && (
+          <p className="mt-4 text-sm text-red-600">
+            Could not load the profile.
+          </p>
+        )}
 
         {q.data && (
           <dl className="mt-4 space-y-3 text-sm">
-            <Detail label="Name" value={`${q.data.first_name ?? ""} ${q.data.last_name ?? ""}`.trim() || "—"} />
+            <Detail
+              label="Name"
+              value={
+                `${q.data.first_name ?? ""} ${q.data.last_name ?? ""}`.trim() ||
+                "—"
+              }
+            />
             <Detail label="Email" value={q.data.email} />
             <Detail label="Status" value={q.data.status} />
-            <Detail label="Roles" value={(q.data.roles ?? []).join(", ") || "no roles"} />
+            <Detail
+              label="Roles"
+              value={(q.data.roles ?? []).join(", ") || "no roles"}
+            />
             <Detail label="Phone" value={q.data.phone || "—"} />
-            <Detail label="Joined" value={q.data.created_at ? new Date(q.data.created_at).toLocaleString() : "—"} />
-            <Detail label="Email verified" value={q.data.email_verified_at ? new Date(q.data.email_verified_at).toLocaleString() : "not verified"} />
-            <Detail label="Last login" value={q.data.last_login_at ? new Date(q.data.last_login_at).toLocaleString() : "never"} />
-            <Detail label="Onboarded" value={q.data.onboarded_at ? new Date(q.data.onboarded_at).toLocaleString() : "not yet"} />
+            <Detail
+              label="Joined"
+              value={
+                q.data.created_at
+                  ? new Date(q.data.created_at).toLocaleString()
+                  : "—"
+              }
+            />
+            <Detail
+              label="Email verified"
+              value={
+                q.data.email_verified_at
+                  ? new Date(q.data.email_verified_at).toLocaleString()
+                  : "not verified"
+              }
+            />
+            <Detail
+              label="Last login"
+              value={
+                q.data.last_login_at
+                  ? new Date(q.data.last_login_at).toLocaleString()
+                  : "never"
+              }
+            />
+            <Detail
+              label="Onboarded"
+              value={
+                q.data.onboarded_at
+                  ? new Date(q.data.onboarded_at).toLocaleString()
+                  : "not yet"
+              }
+            />
             {q.data.tutor_slug && (
-              <Detail label="Tutor profile" value={`${q.data.tutor_slug} (${q.data.tutor_status ?? "—"})`} />
+              <Detail
+                label="Tutor profile"
+                value={`${q.data.tutor_slug} (${q.data.tutor_status ?? "—"})`}
+              />
             )}
           </dl>
         )}
         <p className="mt-4 border-t border-ink-100 pt-3 text-[11px] text-ink-400">
-          View-only. Role and status changes are SUPER_ADMIN actions on the table row.
+          View-only. Role and status changes are SUPER_ADMIN actions on the
+          table row.
         </p>
       </div>
     </div>
@@ -407,8 +578,12 @@ function UserDetailDialog({ userId, onClose }: { userId: string; onClose: () => 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-ink-50 pb-2">
-      <dt className="text-xs font-bold uppercase tracking-wide text-ink-400">{label}</dt>
-      <dd className="max-w-[65%] break-words text-right font-semibold text-ink-800">{value}</dd>
+      <dt className="text-xs font-bold uppercase tracking-wide text-ink-400">
+        {label}
+      </dt>
+      <dd className="max-w-[65%] break-words text-right font-semibold text-ink-800">
+        {value}
+      </dd>
     </div>
   );
 }

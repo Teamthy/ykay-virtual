@@ -28,37 +28,37 @@ export default function HomePage() {
   return (
     <>
       <HeroSplit />
-      <Reveal>
+      <Reveal variant="up">
         <ServicesShowcase />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="zoom">
         <GuaranteeBand />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="left">
         <PopularProgrammes />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="right">
         <HowItWorksStrip />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="up">
         <UpcomingCohorts />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="blur">
         <ExamPrepGrid />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="zoom">
         <TestimonialSlider />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="left">
         <CollegeBridge />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="right">
         <HomeFAQ />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="blur">
         <DownloadAppCTA />
       </Reveal>
-      <Reveal delay={50}>
+      <Reveal delay={50} variant="up">
         <BecomeTutorCTA />
       </Reveal>
     </>

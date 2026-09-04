@@ -74,12 +74,10 @@ export function AnimatedText({
 
   return (
     <Tag className={className}>
-      <span className="sr-only">{text}</span>
       <motion.span
         initial="hidden"
         {...motionProps}
         style={{ display: "inline" }}
-        aria-hidden="true"
       >
         {words.map((word, w) => (
           <span

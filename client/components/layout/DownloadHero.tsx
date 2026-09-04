@@ -1,11 +1,11 @@
 import Image from "next/image";
-import { WifiOff, Bell, FileCheck2 } from "lucide-react";
-import { GooglePlayBadge } from "@/components/ui/StoreBadges";
+import { WifiOff, Bell, FileCheck2, Smartphone } from "lucide-react";
+import { qrUrl, requestOrigin } from "@/lib/qr";
 
-// DownloadHero - on-brand download hero. Self-contained (no remote store
-// buttons, no invented social proof). Android uses the official Google Play
-// badge (APK download today); iOS shows the official App Store badge disabled
-// until the listing exists.
+// DownloadHero - on-brand download hero. The PWA IS the app: it installs from
+// the browser on Android and iPhone, so the hero sells that instead of store
+// badges. The QR encodes this page on the origin the visitor is actually on,
+// so a parent on a laptop can scan it straight onto their phone.
 
 const PERKS = [
   { icon: WifiOff, text: "Learn offline" },
@@ -13,7 +13,9 @@ const PERKS = [
   { icon: FileCheck2, text: "Progress reports" },
 ];
 
-export function DownloadHero() {
+export async function DownloadHero() {
+  const qr = qrUrl(`${await requestOrigin()}/download`);
+
   return (
     <section className="w-full border-b border-ink-100 bg-surface py-14 md:py-20">
       <div className="container-x grid items-center gap-10 lg:grid-cols-2">
@@ -29,9 +31,28 @@ export function DownloadHero() {
             the AI assistant in one app.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <GooglePlayBadge href="/yk-virtual-app.apk" />
-            <GooglePlayBadge disabled />
+          <div className="mt-7 flex flex-wrap items-center gap-6">
+            <a
+              href="#pwa-install"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-deep transition-transform hover:-translate-y-0.5"
+            >
+              <Smartphone size={18} />
+              Install the app — free
+            </a>
+
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qr}
+                alt="QR code — scan to open this page on your phone"
+                width={72}
+                height={72}
+                className="rounded-lg bg-white ring-1 ring-ink-100"
+              />
+              <p className="max-w-[10rem] text-xs leading-snug text-ink-600">
+                Scan with your phone camera to install in seconds
+              </p>
+            </div>
           </div>
 
           <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-6">

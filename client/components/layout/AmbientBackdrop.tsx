@@ -1,10 +1,9 @@
 "use client";
 
-// AmbientBackdrop — a site-wide animated background so no page sits on a
-// flat color: brand-tinted glows drift slowly across the viewport and a fine
-// grid breathes behind them. Transform-only keyframes (composited, cheap);
-// fully disabled for prefers-reduced-motion users. Theme-aware: softer,
-// darker glows in dark mode.
+// AmbientBackdrop v2 — premium layered depth: twin brand glows drifting, a
+// slow aurora sweep, a fine dot field, and an edge vignette so every page
+// sits on rich, quietly-moving brand light instead of a flat color.
+// Transform-only animations; fully disabled for prefers-reduced-motion.
 
 export function AmbientBackdrop() {
   return (
@@ -12,9 +11,11 @@ export function AmbientBackdrop() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
     >
-      <div className="ambient-blob ambient-blob-a" />
-      <div className="ambient-blob ambient-blob-b" />
-      <div className="ambient-grid" />
+      <div className="ambient2-glow-a" />
+      <div className="ambient2-glow-b" />
+      <div className="ambient2-sweep" />
+      <div className="ambient2-dots" />
+      <div className="ambient2-vignette" />
     </div>
   );
 }

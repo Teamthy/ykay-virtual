@@ -21,7 +21,11 @@ const FUNNEL_STEPS = [
 ] as const;
 
 function fmtMoney(n: number) {
-  return n.toLocaleString("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 });
+  return n.toLocaleString("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  });
 }
 
 export default function AdminAnalyticsPage() {
@@ -47,7 +51,10 @@ export default function AdminAnalyticsPage() {
     return <p className="text-ink-500">Analytics unavailable.</p>;
   }
 
-  const maxFunnel = Math.max(...FUNNEL_STEPS.map((s) => data.funnel[s.key] ?? 0), 1);
+  const maxFunnel = Math.max(
+    ...FUNNEL_STEPS.map((s) => data.funnel[s.key] ?? 0),
+    1,
+  );
 
   return (
     <div className="space-y-8">
@@ -64,9 +71,14 @@ export default function AdminAnalyticsPage() {
           <button
             type="button"
             onClick={() => {
-              const lessonId = window.prompt("Lesson ID for the attendance export:");
+              const lessonId = window.prompt(
+                "Lesson ID for the attendance export:",
+              );
               if (lessonId?.trim()) {
-                window.open(`${API_BASE}/admin/reports/attendance.csv?lesson_id=${encodeURIComponent(lessonId.trim())}`, "_blank");
+                window.open(
+                  `${API_BASE}/admin/reports/attendance.csv?lesson_id=${encodeURIComponent(lessonId.trim())}`,
+                  "_blank",
+                );
               }
             }}
             className="rounded-xl border px-4 py-2 text-sm font-semibold hover:bg-ink-50"
@@ -75,7 +87,7 @@ export default function AdminAnalyticsPage() {
           </button>
           <a
             href={`${API_BASE}/admin/reports/revenue.csv`}
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-ink-900 hover:opacity-90"
           >
             ⬇ Revenue CSV
           </a>
@@ -84,14 +96,30 @@ export default function AdminAnalyticsPage() {
 
       {/* KPI stat cards (24.1) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Registered users" value={data.funnel.registered_users.toLocaleString()} hint="Accounts created" />
-        <StatCard label="Learner profiles" value={data.funnel.learners_created.toLocaleString()} hint="Linked to parents" />
-        <StatCard label="Paid orders" value={data.funnel.paid_orders.toLocaleString()} hint={`${data.funnel.orders_created.toLocaleString()} total orders`} />
+        <StatCard
+          label="Registered users"
+          value={data.funnel.registered_users.toLocaleString()}
+          hint="Accounts created"
+        />
+        <StatCard
+          label="Learner profiles"
+          value={data.funnel.learners_created.toLocaleString()}
+          hint="Linked to parents"
+        />
+        <StatCard
+          label="Paid orders"
+          value={data.funnel.paid_orders.toLocaleString()}
+          hint={`${data.funnel.orders_created.toLocaleString()} total orders`}
+        />
         <StatCard
           label="Conversion rate"
           value={`${data.funnel.conversion_rate.toFixed(1)}%`}
           hint="Paid orders ÷ registered users"
-          trend={{ direction: data.funnel.conversion_rate >= 5 ? "up" : "flat", text: data.funnel.conversion_rate >= 5 ? "Healthy" : "Warming up", positive: data.funnel.conversion_rate >= 5 }}
+          trend={{
+            direction: data.funnel.conversion_rate >= 5 ? "up" : "flat",
+            text: data.funnel.conversion_rate >= 5 ? "Healthy" : "Warming up",
+            positive: data.funnel.conversion_rate >= 5,
+          }}
         />
       </div>
 
@@ -104,15 +132,21 @@ export default function AdminAnalyticsPage() {
           {FUNNEL_STEPS.map((s, i) => {
             const v = data.funnel[s.key] ?? 0;
             const pct = Math.max((v / maxFunnel) * 100, v > 0 ? 4 : 0);
-            const prev = i > 0 ? data.funnel[FUNNEL_STEPS[i - 1].key] ?? 0 : 1;
-            const stepRate = i === 0 ? 100 : prev > 0 ? Math.round((v / prev) * 100) : 0;
+            const prev =
+              i > 0 ? (data.funnel[FUNNEL_STEPS[i - 1].key] ?? 0) : 1;
+            const stepRate =
+              i === 0 ? 100 : prev > 0 ? Math.round((v / prev) * 100) : 0;
             return (
               <div key={s.key}>
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{s.label}</span>
                   <span className="text-ink-500">
                     <b className="text-ink-900">{v.toLocaleString()}</b>
-                    {i > 0 && <span className="ml-2 text-xs">({stepRate}% of previous)</span>}
+                    {i > 0 && (
+                      <span className="ml-2 text-xs">
+                        ({stepRate}% of previous)
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div className="mt-1 h-2.5 rounded-full bg-ink-100">
@@ -146,7 +180,10 @@ export default function AdminAnalyticsPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="truncate pr-2 font-medium">{c.title}</span>
                   <span className="shrink-0 text-ink-500">
-                    {c.enrolled}/{c.capacity} · <b className="text-ink-800">{Math.round(c.fill_rate * 100)}%</b>
+                    {c.enrolled}/{c.capacity} ·{" "}
+                    <b className="text-ink-800">
+                      {Math.round(c.fill_rate * 100)}%
+                    </b>
                   </span>
                 </div>
                 <div className="mt-1 h-2 rounded-full bg-ink-100">
@@ -158,7 +195,9 @@ export default function AdminAnalyticsPage() {
                 {c.lessons_count > 0 && (
                   <div className="mt-1 flex items-center justify-between text-[11px] text-ink-400">
                     <span>{c.lessons_count} lessons</span>
-                    <span>Attendance {Math.round((c.attendance_rate ?? 0) * 100)}%</span>
+                    <span>
+                      Attendance {Math.round((c.attendance_rate ?? 0) * 100)}%
+                    </span>
                   </div>
                 )}
               </div>
@@ -182,19 +221,26 @@ export default function AdminAnalyticsPage() {
             {data.revenue.length > 0 && (
               <div className="mb-5 space-y-3">
                 {(() => {
-                  const maxRev = Math.max(...data.revenue.map((r) => r.revenue), 1);
+                  const maxRev = Math.max(
+                    ...data.revenue.map((r) => r.revenue),
+                    1,
+                  );
                   return data.revenue.slice(0, 6).map((r) => (
                     <div key={r.programme_id}>
                       <div className="flex items-center justify-between text-xs">
                         <span className="truncate pr-2 font-semibold text-ink-700">
                           {r.programme_title || r.programme_id.slice(0, 8)}
                         </span>
-                        <span className="shrink-0 font-bold text-deep">{fmtMoney(r.revenue)}</span>
+                        <span className="shrink-0 font-bold text-deep">
+                          {fmtMoney(r.revenue)}
+                        </span>
                       </div>
                       <div className="mt-1 h-3 w-full overflow-hidden rounded-md bg-ink-100">
                         <div
                           className="h-full rounded-md bg-gradient-to-r from-primary to-deep"
-                          style={{ width: `${Math.max((r.revenue / maxRev) * 100, r.revenue > 0 ? 4 : 0)}%` }}
+                          style={{
+                            width: `${Math.max((r.revenue / maxRev) * 100, r.revenue > 0 ? 4 : 0)}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -213,9 +259,15 @@ export default function AdminAnalyticsPage() {
               <tbody>
                 {data.revenue.map((r) => (
                   <tr key={r.programme_id} className="border-b last:border-0">
-                    <td className="py-2.5 font-medium">{r.programme_title || r.programme_id.slice(0, 8)}</td>
-                    <td className="py-2.5 text-right text-ink-500">{r.orders}</td>
-                    <td className="py-2.5 text-right font-bold">{fmtMoney(r.revenue)}</td>
+                    <td className="py-2.5 font-medium">
+                      {r.programme_title || r.programme_id.slice(0, 8)}
+                    </td>
+                    <td className="py-2.5 text-right text-ink-500">
+                      {r.orders}
+                    </td>
+                    <td className="py-2.5 text-right font-bold">
+                      {fmtMoney(r.revenue)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
