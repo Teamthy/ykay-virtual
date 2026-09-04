@@ -1,27 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck,
-  BadgeCheck,
-  FileText,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  AnimatedText,
-  WordCycle,
-  Marquee,
-} from "@/components/ui/animated-text";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { AnimatedText } from "@/components/ui/animated-text";
 
-// Homepage hero - STACKED layout: the brand story + CTA sit on TOP, and the
-// image carousel runs full-width BELOW it. The copy is static (one clear
-// message); only the images rotate. Real photography, never AI-looking.
+// Homepage hero — full-bleed editorial (reference language: madeinevolve.com).
+//
+// One full-viewport image stage: real photography crossfades behind a deep
+// brand-green scrim so EVERY line of type keeps premium contrast (no light on
+// light, ever). The headline reveals letter by letter on load; the slide
+// Ken-Burns slowly; the whole content parallax-fades on scroll. Below the
+// headline: indexed meta marks (01–04), manual slide control, and the trust
+// row. Images are local (public/hero) — fast on Nigerian mobile data.
 
 const SLIDES = [
   {
@@ -31,10 +23,10 @@ const SLIDES = [
     alt: "Tutor helping a young student at home",
   },
   {
-    label: "International",
-    href: "/plus",
-    img: "/hero/international.jpg",
-    alt: "Graduates celebrating international success",
+    label: "Live Cohorts",
+    href: "/cohorts",
+    img: "/hero/cohorts.jpg",
+    alt: "Students in a live online class together",
   },
   {
     label: "UTME 2026",
@@ -43,23 +35,18 @@ const SLIDES = [
     alt: "Student writing answers during exam preparation",
   },
   {
-    label: "Test Prep",
-    href: "/test-prep",
-    img: "/hero/test-prep.jpg",
-    alt: "Student taking notes while preparing for tests",
-  },
-  {
-    label: "YK-Virtual Plus",
+    label: "International",
     href: "/plus",
-    img: "/hero/plus.jpg",
-    alt: "Tutor guiding a young learner one-on-one",
+    img: "/hero/international.jpg",
+    alt: "Graduates celebrating international success",
   },
 ];
 
-const TRUST = [
-  { icon: ShieldCheck, text: "Escrow-protected payments" },
-  { icon: BadgeCheck, text: "ID-verified tutors" },
-  { icon: FileText, text: "Progress reports for parents" },
+const MARKS = [
+  { n: "01", label: "Live online classes" },
+  { n: "02", label: "1-on-1 private tuition" },
+  { n: "03", label: "UTME · WAEC · IELTS prep" },
+  { n: "04", label: "Parent progress reports" },
 ];
 
 const DURATION = 6000;
@@ -70,189 +57,167 @@ export function HeroSplit() {
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const storyY = useTransform(scrollYProgress, [0, 1], [0, 90]);
-  const storyOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.15]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 110]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.12]);
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(
-      () => setActive((p) => (p + 1) % SLIDES.length),
-      DURATION,
-    );
+    const t = setInterval(() => setActive((p) => (p + 1) % SLIDES.length), DURATION);
     return () => clearInterval(t);
   }, []);
 
-  const prev = () => setActive((active - 1 + SLIDES.length) % SLIDES.length);
-  const next = () => setActive((active + 1) % SLIDES.length);
+  const go = (dir: 1 | -1) =>
+    setActive((p) => (p + dir + SLIDES.length) % SLIDES.length);
+
+  const slide = SLIDES[active];
 
   return (
-    <section ref={sectionRef} className="relative py-10 md:py-14">
-      {/* Learning-core 3D layer (gated, decorative) */}
-      {/* ── Top: brand story (static) ── */}
-      <motion.div
-        style={{ y: storyY, opacity: storyOpacity }}
-        className="container-x relative z-10 text-center"
-      >
-        <AnimatedText
-          as="h1"
-          className="mx-auto max-w-6xl font-display text-[clamp(2.75rem,8.5vw,7.5rem)] leading-[0.9] tracking-[-0.015em] text-brand-navy"
-          text="Better, brighter futures for your kids."
-          animateOnLoad
-          heavy
-          stagger={0.032}
-          delay={0.1}
-        />
-
-        <p className="mx-auto mt-5 font-display text-xl text-brand-navy md:text-2xl">
-          Built for{" "}
-          <WordCycle
-            className="text-brand-green"
-            words={["confidence", "better grades", "exam success", "curiosity"]}
-            heavy
-          />
-        </p>
-
-        <p className="mx-auto mt-4 text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
-          British &amp; Nigerian curricula · Vetted tutors
-        </p>
-
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-ink-600 md:text-lg">
-          Personalised tutoring that guides your child toward exam success,
-          better grades and real confidence - from identity-verified,
-          background-checked tutors.
-        </p>
-
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+    <section
+      ref={sectionRef}
+      className="relative flex min-h-[92svh] w-full flex-col justify-end overflow-hidden bg-deep-green"
+    >
+      {/* ── The image stage: crossfade + slow Ken-Burns, best-fit cover ── */}
+      <div className="absolute inset-0">
+        {SLIDES.map((s, i) => (
           <motion.div
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 320, damping: 15 }}
+            key={s.img}
+            initial={false}
+            animate={{ opacity: i === active ? 1 : 0 }}
+            transition={{ duration: 1.1, ease: "easeInOut" }}
+            className="absolute inset-0"
           >
-            <Link
-              href="/tutors"
-              className="group inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover"
+            <motion.div
+              initial={{ scale: 1 }}
+              animate={{ scale: i === active ? 1.07 : 1 }}
+              transition={{
+                duration: DURATION / 1000 + 1.2,
+                ease: "linear",
+              }}
+              style={{ originX: 0.5, originY: 0.6 }}
+              className="h-full w-full"
             >
-              Find a tutor
-              <ArrowRight
-                size={15}
-                className="transition-transform group-hover:translate-x-0.5"
+              <Image
+                src={s.img}
+                alt={s.alt}
+                fill
+                priority={i === 0}
+                sizes="100vw"
+                className="object-cover"
               />
-            </Link>
+            </motion.div>
           </motion.div>
-          <motion.div
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.96 }}
-            transition={{ type: "spring", stiffness: 320, damping: 15 }}
-          >
-            <Link
-              href="/how-it-works"
-              className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition-colors hover:border-brand-navy hover:bg-brand-navy hover:text-white"
-            >
-              How it works
-            </Link>
-          </motion.div>
-        </div>
+        ))}
+        {/* Deep scrim, top→bottom and edges — guarantees text contrast on
+            every photograph, light or dark. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-deep-green/85 via-deep-green/55 to-deep-green/90" />
+        <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_20%_100%,rgba(1,57,32,0.85)_0%,transparent_60%)]" />
+      </div>
 
-        <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 border-t border-ink-100 pt-6">
-          {TRUST.map((t) => (
-            <li
-              key={t.text}
-              className="flex items-center gap-2 text-sm font-semibold text-ink-700"
-            >
-              <t.icon size={16} className="text-brand-green" />
-              {t.text}
-            </li>
-          ))}
-        </ul>
-      </motion.div>
+      {/* ── Content ── */}
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col justify-end px-6 pb-10 pt-32 md:px-10 md:pb-14"
+      >
+        <p className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-black/25 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-white backdrop-blur-sm">
+          <span className="size-1.5 rounded-full bg-primary" />
+          Ykay family · Online school
+        </p>
 
-      {/* ── Marquee band between the copy and the carousel ── */}
-      <Marquee
-        items={[
-          "VETTED TUTORS",
-          "BRITISH & NIGERIAN CURRICULA",
-          "UTME 2026",
-          "LIVE CLASSES",
-        ]}
-        className="relative z-10 mt-10 border-y border-ink-100 bg-brand-navy py-3"
-        itemClassName="font-display text-xs uppercase tracking-[0.22em] text-primary md:text-sm"
-      />
+        <h1 className="font-display text-[clamp(3.25rem,11vw,10rem)] leading-[0.84] tracking-[-0.015em] text-white [container-type:inline-size]">
+          <AnimatedText
+            heavy
+            stagger={0.035}
+            text="LEARN"
+            delay={0.15}
+            animateOnLoad
+            className="block"
+          />
+          <span className="block text-primary">
+            <AnimatedText
+              heavy
+              stagger={0.035}
+              text="ANYWHERE."
+              delay={0.35}
+              animateOnLoad
+            />
+          </span>
+        </h1>
 
-      {/* ── Below: full-width image carousel ── */}
-      <div className="container-x relative z-10 mt-10">
-        <div className="relative">
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl bg-ink-100 shadow-card sm:aspect-[21/9]">
-            {SLIDES.map((s, i) => (
-              <div
-                key={s.img + i}
-                className={cn(
-                  "absolute inset-0 transition-opacity duration-700",
-                  i === active
-                    ? "opacity-100"
-                    : "opacity-0 pointer-events-none",
-                )}
-                aria-hidden={i !== active}
+        <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-xl">
+            <p className="text-base leading-relaxed text-white/85 md:text-lg">
+              Live online classes, private 1-on-1 tuition and UTME / WAEC / IELTS
+              preparation — with the same teachers and standards as the campus school,
+              on any device, anywhere in Nigeria.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a
+                href="/programmes"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-ink-900 shadow-lg transition-all duration-300 hover:scale-[1.03] hover:bg-primary-hover active:scale-[0.97]"
               >
-                <Image
-                  src={s.img}
-                  alt={s.alt}
-                  fill
-                  priority={i === 0}
-                  sizes="100vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent" />
-
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-5 md:p-6">
-                  <Link
-                    href={s.href}
-                    className="inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-xs font-bold text-ink-900 shadow-sm backdrop-blur transition-transform hover:-translate-y-0.5"
-                  >
-                    {s.label}
-                    <ArrowRight size={13} />
-                  </Link>
-                </div>
-              </div>
-            ))}
-
-            {/* Arrows */}
-            <button
-              type="button"
-              onClick={prev}
-              aria-label="Previous image"
-              className="absolute inset-y-0 left-0 w-11 items-center justify-center text-white/70 transition-colors hover:bg-black/10 hover:text-white md:inline-flex"
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button
-              type="button"
-              onClick={next}
-              aria-label="Next image"
-              className="absolute inset-y-0 right-0 w-11 items-center justify-center text-white/70 transition-colors hover:bg-black/10 hover:text-white md:inline-flex"
-            >
-              <ChevronRight size={24} />
-            </button>
-
-            {/* Dots */}
-            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-              {SLIDES.map((s, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setActive(i)}
-                  aria-label={`Go to image ${i + 1}`}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all",
-                    i === active
-                      ? "w-8 bg-white"
-                      : "w-3 bg-white/40 hover:bg-white/70",
-                  )}
-                />
-              ))}
+                Find a programme <ArrowRight size={14} />
+              </a>
+              <a
+                href="/private-tuition"
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-white backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:bg-white/20 active:scale-[0.97]"
+              >
+                Book private tuition
+              </a>
             </div>
           </div>
+
+          {/* Indexed meta marks — the editorial signature */}
+          <ul className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4 lg:w-[34rem] lg:grid-cols-2">
+            {MARKS.map((m) => (
+              <li key={m.n} className="border-l border-white/25 pl-3">
+                <span className="font-display text-sm tracking-widest text-primary">
+                  ({m.n})
+                </span>
+                <p className="mt-1 text-xs font-semibold leading-snug text-white/85">
+                  {m.label}
+                </p>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+
+        {/* ── Slide control row ── */}
+        <div className="mt-10 flex items-center justify-between border-t border-white/15 pt-5">
+          <a
+            href={slide.href}
+            className="group inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.25em] text-white/70 transition-colors hover:text-white"
+          >
+            <span className="tabular-nums text-primary">
+              {String(active + 1).padStart(2, "0")}/{String(SLIDES.length).padStart(2, "0")}
+            </span>
+            <span className="border-b border-transparent pb-0.5 transition-colors group-hover:border-white/60">
+              {slide.label}
+            </span>
+            <ArrowRight
+              size={12}
+              className="transition-transform group-hover:translate-x-1"
+            />
+          </a>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => go(-1)}
+              aria-label="Previous slide"
+              className="grid size-9 place-items-center rounded-full border border-white/25 text-white/80 transition-colors hover:border-white/60 hover:text-white"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => go(1)}
+              aria-label="Next slide"
+              className="grid size-9 place-items-center rounded-full border border-white/25 text-white/80 transition-colors hover:border-white/60 hover:text-white"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 }

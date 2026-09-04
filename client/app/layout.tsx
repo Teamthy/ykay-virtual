@@ -18,6 +18,7 @@ import { Analytics } from "@/components/layout/Analytics";
 import { organizationJsonLd } from "@/lib/seo";
 import { MotionProvider } from "@/components/ui/motion";
 import { AmbientBackdrop } from "@/components/layout/AmbientBackdrop";
+import { LoadingScreen } from "@/components/layout/LoadingScreen";
 
 export const metadata: Metadata = {
   title: {
@@ -111,6 +112,8 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <Providers>
+          {/* First-visit brand loader (madeinevolve-style curtain). */}
+          <LoadingScreen />
           {/* Marketing chrome renders ONLY on public routes; dashboards use
               their own personalized DashboardShell (Batch 1). */}
           <ShellVisibility>
