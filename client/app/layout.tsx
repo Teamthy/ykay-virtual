@@ -19,6 +19,7 @@ import { organizationJsonLd } from "@/lib/seo";
 import { MotionProvider } from "@/components/ui/motion";
 import { AmbientBackdrop } from "@/components/layout/AmbientBackdrop";
 import { LoadingScreen } from "@/components/layout/LoadingScreen";
+import { AppleSplash } from "@/components/layout/AppleSplash";
 
 export const metadata: Metadata = {
   title: {
@@ -109,6 +110,8 @@ export default function RootLayout({
         {/* Analytics loads after hydration when (and only when)
             NEXT_PUBLIC_PLAUSIBLE_DOMAIN is configured. */}
         <Analytics />
+        {/* iOS PWA startup splash screens (per-device, media-selected). */}
+        <AppleSplash />
       </head>
       <body suppressHydrationWarning>
         <Providers>

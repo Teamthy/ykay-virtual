@@ -71,7 +71,54 @@ const nextConfig = {
     // API_PROXY_TARGET at the API in production deployments.
     const target = process.env.API_PROXY_TARGET || "http://localhost:8080";
     return [{ source: "/api/v1/:path*", destination: `${target}/api/v1/:path*` }];
-  }
+  },
+  // ── Security headers applied to every response ──────────────
+  // CSP is deliberately tolerant on media/frames: the LMS streams lesson
+  // videos from teacher-chosen hosts and embeds meeting rooms (Zoom, Meet,
+  // YouTube, Whereby...), so a tight allow-list would break live classes.
+  // Everything else stays strict. Plausible analytics origins are only
+  // allowed when NEXT_PUBLIC_PLAUSIBLE_DOMAIN is configured.
+  async headers() {
+    const plausible = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+      ? " https://plausible.io"
+      : "";
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              // Next.js needs inline scripts for hydration; plausible.io is
+              // added only when analytics is configured.
+              `script-src 'self' 'unsafe-inline'${plausible}`,
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https:",
+              "font-src 'self' data:",
+              // The API is same-origin (rewritten to the Go server), plus
+              // websocket chat and plausible events when configured.
+              `connect-src 'self' https: wss:${plausible}`,
+              // Lesson videos come from teacher-chosen hosts.
+              "media-src 'self' https: blob:",
+              // Live classes embed meeting rooms on these hosts.
+              "frame-src 'self' https://*.zoom.us https://*.google.com https://*.youtube.com https://*.youtube-nocookie.com https://*.whereby.com https://*.meet.jit.si https://teams.microsoft.com",
+              "frame-ancestors 'none'",
+              "object-src 'none'",
+              "base-uri 'self'",
+            ].join("; "),
+          },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
