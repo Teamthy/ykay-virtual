@@ -52,11 +52,14 @@ async function rawFetch(path: string, init?: RequestInit): Promise<Response> {
   const traceId = getTraceId();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  // FormData bodies must NOT get a JSON content-type — the browser sets the
+  // multipart boundary itself (CSV upload in the CBT bank console).
+  const isForm = typeof FormData !== "undefined" && init?.body instanceof FormData;
   return fetch(`${API_BASE}${path}`, {
     ...init,
     signal: init?.signal ?? controller.signal,
     headers: {
-      "Content-Type": "application/json",
+      ...(isForm ? {} : { "Content-Type": "application/json" }),
       "X-Trace-ID": traceId,
       "X-Request-ID": traceId,
       ...(init?.headers || {}),

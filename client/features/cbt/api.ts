@@ -212,3 +212,165 @@ export async function listExamAttempts(
   return (await apiFetch<TutorAttemptItem[]>(`/tutor/exams/${examId}/attempts`))
     .data;
 }
+
+// ---- practice bank (shared 2,000+ question bank, random paper per draw) ----
+
+export type BankSubject = {
+  slug: string;
+  name: string;
+  class_level: string;
+  department: string;
+  question_count: number;
+};
+
+export type BankQuestion = {
+  id: string;
+  topic: string;
+  difficulty: number;
+  text: string;
+  options: string[];
+};
+
+export type BankPaper = {
+  subject: string;
+  limit: number;
+  count: number;
+  questions: BankQuestion[];
+};
+
+export type BankGradedQuestion = {
+  id: string;
+  text: string;
+  options: string[];
+  selected_index: number | null;
+  correct_index: number;
+  explanation: string;
+  correct: boolean;
+};
+
+export type BankGradeResult = {
+  score: number;
+  correct: number;
+  total: number;
+  review: BankGradedQuestion[];
+};
+
+/** Subjects with live published counts. */
+export async function listBankSubjects(): Promise<BankSubject[]> {
+  return (await apiFetch<BankSubject[]>("/cbt/subjects")).data;
+}
+
+/**
+ * Draw a random paper — every call is a fresh subset, so two students (or
+ * two sittings) never see the same paper. Pass a nonce to bust react-query.
+ */
+export async function drawBankPaper(
+  slug: string,
+  limit: number,
+): Promise<BankPaper> {
+  return (
+    await apiFetch<BankPaper>(`/cbt/subjects/${slug}/paper?limit=${limit}`)
+  ).data;
+}
+
+/** Server-side grading — the key never ships with the paper. */
+export async function gradeBankPaper(
+  answers: { question_id: string; selected_index: number | null }[],
+): Promise<BankGradeResult> {
+  return (
+    await apiFetch<BankGradeResult>("/cbt/grade", {
+      method: "POST",
+      body: JSON.stringify({ answers }),
+    })
+  ).data;
+}
+
+// ---- admin: bank console ----------------------------------------------------
+
+export type AdminBankQuestion = {
+  id: string;
+  subject_slug: string;
+  topic: string;
+  difficulty: number;
+  stem: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+  source: string;
+  status: string;
+};
+
+export type AdminBankPage = {
+  data: AdminBankQuestion[];
+  meta: {
+    page: number;
+    page_size: number;
+    total_items: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+};
+
+export async function adminListBankQuestions(
+  subject: string,
+  page: number,
+  pageSize: number,
+): Promise<AdminBankPage> {
+  const res = await apiFetch<AdminBankQuestion[]>(
+    `/admin/cbt/questions?subject=${encodeURIComponent(subject)}&page=${page}&page_size=${pageSize}`,
+  );
+  if (!res.meta) throw new Error("Missing pagination meta");
+  return { data: res.data, meta: res.meta };
+}
+
+export async function adminSetBankQuestionStatus(
+  id: string,
+  status: "draft" | "published",
+): Promise<void> {
+  await apiFetch(`/admin/cbt/questions/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function adminDeleteBankQuestion(id: string): Promise<void> {
+  await apiFetch(`/admin/cbt/questions/${id}`, { method: "DELETE" });
+}
+
+export type NewBankQuestion = {
+  subject_slug: string;
+  subject_name?: string;
+  class_level?: string;
+  department?: string;
+  topic: string;
+  difficulty: number;
+  stem: string;
+  options: string[];
+  correct_index: number;
+  explanation?: string;
+  source?: string;
+};
+
+export async function adminCreateBankQuestion(
+  input: NewBankQuestion,
+): Promise<void> {
+  await apiFetch("/admin/cbt/questions", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+/** CSV import — duplicate stems are skipped, so re-importing is idempotent. */
+export async function adminImportBankCSV(
+  file: File,
+): Promise<{ imported: number; skipped: number }> {
+  const body = new FormData();
+  body.append("file", file);
+  return (
+    await apiFetch<{ imported: number; skipped: number }>("/admin/cbt/import", {
+      method: "POST",
+      body,
+    })
+  ).data;
+}

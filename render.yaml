@@ -45,10 +45,11 @@ services:
       - key: COOKIE_DOMAIN
         sync: false
       # ── Data ───────────────────────────────────────────────────────────
+      # Postgres lives on Oracle Cloud Always Free (DEPLOY-PRODUCTION.md).
+      # Set once in the dashboard; sync:false so redeploys never overwrite it.
+      # postgresql://ykvirtual:<password>@<oci-public-ip>:5432/ykvirtual?sslmode=require
       - key: DATABASE_URL
-        fromDatabase:
-          name: yk-virtual-db
-          property: connectionString
+        sync: false
       - key: REDIS_URL
         fromService:
           name: yk-virtual-redis
@@ -157,10 +158,11 @@ services:
     envVars:
       - key: ENVIRONMENT
         value: production
+      # Postgres lives on Oracle Cloud Always Free (DEPLOY-PRODUCTION.md).
+      # Set once in the dashboard; sync:false so redeploys never overwrite it.
+      # postgresql://ykvirtual:<password>@<oci-public-ip>:5432/ykvirtual?sslmode=require
       - key: DATABASE_URL
-        fromDatabase:
-          name: yk-virtual-db
-          property: connectionString
+        sync: false
       - key: REDIS_URL
         fromService:
           name: yk-virtual-redis
@@ -194,6 +196,9 @@ services:
     plan: free
     ipAllowList: [] # Render-internal only
 
-databases:
-  - name: yk-virtual-db
-    plan: free # or: starter (free expires after 30 days)
+# NOTE: no Render-managed database — production runs Postgres on Oracle
+# Cloud Always Free (A1 VM). See DEPLOY-PRODUCTION.md at the workspace root.
+# If you ever want Render Postgres instead, re-add:
+# databases:
+#   - name: yk-virtual-db
+#     plan: starter

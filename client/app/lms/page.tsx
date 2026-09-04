@@ -395,12 +395,20 @@ export default function LmsHomePage() {
         <Section
           title="Exams & quizzes"
           action={
-            <Link
-              href="/lms/exams"
-              className="text-sm font-semibold text-primary-dark hover:underline"
-            >
-              Practice exams →
-            </Link>
+            <span className="flex gap-4">
+              <Link
+                href="/lms/practice"
+                className="text-sm font-semibold text-primary-dark hover:underline"
+              >
+                Practice bank →
+              </Link>
+              <Link
+                href="/lms/exams"
+                className="text-sm font-semibold text-primary-dark hover:underline"
+              >
+                Practice exams →
+              </Link>
+            </span>
           }
         >
           {(quizzes.data ?? []).length === 0 ? (
@@ -408,10 +416,10 @@ export default function LmsHomePage() {
               <p className="text-sm text-ink-500">
                 No course exams yet — your tutor will publish them. Meanwhile,{" "}
                 <Link
-                  href="/lms/exams"
+                  href="/lms/practice"
                   className="font-bold text-primary-dark hover:underline"
                 >
-                  try a CBT practice paper →
+                  practise from the 2,000+ question bank →
                 </Link>
               </p>
             </div>

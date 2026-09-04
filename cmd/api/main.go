@@ -17,6 +17,7 @@ import (
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 
+	"ykay-virtual/internal/bankdata"
 	"ykay-virtual/internal/cache"
 	"ykay-virtual/internal/config"
 	"ykay-virtual/internal/domain"
@@ -25,6 +26,7 @@ import (
 	"ykay-virtual/internal/domain/admissions"
 	"ykay-virtual/internal/domain/advisor"
 	"ykay-virtual/internal/domain/booking"
+	"ykay-virtual/internal/domain/cbt"
 	"ykay-virtual/internal/domain/chat"
 	"ykay-virtual/internal/domain/content"
 	"ykay-virtual/internal/domain/dash"
@@ -123,6 +125,7 @@ type Repositories struct {
 	Learning           learning.AssessmentRepository
 	Leads              leads.Repository
 	Exams              practice.Repository
+	CBTBank            cbt.Repository
 	Grading            learning.GradingRepository
 	ProgressReports    learning.ProgressReportRepository
 	Analytics          learning.AnalyticsRepository
@@ -286,6 +289,15 @@ func main() {
 		})
 	// CBT practice exams: tutor-authored papers + timed student attempts.
 	examSvc := service.NewPracticeExamService(repos.Exams, repos.Enrollments).WithPlus(plusSvc)
+	// Shared CBT practice bank (000072): embedded CSV seeds the bank on first
+	// boot only (idempotent — admins can curate afterwards without the seed
+	// re-adding anything).
+	cbtSvc := service.NewCBTService(repos.CBTBank)
+	if n, err := cbtSvc.SeedIfAbsent(ctx, bankdata.CSV()); err != nil {
+		slog.Warn("cbt bank seed failed", "error", err)
+	} else if n > 0 {
+		slog.Info("cbt bank seeded from embedded csv", "questions", n)
+	}
 	// Learner completion certificates (virtual-school item).
 	certSvc := service.NewCertificateService(repos.UoWFactory).WithPlus(plusSvc).WithSiteURL(cfg.SiteURL).
 		WithStudentReader(func(ctx context.Context, id uuid.UUID) (string, error) {
@@ -541,6 +553,7 @@ func main() {
 		Account:           accountHandler,
 		Leads:             httpapi.NewLeadsHandler(leadsSvc),
 		PracticeExams:     httpapi.NewPracticeExamHandler(examSvc, profileAuthz),
+		CBTBank:           httpapi.NewCBTBankHandler(cbtSvc),
 		Banks:             httpapi.NewBankHandler(payment_provider.NewBankResolver(cfg.PaystackSecret)),
 		Onboarding:        httpapi.NewOnboardingHandler(onboardingSvc),
 		Portal:            httpapi.NewPortalHandler(portalSvc, profileAuthz),
@@ -699,6 +712,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			CurriculaRepo:      store.Curricula,
 			Leads:              store.Leads,
 			Exams:              memory.NewPracticeExamMemory(),
+			CBTBank:            memory.NewCBTMemory(),
 			TutorRepo:          store.Tutors,
 			AuditRepo:          store.AuditLogs,
 			Orders:             store.Orders,
@@ -770,6 +784,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		CurriculaRepo:      postgres.NewCurriculumRepo(pg.DB()),
 		Leads:              postgres.NewLeadsRepo(pg.DB()),
 		Exams:              postgres.NewPracticeExamRepo(pg.DB()),
+		CBTBank:            postgres.NewCBTRepo(pg.DB()),
 		CohortRepo:         postgres.NewCohortRepo(pg.DB()),
 		StudentLink:        postgres.NewStudentLinkRepo(pg.DB()),
 		TutorSubjectChk:    postgres.NewTutorSubjectCheckRepo(pg.DB()),

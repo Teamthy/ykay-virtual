@@ -175,6 +175,17 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/learning/exams/attempts", handlers.PracticeExams.StudentAttempts)
 	mux.HandleFunc("GET "+v1+"/learning/exams/attempts/{attemptId}", handlers.PracticeExams.AttemptReview)
 
+	// Shared CBT practice bank (000072): random per-request papers, server-side
+	// grading — per-student variation the fixed tutor papers can't offer.
+	mux.HandleFunc("GET "+v1+"/cbt/subjects", handlers.CBTBank.ListSubjects)
+	mux.HandleFunc("GET "+v1+"/cbt/subjects/{slug}/paper", handlers.CBTBank.Paper)
+	mux.HandleFunc("POST "+v1+"/cbt/grade", handlers.CBTBank.Grade)
+	mux.HandleFunc("GET "+v1+"/admin/cbt/questions", handlers.CBTBank.ListQuestions)
+	mux.HandleFunc("POST "+v1+"/admin/cbt/questions", handlers.CBTBank.CreateQuestion)
+	mux.HandleFunc("PATCH "+v1+"/admin/cbt/questions/{id}", handlers.CBTBank.PatchQuestion)
+	mux.HandleFunc("DELETE "+v1+"/admin/cbt/questions/{id}", handlers.CBTBank.DeleteQuestion)
+	mux.HandleFunc("POST "+v1+"/admin/cbt/import", handlers.CBTBank.ImportCSV)
+
 	// Catalogue (public, cached 60-300s)
 	mux.HandleFunc("GET "+v1+"/site/contact", handlers.Notifier.GetContactInfo)
 	mux.HandleFunc("GET "+v1+"/curricula", handlers.Curricula.List)
@@ -577,6 +588,7 @@ type Handlers struct {
 	Account           *AccountHandler
 	Leads             *LeadsHandler
 	PracticeExams     *PracticeExamHandler
+	CBTBank           *CBTBankHandler
 	Banks             *BankHandler
 	Onboarding        *OnboardingHandler
 	Portal            *PortalHandler

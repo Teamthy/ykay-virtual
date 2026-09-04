@@ -40,6 +40,27 @@ export default function PracticeExamsPage() {
         </p>
       </div>
 
+      {/* Shared practice bank */}
+      <section className="rounded-3xl border border-primary/20 bg-primary/5 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="font-display text-2xl text-deep">
+              Out of papers? Practice from the bank
+            </h2>
+            <p className="mt-1 max-w-xl text-sm text-ink-600">
+              2,000+ JAMB/WAEC/NECO-style questions — a different random set
+              every sitting, graded instantly with explanations.
+            </p>
+          </div>
+          <Link
+            href="/lms/practice"
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            Open practice bank →
+          </Link>
+        </div>
+      </section>
+
       {/* Available papers */}
       <section className="space-y-4">
         <h2 className="font-display text-2xl text-deep">Available papers</h2>

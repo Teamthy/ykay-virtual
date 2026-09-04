@@ -26,6 +26,7 @@ tags:
   - name: referrals
   - name: learning
   - name: analytics
+  - name: cbt
 
 paths:
   /auth/me/onboarded:
@@ -4671,3 +4672,71 @@ components:
         programme_title: { type: string }
         revenue: { type: number }
         orders: { type: integer, format: int64 }
+  /cbt/subjects:
+    get:
+      tags: [cbt]
+      summary: Shared practice-bank subjects with live published-question counts
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Subject list }
+  /cbt/subjects/{slug}/paper:
+    get:
+      tags: [cbt]
+      summary: Random published subset per request (fresh paper every draw; key never included)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 30 } }
+      responses:
+        '200': { description: Random paper }
+        '404': { description: Unknown subject or no published questions }
+  /cbt/grade:
+    post:
+      tags: [cbt]
+      summary: Server-side grading — sends selections only; review reveals key + explanations
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Score + per-question review }
+        '400': { description: Empty or oversized answer set }
+  /admin/cbt/questions:
+    get:
+      tags: [cbt]
+      summary: Admin browses bank questions (filter by subject, paginated, includes draft)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: subject, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200': { description: Question page }
+    post:
+      tags: [cbt]
+      summary: Admin authors a single question (subject upserted by slug)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '201': { description: Created }
+        '409': { description: Duplicate stem in subject }
+  /admin/cbt/questions/{id}:
+    patch:
+      tags: [cbt]
+      summary: Publish/unpublish a question (draft|published)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Status updated }
+    delete:
+      tags: [cbt]
+      summary: Delete a question from the bank
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+  /admin/cbt/import:
+    post:
+      tags: [cbt]
+      summary: Bulk CSV import (multipart 'file' or raw body); duplicate stems skipped — idempotent
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: "{ imported, skipped } counts" }

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRef } from "react";
 import {
   motion,
@@ -10,6 +9,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ProgrammeMarquee } from "@/components/home/ProgrammeMarquee";
 
 // Homepage hero — evolve-accurate editorial (reference: madeinevolve.com).
 //
@@ -20,18 +20,6 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 // per-letter spring intro + per-letter scroll outro, and an auto-drifting
 // reel of real photography (pause on hover). Type is always ink-on-light or
 // white-on-deep — contrast is structural, never accidental.
-
-const REEL = [
-  {
-    img: "/hero/home-tutoring.jpg",
-    alt: "Tutor helping a young student at home",
-  },
-  { img: "/hero/cohorts.jpg", alt: "Students in a live online class" },
-  { img: "/hero/utme.jpg", alt: "Student writing during exam preparation" },
-  { img: "/hero/international.jpg", alt: "Graduates celebrating success" },
-  { img: "/hero/test-prep.jpg", alt: "Student taking notes" },
-  { img: "/hero/plus.jpg", alt: "Tutor guiding a learner one-on-one" },
-];
 
 const MARKS = [
   { n: "01", label: "Live online classes" },
@@ -207,30 +195,9 @@ export function HeroSplit() {
         </motion.div>
       </div>
 
-      {/* ── The drifting image reel (pause on hover) ── */}
-      <motion.div style={{ y: reelY }} className="relative w-full pb-14 pt-4">
-        <div className="group relative flex w-full overflow-hidden">
-          <div className="animate-[hero-reel_46s_linear_infinite] flex w-max gap-4 pl-4 group-hover:[animation-play-state:paused] md:gap-6 md:pl-6">
-            {[...REEL, ...REEL].map((s, i) => (
-              <div
-                key={`${s.img}-${i}`}
-                className="relative h-52 w-80 shrink-0 overflow-hidden rounded-2xl shadow-soft md:h-72 md:w-[28rem]"
-              >
-                <Image
-                  src={s.img}
-                  alt={s.alt}
-                  fill
-                  sizes="(max-width: 768px) 320px, 448px"
-                  priority={i < 2}
-                  className="object-cover transition-transform duration-700 hover:scale-105"
-                />
-              </div>
-            ))}
-          </div>
-          {/* edge fades so the reel reads as infinite */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-peach to-transparent dark:from-deep-green" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-peach to-transparent dark:from-deep-green" />
-        </div>
+      {/* ── Programme marquee — continuous discovery (pause on hover) ── */}
+      <motion.div style={{ y: reelY }} className="relative w-full">
+        <ProgrammeMarquee />
       </motion.div>
     </section>
   );

@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   ArrowUpRight,
   BadgeCheck,
+  BookOpenCheck,
   BarChart3,
   Building2,
   CalendarDays,
@@ -248,6 +249,11 @@ export default function AdminOverviewPage() {
       label: "Reviews",
       desc: "Consent-gated publishing",
       icon: Star,
+    },    {
+      href: "/admin/cbt",
+      label: "CBT bank",
+      desc: "2,000+ practice questions",
+      icon: BookOpenCheck,
     },
   ];
 
