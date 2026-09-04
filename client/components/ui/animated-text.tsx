@@ -28,6 +28,14 @@ const SPRING = {
   mass: 0.6,
 } as const;
 
+/** Heavier, slower-settling spring used by the big editorial headlines. */
+const SPRING_HEAVY = {
+  type: "spring",
+  stiffness: 220,
+  damping: 11,
+  mass: 1.05,
+} as const;
+
 /** Per-letter springy reveal. Splits on spaces so words never break apart. */
 export function AnimatedText({
   text,
@@ -35,6 +43,7 @@ export function AnimatedText({
   as: Tag = "span",
   delay = 0,
   stagger = 0.025,
+  heavy = false,
   once = true,
   animateOnLoad = false,
 }: {
@@ -46,6 +55,8 @@ export function AnimatedText({
   delay?: number;
   /** Gap between letters, in SECONDS. */
   stagger?: number;
+  /** Heavy editorial reveal: letters rise further, overshoot more and blur in. */
+  heavy?: boolean;
   once?: boolean;
   /** Animate immediately on mount instead of when scrolled into view. */
   animateOnLoad?: boolean;
@@ -82,16 +93,47 @@ export function AnimatedText({
                 <motion.span
                   key={`${char}-${c}`}
                   style={{ display: "inline-block", willChange: "transform" }}
-                  variants={{
-                    hidden: { opacity: 0, y: "0.5em", rotate: -8, scale: 0.8 },
-                    show: {
-                      opacity: 1,
-                      y: 0,
-                      rotate: 0,
-                      scale: 1,
-                      transition: { ...SPRING, delay: delay + i * stagger },
-                    },
-                  }}
+                  variants={
+                    heavy
+                      ? {
+                          hidden: {
+                            opacity: 0,
+                            y: "1.05em",
+                            rotate: -14,
+                            scale: 0.62,
+                            filter: "blur(9px)",
+                          },
+                          show: {
+                            opacity: 1,
+                            y: 0,
+                            rotate: 0,
+                            scale: 1,
+                            filter: "blur(0px)",
+                            transition: {
+                              ...SPRING_HEAVY,
+                              delay: delay + i * stagger,
+                            },
+                          },
+                        }
+                      : {
+                          hidden: {
+                            opacity: 0,
+                            y: "0.5em",
+                            rotate: -8,
+                            scale: 0.8,
+                          },
+                          show: {
+                            opacity: 1,
+                            y: 0,
+                            rotate: 0,
+                            scale: 1,
+                            transition: {
+                              ...SPRING,
+                              delay: delay + i * stagger,
+                            },
+                          },
+                        }
+                  }
                 >
                   {char}
                 </motion.span>
@@ -110,9 +152,12 @@ export function WordCycle({
   words,
   className,
   interval = 2200,
+  heavy = false,
 }: {
   words: string[];
   className?: string;
+  /** Heavier swap: bigger travel, more overshoot, blur on the outgoing word. */
+  heavy?: boolean;
   /** Milliseconds each word stays on screen. */
   interval?: number;
 }) {
@@ -146,10 +191,24 @@ export function WordCycle({
           initial={false}
           animate={
             idx === i
-              ? { opacity: 1, y: 0, rotate: 0, scale: 1 }
-              : { opacity: 0, y: "-0.45em", rotate: 5, scale: 0.85 }
+              ? { opacity: 1, y: 0, rotate: 0, scale: 1, filter: "blur(0px)" }
+              : heavy
+                ? {
+                    opacity: 0,
+                    y: "-0.9em",
+                    rotate: 10,
+                    scale: 0.7,
+                    filter: "blur(10px)",
+                  }
+                : {
+                    opacity: 0,
+                    y: "-0.45em",
+                    rotate: 5,
+                    scale: 0.85,
+                    filter: "blur(0px)",
+                  }
           }
-          transition={SPRING}
+          transition={heavy ? SPRING_HEAVY : SPRING}
         >
           {word}
         </motion.span>

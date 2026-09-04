@@ -89,7 +89,7 @@ export function HeroSplit() {
   return (
     <section ref={sectionRef} className="relative py-10 md:py-14">
       {/* Learning-core 3D layer (gated, decorative) */}
-      <HeroCanvas className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[620px] overflow-hidden opacity-45 [mask-image:linear-gradient(to_bottom,black_65%,transparent_100%)]" />
+      <HeroCanvas className="pointer-events-none absolute inset-x-0 top-[130px] z-0 h-[560px] overflow-hidden opacity-25 [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)]" />
       {/* ── Top: brand story (static) ── */}
       <motion.div
         style={{ y: storyY, opacity: storyOpacity }}
@@ -97,9 +97,11 @@ export function HeroSplit() {
       >
         <AnimatedText
           as="h1"
-          className="mx-auto max-w-4xl font-display text-4xl leading-[1.05] tracking-[0.01em] text-brand-navy md:text-5xl lg:text-6xl"
+          className="mx-auto max-w-6xl font-display text-[clamp(2.75rem,8.5vw,7.5rem)] leading-[0.9] tracking-[-0.015em] text-brand-navy"
           text="Better, brighter futures for your kids."
           animateOnLoad
+          heavy
+          stagger={0.032}
           delay={0.1}
         />
 
@@ -108,6 +110,7 @@ export function HeroSplit() {
           <WordCycle
             className="text-brand-green"
             words={["confidence", "better grades", "exam success", "curiosity"]}
+            heavy
           />
         </p>
 
