@@ -13,6 +13,12 @@ import {
   FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  AnimatedText,
+  WordCycle,
+  Marquee,
+} from "@/components/ui/animated-text";
+import { HeroCanvas } from "@/components/three/HeroCanvas";
 
 // Homepage hero - STACKED layout: the brand story + CTA sit on TOP, and the
 // image carousel runs full-width BELOW it. The copy is static (one clear
@@ -81,15 +87,29 @@ export function HeroSplit() {
   const next = () => setActive((active + 1) % SLIDES.length);
 
   return (
-    <section className="py-10 md:py-14">
+    <section ref={sectionRef} className="relative py-10 md:py-14">
+      {/* Learning-core 3D layer (gated, decorative) */}
+      <HeroCanvas className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[620px] overflow-hidden opacity-45 [mask-image:linear-gradient(to_bottom,black_65%,transparent_100%)]" />
       {/* ── Top: brand story (static) ── */}
       <motion.div
         style={{ y: storyY, opacity: storyOpacity }}
         className="container-x relative z-10 text-center"
       >
-        <h1 className="mx-auto max-w-4xl font-display text-4xl leading-[1.05] tracking-[0.01em] text-brand-navy md:text-5xl lg:text-6xl">
-          Better, brighter futures for your kids.
-        </h1>
+        <AnimatedText
+          as="h1"
+          className="mx-auto max-w-4xl font-display text-4xl leading-[1.05] tracking-[0.01em] text-brand-navy md:text-5xl lg:text-6xl"
+          text="Better, brighter futures for your kids."
+          animateOnLoad
+          delay={0.1}
+        />
+
+        <p className="mx-auto mt-5 font-display text-xl text-brand-navy md:text-2xl">
+          Built for{" "}
+          <WordCycle
+            className="text-brand-green"
+            words={["confidence", "better grades", "exam success", "curiosity"]}
+          />
+        </p>
 
         <p className="mx-auto mt-4 text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
           British &amp; Nigerian curricula · Vetted tutors
@@ -102,22 +122,34 @@ export function HeroSplit() {
         </p>
 
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/tutors"
-            className="group inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
+          <motion.div
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 320, damping: 15 }}
           >
-            Find a tutor
-            <ArrowRight
-              size={15}
-              className="transition-transform group-hover:translate-x-0.5"
-            />
-          </Link>
-          <Link
-            href="/how-it-works"
-            className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition-colors hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+            <Link
+              href="/tutors"
+              className="group inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition-colors hover:bg-brand-gold-hover"
+            >
+              Find a tutor
+              <ArrowRight
+                size={15}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 320, damping: 15 }}
           >
-            How it works
-          </Link>
+            <Link
+              href="/how-it-works"
+              className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition-colors hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+            >
+              How it works
+            </Link>
+          </motion.div>
         </div>
 
         <ul className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 border-t border-ink-100 pt-6">
@@ -132,6 +164,18 @@ export function HeroSplit() {
           ))}
         </ul>
       </motion.div>
+
+      {/* ── Marquee band between the copy and the carousel ── */}
+      <Marquee
+        items={[
+          "VETTED TUTORS",
+          "BRITISH & NIGERIAN CURRICULA",
+          "UTME 2026",
+          "LIVE CLASSES",
+        ]}
+        className="relative z-10 mt-10 border-y border-ink-100 bg-brand-navy py-3"
+        itemClassName="font-display text-xs uppercase tracking-[0.22em] text-primary md:text-sm"
+      />
 
       {/* ── Below: full-width image carousel ── */}
       <div className="container-x relative z-10 mt-10">

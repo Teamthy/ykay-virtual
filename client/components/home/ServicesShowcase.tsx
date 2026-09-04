@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AnimatedText } from "@/components/ui/animated-text";
 import {
   Home,
   Globe2,
@@ -61,9 +62,11 @@ export function ServicesShowcase() {
     <section className="border-t border-ink-100 bg-white py-12">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
         <div className="flex items-end justify-between gap-4">
-          <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
-            Popular services
-          </h2>
+          <AnimatedText
+            as="h2"
+            className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl"
+            text="Popular services"
+          />
           <Link
             href="/programmes"
             className="text-sm font-bold text-brand-blue hover:text-brand-navy"

@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight, ArrowRight } from "lucide-react";
 
+import { AnimatedText } from "@/components/ui/animated-text";
 // Become-a-tutor section - photo background (local, dark-green overlay) so
 // the white copy sits on real imagery instead of a grid pattern. Premium,
 // high-contrast, brand palette.
@@ -33,9 +34,8 @@ export function BecomeTutorCTA() {
           </span>
 
           <h2 className="mt-8 font-display text-4xl tracking-[0.02em] text-white md:text-6xl">
-            Teach what you love.
-            <br />
-            Get paid to do it.
+            <AnimatedText text="Teach what you love." delay={0.0} />
+            <br /> <AnimatedText text="Get paid to do it." delay={0.5} />
           </h2>
 
           <p className="mx-auto mt-6 max-w-2xl text-white/80 md:text-base">

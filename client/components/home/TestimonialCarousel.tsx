@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { AnimatedText } from "@/components/ui/animated-text";
 // TestimonialCarousel - presentational carousel for the consent-gated
 // testimonials fetched by TestimonialSlider (server component). G5.3:
 // only rows with consent_given + is_public ever reach this component.
@@ -52,9 +53,11 @@ export function TestimonialCarousel({ items }: { items: CarouselItem[] }) {
         <div className="text-[100px] text-ink-900/15 leading-[0.6] mb-5 font-serif">
           &ldquo;
         </div>
-        <h2 className="font-display mb-11 text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
-          Parents love YK-Virtual
-        </h2>
+        <AnimatedText
+          as="h2"
+          className="font-display mb-11 text-3xl tracking-[0.02em] text-brand-navy md:text-4xl"
+          text="Parents love YK-Virtual"
+        />
         <p
           key={current.id}
           className="text-lg md:text-xl leading-relaxed mb-11 text-ink-900 animate-fade-in"

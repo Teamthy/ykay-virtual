@@ -32,12 +32,17 @@ export function TutorBenefits() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
         <div className="grid sm:grid-cols-2 gap-6">
           {BENEFITS.map((b) => (
-            <div key={b.title} className="rounded-2xl border border-ink-100 bg-surface-muted p-7">
+            <div
+              key={b.title}
+              className="rounded-2xl border border-ink-100 bg-surface-muted p-7"
+            >
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-navy text-white">
                 {b.icon}
               </div>
               <h3 className="mt-4 font-bold text-brand-navy">{b.title}</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">{b.desc}</p>
+              <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+                {b.desc}
+              </p>
             </div>
           ))}
         </div>

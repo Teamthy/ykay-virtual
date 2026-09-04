@@ -4,12 +4,12 @@
 // Gates: NEXT_PUBLIC_DISABLE_3D kill switch, WebGL availability, Data Saver,
 // prefers-reduced-motion (static field), weak devices, pauses when hidden or
 // scrolled out of view. Watches the YK-Virtual theme (html.dark) so the
-// particle color always matches the active theme.
+// scene colors always match the active theme.
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
-const Scene = dynamic(() => import("./GrowthScene"), { ssr: false });
+const Scene = dynamic(() => import("./LearningCoreScene"), { ssr: false });
 
 type Mode = "checking" | "off" | "static" | "on";
 

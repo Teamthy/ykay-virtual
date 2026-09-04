@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 
+import { AnimatedText } from "@/components/ui/animated-text";
 // 3-step "Get a tutor" band (reference 003216) - place a request → meet your
 // tutor → study & succeed. Props-driven so each product page customises copy.
 
@@ -21,7 +22,7 @@ export function StepsToTutor({
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
         {title && (
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-brand-navy text-center">
-            {title}
+            <AnimatedText text={title} delay={0.0} />
           </h2>
         )}
         {!title && (
@@ -31,12 +32,17 @@ export function StepsToTutor({
         )}
         <div className="mt-10 grid md:grid-cols-3 gap-6">
           {steps.map((s) => (
-            <div key={s.n} className="relative rounded-2xl border border-ink-100 bg-surface-muted p-7">
+            <div
+              key={s.n}
+              className="relative rounded-2xl border border-ink-100 bg-surface-muted p-7"
+            >
               <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-gold text-sm text-ink-900 font-extrabold text-white">
                 {s.n}
               </div>
               <h3 className="mt-4 font-bold text-brand-navy">{s.title}</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">{s.desc}</p>
+              <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+                {s.desc}
+              </p>
             </div>
           ))}
         </div>

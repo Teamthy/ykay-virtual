@@ -1,8 +1,13 @@
 import Link from "next/link";
 
+import { AnimatedText } from "@/components/ui/animated-text";
 const STEPS = [
   { n: "1", title: "Choose", body: "Programmes, cohorts or a vetted tutor." },
-  { n: "2", title: "Enrol / Book", body: "Secure with escrow-protected payment." },
+  {
+    n: "2",
+    title: "Enrol / Book",
+    body: "Secure with escrow-protected payment.",
+  },
   { n: "3", title: "Learn", body: "Live lessons, resources, assignments." },
   { n: "4", title: "Track", body: "Progress reports for parents." },
 ];
@@ -12,7 +17,11 @@ export function HowItWorksStrip() {
     <section className="container-x py-16">
       <div className="text-center">
         <p className="tag-handwritten">How it works</p>
-        <h2 className="text-3xl font-extrabold mt-1">Four steps to better learning</h2>
+        <AnimatedText
+          as="h2"
+          className="text-3xl font-extrabold mt-1"
+          text="Four steps to better learning"
+        />
       </div>
       <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {STEPS.map((s) => (
@@ -26,7 +35,10 @@ export function HowItWorksStrip() {
         ))}
       </div>
       <div className="mt-8 text-center">
-        <Link href="/how-it-works" className="text-sm font-semibold text-brand-blue hover:underline">
+        <Link
+          href="/how-it-works"
+          className="text-sm font-semibold text-brand-blue hover:underline"
+        >
           See the full walkthrough for parents & tutors →
         </Link>
       </div>

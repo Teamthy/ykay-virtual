@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Users, Wallet, GraduationCap } from "lucide-react";
 
+import { AnimatedText } from "@/components/ui/animated-text";
 // Qualitative tutor pitch - no invented earnings / hours / student counts.
 
 const POINTS = [
@@ -28,9 +29,11 @@ export function TutorCommunityStats() {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark">
           You belong here
         </p>
-        <h2 className="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight text-brand-navy">
-          Teach with YK-Virtual
-        </h2>
+        <AnimatedText
+          as="h2"
+          className="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight text-brand-navy"
+          text="Teach with YK-Virtual"
+        />
         <p className="mt-3 max-w-2xl mx-auto text-ink-600">
           YK-Virtual is building a Nigeria-first tutoring marketplace -
           escrow-protected payouts and a support team, without inflated

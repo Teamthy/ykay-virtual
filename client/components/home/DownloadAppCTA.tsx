@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play, Apple, WifiOff, Bell, FileCheck2 } from "lucide-react";
 
+import { AnimatedText } from "@/components/ui/animated-text";
 // Download-app section - self-contained: no remote store-button SVGs, no
 // remote gradient, no invented social-proof counts. Local image + brand
 // palette + real product perks.
@@ -21,9 +22,11 @@ export function DownloadAppCTA() {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
             YK-Virtual on the go
           </p>
-          <h2 className="mt-4 font-display text-4xl leading-tight tracking-[0.02em] text-brand-navy md:text-5xl">
-            Your classroom, in your pocket.
-          </h2>
+          <AnimatedText
+            as="h2"
+            className="mt-4 font-display text-4xl leading-tight tracking-[0.02em] text-brand-navy md:text-5xl"
+            text="Your classroom, in your pocket."
+          />
           <p className="mt-5 max-w-md leading-relaxed text-ink-600">
             Attend live lessons, take quizzes, submit assignments and track
             progress from your phone - even offline.

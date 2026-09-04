@@ -1,6 +1,13 @@
 import Link from "next/link";
-import { Home, MonitorPlay, GraduationCap, Baby, FileCheck } from "lucide-react";
+import {
+  Home,
+  MonitorPlay,
+  GraduationCap,
+  Baby,
+  FileCheck,
+} from "lucide-react";
 
+import { AnimatedText } from "@/components/ui/animated-text";
 // "No Matter The Learning Need, There's A Tutor For Your Child!" - Tuteria v2
 // with real descriptions per need.
 
@@ -43,9 +50,14 @@ export function LearningNeeds() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
-            No Matter The Learning Need, There&apos;s A Tutor For Your Child!
+            <AnimatedText
+              text="No Matter The Learning Need, There's A Tutor For Your Child!"
+              delay={0.0}
+            />
           </h2>
-          <p className="mt-3 text-ink-600">We have all the solutions your child needs to excel in school.</p>
+          <p className="mt-3 text-ink-600">
+            We have all the solutions your child needs to excel in school.
+          </p>
         </div>
 
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-5">
@@ -58,8 +70,12 @@ export function LearningNeeds() {
               <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-brand-blue shadow-soft transition-colors group-hover:bg-brand-navy group-hover:text-white">
                 {n.icon}
               </div>
-              <p className="mt-4 text-sm font-bold leading-snug text-ink-800">{n.label}</p>
-              <p className="mt-2 text-xs leading-relaxed text-ink-500">{n.desc}</p>
+              <p className="mt-4 text-sm font-bold leading-snug text-ink-800">
+                {n.label}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-ink-500">
+                {n.desc}
+              </p>
             </Link>
           ))}
         </div>
