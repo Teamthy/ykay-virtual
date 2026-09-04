@@ -19,9 +19,9 @@ export function HeroIntro({ children }: { children: ReactNode }) {
   if (reduce) return <>{children}</>;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
+      initial={{ opacity: 0, y: 28, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 110, damping: 15 }}
     >
       {children}
     </motion.div>

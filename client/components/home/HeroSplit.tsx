@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
   ChevronLeft,
@@ -59,6 +60,13 @@ const TRUST = [
 const DURATION = 6000;
 
 export function HeroSplit() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const storyY = useTransform(scrollYProgress, [0, 1], [0, 90]);
+  const storyOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.15]);
   const [active, setActive] = useState(0);
 
   useEffect(() => {
@@ -75,7 +83,10 @@ export function HeroSplit() {
   return (
     <section className="py-10 md:py-14">
       {/* ── Top: brand story (static) ── */}
-      <div className="container-x text-center">
+      <motion.div
+        style={{ y: storyY, opacity: storyOpacity }}
+        className="container-x relative z-10 text-center"
+      >
         <h1 className="mx-auto max-w-4xl font-display text-4xl leading-[1.05] tracking-[0.01em] text-brand-navy md:text-5xl lg:text-6xl">
           Better, brighter futures for your kids.
         </h1>
@@ -120,10 +131,10 @@ export function HeroSplit() {
             </li>
           ))}
         </ul>
-      </div>
+      </motion.div>
 
       {/* ── Below: full-width image carousel ── */}
-      <div className="container-x mt-10">
+      <div className="container-x relative z-10 mt-10">
         <div className="relative">
           <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl bg-ink-100 shadow-card sm:aspect-[21/9]">
             {SLIDES.map((s, i) => (
