@@ -5,6 +5,7 @@ import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
 import { TestimonialSlider } from "@/components/home/TestimonialSlider";
+import { CollegeBridge } from "@/components/home/CollegeBridge";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
 import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
@@ -47,6 +48,9 @@ export default function HomePage() {
       </Reveal>
       <Reveal delay={50}>
         <TestimonialSlider />
+      </Reveal>
+      <Reveal delay={50}>
+        <CollegeBridge />
       </Reveal>
       <Reveal delay={50}>
         <HomeFAQ />

@@ -70,6 +70,7 @@ const NAV_LINKS = [
   { label: "Cohorts", href: "/cohorts" },
   { label: "Tutors", href: "/tutors" },
   { label: "How it works", href: "/how-it-works" },
+  { label: "College", href: "/college" },
   { label: "About", href: "/about" },
 ];
 
