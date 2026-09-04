@@ -19,12 +19,31 @@ import { getMyProfile, updateBankDetails } from "@/features/vetting/api";
 import { NIGERIAN_BANKS, bankNameForCode } from "@/features/vetting/banks";
 import { getTutorEarnings, getCohort } from "@/features/lms/api";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, MessageSquare, Bell, LifeBuoy, Settings, Wallet, CalendarDays, ClipboardCheck, Users, NotebookPen } from "lucide-react";
-import { TutorGradebook, TutorProgressReports } from "@/features/learning/TutorLearning";
-import { listAvailability, upsertAvailability, deleteAvailability } from "@/features/portal/api";
+import {
+  BookOpen,
+  MessageSquare,
+  Bell,
+  LifeBuoy,
+  Settings,
+  Wallet,
+  CalendarDays,
+  ClipboardCheck,
+  Users,
+  NotebookPen,
+} from "lucide-react";
+import {
+  TutorGradebook,
+  TutorProgressReports,
+} from "@/features/learning/TutorLearning";
+import {
+  listAvailability,
+  upsertAvailability,
+  deleteAvailability,
+} from "@/features/portal/api";
 import { listCohorts } from "@/features/cohorts/api/list";
 import { requestCohortJoin } from "@/features/cohorts/api/join";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
+import { ExamAuthoring } from "@/components/tutor/ExamAuthoring";
 import { DashHero } from "@/components/dashboard/DashHero";
 
 // Tutor portal — tabbed workspace: Overview (KPIs + status + today) ·
@@ -42,7 +61,13 @@ type Lesson = {
   cohort_id?: string;
 };
 
-type AttendanceRow = { id: string; lesson_id: string; student_profile_id: string; status: string; marked_at: string };
+type AttendanceRow = {
+  id: string;
+  lesson_id: string;
+  student_profile_id: string;
+  status: string;
+  marked_at: string;
+};
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const STATUS_BADGE: Record<string, string> = {
@@ -61,6 +86,7 @@ const TABS = [
   { key: "overview", label: "Overview" },
   { key: "lessons", label: "Lessons" },
   { key: "cohorts", label: "Cohorts" },
+  { key: "exams", label: "Exams" },
   { key: "availability", label: "Availability" },
   { key: "earnings", label: "Earnings" },
   { key: "profile", label: "Profile" },
@@ -70,8 +96,17 @@ export default function TutorDashboardPage() {
   const qc = useQueryClient();
   const { user } = useSession();
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("overview");
-  const [newSlot, setNewSlot] = useState({ day_of_week: 1, start_time: "16:00", end_time: "17:00" });
-  const [bankForm, setBankForm] = useState({ bank_name: "", bank_code: "", account_number: "", account_name: "" });
+  const [newSlot, setNewSlot] = useState({
+    day_of_week: 1,
+    start_time: "16:00",
+    end_time: "17:00",
+  });
+  const [bankForm, setBankForm] = useState({
+    bank_name: "",
+    bank_code: "",
+    account_number: "",
+    account_name: "",
+  });
   const [bankSaving, setBankSaving] = useState(false);
   const [bankError, setBankError] = useState<string | null>(null);
 
@@ -95,7 +130,9 @@ export default function TutorDashboardPage() {
   const attendance = useQuery({
     queryKey: ["tutor", "attendance"],
     queryFn: async () => {
-      const res = await apiFetch<AttendanceRow[]>(`/lessons/${lessons.data?.[0]?.id}/attendance`);
+      const res = await apiFetch<AttendanceRow[]>(
+        `/lessons/${lessons.data?.[0]?.id}/attendance`,
+      );
       return res.data ?? [];
     },
     enabled: (lessons.data?.length ?? 0) > 0,
@@ -121,7 +158,10 @@ export default function TutorDashboardPage() {
   const teachingCohorts = useQuery({
     queryKey: ["tutor", "teaching-cohorts"],
     queryFn: async () => {
-      const groups = new Map<string, typeof lessons.data extends (infer L)[] ? L : never>();
+      const groups = new Map<
+        string,
+        typeof lessons.data extends (infer L)[] ? L : never
+      >();
       const map = new Map<string, Lesson[]>();
       for (const l of lessons.data ?? []) {
         const cid = l.cohort_id ?? "none";
@@ -129,7 +169,13 @@ export default function TutorDashboardPage() {
         arr.push(l);
         map.set(cid, arr);
       }
-      const out: { cohortId: string; title: string; lessonCount: number; enrolled: number; capacity: number }[] = [];
+      const out: {
+        cohortId: string;
+        title: string;
+        lessonCount: number;
+        enrolled: number;
+        capacity: number;
+      }[] = [];
       for (const [cid, ls] of map) {
         if (cid === "none") continue;
         try {
@@ -142,7 +188,13 @@ export default function TutorDashboardPage() {
             capacity: c.capacity,
           });
         } catch {
-          out.push({ cohortId: cid, title: "Cohort", lessonCount: ls.length, enrolled: 0, capacity: 0 });
+          out.push({
+            cohortId: cid,
+            title: "Cohort",
+            lessonCount: ls.length,
+            enrolled: 0,
+            capacity: 0,
+          });
         }
       }
       return out;
@@ -163,7 +215,8 @@ export default function TutorDashboardPage() {
   const joinCohort = useMutation({
     mutationFn: (id: string) => requestCohortJoin(id),
     onSuccess: () => toast.success("Join request sent — admin will review"),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not request join"),
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Could not request join"),
   });
 
   const addSlot = useMutation({
@@ -178,7 +231,8 @@ export default function TutorDashboardPage() {
       toast.success("Availability slot added");
       qc.invalidateQueries({ queryKey: ["tutor", "availability"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not add slot"),
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Could not add slot"),
   });
 
   const removeSlot = useMutation({
@@ -217,19 +271,36 @@ export default function TutorDashboardPage() {
       toast.success("Bank details saved — payouts will go to this account");
       await qc.invalidateQueries({ queryKey: ["tutor", "profile"] });
     } catch (e) {
-      setBankError(e instanceof Error ? e.message : "Could not save bank details");
+      setBankError(
+        e instanceof Error ? e.message : "Could not save bank details",
+      );
     } finally {
       setBankSaving(false);
     }
   };
 
-  const today = (lessons.data ?? []).filter((l) => l.status === "SCHEDULED" || l.status === "ONGOING");
-  const recent = (lessons.data ?? []).filter((l) => l.status === "COMPLETED" || l.status === "NO_SHOW");
+  const today = (lessons.data ?? []).filter(
+    (l) => l.status === "SCHEDULED" || l.status === "ONGOING",
+  );
+  const recent = (lessons.data ?? []).filter(
+    (l) => l.status === "COMPLETED" || l.status === "NO_SHOW",
+  );
   const upcoming = today
     .slice()
-    .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+    .sort(
+      (a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime(),
+    );
 
-  const profileCompletion = p ? Math.min(100, 40 + (p.bio ? 20 : 0) + (p.headline ? 10 : 0) + ((p.hourly_rate_min ?? 0) > 0 ? 15 : 0) + (p.accepts_online || p.accepts_in_person ? 15 : 0)) : 0;
+  const profileCompletion = p
+    ? Math.min(
+        100,
+        40 +
+          (p.bio ? 20 : 0) +
+          (p.headline ? 10 : 0) +
+          ((p.hourly_rate_min ?? 0) > 0 ? 15 : 0) +
+          (p.accepts_online || p.accepts_in_person ? 15 : 0),
+      )
+    : 0;
 
   const quickLinks = [
     { href: "/lms/tutor", label: "Teach", desc: "Roster", icon: BookOpen },
@@ -246,13 +317,25 @@ export default function TutorDashboardPage() {
       <DashHero
         icon={<BookOpen size={20} />}
         kicker="Tutor workspace"
-        title={p ? `${p.display_name} · ${p.status.replace(/_/g, " ")}` : "Start your tutor application"}
+        title={
+          p
+            ? `${p.display_name} · ${p.status.replace(/_/g, " ")}`
+            : "Start your tutor application"
+        }
         body={
           upcoming[0]
             ? `Next class: ${upcoming[0].title}. Mark attendance, notes and earnings from here.`
             : "Set availability, complete vetting, and your booked lessons will appear here."
         }
-        chipTitle={upcoming[0] ? new Date(upcoming[0].start_at).toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "No class today"}
+        chipTitle={
+          upcoming[0]
+            ? new Date(upcoming[0].start_at).toLocaleString([], {
+                weekday: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "No class today"
+        }
         chipHint="Next lesson"
         ctaHref="/lms/tutor"
         ctaLabel="Open teaching"
@@ -264,7 +347,12 @@ export default function TutorDashboardPage() {
           tabs={TABS.map((t) => ({
             key: t.key,
             label: t.label,
-            count: t.key === "lessons" ? today.length : t.key === "availability" ? availability.data?.length : undefined,
+            count:
+              t.key === "lessons"
+                ? today.length
+                : t.key === "availability"
+                  ? availability.data?.length
+                  : undefined,
           }))}
           active={tab}
           onChange={(k) => setTab(k as (typeof TABS)[number]["key"])}
@@ -275,10 +363,30 @@ export default function TutorDashboardPage() {
       {tab === "overview" && (
         <div className="mt-6 space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Upcoming" value={today.length} hint="lessons" icon={<CalendarDays size={18} />} />
-            <StatCard label="Held (escrow)" value={`₦${(earnings.data?.held_total ?? 0).toLocaleString()}`} hint="awaiting delivery" icon={<Wallet size={18} />} />
-            <StatCard label="Released" value={`₦${(earnings.data?.released_total ?? 0).toLocaleString()}`} hint="awaiting payout" icon={<ClipboardCheck size={18} />} />
-            <StatCard label="Paid out" value={`₦${(earnings.data?.paid_total ?? 0).toLocaleString()}`} hint="total earnings" icon={<Wallet size={18} />} />
+            <StatCard
+              label="Upcoming"
+              value={today.length}
+              hint="lessons"
+              icon={<CalendarDays size={18} />}
+            />
+            <StatCard
+              label="Held (escrow)"
+              value={`₦${(earnings.data?.held_total ?? 0).toLocaleString()}`}
+              hint="awaiting delivery"
+              icon={<Wallet size={18} />}
+            />
+            <StatCard
+              label="Released"
+              value={`₦${(earnings.data?.released_total ?? 0).toLocaleString()}`}
+              hint="awaiting payout"
+              icon={<ClipboardCheck size={18} />}
+            />
+            <StatCard
+              label="Paid out"
+              value={`₦${(earnings.data?.paid_total ?? 0).toLocaleString()}`}
+              hint="total earnings"
+              icon={<Wallet size={18} />}
+            />
           </div>
 
           {/* Application status */}
@@ -288,21 +396,40 @@ export default function TutorDashboardPage() {
                 <h2 className="font-bold text-ink-800">Application</h2>
                 {p ? (
                   <>
-                    <p className="text-sm text-ink-600 mt-1">{p.display_name} · {p.slug}</p>
-                    <span className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-bold ${STATUS_BADGE[p.status] ?? "bg-ink-100"}`}>{p.status}</span>
+                    <p className="text-sm text-ink-600 mt-1">
+                      {p.display_name} · {p.slug}
+                    </p>
+                    <span
+                      className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-bold ${STATUS_BADGE[p.status] ?? "bg-ink-100"}`}
+                    >
+                      {p.status}
+                    </span>
                   </>
                 ) : (
-                  <p className="text-sm text-ink-500 mt-1">You haven&apos;t started your application yet.</p>
+                  <p className="text-sm text-ink-500 mt-1">
+                    You haven&apos;t started your application yet.
+                  </p>
                 )}
               </div>
-              <Link href={p ? "/become-tutor/status" : "/become-tutor/apply"} className="btn-gold text-sm">
+              <Link
+                href={p ? "/become-tutor/status" : "/become-tutor/apply"}
+                className="btn-gold text-sm"
+              >
                 {p ? "View application" : "Start application"}
               </Link>
             </div>
             {p && (
               <div className="mt-4">
-                <div className="flex justify-between text-xs text-ink-500"><span>Profile completion</span><span>{profileCompletion}%</span></div>
-                <div className="mt-1 h-2 rounded-full bg-ink-100"><div className="h-2 rounded-full bg-deep" style={{ width: `${profileCompletion}%` }} /></div>
+                <div className="flex justify-between text-xs text-ink-500">
+                  <span>Profile completion</span>
+                  <span>{profileCompletion}%</span>
+                </div>
+                <div className="mt-1 h-2 rounded-full bg-ink-100">
+                  <div
+                    className="h-2 rounded-full bg-deep"
+                    style={{ width: `${profileCompletion}%` }}
+                  />
+                </div>
               </div>
             )}
           </section>
@@ -317,15 +444,34 @@ export default function TutorDashboardPage() {
             ) : (
               <ul className="mt-4 space-y-3">
                 {upcoming.slice(0, 5).map((l) => (
-                  <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/10 px-5 py-3">
+                  <li
+                    key={l.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/10 px-5 py-3"
+                  >
                     <div>
                       <div className="font-semibold">{l.title}</div>
                       <div className="text-xs text-ink-800/70">
-                        {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                        {new Date(l.start_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        –{" "}
+                        {new Date(l.end_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        · {l.timezone}
                       </div>
                     </div>
                     {l.meeting_url && (
-                      <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-white text-deep text-sm font-bold px-4 py-2">Join class</a>
+                      <a
+                        href={l.meeting_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-xl bg-white text-deep text-sm font-bold px-4 py-2"
+                      >
+                        Join class
+                      </a>
                     )}
                   </li>
                 ))}
@@ -337,7 +483,10 @@ export default function TutorDashboardPage() {
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-bold text-ink-800">Your courses</h2>
-              <Link href="/lms/tutor" className="text-sm font-bold text-primary-dark hover:underline">
+              <Link
+                href="/lms/tutor"
+                className="text-sm font-bold text-primary-dark hover:underline"
+              >
                 Manage courses →
               </Link>
             </div>
@@ -347,7 +496,8 @@ export default function TutorDashboardPage() {
               <div className="rounded-2xl border border-dashed border-ink-200 p-6 text-center">
                 <p className="text-sm text-ink-500">No cohorts assigned yet.</p>
                 <p className="mt-1 text-xs text-ink-400">
-                  Request to join a cohort from the Cohorts tab, or ask an admin to assign you — your LMS fills automatically.
+                  Request to join a cohort from the Cohorts tab, or ask an admin
+                  to assign you — your LMS fills automatically.
                 </p>
               </div>
             ) : (
@@ -368,7 +518,11 @@ export default function TutorDashboardPage() {
                       {c.enrolled}/{c.capacity || "—"} enrolled
                     </p>
                     <Progress
-                      value={c.capacity > 0 ? Math.round((c.enrolled / c.capacity) * 100) : 0}
+                      value={
+                        c.capacity > 0
+                          ? Math.round((c.enrolled / c.capacity) * 100)
+                          : 0
+                      }
                       showValue={false}
                       className="mt-3"
                     />
@@ -382,7 +536,11 @@ export default function TutorDashboardPage() {
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-bold text-ink-800">Your teaching schedule</h2>
-              <button type="button" onClick={() => setTab("availability")} className="text-sm font-bold text-primary-dark hover:underline">
+              <button
+                type="button"
+                onClick={() => setTab("availability")}
+                className="text-sm font-bold text-primary-dark hover:underline"
+              >
                 Edit availability →
               </button>
             </div>
@@ -392,36 +550,62 @@ export default function TutorDashboardPage() {
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => {
-                  const slots = (availability.data ?? []).filter((a) => a.day_of_week === idx);
-                  return (
-                    <div key={day} className={`min-w-24 rounded-2xl border p-3 ${slots.length ? "border-primary bg-primary-light" : "border-ink-100 bg-white"}`}>
-                      <p className={`text-center text-xs font-bold ${slots.length ? "text-primary-dark" : "text-ink-400"}`}>{day}</p>
-                      {slots.length ? (
-                        <p className="mt-1 text-center text-[11px] leading-tight text-ink-700">
-                          {slots.map((s) => `${s.start_time.slice(0, 5)}–${s.end_time.slice(0, 5)}`).join("\n")}
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                  (day, idx) => {
+                    const slots = (availability.data ?? []).filter(
+                      (a) => a.day_of_week === idx,
+                    );
+                    return (
+                      <div
+                        key={day}
+                        className={`min-w-24 rounded-2xl border p-3 ${slots.length ? "border-primary bg-primary-light" : "border-ink-100 bg-white"}`}
+                      >
+                        <p
+                          className={`text-center text-xs font-bold ${slots.length ? "text-primary-dark" : "text-ink-400"}`}
+                        >
+                          {day}
                         </p>
-                      ) : (
-                        <p className="mt-1 text-center text-[11px] text-ink-300">—</p>
-                      )}
-                    </div>
-                  );
-                })}
+                        {slots.length ? (
+                          <p className="mt-1 text-center text-[11px] leading-tight text-ink-700">
+                            {slots
+                              .map(
+                                (s) =>
+                                  `${s.start_time.slice(0, 5)}–${s.end_time.slice(0, 5)}`,
+                              )
+                              .join("\n")}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-center text-[11px] text-ink-300">
+                            —
+                          </p>
+                        )}
+                      </div>
+                    );
+                  },
+                )}
               </div>
             )}
           </section>
 
           {/* Quick links */}
           <section>
-            <h2 className="font-display text-lg tracking-[0.02em] text-deep">Links</h2>
+            <h2 className="font-display text-lg tracking-[0.02em] text-deep">
+              Links
+            </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {quickLinks.map((q) => (
-                <Link key={q.href} href={q.href} className="group flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary">
+                <Link
+                  key={q.href}
+                  href={q.href}
+                  className="group flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary"
+                >
                   <span className="grid size-9 place-items-center rounded-xl bg-primary-light text-primary">
                     <q.icon size={17} />
                   </span>
                   <span>
-                    <span className="block text-sm font-bold text-deep">{q.label}</span>
+                    <span className="block text-sm font-bold text-deep">
+                      {q.label}
+                    </span>
                     <span className="block text-xs text-ink-500">{q.desc}</span>
                   </span>
                 </Link>
@@ -436,9 +620,14 @@ export default function TutorDashboardPage() {
         <div className="mt-6 space-y-6">
           {/* Attendance to complete */}
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="flex items-center gap-2 font-bold text-ink-800"><Users size={16} className="text-primary" /> Attendance to complete</h2>
+            <h2 className="flex items-center gap-2 font-bold text-ink-800">
+              <Users size={16} className="text-primary" /> Attendance to
+              complete
+            </h2>
             {recent.length === 0 ? (
-              <p className="mt-2 text-sm text-ink-500">No completed lessons awaiting attendance.</p>
+              <p className="mt-2 text-sm text-ink-500">
+                No completed lessons awaiting attendance.
+              </p>
             ) : (
               <ul className="mt-4 space-y-3">
                 {recent.slice(0, 5).map((l) => (
@@ -446,11 +635,18 @@ export default function TutorDashboardPage() {
                     <div className="flex justify-between items-center">
                       <div>
                         <div className="font-semibold text-sm">{l.title}</div>
-                        <div className="text-xs text-ink-500">{new Date(l.start_at).toLocaleDateString()}</div>
+                        <div className="text-xs text-ink-500">
+                          {new Date(l.start_at).toLocaleDateString()}
+                        </div>
                       </div>
-                      <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Mark attendance</span>
+                      <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                        Mark attendance
+                      </span>
                     </div>
-                    <Link href="/lms/tutor" className="mt-3 inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-deep transition-colors">
+                    <Link
+                      href="/lms/tutor"
+                      className="mt-3 inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-deep transition-colors"
+                    >
                       Open roster to mark attendance →
                     </Link>
                   </li>
@@ -461,11 +657,18 @@ export default function TutorDashboardPage() {
 
           {/* Lesson notes */}
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="flex items-center gap-2 font-bold text-ink-800"><NotebookPen size={16} className="text-primary" /> Lesson notes &amp; homework</h2>
+            <h2 className="flex items-center gap-2 font-bold text-ink-800">
+              <NotebookPen size={16} className="text-primary" /> Lesson notes
+              &amp; homework
+            </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              Write lesson notes and homework after each session — parents see them in their portal.
+              Write lesson notes and homework after each session — parents see
+              them in their portal.
             </p>
-            <Link href="/lms/tutor" className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-4 py-2 text-xs font-semibold text-deep transition-colors hover:border-deep">
+            <Link
+              href="/lms/tutor"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-4 py-2 text-xs font-semibold text-deep transition-colors hover:border-deep"
+            >
               Open the teaching console <BookOpen size={13} />
             </Link>
           </section>
@@ -476,25 +679,55 @@ export default function TutorDashboardPage() {
             {lessons.isLoading ? (
               <Skeleton className="mt-3 h-20 w-full" />
             ) : (lessons.data?.length ?? 0) === 0 ? (
-              <EmptyState icon={<CalendarDays size={20} />} title="No lessons yet" description="Lessons appear once a learner books you." />
+              <EmptyState
+                icon={<CalendarDays size={20} />}
+                title="No lessons yet"
+                description="Lessons appear once a learner books you."
+              />
             ) : (
               <ul className="mt-4 divide-y divide-ink-100">
                 {(lessons.data ?? [])
                   .slice()
-                  .sort((a, b) => new Date(b.start_at).getTime() - new Date(a.start_at).getTime())
+                  .sort(
+                    (a, b) =>
+                      new Date(b.start_at).getTime() -
+                      new Date(a.start_at).getTime(),
+                  )
                   .map((l) => (
-                    <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <li
+                      key={l.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-3"
+                    >
                       <div>
                         <p className="font-bold text-ink-800">{l.title}</p>
                         <p className="text-xs text-ink-500">
-                          {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
+                          {new Date(l.start_at).toLocaleString([], {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
+                          · {l.timezone}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
-                        {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
-                          <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light transition-colors">Join</a>
-                        )}
+                        <StatusBadge
+                          label={l.status}
+                          kind={statusKindFor(l.status)}
+                        />
+                        {l.meeting_url &&
+                          (l.status === "SCHEDULED" ||
+                            l.status === "ONGOING") && (
+                            <a
+                              href={l.meeting_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-xl bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light transition-colors"
+                            >
+                              Join
+                            </a>
+                          )}
                       </div>
                     </li>
                   ))}
@@ -504,42 +737,66 @@ export default function TutorDashboardPage() {
         </div>
       )}
 
+      {/* ── CBT exams ── */}
+      {tab === "exams" && (
+        <div className="mt-6">
+          <ExamAuthoring />
+        </div>
+      )}
+
       {/* ── Cohorts ── */}
       {tab === "cohorts" && (
         <div className="mt-6 space-y-6">
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <h2 className="font-bold text-ink-800">Request to join a cohort</h2>
             <p className="mt-1 text-sm text-ink-500">
-              Approved tutors can ask to teach a published cohort. An admin still assigns you after review.
+              Approved tutors can ask to teach a published cohort. An admin
+              still assigns you after review.
             </p>
             {p && p.status !== "APPROVED" && (
               <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                Your application is {p.status.replace(/_/g, " ")}. Finish vetting and wait for approval before requesting a cohort.
+                Your application is {p.status.replace(/_/g, " ")}. Finish
+                vetting and wait for approval before requesting a cohort.
               </p>
             )}
             {publishedCohorts.isLoading ? (
               <Skeleton className="mt-4 h-20 w-full" />
             ) : (publishedCohorts.data?.length ?? 0) === 0 ? (
-              <EmptyState icon={<CalendarDays size={20} />} title="No published cohorts" description="Cohorts appear here once admin publishes them." />
+              <EmptyState
+                icon={<CalendarDays size={20} />}
+                title="No published cohorts"
+                description="Cohorts appear here once admin publishes them."
+              />
             ) : (
               <ul className="mt-4 divide-y divide-ink-100">
                 {(publishedCohorts.data ?? []).map((c) => {
                   const mine = p && c.tutor_profile_id === p.id;
                   return (
-                    <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <li
+                      key={c.id}
+                      className="flex flex-wrap items-center justify-between gap-3 py-3"
+                    >
                       <div>
                         <p className="font-bold text-ink-800">{c.title}</p>
                         <p className="text-xs text-ink-500">
-                          {new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()} · {c.enrolled_count}/{c.capacity} enrolled
+                          {new Date(c.start_date).toLocaleDateString()} →{" "}
+                          {new Date(c.end_date).toLocaleDateString()} ·{" "}
+                          {c.enrolled_count}/{c.capacity} enrolled
                         </p>
                       </div>
                       {mine ? (
-                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Assigned to you</span>
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                          Assigned to you
+                        </span>
                       ) : (
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={!p || p.status !== "APPROVED" || joinCohort.isPending}
+                          disabled={
+                            !p ||
+                            p.status !== "APPROVED" ||
+                            joinCohort.isPending
+                          }
                           onClick={() => joinCohort.mutate(c.id)}
                         >
                           Request to join
@@ -559,19 +816,50 @@ export default function TutorDashboardPage() {
         <div className="mt-6 grid lg:grid-cols-[1fr_1.2fr] gap-6 items-start">
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <h2 className="font-bold text-ink-800">Add a weekly slot</h2>
-            <p className="text-xs text-ink-500 mt-1">Set recurring weekly windows learners can book.</p>
+            <p className="text-xs text-ink-500 mt-1">
+              Set recurring weekly windows learners can book.
+            </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <select value={newSlot.day_of_week} onChange={(e) => setNewSlot({ ...newSlot, day_of_week: Number(e.target.value) })}
-                className="rounded-xl border border-ink-200 px-2 py-2 text-sm">
-                {DAYS.map((d, i) => <option key={d} value={i}>{d}</option>)}
+              <select
+                value={newSlot.day_of_week}
+                onChange={(e) =>
+                  setNewSlot({
+                    ...newSlot,
+                    day_of_week: Number(e.target.value),
+                  })
+                }
+                className="rounded-xl border border-ink-200 px-2 py-2 text-sm"
+              >
+                {DAYS.map((d, i) => (
+                  <option key={d} value={i}>
+                    {d}
+                  </option>
+                ))}
               </select>
-              <input type="time" value={newSlot.start_time} onChange={(e) => setNewSlot({ ...newSlot, start_time: e.target.value })}
-                className="rounded-xl border border-ink-200 px-2 py-2 text-sm" />
+              <input
+                type="time"
+                value={newSlot.start_time}
+                onChange={(e) =>
+                  setNewSlot({ ...newSlot, start_time: e.target.value })
+                }
+                className="rounded-xl border border-ink-200 px-2 py-2 text-sm"
+              />
               <span className="self-center text-xs text-ink-400">–</span>
-              <input type="time" value={newSlot.end_time} onChange={(e) => setNewSlot({ ...newSlot, end_time: e.target.value })}
-                className="rounded-xl border border-ink-200 px-2 py-2 text-sm" />
+              <input
+                type="time"
+                value={newSlot.end_time}
+                onChange={(e) =>
+                  setNewSlot({ ...newSlot, end_time: e.target.value })
+                }
+                className="rounded-xl border border-ink-200 px-2 py-2 text-sm"
+              />
             </div>
-            <Button size="sm" className="mt-3 w-full" disabled={addSlot.isPending} onClick={() => addSlot.mutate()}>
+            <Button
+              size="sm"
+              className="mt-3 w-full"
+              disabled={addSlot.isPending}
+              onClick={() => addSlot.mutate()}
+            >
               {addSlot.isPending ? "Adding…" : "+ Add slot"}
             </Button>
           </section>
@@ -581,13 +869,27 @@ export default function TutorDashboardPage() {
             {availability.isLoading ? (
               <Skeleton className="mt-3 h-16 w-full" />
             ) : (availability.data?.length ?? 0) === 0 ? (
-              <EmptyState icon={<CalendarDays size={20} />} title="No availability set" description="Add a weekly window so learners can book you." />
+              <EmptyState
+                icon={<CalendarDays size={20} />}
+                title="No availability set"
+                description="Add a weekly window so learners can book you."
+              />
             ) : (
               <ul className="mt-3 space-y-1.5">
                 {availability.data?.map((a) => (
-                  <li key={a.id} className="flex items-center justify-between text-sm border-b border-ink-100 pb-1.5">
-                    <span className="font-semibold text-ink-700">{DAYS[a.day_of_week]} · {a.start_time}–{a.end_time}</span>
-                    <button onClick={() => removeSlot.mutate(a.id)} className="text-xs text-red-600 hover:underline">Remove</button>
+                  <li
+                    key={a.id}
+                    className="flex items-center justify-between text-sm border-b border-ink-100 pb-1.5"
+                  >
+                    <span className="font-semibold text-ink-700">
+                      {DAYS[a.day_of_week]} · {a.start_time}–{a.end_time}
+                    </span>
+                    <button
+                      onClick={() => removeSlot.mutate(a.id)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Remove
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -603,57 +905,117 @@ export default function TutorDashboardPage() {
             <h2 className="flex items-center gap-2 font-bold text-deep">
               <Wallet size={16} className="text-primary" /> Earnings
             </h2>
-            <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-bold text-deep">Escrow-protected</span>
+            <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-bold text-deep">
+              Escrow-protected
+            </span>
           </div>
-          <p className="mt-1 text-xs text-ink-500">Held until lessons are confirmed, then paid out on the weekly schedule.</p>
+          <p className="mt-1 text-xs text-ink-500">
+            Held until lessons are confirmed, then paid out on the weekly
+            schedule.
+          </p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center">
             <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-deep">₦{(earnings.data?.held_total ?? 0).toLocaleString()}</div>
+              <div className="text-lg font-extrabold text-deep">
+                ₦{(earnings.data?.held_total ?? 0).toLocaleString()}
+              </div>
               <div className="text-[10px] font-semibold text-ink-500">Held</div>
             </div>
             <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-deep">₦{(earnings.data?.released_total ?? 0).toLocaleString()}</div>
-              <div className="text-[10px] font-semibold text-ink-500">Released</div>
+              <div className="text-lg font-extrabold text-deep">
+                ₦{(earnings.data?.released_total ?? 0).toLocaleString()}
+              </div>
+              <div className="text-[10px] font-semibold text-ink-500">
+                Released
+              </div>
             </div>
             <div className="rounded-xl bg-primary-light p-3">
-              <div className="text-lg font-extrabold text-primary">₦{(earnings.data?.paid_total ?? 0).toLocaleString()}</div>
-              <div className="text-[10px] font-semibold text-ink-600">Paid out</div>
+              <div className="text-lg font-extrabold text-primary">
+                ₦{(earnings.data?.paid_total ?? 0).toLocaleString()}
+              </div>
+              <div className="text-[10px] font-semibold text-ink-600">
+                Paid out
+              </div>
             </div>
           </div>
           <div className="mt-5 rounded-xl border border-ink-100 bg-surface-muted p-4">
-            <p className="text-sm font-bold text-ink-700">Payout destination (bank account)</p>
-            <p className="mt-0.5 text-xs text-ink-500">Earnings are transferred to this account. Ask the admin team to confirm each transfer.</p>
+            <p className="text-sm font-bold text-ink-700">
+              Payout destination (bank account)
+            </p>
+            <p className="mt-0.5 text-xs text-ink-500">
+              Earnings are transferred to this account. Ask the admin team to
+              confirm each transfer.
+            </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <label className="block">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Bank</span>
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">
+                  Bank
+                </span>
                 <select
                   value={bankForm.bank_code}
                   onChange={(e) => {
                     const code = e.target.value;
-                    setBankForm({ ...bankForm, bank_code: code, bank_name: bankNameForCode(code) });
+                    setBankForm({
+                      ...bankForm,
+                      bank_code: code,
+                      bank_name: bankNameForCode(code),
+                    });
                   }}
                   className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
                 >
                   <option value="">Select your bank…</option>
                   {NIGERIAN_BANKS.map((b) => (
-                    <option key={b.code} value={b.code}>{b.name}</option>
+                    <option key={b.code} value={b.code}>
+                      {b.name}
+                    </option>
                   ))}
                 </select>
                 {bankForm.bank_name && (
-                  <span className="mt-0.5 block text-[10px] text-ink-400">{bankForm.bank_name} · code {bankForm.bank_code}</span>
+                  <span className="mt-0.5 block text-[10px] text-ink-400">
+                    {bankForm.bank_name} · code {bankForm.bank_code}
+                  </span>
                 )}
               </label>
               <label className="block">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Account number</span>
-                <input value={bankForm.account_number} onChange={(e) => setBankForm({ ...bankForm, account_number: e.target.value.replace(/[^0-9]/g, "") })} placeholder="0123456789" maxLength={12} inputMode="numeric" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm" />
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">
+                  Account number
+                </span>
+                <input
+                  value={bankForm.account_number}
+                  onChange={(e) =>
+                    setBankForm({
+                      ...bankForm,
+                      account_number: e.target.value.replace(/[^0-9]/g, ""),
+                    })
+                  }
+                  placeholder="0123456789"
+                  maxLength={12}
+                  inputMode="numeric"
+                  className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                />
               </label>
               <label className="block">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">Account name</span>
-                <input value={bankForm.account_name} onChange={(e) => setBankForm({ ...bankForm, account_name: e.target.value })} placeholder="e.g. Adaeze Okonkwo" className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm" />
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">
+                  Account name
+                </span>
+                <input
+                  value={bankForm.account_name}
+                  onChange={(e) =>
+                    setBankForm({ ...bankForm, account_name: e.target.value })
+                  }
+                  placeholder="e.g. Adaeze Okonkwo"
+                  className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                />
               </label>
             </div>
-            {bankError && <p className="mt-2 text-xs text-red-600">{bankError}</p>}
-            <button type="button" onClick={() => void saveBank()} disabled={bankSaving} className="mt-3 rounded-full bg-deep px-5 py-2 text-xs font-bold text-white hover:bg-deep/90 disabled:opacity-50">
+            {bankError && (
+              <p className="mt-2 text-xs text-red-600">{bankError}</p>
+            )}
+            <button
+              type="button"
+              onClick={() => void saveBank()}
+              disabled={bankSaving}
+              className="mt-3 rounded-full bg-deep px-5 py-2 text-xs font-bold text-white hover:bg-deep/90 disabled:opacity-50"
+            >
               {bankSaving ? "Saving…" : "Save bank details"}
             </button>
           </div>
@@ -662,16 +1024,30 @@ export default function TutorDashboardPage() {
             <p className="text-sm font-bold text-ink-700">Recent payouts</p>
             {(earnings.data?.payouts ?? []).length === 0 ? (
               <p className="mt-2 rounded-xl border border-dashed border-ink-200 p-4 text-center text-xs text-ink-400">
-                No payouts yet — released earnings are paid out on the weekly schedule.
+                No payouts yet — released earnings are paid out on the weekly
+                schedule.
               </p>
             ) : (
               <div className="mt-2 space-y-2">
                 {(earnings.data?.payouts ?? []).slice(0, 5).map((p) => (
-                  <div key={p.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-2.5 text-sm">
-                    <span className="font-semibold text-ink-700">₦{p.amount.toLocaleString()}</span>
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-2.5 text-sm"
+                  >
+                    <span className="font-semibold text-ink-700">
+                      ₦{p.amount.toLocaleString()}
+                    </span>
                     <span className="text-xs text-ink-400">
                       {new Date(p.created_at).toLocaleDateString()} ·{" "}
-                      <span className={p.status === "PAID" ? "font-bold text-green-600" : "font-semibold text-ink-500"}>{p.status}</span>
+                      <span
+                        className={
+                          p.status === "PAID"
+                            ? "font-bold text-green-600"
+                            : "font-semibold text-ink-500"
+                        }
+                      >
+                        {p.status}
+                      </span>
                     </span>
                   </div>
                 ))}
@@ -687,14 +1063,26 @@ export default function TutorDashboardPage() {
           <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="font-bold text-ink-800">Application &amp; profile</h2>
+                <h2 className="font-bold text-ink-800">
+                  Application &amp; profile
+                </h2>
                 {p ? (
-                  <p className="text-sm text-ink-600 mt-1">{p.display_name} · {p.slug} · <span className="font-semibold">{profileCompletion}% complete</span></p>
+                  <p className="text-sm text-ink-600 mt-1">
+                    {p.display_name} · {p.slug} ·{" "}
+                    <span className="font-semibold">
+                      {profileCompletion}% complete
+                    </span>
+                  </p>
                 ) : (
-                  <p className="text-sm text-ink-500 mt-1">Start your application to appear in tutor search.</p>
+                  <p className="text-sm text-ink-500 mt-1">
+                    Start your application to appear in tutor search.
+                  </p>
                 )}
               </div>
-              <Link href={p ? "/become-tutor/status" : "/become-tutor/apply"} className="btn-gold text-sm">
+              <Link
+                href={p ? "/become-tutor/status" : "/become-tutor/apply"}
+                className="btn-gold text-sm"
+              >
                 {p ? "View application" : "Start application"}
               </Link>
             </div>
