@@ -18,7 +18,6 @@ import {
   WordCycle,
   Marquee,
 } from "@/components/ui/animated-text";
-import { HeroCanvas } from "@/components/three/HeroCanvas";
 
 // Homepage hero - STACKED layout: the brand story + CTA sit on TOP, and the
 // image carousel runs full-width BELOW it. The copy is static (one clear
@@ -89,7 +88,6 @@ export function HeroSplit() {
   return (
     <section ref={sectionRef} className="relative py-10 md:py-14">
       {/* Learning-core 3D layer (gated, decorative) */}
-      <HeroCanvas className="pointer-events-none absolute inset-x-0 top-[130px] z-0 h-[560px] overflow-hidden opacity-25 [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_78%)]" />
       {/* ── Top: brand story (static) ── */}
       <motion.div
         style={{ y: storyY, opacity: storyOpacity }}
