@@ -25,7 +25,7 @@ const FORMAT_META: Record<string, { label: string; bg: string; color: string }> 
   PRIVATE: { label: "Private Tuition", bg: "#FDF0E8", color: "#ED6D20" },
   BOOTCAMP: { label: "Bootcamp", bg: "#F2F9EE", color: "#009A49" },
   HOLIDAY: { label: "Holiday Programme", bg: "#FFF8E6", color: "#C9A227" },
-  ONLINE_CLASS: { label: "Online Class", bg: "#DFFFF2", color: "#4CCB31" },
+  ONLINE_CLASS: { label: "Online Class", bg: "#DFFFF2", color: "#013920" },
   HYBRID: { label: "Hybrid", bg: "#F2F9EE", color: "#009A49" },
 };
 

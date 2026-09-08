@@ -1174,11 +1174,18 @@ html.dark .btn-outline {
 }
 
 html.dark a {
-  color: #8ef56e;
+  color: #b8f59a;
 }
 
 html.dark a:hover {
   color: #70f250;
+}
+
+/* Lime (#70f250) is a FILL. On cream/white it is not body text. */
+html:not(.dark) .bg-white .text-primary,
+html:not(.dark) .bg-peach .text-primary,
+html:not(.dark) .card .text-primary {
+  color: #0a4d32;
 }
 
 html.dark .text-white a,
