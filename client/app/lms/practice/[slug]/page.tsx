@@ -5,12 +5,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
-import { drawBankPaper } from "@/features/cbt/api";
+import { drawBankPaper, listBankTopics } from "@/features/cbt/api";
 import { PracticePlayer } from "@/components/cbt/PracticePlayer";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// /lms/practice/[slug] — one sitting from the shared bank. The query key
+// /lms/practice/[slug] â€” one sitting from the shared bank. The query key
 // carries a nonce so "Practise again" forces a NEW random draw from the
 // server (per-student variation is the whole point of the bank).
 
@@ -21,6 +21,13 @@ export default function PracticeSittingPage() {
   const [limit, setLimit] = useState(20);
   const [difficulty, setDifficulty] = useState(0); // 0 = mixed
   const [duration, setDuration] = useState(0); // 0 = untimed
+  const [topic, setTopic] = useState("");
+
+  const topics = useQuery({
+    queryKey: ["cbt", "bank", "topics", slug],
+    queryFn: () => listBankTopics(slug),
+    staleTime: 60_000,
+  });
 
   const paper = useQuery({
     queryKey: [
@@ -31,9 +38,10 @@ export default function PracticeSittingPage() {
       limit,
       difficulty,
       duration,
+      topic,
       nonce,
     ],
-    queryFn: () => drawBankPaper(slug, limit, difficulty, duration),
+    queryFn: () => drawBankPaper(slug, limit, difficulty, duration, topic),
     staleTime: Infinity, // the sitting owns this draw; no background refetch
     retry: false,
   });
@@ -79,6 +87,24 @@ export default function PracticeSittingPage() {
               <option value={1}>Easy</option>
               <option value={2}>Medium</option>
               <option value={3}>Hard</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+            Topic
+            <select
+              value={topic}
+              onChange={(e) => {
+                setTopic(e.target.value);
+                setNonce((n) => n + 1);
+              }}
+              className="max-w-[12rem] rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
+            >
+              <option value="">All topics</option>
+              {(topics.data ?? []).map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
