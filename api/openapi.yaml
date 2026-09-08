@@ -757,6 +757,74 @@ paths:
                 $ref: '#/components/schemas/AuthUser'
         '401': { description: Invalid credentials }
 
+  /auth/college/login:
+    post:
+      tags: [identity]
+      summary: >-
+        YKAY College federated login (YK-013). Accepts a YKAY College session
+        token (the `ykay_session` cookie value, or the Bearer token held by the
+        College mobile app), verifies it server-to-server against the College
+        portal's `/api/auth/verify-session`, and mints a normal YK Virtual
+        session through the same path as password login.
+      description: >-
+        The College portal remains authoritative: a suspension, password change
+        or sign-out-everywhere on the College side takes effect here at the next
+        login, with no synchronisation job. First login provisions a local
+        account keyed by lower-cased email with a random unusable password
+        hash. Roles are mapped least-privilege — a College staff or admin role
+        never auto-grants ACADEMIC_ADMIN/SUPER_ADMIN/INSTITUTION_ADMIN here.
+        Disabled unless COLLEGE_API_URL and COLLEGE_SSO_SECRET are both set.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  description: The caller's YKAY College session JWT.
+      responses:
+        '200':
+          description: >-
+            Verified — sets httpOnly ykv_session cookie and returns the raw
+            token for native clients.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/AuthUser' }
+                  provider: { type: string, example: ykay_college }
+        '401': { description: The College session is invalid, expired or revoked }
+        '403': { description: The College account is suspended, inactive, or impersonated }
+        '409':
+          description: >-
+            Federated login is not configured on this deployment, or the College
+            portal could not be reached.
+        '429': { description: Too many login attempts }
+
+  /auth/college/config:
+    get:
+      tags: [identity]
+      summary: >-
+        Reports whether YKAY College federated login is enabled on this
+        deployment, so clients can hide the button when it is not. Public and
+        secret-free.
+      security: []
+      responses:
+        '200':
+          description: Configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled: { type: boolean }
+
   /auth/mfa/confirm:
     post:
       tags: [identity]
@@ -4687,17 +4755,27 @@ components:
       parameters:
         - { name: slug, in: path, required: true, schema: { type: string } }
         - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 30 } }
+        - { name: difficulty, in: query, schema: { type: integer, minimum: 0, maximum: 3, default: 0 },
+            description: '0 = mixed; 1/2/3 = only that difficulty' }
+        - { name: duration_minutes, in: query, schema: { type: integer, minimum: 0, maximum: 180, default: 0 },
+            description: '0 = untimed; otherwise a server-enforced deadline rides on the attempt ticket' }
       responses:
-        '200': { description: Random paper }
+        '200': { description: Random paper, plus attempt_token + deadline (deadline is the zero time when untimed) }
         '404': { description: Unknown subject or no published questions }
   /cbt/grade:
     post:
       tags: [cbt]
       summary: Server-side grading — sends selections only; review reveals key + explanations
+      description: >
+        When attempt_token (issued by the paper draw) is present the submission
+        is bound to that draw — the student, the drawn question ids and the
+        deadline are enforced server-side; empty token grades the legacy
+        untimed path.
       security: [{ sessionCookie: [] }]
       responses:
         '200': { description: Score + per-question review }
         '400': { description: Empty or oversized answer set }
+        '422': { description: Attempt ticket invalid, cross-student, or the window closed }
   /admin/cbt/questions:
     get:
       tags: [cbt]

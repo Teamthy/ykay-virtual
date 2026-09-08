@@ -12,13 +12,24 @@ import (
 	"testing"
 )
 
-func TestFlutterwaveVerify_SecretHeader(t *testing.T) {
+// YK-012: the static `verif-hash` compare is deliberately GONE. It compared the
+// header to the secret without ever touching the payload, so one captured
+// header authenticated any body forever. This test pins that removal — if the
+// branch is ever reinstated, this fails.
+func TestFlutterwaveVerify_StaticSecretHeaderRejected(t *testing.T) {
 	p := NewFlutterwave("whsec-test")
-	if !p.VerifyWebhookSignature([]byte(`{"event":"charge.completed"}`), "whsec-test", "whsec-test") {
-		t.Fatal("verif-hash secret compare must accept")
+	body := []byte(`{"event":"charge.completed"}`)
+
+	// The exact case the old implementation accepted: signature == secret.
+	if p.VerifyWebhookSignature(body, "whsec-test", "whsec-test") {
+		t.Fatal("static verif-hash compare must NOT be accepted — it does not bind to the payload")
 	}
 	if p.VerifyWebhookSignature([]byte(`{}`), "wrong", "whsec-test") {
 		t.Fatal("wrong secret must reject")
+	}
+	// An empty signature must never verify, even with a valid secret.
+	if p.VerifyWebhookSignature(body, "", "whsec-test") {
+		t.Fatal("empty signature must reject")
 	}
 }
 

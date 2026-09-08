@@ -38,6 +38,10 @@ func writeCBTError(w http.ResponseWriter, err error) {
 		WriteAppError(w, domain.ErrNotFound)
 	case errors.Is(err, cbt.ErrDuplicateStem):
 		pkg.WriteError(w, http.StatusConflict, string(pkg.CodeConflict), "a question with this stem already exists in the subject", nil)
+	case errors.Is(err, cbt.ErrAttemptExpired):
+		pkg.WriteError(w, http.StatusUnprocessableEntity, string(pkg.CodeValidationError), "the attempt window has closed", nil)
+	case errors.Is(err, cbt.ErrAttemptInvalid):
+		pkg.WriteError(w, http.StatusUnprocessableEntity, string(pkg.CodeValidationError), "attempt ticket is invalid or was issued for another student", nil)
 	case errors.Is(err, cbt.ErrInvalidInput), errors.Is(err, cbt.ErrNotEnough):
 		WriteAppError(w, domain.ErrInvalidInput)
 	default:
@@ -60,9 +64,13 @@ func (h *CBTBankHandler) ListSubjects(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, subjects, nil)
 }
 
-// Paper — GET /cbt/subjects/{slug}/paper?limit=30 — a fresh random draw.
+// Paper — GET /cbt/subjects/{slug}/paper?limit=30&difficulty=2&duration_minutes=20
+// — a fresh random draw. difficulty 0/absent = mixed; duration_minutes 0/absent
+// = untimed. Timed (and token-bound) draws carry an attempt_token the client
+// must return to /cbt/grade.
 func (h *CBTBankHandler) Paper(w http.ResponseWriter, r *http.Request) {
-	if requireActor(w, r) == nil {
+	actor := requireActor(w, r)
+	if actor == nil {
 		return
 	}
 	slug := r.PathValue("slug")
@@ -75,27 +83,53 @@ func (h *CBTBankHandler) Paper(w http.ResponseWriter, r *http.Request) {
 		}
 		limit = n
 	}
-	questions, err := h.svc.GeneratePaper(r.Context(), slug, limit)
+	difficulty := 0
+	if s := r.URL.Query().Get("difficulty"); s != "" {
+		n, err := strconv.Atoi(s)
+		if err != nil || n < 0 || n > 3 {
+			pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), "difficulty must be 0 (mixed), 1, 2 or 3", nil)
+			return
+		}
+		difficulty = n
+	}
+	duration := 0
+	if s := r.URL.Query().Get("duration_minutes"); s != "" {
+		n, err := strconv.Atoi(s)
+		if err != nil || n < 0 || n > 180 {
+			pkg.WriteError(w, http.StatusBadRequest, string(pkg.CodeBadRequest), "duration_minutes must be an integer between 0 and 180", nil)
+			return
+		}
+		duration = n
+	}
+	paper, err := h.svc.GeneratePaper(r.Context(), slug, limit, difficulty, duration, actor.UserID)
 	if err != nil {
 		writeCBTError(w, err)
 		return
 	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
-		"subject":   slug,
-		"limit":     limit,
-		"questions": questions,
-		"count":     len(questions),
+		"subject":          slug,
+		"limit":            limit,
+		"difficulty":       difficulty,
+		"duration_minutes": duration,
+		"attempt_token":    paper.AttemptToken,
+		"deadline":         paper.Deadline, // zero time = untimed
+		"questions":        paper.Questions,
+		"count":            len(paper.Questions),
 	}, nil)
 }
 
 type gradeRequest struct {
-	Answers []service.GradeAnswer `json:"answers"`
+	AttemptToken string                `json:"attempt_token"`
+	Answers      []service.GradeAnswer `json:"answers"`
 }
 
-// Grade — POST /cbt/grade {answers:[{question_id, selected_index}]} —
-// server-side scoring; the review reveals key + explanations.
+// Grade — POST /cbt/grade {attempt_token, answers:[{question_id, selected_index}]}
+// — server-side scoring; the review reveals key + explanations. attempt_token
+// (issued by the paper draw) binds the submission to that draw: tampered,
+// cross-student or late tickets are rejected.
 func (h *CBTBankHandler) Grade(w http.ResponseWriter, r *http.Request) {
-	if requireActor(w, r) == nil {
+	actor := requireActor(w, r)
+	if actor == nil {
 		return
 	}
 	var req gradeRequest
@@ -103,7 +137,7 @@ func (h *CBTBankHandler) Grade(w http.ResponseWriter, r *http.Request) {
 		WriteAppError(w, err)
 		return
 	}
-	result, err := h.svc.GradePaper(r.Context(), req.Answers)
+	result, err := h.svc.GradePaper(r.Context(), actor.UserID, req.AttemptToken, req.Answers)
 	if err != nil {
 		writeCBTError(w, err)
 		return

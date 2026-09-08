@@ -246,15 +246,25 @@ func (p *FlutterwaveProvider) Name() string { return "FLUTTERWAVE" }
 
 // Flutterwave signs webhooks with HMAC-SHA256 of the raw body (hex) using the
 // "FLWSECK-" prefixed secret.
+//
+// YK-012: this used to ALSO accept Flutterwave's dashboard-style `verif-hash`,
+// which is the raw secret echoed back in a header and compared directly:
+//
+//	if hmac.Equal([]byte(signature), []byte(secret)) { return true }
+//
+// That comparison never touches `payload`, so the accepted value is completely
+// independent of the request body. Anyone holding one captured webhook header
+// could then authenticate an arbitrary body forever — the signature layer
+// provided no integrity at all. It has been removed.
+//
+// Only the HMAC-over-the-body form is accepted now, which is what actually
+// binds the signature to the payload. If a Flutterwave integration is still
+// configured for the static `verif-hash` mode, switch it to HMAC in the
+// dashboard rather than reinstating this branch.
 func (p *FlutterwaveProvider) VerifyWebhookSignature(payload []byte, signature string, secret string) bool {
 	if secret == "" || signature == "" {
 		return false
 	}
-	// Dashboard "verif-hash" is the secret compared directly (vendor default).
-	if hmac.Equal([]byte(signature), []byte(secret)) {
-		return true
-	}
-	// Some integrations HMAC-SHA256 the body with the secret.
 	mac := hmac.New(sha256.New, []byte(secret))
 	mac.Write(payload)
 	expected := hex.EncodeToString(mac.Sum(nil))

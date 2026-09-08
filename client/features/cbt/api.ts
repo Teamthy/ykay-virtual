@@ -234,8 +234,14 @@ export type BankQuestion = {
 export type BankPaper = {
   subject: string;
   limit: number;
+  difficulty: number;
+  duration_minutes: number;
   count: number;
   questions: BankQuestion[];
+  /** Signed ticket binding this draw (student + ids + deadline) to grading. */
+  attempt_token: string;
+  /** Server deadline (ISO); zero time when the sitting is untimed. */
+  deadline: string;
 };
 
 export type BankGradedQuestion = {
@@ -262,25 +268,37 @@ export async function listBankSubjects(): Promise<BankSubject[]> {
 
 /**
  * Draw a random paper — every call is a fresh subset, so two students (or
- * two sittings) never see the same paper. Pass a nonce to bust react-query.
+ * two sittings) never see the same paper. difficulty 0 = mixed;
+ * durationMinutes 0 = untimed (otherwise the server enforces the deadline
+ * via the signed attempt ticket).
  */
 export async function drawBankPaper(
   slug: string,
   limit: number,
+  difficulty = 0,
+  durationMinutes = 0,
 ): Promise<BankPaper> {
-  return (
-    await apiFetch<BankPaper>(`/cbt/subjects/${slug}/paper?limit=${limit}`)
-  ).data;
+  const qs = new URLSearchParams({
+    limit: String(limit),
+    difficulty: String(difficulty),
+    duration_minutes: String(durationMinutes),
+  });
+  return (await apiFetch<BankPaper>(`/cbt/subjects/${slug}/paper?${qs}`)).data;
 }
 
-/** Server-side grading — the key never ships with the paper. */
+/**
+ * Server-side grading — the key never ships with the paper. attemptToken
+ * (from the draw) binds the submission to that draw: the server rejects
+ * tampered, cross-student or late tickets.
+ */
 export async function gradeBankPaper(
+  attemptToken: string,
   answers: { question_id: string; selected_index: number | null }[],
 ): Promise<BankGradeResult> {
   return (
     await apiFetch<BankGradeResult>("/cbt/grade", {
       method: "POST",
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ attempt_token: attemptToken, answers }),
     })
   ).data;
 }

@@ -36,8 +36,11 @@ func TestValidate_ProductionFailFast(t *testing.T) {
 		"GOOGLE_CLIENT_ID":     "id",
 		"GOOGLE_CLIENT_SECRET": "secret",
 		"PAYMENT_PROVIDER":     "PAYSTACK",
-		"PAYSTACK_SECRET":      "sk_test_abc123",
-		"METRICS_TOKEN":        "ci-metrics-token",
+		// Live-mode on purpose. This fixture is the definition of "a valid
+		// production config", and it used to carry `sk_test_abc123` here — the
+		// exact mistake YK-011 now rejects at boot. Not a real credential.
+		"PAYSTACK_SECRET": "sk_live_fixture_not_a_real_key",
+		"METRICS_TOKEN":   "ci-metrics-token",
 	}
 
 	t.Run("valid production config passes", func(t *testing.T) {

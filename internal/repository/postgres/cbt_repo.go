@@ -71,12 +71,13 @@ func scanCBTQuestion(scanner interface {
 	return q, nil
 }
 
-func (r *CBTPostgres) RandomQuestions(ctx context.Context, subjectSlug string, n int) ([]cbt.Question, error) {
+func (r *CBTPostgres) RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int) ([]cbt.Question, error) {
 	rows, err := r.db.QueryContext(ctx, fmt.Sprintf(`
 		SELECT %s FROM cbt_questions q
 		JOIN cbt_subjects s ON s.id = q.subject_id
 		WHERE s.slug = $1 AND q.status = 'published'
-		ORDER BY random() LIMIT %d`, questionCols, n), subjectSlug)
+		  AND ($2 = 0 OR q.difficulty = $2)
+		ORDER BY random() LIMIT %d`, questionCols, n), subjectSlug, difficulty)
 	if err != nil {
 		return nil, fmt.Errorf("cbt random: %w", err)
 	}

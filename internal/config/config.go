@@ -54,6 +54,23 @@ type Config struct {
 	// instead of failing the chat.
 	AIMaxTokensPerRequest int
 	AIDailyBudgetTokens   int
+	// YK-013: YKAY College federated login. YK Virtual has its own identity
+	// store; rather than duplicating College credentials into it, a presented
+	// College session is verified against the College portal, which stays the
+	// single source of truth for suspension/revocation.
+	//
+	// CollegeAPIURL is the base URL of the EDU Portal (no trailing slash).
+	// CollegeSSOSecret is the shared service secret sent as
+	// X-College-SSO-Secret; it must equal the portal's COLLEGE_SSO_SECRET and
+	// must NOT be the portal's AUTH_SECRET.
+	CollegeAPIURL    string
+	CollegeSSOSecret string
+
+	// CBTAttemptSecret signs the stateless practice-bank attempt tickets
+	// (paper draw → grade binding: student, ids, deadline). Optional: when
+	// empty a random per-boot key is used (tickets die on restart). Set it
+	// to survive restarts / share across instances.
+	CBTAttemptSecret string
 	// SeedDemoData enables fixture accounts/catalogue only for explicit local development.
 	// It must never be enabled in production.
 	SeedDemoData bool
@@ -105,6 +122,11 @@ func Load() Config {
 		MeetingProvider:    getEnv("MEETING_PROVIDER", "stub"),
 		WherebyAPIKey:      getEnv("WHEREBY_API_KEY", ""),
 		SeedDemoData:       strings.EqualFold(getEnv("SEED_DEMO_DATA", "false"), "true"),
+		// Empty by default: federated College login is opt-in, and an unset
+		// URL disables the endpoint entirely rather than calling a dev default.
+		CollegeAPIURL:    strings.TrimRight(getEnv("COLLEGE_API_URL", ""), "/"),
+		CollegeSSOSecret: getEnv("COLLEGE_SSO_SECRET", ""),
+		CBTAttemptSecret: getEnv("CBT_ATTEMPT_SECRET", ""),
 	}
 	if v := getEnvInt("AI_MAX_TOKENS_PER_REQUEST", 1024); v > 0 {
 		cfg.AIMaxTokensPerRequest = v
@@ -165,8 +187,59 @@ func (c Config) Validate() error {
 			}
 		}
 	}
+
+	// YK-011: reject TEST-MODE provider credentials in production.
+	//
+	// The presence check above only proves the variable is non-empty, so
+	// copying `.env.production.example` (which ships `PAYSTACK_SECRET=sk_test_…`)
+	// straight into a production deploy passes validation and then silently
+	// runs live traffic against Paystack's sandbox: real customers get charged
+	// nothing, nothing settles, and the webhook is signed with a test secret.
+	// That failure is invisible from inside the app — every call returns 200.
+	//
+	// Checked for BOTH providers regardless of the active one, because
+	// cmd/api registers a webhook route for each and verifies it against
+	// that provider's configured secret.
+	for _, p := range []struct{ name, env string }{
+		{"Paystack", "PAYSTACK_SECRET"},
+		{"Flutterwave", "FLUTTERWAVE_SECRET"},
+	} {
+		sec := strings.TrimSpace(os.Getenv(p.env))
+		if sec == "" {
+			continue // absence is handled by the presence check above
+		}
+		lower := strings.ToLower(sec)
+		for _, marker := range []string{"sk_test_", "pk_test_", "flw_secret_test", "flwseck_test"} {
+			if strings.HasPrefix(lower, marker) || strings.Contains(lower, "_test_") {
+				return fmt.Errorf(
+					"production: %s looks like a %s TEST-MODE credential (%q…). "+
+						"Live payments will not settle against a sandbox key — set the live secret, "+
+						"or unset %s entirely to disable that provider",
+					p.env, p.name, marker, p.env,
+				)
+			}
+		}
+	}
 	if _, ok := os.LookupEnv("METRICS_TOKEN"); !ok || strings.TrimSpace(os.Getenv("METRICS_TOKEN")) == "" {
 		return errors.New("production: METRICS_TOKEN must be set (open /metrics is forbidden)")
+	}
+
+	// YK-013: federated College login is opt-in, but half-configured is not a
+	// legal state. A URL with no secret means every verification would be
+	// rejected by the portal (403) and users would see "invalid login" with no
+	// server-side explanation; a secret with no URL means the endpoint is
+	// silently disabled. Fail at boot instead.
+	if (c.CollegeAPIURL != "") != (c.CollegeSSOSecret != "") {
+		return errors.New("production: COLLEGE_API_URL and COLLEGE_SSO_SECRET must be set together (or both left empty to disable YKAY College federated login)")
+	}
+	if c.CollegeSSOSecret != "" && len(c.CollegeSSOSecret) < 32 {
+		return errors.New("production: COLLEGE_SSO_SECRET must be at least 32 characters")
+	}
+	if c.CBTAttemptSecret != "" && len(c.CBTAttemptSecret) < 32 {
+		return errors.New("production: CBT_ATTEMPT_SECRET must be at least 32 characters")
+	}
+	if c.CollegeAPIURL != "" && !strings.HasPrefix(c.CollegeAPIURL, "https://") {
+		return errors.New("production: COLLEGE_API_URL must be https (the shared secret and session tokens cross the network)")
 	}
 	dbURL := c.DatabaseURL
 	if strings.Contains(dbURL, "sslmode=disable") &&

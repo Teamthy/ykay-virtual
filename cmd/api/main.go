@@ -292,7 +292,7 @@ func main() {
 	// Shared CBT practice bank (000072): embedded CSV seeds the bank on first
 	// boot only (idempotent — admins can curate afterwards without the seed
 	// re-adding anything).
-	cbtSvc := service.NewCBTService(repos.CBTBank)
+	cbtSvc := service.NewCBTService(repos.CBTBank).WithAttemptSecret(cfg.CBTAttemptSecret)
 	if n, err := cbtSvc.SeedIfAbsent(ctx, bankdata.CSV()); err != nil {
 		slog.Warn("cbt bank seed failed", "error", err)
 	} else if n > 0 {
@@ -328,6 +328,20 @@ func main() {
 		ClientSecret: cfg.GoogleClientSecret,
 		RedirectURL:  cfg.GoogleRedirectURL,
 	}, authSvc).WithStateStore(cacheBackend)
+
+	// YK-013: YKAY College federated login. Opt-in — with COLLEGE_API_URL and
+	// COLLEGE_SSO_SECRET unset the endpoint answers 503 "not configured" and no
+	// outbound call is ever made.
+	collegeAuth := service.NewCollegeAuthService(service.CollegeSSOConfig{
+		BaseURL: cfg.CollegeAPIURL,
+		Secret:  cfg.CollegeSSOSecret,
+	}, authSvc)
+	if collegeAuth.Enabled() {
+		slog.Info("college sso: YKAY College federated login ENABLED", "portal", cfg.CollegeAPIURL)
+	} else {
+		slog.Info("college sso: disabled (COLLEGE_API_URL / COLLEGE_SSO_SECRET not set)")
+	}
+
 	// G7.1 session cache: 30s resolution cache in front of the DB-backed
 	// resolver (logout invalidates the exact token immediately).
 	sessionCache := middleware.NewCachingSessionResolver(sessionResolverAdapter{svc: authSvc}, cacheBackend)
@@ -538,8 +552,9 @@ func main() {
 		Dashboard:    httpapi.NewDashboardHandler(dashboardSvc, profileAuthz),
 		Recommendations: httpapi.NewRecommendationHandler(
 			service.NewRecommendationService(repos.Cohorts, repos.ProgrammeRepo, repos.TutorRepo, repos.Students)),
-		Content:           httpapi.NewContentHandler(contentSvc),
-		Auth:              httpapi.NewAuthHandlerWithCookieDomain(authSvc, cfg.Environment == "production", cfg.SiteURL, cfg.CookieDomain, googleAuth),
+		Content: httpapi.NewContentHandler(contentSvc),
+		Auth: httpapi.NewAuthHandlerWithCookieDomain(authSvc, cfg.Environment == "production", cfg.SiteURL, cfg.CookieDomain, googleAuth).
+			WithCollege(collegeAuth),
 		SessionContext:    httpapi.NewSessionContextHandler(repos.Students, repos.Vetting),
 		Admin:             adminHandler,
 		Support:           httpapi.NewSupportHandler(supportSvc),

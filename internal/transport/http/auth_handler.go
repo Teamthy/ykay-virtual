@@ -25,6 +25,66 @@ type AuthHandler struct {
 	cfg     middleware.CookieConfig
 	siteURL string
 	google  *service.GoogleAuthService
+	college *service.CollegeAuthService
+}
+
+// WithCollege wires YKAY College federated login (YK-013). Optional: when
+// unset, POST /auth/college/login answers 503 "not configured" rather than
+// failing opaquely against an unconfigured portal.
+func (h *AuthHandler) WithCollege(c *service.CollegeAuthService) *AuthHandler {
+	h.college = c
+	return h
+}
+
+// CollegeLogin — POST /auth/college/login {token} — YKAY College federated
+// login (YK-013).
+//
+// `token` is the caller's YKAY College session JWT (the ykay_session cookie
+// value, or the Bearer token the College mobile app holds). It is verified
+// server-to-server against the College portal, which remains the authority on
+// whether that session is live; this endpoint then mints a normal YK Virtual
+// session through the same startSession path as password and Google login.
+//
+// MFA is not re-challenged here: the College portal has already authenticated
+// the person, and platform-admin roles are never granted automatically by this
+// path (see service.MapCollegeRole), so the MFA-for-admins invariant is
+// preserved rather than bypassed.
+func (h *AuthHandler) CollegeLogin(w http.ResponseWriter, r *http.Request) {
+	if h.college == nil || !h.college.Enabled() {
+		WriteAppError(w, pkg.Conflict("YKAY College login is not configured on this deployment"))
+		return
+	}
+	var req struct {
+		Token string `json:"token"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	ip := clientIP(r)
+	token, user, roles, err := h.college.ExchangeSession(r.Context(), req.Token, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	middleware.SetSessionCookie(w, r, h.cfg, token)
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"token": token,
+		"user":  toUserResponse(user, roles),
+		// Lets the client explain the account it just got, e.g. "your College
+		// role does not carry staff access here yet".
+		"provider": "ykay_college",
+	}, nil)
+}
+
+// CollegeLoginConfig — GET /auth/college/config — tells the client whether
+// federated login is available and where the College portal lives, so the UI
+// can hide the button on deployments that have not enabled it. Public and
+// secret-free by design.
+func (h *AuthHandler) CollegeLoginConfig(w http.ResponseWriter, r *http.Request) {
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"enabled": h.college != nil && h.college.Enabled(),
+	}, nil)
 }
 
 func NewAuthHandler(svc *service.AuthService, secureCookies bool, siteURL string, google *service.GoogleAuthService) *AuthHandler {

@@ -26,7 +26,7 @@ func (f *fakeInner) GeneratePresignedUploadURL(context.Context, BucketType, stri
 	return "http://fake/", nil
 }
 func (f *fakeInner) ObjectExists(context.Context, BucketType, string) (bool, error) { return true, nil }
-func (f *fakeInner) GetPublicURL(BucketType, string) string { return "http://fake/" }
+func (f *fakeInner) GetPublicURL(BucketType, string) string                         { return "http://fake/" }
 
 func TestUploadGuardRejectsBadMIMEAndOversize(t *testing.T) {
 	inner := &fakeInner{}

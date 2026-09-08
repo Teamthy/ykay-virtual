@@ -1,204 +1,260 @@
 "use client";
 
-import { useRef } from "react";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-  type MotionValue,
-} from "framer-motion";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { ProgrammeMarquee } from "@/components/home/ProgrammeMarquee";
+import { useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, Menu, UserRound, X } from "lucide-react";
 
-// Homepage hero — evolve-accurate editorial (reference: madeinevolve.com).
+// Homepage hero — card composition per the approved reference (2026-09-08):
+// a greige field carrying one large rounded off-white card; inside it a slim
+// chrome row (brand mark · pill nav · contact pill · round auth buttons),
+// a letterspaced eyebrow, one enormous two-line display headline with round
+// black prev/next controls, and a horizontal rail of programme cards — the
+// first card lime ("active"), the rest warm off-white — each with two white
+// chips, an index badge, a two-line title, a short description, a colour-block
+// editorial portrait and a white "Read More" pill.
 //
-// The inspo's language: a LIGHT canvas, one enormous display headline whose
-// letters introduce themselves on load and unstitch on the way out, then a
-// drifting reel of image covers beneath. Ours: light peach canvas in light
-// mode / deep green in dark mode, LEARN / ANYWHERE. in Anton-style caps,
-// per-letter spring intro + per-letter scroll outro, and an auto-drifting
-// reel of real photography (pause on hover). Type is always ink-on-light or
-// white-on-deep — contrast is structural, never accidental.
+// Copy discipline: every claim below is a real, existing surface of the
+// product (live classes, WASSCE/UTME prep, 1-on-1 tuition). No invented
+// statistics, no press logos — the round-19 removals stay removed.
 
-const MARKS = [
-  { n: "01", label: "Live online classes" },
-  { n: "02", label: "1-on-1 private tuition" },
-  { n: "03", label: "UTME · WAEC · IELTS prep" },
-  { n: "04", label: "Parent progress reports" },
+const NAV = [
+  { label: "Home", href: "/" },
+  { label: "About Us", href: "/about" },
+  { label: "Programs", href: "/programmes" },
+  { label: "Exam Prep", href: "/exam-prep" },
 ];
 
-/** One headline letter: heavy spring intro, per-letter scroll outro. */
-function HeroLetter({
-  char,
-  index,
-  progress,
-}: {
-  char: string;
-  index: number;
-  progress: MotionValue<number>;
-}) {
-  const reduce = useReducedMotion();
-  const start = 0.08 + index * 0.028;
-  const y = useTransform(
-    progress,
-    [start, start + 0.3],
-    [0, -(90 + index * 7)],
-  );
-  const opacity = useTransform(progress, [start, start + 0.22], [1, 0]);
-  const rotate = useTransform(
-    progress,
-    [start, start + 0.3],
-    [0, index % 2 ? 6 : -6],
-  );
-
-  if (reduce) return <span>{char}</span>;
-
-  return (
-    <motion.span style={{ display: "inline-block", y, opacity, rotate }}>
-      <motion.span
-        style={{ display: "inline-block", willChange: "transform" }}
-        initial={{
-          opacity: 0,
-          y: "1.05em",
-          rotate: -12,
-          scale: 0.7,
-          filter: "blur(8px)",
-        }}
-        animate={{ opacity: 1, y: 0, rotate: 0, scale: 1, filter: "blur(0px)" }}
-        transition={{
-          type: "spring",
-          stiffness: 240,
-          damping: 16,
-          mass: 0.9,
-          delay: 0.35 + index * 0.03,
-        }}
-      >
-        {char}
-      </motion.span>
-    </motion.span>
-  );
-}
-
-function HeroWord({
-  word,
-  progress,
-  className,
-}: {
-  word: string;
-  progress: MotionValue<number>;
-  className?: string;
-}) {
-  const reduce = useReducedMotion();
-  if (reduce) return <span className={className}>{word}</span>;
-  return (
-    <span className={className} aria-label={word} role="text">
-      {Array.from(word).map((char, i) => (
-        <HeroLetter
-          key={`${char}-${i}`}
-          char={char}
-          index={i}
-          progress={progress}
-        />
-      ))}
-    </span>
-  );
-}
+const CARDS = [
+  {
+    n: "01",
+    title: ["Junior", "Programs"],
+    chips: ["JSS 1–3", "BECE track"],
+    blurb:
+      "Live online classes for JSS1–JSS3, built on the NERDC scheme of work.",
+    img: "/home/card-jss.jpg",
+    alt: "Junior secondary student in a striped shirt against a blue backdrop",
+    href: "/online-classes",
+    active: true,
+  },
+  {
+    n: "02",
+    title: ["Senior", "Programs"],
+    chips: ["SS 1–3", "WASSCE route"],
+    blurb: "SS1–SS3 cohorts with structured WASSCE and UTME preparation.",
+    img: "/home/card-ss.jpg",
+    alt: "Senior secondary student with braids against a lavender backdrop",
+    href: "/programmes",
+    active: false,
+  },
+  {
+    n: "03",
+    title: ["Exam", "Preparation"],
+    chips: ["UTME", "All levels"],
+    blurb: "Timed practice and coaching for UTME, WAEC and NECO sittings.",
+    img: "/home/card-exam.jpg",
+    alt: "Student in a pink bucket hat against a teal backdrop",
+    href: "/exam-prep",
+    active: false,
+  },
+  {
+    n: "04",
+    title: ["Private", "Lessons"],
+    chips: ["Any age", "1-on-1"],
+    blurb: "Personal tuition matched to your level, pace and schedule.",
+    img: "/home/card-tuition.jpg",
+    alt: "Student with a notebook against a cobalt backdrop",
+    href: "/private-tuition",
+    active: false,
+  },
+];
 
 export function HeroSplit() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-  const metaY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const metaOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-  const reelY = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const railRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const scrollRail = (dir: 1 | -1) => {
+    const el = railRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: dir * Math.min(el.clientWidth * 0.8, 640),
+      behavior: "smooth",
+    });
+  };
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative flex w-full flex-col overflow-hidden bg-peach dark:bg-deep-green"
-    >
-      {/* ── The headline canvas ── */}
-      <div className="mx-auto w-full max-w-[1400px] px-6 pb-10 pt-28 md:px-10 md:pt-36">
-        <motion.p
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white/70 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.25em] text-ink-600 dark:border-white/20 dark:bg-white/10 dark:text-white/80"
-        >
-          <span className="size-1.5 rounded-full bg-brand-green" />
-          Ykay family · Online school
-        </motion.p>
-
-        <h1 className="font-display text-[clamp(3.5rem,12.5vw,11.5rem)] leading-[0.84] tracking-[-0.02em] text-ink-950 dark:text-white [container-type:inline-size]">
-          <HeroWord
-            word="LEARN"
-            progress={scrollYProgress}
-            className="block whitespace-nowrap"
-          />
-          <span className="block text-deep-green dark:text-primary">
-            <HeroWord
-              word="ANYWHERE."
-              progress={scrollYProgress}
-              className="block whitespace-nowrap"
-            />
-          </span>
-        </h1>
-
-        {/* Meta row: copy + CTAs + indexed marks */}
-        <motion.div
-          style={{ y: metaY, opacity: metaOpacity }}
-          className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between"
-        >
-          <div className="max-w-xl">
-            <p className="text-base leading-relaxed text-ink-600 dark:text-white/80 md:text-lg">
-              Live online classes, private 1-on-1 tuition and UTME / WAEC /
-              IELTS preparation — the same teachers and standards as the campus
-              school, on any device, anywhere in Nigeria.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <a
-                href="/programmes"
-                className="inline-flex items-center gap-2 rounded-full bg-deep-green px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-300 hover:scale-[1.03] hover:bg-deep-green-light active:scale-[0.97] dark:bg-primary dark:text-ink-900 dark:hover:bg-primary-hover"
+    <section className="w-full bg-[#D8D3C8] px-3 py-4 md:px-6 md:py-8 dark:bg-deep-dark">
+      <div className="mx-auto max-w-[1240px] rounded-[28px] bg-[#F7F5F1] px-5 pb-6 pt-5 shadow-[0_24px_80px_-32px_rgba(30,25,15,0.35)] md:px-10 md:pb-10 md:pt-7 dark:bg-[#0A241634] dark:bg-deep">
+        {/* ── chrome row ─────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              href="/"
+              aria-label="YK-Virtual home"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-deep"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                aria-hidden="true"
               >
-                Find a programme <ArrowRight size={14} />
-              </a>
-              <a
-                href="/private-tuition"
-                className="inline-flex items-center gap-2 rounded-full border border-ink-300 bg-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-ink-900 backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:bg-white active:scale-[0.97] dark:border-white/30 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
-              >
-                Book private tuition <ArrowUpRight size={14} />
-              </a>
-            </div>
+                <path
+                  d="M12 3l2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4L12 3z"
+                  fill="currentColor"
+                />
+              </svg>
+            </Link>
+            <nav
+              aria-label="Primary"
+              className="hidden items-center gap-1 rounded-full bg-[#ECEAE4] p-1 md:flex dark:bg-white/10"
+            >
+              {NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-ink-800 transition hover:bg-white hover:text-ink-900 dark:text-white/80 dark:hover:bg-white/10"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
           </div>
 
-          <ul className="grid grid-cols-2 gap-x-8 gap-y-4 sm:grid-cols-4 lg:w-[32rem] lg:grid-cols-2">
-            {MARKS.map((m, i) => (
-              <motion.li
-                key={m.n}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 + i * 0.1, duration: 0.5 }}
-                className="border-l-2 border-ink-200 pl-3 dark:border-white/25"
-              >
-                <span className="font-display text-sm tracking-widest text-deep dark:text-primary">
-                  ({m.n})
-                </span>
-                <p className="mt-1 text-xs font-semibold leading-snug text-ink-700 dark:text-white/85">
-                  {m.label}
-                </p>
-              </motion.li>
-            ))}
-          </ul>
-        </motion.div>
-      </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/contact"
+              className="hidden items-center gap-1.5 rounded-full bg-[#ECEAE4] px-4 py-2 text-[11px] font-semibold text-ink-900 transition hover:bg-white sm:inline-flex dark:bg-white/10 dark:text-white"
+            >
+              Contact Us <ArrowRight size={12} />
+            </Link>
+            <Link
+              href="/login"
+              aria-label="Log in"
+              className="grid h-9 w-9 place-items-center rounded-full bg-[#ECEAE4] text-ink-900 transition hover:bg-white dark:bg-white/10 dark:text-white"
+            >
+              <UserRound size={15} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              className="grid h-9 w-9 place-items-center rounded-full bg-[#ECEAE4] text-ink-900 transition hover:bg-white md:hidden dark:bg-white/10 dark:text-white"
+            >
+              {menuOpen ? <X size={15} /> : <Menu size={15} />}
+            </button>
+          </div>
+        </div>
 
-      {/* ── Programme marquee — continuous discovery (pause on hover) ── */}
-      <motion.div style={{ y: reelY }} className="relative w-full">
-        <ProgrammeMarquee />
-      </motion.div>
+        {menuOpen && (
+          <nav
+            aria-label="Mobile"
+            className="mt-3 grid gap-1 rounded-2xl bg-[#ECEAE4] p-3 md:hidden dark:bg-white/10"
+          >
+            {[...NAV, { label: "Contact Us", href: "/contact" }].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-xl px-3 py-2 text-sm font-semibold text-ink-900 hover:bg-white dark:text-white dark:hover:bg-white/10"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        )}
+
+        {/* ── eyebrow + headline + controls ──────────────────────────── */}
+        <p className="mt-10 text-[10px] font-bold uppercase tracking-[0.28em] text-ink-500 md:mt-14 dark:text-white/50">
+          Elevate your learning
+        </p>
+        <div className="mt-3 flex items-end justify-between gap-6">
+          <h1 className="max-w-[16ch] text-[clamp(2.4rem,6.2vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-ink-900 dark:text-white">
+            Comprehensive Learning for Every Student
+          </h1>
+          <div className="hidden shrink-0 items-center gap-2 pb-2 md:flex">
+            <button
+              type="button"
+              onClick={() => scrollRail(-1)}
+              aria-label="Scroll programmes left"
+              className="grid h-9 w-9 place-items-center rounded-full bg-ink-900 text-white transition hover:bg-black"
+            >
+              <ArrowRight size={14} className="rotate-180" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollRail(1)}
+              aria-label="Scroll programmes right"
+              className="grid h-9 w-9 place-items-center rounded-full bg-ink-900 text-white transition hover:bg-black"
+            >
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── programme rail ─────────────────────────────────────────── */}
+        <div
+          ref={railRef}
+          className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:mt-10 md:gap-5"
+        >
+          {CARDS.map((card) => (
+            <article
+              key={card.n}
+              className={`relative w-[240px] shrink-0 snap-start overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
+                card.active ? "bg-primary" : "bg-[#EFEAE1] dark:bg-white/10"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {card.chips.map((chip) => (
+                    <span
+                      key={chip}
+                      className="rounded-full bg-white px-2.5 py-1 text-[9px] font-bold text-ink-900"
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+                <span
+                  aria-hidden="true"
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[9px] font-bold ${
+                    card.active
+                      ? "bg-ink-900 text-primary"
+                      : "bg-white/60 text-ink-700 dark:bg-white/20 dark:text-white"
+                  }`}
+                >
+                  {card.n}
+                </span>
+              </div>
+
+              <h2 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-ink-900 md:text-3xl">
+                {card.title[0]}
+                <span className="block">{card.title[1]}</span>
+              </h2>
+              <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-ink-700 dark:text-white/70">
+                {card.blurb}
+              </p>
+
+              <div className="relative mt-4 overflow-hidden rounded-2xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={card.img}
+                  alt={card.alt}
+                  loading="eager"
+                  className="aspect-[4/5] w-full object-cover"
+                />
+                <Link
+                  href={card.href}
+                  className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-ink-900 shadow transition hover:bg-ink-900 hover:text-white"
+                >
+                  Read More <ArrowRight size={11} />
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }

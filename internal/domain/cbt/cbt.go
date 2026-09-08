@@ -12,10 +12,12 @@ import (
 )
 
 var (
-	ErrNotFound      = errors.New("cbt: not found")
-	ErrNotEnough     = errors.New("cbt: not enough published questions for the requested paper")
-	ErrInvalidInput  = errors.New("cbt: invalid input")
-	ErrDuplicateStem = errors.New("cbt: question stem already exists in subject")
+	ErrNotFound       = errors.New("cbt: not found")
+	ErrNotEnough      = errors.New("cbt: not enough published questions for the requested paper")
+	ErrInvalidInput   = errors.New("cbt: invalid input")
+	ErrDuplicateStem  = errors.New("cbt: question stem already exists in subject")
+	ErrAttemptInvalid = errors.New("cbt: attempt ticket is invalid or was issued for another student")
+	ErrAttemptExpired = errors.New("cbt: attempt window has closed")
 )
 
 type Subject struct {
@@ -48,7 +50,8 @@ type Repository interface {
 	// UpsertSubject creates or updates a subject by slug.
 	UpsertSubject(ctx context.Context, s *Subject) error
 	// RandomQuestions draws n random published questions for a subject slug.
-	RandomQuestions(ctx context.Context, subjectSlug string, n int) ([]Question, error)
+	// difficulty filters 1-3; 0 means "mixed" (any difficulty).
+	RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int) ([]Question, error)
 	// GetByIDs fetches questions by id (published only) — used by grading.
 	GetByIDs(ctx context.Context, ids []uuid.UUID) ([]Question, error)
 	// CreateQuestion inserts a question; duplicate stems error/are skipped per flag.

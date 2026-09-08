@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
 	"ykay-virtual/internal/domain/cbt"
 	"ykay-virtual/internal/repository/memory"
@@ -58,10 +59,12 @@ func TestCBTSubjectsHaveLiveCounts(t *testing.T) {
 
 func TestCBTPaperIsRandomSubsetWithoutKey(t *testing.T) {
 	svc := newSeededCBT(t)
-	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 2)
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 2, 0, 0, testStudent())
 	require.NoError(t, err)
-	require.Len(t, paper, 2)
-	for _, q := range paper {
+	require.Len(t, paper.Questions, 2)
+	assert.NotEmpty(t, paper.AttemptToken)
+	assert.True(t, paper.Deadline.IsZero(), "duration 0 means untimed")
+	for _, q := range paper.Questions {
 		assert.NotEmpty(t, q.ID)
 		assert.NotEmpty(t, q.Stem)
 		assert.Len(t, q.Options, 4)
@@ -69,30 +72,115 @@ func TestCBTPaperIsRandomSubsetWithoutKey(t *testing.T) {
 	// Two draws over a 3-question pool with limit 2 must (practically) differ.
 	differ := false
 	for i := 0; i < 20 && !differ; i++ {
-		other, err := svc.GeneratePaper(context.Background(), "mathematics", 2)
+		other, err := svc.GeneratePaper(context.Background(), "mathematics", 2, 0, 0, testStudent())
 		require.NoError(t, err)
-		differ = other[0].ID != paper[0].ID || other[1].ID != paper[1].ID
+		differ = other.Questions[0].ID != paper.Questions[0].ID ||
+			other.Questions[1].ID != paper.Questions[1].ID
 	}
 	assert.True(t, differ, "two random draws should rarely be identical")
 
-	_, err = svc.GeneratePaper(context.Background(), "nope", 5)
+	_, err = svc.GeneratePaper(context.Background(), "nope", 5, 0, 0, testStudent())
 	assert.ErrorIs(t, err, cbt.ErrNotFound)
+	// Input guards: difficulty and duration have hard bounds.
+	_, err = svc.GeneratePaper(context.Background(), "mathematics", 5, 4, 0, testStudent())
+	assert.ErrorIs(t, err, cbt.ErrInvalidInput)
+	_, err = svc.GeneratePaper(context.Background(), "mathematics", 5, 1, 181, testStudent())
+	assert.ErrorIs(t, err, cbt.ErrInvalidInput)
+}
+
+func TestCBTPaperFiltersByDifficulty(t *testing.T) {
+	svc := newSeededCBT(t)
+	// mini bank mathematics: difficulty 1, 2, 3 (one each).
+	for _, d := range []int{1, 2, 3} {
+		paper, err := svc.GeneratePaper(context.Background(), "mathematics", 10, d, 0, testStudent())
+		require.NoError(t, err)
+		require.Len(t, paper.Questions, 1, "difficulty %d should match exactly one question", d)
+		assert.Equal(t, d, paper.Questions[0].Difficulty)
+	}
+	mixed, err := svc.GeneratePaper(context.Background(), "mathematics", 10, 0, 0, testStudent())
+	require.NoError(t, err)
+	assert.Len(t, mixed.Questions, 3)
+}
+
+func testStudent() uuid.UUID { return uuid.MustParse("11111111-1111-1111-1111-111111111111") }
+
+func TestCBTAttemptTokenBindsDrawAndDeadline(t *testing.T) {
+	now := time.Date(2026, 9, 8, 12, 0, 0, 0, time.UTC)
+	svc := newSeededCBT(t).WithClock(func() time.Time { return now })
+	other := uuid.MustParse("22222222-2222-2222-2222-222222222222")
+
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 5, testStudent())
+	require.NoError(t, err)
+	require.Len(t, paper.Questions, 3)
+	assert.Equal(t, now.Add(5*time.Minute), paper.Deadline)
+
+	good := 1
+	answers := make([]GradeAnswer, 0, 3)
+	for _, q := range paper.Questions {
+		answers = append(answers, GradeAnswer{QuestionID: q.ID, SelectedIndex: &good})
+	}
+
+	// Happy path inside the window.
+	res, err := svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, answers)
+	require.NoError(t, err)
+	assert.Equal(t, 3, res.Total)
+	assert.Equal(t, 3, res.Correct)
+
+	// Tampered token (flip a character in the payload).
+	tampered := paper.AttemptToken[:12] + string(rune(paper.AttemptToken[12]+1)) + paper.AttemptToken[13:]
+	if tampered == paper.AttemptToken { // extremely unlikely collision guard
+		tampered = paper.AttemptToken + "x"
+	}
+	_, err = svc.GradePaper(context.Background(), testStudent(), tampered, answers)
+	assert.ErrorIs(t, err, cbt.ErrAttemptInvalid)
+
+	// Cross-student replay: signature valid, sid mismatch.
+	_, err = svc.GradePaper(context.Background(), other, paper.AttemptToken, answers)
+	assert.ErrorIs(t, err, cbt.ErrAttemptInvalid)
+
+	// Answer for a question that was never drawn.
+	stray := append(append([]GradeAnswer(nil), answers...),
+		GradeAnswer{QuestionID: uuid.New(), SelectedIndex: &good})
+	_, err = svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, stray)
+	assert.ErrorIs(t, err, cbt.ErrAttemptInvalid)
+
+	// Past the deadline → expired.
+	svc.WithClock(func() time.Time { return now.Add(5*time.Minute + attemptGrace + time.Second) })
+	_, err = svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, answers)
+	assert.ErrorIs(t, err, cbt.ErrAttemptExpired)
+
+	// Inside the grace window the auto-submit still grades.
+	svc.WithClock(func() time.Time { return now.Add(5*time.Minute + attemptGrace - time.Second) })
+	res, err = svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, answers)
+	require.NoError(t, err)
+	assert.Equal(t, 3, res.Correct)
+}
+
+func TestCBTGradeWithoutTokenKeepsLegacyPath(t *testing.T) {
+	svc := newSeededCBT(t)
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 0, testStudent())
+	require.NoError(t, err)
+	good := 1
+	answers := []GradeAnswer{{QuestionID: paper.Questions[0].ID, SelectedIndex: &good}}
+	res, err := svc.GradePaper(context.Background(), testStudent(), "", answers)
+	require.NoError(t, err)
+	assert.Equal(t, 1, res.Correct)
 }
 
 func TestCBTGradeServerSide(t *testing.T) {
 	svc := newSeededCBT(t)
-	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3)
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 0, testStudent())
 	require.NoError(t, err)
 
-	answers := make([]GradeAnswer, 0, len(paper))
+	answers := make([]GradeAnswer, 0, len(paper.Questions))
 	// mathematics CSV keys are all index 1 → answer 1 correctly, skip 1, flub 1.
 	good := 1
-	answers = append(answers, GradeAnswer{QuestionID: paper[0].ID, SelectedIndex: &good})
-	answers = append(answers, GradeAnswer{QuestionID: paper[1].ID}) // unanswered
+	answers = append(answers, GradeAnswer{QuestionID: paper.Questions[0].ID, SelectedIndex: &good})
+	answers = append(answers, GradeAnswer{QuestionID: paper.Questions[1].ID}) // unanswered
 	bad := 2
-	answers = append(answers, GradeAnswer{QuestionID: paper[2].ID, SelectedIndex: &bad})
+	answers = append(answers, GradeAnswer{QuestionID: paper.Questions[2].ID, SelectedIndex: &bad})
 
-	res, err := svc.GradePaper(context.Background(), answers)
+	res, err := svc.GradePaper(context.Background(), testStudent(), "", answers)
 	require.NoError(t, err)
 	assert.Equal(t, 3, res.Total)
 	assert.Equal(t, 1, res.Correct)
@@ -103,7 +191,7 @@ func TestCBTGradeServerSide(t *testing.T) {
 		assert.NotEmpty(t, r.Explanation)
 	}
 
-	_, err = svc.GradePaper(context.Background(), nil)
+	_, err = svc.GradePaper(context.Background(), testStudent(), "", nil)
 	assert.ErrorIs(t, err, cbt.ErrInvalidInput)
 }
 

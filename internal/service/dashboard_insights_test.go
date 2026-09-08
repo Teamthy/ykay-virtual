@@ -15,18 +15,28 @@ import (
 
 func TestDailyQuote_Deterministic_PerUserPerDay(t *testing.T) {
 	day := time.Date(2026, 8, 26, 12, 0, 0, 0, time.UTC)
-	u1, u2 := uuid.New(), uuid.New()
+	u1 := uuid.New()
 
 	q1a := DailyQuote(u1, day)
-	q1b := DailyQuote(u1, day)                      // same user same day
-	q1next := DailyQuote(u1, day.Add(24*time.Hour)) // same user next day
-	q2 := DailyQuote(u2, day)                       // different user same day
-
+	q1b := DailyQuote(u1, day) // same user same day
 	assert.Equal(t, q1a, q1b, "same user + same day must be stable")
 	assert.Contains(t, WelcomeQuotes, q1a)
-	// Not required, but overwhelmingly likely different on next day / other user.
-	assert.NotEqual(t, q1a, q1next)
-	assert.NotEqual(t, q1a, q2)
+
+	// A different day / different user *can* collide — there are only
+	// len(WelcomeQuotes) buckets, so a single random draw flakes ~1-in-12.
+	// Draw until the bucket differs: the property under test is that the
+	// selection varies, not that any particular pair differs.
+	q1next := q1a
+	for i := 0; i < 64 && q1next == q1a; i++ {
+		q1next = DailyQuote(u1, day.Add(24*time.Hour*time.Duration(i+1)))
+	}
+	assert.NotEqual(t, q1a, q1next, "quote must vary across days")
+
+	q2 := q1a
+	for i := 0; i < 64 && q2 == q1a; i++ {
+		q2 = DailyQuote(uuid.New(), day)
+	}
+	assert.NotEqual(t, q1a, q2, "quote must vary across users")
 }
 
 func TestDashboardInsights_FeedbackAndPrefs(t *testing.T) {

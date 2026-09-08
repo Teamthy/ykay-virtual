@@ -19,10 +19,21 @@ export default function PracticeSittingPage() {
   const qc = useQueryClient();
   const [nonce, setNonce] = useState(0);
   const [limit, setLimit] = useState(20);
+  const [difficulty, setDifficulty] = useState(0); // 0 = mixed
+  const [duration, setDuration] = useState(0); // 0 = untimed
 
   const paper = useQuery({
-    queryKey: ["cbt", "bank", "paper", slug, limit, nonce],
-    queryFn: () => drawBankPaper(slug, limit),
+    queryKey: [
+      "cbt",
+      "bank",
+      "paper",
+      slug,
+      limit,
+      difficulty,
+      duration,
+      nonce,
+    ],
+    queryFn: () => drawBankPaper(slug, limit, difficulty, duration),
     staleTime: Infinity, // the sitting owns this draw; no background refetch
     retry: false,
   });
@@ -36,23 +47,59 @@ export default function PracticeSittingPage() {
         >
           <ArrowLeft size={15} /> Practice bank
         </Link>
-        <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
-          Questions per paper
-          <select
-            value={limit}
-            onChange={(e) => {
-              setLimit(Number(e.target.value));
-              setNonce((n) => n + 1);
-            }}
-            className="rounded-xl border border-[--line] bg-white px-3 py-1.5 text-sm font-bold text-deep"
-          >
-            {[10, 20, 30, 40, 50, 60].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+            Questions
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setNonce((n) => n + 1);
+              }}
+              className="rounded-xl border border-[--line] bg-white px-3 py-1.5 text-sm font-bold text-deep"
+            >
+              {[10, 20, 30, 40, 50, 60].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+            Difficulty
+            <select
+              value={difficulty}
+              onChange={(e) => {
+                setDifficulty(Number(e.target.value));
+                setNonce((n) => n + 1);
+              }}
+              className="rounded-xl border border-[--line] bg-white px-3 py-1.5 text-sm font-bold text-deep"
+            >
+              <option value={0}>Mixed</option>
+              <option value={1}>Easy</option>
+              <option value={2}>Medium</option>
+              <option value={3}>Hard</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+            Time
+            <select
+              value={duration}
+              onChange={(e) => {
+                setDuration(Number(e.target.value));
+                setNonce((n) => n + 1);
+              }}
+              className="rounded-xl border border-[--line] bg-white px-3 py-1.5 text-sm font-bold text-deep"
+            >
+              <option value={0}>Untimed</option>
+              {[10, 20, 30, 45, 60, 90].map((n) => (
+                <option key={n} value={n}>
+                  {n} min
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
       {paper.isLoading ? (

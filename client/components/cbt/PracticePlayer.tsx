@@ -24,9 +24,30 @@ import {
 // and grading happens on the server at submit — the key is never in the paper.
 //
 // Lifecycle: brief → running → result (score + per-question review).
-// The timer is a practice aid: at 00:00 the paper auto-submits (JAMB pace).
+//
+// Two timer modes:
+//   * timed   — the student picked a duration, so the server signed a deadline
+//     into the attempt ticket. The clock counts down to THAT deadline (server
+//     truth, not a client budget) and the paper auto-submits at 00:00.
+//   * untimed — a 45s/question pacing aid only; the server enforces nothing.
+// Either way the submission carries the attempt token, so the server grades
+// the questions that were actually drawn.
 
 const LETTERS = ["A", "B", "C", "D", "E", "F"];
+
+function isUntimed(paper: BankPaper): boolean {
+  return (
+    paper.duration_minutes <= 0 ||
+    !paper.deadline ||
+    paper.deadline.startsWith("0001-01-01")
+  );
+}
+
+/** Seconds until the server deadline, floored at zero. */
+function secondsToDeadline(deadline: string): number {
+  const ms = new Date(deadline).getTime() - Date.now();
+  return Number.isFinite(ms) && ms > 0 ? Math.floor(ms / 1000) : 0;
+}
 
 function fmt(sec: number): string {
   const s = Math.max(0, Math.floor(sec));
@@ -47,7 +68,12 @@ export function PracticePlayer({
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [flags, setFlags] = useState<Record<string, boolean>>({});
-  const [remaining, setRemaining] = useState(paper.count * 45); // JAMB pace: 45s/q
+  const timed = !isUntimed(paper);
+  // Timed sittings count down to the server deadline; untimed ones use a
+  // 45s/question pacing aid (JAMB pace) that the server does not enforce.
+  const [remaining, setRemaining] = useState(() =>
+    isUntimed(paper) ? paper.count * 45 : secondsToDeadline(paper.deadline),
+  );
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<BankGradeResult | null>(null);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
@@ -71,7 +97,7 @@ export function PracticePlayer({
         question_id: x.id,
         selected_index: answers[x.id] ?? null,
       }));
-      const res = await gradeBankPaper(payload);
+      const res = await gradeBankPaper(paper.attempt_token, payload);
       setResult(res);
       setPhase("result");
       setConfirmSubmit(false);
@@ -94,7 +120,7 @@ export function PracticePlayer({
       setRemaining((r) => {
         if (r <= 1) {
           clearInterval(t);
-          void finish(true);
+          if (timed) void finish(true); // enforced limit → auto-submit
           return 0;
         }
         return r - 1;
@@ -106,7 +132,8 @@ export function PracticePlayer({
 
   const review = useMemo(() => {
     if (!result) return [];
-    if (showCorrectOnly === "wrong") return result.review.filter((r) => !r.correct);
+    if (showCorrectOnly === "wrong")
+      return result.review.filter((r) => !r.correct);
     return result.review;
   }, [result, showCorrectOnly]);
 
@@ -123,19 +150,29 @@ export function PracticePlayer({
               {qs.length} randomly drawn questions
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-600">
-              This paper was drawn just for you — a fresh random set every
-              time. Suggested pace: <strong>45 seconds</strong> per question
-              ({fmt(qs.length * 45)} total). The clock is a training aid; when
-              it hits zero the paper submits itself, exactly like JAMB.
+              This paper was drawn just for you — a fresh random set every time.{" "}
+              {timed ? (
+                <>
+                  You set a <strong>{paper.duration_minutes}-minute</strong>{" "}
+                  limit and the server is holding you to it: the paper
+                  auto-submits when the clock hits zero, exactly like JAMB.
+                </>
+              ) : (
+                <>
+                  Untimed sitting. Suggested pace: <strong>45 seconds</strong>{" "}
+                  per question ({fmt(qs.length * 45)} total) — the clock is a
+                  training aid and does not submit for you.
+                </>
+              )}
             </p>
           </div>
           <div className="rounded-2xl bg-primary/10 px-5 py-4 text-center">
             <Clock size={20} className="mx-auto text-primary-dark" />
             <p className="mt-1 font-mono text-2xl font-bold text-deep">
-              {fmt(qs.length * 45)}
+              {fmt(timed ? remaining : qs.length * 45)}
             </p>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">
-              time budget
+              {timed ? "enforced limit" : "pace guide"}
             </p>
           </div>
         </div>
@@ -151,7 +188,8 @@ export function PracticePlayer({
             disabled={redrawing}
             className="btn-secondary inline-flex items-center gap-2 disabled:opacity-50"
           >
-            <Dices size={16} /> {redrawing ? "Drawing…" : "Draw different questions"}
+            <Dices size={16} />{" "}
+            {redrawing ? "Drawing…" : "Draw different questions"}
           </button>
         </div>
       </div>
@@ -161,7 +199,11 @@ export function PracticePlayer({
   // ── result ───────────────────────────────────────────────────────────────
   if (phase === "result" && result) {
     const band =
-      result.score >= 70 ? "text-green-600" : result.score >= 50 ? "text-amber-600" : "text-red-600";
+      result.score >= 70
+        ? "text-green-600"
+        : result.score >= 50
+          ? "text-amber-600"
+          : "text-red-600";
     return (
       <div className="space-y-6">
         <div className="rounded-3xl border border-[--line] bg-white p-8 text-center shadow-sm">
@@ -177,17 +219,26 @@ export function PracticePlayer({
             comes with the answer and a short explanation.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <button onClick={onRedraw} disabled={redrawing} className="btn-primary inline-flex items-center gap-2 disabled:opacity-50">
-              <Dices size={16} /> {redrawing ? "Drawing…" : "Practise again (new questions)"}
+            <button
+              onClick={onRedraw}
+              disabled={redrawing}
+              className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+            >
+              <Dices size={16} />{" "}
+              {redrawing ? "Drawing…" : "Practise again (new questions)"}
             </button>
             {result.review.some((r) => !r.correct) && (
               <button
                 onClick={() =>
-                  setShowCorrectOnly(showCorrectOnly === "wrong" ? "all" : "wrong")
+                  setShowCorrectOnly(
+                    showCorrectOnly === "wrong" ? "all" : "wrong",
+                  )
                 }
                 className="btn-secondary"
               >
-                {showCorrectOnly === "wrong" ? "Show all questions" : "Review my mistakes only"}
+                {showCorrectOnly === "wrong"
+                  ? "Show all questions"
+                  : "Review my mistakes only"}
               </button>
             )}
           </div>
@@ -195,10 +246,16 @@ export function PracticePlayer({
 
         <div className="space-y-4">
           {review.map((r, i) => (
-            <div key={r.id} className="rounded-3xl border border-[--line] bg-white p-6 shadow-sm">
+            <div
+              key={r.id}
+              className="rounded-3xl border border-[--line] bg-white p-6 shadow-sm"
+            >
               <div className="flex items-start gap-3">
                 {r.correct ? (
-                  <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-green-600" />
+                  <CheckCircle2
+                    size={20}
+                    className="mt-0.5 shrink-0 text-green-600"
+                  />
                 ) : (
                   <XCircle size={20} className="mt-0.5 shrink-0 text-red-500" />
                 )}
@@ -222,9 +279,15 @@ export function PracticePlayer({
                           }`}
                         >
                           {LETTERS[j]}. {o}
-                          {isKey && <span className="ml-2 text-[11px] font-bold">✓ answer</span>}
+                          {isKey && (
+                            <span className="ml-2 text-[11px] font-bold">
+                              ✓ answer
+                            </span>
+                          )}
                           {isPick && !isKey && (
-                            <span className="ml-2 text-[11px] font-bold">your pick</span>
+                            <span className="ml-2 text-[11px] font-bold">
+                              your pick
+                            </span>
                           )}
                         </div>
                       );
@@ -251,7 +314,8 @@ export function PracticePlayer({
       <div className="sticky top-2 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[--line] bg-white/95 px-5 py-3 shadow-sm backdrop-blur">
         <div className="flex items-center gap-4 text-sm">
           <span className="font-bold text-deep">
-            Question {idx + 1} <span className="text-ink-400">/ {qs.length}</span>
+            Question {idx + 1}{" "}
+            <span className="text-ink-400">/ {qs.length}</span>
           </span>
           <span className="text-ink-500">
             answered <strong className="text-deep">{answeredCount}</strong>
@@ -274,7 +338,10 @@ export function PracticePlayer({
               >
                 {submitting ? "Submitting…" : "Yes, submit"}
               </button>
-              <button onClick={() => setConfirmSubmit(false)} className="btn-secondary text-sm">
+              <button
+                onClick={() => setConfirmSubmit(false)}
+                className="btn-secondary text-sm"
+              >
                 Keep going
               </button>
             </div>
@@ -308,7 +375,9 @@ export function PracticePlayer({
             <button
               onClick={() => setFlags((f) => ({ ...f, [q.id]: !f[q.id] }))}
               className={`ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 ${
-                flags[q.id] ? "bg-amber-100 text-amber-700" : "bg-ink-100 text-ink-500"
+                flags[q.id]
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-ink-100 text-ink-500"
               }`}
             >
               <Flag size={12} /> {flags[q.id] ? "Flagged" : "Flag"}
@@ -351,9 +420,7 @@ export function PracticePlayer({
             </button>
             {answers[q.id] !== undefined && (
               <button
-                onClick={() =>
-                  setAnswers(({ [q.id]: _drop, ...rest }) => rest)
-                }
+                onClick={() => setAnswers(({ [q.id]: _drop, ...rest }) => rest)}
                 className="text-xs font-semibold text-ink-400 hover:text-ink-600"
               >
                 Clear answer
@@ -361,7 +428,9 @@ export function PracticePlayer({
             )}
             <button
               onClick={() =>
-                idx === qs.length - 1 ? setConfirmSubmit(true) : setIdx((i) => i + 1)
+                idx === qs.length - 1
+                  ? setConfirmSubmit(true)
+                  : setIdx((i) => i + 1)
               }
               className="btn-primary inline-flex items-center gap-1.5 text-sm"
             >

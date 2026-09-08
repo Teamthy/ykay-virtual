@@ -2,11 +2,18 @@ package service
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
 	"strings"
+	"time"
 
 	"ykay-virtual/internal/domain/cbt"
 
@@ -18,10 +25,35 @@ import (
 // grading with review, admin browse/publish/delete and CSV import/seed.
 type CBTService struct {
 	repo cbt.Repository
+	// attemptKey signs the stateless attempt tickets issued with every
+	// paper draw. Without a configured CBT_ATTEMPT_SECRET a fresh random
+	// key is generated per boot: tickets then survive everything except a
+	// restart (acceptable for a practice bank; documented in README).
+	attemptKey []byte
+	now        func() time.Time
 }
 
 func NewCBTService(repo cbt.Repository) *CBTService {
-	return &CBTService{repo: repo}
+	key := make([]byte, 32)
+	if _, err := rand.Read(key); err != nil {
+		panic("cbt: crypto/rand unavailable: " + err.Error())
+	}
+	return &CBTService{repo: repo, attemptKey: key, now: time.Now}
+}
+
+// WithAttemptSecret pins the ticket-signing key across restarts/instances
+// (env CBT_ATTEMPT_SECRET). Empty secret keeps the per-boot random key.
+func (s *CBTService) WithAttemptSecret(secret string) *CBTService {
+	if secret != "" {
+		s.attemptKey = []byte(secret)
+	}
+	return s
+}
+
+// WithClock overrides the time source (tests).
+func (s *CBTService) WithClock(fn func() time.Time) *CBTService {
+	s.now = fn
+	return s
 }
 
 // ── student surface ────────────────────────────────────────────────────────
@@ -57,26 +89,121 @@ type PaperQuestion struct {
 }
 
 // GeneratePaper draws a random published subset — a fresh paper per call.
-func (s *CBTService) GeneratePaper(ctx context.Context, subjectSlug string, limit int) ([]PaperQuestion, error) {
+// difficulty 0 = mixed; durationMinutes 0 = untimed. The returned ticket is a
+// stateless, HMAC-signed record of THIS draw (student, ids, deadline): the
+// client cannot widen the id set, swap subject or extend the clock server-side
+// without invalidating the signature.
+func (s *CBTService) GeneratePaper(ctx context.Context, subjectSlug string, limit, difficulty, durationMinutes int, studentID uuid.UUID) (*GeneratedPaper, error) {
 	if subjectSlug == "" {
 		return nil, cbt.ErrInvalidInput
 	}
 	if limit < 1 || limit > 100 {
 		limit = 30
 	}
-	qs, err := s.repo.RandomQuestions(ctx, subjectSlug, limit)
+	if difficulty < 0 || difficulty > 3 {
+		return nil, cbt.ErrInvalidInput
+	}
+	if durationMinutes < 0 || durationMinutes > 180 {
+		return nil, cbt.ErrInvalidInput
+	}
+	qs, err := s.repo.RandomQuestions(ctx, subjectSlug, limit, difficulty)
 	if err != nil {
 		return nil, err
 	}
 	out := make([]PaperQuestion, len(qs))
+	ids := make([]uuid.UUID, len(qs))
 	for i, q := range qs {
 		out[i] = PaperQuestion{ID: q.ID, Topic: q.Topic, Difficulty: q.Difficulty, Stem: q.Stem,
 			Options: append([]string(nil), q.Options...)}
+		ids[i] = q.ID
 	}
 	// NOTE: option order is NOT shuffled — grading maps the client's selected
 	// index directly onto the stored option order, so shuffling here would
 	// desync the key. Randomness comes from question selection + order.
-	return out, nil
+	claims := attemptClaims{
+		StudentID:  studentID,
+		Subject:    subjectSlug,
+		Difficulty: difficulty,
+		Duration:   durationMinutes,
+		IssuedAt:   s.now().UTC(),
+		IDs:        ids,
+	}
+	if durationMinutes > 0 {
+		claims.Deadline = claims.IssuedAt.Add(time.Duration(durationMinutes) * time.Minute)
+	}
+	token, err := s.signAttempt(claims)
+	if err != nil {
+		return nil, err
+	}
+	return &GeneratedPaper{Questions: out, AttemptToken: token, Deadline: claims.Deadline}, nil
+}
+
+// GeneratedPaper — the draw plus its signed attempt ticket.
+type GeneratedPaper struct {
+	Questions    []PaperQuestion `json:"questions"`
+	AttemptToken string          `json:"attempt_token"`
+	Deadline     time.Time       `json:"deadline"` // zero = untimed
+}
+
+// ---- stateless attempt tickets ---------------------------------------------
+//
+// base64url(json claims) + "." + base64url(HMAC-SHA256(secret, claims)).
+// Nothing is persisted, so a timed bank attempt needs no new table or
+// migration; the cost is that tickets are opaque to operators and that a
+// restart without CBT_ATTEMPT_SECRET orphans in-flight attempts.
+
+type attemptClaims struct {
+	StudentID  uuid.UUID   `json:"sid"`
+	Subject    string      `json:"sub"`
+	Difficulty int         `json:"diff"`
+	Duration   int         `json:"dur"` // minutes
+	IssuedAt   time.Time   `json:"iat"`
+	Deadline   time.Time   `json:"exp,omitempty"` // zero = untimed
+	IDs        []uuid.UUID `json:"ids"`
+}
+
+// attemptGrace — the browser's timer hits zero and posts immediately, so a
+// submission can legitimately land a moment after the deadline. Anything past
+// the grace window is rejected as expired.
+const attemptGrace = 30 * time.Second
+
+func (s *CBTService) signAttempt(c attemptClaims) (string, error) {
+	payload, err := json.Marshal(c)
+	if err != nil {
+		return "", fmt.Errorf("cbt attempt: encode: %w", err)
+	}
+	body := base64.RawURLEncoding.EncodeToString(payload)
+	mac := hmac.New(sha256.New, s.attemptKey)
+	mac.Write([]byte(body))
+	return body + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil)), nil
+}
+
+func (s *CBTService) verifyAttempt(token string, studentID uuid.UUID, now time.Time) (*attemptClaims, error) {
+	body, sig, ok := strings.Cut(token, ".")
+	if !ok {
+		return nil, cbt.ErrAttemptInvalid
+	}
+	mac := hmac.New(sha256.New, s.attemptKey)
+	mac.Write([]byte(body))
+	want := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	if subtle.ConstantTimeCompare([]byte(want), []byte(sig)) != 1 {
+		return nil, cbt.ErrAttemptInvalid
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(body)
+	if err != nil {
+		return nil, cbt.ErrAttemptInvalid
+	}
+	var c attemptClaims
+	if err := json.Unmarshal(payload, &c); err != nil {
+		return nil, cbt.ErrAttemptInvalid
+	}
+	if c.StudentID != studentID || len(c.IDs) == 0 {
+		return nil, cbt.ErrAttemptInvalid // replayed or cross-student ticket
+	}
+	if !c.Deadline.IsZero() && now.After(c.Deadline.Add(attemptGrace)) {
+		return nil, cbt.ErrAttemptExpired
+	}
+	return &c, nil
 }
 
 type GradeAnswer struct {
@@ -103,9 +230,30 @@ type GradeResult struct {
 
 // GradePaper grades server-side: the client only sends its selections. The
 // key and explanations are revealed here and nowhere else.
-func (s *CBTService) GradePaper(ctx context.Context, answers []GradeAnswer) (*GradeResult, error) {
+//
+// attemptToken binds the submission to one issued draw (student, ids,
+// deadline). When present it is enforced: answers outside the drawn id set
+// are rejected, expired windows are rejected, and a cross-student ticket is
+// rejected. An empty token grades the legacy untimed path (no deadline, no
+// id binding) so old clients keep working.
+func (s *CBTService) GradePaper(ctx context.Context, studentID uuid.UUID, attemptToken string, answers []GradeAnswer) (*GradeResult, error) {
 	if len(answers) == 0 || len(answers) > 100 {
 		return nil, cbt.ErrInvalidInput
+	}
+	if attemptToken != "" {
+		claims, err := s.verifyAttempt(attemptToken, studentID, s.now())
+		if err != nil {
+			return nil, err
+		}
+		drawn := make(map[uuid.UUID]bool, len(claims.IDs))
+		for _, id := range claims.IDs {
+			drawn[id] = true
+		}
+		for _, a := range answers {
+			if !drawn[a.QuestionID] {
+				return nil, cbt.ErrAttemptInvalid // answer for a question that was never drawn
+			}
+		}
 	}
 	ids := make([]uuid.UUID, len(answers))
 	byID := map[uuid.UUID]GradeAnswer{}

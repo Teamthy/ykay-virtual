@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Search,
@@ -80,6 +80,12 @@ export function Header() {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [q, setQ] = useState("");
+  const pathname = usePathname();
+
+  // The marketing home ships its own chrome inside the hero card (see
+  // components/home/HeroSplit.tsx) — rendering this header above it would
+  // stack two navigations on one screen. Every other public route keeps it.
+  if (pathname === "/") return null;
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();

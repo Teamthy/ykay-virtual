@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -90,9 +91,9 @@ func main() {
 
 	switch *cmd {
 	case "up":
-		up(db, all, source)
+		up(db, all, source, cfg.DatabaseURL)
 	case "down":
-		down(db, all, source)
+		down(db, all, source, cfg.DatabaseURL)
 	case "status":
 		status(db, all, source)
 	default:
@@ -186,7 +187,42 @@ func appliedVersions(db *sql.DB) map[int]bool {
 	return out
 }
 
-func up(db *sql.DB, all []migration, source string) {
+// openMigrationLock takes the advisory lock on its OWN database handle rather
+// than on the pool the migrations run against.
+//
+// The lock is session-scoped, so it pins one backend connection for the whole
+// run. If that connection came from the same pool as the migration
+// transactions, the two would compete for slots and could deadlock when the
+// pool is small. A separate handle costs one extra connection during a manual
+// `cmd/migrate` run, which is a short-lived CLI and can afford it.
+func openMigrationLock(ctx context.Context, dsn string) (*migrations.AdvisoryLock, func()) {
+	lockDB, err := sql.Open("postgres", dsn)
+	if err != nil {
+		logx.Fatal("open lock db", "error", err)
+	}
+	lockDB.SetMaxOpenConns(1)
+	lock, err := migrations.AcquireAdvisoryLock(ctx, lockDB)
+	if err != nil {
+		_ = lockDB.Close()
+		logx.Fatal("acquire migration lock", "error", err,
+			"hint", "another migrate run may be in progress, or the DB user lacks permission for pg_advisory_lock")
+	}
+	return lock, func() {
+		if unlockErr := lock.Unlock(ctx); unlockErr != nil {
+			slog.Warn("migrate: failed to release advisory lock", "error", unlockErr)
+		}
+		_ = lockDB.Close()
+	}
+}
+
+func up(db *sql.DB, all []migration, source, dsn string) {
+	// Same advisory key as migrations.ApplyUp, so a manual `cmd/migrate --cmd=up`
+	// and a boot-time MIGRATE_ON_BOOT run queue behind each other rather than
+	// interleaving DDL. The applied-versions read must happen inside the lock.
+	ctx := context.Background()
+	_, release := openMigrationLock(ctx, dsn)
+	defer release()
+
 	applied := appliedVersions(db)
 	for _, m := range all {
 		if applied[m.version] {
@@ -217,7 +253,14 @@ func up(db *sql.DB, all []migration, source string) {
 	slog.Info("migrate up complete")
 }
 
-func down(db *sql.DB, all []migration, source string) {
+func down(db *sql.DB, all []migration, source, dsn string) {
+	// Held on the same key as up(): a rollback racing an upgrade is the worst
+	// possible interleaving, since down removes objects up is mid-way through
+	// creating.
+	ctx := context.Background()
+	_, release := openMigrationLock(ctx, dsn)
+	defer release()
+
 	applied := appliedVersions(db)
 	for i := len(all) - 1; i >= 0; i-- {
 		m := all[i]

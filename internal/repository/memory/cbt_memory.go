@@ -65,7 +65,7 @@ func (m *CBTMemory) UpsertSubject(_ context.Context, s *cbt.Subject) error {
 	return nil
 }
 
-func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n int) ([]cbt.Question, error) {
+func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n, difficulty int) ([]cbt.Question, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	id, ok := m.bySlug[subjectSlug]
@@ -74,7 +74,7 @@ func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n int) ([]cb
 	}
 	pool := make([]cbt.Question, 0)
 	for _, q := range m.questions {
-		if q.SubjectID == id && q.Status == "published" {
+		if q.SubjectID == id && q.Status == "published" && (difficulty == 0 || q.Difficulty == difficulty) {
 			pool = append(pool, *q)
 		}
 	}
@@ -88,8 +88,8 @@ func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n int) ([]cb
 	return pool[:n], nil
 }
 
-func (m *CBTMemory) RandomQuestions(ctx context.Context, subjectSlug string, n int) ([]cbt.Question, error) {
-	return m.random(ctx, subjectSlug, n)
+func (m *CBTMemory) RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int) ([]cbt.Question, error) {
+	return m.random(ctx, subjectSlug, n, difficulty)
 }
 
 func (m *CBTMemory) GetByIDs(_ context.Context, ids []uuid.UUID) ([]cbt.Question, error) {

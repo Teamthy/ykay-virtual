@@ -95,6 +95,12 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// Auth + sessions (Phase 7)
 	mux.HandleFunc("POST "+v1+"/auth/register", authRate(handlers.Auth.Register))
 	mux.HandleFunc("POST "+v1+"/auth/login", authRate(handlers.Auth.Login))
+	// YK-013: YKAY College federated login. Rate-limited like the other
+	// credential endpoints — the token is verified against the College portal
+	// on every call, so an unthrottled endpoint would be a way to hammer that
+	// portal through us.
+	mux.HandleFunc("POST "+v1+"/auth/college/login", authRate(handlers.Auth.CollegeLogin))
+	mux.HandleFunc("GET "+v1+"/auth/college/config", handlers.Auth.CollegeLoginConfig)
 	mux.HandleFunc("POST "+v1+"/auth/mfa/confirm", authRate(handlers.Auth.ConfirmMFA))
 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)
 	mux.HandleFunc("GET "+v1+"/auth/me", handlers.Auth.Me)
