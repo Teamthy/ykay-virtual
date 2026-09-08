@@ -165,7 +165,7 @@ export default function AdminCBTBankPage() {
             setSubject(e.target.value);
             setPage(1);
           }}
-          className="rounded-xl border border-[--line] bg-white px-3 py-2 text-sm font-semibold text-deep"
+          className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-deep"
         >
           <option value="">All subjects</option>
           {(subjects.data ?? []).map((s) => (
@@ -194,7 +194,7 @@ export default function AdminCBTBankPage() {
           {rows.map((q) => (
             <div
               key={q.id}
-              className="rounded-2xl border border-[--line] bg-white p-4 shadow-sm"
+              className="rounded-2xl border border-ink-200 bg-white p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -221,7 +221,7 @@ export default function AdminCBTBankPage() {
                   <button
                     onClick={() => void toggleStatus(q.id, q.status, q.stem)}
                     title={q.status === "published" ? "Move to draft" : "Publish"}
-                    className="grid h-9 w-9 place-items-center rounded-xl border border-[--line] text-ink-500 hover:border-primary/40 hover:text-primary-dark"
+                    className="grid h-9 w-9 place-items-center rounded-xl border border-ink-200 text-ink-500 hover:border-primary/40 hover:text-primary-dark"
                   >
                     {q.status === "published" ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -251,7 +251,7 @@ export default function AdminCBTBankPage() {
             </div>
           ))}
           {rows.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[--line] p-10 text-center text-sm text-ink-400">
+            <div className="rounded-2xl border border-dashed border-ink-200 p-10 text-center text-sm text-ink-400">
               <BookOpenCheck size={24} className="mx-auto mb-2 text-ink-300" />
               No questions match this filter.
             </div>
@@ -334,10 +334,10 @@ function CreateQuestionForm({
   };
 
   const input =
-    "w-full rounded-xl border border-[--line] bg-white px-3 py-2 text-sm text-ink-900 focus:border-primary focus:outline-none";
+    "w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 focus:border-primary focus:outline-none";
 
   return (
-    <div className="rounded-3xl border border-[--line] bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-ink-200 bg-white p-6 shadow-sm">
       <p className="text-sm font-bold text-deep">Add a question</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <select value={slug} onChange={(e) => setSlug(e.target.value)} className={input}>

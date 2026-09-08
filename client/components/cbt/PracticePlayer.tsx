@@ -140,7 +140,7 @@ export function PracticePlayer({
   // ── brief ────────────────────────────────────────────────────────────────
   if (phase === "brief") {
     return (
-      <div className="rounded-3xl border border-[--line] bg-white p-8 shadow-sm">
+      <div className="rounded-3xl border border-ink-200 bg-white p-8 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary-dark">
@@ -206,7 +206,7 @@ export function PracticePlayer({
           : "text-red-600";
     return (
       <div className="space-y-6">
-        <div className="rounded-3xl border border-[--line] bg-white p-8 text-center shadow-sm">
+        <div className="rounded-3xl border border-ink-200 bg-white p-8 text-center shadow-sm">
           <Trophy size={32} className="mx-auto text-primary-dark" />
           <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-primary-dark">
             Practice result · {paper.subject}
@@ -248,7 +248,7 @@ export function PracticePlayer({
           {review.map((r, i) => (
             <div
               key={r.id}
-              className="rounded-3xl border border-[--line] bg-white p-6 shadow-sm"
+              className="rounded-3xl border border-ink-200 bg-white p-6 shadow-sm"
             >
               <div className="flex items-start gap-3">
                 {r.correct ? (
@@ -275,7 +275,7 @@ export function PracticePlayer({
                               ? "border-green-300 bg-green-50 font-semibold text-green-800"
                               : isPick
                                 ? "border-red-300 bg-red-50 text-red-700 line-through"
-                                : "border-[--line] text-ink-600"
+                                : "border-ink-200 text-ink-600"
                           }`}
                         >
                           {LETTERS[j]}. {o}
@@ -311,7 +311,7 @@ export function PracticePlayer({
   return (
     <div className="space-y-5">
       {/* status bar */}
-      <div className="sticky top-2 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[--line] bg-white/95 px-5 py-3 shadow-sm backdrop-blur">
+      <div className="sticky top-2 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-white/95 px-5 py-3 shadow-sm backdrop-blur">
         <div className="flex items-center gap-4 text-sm">
           <span className="font-bold text-deep">
             Question {idx + 1}{" "}
@@ -364,7 +364,7 @@ export function PracticePlayer({
 
       {/* question */}
       {q && (
-        <div className="rounded-3xl border border-[--line] bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-3xl border border-ink-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
             <span className="rounded-full bg-primary/10 px-3 py-1 uppercase tracking-wide text-primary-dark">
               {q.topic}
@@ -394,14 +394,14 @@ export function PracticePlayer({
                 className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
                   answers[q.id] === j
                     ? "border-primary bg-primary/10 font-semibold text-deep"
-                    : "border-[--line] text-ink-700 hover:border-primary/50 hover:bg-primary/5"
+                    : "border-ink-200 text-ink-700 hover:border-primary/50 hover:bg-primary/5"
                 }`}
               >
                 <span
                   className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm font-bold ${
                     answers[q.id] === j
                       ? "border-primary bg-primary text-deep-green"
-                      : "border-[--line] text-ink-500"
+                      : "border-ink-200 text-ink-500"
                   }`}
                 >
                   {LETTERS[j]}
@@ -442,7 +442,7 @@ export function PracticePlayer({
       )}
 
       {/* palette */}
-      <div className="rounded-3xl border border-[--line] bg-white p-5 shadow-sm">
+      <div className="rounded-3xl border border-ink-200 bg-white p-5 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
           Question palette
         </p>
@@ -458,7 +458,7 @@ export function PracticePlayer({
                     ? "border-amber-300 bg-amber-100 text-amber-700"
                     : answers[x.id] !== undefined
                       ? "border-green-300 bg-green-100 text-green-700"
-                      : "border-[--line] text-ink-500 hover:border-primary/50"
+                      : "border-ink-200 text-ink-500 hover:border-primary/50"
               }`}
             >
               {i + 1}

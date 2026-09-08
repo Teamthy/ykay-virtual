@@ -56,7 +56,7 @@ export default function PracticeSittingPage() {
                 setLimit(Number(e.target.value));
                 setNonce((n) => n + 1);
               }}
-              className="rounded-xl border border-[--line] bg-white px-3 py-1.5 text-sm font-bold text-deep"
+              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
             >
               {[10, 20, 30, 40, 50, 60].map((n) => (
                 <option key={n} value={n}>
@@ -73,7 +73,7 @@ export default function PracticeSittingPage() {
                 setDifficulty(Number(e.target.value));
                 setNonce((n) => n + 1);
               }}
-              className="rounded-xl border border-[--line] bg-white px-3 py-1.5 text-sm font-bold text-deep"
+              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
             >
               <option value={0}>Mixed</option>
               <option value={1}>Easy</option>
@@ -89,7 +89,7 @@ export default function PracticeSittingPage() {
                 setDuration(Number(e.target.value));
                 setNonce((n) => n + 1);
               }}
-              className="rounded-xl border border-[--line] bg-white px-3 py-1.5 text-sm font-bold text-deep"
+              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
             >
               <option value={0}>Untimed</option>
               {[10, 20, 30, 45, 60, 90].map((n) => (

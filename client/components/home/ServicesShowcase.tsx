@@ -69,7 +69,7 @@ export function ServicesShowcase() {
           />
           <Link
             href="/programmes"
-            className="text-sm font-bold text-brand-blue hover:text-brand-navy"
+            className="text-sm font-bold text-deep-green hover:text-deep"
           >
             See all →
           </Link>

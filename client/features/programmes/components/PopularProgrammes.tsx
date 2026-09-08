@@ -18,27 +18,31 @@ export async function PopularProgrammes() {
 
   if (cards.length === 0) {
     return (
-      <section className="container-x py-16">
-        <div className="rounded-2xl border border-dashed border-ink-200 p-10 text-center">
+      <section className="backdrop-brand-light w-full bg-peach py-16">
+        <div className="container-x">
+        <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
           <h2 className="text-2xl font-extrabold">Popular programmes</h2>
           <p className="mt-2 text-sm text-ink-500">Programmes are being finalised for the new term - check back soon or request private tuition.</p>
           <Link href="/private-tuition" className="btn-gold mt-5 inline-block text-sm">Request private tuition</Link>
+        </div>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="container-x py-16">
+    <section className="backdrop-brand-light w-full bg-peach py-16">
+      <div className="container-x">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <p className="tag-handwritten">Start learning</p>
-          <h2 className="text-3xl font-extrabold mt-1">Popular programmes</h2>
+          <h2 className="mt-1 text-3xl font-extrabold text-deep-green">Popular programmes</h2>
         </div>
-        <Link href="/programmes" className="text-sm font-semibold text-brand-blue hover:underline">Browse all programmes →</Link>
+        <Link href="/programmes" className="text-sm font-semibold text-deep-green hover:underline">Browse all programmes →</Link>
       </div>
       <div className="mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {cards.map((p) => <ProgrammeCard key={p.id} p={p} />)}
+      </div>
       </div>
     </section>
   );

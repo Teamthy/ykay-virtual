@@ -20,7 +20,7 @@ export function ExamPrepGrid() {
             <Link
               key={i}
               href={card.href}
-              className="group relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-white p-8 text-center text-ink-800 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:bg-brand-blue hover:text-white hover:shadow-lift"
+              className="group relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-white p-8 text-center text-ink-800 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:bg-deep-green hover:text-white hover:shadow-lift"
             >
               <div className="text-lg font-extrabold md:text-2xl">
                 {card.title}
