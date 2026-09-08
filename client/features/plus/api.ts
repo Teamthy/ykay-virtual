@@ -13,6 +13,19 @@ export type PlusPlan = {
   is_active: boolean;
 };
 
+/** Map API/plan names so the account UI never shows NUVORA. */
+export function plusDisplayName(
+  plan?: Pick<PlusPlan, "code" | "name"> | null,
+  fallbackCode?: string,
+): string {
+  const code = plan?.code ?? fallbackCode ?? "";
+  if (code === "PLUS") return "YK-Virtual Plus";
+  if (code === "PLUS_FAMILY") return "YK-Virtual Plus Family";
+  if (code === "PLUS_TEAMS") return "YK-Virtual Plus Teams";
+  const raw = plan?.name || "YK-Virtual Plus";
+  return raw.replace(/nuvora/gi, "YK-Virtual");
+}
+
 export type Entitlements = {
   cbt_vault: boolean;
   verified_certs: boolean;

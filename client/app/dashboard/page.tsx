@@ -321,13 +321,14 @@ export default function ParentDashboardPage() {
                 />
               )}
             </div>
-            <aside className="space-y-4">
+            <aside className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
               <SideCard
                 icon={<CircleHelp size={18} />}
                 title="Have a question?"
                 body="Support can help with bookings, payments and learner accounts."
                 href="/help"
                 link="Contact support →"
+                image="/home/card-tutoring.jpg"
               />
               <SideCard
                 icon={<Users size={18} />}
@@ -335,6 +336,8 @@ export default function ParentDashboardPage() {
                 body="Add a child, switch profiles, or jump into their bookings."
                 href="/dashboard?section=learners"
                 link="Open learners →"
+                image="/home/ykay-students.png"
+                onClick={() => setSection("learners")}
               />
               <SideCard
                 icon={<MessageSquareText size={18} />}
@@ -342,6 +345,7 @@ export default function ParentDashboardPage() {
                 body="Chat with tutors and support about your family's learning."
                 href="/messages"
                 link="Open inbox →"
+                image="/home/card-cbt.jpg"
               />
             </aside>
             </div>

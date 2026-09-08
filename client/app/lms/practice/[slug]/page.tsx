@@ -53,7 +53,7 @@ export default function PracticeSittingPage() {
           href="/lms/practice"
           className="inline-flex items-center gap-1.5 text-sm font-bold text-primary-dark hover:underline"
         >
-          <ArrowLeft size={15} /> Practice bank
+          <ArrowLeft size={15} /> CBT Practice
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">

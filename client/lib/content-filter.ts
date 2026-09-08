@@ -8,7 +8,14 @@
 
 /** True if a row is seeded demo content (slug starts with `demo-`). */
 export function isDemoSlug(slug?: string | null): boolean {
-  return !!slug && slug.toLowerCase().startsWith("demo-");
+  if (!slug) return false;
+  const s = slug.toLowerCase();
+  return (
+    s.startsWith("demo-") ||
+    s.includes("utme-mastery") ||
+    s.includes("lms-demo") ||
+    s.includes("lmsdemo")
+  );
 }
 
 /** Filter an array of rows that expose a `slug` field. */

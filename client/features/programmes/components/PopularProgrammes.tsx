@@ -14,7 +14,7 @@ export async function PopularProgrammes() {
     programmes = [];
   }
 
-  const cards = programmes;
+  const cards = programmes.slice(0, 6);
 
   if (cards.length === 0) {
     return (

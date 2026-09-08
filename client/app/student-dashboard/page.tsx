@@ -12,7 +12,10 @@ import {
   Trophy,
   Award,
   Flame,
+  MessageSquareText,
+  ClipboardCheck,
 } from "lucide-react";
+import { SideCard } from "@/components/dashboard/DashHero";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import {
@@ -413,27 +416,37 @@ export default function StudentDashboardPage() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <StatCard
                 label="Course progress"
-                value={`${myStats.overallPct}%`}
-                hint={`${myStats.watchedLessons}/${myStats.totalLessons} lessons watched`}
+                value={enrolled ? `${myStats.overallPct}%` : "—"}
+                hint={
+                  enrolled
+                    ? `${myStats.watchedLessons}/${myStats.totalLessons} lessons watched`
+                    : "Join a cohort first"
+                }
                 icon={<Flame size={16} />}
               />
               <StatCard
                 label="Attendance"
                 value={
-                  myStats.attendancePct != null
+                  enrolled && myStats.attendancePct != null
                     ? `${myStats.attendancePct.toFixed(0)}%`
-                    : "–"
+                    : "—"
                 }
                 hint="live classes"
                 icon={<Clock size={16} />}
               />
               <StatCard
                 label="Assignments"
-                value={`${myStats.submitted}/${myStats.assignmentsTotal}`}
+                value={
+                  enrolled
+                    ? `${myStats.submitted}/${myStats.assignmentsTotal}`
+                    : "—"
+                }
                 hint={
-                  myStats.avgScore != null
+                  enrolled && myStats.avgScore != null
                     ? `avg score ${myStats.avgScore}`
-                    : "submitted"
+                    : enrolled
+                      ? "submitted"
+                      : "Join a cohort first"
                 }
                 icon={<CheckCircle2 size={16} />}
               />
@@ -527,23 +540,32 @@ export default function StudentDashboardPage() {
           </div>
         </div>
 
-        <aside className="space-y-4">
-          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
-            <div className="mb-3 grid size-10 place-items-center rounded-full bg-primary-light text-deep">
-              <CircleHelp size={18} />
-            </div>
-            <h3 className="font-bold text-ink-900">Have a question?</h3>
-            <p className="mt-1 text-sm text-ink-500">
-              Support is happy to help you get settled in before class begins.
-            </p>
-            <Link
-              href="/help"
-              className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline"
-            >
-              Contact support →
-            </Link>
-          </div>
-          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
+        <aside className="grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+          <SideCard
+            icon={<CircleHelp size={18} />}
+            title="Have a question?"
+            body="Support is happy to help you get settled in before class begins."
+            href="/help"
+            link="Contact support →"
+            image="/home/card-tutoring.jpg"
+          />
+          <SideCard
+            icon={<ClipboardCheck size={18} />}
+            title="CBT Practice"
+            body="Search a subject, sit a timed paper, and see your score with explanations."
+            href="/lms/practice"
+            link="Sit a paper →"
+            image="/home/card-cbt.jpg"
+          />
+          <SideCard
+            icon={<MessageSquareText size={18} />}
+            title="Messages"
+            body="Chat with tutors and classmates about lessons and assignments."
+            href="/messages"
+            link="Open inbox →"
+            image="/home/card-exam.jpg"
+          />
+          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft sm:col-span-3 xl:col-span-1">
             <div className="mb-3 grid size-10 place-items-center rounded-full bg-peach text-deep">
               <UserRound size={18} />
             </div>
@@ -585,9 +607,9 @@ export default function StudentDashboardPage() {
               <div className="flex justify-between">
                 <dt className="text-ink-500">Attendance</dt>
                 <dd className="font-bold text-ink-900">
-                  {attendance.data
+                  {enrolled && attendance.data
                     ? `${attendance.data.rate.toFixed(0)}%`
-                    : "–"}
+                    : "—"}
                 </dd>
               </div>
               <div className="flex justify-between">

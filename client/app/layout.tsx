@@ -133,7 +133,9 @@ export default function RootLayout({
           {/* Footer appears ONLY on the marketing home page; the floating
               AI assistant (moveable launcher) is available on EVERY page. */}
           <HomeOnly>
-            <Footer />
+            <div className="relative z-10">
+              <Footer />
+            </div>
           </HomeOnly>
           <ChatWidget />
           {/* WhatsApp live chat — floating button above the AI launcher;
