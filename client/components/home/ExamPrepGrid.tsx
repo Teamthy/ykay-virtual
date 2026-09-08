@@ -15,7 +15,7 @@ export function ExamPrepGrid() {
           className="mb-14 text-center text-3xl font-extrabold tracking-tight text-ink-800 md:text-5xl"
           text="Get expert help to ace your exam"
         />
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
           {examCards.map((card, i) => (
             <Link
               key={i}

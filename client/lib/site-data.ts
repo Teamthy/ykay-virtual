@@ -101,16 +101,10 @@ export const accordionItems = [
 
 // Each exam card links to its fully built prep page (Batch 2).
 export const examCards = [
+  { title: "CBT Practice", href: "/lms/practice" },
   { title: "GMAT Classes", href: "/gmat" },
   { title: "GRE Classes", href: "/gre" },
   { title: "SATs Prep", href: "/sat" },
   { title: "ACT Prep", href: "/sat" },
 ];
 
-export const trustLogos = [
-  "MIT | SOLVE",
-  "Forbes",
-  "COBIS",
-  "Cambridge Assessment",
-  "Pearson Edexcel",
-];

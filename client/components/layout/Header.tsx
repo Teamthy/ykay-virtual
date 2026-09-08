@@ -39,6 +39,7 @@ const SERVICE_GROUPS = [
     title: "Tests & Exams",
     icon: <BookOpen size={15} />,
     items: [
+      { label: "CBT Practice", href: "/lms/practice" },
       { label: "UTME 2026 Prep", href: "/utme-2026" },
       { label: "GMAT Prep", href: "/gmat" },
       { label: "Test Prep Hub", href: "/test-prep" },
@@ -65,10 +66,11 @@ const SERVICE_GROUPS = [
   },
 ];
 
-const NAV_LINKS = [
+const NAV_LINKS: { label: string; href: string; badge?: string }[] = [
   { label: "Programmes", href: "/programmes" },
   { label: "Cohorts", href: "/cohorts" },
   { label: "Tutors", href: "/tutors" },
+  { label: "CBT Practice", href: "/lms/practice", badge: "Exam hall" },
   { label: "How it works", href: "/how-it-works" },
   { label: "College", href: "/college" },
   { label: "About", href: "/about" },
@@ -118,9 +120,14 @@ export function Header() {
               key={l.href}
               href={l.href}
               onClick={closeAll}
-              className="rounded-lg p-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900"
+              className="flex items-center gap-1.5 rounded-lg p-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900"
             >
               {l.label}
+              {l.badge && (
+                <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-dark dark:bg-primary/15">
+                  {l.badge}
+                </span>
+              )}
             </Link>
           ))}
 
@@ -201,6 +208,22 @@ export function Header() {
             )}
           </div>
         </div>
+
+        {/* Desktop search */}
+        <form onSubmit={submitSearch} className="relative hidden xl:block">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
+          />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search subjects, tutors, exams…"
+            aria-label="Search subjects, tutors and exams"
+            className="w-56 rounded-full border border-ink-200 bg-ink-50 py-2 pl-8 pr-3 text-sm outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/30 dark:border-[#214c37] dark:bg-[#0d1f16] dark:text-white"
+          />
+        </form>
 
         {/* Divider + buttons */}
         <div className="hidden items-center gap-1.5 lg:flex">

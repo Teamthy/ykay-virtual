@@ -24,6 +24,7 @@ const NAV = [
   { label: "About Us", href: "/about" },
   { label: "Programs", href: "/programmes" },
   { label: "Exam Prep", href: "/exam-prep" },
+  { label: "CBT Practice", href: "/lms/practice" },
 ];
 
 const CARDS = [
@@ -65,6 +66,36 @@ const CARDS = [
     img: "/home/card-tuition.jpg",
     alt: "Student with a notebook against a cobalt backdrop",
     href: "/private-tuition",
+    active: false,
+  },
+  {
+    n: "05",
+    title: ["CBT", "Practice"],
+    chips: ["Timed", "Past papers"],
+    blurb: "Exam-hall simulations with instant scoring and explanations.",
+    img: "/home/card-cbt.jpg",
+    alt: "Student taking a computer-based test on a laptop against a teal backdrop",
+    href: "/lms/practice",
+    active: false,
+  },
+  {
+    n: "06",
+    title: ["Home", "Tutoring"],
+    chips: ["At home", "Vetted tutors"],
+    blurb: "Vetted tutors matched to your child, at home or online.",
+    img: "/home/card-tutoring.jpg",
+    alt: "Tutor and young student working through a notebook together against a warm-orange backdrop",
+    href: "/hometutors",
+    active: false,
+  },
+  {
+    n: "07",
+    title: ["UTME", "2026"],
+    chips: ["JAMB track", "Score boost"],
+    blurb: "A structured 2026 UTME run: syllabus, mocks and weekly reviews.",
+    img: "/home/card-utme.jpg",
+    alt: "Senior student holding a practice exam paper against a deep-purple backdrop",
+    href: "/utme-2026",
     active: false,
   },
 ];
