@@ -20,7 +20,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CBTService â€” the practice-bank engine: subjects with live counts, random
+// CBTService — the practice-bank engine: subjects with live counts, random
 // per-request papers (different student, different questions), server-side
 // grading with review, admin browse/publish/delete and CSV import/seed.
 type CBTService struct {
@@ -56,7 +56,7 @@ func (s *CBTService) WithClock(fn func() time.Time) *CBTService {
 	return s
 }
 
-// â”€â”€ student surface â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── student surface ────────────────────────────────────────────────────────
 
 type SubjectInfo struct {
 	Slug          string `json:"slug"`
@@ -79,7 +79,7 @@ func (s *CBTService) ListSubjects(ctx context.Context) ([]SubjectInfo, error) {
 	return out, nil
 }
 
-// PaperQuestion â€” the student view: NO CorrectIndex, NO Explanation.
+// PaperQuestion — the student view: NO CorrectIndex, NO Explanation.
 type PaperQuestion struct {
 	ID         uuid.UUID `json:"id"`
 	Topic      string    `json:"topic"`
@@ -88,7 +88,7 @@ type PaperQuestion struct {
 	Options    []string  `json:"options"`
 }
 
-// GeneratePaper draws a random published subset â€” a fresh paper per call.
+// GeneratePaper draws a random published subset — a fresh paper per call.
 // difficulty 0 = mixed; durationMinutes 0 = untimed. The returned ticket is a
 // stateless, HMAC-signed record of THIS draw (student, ids, deadline): the
 // client cannot widen the id set, swap subject or extend the clock server-side
@@ -124,7 +124,7 @@ func (s *CBTService) GeneratePaper(ctx context.Context, subjectSlug string, limi
 			Options: append([]string(nil), q.Options...)}
 		ids[i] = q.ID
 	}
-	// NOTE: option order is NOT shuffled â€” grading maps the client's selected
+	// NOTE: option order is NOT shuffled — grading maps the client's selected
 	// index directly onto the stored option order, so shuffling here would
 	// desync the key. Randomness comes from question selection + order.
 	claims := attemptClaims{
@@ -145,7 +145,7 @@ func (s *CBTService) GeneratePaper(ctx context.Context, subjectSlug string, limi
 	return &GeneratedPaper{Questions: out, AttemptToken: token, Deadline: claims.Deadline}, nil
 }
 
-// GeneratedPaper â€” the draw plus its signed attempt ticket.
+// GeneratedPaper — the draw plus its signed attempt ticket.
 type GeneratedPaper struct {
 	Questions    []PaperQuestion `json:"questions"`
 	AttemptToken string          `json:"attempt_token"`
@@ -169,7 +169,7 @@ type attemptClaims struct {
 	IDs        []uuid.UUID `json:"ids"`
 }
 
-// attemptGrace â€” the browser's timer hits zero and posts immediately, so a
+// attemptGrace — the browser's timer hits zero and posts immediately, so a
 // submission can legitimately land a moment after the deadline. Anything past
 // the grace window is rejected as expired.
 const attemptGrace = 30 * time.Second
@@ -290,7 +290,7 @@ func (s *CBTService) GradePaper(ctx context.Context, studentID uuid.UUID, attemp
 	return res, nil
 }
 
-// â”€â”€ admin surface â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── admin surface ──────────────────────────────────────────────────────────
 
 func (s *CBTService) ListQuestions(ctx context.Context, subjectSlug string, page, pageSize int) ([]cbt.Question, int, error) {
 	if page < 1 {
@@ -313,7 +313,7 @@ func (s *CBTService) DeleteQuestion(ctx context.Context, id uuid.UUID) error {
 	return s.repo.DeleteQuestion(ctx, id)
 }
 
-// CreateQuestion â€” admin-authored single question.
+// CreateQuestion — admin-authored single question.
 func (s *CBTService) CreateQuestion(ctx context.Context, subjectSlug, subjectName, classLevel, department string, q cbt.Question) error {
 	if subjectSlug == "" || strings.TrimSpace(q.Stem) == "" || len(q.Options) < 2 || len(q.Options) > 6 {
 		return cbt.ErrInvalidInput
@@ -333,7 +333,7 @@ func (s *CBTService) CreateQuestion(ctx context.Context, subjectSlug, subjectNam
 	return err
 }
 
-// ImportCSV â€” bulk load from the shared bank CSV layout. Duplicate stems are
+// ImportCSV — bulk load from the shared bank CSV layout. Duplicate stems are
 // skipped (idempotent), subjects upserted. Returns imported/skipped counts.
 func (s *CBTService) ImportCSV(ctx context.Context, r io.Reader) (imported, skipped int, err error) {
 	cr := csv.NewReader(r)
@@ -377,7 +377,7 @@ func (s *CBTService) ImportCSV(ctx context.Context, r io.Reader) (imported, skip
 		optA, optB := get(row, "optiona"), get(row, "optionb")
 		ci, cerr := strconv.Atoi(get(row, "correctindex"))
 		if slug == "" || stem == "" || optA == "" || optB == "" || cerr != nil || ci < 0 || ci > 5 {
-			skipped++ // malformed row â€” never half-import a question
+			skipped++ // malformed row — never half-import a question
 			continue
 		}
 		diff := 2

@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     siteName: "YK-Virtual",
     title: "YK-Virtual - Learning beyond boundaries",
     description:
-      "British & Nigerian curricula Â· Exam preparation Â· Private tuition Â· Live cohorts.",
+      "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
     images: [
       {
         url: "/og.png",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "YK-Virtual - Learning beyond boundaries",
     description:
-      "British & Nigerian curricula Â· Exam preparation Â· Private tuition Â· Live cohorts.",
+      "British & Nigerian curricula · Exam preparation · Private tuition · Live cohorts.",
     images: ["/og.png"],
   },
   // PWA (M1 hardening): installable on Android/iOS.
@@ -136,7 +136,7 @@ export default function RootLayout({
             <Footer />
           </HomeOnly>
           <ChatWidget />
-          {/* WhatsApp live chat â€” floating button above the AI launcher;
+          {/* WhatsApp live chat — floating button above the AI launcher;
               hides itself when WHATSAPP_BUSINESS_NUMBER is not configured. */}
           <div className="pointer-events-none fixed bottom-24 right-4 z-40 lg:right-6">
             <WhatsAppButton className="pointer-events-auto block" />

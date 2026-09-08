@@ -18,18 +18,18 @@ import {
   type BankPaper,
 } from "@/features/cbt/api";
 
-// PracticePlayer â€” a JAMB/WAEC-style sitting drawn from the shared practice
+// PracticePlayer — a JAMB/WAEC-style sitting drawn from the shared practice
 // bank. Unlike the exam player there is no server attempt state: a paper is a
 // RANDOM draw (every student sees a different set), answers live client-side,
-// and grading happens on the server at submit â€” the key is never in the paper.
+// and grading happens on the server at submit — the key is never in the paper.
 //
-// Lifecycle: brief â†’ running â†’ result (score + per-question review).
+// Lifecycle: brief → running → result (score + per-question review).
 //
 // Two timer modes:
-//   * timed   â€” the student picked a duration, so the server signed a deadline
+//   * timed   — the student picked a duration, so the server signed a deadline
 //     into the attempt ticket. The clock counts down to THAT deadline (server
 //     truth, not a client budget) and the paper auto-submits at 00:00.
-//   * untimed â€” a 45s/question pacing aid only; the server enforces nothing.
+//   * untimed — a 45s/question pacing aid only; the server enforces nothing.
 // Either way the submission carries the attempt token, so the server grades
 // the questions that were actually drawn.
 
@@ -106,21 +106,21 @@ export function PracticePlayer({
       setError(
         e instanceof Error
           ? e.message
-          : "Could not submit â€” check your connection and try again.",
+          : "Could not submit — check your connection and try again.",
       );
     } finally {
       setSubmitting(false);
     }
   };
 
-  // countdown â†’ auto-submit at zero
+  // countdown → auto-submit at zero
   useEffect(() => {
     if (phase !== "running") return;
     const t = setInterval(() => {
       setRemaining((r) => {
         if (r <= 1) {
           clearInterval(t);
-          if (timed) void finish(true); // enforced limit â†’ auto-submit
+          if (timed) void finish(true); // enforced limit → auto-submit
           return 0;
         }
         return r - 1;
@@ -137,20 +137,20 @@ export function PracticePlayer({
     return result.review;
   }, [result, showCorrectOnly]);
 
-  // â”€â”€ brief â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── brief ────────────────────────────────────────────────────────────────
   if (phase === "brief") {
     return (
       <div className="rounded-3xl border border-ink-200 bg-white p-8 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary-dark">
-              Practice paper Â· {paper.subject}
+              Practice paper · {paper.subject}
             </p>
             <h1 className="mt-2 font-display text-3xl text-deep">
               {qs.length} randomly drawn questions
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-600">
-              This paper was drawn just for you â€” a fresh random set every time.{" "}
+              This paper was drawn just for you — a fresh random set every time.{" "}
               {timed ? (
                 <>
                   You set a <strong>{paper.duration_minutes}-minute</strong>{" "}
@@ -160,7 +160,7 @@ export function PracticePlayer({
               ) : (
                 <>
                   Untimed sitting. Suggested pace: <strong>45 seconds</strong>{" "}
-                  per question ({fmt(qs.length * 45)} total) â€” the clock is a
+                  per question ({fmt(qs.length * 45)} total) — the clock is a
                   training aid and does not submit for you.
                 </>
               )}
@@ -189,14 +189,14 @@ export function PracticePlayer({
             className="btn-secondary inline-flex items-center gap-2 disabled:opacity-50"
           >
             <Dices size={16} />{" "}
-            {redrawing ? "Drawingâ€¦" : "Draw different questions"}
+            {redrawing ? "Drawing…" : "Draw different questions"}
           </button>
         </div>
       </div>
     );
   }
 
-  // â”€â”€ result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── result ───────────────────────────────────────────────────────────────
   if (phase === "result" && result) {
     const band =
       result.score >= 70
@@ -209,13 +209,13 @@ export function PracticePlayer({
         <div className="rounded-3xl border border-ink-200 bg-white p-8 text-center shadow-sm">
           <Trophy size={32} className="mx-auto text-primary-dark" />
           <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-primary-dark">
-            Practice result Â· {paper.subject}
+            Practice result · {paper.subject}
           </p>
           <p className={`mt-2 font-display text-6xl font-bold ${band}`}>
             {result.score}%
           </p>
           <p className="mt-2 text-sm text-ink-600">
-            {result.correct} of {result.total} correct â€” every question below
+            {result.correct} of {result.total} correct — every question below
             comes with the answer and a short explanation.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -225,7 +225,7 @@ export function PracticePlayer({
               className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
             >
               <Dices size={16} />{" "}
-              {redrawing ? "Drawingâ€¦" : "Practise again (new questions)"}
+              {redrawing ? "Drawing…" : "Practise again (new questions)"}
             </button>
             {result.review.some((r) => !r.correct) && (
               <button
@@ -281,7 +281,7 @@ export function PracticePlayer({
                           {LETTERS[j]}. {o}
                           {isKey && (
                             <span className="ml-2 text-[11px] font-bold">
-                              âœ“ answer
+                              ✓ answer
                             </span>
                           )}
                           {isPick && !isKey && (
@@ -307,7 +307,7 @@ export function PracticePlayer({
     );
   }
 
-  // â”€â”€ running â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── running ──────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
       {/* status bar */}
@@ -336,7 +336,7 @@ export function PracticePlayer({
                 disabled={submitting}
                 className="btn-primary text-sm disabled:opacity-50"
               >
-                {submitting ? "Submittingâ€¦" : "Yes, submit"}
+                {submitting ? "Submitting…" : "Yes, submit"}
               </button>
               <button
                 onClick={() => setConfirmSubmit(false)}
@@ -370,7 +370,7 @@ export function PracticePlayer({
               {q.topic}
             </span>
             <span className="rounded-full bg-ink-100 px-3 py-1 text-ink-500">
-              {"â˜…".repeat(q.difficulty)}
+              {"★".repeat(q.difficulty)}
             </span>
             <button
               onClick={() => setFlags((f) => ({ ...f, [q.id]: !f[q.id] }))}
@@ -466,9 +466,9 @@ export function PracticePlayer({
           ))}
         </div>
         <p className="mt-3 text-[11px] text-ink-600">
-          <span className="font-bold text-green-700">â– </span> answered Â·{" "}
-          <span className="font-bold text-amber-600">â– </span> flagged Â·{" "}
-          <span className="font-bold text-ink-400">â– </span> untouched
+          <span className="font-bold text-green-700">■</span> answered ·{" "}
+          <span className="font-bold text-amber-600">■</span> flagged ·{" "}
+          <span className="font-bold text-ink-400">■</span> untouched
         </p>
       </div>
     </div>

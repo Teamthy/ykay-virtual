@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CBTPostgres â€” practice-bank storage (migration 000072). Random papers draw
+// CBTPostgres — practice-bank storage (migration 000072). Random papers draw
 // with ORDER BY random() so every student gets a fresh subset.
 type CBTPostgres struct {
 	db TxQuerier
@@ -130,7 +130,7 @@ func (r *CBTPostgres) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]cbt.Ques
 			WHERE q.id = $1 AND q.status = 'published'`, questionCols), id))
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				continue // stale id in a submission â†’ skip, grade the rest
+				continue // stale id in a submission → skip, grade the rest
 			}
 			return nil, err
 		}

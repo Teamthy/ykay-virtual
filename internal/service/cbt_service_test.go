@@ -33,7 +33,7 @@ func newSeededCBT(t *testing.T) *CBTService {
 
 func TestCBTSeedIsIdempotent(t *testing.T) {
 	svc := newSeededCBT(t)
-	// Second boot: bank non-empty â†’ no re-import.
+	// Second boot: bank non-empty → no re-import.
 	n, err := svc.SeedIfAbsent(context.Background(), miniBankCSV)
 	require.NoError(t, err)
 	assert.Zero(t, n)
@@ -156,7 +156,7 @@ func TestCBTAttemptTokenBindsDrawAndDeadline(t *testing.T) {
 	_, err = svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, stray)
 	assert.ErrorIs(t, err, cbt.ErrAttemptInvalid)
 
-	// Past the deadline â†’ expired.
+	// Past the deadline → expired.
 	svc.WithClock(func() time.Time { return now.Add(5*time.Minute + attemptGrace + time.Second) })
 	_, err = svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, answers)
 	assert.ErrorIs(t, err, cbt.ErrAttemptExpired)
@@ -185,7 +185,7 @@ func TestCBTGradeServerSide(t *testing.T) {
 	require.NoError(t, err)
 
 	answers := make([]GradeAnswer, 0, len(paper.Questions))
-	// mathematics CSV keys are all index 1 â†’ answer 1 correctly, skip 1, flub 1.
+	// mathematics CSV keys are all index 1 → answer 1 correctly, skip 1, flub 1.
 	good := 1
 	answers = append(answers, GradeAnswer{QuestionID: paper.Questions[0].ID, SelectedIndex: &good})
 	answers = append(answers, GradeAnswer{QuestionID: paper.Questions[1].ID}) // unanswered
@@ -225,16 +225,16 @@ func TestCBTAdminLifecycle(t *testing.T) {
 		}
 	}
 
-	// duplicate stem â†’ conflict
+	// duplicate stem → conflict
 	err = svc.CreateQuestion(context.Background(), "english", "English Language", "ss2", "arts", cbt.Question{
 		Topic: "Grammar", Difficulty: 1, Stem: qs[0].Stem,
 		Options: []string{"a", "b"}, CorrectIndex: 0,
 	})
 	assert.ErrorIs(t, err, cbt.ErrDuplicateStem)
 
-	// new unique question â†’ created published
+	// new unique question → created published
 	err = svc.CreateQuestion(context.Background(), "english", "English Language", "ss2", "arts", cbt.Question{
-		Topic: "Comprehension", Difficulty: 2, Stem: "A story's lesson is itsâ€¦",
+		Topic: "Comprehension", Difficulty: 2, Stem: "A story's lesson is its…",
 		Options: []string{"plot", "moral"}, CorrectIndex: 1, Explanation: "definition",
 	})
 	require.NoError(t, err)

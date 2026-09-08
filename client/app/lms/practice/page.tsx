@@ -8,7 +8,7 @@ import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 
-// /lms/practice â€” the shared practice bank home. Every subject card shows the
+// /lms/practice — the shared practice bank home. Every subject card shows the
 // LIVE count of published questions; a paper is a fresh random draw per
 // sitting, so no two students practise the same set.
 
@@ -34,8 +34,8 @@ export default function PracticeBankPage() {
           Test practice, JAMB/WAEC style
         </h1>
         <p className="mt-3 max-w-2xl leading-relaxed text-ink-600">
-          {total.toLocaleString()}+ NERDC-aligned questions across JSS1â€“SS3
-          and BECE/WAEC/NECO/JAMB â€” pick a topic, difficulty, count and time.
+          {total.toLocaleString()}+ NERDC-aligned questions across JSS1–SS3
+          and BECE/WAEC/NECO/JAMB — pick a topic, difficulty, count and time.
           Every paper is drawn at random, so{" "}
           <strong>you get different questions every sitting</strong>.
         </p>
@@ -46,12 +46,12 @@ export default function PracticeBankPage() {
           {
             icon: <Dices size={16} />,
             title: "Random draw per sitting",
-            desc: "A fresh subset every time â€” no repeats to memorise",
+            desc: "A fresh subset every time — no repeats to memorise",
           },
           {
             icon: <ShieldCheck size={16} />,
             title: "Graded on the server",
-            desc: "Answers can't be peeked at â€” score + full review on submit",
+            desc: "Answers can't be peeked at — score + full review on submit",
           },
           {
             icon: <BookOpenCheck size={16} />,
@@ -115,7 +115,7 @@ export default function PracticeBankPage() {
                             </span>
                           </div>
                           <p className="mt-1 text-xs capitalize text-ink-400">
-                            {s.department} Â· {s.class_level.toUpperCase()}
+                            {s.department} · {s.class_level.toUpperCase()}
                           </p>
                           <div className="mt-4 flex items-center justify-between">
                             <div className="flex gap-1.5">
@@ -128,11 +128,11 @@ export default function PracticeBankPage() {
                                 </span>
                               ))}
                               <span className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500">
-                                â€¦more
+                                …more
                               </span>
                             </div>
                             <span className="text-sm font-bold text-primary-dark opacity-0 transition group-hover:opacity-100">
-                              Start â†’
+                              Start →
                             </span>
                           </div>
                         </Link>

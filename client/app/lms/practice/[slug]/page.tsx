@@ -10,7 +10,7 @@ import { PracticePlayer } from "@/components/cbt/PracticePlayer";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// /lms/practice/[slug] â€” one sitting from the shared bank. The query key
+// /lms/practice/[slug] — one sitting from the shared bank. The query key
 // carries a nonce so "Practise again" forces a NEW random draw from the
 // server (per-student variation is the whole point of the bank).
 
