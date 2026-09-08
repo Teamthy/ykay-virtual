@@ -400,7 +400,7 @@ export function PracticePlayer({
                 <span
                   className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm font-bold ${
                     answers[q.id] === j
-                      ? "border-primary bg-primary text-white"
+                      ? "border-primary bg-primary text-deep-green"
                       : "border-[--line] text-ink-500"
                   }`}
                 >
@@ -453,7 +453,7 @@ export function PracticePlayer({
               onClick={() => setIdx(i)}
               className={`h-9 w-9 rounded-xl border text-sm font-bold transition ${
                 i === idx
-                  ? "border-primary bg-primary text-white"
+                  ? "border-primary bg-primary text-deep-green"
                   : flags[x.id]
                     ? "border-amber-300 bg-amber-100 text-amber-700"
                     : answers[x.id] !== undefined
@@ -465,10 +465,10 @@ export function PracticePlayer({
             </button>
           ))}
         </div>
-        <p className="mt-3 text-[11px] text-ink-400">
-          <span className="font-bold text-green-600">■</span> answered ·{" "}
-          <span className="font-bold text-amber-500">■</span> flagged ·{" "}
-          <span className="font-bold text-ink-300">■</span> untouched
+        <p className="mt-3 text-[11px] text-ink-600">
+          <span className="font-bold text-green-700">■</span> answered ·{" "}
+          <span className="font-bold text-amber-600">■</span> flagged ·{" "}
+          <span className="font-bold text-ink-400">■</span> untouched
         </p>
       </div>
     </div>

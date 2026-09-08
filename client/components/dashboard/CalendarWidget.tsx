@@ -22,7 +22,7 @@ export function CalendarWidget({ lessons }: { lessons: Lesson[] }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
       <h3 className="flex items-center gap-2 font-bold text-ink-900">
-        <CalendarDays size={16} className="text-primary" /> Upcoming
+        <CalendarDays size={16} className="text-deep-green" /> Upcoming
       </h3>
       {upcoming.length === 0 ? (
         <p className="mt-2 text-sm text-ink-500">No upcoming classes yet. Join a cohort to fill your calendar.</p>

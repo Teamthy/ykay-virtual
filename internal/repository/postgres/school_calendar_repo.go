@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// SchoolCalendarRepo â€” Postgres academic calendar store (migration 000063).
+// SchoolCalendarRepo — Postgres academic calendar store (migration 000063).
 type SchoolCalendarRepo struct{ db TxQuerier }
 
 func NewSchoolCalendarRepo(db TxQuerier) *SchoolCalendarRepo { return &SchoolCalendarRepo{db: db} }

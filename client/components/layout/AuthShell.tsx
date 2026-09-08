@@ -60,15 +60,15 @@ export function AuthShell({
               Learning beyond boundaries
             </h1>
             <p className="mt-3 max-w-xs text-sm leading-6 text-white/80">
-              Join 30,000+ families learning with YK-Virtual tutors.
+              Live one-to-one and small-group lessons built around the
+              Nigerian &amp; British curricula.
             </p>
 
-            {/* Trusted strip */}
-            <div className="mt-6 flex items-center gap-x-6 border-t border-white/20 pt-5 text-sm font-semibold text-white/70">
-              <span className="font-serif font-bold italic">Forbes</span>
-              <span>BBC</span>
-              <span className="font-extrabold tracking-tight">Microsoft</span>
-              <span className="font-extrabold tracking-[0.18em]">TEF</span>
+            {/* Honest pillars — product facts, never invented trust marks */}
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/20 pt-5 text-xs font-semibold uppercase tracking-wide text-white/70">
+              <span>BECE · WASSCE · IGCSE</span>
+              <span>NERDC-aligned practice</span>
+              <span>Vetted tutors</span>
             </div>
           </div>
         </aside>

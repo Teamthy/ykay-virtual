@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CalendarRepository â€” storage for academic sessions and terms. Overlap and
+// CalendarRepository — storage for academic sessions and terms. Overlap and
 // uniqueness invariants are enforced by the service first (friendly errors)
 // and by database constraints as the concurrency backstop.
 type CalendarRepository interface {
@@ -40,7 +40,7 @@ type CalendarRepository interface {
 	// TermsOverlap reports whether another term in the session covers any day
 	// of [startsOn, endsOn], regardless of status.
 	TermsOverlap(ctx context.Context, sessionID uuid.UUID, startsOn, endsOn time.Time, excludeID uuid.UUID) (bool, error)
-	// CloseTermsForSession bulk-closes a session's UPCOMING/ACTIVE terms â€”
+	// CloseTermsForSession bulk-closes a session's UPCOMING/ACTIVE terms —
 	// the cascade applied when the session itself is closed.
 	CloseTermsForSession(ctx context.Context, sessionID uuid.UUID) error
 }

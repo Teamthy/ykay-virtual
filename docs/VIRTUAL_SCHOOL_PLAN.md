@@ -1,4 +1,4 @@
-# YK-Virtual Virtual School â€” Build Plan
+# YK-Virtual Virtual School — Build Plan
 
 Status: living document Â· Started 2026-08-25 Â· Companion to `docs/GAP_ANALYSIS.md` and `docs/WORKING_DOCUMENT.md`.
 
@@ -12,7 +12,7 @@ builds on the same foundation instead of forking concepts.
 
 YK-Virtual grows from a tutoring marketplace into a **full virtual school**: structured
 academic years, subject registration, timetabled classes, continuous assessment,
-report cards and transcripts â€” for both the platform's own school and partner
+report cards and transcripts — for both the platform's own school and partner
 schools (B2B) that want YK-Virtual's vetting, payments and delivery infrastructure.
 
 ## 2. Architecture decision (locked)
@@ -46,18 +46,18 @@ the institutions model.
 
 Pillars are sequenced so each one only depends on what shipped before it.
 
-## 4. Pillar 1 â€” Academic calendar (shipped)
+## 4. Pillar 1 — Academic calendar (shipped)
 
 ### Data model (migration `000063_academic_calendar`)
 
-- **`academic_sessions`** â€” one academic year per scope (`institution_id NULL` =
+- **`academic_sessions`** — one academic year per scope (`institution_id NULL` =
   platform school). `name` (e.g. `2026/2027`), `starts_on`/`ends_on` (DATE),
-  `status DRAFT â†’ ACTIVE â†’ CLOSED`.
-- **`academic_terms`** â€” terms within a session: `number` (1..6, unique per
+  `status DRAFT → ACTIVE → CLOSED`.
+- **`academic_terms`** — terms within a session: `number` (1..6, unique per
   session), dates, optional **enrolment window** (`enrollment_opens_at` /
-  `enrollment_closes_at`, nil bound = open-ended â€” same semantics as cohort
-  windows in 000060), `status UPCOMING â†’ ACTIVE â†’ CLOSED`.
-- **`cohorts.term_id`** â€” nullable anchor from a cohort to a term (SET NULL on
+  `enrollment_closes_at`, nil bound = open-ended — same semantics as cohort
+  windows in 000060), `status UPCOMING → ACTIVE → CLOSED`.
+- **`cohorts.term_id`** — nullable anchor from a cohort to a term (SET NULL on
   term delete; historical cohorts unaffected).
 - DB invariants: unique `(scope, session_name)`; unique partial index = at most
   one `ACTIVE` session per scope; unique `(session_id, number)`; at most one
@@ -69,7 +69,7 @@ Pillars are sequenced so each one only depends on what shipped before it.
 - Terms must lie fully inside their session and never overlap siblings.
 - Linear lifecycles only; a term can go `ACTIVE` only when its session is `ACTIVE`.
 - Activating a second session in a scope, or a second term in a session, is a
-  friendly 409 â€” the current one must be closed first.
+  friendly 409 — the current one must be closed first.
 - Closing a session cascades: its terms are `CLOSED` with it (documented, tested).
 - Closed sessions/terms are immutable history (report cards must be reproducible).
 - Shrinking a session's dates is refused if it would orphan existing terms.
@@ -80,11 +80,11 @@ Pillars are sequenced so each one only depends on what shipped before it.
 POST   /admin/school/sessions                  create (DRAFT)
 GET    /admin/school/sessions?institution_id=  list per scope
 PUT    /admin/school/sessions/{id}             edit name/dates
-POST   /admin/school/sessions/{id}/status      DRAFTâ†’ACTIVEâ†’CLOSED
+POST   /admin/school/sessions/{id}/status      DRAFT→ACTIVE→CLOSED
 POST   /admin/school/sessions/{id}/terms       add term
 GET    /admin/school/sessions/{id}/terms       list (ordered by number)
 PUT    /admin/school/terms/{id}                edit term + enrolment window
-POST   /admin/school/terms/{id}/status         UPCOMINGâ†’ACTIVEâ†’CLOSED
+POST   /admin/school/terms/{id}/status         UPCOMING→ACTIVE→CLOSED
 GET    /school/calendar/current?institution_id=  public { active, session, terms[]+enrollment_open }
 ```
 
@@ -93,7 +93,7 @@ and covered by service tests in `school_calendar_service_test.go`.
 
 ### Still to do for Pillar 1
 
-- Admin console UI (`/admin`: sessions/terms manager) â€” slot next to the cohorts
+- Admin console UI (`/admin`: sessions/terms manager) — slot next to the cohorts
   manager.
 - Web/mobile read surfaces: term banner on dashboards ("Second Term ends 26 Mar"),
   enrolment-window gating copy.
@@ -111,7 +111,7 @@ starts_at, ends_at, cohort_id NULL)`; conflict checks reuse the booking
   (student, term); PDF via the existing certificate-rendering path.
 - **Pillar 4 (transcripts):** read-only rollup keyed by (student, session);
   verification code pattern mirrors certificates.
-- **Money:** school fees are orders â€” reuse escrow/checkout; do not invent a
+- **Money:** school fees are orders — reuse escrow/checkout; do not invent a
   parallel fee ledger. Per-term pricing lives on `timetable_entries`/programmes,
   never hard-coded.
 
@@ -121,7 +121,7 @@ starts_at, ends_at, cohort_id NULL)`; conflict checks reuse the booking
 2. Every route lands in `api/openapi.yaml` in the same PR (contract test).
 3. Invariants live in the service with friendly mapped errors; DB constraints are
    the backstop, not the UX.
-4. Money-touching flows go through the UoW + audit log (AGENTS.md rule) â€”
+4. Money-touching flows go through the UoW + audit log (AGENTS.md rule) —
    calendar itself is not money, so it follows the catalogue's plain-repo pattern.
 5. No fabricated slate: Nigerian 3-term and British 3-term naming both fit the
    `number`-anchored model; names are free text per school.

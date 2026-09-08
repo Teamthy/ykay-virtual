@@ -39,21 +39,38 @@ test("no critical a11y violations on landing, login and dashboard", async ({ pag
     data: { email, password: "password123", roles: ["PARENT"] },
   });
   expect(reg.status()).toBe(201);
+
+  // Verify the account first — login is gated on email verification, and the
+  // web client gates dashboards on verification too.
+  const fs = await import("fs");
+  const logPath = process.env.API_LOG || "/tmp/e2e-web-api.log";
+  // Capture the log offset FIRST, request the link, then poll only the bytes
+  // appended afterwards — reading the whole log races with the API's async
+  // flush and can pick up a stale (already used) token.
+  const before = fs.existsSync(logPath) ? fs.statSync(logPath).size : 0;
+  const vr = await request.post(`${API}/auth/verify-email/request`, { data: { email } });
+  expect(vr.status()).toBe(200);
+  let token = "";
+  for (let i = 0; i < 40 && !token; i++) {
+    try {
+      const buf = fs.readFileSync(logPath);
+      if (buf.length > before) {
+        const tail = buf.subarray(before).toString("utf8");
+        const m = [...tail.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
+        if (m.length) token = decodeURIComponent(m[m.length - 1][1]);
+      }
+    } catch {
+      /* not flushed yet */
+    }
+    if (!token) await new Promise((r) => setTimeout(r, 250));
+  }
+  expect(token, "verification link in API log").toBeTruthy();
+  const vc = await request.post(`${API}/auth/verify-email/confirm`, { data: { token } });
+  expect(vc.status()).toBe(200);
   const login = await request.post(`${API}/auth/login`, {
     data: { email, password: "password123" },
   });
-  expect(login.status()).toBe(200);
-
-  // Verify the account (the web client gates dashboards on verification).
-  const vr = await request.post(`${API}/auth/verify-email/request`, { data: { email } });
-  expect(vr.status()).toBe(200);
-  const fs = await import("fs");
-  const log = fs.readFileSync(process.env.API_LOG || "/tmp/e2e-web-api.log", "utf8");
-  const matches = [...log.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
-  expect(matches.length).toBeGreaterThan(0);
-  const token = decodeURIComponent(matches[matches.length - 1][1]);
-  const vc = await request.post(`${API}/auth/verify-email/confirm`, { data: { token } });
-  expect(vc.status()).toBe(200);
+  expect(login.status(), `login: ${await login.text()}`).toBe(200);
   const ob = await request.post(`${API}/auth/me/onboarded`);
   expect(ob.status(), "mark onboarded").toBe(200);
 

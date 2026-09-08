@@ -36,7 +36,7 @@ export function StepsToTutor({
               key={s.n}
               className="relative rounded-2xl border border-ink-100 bg-surface-muted p-7"
             >
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-gold text-sm text-ink-900 font-extrabold text-white">
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-gold text-sm text-deep-green font-extrabold">
                 {s.n}
               </div>
               <h3 className="mt-4 font-bold text-brand-navy">{s.title}</h3>

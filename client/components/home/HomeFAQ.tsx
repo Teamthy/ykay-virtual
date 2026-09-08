@@ -24,7 +24,8 @@ const FAQS = [
 export function HomeFAQ() {
   const jsonLd = faqJsonLd(FAQS.map((f) => ({ question: f.q, answer: f.a })));
   return (
-    <section className="container-x py-16 md:py-20">
+    <section className="backdrop-brand-peach w-full bg-white py-16 md:py-20">
+      <div className="container-x">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -63,6 +64,7 @@ export function HomeFAQ() {
           </Link>
         </p>
       </div>
+          </div>
     </section>
   );
 }

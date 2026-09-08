@@ -50,7 +50,7 @@ const nextConfig = {
   // check and lint pass are skipped here deliberately.
   // Vercel production builds type-check. Constrained CI/sandbox hosts skip
   // the in-build pass because CI already ran `tsc --noEmit`.
-  typescript: { ignoreBuildErrors: false },
+  typescript: { ignoreBuildErrors: !isVercel },
   eslint: { ignoreDuringBuilds: !isVercel },
   images: {
     remotePatterns: [
@@ -70,7 +70,13 @@ const nextConfig = {
     // Browser-side /api/v1 calls are proxied to the API server. Point
     // API_PROXY_TARGET at the API in production deployments.
     const target = process.env.API_PROXY_TARGET || "http://localhost:8080";
-    return [{ source: "/api/v1/:path*", destination: `${target}/api/v1/:path*` }];
+    return [
+      { source: "/api/v1/:path*", destination: `${target}/api/v1/:path*` },
+      // Dev/local object storage: the API's presigned upload/download URLs
+      // must stay SAME-ORIGIN with the app or the CSP (connect-src 'self')
+      // blocks them. Production S3/R2 presigns over https and is unaffected.
+      { source: "/objects/:path*", destination: `${target}/objects/:path*` },
+    ];
   },
   // ── Security headers applied to every response ──────────────
   // CSP is deliberately tolerant on media/frames: the LMS streams lesson

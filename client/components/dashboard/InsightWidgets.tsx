@@ -10,7 +10,7 @@ export function GradebookWidget({ rows }: { rows: GradeRow[] }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
       <h3 className="flex items-center gap-2 font-bold text-ink-900">
-        <BarChart3 size={16} className="text-primary" /> Gradebook
+        <BarChart3 size={16} className="text-deep-green" /> Gradebook
       </h3>
       <ul className="mt-3 space-y-3">
         {rows.map((r) => (
@@ -38,7 +38,7 @@ export function ReviewQueueWidget({ items }: { items: ReviewItem[] }) {
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
       <h3 className="flex items-center gap-2 font-bold text-ink-900">
-        <RefreshCw size={16} className="text-primary" /> Review queue
+        <RefreshCw size={16} className="text-deep-green" /> Review queue
       </h3>
       <div className="mt-3 rounded-xl bg-ink-50/60 p-4">
         <p className="text-[10px] font-bold uppercase tracking-wide text-ink-400">{item.subject}</p>
@@ -65,14 +65,14 @@ export function LeaderboardWidget({ rows, yourRank }: { rows: LeaderboardRow[]; 
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
       <h3 className="flex items-center gap-2 font-bold text-ink-900">
-        <Trophy size={16} className="text-brand-gold" /> Leaderboard
+        <Trophy size={16} className="text-deep-green" /> Leaderboard
       </h3>
       <p className="mt-0.5 text-[11px] text-ink-400">Only learners who opted in appear. Compete or opt out anytime.</p>
       <ol className="mt-3 space-y-1.5">
         {rows.slice(0, 5).map((r, i) => (
           <li key={r.user_id} className="flex items-center justify-between rounded-lg px-2 py-1 text-sm hover:bg-ink-50">
             <span className="flex items-center gap-2">
-              <span className={`grid h-6 w-6 place-items-center rounded-full text-[11px] font-bold ${i < 3 ? "bg-brand-gold text-deep" : "bg-ink-100 text-ink-500"}`}>
+              <span className={`grid h-6 w-6 place-items-center rounded-full text-[11px] font-bold ${i < 3 ? "bg-brand-gold text-deep-green" : "bg-ink-100 text-ink-500"}`}>
                 {i + 1}
               </span>
               <span className="font-medium text-ink-700">{r.name || "Learner"}</span>
@@ -94,7 +94,7 @@ export function FeedbackPrompt({ onRate }: { onRate: (rating: number) => void })
   return (
     <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
       <h3 className="flex items-center gap-2 text-sm font-bold text-ink-900">
-        <Star size={16} className="text-brand-gold" /> How was your last lesson?
+        <Star size={16} className="text-deep-green" /> How was your last lesson?
       </h3>
       {rated ? (
         <p className="mt-2 text-sm text-green-700">Thanks for rating it {rated}/5! Your feedback helps tutors improve.</p>
@@ -118,4 +118,4 @@ export function FeedbackPrompt({ onRate }: { onRate: (rating: number) => void })
   );
 }
 
-export const achievementIcon = (n: string) => <Award size={16} className="text-primary" />;
+export const achievementIcon = (n: string) => <Award size={16} className="text-deep-green" />;

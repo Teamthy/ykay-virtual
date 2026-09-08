@@ -50,6 +50,34 @@ test("become-a-tutor: full journey ends with the tutor assigned to a cohort", as
     data: { email, password, roles: ["TUTOR"] },
   });
   expect(reg.status(), `register: ${await reg.text()}`).toBe(201);
+  // Login is gated on email verification (hardening round) — verify first.
+  const fs = await import("fs");
+  const logPath = API_LOG;
+  // Capture the log offset FIRST, request the link, then poll only the bytes
+  // appended afterwards — reading the whole log races with the API's async
+  // flush and can pick up a stale (already used) token.
+  const before = fs.existsSync(logPath) ? fs.statSync(logPath).size : 0;
+  const vr = await api.post(`${API}/auth/verify-email/request`, { data: { email } });
+  expect(vr.status(), "verify request").toBe(200);
+  let token = "";
+  for (let i = 0; i < 40 && !token; i++) {
+    try {
+      const buf = fs.readFileSync(logPath);
+      if (buf.length > before) {
+        const tail = buf.subarray(before).toString("utf8");
+        const m = [...tail.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
+        if (m.length) token = decodeURIComponent(m[m.length - 1][1]);
+      }
+    } catch {
+      /* not flushed yet */
+    }
+    if (!token) await new Promise((r) => setTimeout(r, 250));
+  }
+  expect(token, "verification link in API log").toBeTruthy();
+  {
+    const vc = await api.post(`${API}/auth/verify-email/confirm`, { data: { token } });
+    expect(vc.status(), `verify confirm: ${await vc.text()}`).toBe(200);
+  }
   const login = await api.post(`${API}/auth/login`, { data: { email, password } });
   expect(login.status(), "login").toBe(200);
   await api.post(`${API}/auth/me/onboarded`);
@@ -62,7 +90,8 @@ test("become-a-tutor: full journey ends with the tutor assigned to a cohort", as
   await expect(page).toHaveURL(/tutor-dashboard/, { timeout: 20_000 });
 
   await page.goto("/become-tutor/apply");
-  const form = page.locator("form").first();
+  // Scope to <main>: the site header also contains a (collapsed) search form.
+  const form = page.locator("main form").first();
   await form.locator("input").nth(0).fill(`E2E Tutor ${Date.now()}`);
   await form.locator("input").nth(1).fill("Mathematics · UTME");
   await form.locator("textarea").first().fill("E2E tutor journey — deterministic browser walk through the full vetting pipeline.");
@@ -72,7 +101,9 @@ test("become-a-tutor: full journey ends with the tutor assigned to a cohort", as
   await expect(page).toHaveURL(/become-tutor\/subjects/, { timeout: 20_000 });
 
   // ── Subjects (UI): Mathematics (the seeded bank's subject) ──────────────
-  await page.getByRole("button", { name: /^mathematics$/i }).first().click();
+  // Subject buttons now carry a category chip in the accessible name
+  // ("Mathematics Core"), so match by prefix instead of exact.
+  await page.getByRole("button", { name: /^mathematics/i }).first().click();
   await page.getByRole("button", { name: /continue with 1 subject/i }).click();
   await expect(page).toHaveURL(/become-tutor\/documents/, { timeout: 20_000 });
 
@@ -120,6 +151,13 @@ test("become-a-tutor: full journey ends with the tutor assigned to a cohort", as
   await expect(page.getByText(/Submitted/i).first()).toBeVisible({ timeout: 20_000 });
 
   // ── Admin review chain (console APIs) ────────────────────────────────────
+  if (process.env.E2E_DEMO === "1") {
+    test.skip(
+      true,
+      "E2E_DEMO: the in-memory demo seed has no e2e-admin account (needs the Postgres seed from scripts/e2e.sh)",
+    );
+    return;
+  }
   const admin = await adminSession();
   const queueRes = await admin.get(`${API}/admin/vetting/queue?status=SUBMITTED&page_size=50`);
   expect(queueRes.status(), `queue: ${await queueRes.text()}`).toBe(200);

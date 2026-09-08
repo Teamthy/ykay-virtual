@@ -13,10 +13,10 @@ import (
 	"ykay-virtual/pkg"
 )
 
-// Router assembles the API: middleware chain (request-id â†’ logger â†’ recover â†’
+// Router assembles the API: middleware chain (request-id → logger → recover →
 // rate-limit) + versioned routes per api/openapi.yaml.
 
-// HTTPRateLimiter â€” common contract for the in-memory and Redis-backed
+// HTTPRateLimiter — common contract for the in-memory and Redis-backed
 // limiters (G7.2). The router defaults to in-memory; main swaps in the
 // Redis-backed pair when a shared Redis is available.
 type HTTPRateLimiter interface {
@@ -34,17 +34,17 @@ type Router struct {
 	blockFrames    bool
 }
 
-// NewRouter â€” fail-closed defaults (no cross-origin) + no frame blocking.
+// NewRouter — fail-closed defaults (no cross-origin) + no frame blocking.
 func NewRouter(version string, handlers *Handlers, sessionAuth func(http.Handler) http.Handler, readyCheck func() error) *Router {
 	return NewRouterWithOrigins(version, handlers, "", sessionAuth, readyCheck, false)
 }
 
-// NewRouterWithOrigins â€” explicit CORS allowlist, auth-route rate limiter,
+// NewRouterWithOrigins — explicit CORS allowlist, auth-route rate limiter,
 // liveness/readiness endpoints and optional frame blocking (production).
 func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins string, sessionAuth func(http.Handler) http.Handler, readyCheck func() error, blockFrames bool) *Router {
 	mux := http.NewServeMux()
 	// RATE_LIMIT_PER_MINUTE tunes the global per-IP window (default 300;
-	// load tests raise it to measure raw throughput â€” see scripts/loadtest.sh).
+	// load tests raise it to measure raw throughput — see scripts/loadtest.sh).
 	rl := middleware.NewRateLimiter(RateLimitPerMinute(), time.Minute)
 	// auth endpoints: 40 req/min per IP by default (SEC-005). Env-tunable via
 	// AUTH_RATE_LIMIT_PER_MINUTE so test harnesses (browser E2E runs many auth
@@ -151,7 +151,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/devices", handlers.Devices.ListDevices)
 	mux.HandleFunc("DELETE "+v1+"/me/devices/{deviceId}", handlers.Devices.RemoveDevice)
 
-	// Agent inbox (C4â€“C6)
+	// Agent inbox (C4–C6)
 	mux.HandleFunc("GET "+v1+"/admin/chat/threads", handlers.Chat.ListAllThreads)
 	mux.HandleFunc("GET "+v1+"/admin/chat/threads/{threadId}/messages", handlers.Chat.ListThreadMessages)
 	mux.HandleFunc("POST "+v1+"/admin/chat/threads/{threadId}/reply", handlers.Chat.AgentReply)
@@ -221,7 +221,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/me/recorded-lessons", handlers.LessonOps.MyRecordedLibrary)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.ListNotes)
 
-	// Meeting links (G4.2) â€” tutor opens/refreshes, participants join
+	// Meeting links (G4.2) — tutor opens/refreshes, participants join
 	// inside the server-enforced join window.
 	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/meeting-link", handlers.Meeting.OpenOrRefresh)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/meeting-link", handlers.Meeting.Join)
@@ -420,7 +420,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 
 	// Admin console (Phase 11)
 	mux.HandleFunc("GET "+v1+"/admin/stats", handlers.Admin.Stats)
-	// SUPER_ADMIN â€” user/role management
+	// SUPER_ADMIN — user/role management
 	mux.HandleFunc("GET "+v1+"/admin/users", handlers.Admin.ListUsers)
 	mux.HandleFunc("GET "+v1+"/admin/users/roles", handlers.Admin.ListRoles)
 	mux.HandleFunc("GET "+v1+"/admin/users/{userId}/detail", handlers.Admin.GetUserDetail)
@@ -443,7 +443,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/admin/programmes/{slug}/roster", handlers.Admin.ProgrammeRoster)
 	mux.HandleFunc("POST "+v1+"/admin/programmes", handlers.Admin.CreateProgramme)
 	mux.HandleFunc("PUT "+v1+"/admin/programmes/{programmeId}", handlers.Admin.UpdateProgramme)
-	// G5.3 â€” catalogue sign-off: publish/unpublish programmes and
+	// G5.3 — catalogue sign-off: publish/unpublish programmes and
 	// testimonials without a code deployment (admin-only, audited).
 	mux.HandleFunc("POST "+v1+"/admin/programmes/{programmeId}/status", handlers.Admin.SetProgrammeStatus)
 	mux.HandleFunc("POST "+v1+"/admin/testimonials/{testimonialId}/public", handlers.Admin.SetTestimonialPublic)
@@ -470,9 +470,10 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// Dev object serving (LocalStorage signed URLs)
 	if handlers.Objects != nil {
 		mux.HandleFunc("GET /objects/{bucket}/{key...}", handlers.Objects.Serve)
+		mux.HandleFunc("PUT /objects/{bucket}/{key...}", handlers.Objects.Upload)
 	}
 
-	// JSON 404s for unknown API + root paths â€” the API never returns HTML,
+	// JSON 404s for unknown API + root paths — the API never returns HTML,
 	// so browser clients always get a parseable error envelope (auth UX fix:
 	// "Request failed 404" was an HTML Next.js 404 page reaching apiFetch).
 	mux.HandleFunc("/api/v1/", func(w http.ResponseWriter, r *http.Request) {
@@ -496,13 +497,13 @@ func (rt *Router) SetRateLimiters(global, auth HTTPRateLimiter) {
 	}
 }
 
-// cache60 â€” 60s anonymous browser cache + 5min stale-while-revalidate for
+// cache60 — 60s anonymous browser cache + 5min stale-while-revalidate for
 // public catalogue GETs (F-4). Authenticated requests are never cached.
 func cache60(h http.HandlerFunc) http.Handler {
 	return middleware.PublicCacheForAnonymous(60)(h)
 }
 
-// privateNoStorePrefixes â€” CDN defense-in-depth: every user-scoped or
+// privateNoStorePrefixes — CDN defense-in-depth: every user-scoped or
 // mutating API area gets Cache-Control: no-store so no shared cache can
 // ever store one user's data, even under a misconfigured "Cache Everything"
 // rule. Public catalogue handlers (cache60) deliberately re-stamp public
@@ -538,7 +539,7 @@ func privateNoStorePrefixes(v1 string) []string {
 func (rt *Router) Handler() http.Handler {
 	var h http.Handler = rt.mux
 	h = telemetry.DefaultMetrics().Middleware(h)
-	// F-4: transparent gzip for compressible JSON responses (3â€“6Ã— faster on
+	// F-4: transparent gzip for compressible JSON responses (3–6× faster on
 	// mobile networks). See internal/middleware/gzip.go.
 	h = middleware.Gzip(h)
 	// CDN defense-in-depth: private paths are explicitly no-store.
@@ -555,7 +556,7 @@ func (rt *Router) Handler() http.Handler {
 	return h
 }
 
-// Handlers â€” dependency container so the router stays declarative.
+// Handlers — dependency container so the router stays declarative.
 type Handlers struct {
 	Subjects          *SubjectHandler
 	Curricula         *CurriculaHandler
@@ -602,7 +603,7 @@ type Handlers struct {
 	Objects           *ObjectHandler
 }
 
-// rateLimitPerMinute â€” global per-IP rate limit (env-tunable, G7 capacity).
+// rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
 // Default raised from 300 to 1200/min per IP to comfortably absorb legitimate
 // concurrent bursts (e.g. a shared proxy/NAT concentrating many users behind
 // one IP) while still protecting against abuse. Override per environment via
@@ -611,9 +612,9 @@ func RateLimitPerMinute() int {
 	return envInt("RATE_LIMIT_PER_MINUTE", 1200)
 }
 
-// AuthRateLimitPerMinute â€” per-IP rate limit for authentication endpoints.
+// AuthRateLimitPerMinute — per-IP rate limit for authentication endpoints.
 // Default 120/min: enough headroom for several users signing in from one
-// shared IP (households, school labs, offices behind NAT â€” a core YK-Virtual
+// shared IP (households, school labs, offices behind NAT — a core YK-Virtual
 // market) while still throttling credential stuffing (~2 auth attempts/sec).
 // The key is per-CLIENT-IP via TRUST_PROXY (clientIP); without TRUST_PROXY
 // every user behind the proxy shares one bucket and the limit collapses
@@ -634,7 +635,7 @@ func envInt(key string, def int) int {
 	return def
 }
 
-// metricsToken â€” the bearer token guarding GET /metrics. Production always
+// metricsToken — the bearer token guarding GET /metrics. Production always
 // sets METRICS_TOKEN (config.Validate fails otherwise); dev/staging fall back
 // to a documented default so the scrape endpoint is never open.
 func metricsToken() string {

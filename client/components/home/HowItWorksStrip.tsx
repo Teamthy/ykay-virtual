@@ -14,7 +14,8 @@ const STEPS = [
 
 export function HowItWorksStrip() {
   return (
-    <section className="container-x py-16">
+    <section className="backdrop-brand-light w-full py-16">
+      <div className="container-x">
       <div className="text-center">
         <p className="tag-handwritten">How it works</p>
         <AnimatedText
@@ -42,6 +43,7 @@ export function HowItWorksStrip() {
           See the full walkthrough for parents & tutors →
         </Link>
       </div>
+          </div>
     </section>
   );
 }

@@ -469,7 +469,7 @@ export function ChatWidget() {
                             key={n}
                             type="button"
                             onClick={() => void submitRating(n)}
-                            className="p-1 text-ink-300 hover:text-primary"
+                            className="p-1 text-ink-500 hover:text-primary-dark"
                             aria-label={`${n} stars`}
                           >
                             <Star

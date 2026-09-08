@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// SchoolCalendarMemory â€” in-memory academic calendar store (tests / dev
+// SchoolCalendarMemory — in-memory academic calendar store (tests / dev
 // fallback). Mirrors the Postgres invariants: unique (scope, session name),
 // one ACTIVE session per scope, unique (session, term number), one ACTIVE
 // term per session.

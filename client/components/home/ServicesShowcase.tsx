@@ -59,7 +59,7 @@ const SERVICES = [
 
 export function ServicesShowcase() {
   return (
-    <section className="border-t border-ink-100 bg-white py-12">
+    <section className="backdrop-brand-light w-full border-t border-ink-100 bg-white py-12">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
         <div className="flex items-end justify-between gap-4">
           <AnimatedText

@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// SchoolCalendarService â€” virtual-school academic calendar (Pillar 1).
+// SchoolCalendarService — virtual-school academic calendar (Pillar 1).
 // Owns every invariant for sessions and terms so both the admin console and
 // future pillars (timetable, gradebook, transcripts) can rely on them:
 //
@@ -22,7 +22,7 @@ import (
 //     institution, or one partner school); at most one ACTIVE per scope.
 //   - Terms live fully inside their session's window, never overlap each
 //     other, and at most one is ACTIVE per session.
-//   - Lifecycles are linear: DRAFTâ†’ACTIVEâ†’CLOSED / UPCOMINGâ†’ACTIVEâ†’CLOSED.
+//   - Lifecycles are linear: DRAFT→ACTIVE→CLOSED / UPCOMING→ACTIVE→CLOSED.
 //   - Term activation requires an ACTIVE session (you cannot "be in" a term
 //     of a year that has not started).
 //   - Closing a session cascades: its terms are CLOSED with it.
@@ -44,7 +44,7 @@ func (s *SchoolCalendarService) WithClock(now func() time.Time) *SchoolCalendarS
 	return s
 }
 
-// SessionInput â€” create/update payload for an academic session.
+// SessionInput — create/update payload for an academic session.
 type SessionInput struct {
 	InstitutionID *uuid.UUID
 	Name          string
@@ -52,7 +52,7 @@ type SessionInput struct {
 	EndsOn        time.Time
 }
 
-// TermInput â€” create/update payload for a term.
+// TermInput — create/update payload for a term.
 type TermInput struct {
 	Name               string
 	Number             int
@@ -101,7 +101,7 @@ func validateTermInput(in *TermInput) error {
 	return nil
 }
 
-// CreateSession â€” a new session starts life as DRAFT (never live by default).
+// CreateSession — a new session starts life as DRAFT (never live by default).
 func (s *SchoolCalendarService) CreateSession(ctx context.Context, in SessionInput) (*school.Session, error) {
 	if err := validateSessionInput(&in); err != nil {
 		return nil, err
@@ -126,12 +126,12 @@ func (s *SchoolCalendarService) CreateSession(ctx context.Context, in SessionInp
 	return sess, nil
 }
 
-// ListSessions â€” admin list for one scope.
+// ListSessions — admin list for one scope.
 func (s *SchoolCalendarService) ListSessions(ctx context.Context, institutionID *uuid.UUID) ([]school.Session, error) {
 	return s.repo.ListSessions(ctx, institutionID)
 }
 
-// UpdateSession â€” name/date edits. A CLOSED session is immutable history;
+// UpdateSession — name/date edits. A CLOSED session is immutable history;
 // date edits must still contain every term the session already has.
 func (s *SchoolCalendarService) UpdateSession(ctx context.Context, id uuid.UUID, in SessionInput) (*school.Session, error) {
 	sess, err := s.repo.GetSession(ctx, id)
@@ -158,7 +158,7 @@ func (s *SchoolCalendarService) UpdateSession(ctx context.Context, id uuid.UUID,
 	}
 	for _, t := range terms {
 		if t.StartsOn.Before(in.StartsOn) || t.EndsOn.After(in.EndsOn) {
-			return nil, fmt.Errorf("%w: new dates would orphan term %q â€” adjust its terms first", domain.ErrInvalidInput, t.Name)
+			return nil, fmt.Errorf("%w: new dates would orphan term %q — adjust its terms first", domain.ErrInvalidInput, t.Name)
 		}
 	}
 	sess.Name = in.Name
@@ -170,7 +170,7 @@ func (s *SchoolCalendarService) UpdateSession(ctx context.Context, id uuid.UUID,
 	return sess, nil
 }
 
-// SetSessionStatus â€” DRAFTâ†’ACTIVEâ†’CLOSED. Activating requires no other
+// SetSessionStatus — DRAFT→ACTIVE→CLOSED. Activating requires no other
 // ACTIVE session in the scope (close it first); closing cascades to terms.
 func (s *SchoolCalendarService) SetSessionStatus(ctx context.Context, id uuid.UUID, next school.SessionStatus) (*school.Session, error) {
 	sess, err := s.repo.GetSession(ctx, id)
@@ -182,7 +182,7 @@ func (s *SchoolCalendarService) SetSessionStatus(ctx context.Context, id uuid.UU
 	}
 	if next == school.SessionActive {
 		if cur, cerr := s.repo.CurrentSession(ctx, sess.InstitutionID); cerr == nil && cur.ID != id {
-			return nil, fmt.Errorf("%w: session %q is already ACTIVE â€” close it first", domain.ErrConflict, cur.Name)
+			return nil, fmt.Errorf("%w: session %q is already ACTIVE — close it first", domain.ErrConflict, cur.Name)
 		} else if cerr != nil && !errors.Is(cerr, domain.ErrNotFound) {
 			return nil, cerr
 		}
@@ -198,7 +198,7 @@ func (s *SchoolCalendarService) SetSessionStatus(ctx context.Context, id uuid.UU
 	return s.repo.GetSession(ctx, id)
 }
 
-// CreateTerm â€” adds a term (UPCOMING) to a non-CLOSED session.
+// CreateTerm — adds a term (UPCOMING) to a non-CLOSED session.
 func (s *SchoolCalendarService) CreateTerm(ctx context.Context, sessionID uuid.UUID, in TermInput) (*school.Term, error) {
 	sess, err := s.repo.GetSession(ctx, sessionID)
 	if err != nil {
@@ -211,7 +211,7 @@ func (s *SchoolCalendarService) CreateTerm(ctx context.Context, sessionID uuid.U
 		return nil, err
 	}
 	if in.StartsOn.Before(sess.StartsOn) || in.EndsOn.After(sess.EndsOn) {
-		return nil, fmt.Errorf("%w: term must lie inside the session dates (%s â†’ %s)",
+		return nil, fmt.Errorf("%w: term must lie inside the session dates (%s → %s)",
 			domain.ErrInvalidInput, sess.StartsOn.Format("2006-01-02"), sess.EndsOn.Format("2006-01-02"))
 	}
 	if err := s.ensureNoTermOverlap(ctx, sessionID, in, uuid.Nil); err != nil {
@@ -244,7 +244,7 @@ func (s *SchoolCalendarService) ensureNoTermOverlap(ctx context.Context, session
 	return nil
 }
 
-// ListTerms â€” a session's terms ordered by number.
+// ListTerms — a session's terms ordered by number.
 func (s *SchoolCalendarService) ListTerms(ctx context.Context, sessionID uuid.UUID) ([]school.Term, error) {
 	if _, err := s.repo.GetSession(ctx, sessionID); err != nil {
 		return nil, err
@@ -252,7 +252,7 @@ func (s *SchoolCalendarService) ListTerms(ctx context.Context, sessionID uuid.UU
 	return s.repo.ListTerms(ctx, sessionID)
 }
 
-// UpdateTerm â€” name/number/date/window edits. A CLOSED term (or one whose
+// UpdateTerm — name/number/date/window edits. A CLOSED term (or one whose
 // session is CLOSED) is immutable history.
 func (s *SchoolCalendarService) UpdateTerm(ctx context.Context, id uuid.UUID, in TermInput) (*school.Term, error) {
 	term, err := s.repo.GetTerm(ctx, id)
@@ -267,7 +267,7 @@ func (s *SchoolCalendarService) UpdateTerm(ctx context.Context, id uuid.UUID, in
 		return nil, err
 	}
 	if sess.Status == school.SessionClosed {
-		return nil, fmt.Errorf("%w: the session is closed â€” its terms are locked", domain.ErrConflict)
+		return nil, fmt.Errorf("%w: the session is closed — its terms are locked", domain.ErrConflict)
 	}
 	if err := validateTermInput(&in); err != nil {
 		return nil, err
@@ -290,7 +290,7 @@ func (s *SchoolCalendarService) UpdateTerm(ctx context.Context, id uuid.UUID, in
 	return term, nil
 }
 
-// SetTermStatus â€” UPCOMINGâ†’ACTIVEâ†’CLOSED. Activation requires the parent
+// SetTermStatus — UPCOMING→ACTIVE→CLOSED. Activation requires the parent
 // session to be ACTIVE and no sibling term currently ACTIVE.
 func (s *SchoolCalendarService) SetTermStatus(ctx context.Context, id uuid.UUID, next school.TermStatus) (*school.Term, error) {
 	term, err := s.repo.GetTerm(ctx, id)
@@ -314,7 +314,7 @@ func (s *SchoolCalendarService) SetTermStatus(ctx context.Context, id uuid.UUID,
 		}
 		for _, other := range terms {
 			if other.ID != id && other.Status == school.TermActive {
-				return nil, fmt.Errorf("%w: term %q is already ACTIVE â€” close it first", domain.ErrConflict, other.Name)
+				return nil, fmt.Errorf("%w: term %q is already ACTIVE — close it first", domain.ErrConflict, other.Name)
 			}
 		}
 	}
@@ -324,7 +324,7 @@ func (s *SchoolCalendarService) SetTermStatus(ctx context.Context, id uuid.UUID,
 	return s.repo.GetTerm(ctx, id)
 }
 
-// CurrentCalendar â€” public read: the ACTIVE session for a scope plus its
+// CurrentCalendar — public read: the ACTIVE session for a scope plus its
 // terms (each with the enrolment window evaluated at now). A scope with no
 // active session is a normal state, answered with Active=false.
 func (s *SchoolCalendarService) CurrentCalendar(ctx context.Context, institutionID *uuid.UUID) (*school.CalendarView, error) {

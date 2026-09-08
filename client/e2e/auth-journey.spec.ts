@@ -51,15 +51,31 @@ async function readyAccount(
     data: { email, password: "password123" },
   });
   expect(blocked.status(), "password login before verify").toBe(403);
+  const fs = await import("fs");
+  const logPath = LOG;
+  // Capture the log offset FIRST, request the link, then poll only the bytes
+  // appended afterwards — reading the whole log races with the API's async
+  // flush and can pick up a stale (already used) token.
+  const before = fs.existsSync(logPath) ? fs.statSync(logPath).size : 0;
   const vr = await ctx.post(`${API}/auth/verify-email/request`, {
     data: { email },
   });
   expect(vr.status(), "verify request").toBe(200);
-  const fs = await import("fs");
-  const log = fs.readFileSync(LOG, "utf8");
-  const matches = [...log.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
-  expect(matches.length, "verification link in API log").toBeGreaterThan(0);
-  const token = decodeURIComponent(matches[matches.length - 1][1]);
+  let token = "";
+  for (let i = 0; i < 40 && !token; i++) {
+    try {
+      const buf = fs.readFileSync(logPath);
+      if (buf.length > before) {
+        const tail = buf.subarray(before).toString("utf8");
+        const m = [...tail.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
+        if (m.length) token = decodeURIComponent(m[m.length - 1][1]);
+      }
+    } catch {
+      /* not flushed yet */
+    }
+    if (!token) await new Promise((r) => setTimeout(r, 250));
+  }
+  expect(token, "verification link in API log").toBeTruthy();
   const vc = await ctx.post(`${API}/auth/verify-email/confirm`, {
     data: { token },
   });
@@ -144,7 +160,9 @@ test("signup: full 7-step onboarding with the emailed code, back to ?next=", asy
   // Step 4 - learner details (child fields appear once "My child" is chosen).
   await page.getByRole("button", { name: "My child", exact: true }).click();
   await page.locator("#ob-child").fill("Kemi");
-  await page.getByRole("button", { name: "Secondary", exact: true }).click();
+  // Step 4 redesigned: curriculum combobox gates the level combobox.
+  await page.getByRole("combobox", { name: "Curriculum" }).selectOption({ label: "Nigerian Curriculum" });
+  await page.getByRole("combobox", { name: "Current level" }).selectOption({ label: "JSS2" });
   await page.getByRole("button", { name: "Continue", exact: true }).click();
 
   // Step 5 - phone + password.

@@ -23,7 +23,7 @@ export function BecomeTutorCTA() {
       <div className="relative container-x py-20 text-center md:py-28">
         <div className="mx-auto max-w-3xl">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur">
-            New: tutors keep up to 90% of every lesson fee
+            Now onboarding vetted tutors — you set your rates and schedule
             <Link
               href="/become-tutor"
               className="ml-1 inline-flex items-center gap-1 font-bold text-brand-gold transition hover:text-white"
@@ -40,8 +40,9 @@ export function BecomeTutorCTA() {
 
           <p className="mx-auto mt-6 max-w-2xl text-white/80 md:text-base">
             Join YK-Virtual&apos;s community of vetted tutors. Set your own
-            rates and schedule, teach online or in person, and get paid weekly -
-            while we handle the bookings, payments and students for you.
+            rates and schedule, teach online or in person, and get paid for
+            delivered lessons - while we handle the bookings, payments and
+            students for you.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

@@ -27,6 +27,8 @@ async function registerAndLogin(
     data: { email, password: "password123", roles },
   });
   expect(reg.status(), `register ${email}: ${await reg.text()}`).toBe(201);
+  // Login is gated on email verification (hardening round) — verify first.
+  await completeVerification(ctx, email);
   const login = await ctx.post(`${API}/auth/login`, {
     data: { email, password: "password123" },
   });
@@ -51,21 +53,31 @@ async function uiLogin(page: import("@playwright/test").Page, email: string) {
 // the real verification flow: request a code, read the link the dev console
 // email sender prints to the API log, confirm with the token.
 async function completeVerification(ctx: APIRequestContext, email: string) {
+  const fs = await import("fs");
+  const logPath = process.env.API_LOG || "/tmp/e2e-web-api.log";
+  // Capture the log offset FIRST, request the link, then poll only the bytes
+  // appended afterwards — reading the whole log races with the API's async
+  // flush and can pick up a stale (already used) token.
+  const before = fs.existsSync(logPath) ? fs.statSync(logPath).size : 0;
   const r = await ctx.post(`${API}/auth/verify-email/request`, {
     data: { email },
   });
   expect(r.status(), "verify request").toBe(200);
-  const fs = await import("fs");
-  const log = fs.readFileSync(
-    process.env.API_LOG || "/tmp/e2e-web-api.log",
-    "utf8",
-  );
-  const matches = [...log.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
-  expect(
-    matches.length,
-    "verification link printed to API log",
-  ).toBeGreaterThan(0);
-  const token = decodeURIComponent(matches[matches.length - 1][1]);
+  let token = "";
+  for (let i = 0; i < 40 && !token; i++) {
+    try {
+      const buf = fs.readFileSync(logPath);
+      if (buf.length > before) {
+        const tail = buf.subarray(before).toString("utf8");
+        const m = [...tail.matchAll(/verify-email\?token=([^"&\s\\]+)/g)];
+        if (m.length) token = decodeURIComponent(m[m.length - 1][1]);
+      }
+    } catch {
+      /* not flushed yet */
+    }
+    if (!token) await new Promise((r) => setTimeout(r, 250));
+  }
+  expect(token, "verification link printed to API log").toBeTruthy();
   const c = await ctx.post(`${API}/auth/verify-email/confirm`, {
     data: { token },
   });
@@ -76,8 +88,10 @@ test("public catalogue renders seeded tutor and profile", async ({ page }) => {
   await page.goto("/tutors");
   await expect(page.getByText("Oluwatobi").first()).toBeVisible();
 
-  // Batch-3 card design: vetted badge + subject teaching + message CTA.
-  await expect(page.getByText("Vetted").first()).toBeVisible();
+  // Card redesign: the vetted badge is now a BadgeCheck icon (the only
+  // "Vetted" text on the page lives in the <title>, which getByText matches
+  // but Playwright reports as hidden).
+  await expect(page.locator("svg.lucide-badge-check").first()).toBeVisible();
   await expect(page.getByText(/Teaches/).first()).toBeVisible();
   await expect(
     page.getByRole("link", { name: "message" }).first(),
@@ -120,8 +134,9 @@ test("home page: batch-2 sections present, healthcare gone, exam cards link", as
 
   // Download-on-the-go section.
   await expect(page.getByText("Your classroom, in your pocket.")).toBeVisible();
+  // PWA pivot: the store badge is gone — the section installs from the site.
   await expect(
-    page.getByRole("link", { name: /Get it on Google Play/ }),
+    page.getByRole("link", { name: /Install — Android/ }),
   ).toBeVisible();
 
   // Exam prep cards link to their fully built pages (blue hover + CTA).
@@ -188,12 +203,13 @@ test("parent pilot journey: register → learner → booking → webhook → LMS
   expect(wh.status()).toBe(200);
 
   // UI: sign in as the parent - the dashboard renders its bookings shell
-  // and the settled enrolment shows up in the LMS hub.
-  await completeVerification(request, email);
+  // and the settled enrolment shows up in the LMS hub. (The account was
+  // already email-verified inside registerAndLogin.)
   await uiLogin(page, email);
   await page.goto("/dashboard");
   await expect(
-    page.getByRole("heading", { name: /Family dashboard/ }),
+    // Dashboard shell redesign: time-of-day greeting + family subtitle.
+    page.getByText("Bookings, payments and your family's progress"),
   ).toBeVisible();
   // Suggestions engine renders the "For you" shelf on the dashboard.
   await expect(page.getByRole("heading", { name: "For you" })).toBeVisible();
@@ -248,7 +264,7 @@ test("student role cannot reach admin surfaces", async ({ page, request }) => {
   const q = await request.get(`${API}/admin/support?category=SAFEGUARDING`);
   expect(q.status()).toBe(403);
 
-  await completeVerification(request, email);
+  // registerAndLogin already verified the email.
   await uiLogin(page, email);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/dashboard/);
@@ -279,7 +295,9 @@ test("first-time wizard: 3 steps then the role dashboard", async ({
   // Step 1 → 2: add the first learner.
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByPlaceholder("e.g. Kemi").fill("Wiz");
-  await page.getByRole("button", { name: "JSS2" }).click();
+  // Step 2 redesigned: curriculum combobox gates the level combobox.
+  await page.getByRole("combobox", { name: "Curriculum" }).selectOption({ label: "Nigerian Curriculum" });
+  await page.getByRole("combobox", { name: "Current level" }).selectOption({ label: "JSS2" });
   await page.getByRole("button", { name: "Continue" }).click();
 
   // Step 3 → finish lands on the parent dashboard.
@@ -291,7 +309,8 @@ test("first-time wizard: 3 steps then the role dashboard", async ({
     .click({ noWaitAfter: true });
   await expect(page).toHaveURL(/dashboard/, { timeout: 20_000 });
   await expect(
-    page.getByRole("heading", { name: /Family dashboard/ }),
+    // Dashboard shell redesign: time-of-day greeting + family subtitle.
+    page.getByText("Bookings, payments and your family's progress"),
   ).toBeVisible();
 });
 

@@ -144,7 +144,7 @@ func TestSchoolCal_CurrentCalendar(t *testing.T) {
 	_, err = svc.CreateTerm(ctx, sess.ID, TermInput{Name: "Second Term", Number: 2, StartsOn: day(2027, 1, 5), EndsOn: day(2027, 3, 26)})
 	require.NoError(t, err)
 
-	// No ACTIVE session yet â†’ Active=false, no error.
+	// No ACTIVE session yet → Active=false, no error.
 	view, err := svc.CurrentCalendar(ctx, nil)
 	require.NoError(t, err)
 	require.False(t, view.Active)
@@ -159,7 +159,7 @@ func TestSchoolCal_CurrentCalendar(t *testing.T) {
 	require.Equal(t, "2026/2027", view.Session.Name)
 	require.Len(t, view.Terms, 2)
 	// Terms are ordered by number; only the first has an explicit enrolment
-	// window (open at "now"). The second has no window â†’ open-ended, same
+	// window (open at "now"). The second has no window → open-ended, same
 	// semantics as cohort enrolment windows (migration 000060).
 	require.Equal(t, 1, view.Terms[0].Number)
 	require.True(t, view.Terms[0].EnrollmentOpen)

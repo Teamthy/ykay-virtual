@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// SchoolCalendarHandler â€” virtual-school academic calendar (Pillar 1):
+// SchoolCalendarHandler — virtual-school academic calendar (Pillar 1):
 // admin CRUD + lifecycle for sessions and terms, plus the public
 // current-calendar read for web/mobile.
 type SchoolCalendarHandler struct {
@@ -46,10 +46,10 @@ func (req *sessionRequest) toInput() (service.SessionInput, error) {
 	in.Name = req.Name
 	var err error
 	if in.StartsOn, err = time.Parse("2006-01-02", req.StartsOn); err != nil {
-		return in, pkg.BadRequest("invalid starts_on â€” expected YYYY-MM-DD", nil)
+		return in, pkg.BadRequest("invalid starts_on — expected YYYY-MM-DD", nil)
 	}
 	if in.EndsOn, err = time.Parse("2006-01-02", req.EndsOn); err != nil {
-		return in, pkg.BadRequest("invalid ends_on â€” expected YYYY-MM-DD", nil)
+		return in, pkg.BadRequest("invalid ends_on — expected YYYY-MM-DD", nil)
 	}
 	if req.InstitutionID != "" {
 		id, perr := uuid.Parse(req.InstitutionID)
@@ -76,29 +76,29 @@ func (req *termRequest) toInput() (service.TermInput, error) {
 	in.Number = req.Number
 	var err error
 	if in.StartsOn, err = time.Parse("2006-01-02", req.StartsOn); err != nil {
-		return in, pkg.BadRequest("invalid starts_on â€” expected YYYY-MM-DD", nil)
+		return in, pkg.BadRequest("invalid starts_on — expected YYYY-MM-DD", nil)
 	}
 	if in.EndsOn, err = time.Parse("2006-01-02", req.EndsOn); err != nil {
-		return in, pkg.BadRequest("invalid ends_on â€” expected YYYY-MM-DD", nil)
+		return in, pkg.BadRequest("invalid ends_on — expected YYYY-MM-DD", nil)
 	}
 	if req.EnrollmentOpensAt != "" {
 		t, perr := time.Parse(time.RFC3339, req.EnrollmentOpensAt)
 		if perr != nil {
-			return in, pkg.BadRequest("invalid enrollment_opens_at â€” expected RFC3339", nil)
+			return in, pkg.BadRequest("invalid enrollment_opens_at — expected RFC3339", nil)
 		}
 		in.EnrollmentOpensAt = &t
 	}
 	if req.EnrollmentClosesAt != "" {
 		t, perr := time.Parse(time.RFC3339, req.EnrollmentClosesAt)
 		if perr != nil {
-			return in, pkg.BadRequest("invalid enrollment_closes_at â€” expected RFC3339", nil)
+			return in, pkg.BadRequest("invalid enrollment_closes_at — expected RFC3339", nil)
 		}
 		in.EnrollmentClosesAt = &t
 	}
 	return in, nil
 }
 
-// CreateSession â€” POST /api/v1/admin/school/sessions
+// CreateSession — POST /api/v1/admin/school/sessions
 func (h *SchoolCalendarHandler) CreateSession(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -121,7 +121,7 @@ func (h *SchoolCalendarHandler) CreateSession(w http.ResponseWriter, r *http.Req
 	pkg.WriteSuccess(w, http.StatusCreated, sess, nil)
 }
 
-// ListSessions â€” GET /api/v1/admin/school/sessions?institution_id=
+// ListSessions — GET /api/v1/admin/school/sessions?institution_id=
 func (h *SchoolCalendarHandler) ListSessions(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -143,7 +143,7 @@ func (h *SchoolCalendarHandler) ListSessions(w http.ResponseWriter, r *http.Requ
 	pkg.WriteSuccess(w, http.StatusOK, sessions, nil)
 }
 
-// UpdateSession â€” PUT /api/v1/admin/school/sessions/{id}
+// UpdateSession — PUT /api/v1/admin/school/sessions/{id}
 func (h *SchoolCalendarHandler) UpdateSession(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -171,7 +171,7 @@ func (h *SchoolCalendarHandler) UpdateSession(w http.ResponseWriter, r *http.Req
 	pkg.WriteSuccess(w, http.StatusOK, sess, nil)
 }
 
-// SetSessionStatus â€” POST /api/v1/admin/school/sessions/{id}/status
+// SetSessionStatus — POST /api/v1/admin/school/sessions/{id}/status
 func (h *SchoolCalendarHandler) SetSessionStatus(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -196,7 +196,7 @@ func (h *SchoolCalendarHandler) SetSessionStatus(w http.ResponseWriter, r *http.
 	pkg.WriteSuccess(w, http.StatusOK, sess, nil)
 }
 
-// CreateTerm â€” POST /api/v1/admin/school/sessions/{id}/terms
+// CreateTerm — POST /api/v1/admin/school/sessions/{id}/terms
 func (h *SchoolCalendarHandler) CreateTerm(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -224,7 +224,7 @@ func (h *SchoolCalendarHandler) CreateTerm(w http.ResponseWriter, r *http.Reques
 	pkg.WriteSuccess(w, http.StatusCreated, term, nil)
 }
 
-// ListTerms â€” GET /api/v1/admin/school/sessions/{id}/terms
+// ListTerms — GET /api/v1/admin/school/sessions/{id}/terms
 func (h *SchoolCalendarHandler) ListTerms(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -242,7 +242,7 @@ func (h *SchoolCalendarHandler) ListTerms(w http.ResponseWriter, r *http.Request
 	pkg.WriteSuccess(w, http.StatusOK, terms, nil)
 }
 
-// UpdateTerm â€” PUT /api/v1/admin/school/terms/{id}
+// UpdateTerm — PUT /api/v1/admin/school/terms/{id}
 func (h *SchoolCalendarHandler) UpdateTerm(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -270,7 +270,7 @@ func (h *SchoolCalendarHandler) UpdateTerm(w http.ResponseWriter, r *http.Reques
 	pkg.WriteSuccess(w, http.StatusOK, term, nil)
 }
 
-// SetTermStatus â€” POST /api/v1/admin/school/terms/{id}/status
+// SetTermStatus — POST /api/v1/admin/school/terms/{id}/status
 func (h *SchoolCalendarHandler) SetTermStatus(w http.ResponseWriter, r *http.Request) {
 	if !requireAdmin(w, r) {
 		return
@@ -295,7 +295,7 @@ func (h *SchoolCalendarHandler) SetTermStatus(w http.ResponseWriter, r *http.Req
 	pkg.WriteSuccess(w, http.StatusOK, term, nil)
 }
 
-// CurrentCalendar â€” GET /api/v1/school/calendar/current?institution_id=
+// CurrentCalendar — GET /api/v1/school/calendar/current?institution_id=
 // (public, anonymous-cacheable). Answers 200 with { active: false } when no
 // session is live for the scope, so clients render an empty state.
 func (h *SchoolCalendarHandler) CurrentCalendar(w http.ResponseWriter, r *http.Request) {

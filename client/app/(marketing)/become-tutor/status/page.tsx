@@ -57,6 +57,26 @@ export default function BecomeTutorStatusPage() {
             <Link href="/become-tutor/apply" className="btn-gold mt-4 inline-block">Start application</Link>
           </div>
         )}
+        {profile.data && profile.data.status === "DRAFT" && state.profileId && (
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              disabled={submit.isPending}
+              onClick={() => {
+                if (state.profileId) submit.mutate(state.profileId);
+              }}
+              className="rounded-full bg-brand-green px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-green/90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submit.isPending ? "Submitting…" : "Submit application for review"}
+            </button>
+            {submit.isError && (
+              <p className="mt-2 text-xs font-medium text-red-600">
+                Could not submit — make sure every step is complete, then try
+                again.
+              </p>
+            )}
+          </div>
+        )}
         <p className="mt-6 text-center text-xs text-ink-400">
           Application id: {state.profileId ? state.profileId.slice(0, 8) : "-"} · saved locally so you can return anytime
         </p>
