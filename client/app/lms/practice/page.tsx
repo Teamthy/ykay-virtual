@@ -14,6 +14,32 @@ import { EmptyState } from "@/components/ui/empty-state";
 
 const LIMITS = [10, 20, 30, 50];
 
+const LEVEL_ORDER = [
+  "jss1",
+  "jss2",
+  "jss3",
+  "bece",
+  "ss1",
+  "ss2",
+  "ss3",
+  "waec",
+  "neco",
+  "jamb",
+] as const;
+
+const LEVEL_LABELS: Record<string, string> = {
+  jss1: "Junior — JSS1",
+  jss2: "Junior — JSS2",
+  jss3: "Junior — JSS3",
+  bece: "BECE",
+  ss1: "Senior — SS1",
+  ss2: "Senior — SS2",
+  ss3: "Senior — SS3",
+  waec: "WAEC",
+  neco: "NECO",
+  jamb: "JAMB UTME",
+};
+
 export default function PracticeBankPage() {
   const subjects = useQuery({
     queryKey: ["cbt", "bank", "subjects"],
