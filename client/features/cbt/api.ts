@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api";
 
-// CBT practice exams — the client surface of the Go practice-exam engine
+// CBT practice exams â€” the client surface of the Go practice-exam engine
 // (tutor-authored papers, timed student sittings, server-side grading).
 // The answer key NEVER ships to the student: the paper endpoint returns
 // question text + options only, and grading happens on submit.
@@ -267,27 +267,33 @@ export async function listBankSubjects(): Promise<BankSubject[]> {
 }
 
 /**
- * Draw a random paper — every call is a fresh subset, so two students (or
+ * Draw a random paper â€” every call is a fresh subset, so two students (or
  * two sittings) never see the same paper. difficulty 0 = mixed;
  * durationMinutes 0 = untimed (otherwise the server enforces the deadline
  * via the signed attempt ticket).
  */
+export async function listBankTopics(slug: string): Promise<string[]> {
+  return (await apiFetch<string[]>(`/cbt/subjects/${slug}/topics`)).data;
+}
+
 export async function drawBankPaper(
   slug: string,
   limit: number,
   difficulty = 0,
   durationMinutes = 0,
+  topic = "",
 ): Promise<BankPaper> {
   const qs = new URLSearchParams({
     limit: String(limit),
     difficulty: String(difficulty),
     duration_minutes: String(durationMinutes),
   });
+  if (topic) qs.set("topic", topic);
   return (await apiFetch<BankPaper>(`/cbt/subjects/${slug}/paper?${qs}`)).data;
 }
 
 /**
- * Server-side grading — the key never ships with the paper. attemptToken
+ * Server-side grading â€” the key never ships with the paper. attemptToken
  * (from the draw) binds the submission to that draw: the server rejects
  * tampered, cross-student or late tickets.
  */
@@ -379,7 +385,7 @@ export async function adminCreateBankQuestion(
   });
 }
 
-/** CSV import — duplicate stems are skipped, so re-importing is idempotent. */
+/** CSV import â€” duplicate stems are skipped, so re-importing is idempotent. */
 export async function adminImportBankCSV(
   file: File,
 ): Promise<{ imported: number; skipped: number }> {

@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CBTPostgres — practice-bank storage (migration 000072). Random papers draw
+// CBTPostgres â€” practice-bank storage (migration 000072). Random papers draw
 // with ORDER BY random() so every student gets a fresh subset.
 type CBTPostgres struct {
 	db TxQuerier
@@ -71,13 +71,35 @@ func scanCBTQuestion(scanner interface {
 	return q, nil
 }
 
-func (r *CBTPostgres) RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int) ([]cbt.Question, error) {
+func (r *CBTPostgres) ListTopics(ctx context.Context, subjectSlug string) ([]string, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT DISTINCT q.topic FROM cbt_questions q
+		JOIN cbt_subjects s ON s.id = q.subject_id
+		WHERE s.slug = $1 AND q.status = 'published' AND q.topic <> ''
+		ORDER BY q.topic`, subjectSlug)
+	if err != nil {
+		return nil, fmt.Errorf("cbt topics: %w", err)
+	}
+	defer rows.Close()
+	out := []string{}
+	for rows.Next() {
+		var t string
+		if err := rows.Scan(&t); err != nil {
+			return nil, err
+		}
+		out = append(out, t)
+	}
+	return out, rows.Err()
+}
+
+func (r *CBTPostgres) RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int, topic string) ([]cbt.Question, error) {
 	rows, err := r.db.QueryContext(ctx, fmt.Sprintf(`
 		SELECT %s FROM cbt_questions q
 		JOIN cbt_subjects s ON s.id = q.subject_id
 		WHERE s.slug = $1 AND q.status = 'published'
 		  AND ($2 = 0 OR q.difficulty = $2)
-		ORDER BY random() LIMIT %d`, questionCols, n), subjectSlug, difficulty)
+		  AND ($3 = '' OR q.topic = $3)
+		ORDER BY random() LIMIT %d`, questionCols, n), subjectSlug, difficulty, topic)
 	if err != nil {
 		return nil, fmt.Errorf("cbt random: %w", err)
 	}
@@ -108,7 +130,7 @@ func (r *CBTPostgres) GetByIDs(ctx context.Context, ids []uuid.UUID) ([]cbt.Ques
 			WHERE q.id = $1 AND q.status = 'published'`, questionCols), id))
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				continue // stale id in a submission → skip, grade the rest
+				continue // stale id in a submission â†’ skip, grade the rest
 			}
 			return nil, err
 		}

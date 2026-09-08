@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CBTBankHandler — the shared practice bank (000072):
+// CBTBankHandler â€” the shared practice bank (000072):
 //
 //	student: GET  /cbt/subjects, GET /cbt/subjects/{slug}/paper,
 //	         POST /cbt/grade
@@ -51,7 +51,7 @@ func writeCBTError(w http.ResponseWriter, err error) {
 
 // ---- student surface --------------------------------------------------------
 
-// ListSubjects — GET /cbt/subjects (any authenticated user).
+// ListSubjects â€” GET /cbt/subjects (any authenticated user).
 func (h *CBTBankHandler) ListSubjects(w http.ResponseWriter, r *http.Request) {
 	if requireActor(w, r) == nil {
 		return
@@ -64,8 +64,8 @@ func (h *CBTBankHandler) ListSubjects(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, subjects, nil)
 }
 
-// Paper — GET /cbt/subjects/{slug}/paper?limit=30&difficulty=2&duration_minutes=20
-// — a fresh random draw. difficulty 0/absent = mixed; duration_minutes 0/absent
+// Paper â€” GET /cbt/subjects/{slug}/paper?limit=30&difficulty=2&duration_minutes=20
+// â€” a fresh random draw. difficulty 0/absent = mixed; duration_minutes 0/absent
 // = untimed. Timed (and token-bound) draws carry an attempt_token the client
 // must return to /cbt/grade.
 func (h *CBTBankHandler) Paper(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +101,8 @@ func (h *CBTBankHandler) Paper(w http.ResponseWriter, r *http.Request) {
 		}
 		duration = n
 	}
-	paper, err := h.svc.GeneratePaper(r.Context(), slug, limit, difficulty, duration, actor.UserID)
+	topic := strings.TrimSpace(r.URL.Query().Get("topic"))
+	paper, err := h.svc.GeneratePaper(r.Context(), slug, limit, difficulty, duration, actor.UserID, topic)
 	if err != nil {
 		writeCBTError(w, err)
 		return
@@ -111,6 +112,7 @@ func (h *CBTBankHandler) Paper(w http.ResponseWriter, r *http.Request) {
 		"limit":            limit,
 		"difficulty":       difficulty,
 		"duration_minutes": duration,
+		"topic":            topic,
 		"attempt_token":    paper.AttemptToken,
 		"deadline":         paper.Deadline, // zero time = untimed
 		"questions":        paper.Questions,
@@ -118,13 +120,27 @@ func (h *CBTBankHandler) Paper(w http.ResponseWriter, r *http.Request) {
 	}, nil)
 }
 
+// ListTopics â€” GET /cbt/subjects/{slug}/topics
+func (h *CBTBankHandler) ListTopics(w http.ResponseWriter, r *http.Request) {
+	if requireActor(w, r) == nil {
+		return
+	}
+	slug := r.PathValue("slug")
+	topics, err := h.svc.ListTopics(r.Context(), slug)
+	if err != nil {
+		writeCBTError(w, err)
+		return
+	}
+	pkg.WriteSuccess(w, http.StatusOK, topics, nil)
+}
+
 type gradeRequest struct {
 	AttemptToken string                `json:"attempt_token"`
 	Answers      []service.GradeAnswer `json:"answers"`
 }
 
-// Grade — POST /cbt/grade {attempt_token, answers:[{question_id, selected_index}]}
-// — server-side scoring; the review reveals key + explanations. attempt_token
+// Grade â€” POST /cbt/grade {attempt_token, answers:[{question_id, selected_index}]}
+// â€” server-side scoring; the review reveals key + explanations. attempt_token
 // (issued by the paper draw) binds the submission to that draw: tampered,
 // cross-student or late tickets are rejected.
 func (h *CBTBankHandler) Grade(w http.ResponseWriter, r *http.Request) {
@@ -160,7 +176,7 @@ type adminQuestionDTO struct {
 	Status       string    `json:"status"`
 }
 
-// ListQuestions — GET /admin/cbt/questions?subject=&page=&page_size=
+// ListQuestions â€” GET /admin/cbt/questions?subject=&page=&page_size=
 func (h *CBTBankHandler) ListQuestions(w http.ResponseWriter, r *http.Request) {
 	actor := requireActor(w, r)
 	if actor == nil {
@@ -201,7 +217,7 @@ type createQuestionRequest struct {
 	Status       string   `json:"status"`
 }
 
-// CreateQuestion — POST /admin/cbt/questions
+// CreateQuestion â€” POST /admin/cbt/questions
 func (h *CBTBankHandler) CreateQuestion(w http.ResponseWriter, r *http.Request) {
 	actor := requireActor(w, r)
 	if actor == nil {
@@ -238,7 +254,7 @@ type patchQuestionRequest struct {
 	Status string `json:"status"`
 }
 
-// PatchQuestion — PATCH /admin/cbt/questions/{id} (publish/unpublish).
+// PatchQuestion â€” PATCH /admin/cbt/questions/{id} (publish/unpublish).
 func (h *CBTBankHandler) PatchQuestion(w http.ResponseWriter, r *http.Request) {
 	actor := requireActor(w, r)
 	if actor == nil {
@@ -265,7 +281,7 @@ func (h *CBTBankHandler) PatchQuestion(w http.ResponseWriter, r *http.Request) {
 	pkg.WriteSuccess(w, http.StatusOK, map[string]string{"status": req.Status}, nil)
 }
 
-// DeleteQuestion — DELETE /admin/cbt/questions/{id}
+// DeleteQuestion â€” DELETE /admin/cbt/questions/{id}
 func (h *CBTBankHandler) DeleteQuestion(w http.ResponseWriter, r *http.Request) {
 	actor := requireActor(w, r)
 	if actor == nil {
@@ -287,7 +303,7 @@ func (h *CBTBankHandler) DeleteQuestion(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// ImportCSV — POST /admin/cbt/import — multipart file or raw CSV body.
+// ImportCSV â€” POST /admin/cbt/import â€” multipart file or raw CSV body.
 // Duplicate stems are skipped, so re-importing is idempotent.
 func (h *CBTBankHandler) ImportCSV(w http.ResponseWriter, r *http.Request) {
 	actor := requireActor(w, r)

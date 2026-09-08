@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CBTMemory — in-memory CBT bank (tests / dev fallback).
+// CBTMemory â€” in-memory CBT bank (tests / dev fallback).
 type CBTMemory struct {
 	mu        sync.RWMutex
 	subjects  map[uuid.UUID]*cbt.Subject
@@ -65,7 +65,28 @@ func (m *CBTMemory) UpsertSubject(_ context.Context, s *cbt.Subject) error {
 	return nil
 }
 
-func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n, difficulty int) ([]cbt.Question, error) {
+func (m *CBTMemory) ListTopics(_ context.Context, subjectSlug string) ([]string, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	id, ok := m.bySlug[subjectSlug]
+	if !ok {
+		return nil, cbt.ErrNotFound
+	}
+	seen := map[string]struct{}{}
+	for _, q := range m.questions {
+		if q.SubjectID == id && q.Status == "published" && q.Topic != "" {
+			seen[q.Topic] = struct{}{}
+		}
+	}
+	out := make([]string, 0, len(seen))
+	for t := range seen {
+		out = append(out, t)
+	}
+	sort.Strings(out)
+	return out, nil
+}
+
+func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n, difficulty int, topic string) ([]cbt.Question, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	id, ok := m.bySlug[subjectSlug]
@@ -74,7 +95,7 @@ func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n, difficult
 	}
 	pool := make([]cbt.Question, 0)
 	for _, q := range m.questions {
-		if q.SubjectID == id && q.Status == "published" && (difficulty == 0 || q.Difficulty == difficulty) {
+		if q.SubjectID == id && q.Status == "published" && (difficulty == 0 || q.Difficulty == difficulty) && (topic == "" || q.Topic == topic) {
 			pool = append(pool, *q)
 		}
 	}
@@ -88,8 +109,8 @@ func (m *CBTMemory) random(ctx context.Context, subjectSlug string, n, difficult
 	return pool[:n], nil
 }
 
-func (m *CBTMemory) RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int) ([]cbt.Question, error) {
-	return m.random(ctx, subjectSlug, n, difficulty)
+func (m *CBTMemory) RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int, topic string) ([]cbt.Question, error) {
+	return m.random(ctx, subjectSlug, n, difficulty, topic)
 }
 
 func (m *CBTMemory) GetByIDs(_ context.Context, ids []uuid.UUID) ([]cbt.Question, error) {

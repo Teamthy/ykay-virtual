@@ -8,7 +8,7 @@ import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 
-// /lms/practice — the shared practice bank home. Every subject card shows the
+// /lms/practice â€” the shared practice bank home. Every subject card shows the
 // LIVE count of published questions; a paper is a fresh random draw per
 // sitting, so no two students practise the same set.
 
@@ -34,9 +34,9 @@ export default function PracticeBankPage() {
           Test practice, JAMB/WAEC style
         </h1>
         <p className="mt-3 max-w-2xl leading-relaxed text-ink-600">
-          {total.toLocaleString()}+ exam-standard questions across{" "}
-          {list.length || "13"} subjects — real past-paper patterns with
-          worked explanations. Every paper is drawn at random, so{" "}
+          {total.toLocaleString()}+ NERDC-aligned questions across JSS1â€“SS3
+          and BECE/WAEC/NECO/JAMB â€” pick a topic, difficulty, count and time.
+          Every paper is drawn at random, so{" "}
           <strong>you get different questions every sitting</strong>.
         </p>
       </div>
@@ -46,12 +46,12 @@ export default function PracticeBankPage() {
           {
             icon: <Dices size={16} />,
             title: "Random draw per sitting",
-            desc: "A fresh subset every time — no repeats to memorise",
+            desc: "A fresh subset every time â€” no repeats to memorise",
           },
           {
             icon: <ShieldCheck size={16} />,
             title: "Graded on the server",
-            desc: "Answers can't be peeked at — score + full review on submit",
+            desc: "Answers can't be peeked at â€” score + full review on submit",
           },
           {
             icon: <BookOpenCheck size={16} />,
@@ -90,44 +90,57 @@ export default function PracticeBankPage() {
             }
           />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((s) => (
-              <Link
-                key={s.slug}
-                href={`/lms/practice/${s.slug}`}
-                className="group rounded-2xl border border-ink-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-bold text-deep group-hover:text-primary-dark">
-                    {s.name}
-                  </p>
-                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary-dark">
-                    {s.question_count} q
-                  </span>
-                </div>
-                <p className="mt-1 text-xs capitalize text-ink-400">
-                  {s.department} · {s.class_level.toUpperCase()}
-                </p>
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="flex gap-1.5">
-                    {LIMITS.slice(0, 3).map((n) => (
-                      <span
-                        key={n}
-                        className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500"
-                      >
-                        {n} q
-                      </span>
-                    ))}
-                    <span className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500">
-                      …more
-                    </span>
+          <div className="space-y-10">
+            {LEVEL_ORDER.filter((lv) => list.some((s) => s.class_level === lv)).map(
+              (lv) => (
+                <div key={lv}>
+                  <h3 className="mb-3 font-display text-xl text-deep">
+                    {LEVEL_LABELS[lv] ?? lv.toUpperCase()}
+                  </h3>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {list
+                      .filter((s) => s.class_level === lv)
+                      .map((s) => (
+                        <Link
+                          key={s.slug}
+                          href={`/lms/practice/${s.slug}`}
+                          className="group rounded-2xl border border-ink-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-bold text-deep group-hover:text-primary-dark">
+                              {s.name}
+                            </p>
+                            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary-dark">
+                              {s.question_count} q
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs capitalize text-ink-400">
+                            {s.department} Â· {s.class_level.toUpperCase()}
+                          </p>
+                          <div className="mt-4 flex items-center justify-between">
+                            <div className="flex gap-1.5">
+                              {LIMITS.slice(0, 3).map((n) => (
+                                <span
+                                  key={n}
+                                  className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500"
+                                >
+                                  {n} q
+                                </span>
+                              ))}
+                              <span className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500">
+                                â€¦more
+                              </span>
+                            </div>
+                            <span className="text-sm font-bold text-primary-dark opacity-0 transition group-hover:opacity-100">
+                              Start â†’
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
                   </div>
-                  <span className="text-sm font-bold text-primary-dark opacity-0 transition group-hover:opacity-100">
-                    Start →
-                  </span>
                 </div>
-              </Link>
-            ))}
+              ),
+            )}
           </div>
         )}
       </section>

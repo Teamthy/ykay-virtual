@@ -33,7 +33,7 @@ func newSeededCBT(t *testing.T) *CBTService {
 
 func TestCBTSeedIsIdempotent(t *testing.T) {
 	svc := newSeededCBT(t)
-	// Second boot: bank non-empty → no re-import.
+	// Second boot: bank non-empty â†’ no re-import.
 	n, err := svc.SeedIfAbsent(context.Background(), miniBankCSV)
 	require.NoError(t, err)
 	assert.Zero(t, n)
@@ -59,7 +59,7 @@ func TestCBTSubjectsHaveLiveCounts(t *testing.T) {
 
 func TestCBTPaperIsRandomSubsetWithoutKey(t *testing.T) {
 	svc := newSeededCBT(t)
-	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 2, 0, 0, testStudent())
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 2, 0, 0, testStudent(), "")
 	require.NoError(t, err)
 	require.Len(t, paper.Questions, 2)
 	assert.NotEmpty(t, paper.AttemptToken)
@@ -72,32 +72,44 @@ func TestCBTPaperIsRandomSubsetWithoutKey(t *testing.T) {
 	// Two draws over a 3-question pool with limit 2 must (practically) differ.
 	differ := false
 	for i := 0; i < 20 && !differ; i++ {
-		other, err := svc.GeneratePaper(context.Background(), "mathematics", 2, 0, 0, testStudent())
+		other, err := svc.GeneratePaper(context.Background(), "mathematics", 2, 0, 0, testStudent(), "")
 		require.NoError(t, err)
 		differ = other.Questions[0].ID != paper.Questions[0].ID ||
 			other.Questions[1].ID != paper.Questions[1].ID
 	}
 	assert.True(t, differ, "two random draws should rarely be identical")
 
-	_, err = svc.GeneratePaper(context.Background(), "nope", 5, 0, 0, testStudent())
+	_, err = svc.GeneratePaper(context.Background(), "nope", 5, 0, 0, testStudent(), "")
 	assert.ErrorIs(t, err, cbt.ErrNotFound)
 	// Input guards: difficulty and duration have hard bounds.
-	_, err = svc.GeneratePaper(context.Background(), "mathematics", 5, 4, 0, testStudent())
+	_, err = svc.GeneratePaper(context.Background(), "mathematics", 5, 4, 0, testStudent(), "")
 	assert.ErrorIs(t, err, cbt.ErrInvalidInput)
-	_, err = svc.GeneratePaper(context.Background(), "mathematics", 5, 1, 181, testStudent())
+	_, err = svc.GeneratePaper(context.Background(), "mathematics", 5, 1, 181, testStudent(), "")
 	assert.ErrorIs(t, err, cbt.ErrInvalidInput)
+}
+
+func TestCBTPaperFiltersByTopic(t *testing.T) {
+	svc := newSeededCBT(t)
+	topics, err := svc.ListTopics(context.Background(), "mathematics")
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"Algebra", "Number bases"}, topics)
+
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 10, 0, 0, testStudent(), "Number bases")
+	require.NoError(t, err)
+	require.Len(t, paper.Questions, 1)
+	assert.Equal(t, "Number bases", paper.Questions[0].Topic)
 }
 
 func TestCBTPaperFiltersByDifficulty(t *testing.T) {
 	svc := newSeededCBT(t)
 	// mini bank mathematics: difficulty 1, 2, 3 (one each).
 	for _, d := range []int{1, 2, 3} {
-		paper, err := svc.GeneratePaper(context.Background(), "mathematics", 10, d, 0, testStudent())
+		paper, err := svc.GeneratePaper(context.Background(), "mathematics", 10, d, 0, testStudent(), "")
 		require.NoError(t, err)
 		require.Len(t, paper.Questions, 1, "difficulty %d should match exactly one question", d)
 		assert.Equal(t, d, paper.Questions[0].Difficulty)
 	}
-	mixed, err := svc.GeneratePaper(context.Background(), "mathematics", 10, 0, 0, testStudent())
+	mixed, err := svc.GeneratePaper(context.Background(), "mathematics", 10, 0, 0, testStudent(), "")
 	require.NoError(t, err)
 	assert.Len(t, mixed.Questions, 3)
 }
@@ -109,7 +121,7 @@ func TestCBTAttemptTokenBindsDrawAndDeadline(t *testing.T) {
 	svc := newSeededCBT(t).WithClock(func() time.Time { return now })
 	other := uuid.MustParse("22222222-2222-2222-2222-222222222222")
 
-	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 5, testStudent())
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 5, testStudent(), "")
 	require.NoError(t, err)
 	require.Len(t, paper.Questions, 3)
 	assert.Equal(t, now.Add(5*time.Minute), paper.Deadline)
@@ -144,7 +156,7 @@ func TestCBTAttemptTokenBindsDrawAndDeadline(t *testing.T) {
 	_, err = svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, stray)
 	assert.ErrorIs(t, err, cbt.ErrAttemptInvalid)
 
-	// Past the deadline → expired.
+	// Past the deadline â†’ expired.
 	svc.WithClock(func() time.Time { return now.Add(5*time.Minute + attemptGrace + time.Second) })
 	_, err = svc.GradePaper(context.Background(), testStudent(), paper.AttemptToken, answers)
 	assert.ErrorIs(t, err, cbt.ErrAttemptExpired)
@@ -158,7 +170,7 @@ func TestCBTAttemptTokenBindsDrawAndDeadline(t *testing.T) {
 
 func TestCBTGradeWithoutTokenKeepsLegacyPath(t *testing.T) {
 	svc := newSeededCBT(t)
-	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 0, testStudent())
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 0, testStudent(), "")
 	require.NoError(t, err)
 	good := 1
 	answers := []GradeAnswer{{QuestionID: paper.Questions[0].ID, SelectedIndex: &good}}
@@ -169,11 +181,11 @@ func TestCBTGradeWithoutTokenKeepsLegacyPath(t *testing.T) {
 
 func TestCBTGradeServerSide(t *testing.T) {
 	svc := newSeededCBT(t)
-	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 0, testStudent())
+	paper, err := svc.GeneratePaper(context.Background(), "mathematics", 3, 0, 0, testStudent(), "")
 	require.NoError(t, err)
 
 	answers := make([]GradeAnswer, 0, len(paper.Questions))
-	// mathematics CSV keys are all index 1 → answer 1 correctly, skip 1, flub 1.
+	// mathematics CSV keys are all index 1 â†’ answer 1 correctly, skip 1, flub 1.
 	good := 1
 	answers = append(answers, GradeAnswer{QuestionID: paper.Questions[0].ID, SelectedIndex: &good})
 	answers = append(answers, GradeAnswer{QuestionID: paper.Questions[1].ID}) // unanswered
@@ -213,16 +225,16 @@ func TestCBTAdminLifecycle(t *testing.T) {
 		}
 	}
 
-	// duplicate stem → conflict
+	// duplicate stem â†’ conflict
 	err = svc.CreateQuestion(context.Background(), "english", "English Language", "ss2", "arts", cbt.Question{
 		Topic: "Grammar", Difficulty: 1, Stem: qs[0].Stem,
 		Options: []string{"a", "b"}, CorrectIndex: 0,
 	})
 	assert.ErrorIs(t, err, cbt.ErrDuplicateStem)
 
-	// new unique question → created published
+	// new unique question â†’ created published
 	err = svc.CreateQuestion(context.Background(), "english", "English Language", "ss2", "arts", cbt.Question{
-		Topic: "Comprehension", Difficulty: 2, Stem: "A story's lesson is its…",
+		Topic: "Comprehension", Difficulty: 2, Stem: "A story's lesson is itsâ€¦",
 		Options: []string{"plot", "moral"}, CorrectIndex: 1, Explanation: "definition",
 	})
 	require.NoError(t, err)
