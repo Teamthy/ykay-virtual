@@ -189,22 +189,26 @@ export default function LmsHomePage() {
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Stat
             label="Active courses"
-            value={courses.length || "—"}
+            value={courses.length ? courses.length : "—"}
             hint="Cohorts you're enrolled in"
           />
           <Stat
             label="Attendance"
-            value={attendance.data ? `${attendance.data.rate}%` : "—"}
+            value={
+              courses.length && attendance.data
+                ? `${Math.round(attendance.data.rate)}%`
+                : "—"
+            }
             hint="Across tracked lessons"
           />
           <Stat
             label="Assignments due"
-            value={pending}
-            hint={`${graded} graded so far`}
+            value={courses.length ? pending : "—"}
+            hint={courses.length ? `${graded} graded so far` : "Join a cohort first"}
           />
           <Stat
             label="Quizzes passed"
-            value={passed}
+            value={courses.length ? passed : "—"}
             hint="Auto-graded assessments"
           />
         </div>
@@ -400,13 +404,13 @@ export default function LmsHomePage() {
                 href="/lms/practice"
                 className="text-sm font-semibold text-primary-dark hover:underline"
               >
-                Practice bank →
+                CBT Practice →
               </Link>
               <Link
                 href="/lms/exams"
                 className="text-sm font-semibold text-primary-dark hover:underline"
               >
-                Practice exams →
+                Course exams →
               </Link>
             </span>
           }
@@ -419,7 +423,7 @@ export default function LmsHomePage() {
                   href="/lms/practice"
                   className="font-bold text-primary-dark hover:underline"
                 >
-                  practise from the 2,000+ question bank →
+                  sit a CBT practice paper →
                 </Link>
               </p>
             </div>

@@ -57,7 +57,7 @@ export async function UpcomingCohorts() {
         <Link href="/cohorts" className="text-sm font-semibold text-deep-green hover:underline">View all cohorts →</Link>
       </div>
       <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {cohorts.map((c) => (
+        {cohorts.slice(0, 6).map((c) => (
           <CohortCard key={c.id} c={c} />
         ))}
       </div>

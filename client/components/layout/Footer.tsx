@@ -9,6 +9,7 @@ const PRODUCTS = [
   { href: "/private-tuition", label: "Private Tuition" },
   { href: "/online-classes", label: "Online Classes" },
   { href: "/utme-2026", label: "UTME 2026 Prep" },
+  { href: "/login?next=/lms/practice", label: "CBT Practice" },
   { href: "/plus", label: "YK-Virtual Plus" },
 ];
 
@@ -65,7 +66,7 @@ function Column({
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#0A0A0A] text-white">
+    <footer className="relative z-10 w-full bg-[#0A0A0A] text-white">
       <div className="mx-auto w-full max-w-[1400px] px-6 py-14 md:px-10">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand */}

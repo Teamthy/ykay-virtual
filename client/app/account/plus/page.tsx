@@ -22,6 +22,7 @@ import {
   getMyPlus,
   getMyLearningPlan,
   listPlusPlans,
+  plusDisplayName,
   purchasePlus,
 } from "@/features/plus/api";
 import { initiatePayment } from "@/features/bookings/api/create";
@@ -85,19 +86,39 @@ export default function PlusPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="flex items-center gap-2 text-2xl font-extrabold text-deep">
-          <Crown className="text-brand-gold" /> YK-Virtual Plus
-        </h1>
-        {me?.active ? (
-          <span className="rounded-full bg-brand-gold px-3 py-1 text-xs font-bold text-deep">
-            Active
-          </span>
-        ) : (
-          <span className="rounded-full bg-ink-100 px-3 py-1 text-xs font-bold text-ink-500">
-            Not subscribed
-          </span>
-        )}
+      <div className="relative isolate overflow-hidden rounded-3xl bg-deep p-6 text-white md:p-8">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/home/ribs-green.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-35"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-deep via-deep/90 to-deep/55" />
+        <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+              Membership
+            </p>
+            <h1 className="mt-1 flex items-center gap-2 font-display text-3xl md:text-4xl">
+              <Crown className="text-primary" /> YK-Virtual Plus
+            </h1>
+            <p className="mt-2 max-w-lg text-sm text-white/75">
+              Extra CBT sittings, transcripts, certificates and a higher AI
+              tutor allowance — billed as YK-Virtual, never as a third-party
+              plan name.
+            </p>
+          </div>
+          {me?.active ? (
+            <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-deep">
+              Active
+            </span>
+          ) : (
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white/80">
+              Not subscribed
+            </span>
+          )}
+        </div>
       </div>
 
       {status.isLoading ? (
@@ -105,7 +126,7 @@ export default function PlusPage() {
       ) : me?.active ? (
         <div className="rounded-2xl border border-brand-gold/60 bg-brand-gold-light p-6 shadow-soft">
           <p className="text-lg font-bold text-deep">
-            {myPlan?.name ?? me.subscription?.plan_code} — active
+            {plusDisplayName(myPlan, me.subscription?.plan_code)} — active
           </p>
           {me.subscription && (
             <p className="mt-1 text-sm text-ink-600">
@@ -164,7 +185,7 @@ export default function PlusPage() {
                     : "border-ink-200 hover:border-ink-300"
                 }`}
               >
-                <p className="font-bold text-ink-900">{p.name}</p>
+                <p className="font-bold text-ink-900">{plusDisplayName(p)}</p>
                 <p className="mt-1 text-sm text-ink-500">
                   ₦{p.price.toLocaleString()}/
                   {p.billing === "MONTHLY" ? "mo" : "yr"}
