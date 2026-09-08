@@ -65,9 +65,9 @@ export function LearningNeeds() {
             <Link
               key={n.label}
               href={n.href}
-              className="group rounded-2xl border border-ink-100 bg-surface-muted p-6 text-center transition-all hover:-translate-y-1 hover:border-brand-blue/40 hover:shadow-card"
+              className="group rounded-2xl border border-ink-100 bg-surface-muted p-6 text-center transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-card"
             >
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-brand-blue shadow-soft transition-colors group-hover:bg-brand-navy group-hover:text-white">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-deep-green shadow-soft transition-colors group-hover:bg-deep-green group-hover:text-primary">
                 {n.icon}
               </div>
               <p className="mt-4 text-sm font-bold leading-snug text-ink-800">

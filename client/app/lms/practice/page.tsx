@@ -61,7 +61,7 @@ export default function PracticeBankPage() {
         ].map((f) => (
           <div
             key={f.title}
-            className="rounded-2xl border border-[--line] bg-white p-4 shadow-sm"
+            className="rounded-2xl border border-ink-200 bg-white p-4 shadow-sm"
           >
             <div className="flex items-center gap-2 text-primary-dark">
               {f.icon}
@@ -95,7 +95,7 @@ export default function PracticeBankPage() {
               <Link
                 key={s.slug}
                 href={`/lms/practice/${s.slug}`}
-                className="group rounded-2xl border border-[--line] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                className="group rounded-2xl border border-ink-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-bold text-deep group-hover:text-primary-dark">
@@ -113,12 +113,12 @@ export default function PracticeBankPage() {
                     {LIMITS.slice(0, 3).map((n) => (
                       <span
                         key={n}
-                        className="rounded-lg border border-[--line] px-2 py-0.5 text-[11px] font-semibold text-ink-500"
+                        className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500"
                       >
                         {n} q
                       </span>
                     ))}
-                    <span className="rounded-lg border border-[--line] px-2 py-0.5 text-[11px] font-semibold text-ink-500">
+                    <span className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500">
                       …more
                     </span>
                   </div>

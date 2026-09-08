@@ -73,6 +73,7 @@
   --color-border: #dce5de;
   --color-border-light: #ede8dc;
   --color-border-dark: #285442;
+  --line: var(--color-border);
 
   /* ----------------------------------------------------------
      Semantic Colors
@@ -707,6 +708,32 @@
     background: var(--color-primary-hover);
     border-color: var(--color-primary-hover);
 
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 14px 24px;
+    background: transparent;
+    color: var(--color-deep-green);
+    border: 1.5px solid var(--color-deep-green);
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-deep-green);
+    color: var(--color-white);
     transform: translateY(-2px);
   }
 }
@@ -1529,4 +1556,28 @@ html.dark .ambient2-vignette {
   background-image:
     radial-gradient(44rem 24rem at 10% -15%, rgba(255, 255, 255, 0.85), transparent 60%),
     radial-gradient(40rem 24rem at 95% 110%, rgba(112, 242, 80, 0.1), transparent 62%);
+}
+
+/* Peach / white marketing surfaces must stay light even in dark mode so
+   deep-green type never sits on a dark-green card. */
+.keep-light {
+  color-scheme: light;
+  background-color: #fff7e4;
+  color: #013920;
+}
+
+html.dark .keep-light,
+html.dark .keep-light .bg-white,
+html.dark .keep-light .bg-peach {
+  background-color: #fff7e4;
+  color: #013920;
+}
+
+html.dark .keep-light .bg-white {
+  background-color: #ffffff;
+}
+
+html.dark .keep-light .text-deep-green,
+html.dark .keep-light .text-deep {
+  color: #013920;
 }

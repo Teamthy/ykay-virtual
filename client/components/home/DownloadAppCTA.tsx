@@ -78,7 +78,7 @@ export function DownloadAppCTA() {
             <div className="absolute left-1/2 top-3 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-black/70" />
             <div className="relative aspect-[9/19] overflow-hidden rounded-[2.2rem]">
               <Image
-                src="/hero/african-student.jpg"
+                src="/home/ykay-students.png"
                 alt="A student learning on the YK-Virtual app"
                 fill
                 sizes="288px"

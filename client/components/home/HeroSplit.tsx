@@ -1,31 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Menu, UserRound, X } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-// Homepage hero — full-bleed deep-green brand band carrying one rounded
-// peach card (approved reference composition, 2026-09-08): slim chrome row
-// (brand mark · pill nav · contact pill · round auth buttons), letterspaced
-// eyebrow, one enormous two-line display headline with round lime controls,
-// and a horizontal rail of programme cards — first card lime ("active"), the
-// rest white — each with two chips, an index badge, an editorial portrait and
-// a white "Read More" pill.
-//
-// The rail is in motion: it drifts automatically (marquee pace), pauses on
-// hover/focus/touch, wraps seamlessly, and stands still for users who prefer
-// reduced motion. The round arrows still drive it manually.
-//
-// Copy discipline: every claim below is a real surface of the product. No
-// invented statistics, no press logos.
-
-const NAV = [
-  { label: "Home", href: "/" },
-  { label: "About Us", href: "/about" },
-  { label: "Programs", href: "/programmes" },
-  { label: "Exam Prep", href: "/exam-prep" },
-  { label: "CBT Practice", href: "/lms/practice" },
-];
+/**
+ * Homepage hero — full-bleed peach band under the global header.
+ * A horizontal rail of major-service cards drifts automatically.
+ */
 
 const CARDS = [
   {
@@ -33,8 +15,8 @@ const CARDS = [
     title: ["Junior", "Programs"],
     chips: ["JSS 1–3", "BECE track"],
     blurb: "Live online classes for JSS1–JSS3, built on the NERDC scheme of work.",
-    img: "/home/card-jss.jpg",
-    alt: "Junior secondary student in a striped shirt against a blue backdrop",
+    img: "/home/ykay-students.png",
+    alt: "Ykay College students in school uniform",
     href: "/online-classes",
     active: true,
   },
@@ -44,17 +26,17 @@ const CARDS = [
     chips: ["SS 1–3", "WASSCE route"],
     blurb: "SS1–SS3 cohorts with structured WASSCE and UTME preparation.",
     img: "/home/card-ss.jpg",
-    alt: "Senior secondary student with braids against a lavender backdrop",
+    alt: "Senior secondary student",
     href: "/programmes",
     active: false,
   },
   {
     n: "03",
     title: ["Exam", "Preparation"],
-    chips: ["UTME", "All levels"],
+    chips: ["UTME", "WAEC · NECO"],
     blurb: "Timed practice and coaching for UTME, WAEC and NECO sittings.",
     img: "/home/card-exam.jpg",
-    alt: "Student in a pink bucket hat against a teal backdrop",
+    alt: "Student preparing for an exam",
     href: "/exam-prep",
     active: false,
   },
@@ -64,7 +46,7 @@ const CARDS = [
     chips: ["Any age", "1-on-1"],
     blurb: "Personal tuition matched to your level, pace and schedule.",
     img: "/home/card-tuition.jpg",
-    alt: "Student with a notebook against a cobalt backdrop",
+    alt: "Student with a notebook",
     href: "/private-tuition",
     active: false,
   },
@@ -74,35 +56,86 @@ const CARDS = [
     chips: ["Timed", "Past papers"],
     blurb: "Exam-hall simulations with instant scoring and explanations.",
     img: "/home/card-cbt.jpg",
-    alt: "Student taking a computer-based test on a laptop against a teal backdrop",
+    alt: "Student taking a computer-based test",
     href: "/lms/practice",
     active: false,
   },
   {
     n: "06",
-    title: ["Home", "Tutoring"],
-    chips: ["At home", "Vetted tutors"],
-    blurb: "Vetted tutors matched to your child, at home or online.",
-    img: "/home/card-tutoring.jpg",
-    alt: "Tutor and young student working through a notebook together against a warm-orange backdrop",
-    href: "/hometutors",
+    title: ["Exam", "Hall"],
+    chips: ["Live paper", "Auto-submit"],
+    blurb: "Sit published CBT papers with a server-side timer and review.",
+    img: "/home/ykay-students.png",
+    alt: "Ykay students — exam hall identity",
+    href: "/lms/exams",
     active: false,
   },
   {
     n: "07",
+    title: ["Home", "Tutoring"],
+    chips: ["At home", "Vetted tutors"],
+    blurb: "Vetted tutors matched to your child, at home or online.",
+    img: "/home/card-tutoring.jpg",
+    alt: "Tutor and student working together",
+    href: "/hometutors",
+    active: false,
+  },
+  {
+    n: "08",
     title: ["UTME", "2026"],
     chips: ["JAMB track", "Score boost"],
     blurb: "A structured 2026 UTME run: syllabus, mocks and weekly reviews.",
     img: "/home/card-utme.jpg",
-    alt: "Senior student holding a practice exam paper against a deep-purple backdrop",
+    alt: "Senior student holding a practice paper",
     href: "/utme-2026",
+    active: false,
+  },
+  {
+    n: "09",
+    title: ["Digital", "Skills"],
+    chips: ["IT academy", "Certificates"],
+    blurb: "Practical digital skills — coding, Office, and online literacy.",
+    img: "/hero/digital.jpg",
+    alt: "Student learning digital skills",
+    href: "/digital-skills",
+    active: false,
+  },
+  {
+    n: "10",
+    title: ["Online", "Classes"],
+    chips: ["Live", "Recorded"],
+    blurb: "Live cohorts with recordings, assignments and progress reports.",
+    img: "/hero/cohorts.jpg",
+    alt: "Students in an online class",
+    href: "/online-classes",
+    active: false,
+  },
+  {
+    n: "11",
+    title: ["British", "Curriculum"],
+    chips: ["IGCSE", "A-Level"],
+    blurb: "Year 7–13 British pathway with IGCSE and A-Level coaching.",
+    img: "/hero/british.jpg",
+    alt: "British curriculum learning",
+    href: "/curricula/british",
+    active: false,
+  },
+  {
+    n: "12",
+    title: ["Nigerian", "Curriculum"],
+    chips: ["NERDC", "JSS · SSS"],
+    blurb: "NERDC-aligned JSS and SSS with BECE and WASSCE routes.",
+    img: "/hero/nigerian.jpg",
+    alt: "Nigerian curriculum learning",
+    href: "/curricula/nigerian",
     active: false,
   },
 ];
 
 function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?: boolean }) {
   return (
-    <article aria-hidden={ariaHidden || undefined}
+    <article
+      aria-hidden={ariaHidden || undefined}
       className={`relative w-[240px] shrink-0 snap-start overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
         card.active ? "bg-primary" : "bg-white"
       }`}
@@ -148,7 +181,7 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
           src={card.img}
           alt={card.alt}
           loading="eager"
-          className="aspect-[4/5] w-full object-cover"
+          className="aspect-[4/5] w-full object-cover object-top"
         />
         <Link
           href={card.href}
@@ -165,19 +198,13 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
 export function HeroSplit() {
   const railRef = useRef<HTMLDivElement>(null);
   const hoverRef = useRef(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
-  // Gentle marquee drift: duplicate the card set, advance scrollLeft, wrap at
-  // the halfway point so the loop is seamless. Paused while the user is
-  // interacting and disabled entirely for prefers-reduced-motion.
   useEffect(() => {
     const el = railRef.current;
     if (!el) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let raf = 0;
     let last = performance.now();
-    // One full set = distance to the first duplicate card; wrapping by
-    // exactly that offset makes the loop seamless.
     const half = () => {
       const dup = el.children[CARDS.length] as HTMLElement | undefined;
       const first = el.children[0] as HTMLElement | undefined;
@@ -188,7 +215,7 @@ export function HeroSplit() {
       last = now;
       if (!hoverRef.current && !el.matches(":hover") && !el.matches(":focus-within")) {
         const wrap = half();
-        let next = el.scrollLeft + dt * 0.03; // ~30px/s drift
+        let next = el.scrollLeft + dt * 0.05;
         if (next >= wrap) next -= wrap;
         el.scrollLeft = next;
       }
@@ -221,85 +248,9 @@ export function HeroSplit() {
   };
 
   return (
-    <section className="backdrop-brand-dark w-full bg-deep-green px-3 py-4 md:px-6 md:py-8">
-      <div className="mx-auto max-w-[1240px] rounded-[28px] bg-peach px-5 pb-6 pt-5 shadow-[0_24px_80px_-32px_rgba(0,0,0,0.55)] md:px-10 md:pb-10 md:pt-7">
-        {/* ── chrome row ─────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link
-              href="/"
-              aria-label="YK-Virtual home"
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-deep-green"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-                <path
-                  d="M12 3l2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4L12 3z"
-                  fill="currentColor"
-                />
-              </svg>
-            </Link>
-            <nav
-              aria-label="Primary"
-              className="hidden items-center gap-1 rounded-full bg-deep-green/10 p-1 md:flex"
-            >
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-deep-green transition hover:bg-deep-green hover:text-primary"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/contact"
-              className="hidden items-center gap-1.5 rounded-full bg-deep-green/10 px-4 py-2 text-[11px] font-semibold text-deep-green transition hover:bg-deep-green hover:text-primary sm:inline-flex"
-            >
-              Contact Us <ArrowRight size={12} />
-            </Link>
-            <Link
-              href="/login"
-              aria-label="Log in"
-              className="grid h-9 w-9 place-items-center rounded-full bg-deep-green/10 text-deep-green transition hover:bg-deep-green hover:text-primary"
-            >
-              <UserRound size={15} />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={menuOpen}
-              className="grid h-9 w-9 place-items-center rounded-full bg-deep-green/10 text-deep-green transition hover:bg-deep-green hover:text-primary md:hidden"
-            >
-              {menuOpen ? <X size={15} /> : <Menu size={15} />}
-            </button>
-          </div>
-        </div>
-
-        {menuOpen && (
-          <nav
-            aria-label="Mobile"
-            className="mt-3 grid gap-1 rounded-2xl bg-deep-green/10 p-3 md:hidden"
-          >
-            {[...NAV, { label: "Contact Us", href: "/contact" }].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMenuOpen(false)}
-                className="rounded-xl px-3 py-2 text-sm font-semibold text-deep-green hover:bg-white"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        )}
-
-        {/* ── eyebrow + headline + controls ──────────────────────────── */}
-        <p className="mt-10 text-[10px] font-bold uppercase tracking-[0.28em] text-[#3f5249] md:mt-14">
+    <section className="keep-light w-full bg-peach">
+      <div className="w-full px-5 pb-8 pt-8 md:px-10 md:pb-12 md:pt-10">
+        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#3f5249]">
           Elevate your learning
         </p>
         <div className="mt-3 flex items-end justify-between gap-6">
@@ -326,15 +277,13 @@ export function HeroSplit() {
           </div>
         </div>
 
-        {/* ── programme rail (in motion) ─────────────────────────────── */}
         <div
           ref={railRef}
-          className="mt-8 flex gap-4 overflow-x-auto pb-2 md:mt-10 md:gap-5"
+          className="scrollbar-none mt-8 flex gap-4 overflow-x-auto pb-2 md:mt-10 md:gap-5"
         >
           {CARDS.map((card) => (
             <Card key={card.n} card={card} />
           ))}
-          {/* duplicate set keeps the marquee seamless; hidden from AT */}
           {CARDS.map((card) => (
             <Card key={`dup-${card.n}`} card={card} ariaHidden />
           ))}

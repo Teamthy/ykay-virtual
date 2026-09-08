@@ -11,7 +11,7 @@ export function BecomeTutorCTA() {
   return (
     <section className="relative overflow-hidden">
       <Image
-        src="/hero/plus.jpg"
+        src="/home/ykay-students.png"
         alt=""
         fill
         priority={false}

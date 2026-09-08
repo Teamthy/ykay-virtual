@@ -5,7 +5,7 @@ import { AnimatedText } from "@/components/ui/animated-text";
 
 export function GuaranteeBand() {
   return (
-    <section className="backdrop-brand-peach w-full py-14 bg-white">
+    <section className="backdrop-brand-peach w-full bg-peach py-14 md:py-16">
       <div className="max-w-[1400px] mx-auto px-6 md:px-10">
         <div className="overflow-hidden rounded-3xl bg-brand-gold px-8 py-12 text-center text-ink-900 shadow-brand md:px-16">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-black/10">

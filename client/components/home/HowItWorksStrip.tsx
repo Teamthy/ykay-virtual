@@ -14,23 +14,23 @@ const STEPS = [
 
 export function HowItWorksStrip() {
   return (
-    <section className="backdrop-brand-light w-full py-16">
+    <section className="backdrop-brand-light w-full bg-peach py-16 md:py-20">
       <div className="container-x">
       <div className="text-center">
         <p className="tag-handwritten">How it works</p>
         <AnimatedText
           as="h2"
-          className="text-3xl font-extrabold mt-1"
+          className="mt-1 text-3xl font-extrabold text-deep-green"
           text="Four steps to better learning"
         />
       </div>
-      <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((s) => (
-          <div key={s.n} className="text-center border rounded-2xl p-6">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-brand-blue text-white font-extrabold">
+          <div key={s.n} className="rounded-2xl border border-ink-200 bg-white p-6 text-center text-deep-green">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-deep-green font-extrabold text-primary">
               {s.n}
             </div>
-            <h3 className="font-bold mt-3">{s.title}</h3>
+            <h3 className="mt-3 font-bold text-deep-green">{s.title}</h3>
             <p className="mt-1 text-sm text-ink-600">{s.body}</p>
           </div>
         ))}
@@ -38,7 +38,7 @@ export function HowItWorksStrip() {
       <div className="mt-8 text-center">
         <Link
           href="/how-it-works"
-          className="text-sm font-semibold text-brand-blue hover:underline"
+          className="text-sm font-semibold text-deep-green hover:underline"
         >
           See the full walkthrough for parents & tutors →
         </Link>
