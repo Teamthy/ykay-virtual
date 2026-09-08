@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CBTMemory â€” in-memory CBT bank (tests / dev fallback).
+// CBTMemory — in-memory CBT bank (tests / dev fallback).
 type CBTMemory struct {
 	mu        sync.RWMutex
 	subjects  map[uuid.UUID]*cbt.Subject

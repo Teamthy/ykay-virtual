@@ -1,4 +1,4 @@
-// Package cbt â€” the shared computer-based-testing practice bank: subjects,
+// Package cbt — the shared computer-based-testing practice bank: subjects,
 // exam-style questions, random per-request papers and server-side grading.
 // The correct index NEVER leaves the repository in a generated paper; it is
 // revealed only in the graded review.
@@ -29,7 +29,7 @@ type Subject struct {
 	QuestionCount int // published questions (list views)
 }
 
-// Question â€” one MCQ. Options usually has 4 entries; CorrectIndex is the key.
+// Question — one MCQ. Options usually has 4 entries; CorrectIndex is the key.
 type Question struct {
 	ID           uuid.UUID
 	SubjectID    uuid.UUID
@@ -55,7 +55,7 @@ type Repository interface {
 	RandomQuestions(ctx context.Context, subjectSlug string, n, difficulty int, topic string) ([]Question, error)
 	// ListTopics returns distinct published topics for a subject slug.
 	ListTopics(ctx context.Context, subjectSlug string) ([]string, error)
-	// GetByIDs fetches questions by id (published only) â€” used by grading.
+	// GetByIDs fetches questions by id (published only) — used by grading.
 	GetByIDs(ctx context.Context, ids []uuid.UUID) ([]Question, error)
 	// CreateQuestion inserts a question; duplicate stems error/are skipped per flag.
 	CreateQuestion(ctx context.Context, q *Question, skipDuplicate bool) (created bool, err error)

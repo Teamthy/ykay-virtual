@@ -1,6 +1,5 @@
 import { Reveal } from "@/components/ui/reveal";
 import { HeroSplit } from "@/components/home/HeroSplit";
-import { ServicesShowcase } from "@/components/home/ServicesShowcase";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
@@ -12,10 +11,9 @@ import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 
-// YK-Virtual home - 12 sections, one narrative:
-// hero (split: brand story + image carousel) → services → programmes →
-// cohorts → how it works → testimonials → exam prep → guarantee →
-// travel/care → FAQ → app download → tutor CTA.
+// YK-Virtual home — hero (centered intro + service rail) → escrow →
+// programmes → how it works → cohorts → exam prep → testimonials →
+// campus → FAQ → app download → tutor CTA.
 //
 // Removed for being unverifiable/duplicative (round 19):
 //   StatsBand        - invented "10k+ / 280k+ / 38k+ / 98%" + press logos
@@ -28,9 +26,6 @@ export default function HomePage() {
   return (
     <>
       <HeroSplit />
-      <Reveal variant="up">
-        <ServicesShowcase />
-      </Reveal>
       <Reveal delay={50} variant="zoom">
         <GuaranteeBand />
       </Reveal>

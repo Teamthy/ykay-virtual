@@ -23,7 +23,9 @@ import { cn } from "@/lib/utils";
 
 /**
  * YK-Virtual site chrome — full-width white bar on every public route
- * (including home). Primary links + Exam Hall pill + Services mega-menu.
+ * (including home). Primary links + Services mega-menu.
+ * CBT Practice lives under Services → Tests & Exams (behind login).
+ * Exam Hall is not in public chrome — it is an in-app LMS tool.
  */
 
 const SERVICE_GROUPS = [
@@ -43,8 +45,7 @@ const SERVICE_GROUPS = [
     title: "Tests & Exams",
     icon: <BookOpen size={15} />,
     items: [
-      { label: "CBT Practice", href: "/lms/practice" },
-      { label: "Exam Hall", href: "/lms/exams" },
+      { label: "CBT Practice", href: "/login?next=/lms/practice" },
       { label: "UTME 2026 Prep", href: "/utme-2026" },
       { label: "GMAT Prep", href: "/gmat" },
       { label: "SAT / GRE", href: "/test-prep" },
@@ -76,8 +77,6 @@ const NAV_LINKS: { label: string; href: string; pill?: boolean }[] = [
   { label: "Programmes", href: "/programmes" },
   { label: "Cohorts", href: "/cohorts" },
   { label: "Tutors", href: "/tutors" },
-  { label: "CBT Practice", href: "/lms/practice" },
-  { label: "Exam Hall", href: "/lms/exams", pill: true },
   { label: "How it works", href: "/how-it-works" },
   { label: "College", href: "/college" },
   { label: "About", href: "/about" },

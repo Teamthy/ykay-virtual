@@ -44,7 +44,7 @@ export default function DownloadPage() {
             <Smartphone size={30} />
           </span>
           <h2 className="mt-4 text-center text-xl font-extrabold text-brand-navy dark:text-white">
-            Install instantly — Android &amp; iPhone
+            Install instantly — Android and iPhone
           </h2>
           <p className="mx-auto mt-2 max-w-md text-center text-sm leading-6 text-ink-500">
             The full YK-Virtual app, straight from this website. Installs in
@@ -54,7 +54,10 @@ export default function DownloadPage() {
 
           <div className="mt-7 grid gap-4 sm:grid-cols-2">
             {/* Android */}
-            <div className="rounded-2xl border border-ink-100 bg-[#FAFAF7] p-5 dark:border-ink-700 dark:bg-[#0E1526]">
+            <div
+              id="android"
+              className="scroll-mt-24 rounded-2xl border border-ink-100 bg-[#FAFAF7] p-5 dark:border-ink-700 dark:bg-[#0E1526]"
+            >
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#013920] dark:text-[#70F250]">
                 On Android
               </p>
@@ -72,7 +75,10 @@ export default function DownloadPage() {
               </ol>
             </div>
             {/* iPhone */}
-            <div className="rounded-2xl border border-ink-100 bg-[#FAFAF7] p-5 dark:border-ink-700 dark:bg-[#0E1526]">
+            <div
+              id="iphone"
+              className="scroll-mt-24 rounded-2xl border border-ink-100 bg-[#FAFAF7] p-5 dark:border-ink-700 dark:bg-[#0E1526]"
+            >
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#013920] dark:text-[#70F250]">
                 On iPhone
               </p>

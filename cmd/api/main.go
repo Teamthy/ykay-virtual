@@ -1009,7 +1009,7 @@ func seedMemoryCatalogue(store *memory.MemoryStore) {
 	c3 := uuid.MustParse("00000000-0000-0000-0000-00000000c012")
 	desc1 := "Live classes Tue/Thu/Sat evenings + weekly mock CBT."
 	desc2 := "Small-group live sessions with a certified specialist."
-	desc3 := "Rolling enrolment Â· weekend cohorts Â· past papers."
+	desc3 := "Rolling enrolment · weekend cohorts · past papers."
 	store.Cohorts.Seed(&booking.Cohort{
 		ID: c1, ProgrammeID: p1, Title: "UTME 2026 Mastery — 320+ Programme", Slug: "utme-2026-mastery",
 		TutorProfileID: &oluwatobiID, Capacity: 60, EnrolledCount: 41,
