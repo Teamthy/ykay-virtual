@@ -1539,23 +1539,22 @@ html.dark .ambient2-vignette {
    ============================================================ */
 
 .backdrop-brand-dark {
+  background-color: #013920;
   background-image:
-    radial-gradient(52rem 30rem at 85% -10%, rgba(112, 242, 80, 0.16), transparent 60%),
-    radial-gradient(40rem 26rem at 8% 110%, rgba(112, 242, 80, 0.1), transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Ccircle cx='2' cy='2' r='1.2' fill='%2370f250' fill-opacity='0.14'/%3E%3C/svg%3E");
+    linear-gradient(180deg, rgba(5, 5, 5, 0.55) 0%, rgba(1, 57, 32, 0.45) 100%),
+    url("/home/ribs-green.jpg");
+  background-size: cover;
+  background-position: center;
 }
 
-.backdrop-brand-light {
-  background-image:
-    radial-gradient(46rem 26rem at 90% -20%, rgba(112, 242, 80, 0.12), transparent 62%),
-    radial-gradient(36rem 22rem at 4% 115%, rgba(248, 235, 207, 0.9), transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Ccircle cx='2' cy='2' r='1.2' fill='%23013920' fill-opacity='0.05'/%3E%3C/svg%3E");
-}
-
+.backdrop-brand-light,
 .backdrop-brand-peach {
+  background-color: #fff7e4;
   background-image:
-    radial-gradient(44rem 24rem at 10% -15%, rgba(255, 255, 255, 0.85), transparent 60%),
-    radial-gradient(40rem 24rem at 95% 110%, rgba(112, 242, 80, 0.1), transparent 62%);
+    linear-gradient(180deg, rgba(255, 247, 228, 0.72) 0%, rgba(223, 255, 242, 0.4) 100%),
+    url("/home/ribs-cream.jpg");
+  background-size: cover;
+  background-position: center;
 }
 
 /* Peach / white marketing surfaces must stay light even in dark mode so

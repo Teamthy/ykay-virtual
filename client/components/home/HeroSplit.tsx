@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 /**
- * Homepage hero — full-bleed peach band under the global header.
- * A horizontal rail of major-service cards drifts automatically.
+ * Homepage hero — PrebuiltUI-style centered intro on deep green, then the
+ * drifting service cards on cream ribs. Edge to edge.
  */
 
 const CARDS = [
@@ -57,17 +57,7 @@ const CARDS = [
     blurb: "Exam-hall simulations with instant scoring and explanations.",
     img: "/home/card-cbt.jpg",
     alt: "Student taking a computer-based test",
-    href: "/lms/practice",
-    active: false,
-  },
-  {
-    n: "06",
-    title: ["Exam", "Hall"],
-    chips: ["Live paper", "Auto-submit"],
-    blurb: "Sit published CBT papers with a server-side timer and review.",
-    img: "/home/ykay-students.png",
-    alt: "Ykay students — exam hall identity",
-    href: "/lms/exams",
+    href: "/login?next=/lms/practice",
     active: false,
   },
   {
@@ -146,9 +136,7 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
             <span
               key={chip}
               className={`rounded-full px-2.5 py-1 text-[9px] font-bold ${
-                card.active
-                  ? "bg-deep-green text-primary"
-                  : "bg-peach text-deep-green"
+                card.active ? "bg-deep-green text-primary" : "bg-peach text-deep-green"
               }`}
             >
               {chip}
@@ -158,9 +146,7 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
         <span
           aria-hidden="true"
           className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[9px] font-bold ${
-            card.active
-              ? "bg-deep-green text-primary"
-              : "bg-peach text-deep-green"
+            card.active ? "bg-deep-green text-primary" : "bg-peach text-deep-green"
           }`}
         >
           {card.n}
@@ -171,9 +157,7 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
       </h2>
-      <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-[#3f5249]">
-        {card.blurb}
-      </p>
+      <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-[#3f5249]">{card.blurb}</p>
 
       <div className="relative mt-4 overflow-hidden rounded-2xl">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -248,45 +232,95 @@ export function HeroSplit() {
   };
 
   return (
-    <section className="keep-light w-full bg-peach">
-      <div className="w-full px-5 pb-8 pt-8 md:px-10 md:pb-12 md:pt-10">
-        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#3f5249]">
-          Elevate your learning
-        </p>
-        <div className="mt-3 flex items-end justify-between gap-6">
-          <h1 className="max-w-[16ch] text-[clamp(2.4rem,6.2vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.02em] text-deep-green">
-            Comprehensive Learning for Every Student
-          </h1>
-          <div className="hidden shrink-0 items-center gap-2 pb-2 md:flex">
-            <button
-              type="button"
-              onClick={() => scrollRail(-1)}
-              aria-label="Scroll programmes left"
-              className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
-            >
-              <ArrowRight size={14} className="rotate-180" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollRail(1)}
-              aria-label="Scroll programmes right"
-              className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
-            >
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        </div>
+    <section className="w-full">
+      <div className="relative isolate w-full overflow-hidden bg-[#050505]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/home/ribs-green.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-55"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
 
-        <div
-          ref={railRef}
-          className="scrollbar-none mt-8 flex gap-4 overflow-x-auto pb-2 md:mt-10 md:gap-5"
-        >
-          {CARDS.map((card) => (
-            <Card key={card.n} card={card} />
-          ))}
-          {CARDS.map((card) => (
-            <Card key={`dup-${card.n}`} card={card} ariaHidden />
-          ))}
+        <div className="relative z-10 mx-auto flex min-h-[72vh] w-full max-w-5xl flex-col items-center justify-center px-6 py-20 text-center md:min-h-[78vh] md:py-28">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[11px] font-semibold text-white/90">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            Elevate your learning
+          </p>
+          <h1 className="mt-7 max-w-[18ch] font-display text-[clamp(2.6rem,7vw,5.6rem)] leading-[0.95] tracking-[-0.03em] text-white">
+            Comprehensive Learning for Every Student.
+          </h1>
+          <p className="mt-6 max-w-xl text-sm leading-relaxed text-white/70 md:text-base">
+            British and Nigerian curricula, live cohorts, private tuition and exam
+            preparation — built for Ykay College students and for learners anywhere.
+          </p>
+          <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/onboarding"
+              className="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-black transition hover:bg-white/90"
+            >
+              Get started
+            </Link>
+            <Link
+              href="/programmes"
+              className="inline-flex items-center justify-center rounded-full border border-white/25 bg-transparent px-7 py-3.5 text-sm font-bold text-white transition hover:bg-white/10"
+            >
+              View programmes
+            </Link>
+          </div>
+          <p className="mt-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+            Escrow-protected tuition · Live cohorts · CBT practice
+          </p>
+        </div>
+      </div>
+
+      <div className="relative isolate w-full overflow-hidden bg-peach">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/home/ribs-cream.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FFF7E4]/70 via-[#FFF7E4]/40 to-[#DFFFF2]/35" />
+
+        <div className="relative z-10 w-full px-5 pb-10 pt-8 md:px-10 md:pb-14 md:pt-10">
+          <div className="flex items-end justify-between gap-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#3f5249]">
+              Programmes in motion
+            </p>
+            <div className="hidden shrink-0 items-center gap-2 pb-1 md:flex">
+              <button
+                type="button"
+                onClick={() => scrollRail(-1)}
+                aria-label="Scroll programmes left"
+                className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
+              >
+                <ArrowRight size={14} className="rotate-180" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollRail(1)}
+                aria-label="Scroll programmes right"
+                className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
+              >
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div
+            ref={railRef}
+            className="scrollbar-none mt-6 flex gap-4 overflow-x-auto pb-2 md:mt-8 md:gap-5"
+          >
+            {CARDS.map((card) => (
+              <Card key={card.n} card={card} />
+            ))}
+            {CARDS.map((card) => (
+              <Card key={`dup-${card.n}`} card={card} ariaHidden />
+            ))}
+          </div>
         </div>
       </div>
     </section>
