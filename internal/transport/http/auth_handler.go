@@ -295,16 +295,11 @@ func (h *AuthHandler) ConfirmLoginCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) GoogleAuthURL(w http.ResponseWriter, r *http.Request) {
-	if h.google == nil || !h.google.Enabled() {
-		WriteAppError(w, pkg.Conflict("google auth is not configured"))
-		return
+	fallback := ""
+	if h.google != nil {
+		fallback = h.google.RedirectURL()
 	}
-	u, state, err := h.google.BuildAuthURL(r.Context())
-	if err != nil {
-		WriteAppError(w, err)
-		return
-	}
-	pkg.WriteSuccess(w, http.StatusOK, map[string]any{"url": u, "state": state}, nil)
+	h.googleAuthURLWithRedirect(w, r, webGoogleRedirect(r, fallback))
 }
 
 func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
@@ -342,22 +337,42 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
-	raw := ""
-	if cookie, err := r.Cookie(h.cfg.Name); err == nil && cookie.Value != "" {
-		raw = cookie.Value
-	} else {
-		raw = middleware.BearerToken(r)
+	// Try cookie then Bearer. A present-but-invalid cookie must not hide a
+	// valid Bearer (Next BFF sends both; cookie-only 401 was the Google bounce).
+	var lastErr error
+	tried := false
+	seen := map[string]struct{}{}
+	try := func(raw string) bool {
+		raw = strings.TrimSpace(raw)
+		if raw == "" {
+			return false
+		}
+		if _, ok := seen[raw]; ok {
+			return false
+		}
+		seen[raw] = struct{}{}
+		tried = true
+		user, roles, err := h.svc.Me(r.Context(), hashToken(raw))
+		if err != nil {
+			lastErr = err
+			return false
+		}
+		pkg.WriteSuccess(w, http.StatusOK, toUserResponseFull(user, roles), nil)
+		return true
 	}
-	if raw == "" {
+	if c, err := r.Cookie(h.cfg.Name); err == nil {
+		if try(c.Value) {
+			return
+		}
+	}
+	if try(middleware.BearerToken(r)) {
+		return
+	}
+	if !tried {
 		pkg.WriteError(w, http.StatusUnauthorized, string(pkg.CodeUnauthorized), "not authenticated", nil)
 		return
 	}
-	user, roles, err := h.svc.Me(r.Context(), hashToken(raw))
-	if err != nil {
-		WriteAppError(w, err)
-		return
-	}
-	pkg.WriteSuccess(w, http.StatusOK, toUserResponseFull(user, roles), nil)
+	WriteAppError(w, lastErr)
 }
 
 func hashToken(raw string) string {

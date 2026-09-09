@@ -39,7 +39,11 @@ export async function GET(request: Request) {
     const res = await fetch(`${API_BASE}/auth/google/exchange`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, state }),
+      body: JSON.stringify({
+        code,
+        state,
+        redirect_uri: `${url.origin}/auth/google/callback`,
+      }),
       cache: "no-store",
     });
     if (!res.ok) {

@@ -38,30 +38,45 @@ func BearerToken(r *http.Request) string {
 func SessionAuth(resolver SessionResolver, cookieName string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			raw := ""
+			cookieRaw := ""
 			cookieDomain := ""
 			if cookie, err := r.Cookie(cookieName); err == nil {
-				raw = cookie.Value
+				cookieRaw = cookie.Value
 				cookieDomain = cookie.Domain
 			}
-			if raw == "" {
-				raw = BearerToken(r)
-			}
-			if raw != "" {
-				hash := hashToken(raw)
-				userID, roles, err := resolver.Me(r.Context(), hash)
-				if err == nil {
-					actor := Actor{UserID: userID, Roles: roles}
-					actor.IsAdmin = isPlatformAdmin(roles)
-					ctx := context.WithValue(r.Context(), ActorKey, actor)
-					next.ServeHTTP(w, r.WithContext(ctx))
-					return
+			bearer := BearerToken(r)
+
+			try := func(raw string) bool {
+				if strings.TrimSpace(raw) == "" {
+					return false
 				}
+				userID, roles, err := resolver.Me(r.Context(), hashToken(raw))
+				if err != nil {
+					return false
+				}
+				actor := Actor{UserID: userID, Roles: roles}
+				actor.IsAdmin = isPlatformAdmin(roles)
+				ctx := context.WithValue(r.Context(), ActorKey, actor)
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return true
+			}
+
+			// Cookie first (browser), then Bearer (mobile + Next BFF which
+			// mirrors ykv_session as Authorization when the rewrite used to
+			// drop cookies). Do not skip Bearer just because a cookie is present
+			// but its hash misses — that was the Google bounce.
+			if try(cookieRaw) {
+				return
+			}
+			if bearer != cookieRaw && try(bearer) {
+				return
+			}
+			if cookieRaw != "" {
 				// Invalid/expired/revoked session → clear the cookie. Preserve the
 				// incoming cookie's Domain so a domain-scoped cookie (e.g.
 				// ".vercel.app" when COOKIE_DOMAIN is set) is actually cleared on
 				// the client; a host-only clear would leave the stale cookie
-				// behind (A-17).
+				// behind (A-17). Only clear when Bearer also failed.
 				http.SetCookie(w, &http.Cookie{
 					Name:     cookieName,
 					Value:    "",
