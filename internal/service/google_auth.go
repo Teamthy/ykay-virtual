@@ -70,6 +70,10 @@ func (g *GoogleAuthService) WithStateStore(c cache.Cache) *GoogleAuthService {
 
 func (g *GoogleAuthService) Enabled() bool { return g.cfg.ClientID != "" && g.cfg.ClientSecret != "" }
 
+// RedirectURL is the configured web callback (GOOGLE_REDIRECT_URL). Never the
+// Render API host — Google must send the browser back to the app.
+func (g *GoogleAuthService) RedirectURL() string { return g.cfg.RedirectURL }
+
 // stateKey namespaces a single-use OAuth nonce in the shared cache.
 func (g *GoogleAuthService) stateKey(state string) string {
 	return cache.CacheKey("oauth:google:state", state)

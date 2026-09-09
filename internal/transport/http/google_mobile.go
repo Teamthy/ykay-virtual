@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"html"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"ykay-virtual/pkg"
 )
@@ -38,6 +40,59 @@ func (h *AuthHandler) googleAuthURLWithRedirect(w http.ResponseWriter, r *http.R
 // mobileRedirectBase — the API's own origin (scheme + host), used as the
 // Google redirect_uri prefix for the mobile flow. Behind Render/proxies the
 // host is the public API host; scheme honours X-Forwarded-Proto.
+// webGoogleRedirect builds https://<app-host>/auth/google/callback from the
+// incoming request (BFF stamps X-Forwarded-Origin). Rejects API hosts so a
+// mis-set GOOGLE_REDIRECT_URL on Render cannot steal the cookie.
+func webGoogleRedirect(r *http.Request, fallback string) string {
+	candidates := []string{
+		strings.TrimRight(r.Header.Get("X-Forwarded-Origin"), "/"),
+		strings.TrimRight(r.Header.Get("Origin"), "/"),
+	}
+	if ref := r.Header.Get("Referer"); ref != "" {
+		if u, err := url.Parse(ref); err == nil && u.Host != "" && u.Scheme != "" {
+			candidates = append(candidates, u.Scheme+"://"+u.Host)
+		}
+	}
+	for _, c := range candidates {
+		if isAppOrigin(c) {
+			return c + "/auth/google/callback"
+		}
+	}
+	if isAppGoogleCallback(fallback) {
+		return fallback
+	}
+	return fallback
+}
+
+func isAppGoogleCallback(raw string) bool {
+	u, err := url.Parse(strings.TrimSpace(raw))
+	if err != nil || u.Host == "" {
+		return false
+	}
+	if u.Path != "/auth/google/callback" {
+		return false
+	}
+	return isAppOrigin(u.Scheme + "://" + u.Host)
+}
+
+func isAppOrigin(raw string) bool {
+	u, err := url.Parse(strings.TrimSpace(raw))
+	if err != nil || u.Host == "" {
+		return false
+	}
+	if !strings.EqualFold(u.Scheme, "https") && !strings.EqualFold(u.Scheme, "http") {
+		return false
+	}
+	host := strings.ToLower(u.Host)
+	if strings.Contains(host, "onrender.com") {
+		return false
+	}
+	if strings.HasPrefix(host, "api.") {
+		return false
+	}
+	return true
+}
+
 func mobileRedirectBase(r *http.Request) string {
 	scheme := "http"
 	if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {

@@ -67,16 +67,24 @@ const nextConfig = {
     ];
   },
   async rewrites() {
-    // Browser-side /api/v1 calls are proxied to the API server. Point
-    // API_PROXY_TARGET at the API in production deployments.
+    // Browser-side /api/v1 calls are proxied by app/api/v1/[...path]/route.ts
+    // so the ykv_session cookie is forwarded (and Set-Cookie lands on this
+    // host). Default `afterFiles` rewrites run BEFORE catch-all App Router
+    // routes and would send /api/v1 straight to Render without that BFF —
+    // that was the Google bounce (401 /auth/me with a cookie still present).
+    // `fallback` only fires if the filesystem route is missing.
     const target = process.env.API_PROXY_TARGET || "http://localhost:8080";
-    return [
-      { source: "/api/v1/:path*", destination: `${target}/api/v1/:path*` },
-      // Dev/local object storage: the API's presigned upload/download URLs
-      // must stay SAME-ORIGIN with the app or the CSP (connect-src 'self')
-      // blocks them. Production S3/R2 presigns over https and is unaffected.
-      { source: "/objects/:path*", destination: `${target}/objects/:path*` },
-    ];
+    return {
+      afterFiles: [
+        // Dev/local object storage: the API's presigned upload/download URLs
+        // must stay SAME-ORIGIN with the app or the CSP (connect-src 'self')
+        // blocks them. Production S3/R2 presigns over https and is unaffected.
+        { source: "/objects/:path*", destination: `${target}/objects/:path*` },
+      ],
+      fallback: [
+        { source: "/api/v1/:path*", destination: `${target}/api/v1/:path*` },
+      ],
+    };
   },
   // ── Security headers applied to every response ──────────────
   // CSP is deliberately tolerant on media/frames: the LMS streams lesson
