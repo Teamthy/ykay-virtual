@@ -100,6 +100,7 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	// on every call, so an unthrottled endpoint would be a way to hammer that
 	// portal through us.
 	mux.HandleFunc("POST "+v1+"/auth/college/login", authRate(handlers.Auth.CollegeLogin))
+	mux.HandleFunc("POST "+v1+"/auth/college/credentials", authRate(handlers.Auth.CollegeCredentials))
 	mux.HandleFunc("GET "+v1+"/auth/college/config", handlers.Auth.CollegeLoginConfig)
 	mux.HandleFunc("POST "+v1+"/auth/mfa/confirm", authRate(handlers.Auth.ConfirmMFA))
 	mux.HandleFunc("POST "+v1+"/auth/logout", handlers.Auth.Logout)

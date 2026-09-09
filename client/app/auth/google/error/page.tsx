@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { GoogleButton } from "@/components/ui/google-button";
 
 // Friendly OAuth error page - replaces the raw JSON the API used to return
 // when Google sign-in fails (denied, misconfigured, state mismatch…).
@@ -22,6 +23,7 @@ function GoogleErrorInner() {
           You can try again, or use email instead - your account details are untouched.
         </p>
         <div className="space-y-3">
+          <GoogleButton label="Try Google again" />
           <Link
             href="/login"
             className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 hover:bg-brand-gold-hover"
@@ -29,7 +31,7 @@ function GoogleErrorInner() {
             Back to log in
           </Link>
           <Link
-            href="/register"
+            href="/onboarding"
             className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-ink-200 px-4 text-sm font-semibold text-ink-700 hover:border-ink-300"
           >
             Create an account

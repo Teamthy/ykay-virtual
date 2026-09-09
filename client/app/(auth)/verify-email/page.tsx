@@ -61,9 +61,9 @@ function VerifyEmailInner() {
         </p>
         <Button
           variant="gold"
-          onClick={() => router.push(next ?? "/dashboard")}
+          onClick={() => router.push(next ?? "/login")}
         >
-          Go to dashboard
+          Continue to log in
         </Button>
       </div>
     );

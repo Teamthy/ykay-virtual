@@ -11,7 +11,12 @@ import { toast } from "sonner";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { PasswordInput, INPUT_CLS } from "@/components/ui/password-input";
 import { GoogleButton } from "@/components/ui/google-button";
-import { login, confirmMFA, type CurrentUser } from "@/features/auth/api";
+import {
+  login,
+  confirmMFA,
+  loginWithCollegeCredentials,
+  type CurrentUser,
+} from "@/features/auth/api";
 import { useSession } from "@/hooks/useSession";
 import { safeNextPath, withNext } from "@/lib/safe-next";
 
@@ -56,6 +61,7 @@ function LoginInner() {
   const qc = useQueryClient();
   const sp = useSearchParams();
   const next = safeNextPath(sp.get("next") ?? sp.get("returnTo"));
+  const handoffReason = sp.get("reason");
   const { user, isLoading } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -66,6 +72,8 @@ function LoginInner() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaError, setMfaError] = useState<string | null>(null);
   const [mfaSubmitting, setMfaSubmitting] = useState(false);
+  const collegePortal =
+    process.env.NEXT_PUBLIC_COLLEGE_URL || "https://ykaycollege.com";
 
   // Already signed in? Don't show the form - go where you're headed.
   useEffect(() => {
@@ -98,9 +106,25 @@ function LoginInner() {
         toast.success(`Welcome back, ${result.email.split("@")[0]}!`);
         router.push(destinationFor(result, next));
       } catch (err) {
-        setError(
-          friendlyError(err instanceof Error ? err.message : "Login failed"),
-        );
+        const raw = err instanceof Error ? err.message : "Login failed";
+        const email = value.email.trim();
+        // College students use the same email+password on Virtual. If the
+        // local store has no match, ask the College portal before failing.
+        if (/invalid credentials|incorrect/i.test(raw)) {
+          try {
+            const collegeUser = await loginWithCollegeCredentials(
+              email,
+              value.password,
+            );
+            qc.setQueryData(["session"], collegeUser);
+            toast.success(`Welcome back, ${collegeUser.email.split("@")[0]}!`);
+            router.push(destinationFor(collegeUser, next));
+            return;
+          } catch {
+            /* fall through to the original error */
+          }
+        }
+        setError(friendlyError(raw));
       } finally {
         setSubmitting(false);
       }
@@ -120,6 +144,13 @@ function LoginInner() {
     // form instance is stable for the page lifetime
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (mfaCode.length === 6 && mfaEmail && !mfaSubmitting) {
+      void confirmMfaSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mfaCode]);
 
   const confirmMfaSubmit = async () => {
     if (!mfaEmail) return;
@@ -181,7 +212,12 @@ function LoginInner() {
                 className={INPUT_CLS}
                 placeholder="6-digit code"
                 value={mfaCode}
-                onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+                onChange={(e) =>
+                  setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                onKeyDown={(e) =>
+                  e.key === "Enter" && mfaCode.length === 6 && void confirmMfaSubmit()
+                }
               />
             </label>
             {mfaError && (
@@ -214,7 +250,21 @@ function LoginInner() {
           </div>
         ) : (
           <>
+            {handoffReason ? (
+              <div
+                className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                role="alert"
+              >
+                {handoffReason}
+              </div>
+            ) : null}
             <GoogleButton />
+            <a
+              href={`${collegePortal.replace(/\/$/, "")}/sso/virtual`}
+              className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-ink-200 bg-white px-4 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+            >
+              Continue with Ykay College
+            </a>
 
             <div className="flex items-center gap-3 text-xs uppercase text-ink-400 before:flex-1 before:border-t before:border-ink-200 before:me-4 after:flex-1 after:border-t after:border-ink-200 after:ms-4">
               Or

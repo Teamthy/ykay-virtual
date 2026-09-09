@@ -185,6 +185,35 @@ export async function getGoogleAuthURL(): Promise<{
   return res.data;
 }
 
+export async function getCollegeAuthConfig(): Promise<{
+  enabled: boolean;
+  portal_url?: string;
+}> {
+  try {
+    const res = await apiFetch<{ enabled: boolean; portal_url?: string }>(
+      "/auth/college/config",
+    );
+    return res.data;
+  } catch {
+    return { enabled: false };
+  }
+}
+
+/** Sign in with Ykay College email + password (verified against the College portal). */
+export async function loginWithCollegeCredentials(
+  email: string,
+  password: string,
+): Promise<CurrentUser> {
+  const res = await apiFetch<{ token?: string; user: CurrentUser; provider?: string }>(
+    "/auth/college/credentials",
+    {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    },
+  );
+  return res.data.user ?? (res.data as unknown as CurrentUser);
+}
+
 // --- Onboarding helpers (phase 30) ---
 
 export async function setPrimaryRole(role: string): Promise<string[]> {

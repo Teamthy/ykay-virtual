@@ -90,7 +90,7 @@ Confirm `/health` is ok after deploy.
 1. Open `https://ykay-virtual-wtar.vercel.app/login`.
 2. **Continue with Google**.
 3. Pick a **test user** Gmail.
-4. You should land on `/onboarding/wizard` (first time) or `/dashboard`.
+4. You should land on `/auth/complete`, then `/onboarding/wizard` (first time) or your role dashboard. If the session cookie is missing you stay on `/auth/complete` with a retry — you are not bounced to `/login`.
 
 If you see “Google sign-in isn't enabled yet”, Render still has empty
 client id/secret or the new deploy is not live.

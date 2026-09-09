@@ -322,7 +322,11 @@ export default function LmsHomePage() {
                       </div>
                     </div>
                     <Link
-                      href={meta.href}
+                        href={
+                          c.cohortId !== "none"
+                            ? `/lms/courses/${c.cohortId}`
+                            : "/lms"
+                        }
                       className="flex h-12 items-center justify-center gap-2 bg-deep text-sm font-bold text-white hover:bg-deep-light"
                     >
                       Continue learning

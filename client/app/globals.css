@@ -149,11 +149,25 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  table {
+    max-width: 100%;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
+    overflow-x: clip;
+    max-width: 100%;
 
     background-color: var(--color-background);
     color: var(--color-text);

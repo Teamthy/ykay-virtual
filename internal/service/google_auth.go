@@ -203,6 +203,16 @@ func (g *GoogleAuthService) ExchangeCodeWithRedirect(ctx context.Context, code, 
 	if err != nil {
 		return "", nil, nil, err
 	}
+	// Keep the Google display name on returning accounts that were created
+	// before we stored first/last (avoids a blank "Welcome back, " header).
+	if profile.Name != "" && user.FirstName == "" {
+		first, last := splitName(profile.Name)
+		user.FirstName = first
+		user.LastName = last
+		if uerr := g.auth.users.Update(ctx, user); uerr != nil {
+			return "", nil, nil, uerr
+		}
+	}
 	if profile.VerifiedEmail && user.Status == identity.UserStatusPending {
 		now := g.auth.now().UTC()
 		user.EmailVerifiedAt = &now
@@ -222,8 +232,11 @@ func (g *GoogleAuthService) ExchangeCodeWithRedirect(ctx context.Context, code, 
 // createOAuthUser — registers a Google-sourced user as email-verified ACTIVE.
 func (s *AuthService) createOAuthUser(ctx context.Context, email, name string) (*identity.User, error) {
 	now := s.now().UTC()
+	first, last := splitName(name)
 	user := &identity.User{
 		Email:           strings.ToLower(email),
+		FirstName:       first,
+		LastName:        last,
 		Status:          identity.UserStatusActive,
 		Timezone:        "Africa/Lagos",
 		EmailVerifiedAt: &now,

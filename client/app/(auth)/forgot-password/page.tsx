@@ -54,7 +54,7 @@ function ForgotPasswordInner() {
   return (
     <AuthShell
       title="Reset your password"
-      subtitle="Enter the email you registered with and we&apos;ll send you a reset link."
+      subtitle="Enter the email you registered with and we'll send you a reset link."
       footer={
         <>
           Remembered it?{" "}

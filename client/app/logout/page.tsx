@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useLogout } from "@/hooks/useSession";
 
-// Old /logout URL — send people back. Confirmation is a modal on the current page.
+// Visiting /logout actually ends the session (cookie + server revoke) then
+// sends the visitor home. Previously this page only redirected, so the
+// person stayed signed in.
 export default function LogoutRedirectPage() {
-  const router = useRouter();
+  const doLogout = useLogout();
   useEffect(() => {
-    router.replace("/");
-  }, [router]);
-  return <p className="px-6 py-16 text-center text-sm text-ink-500">Taking you back…</p>;
+    void doLogout();
+    // Intentionally once — useLogout returns a new function each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <p className="px-6 py-16 text-center text-sm text-ink-500">
+      Signing you out…
+    </p>
+  );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { requestLoginCode, confirmLoginCode, type CurrentUser } from "@/features/auth/api";
@@ -34,6 +34,7 @@ function LoginCodeInner() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const confirmingRef = useRef(false);
 
   // Already signed in? Go where you're headed.
   useEffect(() => {
@@ -69,11 +70,18 @@ function LoginCodeInner() {
     }
   };
 
+  useEffect(() => {
+    if (step === "code" && code.trim().length === 6 && !busy) void confirm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, step]);
+
   const confirm = async () => {
     if (code.trim().length !== 6) {
       setError("Enter the 6-digit code from your email");
       return;
     }
+    if (confirmingRef.current) return;
+    confirmingRef.current = true;
     setBusy(true);
     setError(null);
     try {
@@ -84,6 +92,7 @@ function LoginCodeInner() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid code");
     } finally {
+      confirmingRef.current = false;
       setBusy(false);
     }
   };
