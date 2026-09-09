@@ -1055,6 +1055,14 @@ function OnboardingInner() {
     router.push(`/onboarding?step=${n}`);
   };
 
+  // Google / returning session on step 1: skip account+verify (already done)
+  // instead of trapping them on "Create your account" or bouncing to login.
+  useEffect(() => {
+    if (sessionLoading || !user || user.onboarded) return;
+    if (step === 1) go(user.status === "ACTIVE" ? 3 : 2);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionLoading, user, step]);
+
   useEffect(() => {
     if (timer.current) clearInterval(timer.current);
     if (countdown > 0)
@@ -1290,6 +1298,12 @@ function OnboardingInner() {
     if (staleDraft) return;
     // A-29: recover in-flow with a fresh code (re-verify), never a dead-end
     // /login bounce for a password-less brand-new account.
+    if (!state.email) {
+      // Google lands here with a cookie but no local draft. Don't email an
+      // empty address and bounce to /login — wait, or send them to wizard.
+      if (!sessionLoading && !user) router.replace("/onboarding/wizard");
+      return;
+    }
     void reverify("Your session expired");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionLoading, user, step, staleDraft]);

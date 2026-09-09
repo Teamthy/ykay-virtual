@@ -102,8 +102,8 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-ink-200 bg-white dark:border-[#214c37] dark:bg-[#0d1f16]">
-      <nav className="flex w-full items-center justify-between gap-3 px-4 py-3 md:px-8 lg:px-10">
+    <header className="sticky top-0 z-50 w-full max-w-[100vw] overflow-x-clip border-b border-ink-200 bg-white dark:border-[#214c37] dark:bg-[#0d1f16]">
+      <nav className="flex w-full min-w-0 items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4 md:px-8 lg:px-10">
         <Link
           href="/"
           onClick={closeAll}
@@ -238,9 +238,9 @@ export function Header() {
           )}
         </div>
 
-        <ThemeToggle className="lg:hidden" />
-        <LanguageSwitcher className="lg:hidden" />
-        <div className="flex items-center gap-2 lg:hidden">
+        <ThemeToggle className="hidden sm:inline-flex lg:hidden" />
+        <LanguageSwitcher className="hidden sm:inline-flex lg:hidden" />
+        <div className="flex shrink-0 items-center gap-2 lg:hidden">
           <AuthNav />
           <button
             type="button"

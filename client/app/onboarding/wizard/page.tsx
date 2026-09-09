@@ -33,6 +33,7 @@ function WizardInner() {
   const sp = useSearchParams();
   const next = safeNextPath(sp.get("next"));
   const [step, setStep] = useState(0);
+  const [sessionTries, setSessionTries] = useState(0);
   const [firstName, setFirstName] = useState("");
   const [level, setLevel] = useState("");
   const [goals, setGoals] = useState<string[]>([]);
@@ -42,15 +43,23 @@ function WizardInner() {
   const isStudent = !!user?.roles.includes("STUDENT");
   const isTutor = !!user?.roles.includes("TUTOR");
 
-  // Returning users skip the wizard entirely.
+  // Returning users skip the wizard entirely. Google cookie can lag one
+  // /auth/me read — retry before bouncing to login.
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
+      if (sessionTries < 5) {
+        const t = setTimeout(() => {
+          void qc.invalidateQueries({ queryKey: ["session"] });
+          setSessionTries((n) => n + 1);
+        }, 350);
+        return () => clearTimeout(t);
+      }
       router.replace(withNext("/login", next));
       return;
     }
     if (user.onboarded) router.replace(next ?? homeForRoles(user.roles));
-  }, [user, isLoading, router, next]);
+  }, [user, isLoading, router, next, sessionTries, qc]);
 
   const [dob, setDob] = useState("");
   const isMinor = (() => {

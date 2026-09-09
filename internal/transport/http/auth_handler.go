@@ -82,8 +82,44 @@ func (h *AuthHandler) CollegeLogin(w http.ResponseWriter, r *http.Request) {
 // can hide the button on deployments that have not enabled it. Public and
 // secret-free by design.
 func (h *AuthHandler) CollegeLoginConfig(w http.ResponseWriter, r *http.Request) {
+	portal := os.Getenv("COLLEGE_PORTAL_URL")
+	if portal == "" {
+		portal = os.Getenv("COLLEGE_BASE_URL")
+	}
 	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
-		"enabled": h.college != nil && h.college.Enabled(),
+		"enabled":    h.college != nil && h.college.Enabled(),
+		"portal_url": portal,
+	}, nil)
+}
+
+// CollegeCredentials — POST /auth/college/credentials {email, password}
+// Lets a Ykay College student type the same email+password they use on the
+// College portal into the Virtual login form. The password is verified
+// server-to-server against College; it is never stored here.
+func (h *AuthHandler) CollegeCredentials(w http.ResponseWriter, r *http.Request) {
+	if h.college == nil || !h.college.Enabled() {
+		WriteAppError(w, pkg.Conflict("YKAY College login is not configured on this deployment"))
+		return
+	}
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	ip := clientIP(r)
+	token, user, roles, err := h.college.ExchangePassword(r.Context(), req.Email, req.Password, ip, r.UserAgent())
+	if err != nil {
+		WriteAppError(w, err)
+		return
+	}
+	middleware.SetSessionCookie(w, r, h.cfg, token)
+	pkg.WriteSuccess(w, http.StatusOK, map[string]any{
+		"token":    token,
+		"user":     toUserResponseFull(user, roles),
+		"provider": "ykay_college",
 	}, nil)
 }
 

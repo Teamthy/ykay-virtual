@@ -476,7 +476,11 @@ export default function StudentDashboardPage() {
                         </p>
                       </div>
                       <Link
-                        href={c.nextUnwatchedId ? "/lms" : "/lms"}
+                        href={
+                          c.cohortId && c.cohortId !== "none"
+                            ? `/lms/courses/${c.cohortId}`
+                            : "/lms"
+                        }
                         className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light"
                       >
                         {c.pct >= 100

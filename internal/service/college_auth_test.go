@@ -95,6 +95,7 @@ func TestCollegeAuth_ExchangeSession_ProvisionsAndStartsSession(t *testing.T) {
 	assert.Equal(t, "Obi", user.LastName)
 	assert.Equal(t, identity.UserStatusActive, user.Status)
 	assert.NotNil(t, user.EmailVerifiedAt, "College has already verified this email")
+	assert.NotNil(t, user.OnboardedAt, "College users skip the Virtual onboarding wizard")
 	assert.Contains(t, roles, "PARENT")
 
 	// The session must be live and resolvable, not just a returned string.
@@ -234,8 +235,8 @@ func TestMapCollegeRole_IsLeastPrivilege(t *testing.T) {
 		"STUDENT":       {"STUDENT", false},
 		"IT_STUDENT":    {"STUDENT", false},
 		"PARENT":        {"PARENT", false},
-		"TEACHER":       {"STUDENT", true},
-		"HOD":           {"STUDENT", true},
+		"TEACHER":       {"TUTOR", true},
+		"HOD":           {"TUTOR", true},
 		"ADMIN":         {"STUDENT", true},
 		"DIRECTOR":      {"STUDENT", true},
 		"COORDINATOR":   {"STUDENT", true},

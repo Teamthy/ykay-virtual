@@ -101,9 +101,9 @@ func MapCollegeRole(collegeRole string) (string, bool) {
 	case "STUDENT", "IT_STUDENT":
 		return "STUDENT", false
 	case "TEACHER", "HOD":
-		// A teacher is a plausible TUTOR candidate, but tutor status on this
-		// platform requires vetting — so no automatic grant.
-		return "STUDENT", true
+		// Campus teachers land on the Virtual tutor workspace so they can
+		// finish vetting and receive payouts — not the student LMS.
+		return "TUTOR", true
 	case "ADMIN", "DIRECTOR", "COORDINATOR", "BURSAR", "SUPER_ADMIN":
 		return "STUDENT", true
 	default:
@@ -140,7 +140,28 @@ func (c *CollegeAuthService) ExchangeSession(ctx context.Context, collegeToken, 
 	if err != nil {
 		return "", nil, nil, err
 	}
-	if strings.TrimSpace(claims.Email) == "" {
+	return c.upsertAndStart(ctx, claims, ip, userAgent)
+}
+
+// ExchangePassword verifies College email+password (the same details a student
+// uses on the College portal) and mints a YK Virtual session. This is how
+// College students sign in on the Virtual login form without a prior SSO hop.
+func (c *CollegeAuthService) ExchangePassword(ctx context.Context, email, password, ip, userAgent string) (string, *identity.User, []string, error) {
+	if !c.Enabled() {
+		return "", nil, nil, fmt.Errorf("%w: YKAY College login is not configured", domain.ErrConflict)
+	}
+	if strings.TrimSpace(email) == "" || strings.TrimSpace(password) == "" {
+		return "", nil, nil, fmt.Errorf("%w: email and password are required", domain.ErrInvalidInput)
+	}
+	claims, err := c.verifyCredentialsWithCollege(ctx, email, password)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	return c.upsertAndStart(ctx, claims, ip, userAgent)
+}
+
+func (c *CollegeAuthService) upsertAndStart(ctx context.Context, claims *collegeUser, ip, userAgent string) (string, *identity.User, []string, error) {
+	if claims == nil || strings.TrimSpace(claims.Email) == "" {
 		return "", nil, nil, fmt.Errorf("%w: the College account has no email address", domain.ErrUnauthorized)
 	}
 
@@ -167,13 +188,28 @@ func (c *CollegeAuthService) ExchangeSession(ctx context.Context, collegeToken, 
 
 	// Keep the local profile name in step with the College record, so a name
 	// correction on the College side shows up here.
-	if firstName, lastName := splitName(claims.Name); firstName != "" &&
-		(user.FirstName != firstName || user.LastName != lastName) {
+	firstName, lastName := splitName(claims.Name)
+	dirty := false
+	if firstName != "" && (user.FirstName != firstName || user.LastName != lastName) {
 		user.FirstName = firstName
 		user.LastName = lastName
+		dirty = true
+	}
+	// College accounts are already fully provisioned on the campus portal —
+	// skip the Virtual first-time wizard so they are not bounced through it.
+	if user.OnboardedAt == nil {
+		now := c.auth.now().UTC()
+		user.OnboardedAt = &now
+		dirty = true
+	}
+	if dirty {
 		if err := c.auth.users.Update(ctx, user); err != nil {
 			return "", nil, nil, err
 		}
+	}
+
+	if roleName, _ := MapCollegeRole(claims.Role); roleName == "STUDENT" {
+		c.auth.ensureStudentProfile(ctx, user)
 	}
 
 	return c.auth.startSession(ctx, user, ip, userAgent, "ykay_college")
@@ -186,12 +222,23 @@ func (c *CollegeAuthService) ExchangeSession(ctx context.Context, collegeToken, 
 // portal returns when it could not reach its own database. That distinction is
 // preserved so the caller can tell "bad credentials" from "try again".
 func (c *CollegeAuthService) verifyWithCollege(ctx context.Context, collegeToken string) (*collegeUser, error) {
-	body, err := json.Marshal(map[string]string{"token": collegeToken})
+	return c.postCollege(ctx, "/api/auth/verify-session", map[string]string{"token": collegeToken})
+}
+
+func (c *CollegeAuthService) verifyCredentialsWithCollege(ctx context.Context, email, password string) (*collegeUser, error) {
+	return c.postCollege(ctx, "/api/auth/verify-credentials", map[string]string{
+		"email":    strings.TrimSpace(email),
+		"password": password,
+	})
+}
+
+func (c *CollegeAuthService) postCollege(ctx context.Context, path string, payload any) (*collegeUser, error) {
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/api/auth/verify-session", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+path, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -255,6 +302,7 @@ func (c *CollegeAuthService) createCollegeUser(ctx context.Context, claims *coll
 		Status:          identity.UserStatusActive,
 		Timezone:        "Africa/Lagos",
 		EmailVerifiedAt: &now,
+		OnboardedAt:     &now,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
@@ -276,6 +324,9 @@ func (c *CollegeAuthService) createCollegeUser(ctx context.Context, claims *coll
 	roleName, needsReview := MapCollegeRole(claims.Role)
 	if role, err := c.auth.roles.FindByName(ctx, roleName); err == nil {
 		_ = c.auth.roles.AssignToUser(ctx, user.ID, role.ID)
+	}
+	if roleName == "STUDENT" {
+		c.auth.ensureStudentProfile(ctx, user)
 	}
 
 	_ = c.auth.audit.LogStateChange(ctx, &user.ID, identity.AuditCreate, "user", &user.ID, nil,

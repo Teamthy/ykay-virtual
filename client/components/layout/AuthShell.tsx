@@ -117,7 +117,7 @@ export function AuthShell({
             </Link>
           )}
 
-          <div className="w-full max-w-md px-6 py-16">
+          <div className="w-full min-w-0 max-w-md px-4 py-16 sm:px-6">
             <div className="text-left">
               <h2 className="text-2xl font-semibold tracking-tight text-deep">
                 {title}

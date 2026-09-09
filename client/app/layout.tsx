@@ -123,7 +123,7 @@ export default function RootLayout({
           <div
             id="main-content"
             tabIndex={-1}
-            className="pb-16 outline-none lg:pb-0"
+            className="min-w-0 max-w-[100vw] overflow-x-clip pb-16 outline-none lg:pb-0"
           >
             <AmbientBackdrop />
             <MotionProvider>

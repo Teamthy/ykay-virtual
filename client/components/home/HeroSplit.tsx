@@ -2,11 +2,20 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Calculator,
+  FlaskConical,
+  Globe,
+  GraduationCap,
+  Laptop,
+  PencilRuler,
+} from "lucide-react";
 
 /**
- * Homepage hero — PrebuiltUI-style centered intro on deep green, then the
- * drifting service cards on cream ribs. Edge to edge.
+ * Homepage hero — full-viewport intro (100svh) with academic photos +
+ * subject icons, then the drifting service cards. Edge to edge.
  */
 
 const CARDS = [
@@ -122,11 +131,78 @@ const CARDS = [
   },
 ];
 
+const ACADEMIC_PHOTOS = [
+  {
+    src: "/home/ykay-students.png",
+    alt: "Ykay College students",
+    className:
+      "left-[3%] top-[16%] hidden h-44 w-32 -rotate-6 xl:left-[5%] xl:h-52 xl:w-36 lg:block",
+  },
+  {
+    src: "/home/card-jss.jpg",
+    alt: "Junior secondary textbook",
+    className:
+      "bottom-[12%] left-[6%] hidden h-36 w-28 rotate-3 delay-150 lg:block xl:left-[8%]",
+  },
+  {
+    src: "/home/card-ss.jpg",
+    alt: "Senior secondary classroom",
+    className:
+      "right-[3%] top-[14%] hidden h-44 w-32 rotate-6 delay-75 xl:right-[5%] xl:h-52 xl:w-36 lg:block",
+  },
+  {
+    src: "/home/card-exam.jpg",
+    alt: "Exam hall",
+    className:
+      "bottom-[11%] right-[6%] hidden h-32 w-40 -rotate-3 delay-200 lg:block xl:right-[8%]",
+  },
+];
+
+const ACADEMIC_ICONS = [
+  {
+    Icon: GraduationCap,
+    label: "WASSCE",
+    className: "left-[16%] top-[26%] hidden delay-100 xl:flex",
+  },
+  {
+    Icon: BookOpen,
+    label: "NERDC",
+    className: "right-[16%] top-[22%] hidden delay-150 xl:flex",
+  },
+  {
+    Icon: FlaskConical,
+    label: "Sciences",
+    className: "bottom-[28%] left-[14%] hidden delay-200 xl:flex",
+  },
+  {
+    Icon: Globe,
+    label: "IGCSE",
+    className: "bottom-[30%] right-[15%] hidden delay-75 xl:flex",
+  },
+  {
+    Icon: Calculator,
+    label: "Maths",
+    className: "left-[22%] bottom-[18%] hidden delay-300 2xl:flex",
+  },
+  {
+    Icon: PencilRuler,
+    label: "BECE",
+    className: "right-[22%] bottom-[16%] hidden delay-100 2xl:flex",
+  },
+];
+
+const MOBILE_STRIP = [
+  { src: "/home/ykay-students.png", alt: "Students", Icon: GraduationCap, label: "Campus" },
+  { src: "/home/card-jss.jpg", alt: "JSS", Icon: BookOpen, label: "JSS" },
+  { src: "/home/card-ss.jpg", alt: "SSS", Icon: Laptop, label: "SSS" },
+  { src: "/home/card-exam.jpg", alt: "Exams", Icon: PencilRuler, label: "Exams" },
+];
+
 function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?: boolean }) {
   return (
     <article
       aria-hidden={ariaHidden || undefined}
-      className={`relative w-[240px] shrink-0 snap-start overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
+      className={`relative w-[min(78vw,240px)] shrink-0 snap-start overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
         card.active ? "bg-primary" : "bg-white"
       }`}
     >
@@ -232,8 +308,8 @@ export function HeroSplit() {
   };
 
   return (
-    <section className="w-full">
-      <div className="relative isolate w-full overflow-hidden bg-[#050505]">
+    <section className="w-full max-w-[100vw] overflow-x-clip">
+      <div className="relative isolate min-h-[100svh] w-full overflow-hidden bg-[#050505]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/home/ribs-green.jpg"
@@ -243,19 +319,41 @@ export function HeroSplit() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
 
-        <div className="relative z-10 mx-auto flex min-h-[72vh] w-full max-w-5xl flex-col items-center justify-center px-6 py-20 text-center md:min-h-[78vh] md:py-28">
+        {ACADEMIC_PHOTOS.map((p) => (
+          <div
+            key={p.src}
+            className={`animate-float pointer-events-none absolute z-[1] overflow-hidden rounded-3xl ring-2 ring-white/15 ${p.className}`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={p.src} alt={p.alt} className="h-full w-full object-cover object-top" />
+          </div>
+        ))}
+
+        {ACADEMIC_ICONS.map(({ Icon, label, className }) => (
+          <span
+            key={label}
+            className={`animate-float pointer-events-none absolute z-[2] items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur-md ${className}`}
+          >
+            <span className="grid size-6 place-items-center rounded-full bg-primary text-deep-green">
+              <Icon size={13} />
+            </span>
+            {label}
+          </span>
+        ))}
+
+        <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-5xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6 md:py-16">
           <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[11px] font-semibold text-white/90">
             <span className="h-2 w-2 rounded-full bg-primary" />
             Elevate your learning
           </p>
-          <h1 className="mt-7 max-w-[18ch] font-display text-[clamp(2.6rem,7vw,5.6rem)] leading-[0.95] tracking-[-0.03em] text-white">
+          <h1 className="mt-6 max-w-[18ch] font-display text-[clamp(2.25rem,8vw,5.6rem)] leading-[0.95] tracking-[-0.03em] text-white sm:mt-7">
             Comprehensive Learning for Every Student.
           </h1>
-          <p className="mt-6 max-w-xl text-sm leading-relaxed text-white/70 md:text-base">
+          <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/70 sm:mt-6 md:text-base">
             British and Nigerian curricula, live cohorts, private tuition and exam
             preparation — built for Ykay College students and for learners anywhere.
           </p>
-          <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <div className="mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
             <Link
               href="/onboarding"
               className="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-black transition hover:bg-white/90"
@@ -269,7 +367,26 @@ export function HeroSplit() {
               View programmes
             </Link>
           </div>
-          <p className="mt-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+
+          <ul className="mt-8 flex w-full max-w-lg gap-3 overflow-x-auto pb-1 scrollbar-none sm:justify-center lg:hidden">
+            {MOBILE_STRIP.map((item) => (
+              <li
+                key={item.label}
+                className="flex shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/5 py-1 pl-1 pr-3"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.src}
+                  alt=""
+                  className="size-9 rounded-full object-cover object-top"
+                />
+                <item.Icon size={12} className="text-primary" />
+                <span className="text-[11px] font-bold text-white">{item.label}</span>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45 sm:mt-10">
             Escrow-protected tuition · Live cohorts · CBT practice
           </p>
         </div>
@@ -285,12 +402,12 @@ export function HeroSplit() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#FFF7E4]/70 via-[#FFF7E4]/40 to-[#DFFFF2]/35" />
 
-        <div className="relative z-10 w-full px-5 pb-10 pt-8 md:px-10 md:pb-14 md:pt-10">
+        <div className="relative z-10 w-full px-4 pb-10 pt-8 sm:px-5 md:px-10 md:pb-14 md:pt-10">
           <div className="flex items-end justify-between gap-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#3f5249]">
               Programmes in motion
             </p>
-            <div className="hidden shrink-0 items-center gap-2 pb-1 md:flex">
+            <div className="flex shrink-0 items-center gap-2 pb-1">
               <button
                 type="button"
                 onClick={() => scrollRail(-1)}
@@ -312,7 +429,7 @@ export function HeroSplit() {
 
           <div
             ref={railRef}
-            className="scrollbar-none mt-6 flex gap-4 overflow-x-auto pb-2 md:mt-8 md:gap-5"
+            className="scrollbar-none mt-6 flex snap-x gap-4 overflow-x-auto pb-2 md:mt-8 md:gap-5"
           >
             {CARDS.map((card) => (
               <Card key={card.n} card={card} />
