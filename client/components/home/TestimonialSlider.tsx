@@ -29,7 +29,7 @@ export async function TestimonialSlider() {
 
   if (items.length === 0) {
     return (
-      <section className="w-full bg-primary py-24 text-center md:py-28">
+      <section className="home-screen w-full bg-primary py-24 text-center md:py-28">
         <div className="max-w-2xl mx-auto px-6">
           <AnimatedText
             as="h2"

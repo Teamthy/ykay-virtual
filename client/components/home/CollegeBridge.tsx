@@ -10,9 +10,9 @@ export function CollegeBridge() {
     process.env.NEXT_PUBLIC_COLLEGE_URL || "https://ykaycollege.com";
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#062214]">
-      <div className="grid w-full lg:grid-cols-2">
-        <div className="relative min-h-[320px] lg:min-h-[560px]">
+    <section className="home-screen relative w-full overflow-hidden bg-[#062214]">
+      <div className="grid min-h-[100svh] w-full lg:grid-cols-2">
+        <div className="relative min-h-[40svh] lg:min-h-[100svh]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/home/ykay-students.png"

@@ -18,7 +18,7 @@ export async function PopularProgrammes() {
 
   if (cards.length === 0) {
     return (
-      <section className="backdrop-brand-light w-full bg-peach py-16">
+      <section className="home-screen backdrop-brand-light w-full bg-peach py-16">
         <div className="container-x">
         <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
           <h2 className="text-2xl font-extrabold">Popular programmes</h2>
@@ -31,7 +31,7 @@ export async function PopularProgrammes() {
   }
 
   return (
-    <section className="backdrop-brand-light w-full bg-peach py-16">
+    <section className="home-screen backdrop-brand-light w-full bg-peach py-16">
       <div className="container-x">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>

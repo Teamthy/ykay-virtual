@@ -98,9 +98,15 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Env
     window.location.assign("/login");
   }
 
+  const ct = res.headers.get("content-type") || "";
   if (!res.ok) {
-    const errBody = (await res.json().catch(() => null)) as ErrorEnvelope | null;
+    const errBody = ct.includes("json")
+      ? ((await res.json().catch(() => null)) as ErrorEnvelope | null)
+      : null;
     throw new Error(errBody?.error?.message || `Request failed ${res.status}`);
+  }
+  if (!ct.includes("json")) {
+    throw new Error(`Request failed: expected JSON, got ${ct || "unknown"}`);
   }
 
   return (await res.json()) as Envelope<T>;

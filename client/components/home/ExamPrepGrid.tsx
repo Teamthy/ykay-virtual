@@ -8,7 +8,7 @@ import { AnimatedText } from "@/components/ui/animated-text";
 
 export function ExamPrepGrid() {
   return (
-    <section className="backdrop-brand-light w-full bg-surface-muted py-24 md:py-28">
+    <section className="home-screen backdrop-brand-light w-full bg-surface-muted py-24 md:py-28">
       <div className="container-x">
         <AnimatedText
           as="h2"

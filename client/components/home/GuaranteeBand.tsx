@@ -21,7 +21,7 @@ const STEPS = [
 
 export function GuaranteeBand() {
   return (
-    <section className="relative isolate w-full overflow-hidden">
+    <section className="home-screen relative isolate w-full overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/home/ribs-cream.jpg"

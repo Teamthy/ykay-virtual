@@ -24,7 +24,7 @@ const FAQS = [
 export function HomeFAQ() {
   const jsonLd = faqJsonLd(FAQS.map((f) => ({ question: f.q, answer: f.a })));
   return (
-    <section className="backdrop-brand-peach w-full bg-white py-16 md:py-20">
+    <section className="home-screen backdrop-brand-peach w-full bg-white py-16 md:py-20">
       <div className="container-x">
       <script
         type="application/ld+json"
