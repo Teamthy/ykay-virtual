@@ -10,7 +10,7 @@ const PERKS = [
 
 export function DownloadAppCTA() {
   return (
-    <section className="relative w-full overflow-hidden">
+    <section className="home-screen relative w-full overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/home/ribs-cream.jpg"

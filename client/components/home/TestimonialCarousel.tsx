@@ -29,7 +29,7 @@ export function TestimonialCarousel({ items }: { items: CarouselItem[] }) {
   const current = items[active];
 
   return (
-    <section className="py-24 md:py-28 bg-brand-gold text-ink-900 text-center relative">
+    <section className="home-screen relative bg-brand-gold py-24 text-center text-ink-900 md:py-28">
       {items.length > 1 && (
         <>
           <button

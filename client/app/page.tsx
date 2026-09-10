@@ -26,34 +26,34 @@ export default function HomePage() {
   return (
     <>
       <HeroSplit />
-      <Reveal delay={50} variant="zoom">
+      <Reveal delay={50} variant="zoom" className="w-full">
         <GuaranteeBand />
       </Reveal>
-      <Reveal delay={50} variant="left">
+      <Reveal delay={50} variant="left" className="w-full">
         <PopularProgrammes />
       </Reveal>
-      <Reveal delay={50} variant="right">
+      <Reveal delay={50} variant="right" className="w-full">
         <HowItWorksStrip />
       </Reveal>
-      <Reveal delay={50} variant="up">
+      <Reveal delay={50} variant="up" className="w-full">
         <UpcomingCohorts />
       </Reveal>
-      <Reveal delay={50} variant="blur">
+      <Reveal delay={50} variant="blur" className="w-full">
         <ExamPrepGrid />
       </Reveal>
-      <Reveal delay={50} variant="zoom">
+      <Reveal delay={50} variant="zoom" className="w-full">
         <TestimonialSlider />
       </Reveal>
-      <Reveal delay={50} variant="left">
+      <Reveal delay={50} variant="left" className="w-full">
         <CollegeBridge />
       </Reveal>
-      <Reveal delay={50} variant="right">
+      <Reveal delay={50} variant="right" className="w-full">
         <HomeFAQ />
       </Reveal>
-      <Reveal delay={50} variant="blur">
+      <Reveal delay={50} variant="blur" className="w-full">
         <DownloadAppCTA />
       </Reveal>
-      <Reveal delay={50} variant="up">
+      <Reveal delay={50} variant="up" className="w-full">
         <BecomeTutorCTA />
       </Reveal>
     </>

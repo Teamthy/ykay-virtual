@@ -32,7 +32,7 @@ export async function UpcomingCohorts() {
 
   if (cohorts.length === 0) {
     return (
-      <section className="backdrop-brand-peach w-full bg-white py-16">
+      <section className="home-screen backdrop-brand-peach w-full bg-white py-16">
         <div className="container-x">
         <div className="rounded-2xl border border-dashed border-ink-200 bg-peach p-10 text-center">
           <h2 className="text-2xl font-extrabold">Upcoming cohorts</h2>
@@ -47,7 +47,7 @@ export async function UpcomingCohorts() {
   }
 
   return (
-    <section className="backdrop-brand-peach w-full bg-white py-16">
+    <section className="home-screen backdrop-brand-peach w-full bg-white py-16">
       <div className="container-x">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>

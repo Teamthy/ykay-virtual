@@ -15,6 +15,16 @@ test.describe("virtual home", () => {
     await page.goto("/");
     await expect(page.getByText(/The Ykay family · Campus/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /Visit Ykay College/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /What is it/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /What is the campus school/i })).toBeVisible();
+  });
+
+  test("home sections are at least one viewport tall", async ({ page }) => {
+    await page.goto("/");
+    const viewport = page.viewportSize()?.height ?? 720;
+    const heights = await page.locator("main section, #main-content section").evaluateAll((els) =>
+      els.map((el) => (el as HTMLElement).offsetHeight),
+    );
+    expect(heights.length).toBeGreaterThan(3);
+    for (const h of heights) expect(h).toBeGreaterThanOrEqual(viewport - 8);
   });
 });

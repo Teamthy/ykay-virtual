@@ -9,7 +9,7 @@ import { AnimatedText } from "@/components/ui/animated-text";
 
 export function BecomeTutorCTA() {
   return (
-    <section className="relative overflow-hidden">
+    <section className="home-screen relative overflow-hidden">
       <Image
         src="/home/ykay-students.png"
         alt=""

@@ -14,7 +14,7 @@ const STEPS = [
 
 export function HowItWorksStrip() {
   return (
-    <section className="backdrop-brand-light w-full bg-peach py-16 md:py-20">
+    <section className="home-screen backdrop-brand-light w-full bg-peach py-16 md:py-20">
       <div className="container-x">
       <div className="text-center">
         <p className="tag-handwritten">How it works</p>

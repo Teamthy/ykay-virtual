@@ -392,7 +392,7 @@ export function HeroSplit() {
         </div>
       </div>
 
-      <div className="relative isolate w-full overflow-hidden bg-peach">
+      <div className="home-screen relative isolate w-full overflow-hidden bg-peach">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/home/ribs-cream.jpg"
