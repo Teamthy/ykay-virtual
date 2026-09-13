@@ -1,13 +1,13 @@
-# YK-Virtual â€” OCI production stack (frontends on Vercel, API/worker/state on OCI)
+# YK-Virtual — OCI production stack (frontends on Vercel, API/worker/state on OCI)
 #
 # Layout (matches docs/OCI-HOSTING.md):
-#   Caddy (TLS, host ports 80/443) â†’ api:8080
-#   api       â€” Go HTTP API (one replica; Redis-backed distributed limiter)
-#   worker    â€” durable Redis queue + leader-locked crons
-#   migrate   â€” one-shot schema migration, must complete before api/worker
-#   postgres  â€” not exposed to host; bind TLS later via Caddy TCP if needed
-#   redis     â€” queue, rate limits, session cache, cron locks
-#   clamav    â€” upload malware scanning (api uploads FAIL CLOSED without it)
+#   Caddy (TLS, host ports 80/443) → api:8080
+#   api       — Go HTTP API (one replica; Redis-backed distributed limiter)
+#   worker    — durable Redis queue + leader-locked crons
+#   migrate   — one-shot schema migration, must complete before api/worker
+#   postgres  — not exposed to host; bind TLS later via Caddy TCP if needed
+#   redis     — queue, rate limits, session cache, cron locks
+#   clamav    — upload malware scanning (api uploads FAIL CLOSED without it)
 #
 # Deploy with deploy/oci/deploy.sh (health-gated, auto-rollback). Do NOT run
 # `docker compose up` by hand for production releases.

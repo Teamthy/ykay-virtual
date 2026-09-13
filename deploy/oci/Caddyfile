@@ -1,7 +1,7 @@
 # Caddy reverse proxy for the YK-Virtual API on OCI.
 #
 # API_HOST is injected from .env (e.g. api.virtual.ykaycollege.com).
-# Caddy fetches/renews Let's Encrypt certificates automatically â€” the OCI
+# Caddy fetches/renews Let's Encrypt certificates automatically — the OCI
 # security list/NSG MUST allow inbound 80 and 443 (80 is used for ACME
 # challenges and redirected to 443).
 #

@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Phase 5b â€” the SSE stream endpoint. Auth is the standard session actor;
+// Phase 5b — the SSE stream endpoint. Auth is the standard session actor;
 // events written for the subscribed user must arrive on the wire before the
 // test deadline; anonymous requests are rejected before the stream opens.
 
@@ -127,7 +127,7 @@ func TestEventsStream_SSEWireFormat(t *testing.T) {
 // TestEventsStream_SurvivesServerWriteTimeout guards VRT-01: the API server
 // sets a global WriteTimeout (30s in cmd/api/main.go). SSE streams live up
 // to 9 minutes, so the handler MUST clear that deadline on its connection
-// via http.ResponseController â€” otherwise the first heartbeat past
+// via http.ResponseController — otherwise the first heartbeat past
 // WriteTimeout fails, the socket closes, and EventSource reconnects in a
 // loop (realtime silently never works in production behind TLS).
 func TestEventsStream_SurvivesServerWriteTimeout(t *testing.T) {

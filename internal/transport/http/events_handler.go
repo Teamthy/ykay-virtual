@@ -10,10 +10,10 @@ import (
 	"ykay-virtual/internal/realtime"
 )
 
-// EventsHandler â€” GET /api/v1/me/events (Phase 5b realtime).
+// EventsHandler — GET /api/v1/me/events (Phase 5b realtime).
 //
 // Server-Sent Events stream: one long-lived response per authenticated user
-// carrying that user's poke events ("message.new" â€¦). Clients keep their
+// carrying that user's poke events ("message.new" …). Clients keep their
 // interval polling as the fallback; this stream only makes fresh data arrive
 // instantly instead of on the next poll tick.
 //
@@ -45,7 +45,7 @@ func (h *EventsHandler) Stream(w http.ResponseWriter, r *http.Request) {
 	// This stream lives up to maxLife (9 min), far past the server-wide
 	// WriteTimeout (30s, cmd/api/main.go). net/http applies that deadline
 	// to every write on the connection, so without clearing it the first
-	// heartbeat after 30s fails and the stream dies â€” EventSource then
+	// heartbeat after 30s fails and the stream dies — EventSource then
 	// reconnects in a loop and "realtime" silently never works. Zero the
 	// deadline on this connection only; the 25s heartbeat remains the
 	// liveness signal. ResponseController unwraps gzip/logger/metrics
@@ -96,7 +96,7 @@ func (h *EventsHandler) Stream(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				continue
 			}
-			// Named event + JSON payload: addEventListener("message.new", â€¦)
+			// Named event + JSON payload: addEventListener("message.new", …)
 			if !writeSSE(fmt.Sprintf("event: %s\ndata: %s\n\n", ev.Type, data)) {
 				return
 			}
