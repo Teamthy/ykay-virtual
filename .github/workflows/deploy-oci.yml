@@ -34,7 +34,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    name: Build image â†’ deploy OCI
+    name: Build image → deploy OCI
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
@@ -103,7 +103,7 @@ jobs:
              if [ ! -f /opt/ykay/virtual/.env ]; then
                cp /opt/ykay/virtual-new/env.production.template /opt/ykay/virtual/.env
                chmod 600 /opt/ykay/virtual/.env
-               echo "âš  /opt/ykay/virtual/.env created from template â€” FILL IT before deploy"
+               echo "⚠ /opt/ykay/virtual/.env created from template — FILL IT before deploy"
              fi
              rm -rf /opt/ykay/virtual-new'
 

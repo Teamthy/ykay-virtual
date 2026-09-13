@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-// Gzip â€” response compression for the JSON API (F-4 wait-time fix).
+// Gzip — response compression for the JSON API (F-4 wait-time fix).
 //
 // Why: catalogue/dashboard payloads (cohort listings, tutor search, programme
 // data) are verbose JSON; on the mobile networks most YK-Virtual learners use,
-// an uncompressed body is often 3â€“6Ã— the transfer time of a gzipped one.
+// an uncompressed body is often 3–6× the transfer time of a gzipped one.
 //
 // Behaviour:
 //   - Only compresses when the client sent `Accept-Encoding: gzip` and the
@@ -19,7 +19,7 @@ import (
 //   - `Vary: Accept-Encoding` is always set so caches never mix encodings.
 //   - Streaming-safe: Flush() flushes the gzip stream; SSE endpoints (none
 //     today) would simply stream compressed chunks.
-//   - Webhook VERIFICATION reads the request body, not the response â€” gzip
+//   - Webhook VERIFICATION reads the request body, not the response — gzip
 //     here never affects signature checks.
 const gzipMinSize = 512 // below this, compression costs more than it saves
 
@@ -42,7 +42,7 @@ type gzipResponseWriter struct {
 // Unwrap keeps http.ResponseController working through this wrapper (so the
 // SSE handler can clear the server-wide WriteDeadline on the underlying
 // connection). Without it, NewResponseController stops at the gzip writer and
-// SetWriteDeadline(zero) returns ErrNotSupported â€” the global 30s
+// SetWriteDeadline(zero) returns ErrNotSupported — the global 30s
 // WriteTimeout then kills every /me/events stream at ~30s despite the 9-min
 // maxLife and 25s heartbeats.
 func (g *gzipResponseWriter) Unwrap() http.ResponseWriter { return g.ResponseWriter }
@@ -62,7 +62,7 @@ func (g *gzipResponseWriter) decide() {
 	if i := strings.IndexByte(base, ';'); i >= 0 {
 		base = strings.TrimSpace(base[:i])
 	}
-	// SSE streams must NEVER be buffered/compressed â€” they are long-lived
+	// SSE streams must NEVER be buffered/compressed — they are long-lived
 	// incremental pushes (Phase 5b realtime); buffering breaks liveness.
 	if strings.HasPrefix(base, "text/event-stream") {
 		g.flushSniffRaw()

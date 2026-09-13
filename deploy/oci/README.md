@@ -4,16 +4,16 @@ Production topology:
 
 ```
 Browser / Expo apps
-        â”‚  HTTPS
-        â–¼
-Vercel (Next.js BFF, client/)  â”€â”€ same-origin /api/v1 proxy â”€â”€â”
-        â–²                                                       â”‚
-        â”‚  static pages, session cookies                        â–¼
-                                              Caddy (TLS) â†’ api:8080  (Go)
-                                                              â”‚
-                                              Redis Â· worker Â· Postgres Â· ClamAV
-                                                              â”‚
-                                                        S3/R2 + Paystackâ€¦
+        │  HTTPS
+        ▼
+Vercel (Next.js BFF, client/)  ── same-origin /api/v1 proxy ──┐
+        ▲                                                       │
+        │  static pages, session cookies                        ▼
+                                              Caddy (TLS) → api:8080  (Go)
+                                                              │
+                                              Redis · worker · Postgres · ClamAV
+                                                              │
+                                                        S3/R2 + Paystack…
                                               All on one OCI Ampere VM (pilot)
 ```
 
@@ -52,7 +52,7 @@ automatically; for the first boot copy them manually):
   backups/
 ```
 
-## 2. First boot (staging first â€” always)
+## 2. First boot (staging first — always)
 
 1. Provision storage buckets (R2/S3): public, private, quarantine; restricted
    credentials; CORS on the bucket allows the Vercel origin for presigned PUTs.
@@ -69,9 +69,9 @@ automatically; for the first boot copy them manually):
    ```
    The API refuses to boot in `ENVIRONMENT=production` on test credentials,
    wildcard CORS, open /metrics, a stub meeting provider, missing
-   CBT_ATTEMPT_SECRET, etc. â€” read the fatal error and fix the env.
+   CBT_ATTEMPT_SECRET, etc. — read the fatal error and fix the env.
 4. Seed the LMS catalogue: run `seedlms` as a one-off task
-   (`docker compose run --rm --entrypoint /usr/local/bin/seedlms api â€¦`).
+   (`docker compose run --rm --entrypoint /usr/local/bin/seedlms api …`).
 
 ## 3. Cut the Vercel side
 
@@ -88,12 +88,12 @@ Mobile EAS builds: `EXPO_PUBLIC_API_URL=https://<vercel-app>/api/v1`.
 
 Run these against staging and record results (see root `GO-LIVE-CHECKLIST.md`):
 
-- Fee/webhook: pay in test mode; POST the same webhook 50Ã— â†’ exactly 1
+- Fee/webhook: pay in test mode; POST the same webhook 50× → exactly 1
   settlement; amount/currency mismatch rejected.
-- Escrow: complete â†’ hold â†’ auto-expire/release â†’ payout OTP; one refund
+- Escrow: complete → hold → auto-expire/release → payout OTP; one refund
   (then set `PAYMENT_REFUNDS_ENABLED=true` in production deliberately).
 - Cohort oversell race; 60-student exam burst (`scripts/loadtest.sh`).
-- Upload EICAR â†’ quarantine; clean file passes.
+- Upload EICAR → quarantine; clean file passes.
 - Kill Redis / Postgres / S3 one at a time; verify `/health/ready`, restart
   recovery, DLQ behavior.
 - **Restore drill:** restore a `backups/*.dump.gz` into a scratch database.
@@ -106,9 +106,9 @@ Run these against staging and record results (see root `GO-LIVE-CHECKLIST.md`):
 
 After a merge to `main`, CI must pass; the **Deploy OCI** workflow then builds
 a multi-arch GHCR image (`sha-<short>`), syncs `deploy/oci`, and runs
-`deploy.sh`, which: pulls the new image â†’ runs migrations (`service_completed_successfully`
-gates api/worker) â†’ restarts api/worker â†’ waits for container health **and**
-`https://$API_HOST/health/ready` â†’ otherwise **automatically rolls back** to
+`deploy.sh`, which: pulls the new image → runs migrations (`service_completed_successfully`
+gates api/worker) → restarts api/worker → waits for container health **and**
+`https://$API_HOST/health/ready` → otherwise **automatically rolls back** to
 the previous image and prints logs.
 
 Manual rollback:
@@ -128,7 +128,7 @@ IMAGE_TAG=sha-known-good ./deploy.sh
   (object storage) and monitor that files appear.
 - Keep the VM at **one api replica** until you confirm distributed rate
   limiting, the Redis session cache, and the shared AI token budget
-  (currently per-process â€” see `internal/service/chat_gemini.go`) all use
+  (currently per-process — see `internal/service/chat_gemini.go`) all use
   Redis; they already wire automatically when `REDIS_URL` is set, but verify
   before `--scale api=2`.
 - Resource sharing with the EduPortal stack (same VM): leave headroom for
