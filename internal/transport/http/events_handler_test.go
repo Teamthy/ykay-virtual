@@ -3,6 +3,7 @@ package httpapi
 import (
 	"bufio"
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,7 +16,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Phase 5b — the SSE stream endpoint. Auth is the standard session actor;
+// Phase 5b â€” the SSE stream endpoint. Auth is the standard session actor;
 // events written for the subscribed user must arrive on the wire before the
 // test deadline; anonymous requests are rejected before the stream opens.
 
@@ -120,5 +121,55 @@ func TestEventsStream_SSEWireFormat(t *testing.T) {
 	}
 	if !sawNamedFrame {
 		t.Fatal("no named event frame on the wire")
+	}
+}
+
+// TestEventsStream_SurvivesServerWriteTimeout guards VRT-01: the API server
+// sets a global WriteTimeout (30s in cmd/api/main.go). SSE streams live up
+// to 9 minutes, so the handler MUST clear that deadline on its connection
+// via http.ResponseController â€” otherwise the first heartbeat past
+// WriteTimeout fails, the socket closes, and EventSource reconnects in a
+// loop (realtime silently never works in production behind TLS).
+func TestEventsStream_SurvivesServerWriteTimeout(t *testing.T) {
+	broker := realtime.NewBroker(nil)
+	defer broker.Close()
+	h := NewEventsHandler(broker)
+	h.heartbeatsInterval = 50 * time.Millisecond
+	h.maxLife = 5 * time.Second
+
+	user := uuid.New()
+	authed := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r = r.WithContext(context.WithValue(r.Context(), middleware.ActorKey, middleware.Actor{UserID: user}))
+		h.Stream(w, r)
+	})
+
+	// WriteTimeout shorter than the test's observation window. Without the
+	// SetWriteDeadline(zero) in Stream, the connection is torn down at ~120ms.
+	srv := httptest.NewServer(&http.Server{
+		Handler:      middleware.Gzip(authed), // production-style writer wrapper
+		WriteTimeout: 120 * time.Millisecond,
+		ReadTimeout:  5 * time.Second,
+	})
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL)
+	if err != nil {
+		t.Fatalf("connect: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Heartbeats every 50ms for 400ms => at least 4 pings expected if the
+	// stream survives well past the 120ms WriteTimeout. Read in a goroutine
+	// (the stream never ends within the observation window), then close.
+	readDone := make(chan string, 1)
+	go func() {
+		b, _ := io.ReadAll(resp.Body)
+		readDone <- string(b)
+	}()
+	time.Sleep(400 * time.Millisecond)
+	resp.Body.Close()
+	total := <-readDone
+	if got := strings.Count(total, ": ping"); got < 4 {
+		t.Fatalf("stream did not survive the server WriteTimeout: got %d heartbeats in %q", got, total)
 	}
 }

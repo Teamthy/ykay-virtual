@@ -1,0 +1,198 @@
+# YK-Virtual â€” OCI production stack (frontends on Vercel, API/worker/state on OCI)
+#
+# Layout (matches docs/OCI-HOSTING.md):
+#   Caddy (TLS, host ports 80/443) â†’ api:8080
+#   api       â€” Go HTTP API (one replica; Redis-backed distributed limiter)
+#   worker    â€” durable Redis queue + leader-locked crons
+#   migrate   â€” one-shot schema migration, must complete before api/worker
+#   postgres  â€” not exposed to host; bind TLS later via Caddy TCP if needed
+#   redis     â€” queue, rate limits, session cache, cron locks
+#   clamav    â€” upload malware scanning (api uploads FAIL CLOSED without it)
+#
+# Deploy with deploy/oci/deploy.sh (health-gated, auto-rollback). Do NOT run
+# `docker compose up` by hand for production releases.
+#
+# Secrets live in /opt/ykay/virtual/.env (chmod 600), never in this file.
+
+name: ykv-prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ykvirtual}
+      POSTGRES_USER: ${POSTGRES_USER:-ykvirtual}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ykvirtual} -d ${POSTGRES_DB:-ykvirtual}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No host port: reachable only inside the compose network.
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clamav:
+    image: clamav/clamav:stable_base
+    restart: unless-stopped
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+
+  migrate:
+    image: ghcr.io/${GHCR_REPO:-teamthy/ykay-virtual}:${IMAGE_TAG:?IMAGE_TAG is required (git sha or vX.Y.Z)}
+    restart: "no"
+    # The image ENTRYPOINT is /usr/local/bin/api; overriding command alone
+    # would just boot another API (a bug in the older compose: the service
+    # never exits, so service_completed_successfully gates hang forever).
+    entrypoint: ["/usr/local/bin/migrate"]
+    command: ["--cmd=up"]
+    environment: &api_env
+      ENVIRONMENT: production
+      PORT: "8080"
+      DATABASE_URL: postgres://${POSTGRES_USER:-ykvirtual}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ykvirtual}?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      SITE_URL: ${SITE_URL:?set SITE_URL (https web origin on Vercel)}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?set ALLOWED_ORIGINS (exact https origins, comma separated)}
+      TRUST_PROXY: "true"
+      PAYSTACK_SECRET: ${PAYSTACK_SECRET:-}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-PAYSTACK}
+      PAYMENT_REFUNDS_ENABLED: ${PAYMENT_REFUNDS_ENABLED:-false}
+      FLUTTERWAVE_SECRET: ${FLUTTERWAVE_SECRET:-}
+      CLAMAV_ADDR: clamav:3310
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CHATBOT_ENABLED: ${CHATBOT_ENABLED:-true}
+      EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-no-reply@ykaycollege.com}
+      TERMII_API_KEY: ${TERMII_API_KEY:-}
+      TERMII_SENDER_ID: ${TERMII_SENDER_ID:-}
+      MEETING_PROVIDER: ${MEETING_PROVIDER:?set MEETING_PROVIDER (jitsi or whereby)}
+      WHEREBY_API_KEY: ${WHEREBY_API_KEY:-}
+      AI_MAX_TOKENS_PER_REQUEST: ${AI_MAX_TOKENS_PER_REQUEST:-1024}
+      AI_DAILY_BUDGET_TOKENS: ${AI_DAILY_BUDGET_TOKENS:-200000}
+      STORAGE_MAX_UPLOAD_BYTES: ${STORAGE_MAX_UPLOAD_BYTES:-10485760}
+      S3_QUARANTINE_BUCKET: ${S3_QUARANTINE_BUCKET:-yk-virtual-quarantine}
+      METRICS_TOKEN: ${METRICS_TOKEN:?set METRICS_TOKEN (bearer for /metrics)}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_PUBLIC_BUCKET: ${S3_PUBLIC_BUCKET:-yk-virtual-public}
+      S3_PRIVATE_BUCKET: ${S3_PRIVATE_BUCKET:-yk-virtual-private}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      COLLEGE_API_URL: ${COLLEGE_API_URL:-}
+      COLLEGE_SSO_SECRET: ${COLLEGE_SSO_SECRET:-}
+      CBT_ATTEMPT_SECRET: ${CBT_ATTEMPT_SECRET:?set CBT_ATTEMPT_SECRET (32+ chars)}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    image: ghcr.io/${GHCR_REPO:-teamthy/ykay-virtual}:${IMAGE_TAG:?IMAGE_TAG required}
+    restart: unless-stopped
+    environment: *api_env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      clamav:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/api", "-healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  worker:
+    image: ghcr.io/${GHCR_REPO:-teamthy/ykay-virtual}:${IMAGE_TAG:?IMAGE_TAG required}
+    restart: unless-stopped
+    entrypoint: ["/usr/local/bin/worker"]
+    environment: *api_env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      API_HOST: ${API_HOST:?set API_HOST (e.g. api.virtual.ykaycollege.com)}
+    depends_on:
+      api:
+        condition: service_started
+
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:-ykvirtual}
+      POSTGRES_DB: ${POSTGRES_DB:-ykvirtual}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    entrypoint: >
+      /bin/sh -c '
+      apk add --no-cache coreutils >/dev/null 2>&1;
+      while true; do
+        ts=$$(date -u +%Y%m%dT%H%M%SZ);
+        out=/backups/ykv-$$ts.dump;
+        if pg_dump -h postgres -U $$POSTGRES_USER -d $$POSTGRES_DB -Fc > $$out; then
+          gzip -f $$out; echo "backup ok $$ts";
+        else echo "backup FAILED $$ts"; rm -f $$out; fi;
+        find /backups -name "ykv-*.dump.gz" -mtime +$${BACKUP_RETENTION_DAYS:-14} -delete;
+        sleep $${BACKUP_INTERVAL_HOURS:-24}h;
+      done'
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  clamav_data:
+  caddy_data:
+  caddy_config:
