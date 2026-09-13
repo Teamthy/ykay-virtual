@@ -1,0 +1,45 @@
+# Caddy reverse proxy for the YK-Virtual API on OCI.
+#
+# API_HOST is injected from .env (e.g. api.virtual.ykaycollege.com).
+# Caddy fetches/renews Let's Encrypt certificates automatically â€” the OCI
+# security list/NSG MUST allow inbound 80 and 443 (80 is used for ACME
+# challenges and redirected to 443).
+#
+# Caddy's reverse_proxy flushes streaming responses (text/event-stream)
+# immediately, which the /api/v1/me/events SSE endpoint requires.
+
+{$API_HOST} {
+	encode zstd gzip
+
+	# Allow large-ish uploads through (tutor vetting docs etc.); the API's
+	# own UploadGuard enforces the real 10 MB default.
+	request_body {
+		max_size 25MB
+	}
+
+	# Security response headers (the Go app also sets these; repeated here
+	# for defense in depth).
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	reverse_proxy api:8080 {
+		# Long-lived SSE connections need a generous proxy timeout.
+		transport http {
+			read_timeout 600s
+			write_timeout 600s
+		}
+		flush_interval -1
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 50mb
+			roll_keep 10
+		}
+	}
+}

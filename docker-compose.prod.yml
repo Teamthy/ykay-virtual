@@ -1,4 +1,4 @@
-# YK-Virtual — production compose stack (Phase 40) with observability stack
+# YK-Virtual â€” production compose stack (Phase 40) with observability stack
 # (Prometheus + Grafana + node-exporter, G3.3) and a durable worker service
 # (G3.1).
 #
@@ -8,7 +8,7 @@
 # ${VAR} below; the API refuses to start with dev defaults in production
 # (config.Validate). A reverse proxy (Caddy/Traefik/Nginx) in front of
 # `web:3000` terminates TLS and forwards /api/v1 via the web container's
-# rewrite — the browser only ever talks to the web origin.
+# rewrite â€” the browser only ever talks to the web origin.
 
 name: yk-virtual-prod
 
@@ -31,7 +31,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # No ports exposed to the host — only reachable inside the network.
+    # No ports exposed to the host â€” only reachable inside the network.
 
   redis:
     image: redis:7-alpine
@@ -64,7 +64,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["migrate", "--cmd=up"]
+    # Image ENTRYPOINT is /usr/local/bin/api; a command override alone would
+    # run a second, never-exiting API and hang the
+    # service_completed_successfully gate api/worker depend on.
+    entrypoint: ["/usr/local/bin/migrate"]
+    command: ["--cmd=up"]
     environment: &api_env
       ENVIRONMENT: production
       PORT: "8080"
@@ -128,7 +132,7 @@ services:
       timeout: 5s
       retries: 3
     # Scale out: docker compose up -d --scale api=2 (stateless except the
-    # in-memory rate limiter — pin to 1 or add Redis-backed limiting).
+    # in-memory rate limiter â€” pin to 1 or add Redis-backed limiting).
 
   worker:
     build:
@@ -191,7 +195,7 @@ services:
       - ./backups:/backups
       - ./metrics-textfile:/metrics-textfile
 
-  # ── Observability (G3.3) ────────────────────────────────────────────────
+  # â”€â”€ Observability (G3.3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   prometheus:
     image: prom/prometheus:v2.53.0
     restart: unless-stopped
