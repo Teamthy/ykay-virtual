@@ -2,20 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  BookOpen,
-  Calculator,
-  FlaskConical,
-  Globe,
-  GraduationCap,
-  Laptop,
-  PencilRuler,
-} from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, BookOpen, Laptop, Monitor, Target } from "lucide-react";
 
 /**
- * Homepage hero — full-viewport intro (100svh) with academic photos +
- * subject icons, then the drifting service cards. Edge to edge.
+ * Homepage hero — full-viewport intro (100svh): image background, glass
+ * (translucent, backdrop-blur) programme cards floating over it in
+ * continuous motion, then the drifting service-card rail. Edge to edge.
+ * Motion is disabled for users who prefer reduced motion.
  */
 
 const CARDS = [
@@ -131,72 +125,126 @@ const CARDS = [
   },
 ];
 
-const ACADEMIC_PHOTOS = [
-  {
-    src: "/home/ykay-students.png",
-    alt: "Ykay College students",
-    className:
-      "left-[3%] top-[16%] hidden h-44 w-32 -rotate-6 xl:left-[5%] xl:h-52 xl:w-36 lg:block",
-  },
-  {
-    src: "/home/card-jss.jpg",
-    alt: "Junior secondary textbook",
-    className:
-      "bottom-[12%] left-[6%] hidden h-36 w-28 rotate-3 delay-150 lg:block xl:left-[8%]",
-  },
-  {
-    src: "/home/card-ss.jpg",
-    alt: "Senior secondary classroom",
-    className:
-      "right-[3%] top-[14%] hidden h-44 w-32 rotate-6 delay-75 xl:right-[5%] xl:h-52 xl:w-36 lg:block",
-  },
-  {
-    src: "/home/card-exam.jpg",
-    alt: "Exam hall",
-    className:
-      "bottom-[11%] right-[6%] hidden h-32 w-40 -rotate-3 delay-200 lg:block xl:right-[8%]",
-  },
-];
-
-const ACADEMIC_ICONS = [
-  {
-    Icon: GraduationCap,
-    label: "WASSCE",
-    className: "left-[16%] top-[26%] hidden delay-100 xl:flex",
-  },
+/**
+ * Hero glass cards — translucent panels floating over the background image.
+ * Desktop (xl+): two per side, gently bobbing with staggered phases.
+ * Below xl: same cards in a snap-scroll rail under the CTAs.
+ */
+const GLASS_CARDS = [
   {
     Icon: BookOpen,
-    label: "NERDC",
-    className: "right-[16%] top-[22%] hidden delay-150 xl:flex",
+    title: ["Junior", "Programs"],
+    chips: ["JSS 1–3", "BECE track"],
+    img: "/home/card-jss.jpg",
+    alt: "Junior secondary class",
+    href: "/online-classes",
+    desktop: "left-[2.5%] top-[15%]",
+    duration: 5.2,
+    delay: 0,
   },
   {
-    Icon: FlaskConical,
-    label: "Sciences",
-    className: "bottom-[28%] left-[14%] hidden delay-200 xl:flex",
+    Icon: Target,
+    title: ["Exam", "Preparation"],
+    chips: ["UTME", "WAEC · NECO"],
+    img: "/home/card-exam.jpg",
+    alt: "Exam preparation session",
+    href: "/exam-prep",
+    desktop: "right-[2.5%] top-[15%]",
+    duration: 4.6,
+    delay: 0.9,
   },
   {
-    Icon: Globe,
-    label: "IGCSE",
-    className: "bottom-[30%] right-[15%] hidden delay-75 xl:flex",
+    Icon: Monitor,
+    title: ["CBT", "Practice"],
+    chips: ["Timed", "Instant scoring"],
+    img: "/home/card-cbt.jpg",
+    alt: "Computer-based test practice",
+    href: "/login?next=/lms/practice",
+    desktop: "left-[4.5%] bottom-[13%]",
+    duration: 5.8,
+    delay: 0.45,
   },
   {
-    Icon: Calculator,
-    label: "Maths",
-    className: "left-[22%] bottom-[18%] hidden delay-300 2xl:flex",
-  },
-  {
-    Icon: PencilRuler,
-    label: "BECE",
-    className: "right-[22%] bottom-[16%] hidden delay-100 2xl:flex",
+    Icon: Laptop,
+    title: ["Digital", "Skills"],
+    chips: ["IT academy", "Certificates"],
+    img: "/hero/digital.jpg",
+    alt: "Digital skills training",
+    href: "/digital-skills",
+    desktop: "right-[4.5%] bottom-[13%]",
+    duration: 5.0,
+    delay: 1.35,
   },
 ];
 
-const MOBILE_STRIP = [
-  { src: "/home/ykay-students.png", alt: "Students", Icon: GraduationCap, label: "Campus" },
-  { src: "/home/card-jss.jpg", alt: "JSS", Icon: BookOpen, label: "JSS" },
-  { src: "/home/card-ss.jpg", alt: "SSS", Icon: Laptop, label: "SSS" },
-  { src: "/home/card-exam.jpg", alt: "Exams", Icon: PencilRuler, label: "Exams" },
-];
+function GlassCard({
+  card,
+  entranceDelay,
+  floatDuration,
+  floatDelay,
+}: {
+  card: (typeof GLASS_CARDS)[number];
+  entranceDelay: number;
+  floatDuration: number;
+  floatDelay: number;
+}) {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 28, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.7, delay: entranceDelay, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={reduce ? undefined : { y: -6 }}
+      className="shrink-0 snap-start"
+    >
+      <motion.div
+        animate={reduce ? undefined : { y: [0, -10, 0] }}
+        transition={
+          reduce
+            ? undefined
+            : { duration: floatDuration, delay: floatDelay, repeat: Infinity, ease: "easeInOut" }
+        }
+      >
+        <article className="w-[min(74vw,236px)] overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl transition-colors hover:bg-white/15">
+          <div className="relative overflow-hidden rounded-t-3xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={card.img}
+              alt={card.alt}
+              loading="lazy"
+              className="aspect-[16/9] w-full object-cover object-top"
+            />
+            <span className="absolute left-3 top-3 grid size-8 place-items-center rounded-full bg-deep-green/85 text-primary backdrop-blur-sm">
+              <card.Icon size={15} />
+            </span>
+          </div>
+          <div className="p-4">
+            <div className="flex flex-wrap gap-1.5">
+              {card.chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="rounded-full bg-white/15 px-2.5 py-1 text-[9px] font-bold text-white"
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
+            <h2 className="mt-3 text-[22px] font-bold leading-[1.05] tracking-[-0.01em] text-white">
+              {card.title[0]}
+              <span className="block">{card.title[1]}</span>
+            </h2>
+            <Link
+              href={card.href}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green transition hover:bg-deep-green hover:text-primary"
+            >
+              Read More <ArrowRight size={11} />
+            </Link>
+          </div>
+        </article>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?: boolean }) {
   return (
@@ -319,41 +367,39 @@ export function HeroSplit() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
 
-        {ACADEMIC_PHOTOS.map((p) => (
-          <div
-            key={p.src}
-            className={`animate-float pointer-events-none absolute z-[1] overflow-hidden rounded-3xl ring-2 ring-white/15 ${p.className}`}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.src} alt={p.alt} className="h-full w-full object-cover object-top" />
-          </div>
-        ))}
+        {/* Glass cards — desktop: floating two per side over the background */}
+        <div aria-label="Featured programmes" className="pointer-events-none absolute inset-0 z-[3] hidden xl:block">
+          {GLASS_CARDS.map((card) => (
+            <div
+              key={card.title.join(" ")}
+              className={`pointer-events-auto absolute ${card.desktop}`}
+            >
+              <GlassCard
+                card={card}
+                entranceDelay={0.55 + card.delay * 0.35}
+                floatDuration={card.duration}
+                floatDelay={card.delay}
+              />
+            </div>
+          ))}
+        </div>
 
-        {ACADEMIC_ICONS.map(({ Icon, label, className }) => (
-          <span
-            key={label}
-            className={`animate-float pointer-events-none absolute z-[2] items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur-md ${className}`}
-          >
-            <span className="grid size-6 place-items-center rounded-full bg-primary text-deep-green">
-              <Icon size={13} />
-            </span>
-            {label}
-          </span>
-        ))}
-
-        <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-5xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6 md:py-16">
+        <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-5xl flex-col items-center justify-center px-4 py-24 text-center sm:px-6 md:py-16 xl:max-w-3xl">
           <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[11px] font-semibold text-white/90">
             <span className="h-2 w-2 rounded-full bg-primary" />
             Elevate your learning
           </p>
-          <h1 className="mt-6 max-w-[18ch] font-display text-[clamp(2.25rem,8vw,5.6rem)] leading-[0.95] tracking-[-0.03em] text-white sm:mt-7">
+          <h1 className="mt-6 max-w-[18ch] font-display text-[clamp(2.25rem,7vw,5.2rem)] leading-[0.95] tracking-[-0.03em] text-white sm:mt-7"
+          >
             Comprehensive Learning for Every Student.
           </h1>
-          <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/70 sm:mt-6 md:text-base">
+          <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/70 sm:mt-6 md:text-base"
+          >
             British and Nigerian curricula, live cohorts, private tuition and exam
             preparation — built for Ykay College students and for learners anywhere.
           </p>
-          <div className="mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
+          <div className="mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center"
+          >
             <Link
               href="/onboarding"
               className="inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-black transition hover:bg-white/90"
@@ -368,20 +414,19 @@ export function HeroSplit() {
             </Link>
           </div>
 
-          <ul className="mt-8 flex w-full max-w-lg gap-3 overflow-x-auto pb-1 scrollbar-none sm:justify-center lg:hidden">
-            {MOBILE_STRIP.map((item) => (
-              <li
-                key={item.label}
-                className="flex shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/5 py-1 pl-1 pr-3"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.src}
-                  alt=""
-                  className="size-9 rounded-full object-cover object-top"
+          {/* Glass cards — mobile/tablet: snap-scroll rail under the CTAs */}
+          <ul
+            aria-label="Featured programmes"
+            className="mt-9 flex w-full max-w-3xl list-none gap-4 overflow-x-auto pb-2 scrollbar-none snap-x xl:hidden"
+          >
+            {GLASS_CARDS.map((card, i) => (
+              <li key={card.title.join(" ")} className="contents">
+                <GlassCard
+                  card={card}
+                  entranceDelay={0}
+                  floatDuration={card.duration}
+                  floatDelay={i * 0.6}
                 />
-                <item.Icon size={12} className="text-primary" />
-                <span className="text-[11px] font-bold text-white">{item.label}</span>
               </li>
             ))}
           </ul>
