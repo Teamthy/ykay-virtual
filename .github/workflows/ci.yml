@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - name: Lint (gofmt + vet)
         run: |
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - name: Run CI eval suite (deterministic rubric)
         run: go test ./internal/service/ -run 'TestChatPromptEvals_CI|TestChatService_|TestPushService_' -v
@@ -85,7 +85,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - name: Install postgres client (psql/pg_dump)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
@@ -141,7 +141,7 @@ jobs:
           node-version: "20"
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - name: Install LHCI
         run: npm install -g @lhci/cli@0.14.x
@@ -201,7 +201,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - name: Install postgres client (psql/pg_dump/pg_restore)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
@@ -245,7 +245,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - name: Install postgres client (psql)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
@@ -267,7 +267,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - name: Metrics unit tests (telemetry + queue instrumentation)
         run: go test ./internal/telemetry/ ./internal/worker/
@@ -307,13 +307,16 @@ jobs:
       - name: Metrics endpoint smoke (API boots + scrape responds)
         env:
           PORT: "8080"
+          # /metrics is ALWAYS token-guarded (dev default is
+          # yk-virtual-dev-metrics); the scrape must present a bearer token.
+          METRICS_TOKEN: ci-metrics-smoke-token
         run: |
           go build -o /tmp/yk-virtual-api ./cmd/api
-          (PORT=8080 /tmp/yk-virtual-api > /tmp/api.log 2>&1 &)
+          (PORT=8080 METRICS_TOKEN=ci-metrics-smoke-token /tmp/yk-virtual-api > /tmp/api.log 2>&1 &)
           for i in $(seq 1 60); do curl -sf -m 1 localhost:8080/health >/dev/null 2>&1 && break; sleep 1; done
-          curl -sf localhost:8080/metrics | grep -q 'ykv_build_info' || { echo "metrics scrape missing build info"; tail -20 /tmp/api.log; exit 1; }
+          curl -sf -H "Authorization: Bearer $METRICS_TOKEN" localhost:8080/metrics | grep -q 'ykv_build_info' || { echo "metrics scrape missing build info"; tail -20 /tmp/api.log; exit 1; }
           curl -s localhost:8080/health > /dev/null
-          curl -sf localhost:8080/metrics | grep -q 'ykv_http_requests_total' || { echo "metrics scrape missing http counters"; exit 1; }
+          curl -sf -H "Authorization: Bearer $METRICS_TOKEN" localhost:8080/metrics | grep -q 'ykv_http_requests_total' || { echo "metrics scrape missing http counters"; exit 1; }
           echo "metrics smoke OK"
 
   contract:
@@ -323,7 +326,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - run: go test ./internal/transport/http/ -run TestOpenAPIContract -v
 
@@ -348,7 +351,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.26"
           cache: true
       - uses: actions/setup-node@v4
         with:
@@ -357,6 +360,9 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - name: Install postgres client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Install client deps (pins Playwright to lockfile version)
+        working-directory: client
+        run: npm ci --no-audit --no-fund
       - name: Install Playwright chromium
         working-directory: client
         run: npx playwright install --with-deps chromium
