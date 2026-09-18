@@ -355,7 +355,22 @@ export function DocumentsStep({
           f.file.size,
         );
         if (!res.upload_url) throw new Error("Upload URL was not generated");
-        const uploadRes = await fetch(res.upload_url, {
+        // The local/dev object store presigns ABSOLUTE URLs against the API
+        // (http://localhost:8080/objects/...). The app CSP
+        // (connect-src 'self' https:) blocks plain-http cross-origin fetches,
+        // so route those through the same-origin /objects rewrite that
+        // next.config.js proxies to the API (its documented purpose).
+        // https presigned URLs (production S3/R2) are used as-is.
+        let uploadUrl = res.upload_url;
+        try {
+          const u = new URL(uploadUrl);
+          if (u.protocol !== "https:" && u.pathname.startsWith("/objects/")) {
+            uploadUrl = u.pathname + u.search;
+          }
+        } catch {
+          /* not a parseable absolute URL — use as-is */
+        }
+        const uploadRes = await fetch(uploadUrl, {
           method: "PUT",
           headers: { "Content-Type": mime },
           body: f.file,

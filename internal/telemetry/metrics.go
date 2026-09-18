@@ -201,6 +201,17 @@ func (s *statusWriter) WriteHeader(code int) {
 
 func (s *statusWriter) Unwrap() http.ResponseWriter { return s.ResponseWriter }
 
+// Flush forwards the flush so handlers wrapped by the metrics recorder keep
+// their http.Flusher capability. SSE endpoints (/me/events) sit INSIDE this
+// wrapper and assert w.(http.Flusher); without this method every browser
+// request (Accept-Encoding: gzip → gzip middleware wraps → statusWriter on
+// top) failed the assertion and the stream 500'd with "streaming
+// unsupported". ResponseController unwraps the gzip/logger writers via their
+// Unwrap methods down to the real connection.
+func (s *statusWriter) Flush() {
+	http.NewResponseController(s.ResponseWriter).Flush()
+}
+
 var uuidSegment = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 var numericSegment = regexp.MustCompile(`^\d+$`)
 

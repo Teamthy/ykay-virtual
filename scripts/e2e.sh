@@ -44,6 +44,13 @@ fi
 
 E2E_ADMIN_EMAIL="${E2E_ADMIN_EMAIL:-admin@ykaycollege.com}"
 E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-password123}"
+# The owning tutor of the seeded UTME cohort (c010). Memory demo seeds key
+# profile 0102 to tutor@ykaycollege.com; the postgres e2e (seed-refs.sql)
+# re-keys it to e2e-tutor@test.invalid — e2e-pg.sh overrides this var.
+# Cohort content authoring is ownership-scoped, so LMS/assessment/roster
+# checks must run as THIS tutor, not the self-registered e2e tutor.
+E2E_COHORT_TUTOR_EMAIL="${E2E_COHORT_TUTOR_EMAIL:-tutor@ykaycollege.com}"
+E2E_COHORT_TUTOR_PASSWORD="${E2E_COHORT_TUTOR_PASSWORD:-password123}"
 
 # E2E_KEEP_SERVER=1: scripts/e2e-pg.sh already booted a Postgres-backed API.
 # Do not kill it and replace with the in-memory demo store.
@@ -77,7 +84,7 @@ echo "Starting API on :${PORT} (in-memory mode)…"
 # RATE_LIMIT_PER_MINUTE: the suite intentionally exceeds the production
 # per-IP window from 127.0.0.1; with Redis present the counters persist
 # across boots, so pin a high limit for deterministic repeat runs.
-PORT="$PORT" SEED_DEMO_DATA=true DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" RATE_LIMIT_PER_MINUTE=1000000 "$BIN" >/tmp/e2e-api.log 2>&1 &
+PORT="$PORT" SEED_DEMO_DATA=true DATABASE_URL="postgres://bad:bad@localhost:5999/none?sslmode=disable" RATE_LIMIT_PER_MINUTE=1000000 AUTH_RATE_LIMIT_PER_MINUTE=1000000 "$BIN" >/tmp/e2e-api.log 2>&1 &
 API_PID=$!
 for i in $(seq 1 30); do
   curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break
@@ -91,11 +98,12 @@ fi # E2E_KEEP_SERVER
 
 J_PARENT=/tmp/e2e-parent.jar
 J_TUTOR=/tmp/e2e-tutor.jar
+J_OWNER=/tmp/e2e-owner.jar
 J_STUDENT=/tmp/e2e-student.jar
 J_ADMIN=/tmp/e2e-admin.jar
 J_LOGOUT=/tmp/e2e-logout.jar
 J_PUB=/tmp/e2e-pub.jar
-rm -f "$J_PARENT" "$J_TUTOR" "$J_STUDENT" "$J_ADMIN" "$J_LOGOUT" "$J_PUB"
+rm -f "$J_PARENT" "$J_TUTOR" "$J_OWNER" "$J_STUDENT" "$J_ADMIN" "$J_LOGOUT" "$J_PUB"
 
 req() { # req <jar> <method> <path> <body?>  → prints HTTP code
   local jar="$1" method="$2" path="$3" body="${4:-}"
@@ -172,6 +180,12 @@ if grep -q '"mfa_required":true' /tmp/e2e-body.json 2>/dev/null; then
   complete_admin_mfa "$J_ADMIN" "$E2E_ADMIN_EMAIL"
 fi
 
+# Seeded cohort owner — used for cohort-scoped authoring (LMS, assessments,
+# roster). c010 belongs to fixture profile 0102, not to the self-registered
+# e2e tutor, so those calls 403 for J_TUTOR by design.
+c=$(req "$J_OWNER" POST /auth/login "{\"email\":\"${E2E_COHORT_TUTOR_EMAIL}\",\"password\":\"${E2E_COHORT_TUTOR_PASSWORD}\"}")
+assert_code "login cohort tutor (${E2E_COHORT_TUTOR_EMAIL})" 200 "$c"
+
 c=$(req /dev/null POST /auth/login '{"email":"e2e-parent@test.com","password":"wrong-pass"}')
 assert_code "wrong password → 401" 401 "$c"
 [ "$(cat /tmp/e2e-body.json | json 'd["error"]["message"]')" = "invalid credentials" ] && ok "401 says 'invalid credentials' (user-facing)" || fail "401 message not user-facing: $(cat /tmp/e2e-body.json | head -c 300)"
@@ -235,8 +249,16 @@ assert_code "create vetting profile" 201 "$c"
 PROFILE_ID=$(cat /tmp/e2e-body.json | json 'd["data"]["id"]')
 
 # attach mathematics (resolved dynamically so both memory and postgres
-# modes work — the subject that carries the competency question bank)
-SUBJECT_ID=$(curl -s "$BASE/subjects" | python3 -c 'import json,sys; d=json.load(sys.stdin)["data"]; print(next((x["id"] for x in d if x.get("slug")=="mathematics"), next((x["id"] for x in d if "mathematic" in x["name"].lower()), d[0]["id"] if d else "")))')
+# modes work — the subject that carries the competency question bank).
+# Resolve by SLUG directly: the list endpoint paginates (20/page), and the
+# old list-scan fallback silently matched "Basic Mathematics" — a subject the
+# fixture tutor does not teach — breaking every subject-scoped call after it.
+SUBJECT_ID=$(curl -s "$BASE/subjects/mathematics" | python3 -c 'import json,sys
+try:
+    d = json.load(sys.stdin).get("data") or {}
+    print(d.get("id", ""))
+except Exception:
+    print("")')
 [ -n "$SUBJECT_ID" ] && ok "subject resolved ($SUBJECT_ID)" || fail "subject id missing"
 c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/subjects" "{\"subject_id\":\"${SUBJECT_ID}\"}")
 assert_code "add subject to profile" 201 "$c"
@@ -246,6 +268,17 @@ c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/documents" '{
 assert_code "request GOVT_ID upload" 201 "$c"
 DOC_ID=$(cat /tmp/e2e-body.json | json 'd["data"]["document"]["id"]')
 [ -n "$DOC_ID" ] && ok "document id captured" || fail "document id missing"
+
+# The submit gate (security hardening) requires the GOVT_ID to EXIST in
+# storage — a presigned URL alone no longer proves the tutor uploaded it.
+# Complete the actual signed PUT (strip the presigned base URL and send the
+# bytes to the API under test, whatever port it is on). NOTE: the dev object
+# route lives at the API ROOT (/objects/...), NOT under /api/v1.
+UP_URL=$(cat /tmp/e2e-body.json | json 'd["data"]["upload_url"]')
+UP_PATH=$(printf '%s' "$UP_URL" | sed -E 's#^[a-zA-Z][a-zA-Z0-9+.-]*://[^/]+##')
+printf '\xff\xd8\xff\xe0\x00\x10JFIF e2e tutor government-id fixture bytes' > /tmp/e2e-govt-id.jpg
+c=$(curl -s -o /dev/null -w '%{http_code}' -X PUT "http://localhost:${PORT}${UP_PATH}" -H 'Content-Type: image/jpeg' --data-binary @/tmp/e2e-govt-id.jpg)
+assert_code "upload GOVT_ID bytes (signed PUT)" 200 "$c"
 
 c=$(req "$J_TUTOR" POST "/tutors/me/vetting/profiles/${PROFILE_ID}/submit")
 assert_code "submit for review" 200 "$c"
@@ -301,12 +334,14 @@ assert_code "non-tutor availability → 403" 403 "$c"
 # ============================================ 6. LEARNING — ASSESSMENTS ======
 note "LEARNING — ASSESSMENTS (phase 11c)"
 COHORT_ID="00000000-0000-0000-0000-00000000c010"
-A1=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
-  -d "{\"cohort_id\":\"${COHORT_ID}\",\"title\":\"E2E Maths Quiz\",\"instructions\":\"No calculators\",\"pass_threshold\":0.5,\"questions\":[{\"question\":\"2+2?\",\"options\":[\"3\",\"4\",\"5\"],\"correct_index\":1,\"explanation\":\"2+2=4\"},{\"question\":\"Capital of Nigeria?\",\"options\":[\"Lagos\",\"Abuja\",\"Kano\"],\"correct_index\":1}]}" \
+# subject_id is required when the tutor teaches more than one subject — send
+# the mathematics subject resolved in the vetting section.
+A1=$(curl -s -b "$J_OWNER" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
+  -d "{\"cohort_id\":\"${COHORT_ID}\",\"subject_id\":\"${SUBJECT_ID}\",\"title\":\"E2E Maths Quiz\",\"instructions\":\"No calculators\",\"pass_threshold\":0.5,\"questions\":[{\"question\":\"2+2?\",\"options\":[\"3\",\"4\",\"5\"],\"correct_index\":1,\"explanation\":\"2+2=4\"},{\"question\":\"Capital of Nigeria?\",\"options\":[\"Lagos\",\"Abuja\",\"Kano\"],\"correct_index\":1}]}" \
   | json 'd["data"]["id"]')
-[ -n "$A1" ] && ok "tutor creates assessment (session-resolved profile)" || fail "assessment create failed"
-A1_LEAK=$(curl -s -b "$J_TUTOR" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
-  -d '{"title":"Leak Check","questions":[{"question":"Q","options":["A","B"],"correct_index":0}]}' \
+[ -n "$A1" ] && ok "cohort tutor creates assessment (session-resolved profile)" || fail "assessment create failed"
+A1_LEAK=$(curl -s -b "$J_OWNER" -X POST "$BASE/learning/assessments" -H 'Content-Type: application/json' \
+  -d "{\"cohort_id\":\"${COHORT_ID}\",\"subject_id\":\"${SUBJECT_ID}\",\"title\":\"Leak Check\",\"questions\":[{\"question\":\"Q\",\"options\":[\"A\",\"B\"],\"correct_index\":0}]}" \
   | python3 -c "import json,sys; d=json.load(sys.stdin)['data']; print(len(d['questions']) if 'questions' in d else 'n/a')")
 ok "assessment body never leaks questions (tutor view has $A1_LEAK question fields)"
 
@@ -405,11 +440,17 @@ reg=$(cat /tmp/e2e-body.json | json 'd["data"]["funnel"]["registered_users"]')
 c=$(req "$J_STUDENT" GET /admin/analytics)
 assert_code "student analytics → 403" 403 "$c"
 
-c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_ADMIN" -X GET "$BASE/admin/reports/attendance.csv?lesson_id=00000000-0000-0000-0000-000000000010")
+# Resolve a real lesson of the seeded cohort dynamically: memory seeds use
+# random lesson UUIDs and the postgres seed uses 0011-0013, so a hardcoded
+# id can never resolve in both modes.
+LESSON_ID=$(curl -s "$BASE/cohorts/${COHORT_ID}/lessons" | json 'd["data"][0]["id"]')
+[ -n "$LESSON_ID" ] && ok "cohort lesson resolved (${LESSON_ID})" || fail "cohort lesson id missing"
+
+c=$(curl -s -o /tmp/e2e-body.json -w '%{http_code}' -b "$J_ADMIN" -X GET "$BASE/admin/reports/attendance.csv?lesson_id=${LESSON_ID}")
 assert_code "attendance.csv (admin)" 200 "$c"
 head -1 /tmp/e2e-body.json | grep -q "student_profile_id" && ok "attendance.csv header" || fail "attendance.csv malformed"
 
-c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/admin/reports/attendance.csv?lesson_id=00000000-0000-0000-0000-000000000010")
+c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_STUDENT" -X GET "$BASE/admin/reports/attendance.csv?lesson_id=${LESSON_ID}")
 assert_code "attendance.csv (student) → 403" 403 "$c"
 
 c=$(curl -s -o /dev/null -w '%{http_code}' -b "$J_ADMIN" -X GET "$BASE/admin/reports/attendance.csv")
@@ -450,13 +491,15 @@ assert_code "chat list threads" 200 "$c"
 grep -q "ESCALATED" /tmp/e2e-body.json && ok "chat thread escalated" || fail "chat thread not escalated"
 
 # LMS authoring: create assignment + resource + quiz on the seeded cohort.
-c=$(req "$J_TUTOR" POST /cohorts/00000000-0000-0000-0000-00000000c010/assignments '{"title":"e2e assignment","max_score":10}')
+# Ownership-scoped: run as the cohort's tutor (J_OWNER), not the self-
+# registered e2e tutor — authoring on a cohort you don't teach must 403.
+c=$(req "$J_OWNER" POST /cohorts/00000000-0000-0000-0000-00000000c010/assignments '{"title":"e2e assignment","max_score":10}')
 assert_code "lms create assignment" 201 "$c"
-c=$(req "$J_TUTOR" POST /cohorts/00000000-0000-0000-0000-00000000c010/resources '{"title":"e2e resource","file_url":"https://example.com/notes.pdf"}')
+c=$(req "$J_OWNER" POST /cohorts/00000000-0000-0000-0000-00000000c010/resources '{"title":"e2e resource","file_url":"https://example.com/notes.pdf"}')
 assert_code "lms create resource" 201 "$c"
-c=$(req "$J_TUTOR" POST /learning/assessments '{"cohort_id":"00000000-0000-0000-0000-00000000c010","title":"e2e quiz","pass_threshold":70,"questions":[{"question":"1+1?","options":["2","3","4"],"correct_index":0}]}')
+c=$(req "$J_OWNER" POST /learning/assessments "{\"cohort_id\":\"00000000-0000-0000-0000-00000000c010\",\"subject_id\":\"${SUBJECT_ID}\",\"title\":\"e2e quiz\",\"pass_threshold\":70,\"questions\":[{\"question\":\"1+1?\",\"options\":[\"2\",\"3\",\"4\"],\"correct_index\":0}]}")
 assert_code "lms create quiz" 201 "$c"
-c=$(req "$J_TUTOR" GET /cohorts/00000000-0000-0000-0000-00000000c010/enrollments)
+c=$(req "$J_OWNER" GET /cohorts/00000000-0000-0000-0000-00000000c010/enrollments)
 assert_code "lms roster" 200 "$c"
 c=$(req "$J_STUDENT" GET /cohorts/00000000-0000-0000-0000-00000000c010/enrollments)
 assert_code "lms roster (student) → 403" 403 "$c"
@@ -664,6 +707,9 @@ note "G6 SESSION SYNC — one session row serves web cookie AND mobile bearer"
 J_SYNC=/tmp/e2e-sync.jar; rm -f "$J_SYNC"
 c=$(req "$J_SYNC" POST /auth/register '{"email":"sync-test@test.com","password":"password123","roles":["PARENT"]}')
 assert_code "register sync user" 201 "$c"
+# Login requires an ACTIVE account: verify the email first (same as every
+# other registration in this suite) or login/mobile answers 403.
+confirm_email "sync-test@test.com"
 TOKEN=$(curl -s -X POST "$BASE/auth/login/mobile" -H 'Content-Type: application/json' -d '{"email":"sync-test@test.com","password":"password123"}' | json 'd["data"]["token"]')
 [ -n "$TOKEN" ] && ok "mobile login returns raw session token" || fail "mobile login token missing"
 

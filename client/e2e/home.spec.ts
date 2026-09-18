@@ -21,7 +21,12 @@ test.describe("virtual home", () => {
   test("home sections are at least one viewport tall", async ({ page }) => {
     await page.goto("/");
     const viewport = page.viewportSize()?.height ?? 720;
-    const heights = await page.locator("main section, #main-content section").evaluateAll((els) =>
+    // Wait for the sections before measuring — evaluateAll does not
+    // auto-wait, and on a slow first paint it can observe an empty DOM
+    // (hydration/streaming still settling) and measure zero sections.
+    const sections = page.locator("#main-content section");
+    await expect(sections.first()).toBeVisible();
+    const heights = await sections.evaluateAll((els) =>
       els.map((el) => (el as HTMLElement).offsetHeight),
     );
     expect(heights.length).toBeGreaterThan(3);

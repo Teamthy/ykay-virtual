@@ -807,6 +807,47 @@ paths:
             portal could not be reached.
         '429': { description: Too many login attempts }
 
+  /auth/college/credentials:
+    post:
+      tags: [identity]
+      summary: >-
+        YKAY College credential exchange (YK-013). Accepts a College email +
+        password, verifies it server-to-server against the College portal's
+        /api/auth/verify-credentials (shared COLLEGE_SSO_SECRET), and mints a
+        normal YK-Virtual session through the same path as password login.
+      description: >-
+        The College portal remains authoritative for the password check; this
+        endpoint never stores the College password. Disabled unless
+        COLLEGE_API_URL and COLLEGE_SSO_SECRET are both set.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: >-
+            Verified — sets httpOnly ykv_session cookie and returns the raw
+            token for native clients.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/AuthUser' }
+                  provider: { type: string, example: ykay_college }
+        '401': { description: Invalid College credentials }
+        '403': { description: The College account is suspended, inactive, or impersonated }
+        '409': { description: Federated login is not configured on this deployment, or the College portal could not be reached }
+        '429': { description: Too many attempts }
+
   /auth/college/config:
     get:
       tags: [identity]
@@ -4762,6 +4803,16 @@ components:
       responses:
         '200': { description: Random paper, plus attempt_token + deadline (deadline is the zero time when untimed) }
         '404': { description: Unknown subject or no published questions }
+  /cbt/subjects/{slug}/topics:
+    get:
+      tags: [cbt]
+      summary: Published topics for a practice subject (drives the topic picker)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Topic list }
+        '404': { description: Unknown subject }
   /cbt/grade:
     post:
       tags: [cbt]

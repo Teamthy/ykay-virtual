@@ -145,11 +145,12 @@ func TestEventsStream_SurvivesServerWriteTimeout(t *testing.T) {
 
 	// WriteTimeout shorter than the test's observation window. Without the
 	// SetWriteDeadline(zero) in Stream, the connection is torn down at ~120ms.
-	srv := httptest.NewServer(&http.Server{
-		Handler:      middleware.Gzip(authed), // production-style writer wrapper
-		WriteTimeout: 120 * time.Millisecond,
-		ReadTimeout:  5 * time.Second,
-	})
+	// httptest.NewServer takes an http.Handler, not an *http.Server — to apply
+	// server-level timeouts, start the test server unstarted, set Config, then go.
+	srv := httptest.NewUnstartedServer(middleware.Gzip(authed))
+	srv.Config.WriteTimeout = 120 * time.Millisecond
+	srv.Config.ReadTimeout = 5 * time.Second
+	srv.Start()
 	defer srv.Close()
 
 	resp, err := http.Get(srv.URL)

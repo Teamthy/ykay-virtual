@@ -937,6 +937,14 @@ func seedMemoryTutors(store *memory.MemoryStore) {
 		Timezone: "Africa/Lagos", AcceptsOnline: true, AcceptsInPerson: true,
 		CreatedAt: time.Now(), UpdatedAt: time.Now(),
 	})
+	// Onboarded (vetted) teaching scope — same rows seed-refs.sql inserts for
+	// the Postgres fixture tutor (mathematics + physics, approved). Exam
+	// authoring validates subject_id against THIS set, not the search index
+	// above, so without it the demo tutor cannot create the cohort exam.
+	_ = store.TutorSubj.SeedForTutor(context.Background(), oluwatobi, []tutor.TutorSubjectEntry{
+		{SubjectID: uuid.MustParse("00000000-0000-0000-0000-00000000c001"), Name: "Mathematics", Slug: "mathematics", Approved: true},
+		{SubjectID: uuid.MustParse("00000000-0000-0000-0000-00000000c003"), Name: "Physics", Slug: "physics", Approved: true},
+	})
 	chinasa := uuid.MustParse("00000000-0000-0000-0000-000000000101")
 	store.Tutors.Seed(tutor.TutorSearchResult{
 		Profile: tutor.TutorProfile{

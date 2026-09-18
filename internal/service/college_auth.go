@@ -55,7 +55,8 @@ func NewCollegeAuthService(cfg CollegeSSOConfig, auth *AuthService) *CollegeAuth
 }
 
 // Enabled reports whether federated College login is configured. The handler
-// answers 503 when false rather than letting the call fail opaquely.
+// answers 409 CONFLICT ("not configured" — the same convention as the Google
+// federated path) when false rather than letting the call fail opaquely.
 func (c *CollegeAuthService) Enabled() bool {
 	return c.baseURL != "" && c.secret != "" && c.auth != nil
 }
@@ -271,7 +272,10 @@ func (c *CollegeAuthService) postCollege(ctx context.Context, path string, paylo
 		return nil, fmt.Errorf("%w: your YKAY College session is no longer valid (%s)",
 			domain.ErrUnauthorized, reasonOr(parsed.Reason, "invalid"))
 	case res.StatusCode == http.StatusTooManyRequests:
-		return nil, fmt.Errorf("%w: too many login attempts, please wait", domain.ErrConflict)
+		// AUD-F10: surface the College portal's 429 as 429, not 409 — "slow
+		// down" is not a resource conflict, and callers (including our own web
+		// login fallback) need to tell "retry later" from "state conflict".
+		return nil, fmt.Errorf("%w: too many login attempts, please wait", domain.ErrTooManyRequests)
 	default:
 		return nil, fmt.Errorf("%w: YKAY College rejected this login (%s)",
 			domain.ErrUnauthorized, reasonOr(parsed.Reason, res.Status))
@@ -288,7 +292,10 @@ func reasonOr(reason, fallback string) string {
 // createCollegeUser provisions a local account for a first-time College login.
 //
 // The password hash is random and unguessable: this account authenticates only
-// through the College portal, so there is no password to know. Email is marked
+// through the College portal, so there is no password to know. The hash is
+// also marked federated-only (identity.MarkFederatedOnly) so Login never
+// counts a failed local attempt — the web client's expected fallback —
+// against the per-account lockout (AUD-F9). Email is marked
 // verified because the College portal has already authenticated the person and
 // only returns a verified, active account.
 func (c *CollegeAuthService) createCollegeUser(ctx context.Context, claims *collegeUser, email string) (*identity.User, error) {
@@ -315,7 +322,11 @@ func (c *CollegeAuthService) createCollegeUser(ctx context.Context, claims *coll
 	if err != nil {
 		return nil, err
 	}
-	user.PasswordHash = string(hash)
+	// AUD-F9: mark the hash so Login can tell "no local password exists —
+	// this account authenticates via the College portal" apart from a real
+	// password mismatch, and not count the (expected) failed local attempt
+	// of the web client's College fallback toward the per-account lockout.
+	user.PasswordHash = identity.MarkFederatedOnly(string(hash))
 
 	if err := c.auth.users.Create(ctx, user); err != nil {
 		return nil, err

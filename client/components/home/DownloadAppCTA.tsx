@@ -26,7 +26,7 @@ export function DownloadAppCTA() {
             <Smartphone size={12} /> YK-Virtual on the go
           </p>
           <h2 className="mt-5 font-display text-[clamp(2.4rem,6vw,4.8rem)] leading-[0.9] tracking-[-0.02em] text-deep-green">
-            Your classroom,
+            Your classroom,{" "}
             <span className="block text-[#1a6b3c]">in your pocket.</span>
           </h2>
           <p className="mt-5 max-w-md text-base leading-relaxed text-ink-700">

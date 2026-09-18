@@ -185,7 +185,8 @@ test("become-a-tutor: full journey ends with the tutor assigned to a cohort", as
 
   // ── Tutor requests the demo cohort from the dashboard (UI) ───────────────
   await page.goto("/tutor-dashboard");
-  await page.getByRole("button", { name: /cohorts/i }).first().click();
+  // Dashboard sections are tabs (DashboardShell tablist), not buttons.
+  await page.getByRole("tab", { name: /cohorts/i }).click();
   await expect(page.getByText(/UTME 2026 Mastery/i).first()).toBeVisible({ timeout: 20_000 });
   const cohortRow = page
     .locator("div")

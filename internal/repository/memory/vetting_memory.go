@@ -500,4 +500,24 @@ func (m *VettingTutorSubjectMemory) AddForTutor(_ context.Context, profileID, su
 	return nil
 }
 
+// SeedForTutor — dev/demo seed path (mirrors scripts/seed-refs.sql, which
+// gives the fixture tutor mathematics + physics as APPROVED onboarded
+// subjects). Without these, exam authoring on the demo cohort 403s with
+// "you need at least one onboarded subject" in memory mode — Postgres
+// environments get them from the seed SQL, so this keeps parity.
+func (m *VettingTutorSubjectMemory) SeedForTutor(_ context.Context, profileID uuid.UUID, entries []tutor.TutorSubjectEntry) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	existing := map[uuid.UUID]bool{}
+	for _, e := range m.rows[profileID] {
+		existing[e.SubjectID] = true
+	}
+	for _, e := range entries {
+		if !existing[e.SubjectID] {
+			m.rows[profileID] = append(m.rows[profileID], e)
+		}
+	}
+	return nil
+}
+
 var _ tutor.TutorSubjectRepository = (*VettingTutorSubjectMemory)(nil)

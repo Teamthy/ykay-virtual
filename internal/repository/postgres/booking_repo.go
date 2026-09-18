@@ -225,10 +225,14 @@ func (r *CohortEnrollmentRepo) GetByCohortAndStudent(ctx context.Context, cohort
 }
 
 func (r *CohortEnrollmentRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status booking.EnrollmentStatus) error {
+	// $1 (enum-typed by the SET target) and $2 (text, compared with the
+	// literal) are deliberately separate binds: reusing one parameter for both
+	// positions makes Postgres fail with "inconsistent types deduced for
+	// parameter $1" because the enum column and the text literal disagree.
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE cohort_enrollments SET status = $1, updated_at = NOW(),
-			cancelled_at = CASE WHEN $1 = 'CANCELLED' THEN NOW() ELSE cancelled_at END
-		WHERE id = $2`, status, id)
+			cancelled_at = CASE WHEN $2 = 'CANCELLED' THEN NOW() ELSE cancelled_at END
+		WHERE id = $3`, status, string(status), id)
 	if err != nil {
 		return fmt.Errorf("update enrollment status: %w", err)
 	}

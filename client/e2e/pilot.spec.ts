@@ -136,7 +136,7 @@ test("home page: batch-2 sections present, healthcare gone, exam cards link", as
   await expect(page.getByText("Your classroom, in your pocket.")).toBeVisible();
   // PWA pivot: the store badge is gone — the section installs from the site.
   await expect(
-    page.getByRole("link", { name: /Install — Android/ }),
+    page.getByRole("link", { name: /Install on Android/ }),
   ).toBeVisible();
 
   // Exam prep cards link to their fully built pages (blue hover + CTA).

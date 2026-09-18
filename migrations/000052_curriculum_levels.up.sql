@@ -6,19 +6,20 @@ INSERT INTO levels (curriculum_id, name, slug, order_index, description)
 SELECT c.id, v.name, v.slug, v.order_index, v.description
 FROM curricula c,
      (VALUES
-        -- Nigerian curriculum
+        -- Nigerian curriculum (slug must be lowercase 'nigerian' — a capital-N
+        -- typo here once made these rows silently match no curriculum)
         ('nigerian', 'Primary 1', 'primary-1', 10, 'Nigerian primary school'),
         ('nigerian', 'Primary 2', 'primary-2', 11, 'Nigerian primary school'),
         ('nigerian', 'Primary 3', 'primary-3', 12, 'Nigerian primary school'),
         ('nigerian', 'Primary 4', 'primary-4', 13, 'Nigerian primary school'),
         ('nigerian', 'Primary 5', 'primary-5', 14, 'Nigerian primary school'),
         ('nigerian', 'Primary 6', 'primary-6', 15, 'Nigerian primary school'),
-        ('Nigerian', 'JSS1', 'jss1', 20, 'Junior Secondary School 1'),
-        ('Nigerian', 'JSS2', 'jss2', 21, 'Junior Secondary School 2'),
-        ('Nigerian', 'JSS3', 'jss3', 22, 'Junior Secondary School 3 (BECE)'),
-        ('Nigerian', 'SSS1', 'sss1', 30, 'Senior Secondary School 1'),
-        ('Nigerian', 'SSS2', 'sss2', 31, 'Senior Secondary School 2'),
-        ('Nigerian', 'SSS3', 'sss3', 32, 'Senior Secondary School 3 (WAEC/NECO/JAMB)'),
+        ('nigerian', 'JSS1', 'jss1', 20, 'Junior Secondary School 1'),
+        ('nigerian', 'JSS2', 'jss2', 21, 'Junior Secondary School 2'),
+        ('nigerian', 'JSS3', 'jss3', 22, 'Junior Secondary School 3 (BECE)'),
+        ('nigerian', 'SSS1', 'sss1', 30, 'Senior Secondary School 1'),
+        ('nigerian', 'SSS2', 'sss2', 31, 'Senior Secondary School 2'),
+        ('nigerian', 'SSS3', 'sss3', 32, 'Senior Secondary School 3 (WAEC/NECO/JAMB)'),
         -- British curriculum
         ('british', 'Reception', 'reception', 5, 'Early Years Foundation Stage'),
         ('british', 'Year 1', 'year-1', 11, 'Key Stage 1'),

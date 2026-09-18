@@ -1,12 +1,32 @@
 package identity
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 // Entities — no framework imports per AGENTS.md
+
+// federatedOnlyPrefix marks an account whose credentials live with an
+// external identity provider (YKAY College SSO). The prefix makes the stored
+// value an invalid bcrypt hash, so no password can ever verify against it.
+// Login treats a failed local password attempt for such an account as an
+// expected client fallback, not a brute-force signal (audit finding AUD-F9).
+const federatedOnlyPrefix = "!!federated!!"
+
+// MarkFederatedOnly tags a random, unguessable bcrypt hash as belonging to an
+// account that authenticates only through its federated provider.
+func MarkFederatedOnly(bcryptHash string) string {
+	return federatedOnlyPrefix + bcryptHash
+}
+
+// IsFederatedOnly reports whether the account has no usable local password
+// and authenticates exclusively through a federated provider.
+func IsFederatedOnly(passwordHash string) bool {
+	return strings.HasPrefix(passwordHash, federatedOnlyPrefix)
+}
 
 type UserStatus string
 

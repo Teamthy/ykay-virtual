@@ -145,8 +145,11 @@ func TestCollegeAuth_ExchangeSession_RejectsFailures(t *testing.T) {
 			map[string]any{"valid": false, "reason": "IMPERSONATION_NOT_FEDERABLE"}, domain.ErrForbidden},
 		{"portal database unreachable", http.StatusServiceUnavailable,
 			map[string]any{"valid": false, "reason": "IDENTITY_UNVERIFIABLE"}, domain.ErrConflict},
+		// AUD-F10: a portal 429 is surfaced as 429 (ErrTooManyRequests), not
+		// 409 — "slow down" is not a resource conflict, and callers need to
+		// distinguish "retry later" from "state conflict".
 		{"portal rate limited us", http.StatusTooManyRequests,
-			map[string]any{"error": "Too many requests."}, domain.ErrConflict},
+			map[string]any{"error": "Too many requests."}, domain.ErrTooManyRequests},
 	}
 
 	for _, tc := range cases {

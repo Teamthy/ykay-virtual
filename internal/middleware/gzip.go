@@ -144,6 +144,17 @@ func (g *gzipResponseWriter) Close() {
 	if g.gz != nil {
 		_ = g.gz.Close()
 		g.gz = nil // idempotent: the deferred second Close is a no-op
+		// Small gzipped bodies (<2 KiB, no explicit flush) let net/http
+		// auto-size the response and send Content-Length alongside
+		// Content-Encoding — legal HTTP, and curl/browsers handle it. But
+		// the Next.js rewrite proxy (Vercel-style /api rewrites, used by the
+		// web client in production and browser E2E) decodes the gzip stream
+		// and forwards the STALE compressed-length header on the decoded
+		// body, truncating every catalogue payload to compressed-size bytes
+		// (empty curriculum selects, missing tutor cards, missing "For you"
+		// recommendations). Flushing here commits the response to chunked
+		// transfer instead, which every proxy streams to EOF correctly.
+		_ = http.NewResponseController(g.ResponseWriter).Flush()
 	}
 }
 

@@ -11,6 +11,7 @@ function okEnvelope(data: unknown) {
   return {
     ok: true,
     status: 200,
+    headers: new Headers({ "content-type": "application/json" }),
     json: async () => ({ data }),
   } as Response;
 }

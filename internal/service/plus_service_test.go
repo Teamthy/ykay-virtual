@@ -127,6 +127,11 @@ func TestPaymentSettlement_ActivatesPlus(t *testing.T) {
 		Price: 52500, Currency: "NGN", TrialDays: 7, IsActive: true,
 	}))
 	plusSvc := NewPlusService(plusRepo, audit)
+	// Pin the PlusService clock to the same fixed time as the payment clock:
+	// the subscription is created at paySvc's fixedTime and ends fixedTime+1mo,
+	// so an unpinned PlusService clock makes this test a time bomb (it started
+	// failing the moment real time passed fixedTime+1 month).
+	plusSvc.now = func() time.Time { return fixedTime }
 
 	paySvc := NewPaymentService(
 		memory.NewMemoryUnitOfWorkFactory(store), testProviders(), audit, store.Escrow,

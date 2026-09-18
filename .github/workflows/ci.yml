@@ -300,6 +300,9 @@ jobs:
           GRAFANA_ADMIN_PASSWORD: ci-check
           SITE_URL: https://virtual.ykaycollege.com
           ALLOWED_ORIGINS: https://virtual.ykaycollege.com
+          # docker-compose.prod.yml fails interpolation without it (production
+          # stays fail-fast via the :? guard; CI validates structure only).
+          MEETING_PROVIDER: jitsi
         run: docker compose -f docker-compose.prod.yml config --quiet
       - name: Metrics endpoint smoke (API boots + scrape responds)
         env:

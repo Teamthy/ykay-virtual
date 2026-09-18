@@ -29,8 +29,9 @@ type AuthHandler struct {
 }
 
 // WithCollege wires YKAY College federated login (YK-013). Optional: when
-// unset, POST /auth/college/login answers 503 "not configured" rather than
-// failing opaquely against an unconfigured portal.
+// unset, POST /auth/college/login answers 409 CONFLICT "not configured" (the
+// same convention as the Google federated path) rather than failing opaquely
+// against an unconfigured portal.
 func (h *AuthHandler) WithCollege(c *service.CollegeAuthService) *AuthHandler {
 	h.college = c
 	return h

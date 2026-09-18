@@ -51,4 +51,6 @@ echo "== 4/4 E2E against postgres =="
 E2E_KEEP_SERVER=1 \
 E2E_ADMIN_EMAIL=e2e-admin@test.invalid \
 E2E_ADMIN_PASSWORD=password123 \
+E2E_COHORT_TUTOR_EMAIL=e2e-tutor@test.invalid \
+E2E_COHORT_TUTOR_PASSWORD=password123 \
 bash scripts/e2e.sh "$PORT" || { echo "---- /tmp/e2e-api.log (tail) ----"; tail -80 /tmp/e2e-api.log; exit 1; }

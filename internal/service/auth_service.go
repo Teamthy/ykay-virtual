@@ -484,7 +484,17 @@ func (s *AuthService) Login(ctx context.Context, email, password, ip, userAgent 
 		return nil, fmt.Errorf("%w: account is not active", domain.ErrForbidden)
 	}
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
-		s.recordLoginFailure(email, s.now().UTC())
+		// AUD-F9: accounts provisioned by a federated provider (YKAY College
+		// SSO) carry a marked, unguessable hash — no local password exists.
+		// The web client's login form tries local auth first and falls back to
+		// the College portal, so this failure is EXPECTED for those accounts,
+		// not a brute-force signal. Don't count it toward the per-account
+		// lockout: five form-based College sign-ins used to lock the account
+		// and — because the lockout message doesn't match the client's
+		// fallback trigger — silently disable the College fallback for 15 min.
+		if !identity.IsFederatedOnly(user.PasswordHash) {
+			s.recordLoginFailure(email, s.now().UTC())
+		}
 		return nil, fmt.Errorf("%w: invalid credentials", domain.ErrUnauthorized)
 	}
 	if user.Status == identity.UserStatusPending {
