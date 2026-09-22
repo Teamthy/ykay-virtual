@@ -582,7 +582,7 @@ export function HomeHero() {
 
         {/* lg+: editorial overlap — copy over the portrait, chips at stage edges */}
         <div className="pointer-events-none absolute inset-0 z-30 hidden lg:block">
-          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pb-[26%] pt-14 text-center xl:ml-[28%] xl:max-w-[760px] xl:pb-[22%] xl:pt-20">
+          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pt-14 text-center lg:pb-[24%] xl:ml-[28%] xl:max-w-[760px] xl:pb-[22%] xl:pt-20">
             <p
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
