@@ -527,7 +527,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="animate-hero-in-3 mt-6 flex items-center justify-center gap-3 motion-reduce:animate-none sm:mt-7"
+            className="animate-hero-in-3 mt-5 flex items-center justify-center gap-2.5 motion-reduce:animate-none sm:mt-6"
           >
             <div className="flex -space-x-2.5">
               {["/tutors/tutor-1.jpg", "/tutors/tutor-2.jpg", "/tutors/tutor-3.jpg"].map((src) => (
@@ -537,11 +537,11 @@ export function HomeHero() {
                   src={src}
                   alt=""
                   aria-hidden="true"
-                  className="size-8 rounded-full border-2 border-white bg-ink-100 object-cover"
+                  className="size-7 rounded-full border-2 border-white bg-ink-100 object-cover"
                 />
               ))}
             </div>
-            <p className="text-xs font-semibold text-ink-600">
+            <p className="text-[11px] font-semibold text-ink-600">
               <span className="[color:var(--home-ink)]">Vetted</span> tutors for
               escrow-protected tuition
             </p>
@@ -566,7 +566,7 @@ export function HomeHero() {
 
         {/* lg+: editorial overlap — copy over the portrait, chips at stage edges */}
         <div className="pointer-events-none absolute inset-0 z-30 hidden lg:block">
-          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pt-16 text-center xl:ml-[28%] xl:max-w-[760px] xl:pt-24">
+          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pb-[26%] pt-14 text-center xl:ml-[28%] xl:max-w-[760px] xl:pb-[22%] xl:pt-20">
             <p
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
@@ -620,20 +620,20 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="animate-hero-in-3 mt-6 flex items-center justify-center gap-3 motion-reduce:animate-none"
+              className="animate-hero-in-3 mt-5 flex items-center justify-center gap-2.5 motion-reduce:animate-none"
             >
-              <div className="flex -space-x-2.5">
+              <div className="flex -space-x-2">
                 {["/tutors/tutor-1.jpg", "/tutors/tutor-2.jpg", "/tutors/tutor-3.jpg"].map((src) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={src}
                     src={src}
                     alt=""
-                    className="size-8 rounded-full border-2 border-white bg-ink-100 object-cover"
+                    className="size-7 rounded-full border-2 border-white bg-ink-100 object-cover"
                   />
                 ))}
               </div>
-              <p className="text-xs font-semibold text-ink-600">
+              <p className="text-[11px] font-semibold text-ink-600">
                 <span className="[color:var(--home-ink)]">Vetted</span> tutors for
                 escrow-protected tuition
               </p>
