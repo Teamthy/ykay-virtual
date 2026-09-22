@@ -46,7 +46,7 @@
      Backgrounds
      ---------------------------------------------------------- */
 
-  --color-background: #fff7e4;
+  --color-background: #fffdf5;
   --color-background-soft: #ffffff;
   --color-background-muted: #f8ebcf;
 
@@ -73,7 +73,9 @@
   --color-border: #dce5de;
   --color-border-light: #ede8dc;
   --color-border-dark: #285442;
-  --line: var(--color-border);
+  /* Header gutter — marketing pages float a pill header over the hero;
+     set to 0 on routes with a solid/flush header (e.g. auth). */
+  --home-scroll-mt: 7rem;
 
   /* ----------------------------------------------------------
      Semantic Colors
