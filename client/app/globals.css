@@ -73,9 +73,6 @@
   --color-border: #dce5de;
   --color-border-light: #ede8dc;
   --color-border-dark: #285442;
-  /* Header gutter — marketing pages float a pill header over the hero;
-     set to 0 on routes with a solid/flush header (e.g. auth). */
-  --home-scroll-mt: 7rem;
 
   /* ----------------------------------------------------------
      Semantic Colors
@@ -468,7 +465,11 @@
   }
 
   /* Every marketing-home band fills one screen (grows if content is taller). */
-  .home-screen {
+  .hero-text {
+  filter: var(--home-text-halo);
+}
+
+.home-screen {
     min-height: 100svh;
     width: 100%;
     display: flex;

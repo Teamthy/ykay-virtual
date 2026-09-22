@@ -404,7 +404,7 @@ export function HeroSplit() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(112,242,80,0.38)_0%,rgba(112,242,80,0.16)_55%,rgba(112,242,80,0)_72%)]"
+            className="absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(112,242,80,0.38)_0%,rgba(112,242,80,0.16)_55%,rgba(112,242,80,0)_72%)] xl:left-[28%] xl:w-[min(34vw,560px)]"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <motion.img
@@ -413,7 +413,7 @@ export function HeroSplit() {
             transition={{ duration: 0.8, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
             src="/home/hero-student.png"
             alt="Smiling student with a backpack holding a tablet and books"
-            className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden xl:h-[97%]"
+            className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden lg:left-[38%] xl:left-[27%] xl:h-[97%]"
           />
 
           {/* floating chips — ring around the portrait */}
@@ -435,7 +435,7 @@ export function HeroSplit() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green"
+            className="hero-text inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green"
           >
             <Zap size={11} className="fill-primary-dark text-primary-dark" />
             Live · Vetted · Personal
@@ -445,7 +445,7 @@ export function HeroSplit() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,5.6rem)] leading-[0.98] tracking-[-0.02em] text-ink-950"
+            className="hero-text mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,5.6rem)] leading-[0.98] tracking-[-0.02em] text-ink-950"
           >
             Comprehensive Learning Solutions for Every Student
           </motion.h1>
@@ -454,7 +454,7 @@ export function HeroSplit() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-5 max-w-xl text-sm leading-relaxed text-ink-500 md:text-base"
+            className="hero-text mt-5 max-w-xl text-sm leading-relaxed text-ink-500 md:text-base"
           >
             The easiest and fastest way to learn with expert tutors — British and
             Nigerian curricula, exam preparation, private tuition and live cohorts
@@ -527,12 +527,12 @@ export function HeroSplit() {
 
         {/* lg+: editorial overlap — copy over the portrait, chips at stage edges */}
         <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block">
-          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pt-16 text-center xl:max-w-4xl xl:pt-20">
+          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pt-16 text-center xl:ml-[18%] xl:max-w-[820px] xl:pt-20">
             <motion.p
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green"
+              className="hero-text inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green"
             >
               <Zap size={11} className="fill-primary-dark text-primary-dark" />
               Live · Vetted · Personal
@@ -541,15 +541,16 @@ export function HeroSplit() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,5.6rem)] leading-[0.98] tracking-[-0.02em] text-ink-950"
+              className="hero-text mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,5.6rem)] leading-[0.98] tracking-[-0.02em] text-ink-950"
             >
-              Comprehensive Learning Solutions for Every Student
+              Comprehensive Learning
+              <span className="block">Solutions for Every Student</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-5 max-w-xl text-sm leading-relaxed text-ink-500 md:text-base"
+              className="hero-text mt-5 max-w-xl text-sm leading-relaxed text-ink-500 md:text-base"
             >
               The easiest and fastest way to learn with expert tutors — British and
               Nigerian curricula, exam preparation, private tuition and live cohorts
