@@ -472,7 +472,7 @@ export function Rail() {
               aria-label="Scroll programmes left"
               className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
             >
-              <ArrowRight size={14} className="rotate-180" />
+              <ArrowRight size={14} className="rotate-180" aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -480,7 +480,7 @@ export function Rail() {
               aria-label="Scroll programmes right"
               className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
             >
-              <ArrowRight size={14} />
+              <ArrowRight size={14} aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -187,15 +187,15 @@ const CHIPS = [
     body: (
       <div className="w-[200px] rounded-2xl border border-black/5 bg-white p-3.5 shadow-chip backdrop-blur">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold text-ink-400">Next live class</p>
-          <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-[9px] font-bold text-deep-green">
+          <p className="text-[10px] font-semibold [color:var(--home-ink-muted)]">Next live class</p>
+          <span className="flex items-center gap-1 rounded-full bg-primary-light px-2 py-0.5 text-[9px] font-bold text-deep-green">
             <CalendarClock size={10} /> Today · 4pm
           </span>
         </div>
         <p className="mt-2 font-display text-[22px] leading-none tracking-[-0.01em] [color:var(--home-ink)]">
           Further Maths
         </p>
-        <p className="mt-1.5 flex items-center gap-1.5 text-[10px] text-ink-600">
+        <p className="mt-1.5 flex items-center gap-1.5 text-[10px] [color:var(--home-ink-muted)]">
           <GraduationCap size={12} className="text-deep-green" />
           Mr. Adeyemi · SS2 cohort
         </p>
@@ -557,7 +557,7 @@ export function HomeHero() {
                 />
               ))}
             </div>
-            <p className="text-[11px] font-semibold text-ink-600">
+            <p className="text-[11px] font-semibold [color:var(--home-ink-muted)]">
               <span className="[color:var(--home-ink)]">Vetted</span> tutors for
               escrow-protected tuition
             </p>
@@ -573,7 +573,7 @@ export function HomeHero() {
                 {c.icon}
                 <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">
                   {c.title}
-                  <span className="block font-medium text-ink-500">{c.sub}</span>
+                  <span className="block font-medium [color:var(--home-ink-muted)]">{c.sub}</span>
                 </p>
               </li>
             ))}
@@ -649,7 +649,7 @@ export function HomeHero() {
                   />
                 ))}
               </div>
-              <p className="text-[11px] font-semibold text-ink-600">
+              <p className="text-[11px] font-semibold [color:var(--home-ink-muted)]">
                 <span className="[color:var(--home-ink)]">Vetted</span> tutors for
                 escrow-protected tuition
               </p>
