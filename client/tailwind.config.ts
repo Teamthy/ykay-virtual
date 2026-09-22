@@ -293,6 +293,10 @@ const config: Config = {
 
         hero: "0 30px 80px rgba(1, 57, 32, 0.18)",
 
+        chip: "var(--shadow-chip)",
+
+        "chip-soft": "var(--shadow-chip-soft)",
+
         brand: "0 10px 30px rgba(112, 242, 80, 0.28)",
 
         "brand-lg": "0 20px 50px rgba(112, 242, 80, 0.22)",
@@ -314,6 +318,16 @@ const config: Config = {
         "hero-in-late": "heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both",
 
         float: "floatY 5s ease-in-out infinite",
+
+        "hero-in-2": "heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both",
+
+        "hero-in-3": "heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.48s both",
+
+        "hero-float": "floatY 5s ease-in-out infinite",
+
+        "hero-float-slow": "floatY 5.6s ease-in-out infinite",
+
+        "rail-marquee": "railMarquee var(--rail-duration,60s) linear infinite",
       },
 
       /* ==========================================================

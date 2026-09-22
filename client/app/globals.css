@@ -46,7 +46,7 @@
      Backgrounds
      ---------------------------------------------------------- */
 
-  --color-background: #fff7e4;
+  --color-background: #fffdf5;
   --color-background-soft: #ffffff;
   --color-background-muted: #f8ebcf;
 
@@ -73,7 +73,6 @@
   --color-border: #dce5de;
   --color-border-light: #ede8dc;
   --color-border-dark: #285442;
-  --line: var(--color-border);
 
   /* ----------------------------------------------------------
      Semantic Colors
@@ -466,7 +465,11 @@
   }
 
   /* Every marketing-home band fills one screen (grows if content is taller). */
-  .home-screen {
+  .hero-text {
+  filter: var(--home-text-halo);
+}
+
+.home-screen {
     min-height: 100svh;
     width: 100%;
     display: flex;
@@ -1609,4 +1612,119 @@ html.dark .keep-light .bg-white {
 html.dark .keep-light .text-deep-green,
 html.dark .keep-light .text-deep {
   color: #013920;
+}
+
+
+/* ============================================================
+   15. HOME HERO SYSTEM
+   Tokens + utilities for the editorial hero and programme rail.
+   ============================================================ */
+
+:root {
+  /* Header gutter — marketing pages float over the hero. */
+  --home-scroll-mt: 7rem;
+
+  /* Header glass backdrop: solid at 80% + blur(14px) in the header. */
+  --home-header-bg: rgba(255, 253, 245, 0.8);
+
+  /* Hero / panel text (neutral, never green body copy). */
+  --home-ink: #11181c;
+  --home-ink-active: #11181c; /* bold copy on active (lime) surfaces */
+  --home-ink-muted: #52645b;
+
+  /* Soft halo behind hero text that overlaps imagery. */
+  --home-text-halo: drop-shadow(0 1px 0 rgba(255, 253, 245, 0.55))
+    drop-shadow(0 0 18px rgba(255, 253, 245, 0.9))
+    drop-shadow(0 0 42px rgba(255, 253, 245, 0.55));
+
+  /* Hero canvas. */
+  --home-glow: radial-gradient(
+    circle,
+    rgba(112, 242, 80, 0.38) 0%,
+    rgba(112, 242, 80, 0.16) 55%,
+    rgba(112, 242, 80, 0) 72%
+  );
+  --home-grid: linear-gradient(to right, rgba(23, 43, 34, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(23, 43, 34, 0.05) 1px, transparent 1px);
+  --home-grid-size: 96px 96px;
+
+  /* Floating chip elevations. */
+  --shadow-chip: 0 16px 40px rgba(1, 57, 32, 0.12);
+  --shadow-chip-soft: 0 14px 36px rgba(1, 57, 32, 0.1);
+
+  /* Programme rail marquee (pauses on hover/focus/drag). */
+  --rail-duration: 60s;
+  --rail-shift: -50%;
+}
+
+html.dark {
+  --home-ink: #f4f7f5;
+  --home-ink-active: #f4f7f5;
+  --home-ink-muted: #91a49a;
+  --home-text-halo: drop-shadow(0 1px 0 rgba(7, 20, 14, 0.55))
+    drop-shadow(0 0 18px rgba(7, 20, 14, 0.9))
+    drop-shadow(0 0 42px rgba(7, 20, 14, 0.55));
+}
+
+.home-grid {
+  background-image: var(--home-grid);
+  background-size: var(--home-grid-size);
+}
+
+.home-glow {
+  background-image: var(--home-glow);
+}
+
+/* Floating chip surface: solid white, soft border, chip shadow. */
+.home-chip {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-chip-soft);
+}
+
+.home-chip--lg {
+  box-shadow: var(--shadow-chip);
+}
+
+.home-chip--round {
+  border-radius: 1rem;
+}
+
+html.dark .home-chip {
+  background: #0d1f16;
+  border-color: #214c37;
+}
+
+/* Hero entrance scale: heroIn 0.7s brand ease, delays 0.18 / 0.32 / 0.48s. */
+.hero-anim {
+  animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-anim--1 {
+  animation-delay: 0.18s;
+}
+
+.hero-anim--2 {
+  animation-delay: 0.32s;
+}
+
+.hero-anim--3 {
+  animation-delay: 0.48s;
+}
+
+/* Programme rail marquee — CSS-driven drift, pauses on interaction. */
+.rail-marquee-paused .animate-rail-marquee,
+.home-screen-track:hover .animate-rail-marquee,
+.home-screen-track:focus-within .animate-rail-marquee,
+.home-screen-track:active .animate-rail-marquee {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-anim,
+  .hero-anim--1,
+  .hero-anim--2,
+  .hero-anim--3 {
+    animation: none;
+  }
 }
