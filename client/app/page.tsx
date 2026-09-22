@@ -7,7 +7,6 @@ import { TestimonialSlider } from "@/components/home/TestimonialSlider";
 import { CollegeBridge } from "@/components/home/CollegeBridge";
 import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
-import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 
@@ -21,6 +20,9 @@ import { HomeFAQ } from "@/components/home/HomeFAQ";
 //                      the how-it-works narrative
 //   SuccessRateBand  - invented per-subject success rates (98/89/92%)
 //   HeroSlider       - replaced by HeroSplit, now HeroHome (reference redesign)
+//
+// Home tail (round 21): FAQ → app download → tutor CTA. Nav primary CTA is
+// the verifiable Get Started funnel; hero primary books a home tutor.
 
 export default function HomePage() {
   return (
@@ -51,9 +53,6 @@ export default function HomePage() {
         <HomeFAQ />
       </Reveal>
       <Reveal delay={50} variant="blur" className="w-full">
-        <DownloadAppCTA />
-      </Reveal>
-      <Reveal delay={50} variant="up" className="w-full">
         <BecomeTutorCTA />
       </Reveal>
     </>

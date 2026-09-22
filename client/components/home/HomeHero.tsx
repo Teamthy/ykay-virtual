@@ -523,10 +523,10 @@ export function HomeHero() {
             className="animate-hero-in-2 mt-8 flex w-full max-w-md flex-col items-stretch gap-3 motion-reduce:animate-none sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center"
           >
             <Link
-              href="/onboarding"
+              href="/hometutors#booking"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-bold text-deep-green shadow-brand-lg transition hover:bg-primary-hover"
             >
-              Get started
+              Book a Home Tutor
               <ArrowRight size={15} />
             </Link>
             <Link
@@ -618,10 +618,10 @@ export function HomeHero() {
               className="animate-hero-in-2 mt-8 flex items-center justify-center gap-3 motion-reduce:animate-none"
             >
               <Link
-                href="/onboarding"
+                href="/hometutors#booking"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-bold text-deep-green shadow-brand-lg transition hover:bg-primary-hover"
               >
-                Get started
+                Book a Home Tutor
                 <ArrowRight size={15} />
               </Link>
               <Link
