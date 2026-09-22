@@ -164,9 +164,9 @@ const CHIPS = [
       <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/mark.png" alt="" className="size-8 rounded-lg object-contain" />
-        <p className="text-[11px] font-bold leading-[1.25] text-ink-700">
+        <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">
           Powered by
-          <span className="block text-ink-950">Ykay College</span>
+          <span className="block [color:var(--home-ink)]">Ykay College</span>
         </p>
       </div>
     ),
@@ -179,26 +179,32 @@ const CHIPS = [
     body: (
       <div className="w-[200px] rounded-2xl border border-black/5 bg-white/85 p-3.5 shadow-chip backdrop-blur">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold text-ink-500">Next live class</p>
+          <p className="text-[10px] font-semibold text-ink-400">Next live class</p>
           <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-[9px] font-bold text-deep-green">
             <CalendarClock size={10} /> Today · 4pm
           </span>
         </div>
-        <p className="mt-2 font-display text-[22px] leading-none tracking-[-0.01em] text-ink-950">
+        <p className="mt-2 font-display text-[22px] leading-none tracking-[-0.01em] [color:var(--home-ink)]">
           Further Maths
         </p>
-        <p className="mt-1.5 flex items-center gap-1.5 text-[10px] text-ink-500">
+        <p className="mt-1.5 flex items-center gap-1.5 text-[10px] text-ink-600">
           <GraduationCap size={12} className="text-deep-green" />
           Mr. Adeyemi · SS2 cohort
         </p>
         <div className="mt-3 flex items-center gap-3 border-t border-black/5 pt-2.5 text-[10px] font-bold">
-          <Link href="/login?next=/lms" className="inline-flex items-center gap-1 text-deep-green hover:underline">
+          <Link
+            href="/login?next=/lms"
+            className="inline-flex items-center gap-1 rounded-sm text-deep-green hover:underline focus-visible:outline-2"
+          >
             <PlayCircle size={12} /> Join class
           </Link>
-          <Link href="/programmes" className="text-ink-500 hover:text-ink-700">
+          <Link
+            href="/programmes"
+            className="rounded-sm text-ink-400 hover:[color:var(--home-ink)] focus-visible:outline-2"
+          >
             Reschedule
           </Link>
-          <span aria-hidden="true" className="ml-auto tracking-[0.15em] text-ink-400">
+          <span aria-hidden="true" className="ml-auto tracking-[0.15em] text-ink-300">
             •••
           </span>
         </div>
@@ -220,9 +226,9 @@ const CHIPS = [
             <Sparkles size={10} className="fill-[#F4B400] text-warning" />
             TRUST
           </p>
-          <p className="text-[11px] font-bold leading-[1.25] text-ink-700">
+          <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">
             Escrow-protected
-            <span className="block text-ink-950">payments</span>
+            <span className="block [color:var(--home-ink)]">payments</span>
           </p>
         </div>
       </div>
@@ -270,14 +276,14 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
       </div>
 
       <h2
-        className={`mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-ink-950 md:text-3xl ${
+        className={`mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] [color:var(--home-ink)] md:text-3xl ${
           card.active ? "text-primary" : ""
         }`}
       >
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
       </h2>
-      <p className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${card.active ? "text-white/70" : "text-ink-500"}`}>
+      <p className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${card.active ? "text-white/70" : "text-ink-600"}`}>
         {card.blurb}
       </p>
 
@@ -341,14 +347,14 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
       </div>
 
       <h2
-        className={`mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-ink-950 md:text-3xl ${
+        className={`mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] [color:var(--home-ink)] md:text-3xl ${
           card.active ? "text-primary" : ""
         }`}
       >
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
       </h2>
-      <p className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${card.active ? "text-white/70" : "text-ink-500"}`}>
+      <p className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${card.active ? "text-white/70" : "text-ink-600"}`}>
         {card.blurb}
       </p>
 
@@ -477,7 +483,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] text-ink-950 motion-reduce:animate-none"
+            className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] [color:var(--home-ink)] motion-reduce:animate-none"
           >
             Comprehensive Learning
             <span className="block">Solutions for Every Student</span>
@@ -487,7 +493,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-500 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
+            className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-600 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
           >
             The easiest and fastest way to learn with expert tutors — British and
             Nigerian curricula, exam preparation, private tuition and live cohorts
@@ -509,10 +515,10 @@ export function HomeHero() {
             </Link>
             <Link
               href="/programmes"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold text-ink-950 transition hover:border-ink-300 hover:bg-ink-50"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold [color:var(--home-ink)] transition hover:border-ink-300 hover:bg-ink-50"
             >
               View programmes
-              <PlayCircle size={15} className="text-ink-500" />
+              <PlayCircle size={15} className="text-ink-600" />
             </Link>
           </div>
 
@@ -530,12 +536,13 @@ export function HomeHero() {
                   key={src}
                   src={src}
                   alt=""
+                  aria-hidden="true"
                   className="size-8 rounded-full border-2 border-white bg-ink-100 object-cover"
                 />
               ))}
             </div>
-            <p className="text-xs font-semibold text-ink-500">
-              <span className="text-ink-950">Vetted</span> tutors for
+            <p className="text-xs font-semibold text-ink-600">
+              <span className="[color:var(--home-ink)]">Vetted</span> tutors for
               escrow-protected tuition
             </p>
           </div>
@@ -548,7 +555,7 @@ export function HomeHero() {
                 className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur"
               >
                 {c.icon}
-                <p className="text-[11px] font-bold leading-[1.25] text-ink-700">
+                <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">
                   {c.title}
                   <span className="block font-medium text-ink-500">{c.sub}</span>
                 </p>
@@ -573,7 +580,7 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] text-ink-950 motion-reduce:animate-none"
+              className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] [color:var(--home-ink)] motion-reduce:animate-none"
             >
               Comprehensive Learning
               <span className="block">Solutions for Every Student</span>
@@ -582,7 +589,7 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-500 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
+              className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-600 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
             >
               The easiest and fastest way to learn with expert tutors — British and
               Nigerian curricula, exam preparation, private tuition and live cohorts
@@ -603,10 +610,10 @@ export function HomeHero() {
               </Link>
               <Link
                 href="/programmes"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold text-ink-950 transition hover:border-ink-300 hover:bg-ink-50"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold [color:var(--home-ink)] transition hover:border-ink-300 hover:bg-ink-50"
               >
                 View programmes
-                <PlayCircle size={15} className="text-ink-500" />
+                <PlayCircle size={15} className="text-ink-600" />
               </Link>
             </div>
             <div
@@ -626,8 +633,8 @@ export function HomeHero() {
                   />
                 ))}
               </div>
-              <p className="text-xs font-semibold text-ink-500">
-                <span className="text-ink-950">Vetted</span> tutors for
+              <p className="text-xs font-semibold text-ink-600">
+                <span className="[color:var(--home-ink)]">Vetted</span> tutors for
                 escrow-protected tuition
               </p>
             </div>
@@ -664,7 +671,7 @@ export function HomeHero() {
               <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-ink-400">
                 Programmes in motion
               </p>
-              <p className="mt-1.5 font-display text-2xl tracking-[-0.01em] text-ink-950 md:text-3xl">
+              <p className="mt-1.5 font-display text-2xl tracking-[-0.01em] [color:var(--home-ink)] md:text-3xl">
                 Find your track
               </p>
             </div>

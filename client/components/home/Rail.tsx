@@ -163,7 +163,7 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
       </h2>
-      <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-ink-500">
+      <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-[#3f5249]">
         {card.blurb}
       </p>
 
