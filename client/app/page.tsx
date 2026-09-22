@@ -1,5 +1,5 @@
 import { Reveal } from "@/components/ui/reveal";
-import { HeroSplit } from "@/components/home/HeroSplit";
+import { HeroHome } from "@/components/home/HeroHome";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";
@@ -11,7 +11,7 @@ import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 
-// YK-Virtual home — hero (centered intro + service rail) → escrow →
+// YK-Virtual home — hero (light editorial stage + programme rail) → escrow →
 // programmes → how it works → cohorts → exam prep → testimonials →
 // campus → FAQ → app download → tutor CTA.
 //
@@ -20,12 +20,12 @@ import { HomeFAQ } from "@/components/home/HomeFAQ";
 //   ApproachSection  - "3x better" claim + YK-Virtual Insights™, duplicated
 //                      the how-it-works narrative
 //   SuccessRateBand  - invented per-subject success rates (98/89/92%)
-//   HeroSlider       - replaced by HeroSplit (static copy + image carousel)
+//   HeroSlider       - replaced by HeroSplit, now HeroHome (reference redesign)
 
 export default function HomePage() {
   return (
     <>
-      <HeroSplit />
+      <HeroHome />
       <Reveal delay={50} variant="zoom" className="w-full">
         <GuaranteeBand />
       </Reveal>

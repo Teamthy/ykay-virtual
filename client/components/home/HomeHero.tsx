@@ -1,22 +1,9 @@
-"use client";
-
-import { useEffect, useRef } from "react";
-import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import {
-  ArrowRight,
-  CalendarClock,
-  GraduationCap,
-  Play,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, CalendarClock, GraduationCap, PlayCircle, ShieldCheck, Sparkles } from "lucide-react";
 
 /**
- * Homepage hero — light "fintech-editorial" composition on a faint grid:
- * centred badge → headline → subtext → CTA pair → trust row, then a lime
- * glow with a cut-out learner and three floating glass chips (institution,
- * next live class, escrow). Below it, the drifting programme-card rail.
+ * Homepage hero — full-viewport intro (100svh): image background, glass
+ * (translucent, backdrop-blur) programme cards floating over it in
+ * continuous motion, then the drifting service-card rail. Edge to edge.
  * Motion is disabled for users who prefer reduced motion.
  */
 
@@ -57,7 +44,7 @@ const CARDS = [
     chips: ["Any age", "1-on-1"],
     blurb: "Personal tuition matched to your level, pace and schedule.",
     img: "/home/card-tuition.jpg",
-    alt: "Student preparing for an exam",
+    alt: "Student with a notebook",
     href: "/private-tuition",
     active: false,
   },
@@ -67,7 +54,7 @@ const CARDS = [
     chips: ["Timed", "Past papers"],
     blurb: "Exam-hall simulations with instant scoring and explanations.",
     img: "/home/card-cbt.jpg",
-    alt: "/login?next=/lms/practice",
+    alt: "Student taking a computer-based test",
     href: "/login?next=/lms/practice",
     active: false,
   },
@@ -172,10 +159,9 @@ const CHIPS = [
     key: "backed",
     pos: "left-[3%] top-[26%]",
     edge: "left-[3.5%] top-[46%]",
-    float: { duration: 5.4, delay: 0 },
-    entrance: 0.6,
+    floatCls: "motion-reduce:animate-none",
     body: (
-      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-lift backdrop-blur">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/mark.png" alt="" className="size-8 rounded-lg object-contain" />
         <p className="text-[11px] font-bold leading-[1.25] text-ink-700">
@@ -189,10 +175,9 @@ const CHIPS = [
     key: "wallet",
     pos: "right-[3%] top-[30%]",
     edge: "right-[3.5%] top-[42%]",
-    float: { duration: 4.7, delay: 0.8 },
-    entrance: 0.75,
+    floatCls: "animate-hero-float-slow",
     body: (
-      <div className="w-[200px] rounded-2xl border border-black/5 bg-white/85 p-3.5 shadow-hero backdrop-blur">
+      <div className="w-[200px] rounded-2xl border border-black/5 bg-white/85 p-3.5 shadow-chip backdrop-blur">
         <div className="flex items-center justify-between">
           <p className="text-[10px] font-semibold text-ink-500">Next live class</p>
           <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-[9px] font-bold text-deep-green">
@@ -208,7 +193,7 @@ const CHIPS = [
         </p>
         <div className="mt-3 flex items-center gap-3 border-t border-black/5 pt-2.5 text-[10px] font-bold">
           <Link href="/login?next=/lms" className="inline-flex items-center gap-1 text-deep-green hover:underline">
-            <Play size={12} /> Join class
+            <PlayCircle size={12} /> Join class
           </Link>
           <Link href="/programmes" className="text-ink-500 hover:text-ink-700">
             Reschedule
@@ -224,16 +209,15 @@ const CHIPS = [
     key: "escrow",
     pos: "left-[7%] bottom-[12%]",
     edge: "left-[8%] bottom-[13%]",
-    float: { duration: 5.0, delay: 1.5 },
-    entrance: 0.9,
+    floatCls: "animate-hero-float [animation-delay:0.6s]",
     body: (
-      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-lift backdrop-blur">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
         <span className="grid size-8 place-items-center rounded-full bg-primary text-deep-green">
           <ShieldCheck size={16} />
         </span>
         <div>
-          <p className="flex items-center gap-1 text-[10px] font-bold tracking-[0.16em] text-[#F4B400]">
-            <Zap size={10} className="fill-[#F4B400] text-[#F4B400]" />
+          <p className="flex items-center gap-1 text-[10px] font-bold tracking-[0.16em] text-warning">
+            <Sparkles size={10} className="fill-[#F4B400] text-warning" />
             TRUST
           </p>
           <p className="text-[11px] font-bold leading-[1.25] text-ink-700">
@@ -247,25 +231,10 @@ const CHIPS = [
 ];
 
 function Chip({ chip }: { chip: (typeof CHIPS)[number] }) {
-  const reduce = useReducedMotion();
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 22, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.65, delay: chip.entrance, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={reduce ? undefined : { y: -5, scale: 1.02 }}
-    >
-      <motion.div
-        animate={reduce ? undefined : { y: [0, -8, 0] }}
-        transition={
-          reduce
-            ? undefined
-            : { duration: chip.float.duration, delay: chip.float.delay, repeat: Infinity, ease: "easeInOut" }
-        }
-      >
-        {chip.body}
-      </motion.div>
-    </motion.div>
+    <div className="animate-hero-in-2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:animate-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
+      <div className={`animate-hero-float motion-reduce:animate-none ${chip.floatCls}`}>{chip.body}</div>
+    </div>
   );
 }
 
@@ -332,10 +301,80 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
   );
 }
 
-export function HeroSplit() {
+export function HomeHero() {
+  return (
+    <div className="animate-hero-in-2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:animate-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
+      <div className={`animate-hero-float motion-reduce:animate-none ${chip.floatCls}`}>{chip.body}</div>
+    </div>
+  );
+}
+
+function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?: boolean }) {
+  return (
+    <article
+      aria-hidden={ariaHidden || undefined}
+      className={`relative w-[min(78vw,240px)] shrink-0 snap-start overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
+        card.active ? "bg-deep-green" : "bg-white"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {card.chips.map((chip) => (
+            <span
+              key={chip}
+              className={`rounded-full px-2.5 py-1 text-[9px] font-bold ${
+                card.active ? "bg-primary text-deep-green" : "bg-primary-light text-deep-green"
+              }`}
+            >
+              {chip}
+            </span>
+          ))}
+        </div>
+        <span
+          aria-hidden="true"
+          className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[9px] font-bold ${
+            card.active ? "bg-primary text-deep-green" : "bg-primary-light text-deep-green"
+          }`}
+        >
+          {card.n}
+        </span>
+      </div>
+
+      <h2
+        className={`mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-ink-950 md:text-3xl ${
+          card.active ? "text-primary" : ""
+        }`}
+      >
+        {card.title[0]}
+        <span className="block">{card.title[1]}</span>
+      </h2>
+      <p className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${card.active ? "text-white/70" : "text-ink-500"}`}>
+        {card.blurb}
+      </p>
+
+      <div className="relative mt-4 overflow-hidden rounded-2xl">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={card.img}
+          alt={card.alt}
+          loading="lazy"
+          className="aspect-[4/5] w-full object-cover object-top"
+        />
+        <Link
+          href={card.href}
+          tabIndex={ariaHidden ? -1 : undefined}
+          className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
+        >
+          Read More <ArrowRight size={11} />
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+export function HomeHero() {
   const railRef = useRef<HTMLDivElement>(null);
   const hoverRef = useRef(false);
-  const reduce = useReducedMotion();
 
   useEffect(() => {
     const el = railRef.current;
@@ -391,32 +430,25 @@ export function HeroSplit() {
         {/* faint architectural grid */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(23,43,34,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,43,34,0.05)_1px,transparent_1px)] bg-[size:96px_96px]"
+          className="pointer-events-none absolute inset-0 bg-home-grid"
         />
 
         {/* lime glow + cut-out learner (wide: overlapped by the copy block) */}
         <div
-          aria-hidden={reduce || undefined}
-          className="relative mx-auto h-[min(96vw,560px)] w-full max-w-[1500px] xl:h-[660px]"
+          className="relative z-[5] mx-auto -mt-32 h-[min(96vw,560px)] w-full max-w-[1500px] sm:-mt-44 lg:-mt-64 xl:-mt-24 xl:h-[660px]"
         >
-          <motion.div
+          <div
             aria-hidden="true"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(112,242,80,0.38)_0%,rgba(112,242,80,0.16)_55%,rgba(112,242,80,0)_72%)] xl:left-[28%] xl:w-[min(34vw,560px)]"
+            className="animate-scale-in motion-reduce:animate-none absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full bg-home-glow xl:left-[28%] xl:w-[min(34vw,560px)]"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <motion.img
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          <img
             src="/home/hero-student.png"
             alt="Smiling student with a backpack holding a tablet and books"
-            className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden xl:left-[27%] xl:h-[97%]"
+            className="animate-hero-in-late motion-reduce:animate-none absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden xl:left-[27%] xl:h-[97%]"
           />
 
-          {/* floating chips — ring around the portrait */}
+          {/* floating chips */}
           <div className="pointer-events-none absolute inset-0 z-10">
             {CHIPS.map((chip) => (
               <div
@@ -430,42 +462,43 @@ export function HeroSplit() {
         </div>
 
         {/* sm–lg: stacked stage (copy above, portrait below, chips in ring) */}
-        <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-4 pb-14 text-center sm:px-6 lg:hidden">
-          <motion.p
+        <div className="relative z-20 mx-auto -mt-28 flex w-full max-w-3xl flex-col items-center px-4 pb-14 text-center sm:-mt-36 sm:px-6 lg:hidden">
+          <p
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green"
+            className="hero-text animate-hero-in inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green motion-reduce:animate-none"
           >
-            <Zap size={11} className="fill-primary-dark text-primary-dark" />
+            <Sparkles size={11} className="fill-primary-dark text-primary-dark" />
             Live · Vetted · Personal
-          </motion.p>
+          </p>
 
-          <motion.h1
+          <h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,5.6rem)] leading-[0.98] tracking-[-0.02em] text-ink-950"
+            className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] text-ink-950 motion-reduce:animate-none"
           >
-            Comprehensive Learning Solutions for Every Student
-          </motion.h1>
+            Comprehensive Learning
+            <span className="block">Solutions for Every Student</span>
+          </h1>
 
-          <motion.p
+          <p
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text mt-5 max-w-xl text-sm leading-relaxed text-ink-500 md:text-base"
+            className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-500 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
           >
             The easiest and fastest way to learn with expert tutors — British and
             Nigerian curricula, exam preparation, private tuition and live cohorts
             for students worldwide.
-          </motion.p>
+          </p>
 
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center"
+            className="animate-hero-in-2 mt-8 flex w-full max-w-md flex-col items-stretch gap-3 motion-reduce:animate-none sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center"
           >
             <Link
               href="/onboarding"
@@ -479,16 +512,16 @@ export function HeroSplit() {
               className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold text-ink-950 transition hover:border-ink-300 hover:bg-ink-50"
             >
               View programmes
-              <Play size={15} className="text-ink-500" />
+              <PlayCircle size={15} className="text-ink-500" />
             </Link>
-          </motion.div>
+          </div>
 
           {/* trust row */}
-          <motion.div
+          <div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-6 flex items-center justify-center gap-3 sm:mt-7"
+            className="animate-hero-in-3 mt-6 flex items-center justify-center gap-3 motion-reduce:animate-none sm:mt-7"
           >
             <div className="flex -space-x-2.5">
               {["/tutors/tutor-1.jpg", "/tutors/tutor-2.jpg", "/tutors/tutor-3.jpg"].map((src) => (
@@ -505,14 +538,14 @@ export function HeroSplit() {
               <span className="text-ink-950">Vetted</span> tutors for
               escrow-protected tuition
             </p>
-          </motion.div>
+          </div>
 
           {/* xs: chip content as a compact strip (no room to float) */}
-          <ul className="mt-7 grid w-full max-w-sm list-none grid-cols-1 gap-2 text-left sm:hidden">
+          <ul className="animate-hero-in-3 mt-7 grid w-full max-w-sm list-none grid-cols-1 gap-2 text-left motion-reduce:animate-none sm:hidden">
             {EXTENDED_CHIPS.map((c) => (
               <li
                 key={c.key}
-                className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-soft backdrop-blur"
+                className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur"
               >
                 {c.icon}
                 <p className="text-[11px] font-bold leading-[1.25] text-ink-700">
@@ -525,41 +558,41 @@ export function HeroSplit() {
         </div>
 
         {/* lg+: editorial overlap — copy over the portrait, chips at stage edges */}
-        <div className="pointer-events-none absolute inset-0 z-20 hidden lg:block">
-          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pt-16 text-center xl:ml-[18%] xl:max-w-[820px] xl:pt-20">
-            <motion.p
+        <div className="pointer-events-none absolute inset-0 z-30 hidden lg:block">
+          <div className="pointer-events-auto mx-auto flex h-full w-full max-w-3xl flex-col items-center px-6 pt-16 text-center xl:ml-[28%] xl:max-w-[760px] xl:pt-24">
+            <p
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green"
+              className="hero-text animate-hero-in inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green motion-reduce:animate-none"
             >
-              <Zap size={11} className="fill-primary-dark text-primary-dark" />
+              <Sparkles size={11} className="fill-primary-dark text-primary-dark" />
               Live · Vetted · Personal
-            </motion.p>
-            <motion.h1
+            </p>
+            <h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,5.6rem)] leading-[0.98] tracking-[-0.02em] text-ink-950"
+              className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] text-ink-950 motion-reduce:animate-none"
             >
               Comprehensive Learning
               <span className="block">Solutions for Every Student</span>
-            </motion.h1>
-            <motion.p
+            </h1>
+            <p
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text mt-5 max-w-xl text-sm leading-relaxed text-ink-500 md:text-base"
+              className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-500 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
             >
               The easiest and fastest way to learn with expert tutors — British and
               Nigerian curricula, exam preparation, private tuition and live cohorts
               for students worldwide.
-            </motion.p>
-            <motion.div
+            </p>
+            <div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-8 flex items-center justify-center gap-3"
+              className="animate-hero-in-2 mt-8 flex items-center justify-center gap-3 motion-reduce:animate-none"
             >
               <Link
                 href="/onboarding"
@@ -573,14 +606,14 @@ export function HeroSplit() {
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold text-ink-950 transition hover:border-ink-300 hover:bg-ink-50"
               >
                 View programmes
-                <Play size={15} className="text-ink-500" />
+                <PlayCircle size={15} className="text-ink-500" />
               </Link>
-            </motion.div>
-            <motion.div
+            </div>
+            <div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-6 flex items-center justify-center gap-3"
+              className="animate-hero-in-3 mt-6 flex items-center justify-center gap-3 motion-reduce:animate-none"
             >
               <div className="flex -space-x-2.5">
                 {["/tutors/tutor-1.jpg", "/tutors/tutor-2.jpg", "/tutors/tutor-3.jpg"].map((src) => (
@@ -597,7 +630,7 @@ export function HeroSplit() {
                 <span className="text-ink-950">Vetted</span> tutors for
                 escrow-protected tuition
               </p>
-            </motion.div>
+            </div>
           </div>
 
           {/* chips pinned to the stage edges (no text collision) */}
@@ -612,6 +645,9 @@ export function HeroSplit() {
         </div>
       </div>
 
+      {/* ---------------------------------------------------------- */}
+      {/* Programme rail                                              */}
+      {/* ---------------------------------------------------------- */}
       <div id="programmes-rail" className="home-screen relative isolate w-full scroll-mt-[var(--home-scroll-mt,7rem)] overflow-hidden bg-[var(--color-background)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -620,7 +656,7 @@ export function HeroSplit() {
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover object-top opacity-40 mix-blend-multiply"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FFFDF5] via-[#FFFDF5]/70 to-[#DFFFF2]/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-background)] via-[var(--color-background)]/70 to-primary-light/40" />
 
         <div className="relative z-10 w-full px-4 pb-12 pt-8 sm:px-5 md:px-10 md:pb-16 md:pt-10">
           <div className="flex items-end justify-between gap-6">
