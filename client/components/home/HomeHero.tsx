@@ -124,6 +124,7 @@ const CARDS = [
 const EXTENDED_CHIPS = [
   {
     key: "backed",
+    label: "Institution",
     icon: (
       // eslint-disable-next-line @next/next/no-img-element
       <img src="/brand/mark.png" alt="" className="size-8 rounded-lg object-contain" />
@@ -143,6 +144,7 @@ const EXTENDED_CHIPS = [
   },
   {
     key: "escrow",
+    label: "Payment protection",
     icon: (
       <span className="grid size-8 place-items-center rounded-full bg-primary text-deep-green">
         <ShieldCheck size={15} />
@@ -157,11 +159,12 @@ const EXTENDED_CHIPS = [
 const CHIPS = [
   {
     key: "backed",
+    label: "Institution",
     pos: "left-[3%] top-[26%]",
     edge: "left-[3.5%] top-[46%]",
     floatCls: "motion-reduce:animate-none",
     body: (
-      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/mark.png" alt="" className="size-8 rounded-lg object-contain" />
         <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">
@@ -173,11 +176,12 @@ const CHIPS = [
   },
   {
     key: "wallet",
+    label: "Next live class",
     pos: "right-[3%] top-[30%]",
     edge: "right-[3.5%] top-[42%]",
     floatCls: "animate-hero-float-slow",
     body: (
-      <div className="w-[200px] rounded-2xl border border-black/5 bg-white/85 p-3.5 shadow-chip backdrop-blur">
+      <div className="w-[200px] rounded-2xl border border-black/5 bg-white p-3.5 shadow-chip backdrop-blur">
         <div className="flex items-center justify-between">
           <p className="text-[10px] font-semibold text-ink-400">Next live class</p>
           <span className="flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-[9px] font-bold text-deep-green">
@@ -213,11 +217,12 @@ const CHIPS = [
   },
   {
     key: "escrow",
+    label: "Payment protection",
     pos: "left-[7%] bottom-[12%]",
     edge: "left-[8%] bottom-[13%]",
     floatCls: "animate-hero-float [animation-delay:0.6s]",
     body: (
-      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
+      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
         <span className="grid size-8 place-items-center rounded-full bg-primary text-deep-green">
           <ShieldCheck size={16} />
         </span>
@@ -238,7 +243,11 @@ const CHIPS = [
 
 function Chip({ chip }: { chip: (typeof CHIPS)[number] }) {
   return (
-    <div className="animate-hero-in-2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:animate-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
+    <div
+      role="group"
+      aria-label={chip.label}
+      className="animate-hero-in-2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:animate-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
+    >
       <div className={`animate-hero-float motion-reduce:animate-none ${chip.floatCls}`}>{chip.body}</div>
     </div>
   );
@@ -436,16 +445,17 @@ export function HomeHero() {
         {/* faint architectural grid */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-home-grid"
+          className="home-grid pointer-events-none absolute inset-0"
         />
 
         {/* lime glow + cut-out learner (wide: overlapped by the copy block) */}
         <div
+          aria-hidden="true"
           className="relative z-[5] mx-auto -mt-32 h-[min(96vw,560px)] w-full max-w-[1500px] sm:-mt-44 lg:-mt-64 xl:-mt-24 xl:h-[660px]"
         >
           <div
             aria-hidden="true"
-            className="animate-scale-in motion-reduce:animate-none absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full bg-home-glow xl:left-[28%] xl:w-[min(34vw,560px)]"
+            className="home-glow animate-scale-in motion-reduce:animate-none absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full xl:left-[28%] xl:w-[min(34vw,560px)]"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -552,7 +562,7 @@ export function HomeHero() {
             {EXTENDED_CHIPS.map((c) => (
               <li
                 key={c.key}
-                className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white/85 px-3.5 py-2.5 shadow-chip-soft backdrop-blur"
+                className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-3.5 py-2.5 shadow-chip-soft backdrop-blur"
               >
                 {c.icon}
                 <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">

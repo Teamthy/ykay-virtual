@@ -326,6 +326,8 @@ const config: Config = {
         "hero-float": "floatY 5s ease-in-out infinite",
 
         "hero-float-slow": "floatY 5.6s ease-in-out infinite",
+
+        "rail-marquee": "railMarquee var(--rail-duration,60s) linear infinite",
       },
 
       /* ==========================================================
