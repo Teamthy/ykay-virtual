@@ -6,7 +6,9 @@ test.describe("virtual home", () => {
     const response = await page.goto("/");
     expect(response?.status()).toBeLessThan(400);
     await expect(
-      page.getByRole("heading", { name: /Comprehensive Learning for Every Student/i }),
+      page.getByRole("heading", {
+        name: /Comprehensive Learning\s+Solutions for Every Student/i,
+      }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: /Junior/i }).first()).toBeVisible();
   });

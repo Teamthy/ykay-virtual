@@ -9,6 +9,7 @@ import { ExamPrepGrid } from "@/components/home/ExamPrepGrid";
 import { BecomeTutorCTA } from "@/components/home/BecomeTutorCTA";
 import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
+import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 
 // YK-Virtual home — hero (light editorial stage + programme rail) → escrow →
 // programmes → how it works → cohorts → exam prep → testimonials →
@@ -51,6 +52,9 @@ export default function HomePage() {
       </Reveal>
       <Reveal delay={50} variant="right" className="w-full">
         <HomeFAQ />
+      </Reveal>
+      <Reveal delay={50} variant="up" className="w-full">
+        <DownloadAppCTA />
       </Reveal>
       <Reveal delay={50} variant="blur" className="w-full">
         <BecomeTutorCTA />
