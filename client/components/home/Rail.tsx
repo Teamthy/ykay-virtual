@@ -160,13 +160,13 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
         </span>
       </div>
 
-      <h3 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-[var(--home-ink)] md:text-3xl">
+      <h3 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-[var(--home-ink-active)] md:text-3xl">
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
       </h3>
       <p
         className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${
-          card.active ? "text-[var(--home-ink)]/80" : "text-ink-500"
+          card.active ? "text-[var(--home-ink-active)]" : "text-ink-500"
         }`}
       >
         {card.blurb}
@@ -239,13 +239,13 @@ export function Rail() {
         </span>
       </div>
 
-      <h3 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-[var(--home-ink)] md:text-3xl">
+      <h3 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-[var(--home-ink-active)] md:text-3xl">
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
       </h3>
       <p
         className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${
-          card.active ? "text-[var(--home-ink)]/80" : "text-ink-500"
+          card.active ? "text-[var(--home-ink-active)]" : "text-ink-500"
         }`}
       >
         {card.blurb}
@@ -334,13 +334,13 @@ export function Rail() {
         </span>
       </div>
 
-      <h3 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-[var(--home-ink)] md:text-3xl">
+      <h3 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-[var(--home-ink-active)] md:text-3xl">
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
       </h3>
       <p
         className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${
-          card.active ? "text-[var(--home-ink)]/80" : "text-ink-500"
+          card.active ? "text-[var(--home-ink-active)]" : "text-ink-500"
         }`}
       >
         {card.blurb}

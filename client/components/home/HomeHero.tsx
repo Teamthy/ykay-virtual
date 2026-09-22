@@ -167,7 +167,7 @@ const CHIPS = [
     edge: "left-[3.5%] top-[46%]",
     floatCls: "motion-reduce:animate-none",
     body: (
-      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
+      <div className="home-chip home-chip--round flex items-center gap-2.5 px-3.5 py-2.5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/mark.png" alt="" className="size-8 rounded-lg object-contain" />
         <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">
@@ -185,7 +185,7 @@ const CHIPS = [
     edge: "right-[3.5%] top-[42%]",
     floatCls: "animate-hero-float-slow",
     body: (
-      <div className="w-[200px] rounded-2xl border border-black/5 bg-white p-3.5 shadow-chip backdrop-blur">
+      <div className="home-chip home-chip--lg home-chip--round w-[200px] p-3.5">
         <div className="flex items-center justify-between">
           <p className="text-[10px] font-semibold [color:var(--home-ink-muted)]">Next live class</p>
           <span className="flex items-center gap-1 rounded-full bg-primary-light px-2 py-0.5 text-[9px] font-bold text-deep-green">
@@ -207,7 +207,7 @@ const CHIPS = [
             <PlayCircle size={12} /> Join class
           </Link>
           <Link
-            href="/programmes"
+            href="/#programmes"
             className="rounded-sm text-ink-400 hover:[color:var(--home-ink)] focus-visible:outline-2"
           >
             Reschedule
@@ -227,7 +227,7 @@ const CHIPS = [
     edge: "left-[8%] bottom-[13%]",
     floatCls: "animate-hero-float [animation-delay:0.6s]",
     body: (
-      <div className="flex items-center gap-2.5 rounded-2xl border border-black/5 bg-white px-3.5 py-2.5 shadow-chip-soft backdrop-blur">
+      <div className="home-chip home-chip--round flex items-center gap-2.5 px-3.5 py-2.5">
         <span className="grid size-8 place-items-center rounded-full bg-primary text-deep-green">
           <ShieldCheck size={16} />
         </span>
@@ -251,7 +251,7 @@ function Chip({ chip }: { chip: (typeof CHIPS)[number] }) {
     <div
       role="group"
       aria-label={chip.label}
-      className="animate-hero-in-2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:animate-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
+      className="hero-anim hero-anim--2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
     >
       <div className={`animate-hero-float motion-reduce:animate-none ${chip.floatCls}`}>{chip.body}</div>
     </div>
@@ -323,7 +323,7 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
 
 export function HomeHero() {
   return (
-    <div className="animate-hero-in-2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:animate-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
+    <div className="hero-anim hero-anim--2 transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02] motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
       <div className={`animate-hero-float motion-reduce:animate-none ${chip.floatCls}`}>{chip.body}</div>
     </div>
   );
@@ -461,13 +461,13 @@ export function HomeHero() {
         >
           <div
             aria-hidden="true"
-            className="home-glow animate-scale-in motion-reduce:animate-none absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full xl:left-[28%] xl:w-[min(34vw,560px)]"
+            className="home-glow hero-anim absolute left-[42%] top-[6%] aspect-square w-[min(58vw,480px)] -translate-x-1/2 rounded-full xl:left-[28%] xl:w-[min(34vw,560px)]"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/home/hero-student.png"
             alt="Smiling student with a backpack holding a tablet and books"
-            className="animate-hero-in-late motion-reduce:animate-none absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden xl:left-[27%] xl:h-[97%]"
+            className="hero-anim hero-anim--1 absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden xl:left-[27%] xl:h-[97%]"
           />
 
           {/* floating chips */}
@@ -489,7 +489,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text animate-hero-in inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green motion-reduce:animate-none"
+            className="hero-text hero-anim inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green motion-reduce:animate-none"
           >
             <Sparkles size={11} className="fill-primary-dark text-primary-dark" />
             Live · Vetted · Personal
@@ -499,7 +499,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] [color:var(--home-ink)] motion-reduce:animate-none"
+            className="hero-text hero-anim hero-anim--1 mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] [color:var(--home-ink)] motion-reduce:animate-none"
           >
             Comprehensive Learning
             <span className="block">Solutions for Every Student</span>
@@ -509,7 +509,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-600 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
+            className="hero-text hero-anim hero-anim--2 mt-5 max-w-xl text-sm leading-relaxed text-ink-600 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
           >
             The easiest and fastest way to learn with expert tutors — British and
             Nigerian curricula, exam preparation, private tuition and live cohorts
@@ -520,7 +520,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="animate-hero-in-2 mt-8 flex w-full max-w-md flex-col items-stretch gap-3 motion-reduce:animate-none sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center"
+            className="hero-anim hero-anim--2 mt-8 flex w-full max-w-md flex-col items-stretch gap-3 motion-reduce:animate-none sm:mt-9 sm:max-w-none sm:flex-row sm:items-center sm:justify-center"
           >
             <Link
               href="/hometutors#booking"
@@ -530,7 +530,7 @@ export function HomeHero() {
               <ArrowRight size={15} />
             </Link>
             <Link
-              href="/programmes"
+              href="/#programmes"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold [color:var(--home-ink)] transition hover:border-ink-300 hover:bg-ink-50"
             >
               View programmes
@@ -543,7 +543,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="animate-hero-in-3 mt-5 flex items-center justify-center gap-2.5 motion-reduce:animate-none sm:mt-6"
+            className="hero-anim hero-anim--3 mt-5 flex items-center justify-center gap-2.5 motion-reduce:animate-none sm:mt-6"
           >
             <div className="flex -space-x-2.5">
               {["/tutors/tutor-1.jpg", "/tutors/tutor-2.jpg", "/tutors/tutor-3.jpg"].map((src) => (
@@ -564,11 +564,11 @@ export function HomeHero() {
           </div>
 
           {/* xs: chip content as a compact strip (no room to float) */}
-          <ul className="animate-hero-in-3 mt-7 grid w-full max-w-sm list-none grid-cols-1 gap-2 text-left motion-reduce:animate-none sm:hidden">
+          <ul className="hero-anim hero-anim--3 mt-7 grid w-full max-w-sm list-none grid-cols-1 gap-2 text-left motion-reduce:animate-none sm:hidden">
             {EXTENDED_CHIPS.map((c) => (
               <li
                 key={c.key}
-                className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-3.5 py-2.5 shadow-chip-soft backdrop-blur"
+                className="home-chip home-chip--round flex items-center gap-3 px-3.5 py-2.5"
               >
                 {c.icon}
                 <p className="text-[11px] font-bold leading-[1.25] [color:var(--home-ink)]">
@@ -587,7 +587,7 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text animate-hero-in inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green motion-reduce:animate-none"
+              className="hero-text hero-anim inline-flex items-center gap-1.5 rounded-full border border-primary/60 bg-primary-light px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green motion-reduce:animate-none"
             >
               <Sparkles size={11} className="fill-primary-dark text-primary-dark" />
               Live · Vetted · Personal
@@ -596,7 +596,7 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text animate-hero-in-late mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] [color:var(--home-ink)] motion-reduce:animate-none"
+              className="hero-text hero-anim hero-anim--1 mt-5 max-w-[18ch] font-display text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.98] tracking-[-0.02em] [color:var(--home-ink)] motion-reduce:animate-none"
             >
               Comprehensive Learning
               <span className="block">Solutions for Every Student</span>
@@ -605,7 +605,7 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-text animate-hero-in-2 mt-5 max-w-xl text-sm leading-relaxed text-ink-600 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
+              className="hero-text hero-anim hero-anim--2 mt-5 max-w-xl text-sm leading-relaxed text-ink-600 motion-reduce:animate-none md:text-base xl:max-w-[560px]"
             >
               The easiest and fastest way to learn with expert tutors — British and
               Nigerian curricula, exam preparation, private tuition and live cohorts
@@ -615,7 +615,7 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="animate-hero-in-2 mt-8 flex items-center justify-center gap-3 motion-reduce:animate-none"
+              className="hero-anim hero-anim--2 mt-8 flex items-center justify-center gap-3 motion-reduce:animate-none"
             >
               <Link
                 href="/hometutors#booking"
@@ -625,7 +625,7 @@ export function HomeHero() {
                 <ArrowRight size={15} />
               </Link>
               <Link
-                href="/programmes"
+                href="/#programmes"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-200 bg-white px-8 py-3.5 text-sm font-bold [color:var(--home-ink)] transition hover:border-ink-300 hover:bg-ink-50"
               >
                 View programmes
@@ -636,7 +636,7 @@ export function HomeHero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="animate-hero-in-3 mt-5 flex items-center justify-center gap-2.5 motion-reduce:animate-none"
+              className="hero-anim hero-anim--3 mt-5 flex items-center justify-center gap-2.5 motion-reduce:animate-none"
             >
               <div className="flex -space-x-2">
                 {["/tutors/tutor-1.jpg", "/tutors/tutor-2.jpg", "/tutors/tutor-3.jpg"].map((src) => (

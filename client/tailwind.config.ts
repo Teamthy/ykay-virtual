@@ -293,9 +293,9 @@ const config: Config = {
 
         hero: "0 30px 80px rgba(1, 57, 32, 0.18)",
 
-        chip: "0 16px 40px rgba(1, 57, 32, 0.12)",
+        chip: "var(--shadow-chip)",
 
-        "chip-soft": "0 14px 36px rgba(1, 57, 32, 0.10)",
+        "chip-soft": "var(--shadow-chip-soft)",
 
         brand: "0 10px 30px rgba(112, 242, 80, 0.28)",
 
