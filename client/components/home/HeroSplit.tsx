@@ -413,7 +413,7 @@ export function HeroSplit() {
             transition={{ duration: 0.8, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
             src="/home/hero-student.png"
             alt="Smiling student with a backpack holding a tablet and books"
-            className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden lg:left-[38%] xl:left-[27%] xl:h-[97%]"
+            className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-left max-sm:hidden xl:left-[27%] xl:h-[97%]"
           />
 
           {/* floating chips — ring around the portrait */}
@@ -502,9 +502,8 @@ export function HeroSplit() {
               ))}
             </div>
             <p className="text-xs font-semibold text-ink-500">
-              Escrow-protected tuition ·{" "}
-              <span className="text-ink-950">Vetted</span> tutors ·{" "}
-              <span className="text-ink-950">Live</span> cohorts
+              <span className="text-ink-950">Vetted</span> tutors for
+              escrow-protected tuition
             </p>
           </motion.div>
 
@@ -595,9 +594,8 @@ export function HeroSplit() {
                 ))}
               </div>
               <p className="text-xs font-semibold text-ink-500">
-                Escrow-protected tuition ·{" "}
-                <span className="text-ink-950">Vetted</span> tutors ·{" "}
-                <span className="text-ink-950">Live</span> cohorts
+                <span className="text-ink-950">Vetted</span> tutors for
+                escrow-protected tuition
               </p>
             </motion.div>
           </div>
