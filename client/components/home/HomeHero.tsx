@@ -141,7 +141,7 @@ const EXTENDED_CHIPS = [
       </span>
     ),
     title: "Next live class",
-    sub: "Further Maths · Today 4pm",
+    sub: "Vetted tutor · Live online",
   },
   {
     key: "escrow",
@@ -193,11 +193,11 @@ const CHIPS = [
           </span>
         </div>
         <p className="mt-2 font-display text-[22px] leading-none tracking-[-0.01em] [color:var(--home-ink)]">
-          Further Maths
+          Live class today
         </p>
         <p className="mt-1.5 flex items-center gap-1.5 text-[10px] [color:var(--home-ink-muted)]">
           <GraduationCap size={12} className="text-deep-green" />
-          Mr. Adeyemi · SS2 cohort
+          Vetted tutor · Your cohort
         </p>
         <div className="mt-3 flex items-center gap-3 border-t border-black/5 pt-2.5 text-[10px] font-bold">
           <Link
