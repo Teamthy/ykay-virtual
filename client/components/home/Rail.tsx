@@ -131,9 +131,8 @@ function scrollRailBy(el: HTMLDivElement | null, dir: 1 | -1) {
 function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?: boolean }) {
   return (
     <article
-      aria-hidden={ariaHidden || undefined}
-      role="group"
-      aria-label={`${card.title[0]} ${card.title[1]}`}
+      role={ariaHidden ? undefined : "group"}
+      aria-label={ariaHidden ? undefined : `${card.title[0]} ${card.title[1]}`}
       className={`relative w-[min(78vw,240px)] overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
         card.active ? "bg-primary" : "bg-white"
       }`}
@@ -182,14 +181,22 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
           loading="lazy"
           className="aspect-[4/5] w-full object-cover object-top"
         />
-        <Link
-          href={card.href}
-          tabIndex={ariaHidden ? -1 : undefined}
-          aria-label={`${card.title[0]} ${card.title[1]} — read more`}
-          className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
-        >
-          Read more <ArrowRight size={11} aria-hidden="true" />
-        </Link>
+        {ariaHidden ? (
+          <span
+            aria-hidden="true"
+            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow"
+          >
+            Read more <ArrowRight size={11} />
+          </span>
+        ) : (
+          <Link
+            href={card.href}
+            aria-label={`${card.title[0]} ${card.title[1]} — read more`}
+            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
+          >
+            Read more <ArrowRight size={11} aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </article>
   );
@@ -253,14 +260,22 @@ export function Rail() {
           loading="lazy"
           className="aspect-[4/5] w-full object-cover object-top"
         />
-        <Link
-          href={card.href}
-          tabIndex={ariaHidden ? -1 : undefined}
-          aria-label={`${card.title[0]} ${card.title[1]} — read more`}
-          className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
-        >
-          Read more <ArrowRight size={11} aria-hidden="true" />
-        </Link>
+        {ariaHidden ? (
+          <span
+            aria-hidden="true"
+            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow"
+          >
+            Read more <ArrowRight size={11} />
+          </span>
+        ) : (
+          <Link
+            href={card.href}
+            aria-label={`${card.title[0]} ${card.title[1]} — read more`}
+            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
+          >
+            Read more <ArrowRight size={11} aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </article>
   );
@@ -340,14 +355,22 @@ export function Rail() {
           loading="lazy"
           className="aspect-[4/5] w-full object-cover object-top"
         />
-        <Link
-          href={card.href}
-          tabIndex={ariaHidden ? -1 : undefined}
-          aria-label={`${card.title[0]} ${card.title[1]} — read more`}
-          className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
-        >
-          Read more <ArrowRight size={11} aria-hidden="true" />
-        </Link>
+        {ariaHidden ? (
+          <span
+            aria-hidden="true"
+            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow"
+          >
+            Read more <ArrowRight size={11} />
+          </span>
+        ) : (
+          <Link
+            href={card.href}
+            aria-label={`${card.title[0]} ${card.title[1]} — read more`}
+            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
+          >
+            Read more <ArrowRight size={11} aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </article>
   );
@@ -468,6 +491,8 @@ export function Rail() {
         >
           <ul
             className="flex w-max animate-rail-marquee list-none gap-4 motion-reduce:animate-none md:gap-5"
+            /* half the track (11 cards) + one gap = seamless wrap, matching
+                the legacy JS (dup.offsetLeft - first.offsetLeft) */
             style={{ ["--rail-shift" as string]: "calc(-50% - 0.5rem)" }}
           >
             {CARDS.map((card) => (
