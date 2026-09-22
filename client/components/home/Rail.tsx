@@ -132,6 +132,8 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
   return (
     <article
       aria-hidden={ariaHidden || undefined}
+      role="group"
+      aria-label={`${card.title[0]} ${card.title[1]}`}
       className={`relative w-[min(78vw,240px)] overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
         card.active ? "bg-primary" : "bg-white"
       }`}
@@ -159,10 +161,10 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
         </span>
       </div>
 
-      <h2 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-deep-green md:text-3xl">
+      <p className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-deep-green md:text-3xl">
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
-      </h2>
+      </p>
       <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-[#3f5249]">
         {card.blurb}
       </p>
@@ -179,9 +181,10 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
         <Link
           href={card.href}
           tabIndex={ariaHidden ? -1 : undefined}
+          aria-label={`${card.title[0]} ${card.title[1]} — read more`}
           className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
         >
-          Read More <ArrowRight size={11} />
+          Read more <ArrowRight size={11} aria-hidden="true" />
         </Link>
       </div>
     </article>
@@ -196,6 +199,8 @@ export function Rail() {
   return (
     <article
       aria-hidden={ariaHidden || undefined}
+      role="group"
+      aria-label={`${card.title[0]} ${card.title[1]}`}
       className={`relative w-[min(78vw,240px)] overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
         card.active ? "bg-primary" : "bg-white"
       }`}
@@ -223,10 +228,10 @@ export function Rail() {
         </span>
       </div>
 
-      <h2 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-deep-green md:text-3xl">
+      <p className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-deep-green md:text-3xl">
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
-      </h2>
+      </p>
       <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-[#3f5249]">
         {card.blurb}
       </p>
@@ -243,9 +248,10 @@ export function Rail() {
         <Link
           href={card.href}
           tabIndex={ariaHidden ? -1 : undefined}
+          aria-label={`${card.title[0]} ${card.title[1]} — read more`}
           className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
         >
-          Read More <ArrowRight size={11} />
+          Read more <ArrowRight size={11} aria-hidden="true" />
         </Link>
       </div>
     </article>
@@ -276,6 +282,8 @@ export function Rail() {
   return (
     <article
       aria-hidden={ariaHidden || undefined}
+      role="group"
+      aria-label={`${card.title[0]} ${card.title[1]}`}
       className={`relative w-[min(78vw,240px)] overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
         card.active ? "bg-primary" : "bg-white"
       }`}
@@ -303,10 +311,10 @@ export function Rail() {
         </span>
       </div>
 
-      <h2 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-deep-green md:text-3xl">
+      <p className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-deep-green md:text-3xl">
         {card.title[0]}
         <span className="block">{card.title[1]}</span>
-      </h2>
+      </p>
       <p className="mt-2 min-h-[3.4em] text-[11px] leading-relaxed text-[#3f5249]">
         {card.blurb}
       </p>
@@ -323,9 +331,10 @@ export function Rail() {
         <Link
           href={card.href}
           tabIndex={ariaHidden ? -1 : undefined}
+          aria-label={`${card.title[0]} ${card.title[1]} — read more`}
           className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
         >
-          Read More <ArrowRight size={11} />
+          Read more <ArrowRight size={11} aria-hidden="true" />
         </Link>
       </div>
     </article>
