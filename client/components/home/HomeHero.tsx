@@ -527,7 +527,7 @@ export function HomeHero() {
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-bold text-deep-green shadow-brand-lg transition hover:bg-primary-hover"
             >
               Book a Home Tutor
-              <ArrowRight size={15} />
+              <ArrowRight size={15} aria-hidden="true" />
             </Link>
             <Link
               href="/#programmes"
@@ -622,7 +622,7 @@ export function HomeHero() {
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-bold text-deep-green shadow-brand-lg transition hover:bg-primary-hover"
               >
                 Book a Home Tutor
-                <ArrowRight size={15} />
+                <ArrowRight size={15} aria-hidden="true" />
               </Link>
               <Link
                 href="/#programmes"
