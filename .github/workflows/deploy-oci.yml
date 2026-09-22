@@ -59,9 +59,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Resolve image tag
+      - name: Resolve image name + tag
         id: tag
-        run: echo "sha=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          # Image names must be lowercase: github.repository keeps the owner's
+          # casing (Teamthy/...) and buildx fails with "repository name must be
+          # lowercase". The lowercased slug also matches the GHCR_REPO default
+          # (teamthy/ykay-virtual) that deploy/oci/docker-compose.oci.yml pulls.
+          echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "sha=sha-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Build & push (arm64 required, amd64 portable)
         uses: docker/build-push-action@v6
@@ -71,8 +77,8 @@ jobs:
           platforms: linux/arm64,linux/amd64
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.sha }}
-            ghcr.io/${{ github.repository }}:latest
+            ${{ steps.tag.outputs.image }}:${{ steps.tag.outputs.sha }}
+            ${{ steps.tag.outputs.image }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

@@ -31,6 +31,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      # A-06: fail loudly (and fast) when the Vercel secrets are missing
+      # instead of dying deep inside `vercel pull` with a bare exit 1.
+      - name: Check Vercel secrets (fail fast)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          missing=""
+          [ -z "$VERCEL_TOKEN" ] && missing="$missing VERCEL_TOKEN"
+          [ -z "$VERCEL_ORG_ID" ] && missing="$missing VERCEL_ORG_ID"
+          [ -z "$VERCEL_PROJECT_ID" ] && missing="$missing VERCEL_PROJECT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repo secrets:$missing — web was NOT deployed to Vercel. Set them in Settings → Secrets and variables → Actions."
+            exit 1
+          fi
       - name: Install dependencies
         working-directory: client
         run: npm ci
