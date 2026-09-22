@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {

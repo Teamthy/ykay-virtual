@@ -11,14 +11,6 @@ import { prefersReducedMotionSync } from "./motion.prefers";
 
 export type RevealVariant = "up" | "left" | "right" | "zoom" | "blur";
 
-const VARIANT: Record<RevealVariant, string> = {
-  up: "up",
-  left: "left",
-  right: "right",
-  zoom: "zoom",
-  blur: "blur",
-};
-
 export function Reveal({
   children,
   variant = "up",
@@ -58,7 +50,7 @@ export function Reveal({
   return (
     <div
       ref={ref}
-      data-reveal={VARIANT[variant]}
+      data-reveal={variant}
       data-reveal-state={shown ? "shown" : "pending"}
       style={delay ? { transitionDelay: `${delay}ms` } : undefined}
       className={`motion-reveal ${className ?? ""}`}

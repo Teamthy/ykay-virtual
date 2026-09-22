@@ -1,5 +1,5 @@
 import { Reveal } from "@/components/ui/reveal";
-import { HeroHome } from "@/components/home/HomeHero";
+import { HeroHome } from "@/components/home/HeroHome";
 import { GuaranteeBand } from "@/components/home/GuaranteeBand";
 import { PopularProgrammes } from "@/features/programmes/components/PopularProgrammes";
 import { UpcomingCohorts } from "@/features/cohorts/components/UpcomingCohorts";

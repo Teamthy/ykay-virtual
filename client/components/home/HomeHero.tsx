@@ -125,6 +125,7 @@ const EXTENDED_CHIPS = [
   {
     key: "backed",
     label: "Institution",
+    label: "Institution",
     icon: (
       // eslint-disable-next-line @next/next/no-img-element
       <img src="/brand/mark.png" alt="" className="size-8 rounded-lg object-contain" />
@@ -145,6 +146,7 @@ const EXTENDED_CHIPS = [
   {
     key: "escrow",
     label: "Payment protection",
+    label: "Payment protection",
     icon: (
       <span className="grid size-8 place-items-center rounded-full bg-primary text-deep-green">
         <ShieldCheck size={15} />
@@ -159,6 +161,7 @@ const EXTENDED_CHIPS = [
 const CHIPS = [
   {
     key: "backed",
+    label: "Institution",
     label: "Institution",
     pos: "left-[3%] top-[26%]",
     edge: "left-[3.5%] top-[46%]",
@@ -176,6 +179,7 @@ const CHIPS = [
   },
   {
     key: "wallet",
+    label: "Next live class",
     label: "Next live class",
     pos: "right-[3%] top-[30%]",
     edge: "right-[3.5%] top-[42%]",
@@ -217,6 +221,7 @@ const CHIPS = [
   },
   {
     key: "escrow",
+    label: "Payment protection",
     label: "Payment protection",
     pos: "left-[7%] bottom-[12%]",
     edge: "left-[8%] bottom-[13%]",
@@ -450,6 +455,7 @@ export function HomeHero() {
 
         {/* lime glow + cut-out learner (wide: overlapped by the copy block) */}
         <div
+          aria-hidden="true"
           aria-hidden="true"
           className="relative z-[5] mx-auto -mt-32 h-[min(96vw,560px)] w-full max-w-[1500px] sm:-mt-44 lg:-mt-64 xl:-mt-24 xl:h-[660px]"
         >
