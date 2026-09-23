@@ -15,7 +15,7 @@ const TIPS = [
 export default function StudySkillsPage() {
   return (
     <main className="w-full overflow-hidden">
-      <PageHero eyebrow="Study Skills" title="How to build a consistent study routine that actually works" subtitle="For JSS & SSS learners — British and Nigerian curricula. Practical, parent-friendly, and built for real results." crumbs={[{ name: "Home", href: "/" }, { name: "Study Skills" }]} ctas={[{ label: "Browse programmes", href: "/programmes", primary: true }, { label: "How it works", href: "/how-it-works" }]} />
+      <PageHero cover="/home/card-jss.jpg" eyebrow="Study Skills" title="How to build a consistent study routine that actually works" subtitle="For JSS & SSS learners — British and Nigerian curricula. Practical, parent-friendly, and built for real results." crumbs={[{ name: "Home", href: "/" }, { name: "Study Skills" }]} ctas={[{ label: "Browse programmes", href: "/programmes", primary: true }, { label: "How it works", href: "/how-it-works" }]} />
 
       <section className="w-full bg-[#F9F6ED] py-12 lg:py-20">
         <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12">

@@ -97,8 +97,9 @@ export default function Utme2026Page() {
       {/* Full-bleed forest hero. Keep the photo behind a dark scrim so the
           heading stays readable at every viewport width. */}
       <section className="relative isolate w-full overflow-hidden bg-[#0F2A1A] text-white">
+        {/* Matching card cover, consistent with the "Find your track" rail. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/hero/utme.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-30 lg:object-right" />
+        <img src="/home/card-utme.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-30 lg:object-right" />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#0F2A1A] via-[#0F2A1A]/95 to-[#0F2A1A]/65" />
         <div aria-hidden="true" className="absolute -right-32 top-0 size-[500px] rounded-full bg-[#D6FF57]/10 blur-[100px]" />
 

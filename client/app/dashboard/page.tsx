@@ -336,7 +336,7 @@ export default function ParentDashboardPage() {
                 body="Add a child, switch profiles, or jump into their bookings."
                 href="/dashboard?section=learners"
                 link="Open learners →"
-                image="/home/ykay-students.png"
+                image="/home/campus-hero.jpg"
                 onClick={() => setSection("learners")}
               />
               <SideCard

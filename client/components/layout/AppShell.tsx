@@ -55,15 +55,30 @@ function NavList({
               onClick={onNavigate}
               className={cn(
                 "group flex items-center gap-3 rounded-full px-4 py-2.5 text-[13px] font-bold transition-all",
-                active ? "bg-[#0F2A1A] text-white shadow-sm" : "text-[#0F2A1A]/70 hover:bg-[#0F2A1A]/5 hover:text-[#0F2A1A]",
+                active
+                  ? "bg-[#D6FF57] text-[#0F2A1A] shadow-sm"
+                  : "text-white/70 hover:bg-white/10 hover:text-white",
               )}
+              aria-current={active ? "page" : undefined}
             >
-              <span className={cn("grid size-7 place-items-center rounded-full transition", active ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#0F2A1A]/5 text-[#0F2A1A]/65 group-hover:bg-[#0F2A1A]/10")}>
+              <span
+                className={cn(
+                  "grid size-7 shrink-0 place-items-center rounded-full transition",
+                  active
+                    ? "bg-[#0F2A1A] text-[#D6FF57]"
+                    : "bg-white/10 text-white/70 group-hover:bg-white/15 group-hover:text-white",
+                )}
+              >
                 <Icon size={14} />
               </span>
               {item.label}
               {item.href === "/notifications" && unreadN > 0 && (
-                <span className="ml-auto rounded-full bg-[#D6FF57] px-2 py-0.5 text-[10px] font-bold text-[#0F2A1A]">
+                <span
+                  className={cn(
+                    "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
+                    active ? "bg-[#0F2A1A] text-white" : "bg-[#D6FF57] text-[#0F2A1A]",
+                  )}
+                >
                   {unreadN}
                 </span>
               )}
@@ -102,9 +117,9 @@ export function AppShell({
   const sidebar = (
     <div className="flex h-full flex-col">
       <Link href={spec.home} className="block px-6 pb-4 pt-6" onClick={() => setOpen(false)}>
-        <Logo markClassName="size-8" />
+        <Logo dark markClassName="size-8" className="text-[1.35rem]" />
       </Link>
-      <div className="mx-4 mb-6 rounded-[16px] bg-[#0F2A1A] px-4 py-3 text-white">
+      <div className="mx-4 mb-6 rounded-[16px] border border-white/10 bg-white/5 px-4 py-3 text-white">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Enrolled as</p>
         <p className="mt-1 text-[13px] font-bold">{spec.chip}</p>
         <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#D6FF57]">
@@ -113,11 +128,11 @@ export function AppShell({
       </div>
       <nav className="flex flex-1 flex-col gap-6 px-3 pb-6" aria-label={`${spec.title} navigation`}>
         <div>
-          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/65">Main</p>
+          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/50">Main</p>
           <NavList items={spec.main} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
         </div>
         <div>
-          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/65">More</p>
+          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/50">More</p>
           <NavList items={spec.more} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
         </div>
 
@@ -134,14 +149,14 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen bg-[#F9F6ED]">
-      <aside className="hidden w-[280px] shrink-0 flex-col border-r border-black/10 bg-white lg:flex">
+      <aside className="hidden w-[280px] shrink-0 flex-col border-r border-[#0F2A1A]/20 bg-[#0F2A1A] lg:flex">
         {sidebar}
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between gap-3 border-b border-black/10 bg-white px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex min-w-0 items-center gap-3">
-            <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-[#0F2A1A] lg:hidden" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)}>
+            <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-[#0F2A1A] lg:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
             <div className="min-w-0">
@@ -152,7 +167,8 @@ export function AppShell({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Link href="/notifications" className="relative grid size-10 place-items-center rounded-full border border-black/10 bg-white text-[#0F2A1A] hover:bg-[#0F2A1A] hover:text-white transition" aria-label="Notifications">
+            {/* White bell surface with brand-dark icon (stays white on hover). */}
+            <Link href="/notifications" className="relative grid size-10 place-items-center rounded-full border border-black/10 bg-white text-[#0F2A1A] transition hover:bg-[#F9F6ED]" aria-label="Notifications">
               <Bell size={16} />
               {unreadN > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D6FF57] px-1 text-[10px] font-bold text-[#0F2A1A]">{unreadN}</span>
@@ -175,7 +191,7 @@ export function AppShell({
         {open && (
           <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true">
             <button type="button" className="absolute inset-0 bg-[#0F2A1A]/40" aria-label="Close menu" onClick={() => setOpen(false)} />
-            <aside className="absolute left-0 top-0 flex h-full w-[min(300px,88vw)] flex-col overflow-y-auto bg-white shadow-xl">
+            <aside className="absolute left-0 top-0 flex h-full w-[min(300px,88vw)] flex-col overflow-y-auto bg-[#0F2A1A] shadow-xl">
               {sidebar}
             </aside>
           </div>

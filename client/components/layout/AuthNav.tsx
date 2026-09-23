@@ -7,22 +7,39 @@ import { LogoutDialog } from "@/components/layout/LogoutDialog";
 import { isAdmin } from "@/features/auth/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDict } from "@/hooks/useDict";
+import { cn } from "@/lib/utils";
 
 // Header auth chip: Log in / Register when signed out; account menu (with
-// role-aware links) + logout when signed in.
-export function AuthNav() {
+// role-aware links) + logout when signed in. `tone="dark"` renders the
+// trigger for the dark floating pill header; the dropdown stays white.
+export function AuthNav({ tone = "light" }: { tone?: "light" | "dark" }) {
   const { user, isLoading } = useSession();
   const { t } = useDict();
   const [open, setOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   if (isLoading) {
-    return <Skeleton className="h-9 w-24 rounded-full" />;
+    return (
+      <Skeleton
+        className={cn(
+          "h-9 w-24 rounded-full",
+          tone === "dark" ? "bg-white/15" : "bg-[#0F2A1A]/10",
+        )}
+      />
+    );
   }
 
   if (!user) {
     return (
-      <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-[#0F2A1A]/75 transition-colors hover:bg-[#F9F6ED] hover:text-[#0F2A1A] ">
+      <Link
+        href="/login"
+        className={cn(
+          "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          tone === "dark"
+            ? "text-white/75 hover:bg-white/10 hover:text-white"
+            : "text-[#0F2A1A]/75 hover:bg-[#F9F6ED] hover:text-[#0F2A1A]",
+        )}
+      >
         {t("auth.login")}
       </Link>
     );
@@ -52,9 +69,19 @@ export function AuthNav() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-full border border-black/10 py-1.5 pl-1.5 pr-4 text-sm font-semibold hover:border-[#0F2A1A] transition-colors"
+        className={cn(
+          "flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 text-sm font-semibold transition-colors",
+          tone === "dark"
+            ? "border-white/20 bg-white/5 text-white hover:border-white/40"
+            : "border-black/10 text-[#0F2A1A] hover:border-[#0F2A1A]",
+        )}
       >
-        <span className="relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#0F2A1A] text-xs font-bold text-white">
+        <span
+          className={cn(
+            "relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full text-xs font-bold",
+            tone === "dark" ? "bg-white text-[#0F2A1A]" : "bg-[#0F2A1A] text-white",
+          )}
+        >
           {user.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -62,7 +89,7 @@ export function AuthNav() {
             initials
           )}
         </span>
-        {user.first_name?.slice(0, 14) ?? user.email.split("@")[0].slice(0, 12)}
+        <span className="hidden sm:inline">{user.first_name?.slice(0, 14) ?? user.email.split("@")[0].slice(0, 12)}</span>
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-black/10 bg-white p-2 shadow-lift z-50">

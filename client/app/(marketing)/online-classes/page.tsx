@@ -68,7 +68,7 @@ export default function OnlineClassesPage() {
       />
 
       <PageHero
-        cover="/hero/programmes.jpg"
+        cover="/hero/cohorts.jpg"
         eyebrow="Live small-group learning"
         title="Online Classes & Cohorts"
         subtitle="Live small-group classes on virtual.ykaycollege.com - same login on your phone. Open cohorts come from the live catalogue, not a dummy list."

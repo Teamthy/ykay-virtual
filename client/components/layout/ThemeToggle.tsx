@@ -3,18 +3,12 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
-// Dark mode (P2): applies `dark` on <html>, persists the choice, falls back
-// to the system preference. CSS variables + targeted overrides in globals.css
-// handle the visual switch.
+// Dark mode (P2): applies `dark` on <html> and persists the choice.
+// Default is ALWAYS light, regardless of the device's
+// `prefers-color-scheme` — a stored user selection (`yk-virtual-theme`)
+// is honoured on subsequent visits.
 
 const KEY = "yk-virtual-theme";
-
-function systemPrefersDark() {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-color-scheme: dark)")?.matches
-  );
-}
 
 export function applyTheme(theme: "light" | "dark") {
   const root = document.documentElement;
@@ -26,8 +20,14 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(KEY);
-    const initial = stored ? stored === "dark" : systemPrefersDark();
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(KEY);
+    } catch {
+      /* ignore */
+    }
+    // Stored selection wins; otherwise default to light (never system).
+    const initial = stored === "dark" || stored === "light" ? stored === "dark" : false;
     setDark(initial);
     applyTheme(initial ? "dark" : "light");
   }, []);
@@ -48,7 +48,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       type="button"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`grid size-9 place-items-center rounded-lg text-[#0F2A1A]/70 transition-colors hover:bg-[#F9F6ED]   ${className}`}
+      aria-pressed={dark}
+      className={`grid size-9 place-items-center rounded-lg text-[#0F2A1A]/70 transition-colors hover:bg-[#F9F6ED] ${className}`}
     >
       {dark ? <Sun size={17} /> : <Moon size={17} />}
     </button>

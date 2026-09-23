@@ -1,11 +1,19 @@
 import Link from "next/link";
-import { ArrowRight, Play, Star } from "lucide-react";
+import { ArrowRight, Play, ShieldCheck, BadgeCheck, CalendarCheck } from "lucide-react";
 import { HomePillNav } from "./HomePillNav";
+import { HeroLearnerCarousel } from "./HeroLearnerCarousel";
 
 const AVATARS = [
   "/tutors/chinasa.jpg",
   "/tutors/judith.jpg",
   "/tutors/olanike.jpg",
+];
+
+/** Verifiable trust points — no invented ratings or family counts. */
+const TRUST = [
+  { icon: BadgeCheck, label: "Vetted tutors" },
+  { icon: ShieldCheck, label: "Escrow-protected payments" },
+  { icon: CalendarCheck, label: "Live + recorded lessons" },
 ];
 
 function HeroBadge() {
@@ -32,8 +40,10 @@ export function HomeHero() {
       <div className="relative z-10 mx-auto flex w-full max-w-[1920px] flex-col items-center px-4 pt-28 text-center sm:px-6 sm:pt-32 lg:px-8 lg:pt-36 xl:px-12 2xl:px-16">
         <HeroBadge />
 
-        <h1 className="hero-anim hero-anim--1 mt-6 max-w-[14ch] text-balance font-display text-[clamp(2.4rem,6.5vw,4.4rem)] leading-[0.88] tracking-[-0.03em] text-[#0F2A1A]">
-          Comprehensive Learning Solutions for Every Student
+        {/* Two-line headline, bold body face (DM Sans), not a display face. */}
+        <h1 className="hero-anim hero-anim--1 mt-6 max-w-[20ch] font-body text-[clamp(2.6rem,7vw,4.75rem)] font-bold leading-[1.02] tracking-[-0.02em] text-[#0F2A1A]">
+          <span className="block">Learning solutions</span>
+          <span className="block">for every student</span>
         </h1>
 
         <p className="hero-anim hero-anim--2 mt-5 max-w-[56ch] text-[15px] leading-[1.6] text-[#0F2A1A]/65 md:text-[16px]">
@@ -49,30 +59,28 @@ export function HomeHero() {
           </Link>
         </div>
 
-        <div className="hero-anim hero-anim--3 mt-7 flex items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2 shadow-sm">
-          <div className="flex -space-x-2">
+        {/* Verifiable trust messaging replaces the old rating/count chip. */}
+        <div className="hero-anim hero-anim--3 mt-7 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-full border border-black/10 bg-white px-4 py-2 shadow-sm">
+          <div className="mr-1 flex -space-x-2">
             {AVATARS.map((s) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img key={s} src={s} alt="" className="size-7 rounded-full border-2 border-white object-cover" />
             ))}
           </div>
-          <div className="flex items-center gap-1.5 text-[12px] font-bold text-[#0F2A1A]">
-            <Star size={12} className="fill-amber-400 text-amber-400" /> 4.9/5
-            <span className="font-medium text-[#0F2A1A]/65">· 3k+ families</span>
-          </div>
+          {TRUST.map((t) => (
+            <span key={t.label} className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#0F2A1A]">
+              <t.icon size={13} aria-hidden="true" className="text-[#0F2A1A]/60" />
+              {t.label}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* stage - single circle + learner, no extra cards */}
-      <div className="relative z-[5] mx-auto mt-10 h-[min(72vw,380px)] w-full max-w-[1200px] overflow-hidden sm:h-[min(52vw,480px)] lg:h-[min(42vw,560px)]">
-        <div aria-hidden="true" className="absolute left-1/2 top-0 aspect-square w-[min(88vw,420px)] -translate-x-1/2 overflow-hidden rounded-full sm:w-[min(62vw,560px)] lg:w-[min(52vw,720px)]">
-          <div className="absolute inset-0 rounded-full bg-[#D6FF57]" />
-          <div className="absolute inset-x-0 top-[4%] h-[98%]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/home/hero-student.png" alt="" className="mx-auto block h-full w-auto object-contain object-top mix-blend-multiply" />
-          </div>
-        </div>
-      </div>
+      {/* stage - the learner circle becomes a carousel (geometry unchanged) */}
+      <HeroLearnerCarousel />
+
+      {/* breathing room before the next section */}
+      <div aria-hidden="true" className="h-6" />
     </section>
   );
 }
