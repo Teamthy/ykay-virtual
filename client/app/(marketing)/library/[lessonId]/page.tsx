@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getLibraryItem } from "@/features/library/api";
 import { formatDuration, formatRecordedDate } from "@/lib/format";
 import { TranscriptPanel } from "@/features/lms/components/TranscriptPanel";
+import { LessonNotesPanel } from "@/features/learning/LessonNotesPanel";
 
 export default function LibraryLessonPage() {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -103,6 +104,12 @@ export default function LibraryLessonPage() {
               </div>
             )}
             {it.description && <p className="mt-4 text-sm leading-relaxed text-[#0F2A1A]/70">{it.description}</p>}
+            {it.entitled && (
+              <div className="mt-6 rounded-2xl border border-black/10 bg-white p-4">
+                <h2 className="mb-3 text-sm font-bold text-[#0F2A1A]">Notes &amp; bookmarks</h2>
+                <LessonNotesPanel lessonId={lessonId} />
+              </div>
+            )}
           </div>
         </div>
 

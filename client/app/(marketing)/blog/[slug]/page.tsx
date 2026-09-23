@@ -5,6 +5,7 @@ import { API_BASE, apiFetchSSR } from "@/lib/server-api";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { InnerHero } from "@/components/layout/InnerHero";
 import { RelatedContent } from "@/components/RelatedContent";
+import { jsonLd } from "@/lib/json-ld";
 
 export const revalidate = 600;
 
@@ -90,7 +91,7 @@ export default async function BlogSlugPage(props: Props) {
     <main className="container-x py-12 max-w-4xl">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(article) }}
       />
       <Breadcrumbs
         items={[

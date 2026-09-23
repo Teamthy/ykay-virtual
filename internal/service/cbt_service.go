@@ -31,6 +31,10 @@ type CBTService struct {
 	// restart (acceptable for a practice bank; documented in README).
 	attemptKey []byte
 	now        func() time.Time
+	// mastery (optional, feature 2) records each graded question's topic
+	// outcome into the mastery read-model. Nil by default so existing tests
+	// and the untracked grading path are unaffected; wired in main.go.
+	mastery func(ctx context.Context, studentProfileID uuid.UUID, subject, topic string, correct bool)
 }
 
 func NewCBTService(repo cbt.Repository) *CBTService {
@@ -53,6 +57,13 @@ func (s *CBTService) WithAttemptSecret(secret string) *CBTService {
 // WithClock overrides the time source (tests).
 func (s *CBTService) WithClock(fn func() time.Time) *CBTService {
 	s.now = fn
+	return s
+}
+
+// WithMasteryRecorder wires the optional mastery read-model recorder (feature
+// 2). When set, every server-graded question feeds the topic-mastery heatmap.
+func (s *CBTService) WithMasteryRecorder(fn func(ctx context.Context, studentProfileID uuid.UUID, subject, topic string, correct bool)) *CBTService {
+	s.mastery = fn
 	return s
 }
 
@@ -283,6 +294,9 @@ func (s *CBTService) GradePaper(ctx context.Context, studentID uuid.UUID, attemp
 		if a.SelectedIndex != nil && *a.SelectedIndex == q.CorrectIndex {
 			gq.Correct = true
 			res.Correct++
+		}
+		if s.mastery != nil {
+			s.mastery(ctx, studentID, q.SubjectSlug, q.Topic, gq.Correct)
 		}
 		res.Review = append(res.Review, gq)
 	}

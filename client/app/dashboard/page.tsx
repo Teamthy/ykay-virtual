@@ -34,6 +34,7 @@ import { RoleGate } from "@/components/dashboard/RoleGate";
 import { WelcomeQuote } from "@/components/dashboard/WelcomeQuote";
 import { RecommendationsForYou } from "@/components/dashboard/RecommendationsForYou";
 import { getAttendanceSummary, getOrderReceipt, type OrderReceipt } from "@/features/portal/api";
+import { DigestPrefsToggle } from "@/features/learning/DigestPrefsToggle";
 import { DashboardPage } from "@/components/dashboard/DashboardPage";
 import { DashHero, SideCard } from "@/components/dashboard/DashHero";
 import { CircleHelp } from "lucide-react";
@@ -497,6 +498,7 @@ export default function ParentDashboardPage() {
                   </div>
                 )}
               </div>
+              <DigestPrefsToggle />
             </div>
           )}
 

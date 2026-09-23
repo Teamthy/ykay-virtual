@@ -201,11 +201,20 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/subjects/{slug}", handlers.Subjects.GetBySlug)
 	mux.Handle("GET "+v1+"/tutors/search", cache60(handlers.Tutors.Search))
 	mux.HandleFunc("GET "+v1+"/tutors/{slug}", handlers.Tutors.GetBySlug)
+	// Tutor availability matching (feature 4): real slots for a tutor profile.
+	mux.Handle("GET "+v1+"/tutors/{id}/availability", cache60(handlers.AvailabilityPublic.ByTutor))
 	mux.HandleFunc("GET "+v1+"/programmes", handlers.Programmes.List)
 	mux.HandleFunc("GET "+v1+"/programmes/{slug}", handlers.Programmes.GetBySlug)
 	mux.Handle("GET "+v1+"/programmes/{slug}/tutors", cache60(handlers.Programmes.Tutors))
 	mux.Handle("GET "+v1+"/cohorts", cache60(handlers.Cohorts.List))
 	mux.Handle("GET "+v1+"/cohorts/{id}", cache60(handlers.Cohorts.GetByID))
+	// Cohort waitlist (feature 6, 000079): join/leave/mine, public count, admin.
+	mux.HandleFunc("POST "+v1+"/me/cohorts/{cohortId}/waitlist", handlers.Waitlist.Join)
+	mux.HandleFunc("DELETE "+v1+"/me/cohorts/{cohortId}/waitlist", handlers.Waitlist.Leave)
+	mux.HandleFunc("GET "+v1+"/me/cohorts/{cohortId}/waitlist", handlers.Waitlist.Mine)
+	mux.Handle("GET "+v1+"/cohorts/{id}/waitlist", cache60(handlers.Waitlist.PublicCount))
+	mux.HandleFunc("GET "+v1+"/admin/cohorts/{cohortId}/waitlist", handlers.Waitlist.AdminList)
+	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/waitlist/notify", handlers.Waitlist.AdminNotify)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/lessons", handlers.LessonOps.ListCohortLessons)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/resources", handlers.LessonOps.ListResources)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/assignments", handlers.LessonOps.ListAssignments)
@@ -222,6 +231,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/lessons/{lessonId}/video", handlers.LessonOps.SetRecordedVideo)
 	mux.HandleFunc("GET "+v1+"/me/recorded-lessons", handlers.LessonOps.MyRecordedLibrary)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.ListNotes)
+	// Lesson bookmarks & timestamped player notes (feature 5, 000078). Scoped
+	// to lesson participants via the same lesson-note authorization.
+	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/player-notes", handlers.PlayerNotes.Add)
+	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/player-notes", handlers.PlayerNotes.List)
+	mux.HandleFunc("DELETE "+v1+"/me/player-notes/{id}", handlers.PlayerNotes.Delete)
 
 	// Meeting links (G4.2) — tutor opens/refreshes, participants join
 	// inside the server-enforced join window.
@@ -364,6 +378,17 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.RecordLessonProgress)
 	mux.HandleFunc("GET "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.GetLessonProgress)
 	mux.HandleFunc("GET "+v1+"/me/learning/progress", handlers.Learning.MyLessonProgress)
+	// Topic-mastery heatmap (feature 2, 000074): own view + parent per-child view.
+	mux.HandleFunc("GET "+v1+"/me/learning/mastery", handlers.Mastery.Get)
+	// Adaptive revision planner (feature 1, 000075).
+	mux.HandleFunc("GET "+v1+"/me/revision-plans", handlers.Revision.List)
+	mux.HandleFunc("POST "+v1+"/me/revision-plans", handlers.Revision.Create)
+	mux.HandleFunc("POST "+v1+"/me/revision-plans/{id}/rebalance", handlers.Revision.Rebalance)
+	mux.HandleFunc("GET "+v1+"/me/revision-plans/{id}/tasks", handlers.Revision.Tasks)
+	mux.HandleFunc("POST "+v1+"/me/revision-plans/tasks/{id}/complete", handlers.Revision.CompleteTask)
+	// Weekly parent progress digest (feature 3, 000076): dashboard toggle.
+	mux.HandleFunc("GET "+v1+"/me/digest-prefs", handlers.Digest.Get)
+	mux.HandleFunc("PUT "+v1+"/me/digest-prefs", handlers.Digest.Set)
 	mux.HandleFunc("GET "+v1+"/admin/analytics", handlers.Learning.Analytics)
 	mux.HandleFunc("GET "+v1+"/admin/reports/attendance.csv", handlers.Learning.AttendanceCSV)
 	mux.HandleFunc("GET "+v1+"/admin/reports/revenue.csv", handlers.Learning.RevenueCSV)
@@ -603,6 +628,12 @@ type Handlers struct {
 	Portal            *PortalHandler
 	Learning          *LearningHandler
 	Objects           *ObjectHandler
+	Waitlist          *WaitlistHandler
+	AvailabilityPublic *AvailabilityPublicHandler
+	Mastery           *MasteryHandler
+	Revision          *RevisionHandler
+	PlayerNotes       *PlayerNoteHandler
+	Digest            *DigestHandler
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
@@ -622,7 +653,7 @@ func RateLimitPerMinute() int {
 // every user behind the proxy shares one bucket and the limit collapses
 // platform-wide. Env-tunable via AUTH_RATE_LIMIT_PER_MINUTE.
 func AuthRateLimitPerMinute() int {
-	return envInt("AUTH_RATE_LIMIT_PER_MINUTE", 20)
+	return envInt("AUTH_RATE_LIMIT_PER_MINUTE", 120)
 }
 
 // envInt reads a positive integer env var, falling back to def on empty/parse

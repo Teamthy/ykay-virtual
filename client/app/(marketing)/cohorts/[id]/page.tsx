@@ -9,6 +9,7 @@ import { CalendarDays, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge, statusKindFor } from "@/components/ui/status-badge";
 import { LeadCapture } from "@/features/leads/LeadCapture";
+import { WaitlistButton } from "@/features/cohorts/WaitlistButton";
 
 export const revalidate = 300;
 
@@ -233,12 +234,15 @@ export default async function CohortDetailPage(props: Props) {
               </li>
             </ul>
             {full ? (
-              <button
-                disabled
-                className="btn-gold w-full opacity-50 cursor-not-allowed"
-              >
-                Cohort full
-              </button>
+              <div className="space-y-3">
+                <button
+                  disabled
+                  className="btn-gold w-full opacity-50 cursor-not-allowed"
+                >
+                  Cohort full
+                </button>
+                <WaitlistButton cohortId={cohort.id} />
+              </div>
             ) : (
               <Link
                 href={`/cohorts/${cohort.id}/enroll`}

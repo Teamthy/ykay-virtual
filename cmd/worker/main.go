@@ -13,10 +13,12 @@ import (
 	"github.com/joho/godotenv"
 
 	"ykay-virtual/internal/config"
+	"ykay-virtual/internal/domain/digest"
 	"ykay-virtual/internal/domain/identity"
 	"ykay-virtual/internal/domain/leads"
 	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/payment"
+	"ykay-virtual/internal/domain/practice"
 	"ykay-virtual/internal/logx"
 	"ykay-virtual/internal/notification"
 	payment_provider "ykay-virtual/internal/payment"
@@ -65,6 +67,9 @@ type repos struct {
 	orders     payment.OrderRepository
 	dripRepo   identity.EmailDripRepository
 	roleRepo   identity.RoleRepository
+	students   identity.StudentProfileRepository
+	exams      practice.Repository
+	digest     digest.Repository
 }
 
 func main() {
@@ -125,6 +130,11 @@ func main() {
 		plusReportSvc = service.NewPlusReportService(uow.Plus(), r.users, notification.NewEmailSender(), cfg.SiteURL)
 		uow.Rollback()
 	}
+
+	// Weekly parent progress digest (feature 3, 000076): honest per-child
+	// activity summaries emailed to opted-in parents.
+	digestSvc := service.NewDigestService(r.digest, r.users, r.students, r.exams,
+		notification.NewEmailSender(), cfg.SiteURL)
 
 	// --- Durable job queue (G3.1) ---
 	// Redis-backed with retries + dead-letter; consumers are idempotent.
@@ -388,6 +398,22 @@ func main() {
 						release()
 					}
 				}
+				// Weekly parent progress digest (feature 3, 000076).
+				if digestSvc != nil {
+					if release, ok := cronLock.TryLock(ctx, "send_parent_progress_digests", 6*24*time.Hour); ok {
+						n, derr := digestSvc.SendDigests(ctx)
+						if derr != nil {
+							slog.Error("cron: send_parent_progress_digests", "error", derr)
+							telemetry.CronRun("send_parent_progress_digests", false)
+						} else {
+							telemetry.CronRun("send_parent_progress_digests", true)
+							if n > 0 {
+								slog.Info("cron: send_parent_progress_digests", "sent", n)
+							}
+						}
+						release()
+					}
+				}
 			case <-rankingTicker.C:
 				if release, ok := cronLock.TryLock(ctx, "compute_tutor_ranking_score", 20*time.Hour); ok {
 					n, err := vettingSvc.RecomputeAllRankings(ctx)
@@ -482,6 +508,9 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 			orders:     store.Orders,
 			dripRepo:   memory.NewEmailDripMemory(),
 			roleRepo:   store.Roles,
+			students:   store.Students,
+			exams:      memory.NewPracticeExamMemory(),
+			digest:     memory.NewDigestMemory(),
 		}
 	}
 	_ = ctx
@@ -496,6 +525,9 @@ func setupRepos(ctx context.Context, cfg config.Config) *repos {
 		orders:     postgres.NewOrderRepo(pg.DB()),
 		dripRepo:   postgres.NewEmailDripRepo(pg.DB()),
 		roleRepo:   postgres.NewRoleRepo(pg.DB()),
+		students:   postgres.NewStudentProfileRepo(pg.DB()),
+		exams:      postgres.NewPracticeExamRepo(pg.DB()),
+		digest:     postgres.NewDigestRepo(pg.DB()),
 	}
 }
 

@@ -5,6 +5,7 @@ import { RelatedContent } from "@/components/RelatedContent";
 import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
 import { PrivateBookingForm } from "@/features/tuition/PrivateBookingForm";
+import { TutorAvailability } from "@/features/tutors/TutorAvailability";
 import { apiFetchSSR } from "@/lib/server-api";
 import Image from "next/image";
 import {
@@ -189,6 +190,15 @@ export default async function TutorPage(props: Props) {
               evaluation - plus YK-Virtual progress reports with strengths,
               weaknesses and recommendations, all audited.
             </p>
+          </section>
+
+          <section className="mt-8">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
+              Weekly availability
+            </h2>
+            <div className="mt-4">
+              <TutorAvailability tutorProfileId={tutor.id} />
+            </div>
           </section>
 
           <section id="book" className="mt-8">

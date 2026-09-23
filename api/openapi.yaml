@@ -1040,6 +1040,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedTutors'
 
+  /tutors/{id}/availability:
+    get:
+      tags: [tutors]
+      summary: A tutor's real recurring availability slots (feature 4, cached 60s)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Real availability slots for the tutor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TutorAvailability'
+
   /tutors/{slug}:
     get:
       tags: [tutors]
@@ -1094,6 +1110,90 @@ paths:
               schema:
                 $ref: '#/components/schemas/Cohort'
         '404': { description: Cohort not found }
+
+  /cohorts/{id}/waitlist:
+    get:
+      tags: [cohorts]
+      summary: Visible waitlist size for a cohort (real data, never fabricated)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Waitlist count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  waiting: { type: integer }
+
+  /me/cohorts/{cohortId}/waitlist:
+    post:
+      tags: [cohorts]
+      summary: Join a full cohort's waitlist (idempotent per user)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Waitlist entry (position)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistEntry'
+    get:
+      tags: [cohorts]
+      summary: My waitlist position for a cohort (null when not waiting)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Entry or null
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistEntry'
+    delete:
+      tags: [cohorts]
+      summary: Leave a cohort's waitlist
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Left }
+
+  /admin/cohorts/{cohortId}/waitlist:
+    get:
+      tags: [admin]
+      summary: List a cohort's waitlist (ordered by position)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Ordered waitlist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaitlistEntry'
+
+  /admin/cohorts/{cohortId}/waitlist/notify:
+    post:
+      tags: [admin]
+      summary: Manually notify the front of the waitlist (idempotent, at-most-once)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Who was notified this call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notified: { type: integer }
+                  user_ids:
+                    type: array
+                    items: { type: string, format: uuid }
 
   /bookings:
     post:
@@ -2493,6 +2593,53 @@ paths:
         - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
         '200': { description: Notes }
+
+  /lessons/{lessonId}/player-notes:
+    post:
+      tags: [learning]
+      summary: Add a timestamped player note or bookmark (feature 5, participants only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role, timestamp_sec]
+              properties:
+                role: { type: string, enum: [STUDENT, PARENT, TUTOR] }
+                timestamp_sec: { type: integer, minimum: 0 }
+                is_bookmark: { type: boolean, default: false }
+                text: { type: string }
+      responses:
+        '201': { description: Note created }
+    get:
+      tags: [learning]
+      summary: Shared participant notes/bookmarks for a lesson (ordered by time)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Player notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PlayerNote' }
+
+  /me/player-notes/{id}:
+    delete:
+      tags: [learning]
+      summary: Delete one of my player notes/bookmarks (owner only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Deleted }
+        '404': { description: Not found or not the owner }
 
   /lessons/{lessonId}/reschedule:
     post:
@@ -4215,6 +4362,151 @@ paths:
                   data:
                     type: array
                     items: { $ref: '#/components/schemas/LessonProgress' }
+
+  /me/learning/mastery:
+    get:
+      tags: [learning]
+      summary: Topic-mastery heatmap — own view, or a parent's per-child view (feature 2)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: subject, in: query, schema: { type: string } }
+        - { name: student_profile_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Mastery cells (empty array when there is no attempt history)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/TopicMastery' }
+
+  /me/revision-plans:
+    get:
+      tags: [learning]
+      summary: List the learner's revision plans (feature 1)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Revision plans
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/RevisionPlan' }
+    post:
+      tags: [learning]
+      summary: Create a revision plan (seeds tasks from weak topics)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, window_start, window_end]
+              properties:
+                subject: { type: string }
+                exam: { type: string }
+                window_start: { type: string, format: date }
+                window_end: { type: string, format: date }
+      responses:
+        '201':
+          description: Created plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevisionPlan'
+
+  /me/revision-plans/{id}/rebalance:
+    post:
+      tags: [learning]
+      summary: Weekly rebalance — promote weak units, compress mastered ones
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Number of tasks reprioritised
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reprioritised: { type: integer }
+
+  /me/revision-plans/{id}/tasks:
+    get:
+      tags: [learning]
+      summary: A plan's task timeline (week view)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Ordered tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RevisionTask' }
+
+  /me/revision-plans/tasks/{id}/complete:
+    post:
+      tags: [learning]
+      summary: Mark a revision task complete (idempotent)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Completed }
+
+  /me/digest-prefs:
+    get:
+      tags: [learning]
+      summary: My weekly parent progress digest preference + last-sent watermark (feature 3)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Digest prefs (defaults to enabled=true when never toggled)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ParentDigestPrefs' }
+    put:
+      tags: [learning]
+      summary: Toggle my weekly parent progress digest on or off
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled: { type: boolean }
+      responses:
+        '200':
+          description: Updated prefs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ParentDigestPrefs' }
+
   /admin/analytics:
     get:
       tags: [analytics]
@@ -4456,6 +4748,83 @@ components:
         fee: { type: number }
         currency: { type: string }
         status: { type: string }
+
+    WaitlistEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        cohort_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        position: { type: integer }
+        notified_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+
+    TutorAvailability:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tutor_profile_id: { type: string, format: uuid }
+        day_of_week: { type: integer, minimum: 0, maximum: 6 }
+        start_time: { type: string }
+        end_time: { type: string }
+        is_recurring: { type: boolean }
+        valid_from: { type: string, format: date-time }
+        valid_to: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+
+    TopicMastery:
+      type: object
+      properties:
+        subject: { type: string }
+        topic: { type: string }
+        attempts: { type: integer }
+        correct: { type: integer }
+        mastery: { type: integer, minimum: 0, maximum: 100 }
+
+    RevisionPlan:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        student_profile_id: { type: string, format: uuid }
+        subject: { type: string }
+        exam: { type: string }
+        window_start: { type: string, format: date }
+        window_end: { type: string, format: date }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    RevisionTask:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        plan_id: { type: string, format: uuid }
+        topic: { type: string }
+        window_start: { type: string, format: date }
+        window_end: { type: string, format: date }
+        status: { type: string, enum: [PENDING, DONE, SKIPPED] }
+        priority: { type: integer, minimum: 1, maximum: 3 }
+        source: { type: string, enum: [seeded, rebalanced] }
+        completed_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+
+    PlayerNote:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        lesson_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        role: { type: string, enum: [STUDENT, PARENT, TUTOR] }
+        timestamp_sec: { type: integer, minimum: 0 }
+        is_bookmark: { type: boolean }
+        text: { type: string }
+        created_at: { type: string, format: date-time }
+
+    ParentDigestPrefs:
+      type: object
+      properties:
+        enabled: { type: boolean, description: "Opt-in toggle for the weekly parent progress digest" }
+        last_sent_at: { type: string, format: date-time, description: "Watermark the worker uses to collect activity since the last digest (absent until the first send)" }
 
     OrderItem:
       type: object

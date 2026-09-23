@@ -1,0 +1,84 @@
+package memory
+
+import (
+	"context"
+	"sort"
+	"sync"
+	"time"
+
+	"github.com/google/uuid"
+
+	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/lessonnote"
+)
+
+// LessonNoteMemory — in-memory lessonnote.Repository for tests + dev fallback.
+type LessonNoteMemory struct {
+	mu    sync.RWMutex
+	notes []*lessonnote.PlayerNote
+}
+
+func NewLessonNoteMemory() *LessonNoteMemory {
+	return &LessonNoteMemory{notes: []*lessonnote.PlayerNote{}}
+}
+
+func (m *LessonNoteMemory) Add(_ context.Context, n *lessonnote.PlayerNote) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	n.ID = uuid.New()
+	n.CreatedAt = time.Now().UTC()
+	cp := *n
+	m.notes = append(m.notes, &cp)
+	*n = cp
+	return nil
+}
+
+func (m *LessonNoteMemory) ListByLesson(_ context.Context, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []lessonnote.PlayerNote{}
+	for _, n := range m.notes {
+		if n.LessonID == lessonID {
+			out = append(out, *n)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].TimestampSec < out[j].TimestampSec })
+	return out, nil
+}
+
+func (m *LessonNoteMemory) ListByUser(_ context.Context, userID, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := []lessonnote.PlayerNote{}
+	for _, n := range m.notes {
+		if n.UserID == userID && n.LessonID == lessonID {
+			out = append(out, *n)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].TimestampSec < out[j].TimestampSec })
+	return out, nil
+}
+
+func (m *LessonNoteMemory) Delete(_ context.Context, id, userID uuid.UUID) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	out := m.notes[:0]
+	found := false
+	for _, n := range m.notes {
+		if n.ID == id {
+			if n.UserID != userID {
+				return domain.ErrForbidden // only the owner may delete
+			}
+			found = true
+			continue
+		}
+		out = append(out, n)
+	}
+	m.notes = out
+	if !found {
+		return domain.ErrNotFound
+	}
+	return nil
+}
+
+var _ lessonnote.Repository = (*LessonNoteMemory)(nil)
