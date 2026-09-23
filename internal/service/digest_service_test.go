@@ -144,7 +144,7 @@ func TestSendDigests_SkipsParentWithoutEmail(t *testing.T) {
 	parent := uuid.New()
 	child := uuid.New()
 	require.NoError(t, prefs.Upsert(ctx, &digest.Prefs{ParentUserID: parent, Enabled: true}))
-	users := fakeUserRepo{byID: map[uuid.UUID]*identity.User{{ID: parent, Email: ""}}} // no email
+	users := fakeUserRepo{byID: map[uuid.UUID]*identity.User{parent: {ID: parent, Email: ""}}} // no email
 	students := fakeStudentRepo{byParent: map[uuid.UUID][]identity.StudentProfile{parent: {{ID: child}}}}
 	recent := time.Now().Add(-time.Hour)
 	prac := fakePracticeRepo{byStudent: map[uuid.UUID][]practice.Attempt{child: {{SubmittedAt: &recent, Score: ptr(60)}}}}
