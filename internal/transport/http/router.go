@@ -373,6 +373,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.RecordLessonProgress)
 	mux.HandleFunc("GET "+v1+"/learning/lessons/{lessonId}/progress", handlers.Learning.GetLessonProgress)
 	mux.HandleFunc("GET "+v1+"/me/learning/progress", handlers.Learning.MyLessonProgress)
+	// Topic-mastery heatmap (feature 2, 000074): own view + parent per-child view.
+	mux.HandleFunc("GET "+v1+"/me/learning/mastery", handlers.Mastery.Get)
 	mux.HandleFunc("GET "+v1+"/admin/analytics", handlers.Learning.Analytics)
 	mux.HandleFunc("GET "+v1+"/admin/reports/attendance.csv", handlers.Learning.AttendanceCSV)
 	mux.HandleFunc("GET "+v1+"/admin/reports/revenue.csv", handlers.Learning.RevenueCSV)
@@ -614,6 +616,7 @@ type Handlers struct {
 	Objects           *ObjectHandler
 	Waitlist          *WaitlistHandler
 	AvailabilityPublic *AvailabilityPublicHandler
+	Mastery           *MasteryHandler
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).

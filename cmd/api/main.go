@@ -35,6 +35,7 @@ import (
 	"ykay-virtual/internal/domain/leads"
 	"ykay-virtual/internal/domain/learning"
 	"ykay-virtual/internal/domain/library"
+	"ykay-virtual/internal/domain/mastery"
 	"ykay-virtual/internal/domain/messaging"
 	"ykay-virtual/internal/domain/payment"
 	"ykay-virtual/internal/domain/plus"
@@ -139,6 +140,7 @@ type Repositories struct {
 	Meeting            service.LessonMeetingRepo
 	ProgrammeLifecycle academics.ProgrammeLifecycleRepository
 	Waitlist           waitlist.Repository
+	Mastery            mastery.Repository
 	StorageBackend     string  // "postgres" | "memory"
 	CachePrefix        string  // namespaces the shared cache per backend
 	DB                 *sql.DB // raw handle (nil in memory mode) — boot migrations
@@ -275,6 +277,9 @@ func main() {
 		WithPractice(repos.Exams).WithLearning(repos.Learning).WithUsers(repos.Users)
 	// Cohort waitlist (feature 6, 000079).
 	waitlistSvc := service.NewWaitlistService(repos.Waitlist)
+	// Topic-mastery heatmap (feature 2, 000074). Feeds the read-model from
+	// server-authoritative CBT grading (nil-safe recorder).
+	masterySvc := service.NewMasteryService(repos.Mastery)
 	// (profileAuthz is created after the services block)
 	_ = dashSvc
 	plusTeamsSvc := service.NewPlusTeamsService(repos.PlusTeams, audit).WithUsers(repos.Users).
@@ -296,7 +301,8 @@ func main() {
 	// Shared CBT practice bank (000072): embedded CSV seeds the bank on first
 	// boot only (idempotent — admins can curate afterwards without the seed
 	// re-adding anything).
-	cbtSvc := service.NewCBTService(repos.CBTBank).WithAttemptSecret(cfg.CBTAttemptSecret)
+	cbtSvc := service.NewCBTService(repos.CBTBank).WithAttemptSecret(cfg.CBTAttemptSecret).
+		WithMasteryRecorder(masterySvc.Recorder())
 	if n, err := cbtSvc.SeedIfAbsent(ctx, bankdata.CSV()); err != nil {
 		slog.Warn("cbt bank seed failed", "error", err)
 	} else if n > 0 {
@@ -580,6 +586,7 @@ func main() {
 		DashboardInsights: httpapi.NewDashboardInsightsHandler(dashSvc, profileAuthz),
 		Waitlist:          httpapi.NewWaitlistHandler(waitlistSvc),
 		AvailabilityPublic: httpapi.NewAvailabilityPublicHandler(repos.Availability),
+		Mastery:            httpapi.NewMasteryHandler(masterySvc, profileAuthz),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
@@ -785,6 +792,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			Analytics:          memory.NewAnalyticsMemory(store),
 			Availability:       memory.NewAvailabilityMemory(),
 		Waitlist:           memory.NewWaitlistMemory(),
+		Mastery:            memory.NewMasteryMemory(),
 			Submissions:        store.Submissions,
 			Chat:               memory.NewChatMemory(),
 			Devices:            memory.NewDeviceMemory(),
@@ -859,6 +867,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Analytics:          postgres.NewAnalyticsRepo(pg.DB()),
 		Availability:       postgres.NewAvailabilityRepo(pg.DB()),
 		Waitlist:           postgres.NewWaitlistRepo(pg.DB()),
+		Mastery:            postgres.NewMasteryRepo(pg.DB()),
 		Submissions:        postgres.NewSubmissionRepo(pg.DB()),
 		Chat:               postgres.NewChatRepo(pg.DB()),
 		Devices:            postgres.NewDeviceRepo(pg.DB()),
