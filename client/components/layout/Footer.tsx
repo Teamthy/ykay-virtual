@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
-
-// YK-Virtual footer - full-width dark band, white brand copy, three link columns
-// and a copyright bar. No social icons (removed), no rounded inset card.
+import { ArrowRight } from "lucide-react";
 
 const PRODUCTS = [
   { href: "/cohorts", label: "Group Cohorts" },
   { href: "/private-tuition", label: "Private Tuition" },
   { href: "/online-classes", label: "Online Classes" },
   { href: "/utme-2026", label: "UTME 2026 Prep" },
-  { href: "/login?next=/lms/practice", label: "CBT Practice" },
+  { href: "/exam-prep", label: "Exam Prep" },
   { href: "/plus", label: "YK-Virtual Plus" },
 ];
 
@@ -18,8 +16,8 @@ const RESOURCES = [
   { href: "/resources", label: "Study Guides" },
   { href: "/blog", label: "Blog" },
   { href: "/test-prep", label: "Test Prep" },
-  { href: "/gmat", label: "GMAT / GRE" },
-  { href: "/download", label: "Android App" },
+  { href: "/subjects", label: "Subjects" },
+  { href: "/download", label: "Download App" },
 ];
 
 const COMPANY = [
@@ -28,67 +26,80 @@ const COMPANY = [
   { href: "/success-stories", label: "Success Stories" },
   { href: "/become-tutor", label: "Become a Tutor" },
   { href: "/college", label: "Ykay College" },
-  { href: "/careers", label: "Careers" },
-  { href: "/privacy", label: "Privacy Policy" },
   { href: "/contact", label: "Contact Us" },
 ];
 
-function FooterLink({ href, label }: { href: string; label: string }) {
-  return (
-    <li>
-      <Link href={href} className="text-white/70 transition hover:text-white">
-        {label}
-      </Link>
-    </li>
-  );
-}
-
-function Column({
-  title,
-  links,
-}: {
-  title: string;
-  links: { href: string; label: string }[];
-}) {
-  return (
-    <div>
-      <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-white">
-        {title}
-      </h3>
-      <ul className="space-y-3 text-sm">
-        {links.map((l) => (
-          <FooterLink key={l.href} {...l} />
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export function Footer() {
   return (
-    <footer className="relative z-10 w-full bg-[#0A0A0A] text-white">
-      <div className="mx-auto w-full max-w-[1400px] px-6 py-14 md:px-10">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          {/* Brand */}
-          <div>
-            <Link href="/" aria-label="YK-Virtual home">
-              <Logo dark className="text-2xl" />
-            </Link>
-            <p className="mt-6 max-w-sm text-sm leading-relaxed text-white">
-              Africa&apos;s trusted tutoring platform - British &amp; Nigerian
-              curricula, exam preparation, private tuition and live cohorts.
-              Learning beyond boundaries.
-            </p>
+    <footer className="relative w-full overflow-hidden bg-[#0F2A1A]">
+      <div className="relative mx-auto w-full max-w-[1920px] px-4 py-8 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+        <div className="mx-auto max-w-[1200px]">
+          {/* white card like reference */}
+          <div className="rounded-[20px] bg-white p-6 lg:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.15)]">
+            <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+              <div>
+                <Link href="/" aria-label="YK-Virtual home" className="inline-flex items-center gap-2">
+                  <Logo />
+                </Link>
+                <p className="mt-4 max-w-[36ch] text-[13px] leading-[1.6] text-[#0F2A1A]/70">
+                  YK-Virtual is Africa&apos;s trusted tutoring platform — British & Nigerian curricula, exam preparation, private tuition and live cohorts. Learning beyond boundaries, powered by Ykay College.
+                </p>
+                <div className="mt-6">
+                  <Link href="/become-tutor" className="inline-flex items-center gap-2 rounded-full bg-[#0F2A1A] px-5 py-2.5 text-[12px] font-bold text-white hover:bg-black">
+                    Apply to teach <span className="grid size-5 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]"><ArrowRight size={10} /></span>
+                  </Link>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">Products</p>
+                <ul className="mt-3 space-y-2">
+                  {PRODUCTS.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="text-[13px] text-[#0F2A1A]/70 hover:text-[#0F2A1A] hover:underline">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">Resources</p>
+                <ul className="mt-3 space-y-2">
+                  {RESOURCES.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="text-[13px] text-[#0F2A1A]/70 hover:text-[#0F2A1A] hover:underline">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">Company</p>
+                <ul className="mt-3 space-y-2">
+                  {COMPANY.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="text-[13px] text-[#0F2A1A]/70 hover:text-[#0F2A1A] hover:underline">
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-5">
+              <p className="text-[11px] text-[#0F2A1A]/50">© 2026 YK-Virtual · British & Nigerian curricula · All rights reserved</p>
+              <div className="flex gap-4 text-[11px] text-[#0F2A1A]/50">
+                <Link href="/privacy" className="hover:text-[#0F2A1A] hover:underline">Privacy</Link>
+                <Link href="/terms" className="hover:text-[#0F2A1A] hover:underline">Terms</Link>
+                <Link href="/contact" className="hover:text-[#0F2A1A] hover:underline">Contact</Link>
+              </div>
+            </div>
           </div>
-
-          <Column title="Products" links={PRODUCTS} />
-          <Column title="Resources" links={RESOURCES} />
-          <Column title="Company" links={COMPANY} />
-        </div>
-
-        <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 sm:flex-row">
-          <p className="text-sm text-white/60">© 2026 YK-Virtual</p>
-          <p className="text-sm text-white/60">All rights reserved.</p>
         </div>
       </div>
     </footer>

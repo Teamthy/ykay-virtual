@@ -226,18 +226,18 @@ export function Rail() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-background)] via-[var(--color-background)]/70 to-primary-light/40" />
 
-      <div className="relative z-10 w-full px-4 pb-12 pt-8 sm:px-5 md:px-10 md:pb-16 md:pt-10">
-        <div className="flex items-end justify-between gap-6">
+      <div className="relative z-10 mx-auto w-full max-w-[1920px] px-4 pb-12 pt-8 sm:px-6 md:pb-16 md:pt-10 lg:px-10 xl:px-16">
+        <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-ink-400">
-              Programmes in motion
-            </p>
             <h2
               id="programmes-rail-title"
-              className="mt-1.5 font-display text-2xl tracking-[-0.01em] [color:var(--home-ink)] md:text-3xl"
+              className="font-display text-[clamp(1.8rem,3vw,2.6rem)] leading-[0.95] tracking-[-0.02em] [color:var(--home-ink)]"
             >
               Find your track
             </h2>
+            <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-ink-600 md:text-[15px]">
+              Live cohorts, private tuition, exam prep and digital skills — choose the format that fits your learner&apos;s pace and goals.
+            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2 pb-1">
             <button

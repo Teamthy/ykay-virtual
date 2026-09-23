@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, LogOut, Menu, X } from "lucide-react";
+import { Bell, LogOut, Menu, X, ArrowRight } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { unreadCount } from "@/features/messaging/api";
 import { cn } from "@/lib/utils";
@@ -16,9 +16,6 @@ import {
 } from "@/lib/app-nav";
 import { LogoutDialog } from "@/components/layout/LogoutDialog";
 import { Logo } from "@/components/layout/Logo";
-
-// AppShell — Incubator-style frame (full-height sidebar + greeting header)
-// with YK-Virtual brand: deep green, neon gold, peach surfaces.
 
 function greetingWord(d = new Date()) {
   const h = d.getHours();
@@ -41,7 +38,7 @@ function NavList({
   onNavigate: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-1">
       {items
         .filter(
           (item) => !item.superAdminOnly || userRoles.includes("SUPER_ADMIN"),
@@ -57,17 +54,16 @@ function NavList({
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
-                active ? "bg-deep text-white" : "text-ink-700 hover:bg-ink-50",
+                "group flex items-center gap-3 rounded-full px-4 py-2.5 text-[13px] font-bold transition-all",
+                active ? "bg-[#0F2A1A] text-white shadow-sm" : "text-[#0F2A1A]/70 hover:bg-[#0F2A1A]/5 hover:text-[#0F2A1A]",
               )}
             >
-              <Icon
-                size={16}
-                className={active ? "text-primary" : "text-ink-500"}
-              />
+              <span className={cn("grid size-7 place-items-center rounded-full transition", active ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#0F2A1A]/5 text-[#0F2A1A]/60 group-hover:bg-[#0F2A1A]/10")}>
+                <Icon size={14} />
+              </span>
               {item.label}
               {item.href === "/notifications" && unreadN > 0 && (
-                <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-ink-900">
+                <span className="ml-auto rounded-full bg-[#D6FF57] px-2 py-0.5 text-[10px] font-bold text-[#0F2A1A]">
                   {unreadN}
                 </span>
               )}
@@ -104,132 +100,82 @@ export function AppShell({
     user?.first_name?.trim() || user?.email?.split("@")[0] || "there";
 
   const sidebar = (
-    <>
-      <Link
-        href={spec.home}
-        className="block px-5 pb-4 pt-6"
-        onClick={() => setOpen(false)}
-      >
+    <div className="flex h-full flex-col">
+      <Link href={spec.home} className="block px-6 pb-4 pt-6" onClick={() => setOpen(false)}>
         <Logo markClassName="size-8" />
       </Link>
-      <div className="mx-4 mb-6 rounded-xl bg-primary-light px-3 py-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-deep/70">
-          Enrolled as
-        </p>
-        <p className="text-sm font-bold text-deep">{spec.chip}</p>
+      <div className="mx-4 mb-6 rounded-[16px] bg-[#0F2A1A] px-4 py-3 text-white">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Enrolled as</p>
+        <p className="mt-1 text-[13px] font-bold">{spec.chip}</p>
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[#D6FF57]">
+          <span className="size-1.5 rounded-full bg-[#D6FF57] animate-pulse" /> Active
+        </div>
       </div>
-      <nav
-        className="flex flex-1 flex-col gap-6 px-3 pb-6"
-        aria-label={`${spec.title} navigation`}
-      >
+      <nav className="flex flex-1 flex-col gap-6 px-3 pb-6" aria-label={`${spec.title} navigation`}>
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">
-            Main
-          </p>
-          <NavList
-            items={spec.main}
-            pathname={pathname}
-            userRoles={user?.roles ?? []}
-            unreadN={unreadN}
-            onNavigate={() => setOpen(false)}
-          />
+          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/40">Main</p>
+          <NavList items={spec.main} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
         </div>
         <div>
-          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-400">
-            More
-          </p>
-          <NavList
-            items={spec.more}
-            pathname={pathname}
-            userRoles={user?.roles ?? []}
-            unreadN={unreadN}
-            onNavigate={() => setOpen(false)}
-          />
+          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/40">More</p>
+          <NavList items={spec.more} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
+        </div>
+
+        <div className="mt-auto rounded-[16px] bg-[#D6FF57] p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/60">Need help?</p>
+          <p className="mt-1 text-[13px] font-bold leading-tight text-[#0F2A1A]">Book a free 15-min consultation</p>
+          <Link href="/contact" className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#0F2A1A] px-4 py-2 text-[12px] font-bold text-white">
+            Book now <ArrowRight size={12} />
+          </Link>
         </div>
       </nav>
-    </>
+    </div>
   );
 
   return (
-    <div className="flex min-h-screen bg-ink-50 dark:bg-[#07140e]">
-      <aside className="hidden w-[248px] shrink-0 flex-col border-r border-ink-100 bg-white dark:border-[#214c37] dark:bg-[#0d1f16] lg:flex">
+    <div className="flex min-h-screen bg-[#F9F6ED]">
+      <aside className="hidden w-[280px] shrink-0 flex-col border-r border-black/10 bg-white lg:flex">
         {sidebar}
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between gap-3 border-b border-ink-100 bg-white px-4 dark:border-[#214c37] dark:bg-[#0d1f16]/95 md:px-8">
+        <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between gap-3 border-b border-black/10 bg-white px-4 md:px-8">
           <div className="flex min-w-0 items-center gap-3">
-            <button
-              type="button"
-              className="grid h-10 w-10 place-items-center rounded-xl border border-ink-200 text-ink-700 lg:hidden"
-              aria-label={open ? "Close menu" : "Open menu"}
-              onClick={() => setOpen((v) => !v)}
-            >
+            <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-[#0F2A1A] lg:hidden" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)}>
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold text-ink-900 md:text-xl">
+              <h1 className="truncate font-display text-[18px] leading-none tracking-[-0.01em] text-[#0F2A1A] uppercase md:text-[20px]">
                 {greetingWord()}, {isLoading ? "…" : name}
               </h1>
-              <p className="hidden truncate text-sm text-ink-500 sm:block">
-                {spec.subtitle}
-              </p>
+              <p className="hidden truncate text-[12px] text-[#0F2A1A]/60 sm:block mt-1">{spec.subtitle}</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Link
-              href="/notifications"
-              className="relative rounded-full border border-ink-200 p-2.5 text-ink-600 hover:bg-ink-50"
-              aria-label="Notifications"
-            >
+            <Link href="/notifications" className="relative grid size-10 place-items-center rounded-full border border-black/10 bg-white text-[#0F2A1A] hover:bg-[#0F2A1A] hover:text-white transition" aria-label="Notifications">
               <Bell size={16} />
               {unreadN > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-ink-900">
-                  {unreadN}
-                </span>
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D6FF57] px-1 text-[10px] font-bold text-[#0F2A1A]">{unreadN}</span>
               )}
             </Link>
-            <Link
-              href="/account"
-              className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-deep text-sm font-bold text-white ring-2 ring-white"
-              title={user?.email}
-            >
+            <Link href="/account" className="flex size-10 items-center justify-center overflow-hidden rounded-full bg-[#0F2A1A] text-sm font-bold text-white ring-2 ring-white shadow" title={user?.email}>
               {user?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.avatar_url}
-                  alt=""
-                  className="size-full object-cover"
-                />
+                <img src={user.avatar_url} alt="" className="size-full object-cover" />
               ) : (
                 name.charAt(0).toUpperCase()
               )}
             </Link>
-            <button
-              type="button"
-              onClick={() => setLogoutOpen(true)}
-              aria-label="Log out"
-              title="Log out"
-              className="hidden h-9 w-9 items-center justify-center rounded-full border border-ink-200 text-ink-500 hover:bg-ink-100 hover:text-ink-900 sm:flex"
-            >
+            <button type="button" onClick={() => setLogoutOpen(true)} aria-label="Log out" title="Log out" className="hidden h-10 w-10 items-center justify-center rounded-full border border-black/10 text-[#0F2A1A]/60 hover:bg-[#0F2A1A] hover:text-white sm:flex transition">
               <LogOut size={16} />
             </button>
           </div>
         </header>
 
         {open && (
-          <div
-            className="fixed inset-0 z-40 lg:hidden"
-            role="dialog"
-            aria-modal="true"
-          >
-            <button
-              type="button"
-              className="absolute inset-0 bg-ink-900/40"
-              aria-label="Close menu"
-              onClick={() => setOpen(false)}
-            />
-            <aside className="absolute left-0 top-0 flex h-full w-[min(280px,88vw)] flex-col overflow-y-auto bg-white shadow-lift">
+          <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true">
+            <button type="button" className="absolute inset-0 bg-[#0F2A1A]/40" aria-label="Close menu" onClick={() => setOpen(false)} />
+            <aside className="absolute left-0 top-0 flex h-full w-[min(300px,88vw)] flex-col overflow-y-auto bg-white shadow-xl">
               {sidebar}
             </aside>
           </div>

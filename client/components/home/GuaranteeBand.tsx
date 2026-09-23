@@ -1,78 +1,146 @@
 import Link from "next/link";
-import { ArrowRight, CreditCard, Handshake, ShieldCheck, Unlock } from "lucide-react";
-
-const STEPS = [
-  {
-    icon: CreditCard,
-    title: "You pay",
-    body: "Tuition is collected when you enrol — not handed to the tutor on day one.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "We hold it",
-    body: "Fees sit in escrow until the lesson or cohort session actually happens.",
-  },
-  {
-    icon: Unlock,
-    title: "Then we release",
-    body: "After delivery, the tutor is paid. If something goes wrong, we work it through with both of you.",
-  },
-];
+import { ArrowRight } from "lucide-react";
 
 export function GuaranteeBand() {
   return (
-    <section className="home-screen relative isolate w-full overflow-hidden">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/home/ribs-cream.jpg"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#FFF7E4] via-[#FFF7E4]/88 to-[#DFFFF2]/55" />
+    <section className="relative w-full overflow-hidden bg-[#0F2A1A]">
+      {/* subtle texture */}
+      <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`, backgroundSize: '28px 28px' }} />
 
-      <div className="relative z-10 grid w-full items-center lg:grid-cols-2">
-        <div className="px-6 py-16 md:px-12 md:py-24 lg:px-16">
-          <p className="inline-flex items-center gap-2 rounded-full border border-deep-green/15 bg-white/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-deep-green">
-            <Handshake size={12} /> Protected payments
-          </p>
-          <h2 className="mt-5 max-w-[14ch] font-display text-[clamp(2.2rem,5.5vw,4.4rem)] leading-[0.92] tracking-[-0.02em] text-deep-green">
-            Fees sit in escrow until lessons are delivered.
+      <div className="relative mx-auto w-full max-w-[1920px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 xl:px-12 2xl:px-16 lg:py-20">
+        {/* header */}
+        <div className="mx-auto max-w-[900px] text-center">
+          <h2 className="font-display text-[clamp(1.6rem,3.5vw,2.8rem)] leading-[0.95] tracking-[-0.02em] text-white uppercase">
+            Consistent learning and expert-led programmes
           </h2>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-ink-700">
-            Tuition is held until the lesson happens. If something goes wrong, we
-            work with you and the tutor to put it right — we do not advertise a
-            blanket satisfaction statistic.
-          </p>
-          <Link
-            href="/how-it-works"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-deep-green px-6 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-primary transition hover:bg-[#024d2c]"
-          >
-            How payments work <ArrowRight size={14} />
-          </Link>
         </div>
 
-        <ol className="grid gap-3 px-6 pb-16 md:px-12 lg:px-16 lg:py-24">
-          {STEPS.map((step, i) => (
-            <li
-              key={step.title}
-              className="flex gap-4 rounded-3xl border border-deep-green/10 bg-white/80 p-5 shadow-sm backdrop-blur-sm"
-            >
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-deep-green text-primary">
-                <step.icon size={18} />
-              </span>
+        {/* pill tabs */}
+        <div className="mt-8 flex justify-center">
+          <div className="inline-flex flex-wrap items-center gap-1 rounded-full bg-black/30 p-1.5 backdrop-blur">
+            {[
+              "British Curriculum",
+              "Personal Tuition",
+              "Exam Preparation",
+              "Live Cohorts",
+            ].map((tab, i) => (
+              <button
+                key={tab}
+                className={`rounded-full px-4 py-2 text-[12px] font-bold transition ${i === 1 ? "bg-[#D6FF57] text-[#0F2A1A]" : "text-white/70 hover:text-white hover:bg-white/10"}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 3 cards */}
+        <div className="mt-10 grid gap-5 md:grid-cols-3 lg:gap-6 max-w-[1200px] mx-auto">
+          {/* left white card - steps */}
+          <div className="rounded-[20px] bg-white p-6 lg:p-7 flex flex-col">
+            <div className="space-y-7 flex-1">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-deep-green/50">
-                  Step {String(i + 1).padStart(2, "0")}
+                <p className="text-[12px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">1. SET YOUR GOALS</p>
+                <p className="mt-2 text-[13px] leading-[1.5] text-[#0F2A1A]/70">
+                  Share your learner&apos;s level, subjects and goals — JSS, SSS, UTME, WASSCE or IGCSE — to get started.
                 </p>
-                <p className="mt-1 font-display text-2xl leading-none text-deep-green">
-                  {step.title}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600">{step.body}</p>
               </div>
-            </li>
-          ))}
-        </ol>
+              <div className="h-px bg-black/10" />
+              <div>
+                <p className="text-[12px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">2. GET YOUR PLAN</p>
+                <p className="mt-2 text-[13px] leading-[1.5] text-[#0F2A1A]/70">
+                  Receive a personalised learning plan — private tutor or live cohort — matched to curriculum and schedule.
+                </p>
+              </div>
+              <div className="h-px bg-black/10" />
+              <div>
+                <p className="text-[12px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">3. LEARN & SEE RESULTS</p>
+                <p className="mt-2 text-[13px] leading-[1.5] text-[#0F2A1A]/70">
+                  Follow your plan with live lessons, recordings, assignments and parent reports. Escrow-protected.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* middle lime PRO */}
+          <div className="rounded-[20px] bg-[#D6FF57] p-6 lg:p-7 flex flex-col">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#0F2A1A]">PRO</p>
+                <p className="mt-1 text-[11px] leading-[1.4] text-[#0F2A1A]/70 max-w-[22ch]">For families who want 1-on-1 consistency and faster progress</p>
+              </div>
+              <div className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-[#0F2A1A]">POPULAR</div>
+            </div>
+
+            <div className="mt-5">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2">
+                <span className="text-[18px] font-extrabold leading-none text-[#0F2A1A]">$45</span>
+                <span className="text-[12px] text-[#0F2A1A]/60">/ month</span>
+                <span className="ml-2 grid size-6 place-items-center rounded-full bg-[#0F2A1A]">
+                  <span className="size-3 rounded-full bg-[#D6FF57]" />
+                </span>
+              </div>
+              <p className="mt-1 text-[10px] text-[#0F2A1A]/60">Billed monthly · Cancel anytime</p>
+            </div>
+
+            <ul className="mt-6 space-y-2.5 flex-1">
+              {[
+                "4 sessions per week",
+                "Personalised learning plan",
+                "Assignments & feedback",
+                "Parent reports & escrow",
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-2 text-[12px] font-medium text-[#0F2A1A]">
+                  <span className="size-1.5 rounded-full bg-[#0F2A1A]" /> {f}
+                </li>
+              ))}
+            </ul>
+
+            <Link href="/private-tuition" className="mt-7 inline-flex w-full items-center justify-between rounded-full bg-[#0F2A1A] px-5 py-3 text-[13px] font-bold text-white transition hover:bg-black">
+              <span>Get Started</span>
+              <span className="grid size-7 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]">
+                <ArrowRight size={14} />
+              </span>
+            </Link>
+          </div>
+
+          {/* right white STARTER */}
+          <div className="rounded-[20px] bg-white p-6 lg:p-7 flex flex-col">
+            <div>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#0F2A1A]">STARTER</p>
+              <p className="mt-1 text-[11px] leading-[1.4] text-[#0F2A1A]/60 max-w-[22ch]">For learners who want structured cohorts and peer learning</p>
+            </div>
+
+            <div className="mt-5">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#0F2A1A]/5 px-3 py-2">
+                <span className="text-[18px] font-extrabold leading-none text-[#0F2A1A]">$25</span>
+                <span className="text-[12px] text-[#0F2A1A]/60">/ month</span>
+                <span className="ml-2 grid size-6 place-items-center rounded-full bg-[#0F2A1A]">
+                  <span className="size-3 rounded-full bg-white" />
+                </span>
+              </div>
+            </div>
+
+            <ul className="mt-6 space-y-2.5 flex-1">
+              {[
+                "2 sessions per week",
+                "Live cohort + recordings",
+                "Basic progress tracking",
+              ].map((f) => (
+                <li key={f} className="flex items-center gap-2 text-[12px] font-medium text-[#0F2A1A]">
+                  <span className="size-1.5 rounded-full bg-[#0F2A1A]/30" /> {f}
+                </li>
+              ))}
+            </ul>
+
+            <Link href="/cohorts" className="mt-7 inline-flex w-full items-center justify-between rounded-full bg-[#0F2A1A] px-5 py-3 text-[13px] font-bold text-white transition hover:bg-black">
+              <span>Get Started</span>
+              <span className="grid size-7 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]">
+                <ArrowRight size={14} />
+              </span>
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   );

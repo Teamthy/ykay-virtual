@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, MapPin, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, MapPin, Users, Clock, Video } from "lucide-react";
 import { coverFor } from "@/lib/covers";
 
 export type CohortCardData = {
@@ -24,65 +24,65 @@ export function CohortCard({ c }: { c: CohortCardData }) {
   const seatsLeft = Math.max(0, c.capacity - c.enrolled_count);
   const full = seatsLeft === 0;
   const fill = c.capacity > 0 ? Math.min((c.enrolled_count / c.capacity) * 100, 100) : 0;
+  const start = new Date(c.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const end = new Date(c.end_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft">
-      <div
-        className="relative flex h-20 items-end justify-between gap-2 bg-cover bg-center px-4 py-2.5"
-        style={{
-          backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.2), rgba(6,15,38,0.82)), url(${coverFor(c.title + c.id)})`,
-        }}
-      >
-        <span className="rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
-          Cohort
-        </span>
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-white">
-          <MapPin size={11} />
-          {c.location_mode === "IN_PERSON" ? "In person" : c.location_mode === "HYBRID" ? "Hybrid" : "Online"}
-        </span>
+    <div className="group relative flex flex-col overflow-hidden rounded-[28px] border border-ink-100 bg-white shadow-[0_8px_32px_rgba(1,57,32,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_60px_rgba(1,57,32,0.14)] hover:border-deep/15">
+      {/* cover */}
+      <div className="relative h-[170px] overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center transition duration-700 group-hover:scale-[1.06]" style={{ backgroundImage: `url(${coverFor(c.title + c.id)})` }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="absolute left-4 top-4 flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-deep shadow-sm">
+            <Video size={12} /> Cohort
+          </span>
+          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold text-white shadow-sm ${fill >= 90 ? "bg-red-500" : fill >= 60 ? "bg-amber-500" : "bg-emerald-600"}`}>
+            {full ? "Full" : `${seatsLeft} seats left`}
+          </span>
+        </div>
+        <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+          <div className="flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur">
+            <MapPin size={12} className="text-primary" /> {c.location_mode === "IN_PERSON" ? "In person" : c.location_mode === "HYBRID" ? "Hybrid" : "Online"}
+          </div>
+          <span className="rounded-full bg-white px-3 py-1.5 text-[12px] font-extrabold text-deep shadow">{c.currency} {c.fee.toLocaleString()}</span>
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="line-clamp-2 font-display text-base leading-snug tracking-[0.02em] text-brand-navy">
-          {c.title}
-        </h3>
-        {c.programme_title && <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold text-ink-500">{c.programme_title}</p>}
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="line-clamp-2 font-display text-[19px] leading-[1.1] tracking-[-0.01em] text-deep">{c.title}</h3>
+        {c.programme_title && <p className="mt-1 line-clamp-1 text-[12px] font-semibold text-ink-500">{c.programme_title}</p>}
 
-        <div className="mt-2 flex items-center gap-1 text-[11px] text-ink-500">
-          <CalendarDays size={12} className="text-brand-blue" />
-          {new Date(c.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} →{" "}
-          {new Date(c.end_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-        </div>
-
-        <div className="mt-2">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="flex items-center gap-1 font-semibold text-ink-600">
-              <Users size={12} className="text-brand-blue" />
-              {full ? "Full" : `${seatsLeft} seats`}
-            </span>
-            <span className="font-bold text-brand-navy">{Math.round(fill)}%</span>
-          </div>
-          <div className="mt-1 h-1 overflow-hidden rounded-full bg-ink-100">
-            <div
-              className={`h-full rounded-full ${fill >= 90 ? "bg-red-500" : fill >= 60 ? "bg-amber-500" : "bg-brand-green"}`}
-              style={{ width: `${fill}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="mt-3 flex items-center justify-between border-t border-ink-100 pt-3">
-          <span className="text-sm font-extrabold text-brand-navy">
-            {c.currency} {c.fee.toLocaleString()}
+        <div className="mt-4 flex items-center gap-2 text-[12px] text-ink-600">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-ink-100 bg-ink-50 px-2.5 py-1">
+            <CalendarDays size={12} className="text-deep" /> {start} → {end}
           </span>
+        </div>
+
+        {c.schedule_description && (
+          <p className="mt-3 flex items-center gap-1.5 text-[12px] text-ink-500 line-clamp-1">
+            <Clock size={12} /> {c.schedule_description} · {c.timezone}
+          </p>
+        )}
+
+        <div className="mt-4">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wide">
+            <span className="flex items-center gap-1 text-ink-600"><Users size={12} className="text-deep" /> Enrolment</span>
+            <span className={fill >= 90 ? "text-red-600" : fill >= 60 ? "text-amber-600" : "text-emerald-700"}>{Math.round(fill)}% filled</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-100">
+            <div className={`h-full rounded-full transition-all duration-700 ${fill >= 90 ? "bg-red-500" : fill >= 60 ? "bg-amber-500" : "bg-deep"}`} style={{ width: `${fill}%` }} />
+          </div>
+          <p className="mt-2 text-[11px] text-ink-500">{c.enrolled_count}/{c.capacity} enrolled · {seatsLeft} seats left</p>
+        </div>
+
+        <div className="mt-5 flex items-center justify-between border-t border-ink-100 pt-4">
+          <span className="text-[11px] font-bold uppercase tracking-wide text-ink-400">Secure with escrow</span>
           <Link
             href={full ? "/cohorts" : (c.href ?? `/cohorts/${c.id}/enroll`)}
-            className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
-              full ? "cursor-not-allowed bg-ink-100 text-ink-400" : "bg-brand-navy text-white hover:bg-brand-blue"
-            }`}
-            aria-disabled={full}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold transition ${full ? "cursor-not-allowed bg-ink-100 text-ink-400" : "bg-deep text-white hover:bg-black group-hover:bg-primary group-hover:text-deep"}`}
           >
-            {full ? "Full" : "Enrol"}
-            {!full && <ArrowRight size={12} />}
+            {full ? "Join waitlist" : "Enrol now"} {!full && <ArrowRight size={14} />}
           </Link>
         </div>
       </div>
