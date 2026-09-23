@@ -47,6 +47,30 @@ jobs:
             echo "::error::Missing repo secrets:$missing — web was NOT deployed to Vercel. Set them in Settings → Secrets and variables → Actions."
             exit 1
           fi
+      # Presence is not enough: a stale/renamed VERCEL_PROJECT_ID, or a token
+      # that is not in VERCEL_ORG_ID's scope, makes `vercel pull` die with the
+      # opaque "Error: Could not retrieve Project Settings. To link your
+      # Project, remove the `.vercel` directory and deploy again." — advice
+      # that cannot help in CI (there is no .vercel directory to remove, and
+      # the IDs come from the repo secrets). Resolve them against the Vercel
+      # API first so the log names the value that has to change.
+      - name: Verify Vercel project resolves
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          probe() {
+            curl -fsS -o /dev/null -H "Authorization: Bearer $VERCEL_TOKEN" "$1"
+          }
+          if probe "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID?teamId=$VERCEL_ORG_ID" \
+            || probe "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID"; then
+            echo "Vercel project $VERCEL_PROJECT_ID resolves ✔"
+            exit 0
+          fi
+          echo "::error::Vercel cannot resolve project '$VERCEL_PROJECT_ID' in org '$VERCEL_ORG_ID' with this token — \`vercel pull\` will fail with 'Could not retrieve Project Settings'. Copy both values from Vercel → Project → Settings → General (Project ID / Team ID) into the VERCEL_PROJECT_ID and VERCEL_ORG_ID repo secrets (Settings → Secrets and variables → Actions)."
+          exit 1
+
       - name: Install dependencies
         working-directory: client
         run: npm ci

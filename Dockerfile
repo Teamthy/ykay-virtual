@@ -4,7 +4,13 @@
 # Run:     see docker-compose.prod.yml
 
 # ── Stage 1: build ─────────────────────────────────────────────────────────
-FROM golang:1.22-alpine AS build
+# The image tag MUST satisfy the `go` directive in go.mod (currently 1.25.0).
+# Official golang images run with GOTOOLCHAIN=local, so a module that asks for
+# a newer Go aborts the build instead of downloading a toolchain:
+#   go: go.mod requires go >= 1.25.0 (running go 1.22.12; GOTOOLCHAIN=local)
+# That is what broke the Render deploy. Keep this in lockstep with
+# .github/workflows/ci.yml (go-version) — `make toolchain-check` enforces it.
+FROM golang:1.26-alpine AS build
 WORKDIR /src
 
 # Cache module downloads first (layer stays valid unless go.mod changes).

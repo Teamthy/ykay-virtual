@@ -32,6 +32,23 @@ function cookieValue(header: string, name: string): string {
   return "";
 }
 
+/**
+ * How long to wait for the upstream to START responding (headers only).
+ *
+ * Without this, a dead/unreachable API leaves the browser request pending
+ * until the OS gives up (~2 min of spinner), and any server-side caller that
+ * fetches this app's own origin — the sitemap does when
+ * NEXT_PUBLIC_API_URL points at the deployment — hangs with it.
+ *
+ * Deliberately NOT AbortSignal.timeout: the timer is cleared as soon as
+ * headers arrive, so long-lived SSE streams (/api/v1/me/events) and large
+ * downloads are never cut off mid-body.
+ */
+const UPSTREAM_HEADER_TIMEOUT_MS = (() => {
+  const raw = Number(process.env.API_PROXY_TIMEOUT_MS);
+  return Number.isFinite(raw) && raw > 0 ? raw : 10000;
+})();
+
 /** Drop Domain so Set-Cookie from Render binds to this Vercel host. */
 function hostOnlySetCookie(raw: string): string {
   return raw
@@ -79,7 +96,30 @@ async function proxy(req: NextRequest, path: string[]): Promise<Response> {
     init.body = await req.arrayBuffer();
   }
 
-  const up = await fetch(dest, init);
+  // Bounded wait for the upstream's response HEADERS. The timer is cleared in
+  // `finally`, i.e. the moment headers land, so the body (SSE chat/notifications
+  // streams, large exports) streams for as long as it needs.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPSTREAM_HEADER_TIMEOUT_MS);
+  let up: Response;
+  try {
+    up = await fetch(dest, { ...init, signal: controller.signal });
+  } catch {
+    // DNS failure, connection refused, TLS error or no headers within the
+    // deadline — answer immediately instead of leaving the caller hanging.
+    return NextResponse.json(
+      {
+        error: {
+          code: "upstream_unavailable",
+          message: "The API did not respond in time. Please try again.",
+        },
+      },
+      { status: 504 },
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+
   const out = new NextResponse(up.body, { status: up.status });
   up.headers.forEach((value, key) => {
     const k = key.toLowerCase();

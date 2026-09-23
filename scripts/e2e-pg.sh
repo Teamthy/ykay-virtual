@@ -40,11 +40,24 @@ rm -f .e2e-api && "$GO" build -o .e2e-api ./cmd/api
 PORT="$PORT" SEED_DEMO_DATA=false DATABASE_URL="$DBURL" AUTH_RATE_LIMIT_PER_MINUTE=1000000 RATE_LIMIT_PER_MINUTE=1000000 ./.e2e-api > /tmp/e2e-api.log 2>&1 &
 API_PID=$!
 trap 'kill $API_PID 2>/dev/null || true' EXIT
-for i in $(seq 1 30); do
-  curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1 && break
-  sleep 0.5
+
+# Wait for /health. The previous budget (30 × 0.5s ≈ 15s) was tuned on a warm
+# runner and flaked the required main-branch gate: on a cold one the binary
+# boots slower (CBT-bank seed, portal wiring, Postgres pool) and was still not
+# listening when the loop ran out — the job failed with "API failed to start"
+# even though the process was healthy. Poll for up to ~3 minutes instead, but
+# stop immediately — with the log tail — if the process dies, so a genuine
+# crash still fails fast and diagnosably.
+ready=""
+for _ in $(seq 1 90); do
+  if curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null 2>&1; then ready=1; break; fi
+  if ! kill -0 "$API_PID" 2>/dev/null; then
+    echo "API process exited during boot"
+    break
+  fi
+  sleep 1
 done
-curl -sf -m 1 "http://localhost:${PORT}/health" >/dev/null || { echo "API failed to start"; tail -5 /tmp/e2e-api.log; exit 1; }
+[ -n "$ready" ] || { echo "API failed to start (waited up to ~3min)"; tail -20 /tmp/e2e-api.log; exit 1; }
 
 echo "== 4/4 E2E against postgres =="
 # Do not let e2e.sh kill this process and fall back to memory + demo admin.

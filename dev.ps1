@@ -10,7 +10,7 @@
 #   .\dev.ps1 test        # go test + vitest
 #   .\dev.ps1 build       # go build + next build
 #
-# Prerequisites: Docker Desktop, Go 1.22+, Node 20 LTS.
+# Prerequisites: Docker Desktop, Go 1.26+, Node 20 LTS.
 param(
   [Parameter(Position = 0)][string]$Task = "help"
 )

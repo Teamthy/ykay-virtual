@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getExamPrepPages } from "@/lib/exam-prep-data";
-import { API_BASE, apiFetchSSR } from "@/lib/server-api";
+import { API_BASE, SSR_FETCH_TIMEOUT_MS, apiFetchSSR } from "@/lib/server-api";
 import { getHelpArticles } from "@/lib/help-data";
 
 const SITE =
@@ -106,10 +106,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     });
 
+  // Live entries are BEST-EFFORT: an unreachable or slow API must never fail
+  // the build. This route is statically generated, and Next aborts a route
+  // that takes more than 60s per attempt ("Failed to build /sitemap.xml/route
+  // after 3 attempts" → the whole `next build` exits 1), so every call is
+  // hard-bounded by apiFetchSSR's timeout and the failure is swallowed below.
+  // A build with the API down ships static + local-help entries only; the ISR
+  // window (revalidate 300s) repopulates the live ones after the first
+  // request, so crawlers still get the full sitemap.
   const fetchType = async (path: string, key: string): Promise<string[]> => {
     try {
       const res = await apiFetchSSR<Record<string, unknown>[]>(
         `${path}?page=1&page_size=100`,
+        // At most 5s per call, and never beyond the global SSR budget — so a
+        // tightened SSR_FETCH_TIMEOUT_MS also tightens the build.
+        { timeoutMs: Math.min(5000, SSR_FETCH_TIMEOUT_MS) },
       );
       return (res.data ?? [])
         .map((d) => String((d as Record<string, unknown>)[key]))
