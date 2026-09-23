@@ -45,6 +45,7 @@ import (
 	"ykay-virtual/internal/domain/school"
 	"ykay-virtual/internal/domain/tutor"
 	"ykay-virtual/internal/domain/vetting"
+	"ykay-virtual/internal/domain/waitlist"
 	"ykay-virtual/internal/logx"
 	"ykay-virtual/internal/meeting"
 	"ykay-virtual/internal/middleware"
@@ -137,6 +138,7 @@ type Repositories struct {
 	Devices            identity.DeviceRepository
 	Meeting            service.LessonMeetingRepo
 	ProgrammeLifecycle academics.ProgrammeLifecycleRepository
+	Waitlist           waitlist.Repository
 	StorageBackend     string  // "postgres" | "memory"
 	CachePrefix        string  // namespaces the shared cache per backend
 	DB                 *sql.DB // raw handle (nil in memory mode) — boot migrations
@@ -271,6 +273,8 @@ func main() {
 	// leaderboard, feedback, prefs.
 	dashSvc := service.NewDashboardInsightsService(repos.Dash).
 		WithPractice(repos.Exams).WithLearning(repos.Learning).WithUsers(repos.Users)
+	// Cohort waitlist (feature 6, 000079).
+	waitlistSvc := service.NewWaitlistService(repos.Waitlist)
 	// (profileAuthz is created after the services block)
 	_ = dashSvc
 	plusTeamsSvc := service.NewPlusTeamsService(repos.PlusTeams, audit).WithUsers(repos.Users).
@@ -574,6 +578,7 @@ func main() {
 		Portal:            httpapi.NewPortalHandler(portalSvc, profileAuthz),
 		Learning:          httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
 		DashboardInsights: httpapi.NewDashboardInsightsHandler(dashSvc, profileAuthz),
+		Waitlist:          httpapi.NewWaitlistHandler(waitlistSvc),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
@@ -778,6 +783,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			ProgressReports:    store.Learning,
 			Analytics:          memory.NewAnalyticsMemory(store),
 			Availability:       memory.NewAvailabilityMemory(),
+		Waitlist:           memory.NewWaitlistMemory(),
 			Submissions:        store.Submissions,
 			Chat:               memory.NewChatMemory(),
 			Devices:            memory.NewDeviceMemory(),
@@ -851,6 +857,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		ProgressReports:    postgres.NewProgressReportRepo(pg.DB()),
 		Analytics:          postgres.NewAnalyticsRepo(pg.DB()),
 		Availability:       postgres.NewAvailabilityRepo(pg.DB()),
+		Waitlist:           postgres.NewWaitlistRepo(pg.DB()),
 		Submissions:        postgres.NewSubmissionRepo(pg.DB()),
 		Chat:               postgres.NewChatRepo(pg.DB()),
 		Devices:            postgres.NewDeviceRepo(pg.DB()),

@@ -206,6 +206,13 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.Handle("GET "+v1+"/programmes/{slug}/tutors", cache60(handlers.Programmes.Tutors))
 	mux.Handle("GET "+v1+"/cohorts", cache60(handlers.Cohorts.List))
 	mux.Handle("GET "+v1+"/cohorts/{id}", cache60(handlers.Cohorts.GetByID))
+	// Cohort waitlist (feature 6, 000079): join/leave/mine, public count, admin.
+	mux.HandleFunc("POST "+v1+"/me/cohorts/{cohortId}/waitlist", handlers.Waitlist.Join)
+	mux.HandleFunc("DELETE "+v1+"/me/cohorts/{cohortId}/waitlist", handlers.Waitlist.Leave)
+	mux.HandleFunc("GET "+v1+"/me/cohorts/{cohortId}/waitlist", handlers.Waitlist.Mine)
+	mux.Handle("GET "+v1+"/cohorts/{id}/waitlist", cache60(handlers.Waitlist.PublicCount))
+	mux.HandleFunc("GET "+v1+"/admin/cohorts/{cohortId}/waitlist", handlers.Waitlist.AdminList)
+	mux.HandleFunc("POST "+v1+"/admin/cohorts/{cohortId}/waitlist/notify", handlers.Waitlist.AdminNotify)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/lessons", handlers.LessonOps.ListCohortLessons)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/resources", handlers.LessonOps.ListResources)
 	mux.HandleFunc("GET "+v1+"/cohorts/{id}/assignments", handlers.LessonOps.ListAssignments)
@@ -603,6 +610,7 @@ type Handlers struct {
 	Portal            *PortalHandler
 	Learning          *LearningHandler
 	Objects           *ObjectHandler
+	Waitlist          *WaitlistHandler
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).

@@ -1095,6 +1095,90 @@ paths:
                 $ref: '#/components/schemas/Cohort'
         '404': { description: Cohort not found }
 
+  /cohorts/{id}/waitlist:
+    get:
+      tags: [cohorts]
+      summary: Visible waitlist size for a cohort (real data, never fabricated)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Waitlist count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  waiting: { type: integer }
+
+  /me/cohorts/{cohortId}/waitlist:
+    post:
+      tags: [cohorts]
+      summary: Join a full cohort's waitlist (idempotent per user)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Waitlist entry (position)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistEntry'
+    get:
+      tags: [cohorts]
+      summary: My waitlist position for a cohort (null when not waiting)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Entry or null
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistEntry'
+    delete:
+      tags: [cohorts]
+      summary: Leave a cohort's waitlist
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Left }
+
+  /admin/cohorts/{cohortId}/waitlist:
+    get:
+      tags: [admin]
+      summary: List a cohort's waitlist (ordered by position)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Ordered waitlist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WaitlistEntry'
+
+  /admin/cohorts/{cohortId}/waitlist/notify:
+    post:
+      tags: [admin]
+      summary: Manually notify the front of the waitlist (idempotent, at-most-once)
+      parameters:
+        - { name: cohortId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Who was notified this call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notified: { type: integer }
+                  user_ids:
+                    type: array
+                    items: { type: string, format: uuid }
+
   /bookings:
     post:
       tags: [bookings]
@@ -4456,6 +4540,16 @@ components:
         fee: { type: number }
         currency: { type: string }
         status: { type: string }
+
+    WaitlistEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        cohort_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        position: { type: integer }
+        notified_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
 
     OrderItem:
       type: object
