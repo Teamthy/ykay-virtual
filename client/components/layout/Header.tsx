@@ -3,72 +3,24 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search, ChevronDown, Menu, X, GraduationCap, BookOpen, MonitorPlay, Star, ArrowRight } from "lucide-react";
+import { Search, Menu, X, ArrowRight } from "lucide-react";
 import { AuthNav } from "@/components/layout/AuthNav";
 import { useSession } from "@/hooks/useSession";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
+import {
+  MobileServiceGroups,
+  PRIMARY_LINKS,
+  ServicesDropdown,
+  ServicesToggle,
+  navActive,
+} from "@/components/layout/public-nav";
 import { cn } from "@/lib/utils";
 
-const SERVICE_GROUPS = [
-  {
-    title: "K-12 Academics",
-    icon: <GraduationCap size={14} />,
-    items: [
-      { label: "Home Tutoring", href: "/hometutors" },
-      { label: "Private Tuition", href: "/private-tuition" },
-      { label: "Group Cohorts", href: "/cohorts" },
-      { label: "Online Classes", href: "/online-classes" },
-      { label: "British Curriculum", href: "/curricula/british" },
-      { label: "Nigerian Curriculum", href: "/curricula/nigerian" },
-    ],
-  },
-  {
-    title: "Tests & Exams",
-    icon: <BookOpen size={14} />,
-    items: [
-      { label: "CBT Practice", href: "/login?next=/lms/practice" },
-      { label: "UTME 2026 Prep", href: "/utme-2026" },
-      { label: "GMAT Prep", href: "/gmat" },
-      { label: "SAT / GRE", href: "/test-prep" },
-      { label: "Entrance Exams", href: "/entrance-exam" },
-    ],
-  },
-  {
-    title: "Training & Digital",
-    icon: <MonitorPlay size={14} />,
-    items: [
-      { label: "Digital Skills", href: "/digital-skills" },
-      { label: "Programmes", href: "/programmes" },
-      { label: "Subjects", href: "/subjects" },
-    ],
-  },
-  {
-    title: "The Ykay family",
-    icon: <Star size={14} />,
-    items: [
-      { label: "Ykay College", href: "/college" },
-      { label: "YK-Virtual Plus", href: "/plus" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Become a tutor", href: "/become-tutor" },
-    ],
-  },
-];
-
-const NAV_LINKS = [
-  { label: "Programmes", href: "/programmes" },
-  { label: "Cohorts", href: "/cohorts" },
-  { label: "Tutors", href: "/tutors" },
-  { label: "How it works", href: "/how-it-works" },
-  { label: "College", href: "/college" },
-  { label: "About", href: "/about" },
-];
-
 /**
- * Global header — a dark floating pill matching the homepage HomePillNav:
- * white logo variant, white/70 links and a lime CTA with dark text. The
- * homepage yields to HomePillNav instead (both are the same pattern).
+ * Global header — dark floating pill. Primary links are College, CBT and
+ * Services (the same set as the homepage pill). Homepage yields to HomePillNav.
  */
 export function Header() {
   const { user, isLoading } = useSession();
@@ -101,10 +53,9 @@ export function Header() {
           <Logo dark markClassName="size-7 sm:size-8" className="text-[1.15rem] sm:text-[1.35rem]" />
         </Link>
 
-        {/* Centred links (xl+) */}
         <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 xl:flex">
-          {NAV_LINKS.map((l) => {
-            const active = pathname === l.href;
+          {PRIMARY_LINKS.map((l) => {
+            const active = navActive(pathname, l.href);
             return (
               <Link
                 key={l.href}
@@ -123,51 +74,9 @@ export function Header() {
               </Link>
             );
           })}
-
           <div className="relative">
-            <button
-              onClick={() => setServicesOpen(!servicesOpen)}
-              className={cn(
-                "pointer-events-auto flex items-center gap-1 rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
-                servicesOpen ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/10 hover:text-white",
-              )}
-              aria-expanded={servicesOpen}
-            >
-              Services <ChevronDown size={14} className={cn("transition", servicesOpen && "rotate-180")} />
-            </button>
-
-            {servicesOpen && (
-              <div className="absolute left-1/2 top-full z-20 mt-3 w-[min(92vw,820px)] -translate-x-1/2 overflow-hidden rounded-[20px] border border-black/10 bg-white shadow-[0_16px_60px_rgba(15,42,26,0.15)]">
-                <div className="grid sm:grid-cols-[1.4fr_0.6fr]">
-                  <div className="grid grid-cols-2 gap-1 p-4">
-                    {SERVICE_GROUPS.map((g) => (
-                      <div key={g.title} className="rounded-[14px] bg-[#F9F6ED]/60 p-3">
-                        <span className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">
-                          <span className="grid size-6 place-items-center rounded-full bg-[#0F2A1A] text-white">{g.icon}</span>
-                          {g.title}
-                        </span>
-                        <div className="mt-2 space-y-0.5">
-                          {g.items.map((it) => (
-                            <Link key={it.label} href={it.href} onClick={closeAll} className="block rounded-full px-3 py-1.5 text-[12px] font-semibold text-[#0F2A1A]/70 hover:bg-white hover:text-[#0F2A1A]">
-                              {it.label}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="bg-[#0F2A1A] p-5 text-white">
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-[#D6FF57]">The Ykay family</span>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/campus-hero.jpg" alt="Ykay College campus with students in uniform" className="mt-3 h-32 w-full rounded-[12px] object-cover" />
-                    <p className="mt-3 text-[12px] leading-relaxed text-white/70">One family — campus in Sango Ota, live classes and CBT online.</p>
-                    <Link href="/college" onClick={closeAll} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#D6FF57] px-4 py-2 text-[12px] font-bold text-[#0F2A1A]">
-                      Visit Ykay College <ArrowRight size={12} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
+            <ServicesToggle open={servicesOpen} onToggle={() => setServicesOpen((v) => !v)} />
+            <ServicesDropdown open={servicesOpen} onClose={() => setServicesOpen(false)} />
           </div>
         </div>
 
@@ -204,7 +113,6 @@ export function Header() {
         </div>
       </nav>
 
-      {/* Mobile panel — dark, matching HomePillNav's collapsed panel */}
       {mobileOpen && (
         <div className="mx-auto mt-2 w-full max-w-[1920px] px-3 sm:px-4 lg:hidden">
           <div className="rounded-[1.75rem] bg-[#0F2A1A] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.32)]">
@@ -220,40 +128,26 @@ export function Header() {
               />
             </form>
             <div className="grid grid-cols-2 gap-1">
-              {NAV_LINKS.map((l) => (
+              {PRIMARY_LINKS.map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}
                   onClick={closeAll}
                   className={cn(
                     "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    pathname === l.href ? "bg-white/10 text-white" : "text-white/75 hover:bg-white/10 hover:text-white",
+                    navActive(pathname, l.href) ? "bg-white/10 text-white" : "text-white/75 hover:bg-white/10 hover:text-white",
                   )}
                 >
                   {l.label}
                 </Link>
               ))}
             </div>
-            <div className="mt-2 grid grid-cols-2 gap-1 border-t border-white/10 pt-2">
-              {SERVICE_GROUPS.flatMap((g) => g.items).slice(0, 8).map((it) => (
-                <Link key={it.label} href={it.href} onClick={closeAll} className="rounded-xl px-3 py-2 text-[12px] font-semibold text-white/70 hover:bg-white/10 hover:text-white">
-                  {it.label}
-                </Link>
-              ))}
-            </div>
+            <MobileServiceGroups onNavigate={closeAll} />
             <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
-              <Link
-                href="/login"
-                onClick={closeAll}
-                className="grid place-items-center rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
-              >
+              <Link href="/login" onClick={closeAll} className="grid place-items-center rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10">
                 Sign in
               </Link>
-              <Link
-                href="/onboarding"
-                onClick={closeAll}
-                className="grid place-items-center rounded-full bg-[#D6FF57] px-4 py-2.5 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030]"
-              >
+              <Link href="/onboarding" onClick={closeAll} className="grid place-items-center rounded-full bg-[#D6FF57] px-4 py-2.5 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030]">
                 Get started
               </Link>
             </div>

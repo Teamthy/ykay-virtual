@@ -19,12 +19,13 @@ export default function ProgrammesPage() {
       <PageHero
         cover="/home/card-ss.jpg"
         title="Learning programmes"
-        subtitle="Cohort classes, bootcamps and online courses led by vetted tutors. Enroll securely - your fees sit in escrow until the programme delivers."
+        subtitle="Cohort classes, bootcamps and online courses led by vetted tutors. This list shows published programmes only — filter by curriculum, exam, level and format. Fees sit in escrow until the programme delivers."
         crumbs={[{ name: "Home", href: "/" }, { name: "Programmes" }]}
         align="left"
       />
 
-      <div className="container-x mt-10 pb-16">
+      <div className="w-full bg-[#F9F6ED] py-12 lg:py-16">
+      <div className="container-x">
         <Suspense
           fallback={
             <p className="text-center text-[#0F2A1A]/65 py-10">
@@ -34,6 +35,7 @@ export default function ProgrammesPage() {
         >
           <ProgrammesHub />
         </Suspense>
+      </div>
       </div>
     </main>
   );

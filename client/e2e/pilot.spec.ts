@@ -376,6 +376,7 @@ test("page sweep: every public surface renders (no application errors)", async (
     "/hometutors",
     "/private-tuition",
     "/exam-prep",
+    "/cbt",
     "/test-prep",
     "/gmat",
     "/plus",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/useSession";
 import { Stepper } from "@/components/ui/stepper";
@@ -75,6 +76,12 @@ type FormState = {
   email: string;
   phone: string;
 };
+
+function choiceClass(on: boolean) {
+  return on
+    ? "rounded-xl border border-[#D6FF57] bg-[#D6FF57] px-4 py-2.5 text-sm font-semibold text-[#0F2A1A]"
+    : "rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm text-[#0F2A1A]/80 transition hover:border-[#0F2A1A]/30";
+}
 
 const EMPTY: FormState = {
   learnerName: "",
@@ -197,13 +204,14 @@ export function PrivateTuitionWizard() {
 
   if (done) {
     return (
-      <div className="border rounded-2xl p-10 text-center space-y-4">
-        <div className="text-5xl">🎉</div>
-        <h2 className="text-2xl font-extrabold">Request received!</h2>
-        <p className="text-[#0F2A1A]/70 text-sm max-w-md mx-auto">
-          Our team will match {form.learnerName} with a vetted {form.subject}{" "}
-          tutor and reach out to <strong>{user?.email ?? form.email}</strong>{" "}
-          within 24 hours with a proposed schedule and quote.
+      <div className="rounded-[20px] border border-black/10 bg-white p-10 text-center shadow-[0_8px_28px_rgba(15,42,26,0.06)]">
+        <span className="mx-auto grid size-14 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]">
+          <Check size={22} strokeWidth={2.5} />
+        </span>
+        <h2 className="mt-4 font-display text-[32px] uppercase text-[#0F2A1A]">Request received</h2>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#0F2A1A]/70">
+          An advisor will match {form.learnerName} with a vetted {form.subject} tutor and send a schedule and quote to{" "}
+          <strong>{user?.email ?? form.email}</strong> before any payment. The fee sits in escrow until lessons are delivered.
         </p>
         <Button
           variant="outline"
@@ -220,7 +228,7 @@ export function PrivateTuitionWizard() {
   }
 
   return (
-    <div className="card p-6 md:p-8">
+    <div className="rounded-[20px] border border-black/10 bg-white p-6 shadow-[0_8px_28px_rgba(15,42,26,0.06)] md:p-8">
       {/* Stepper (shared §24.1 component) */}
       <Stepper steps={STEPS} current={step} className="mb-8" />
 
@@ -251,7 +259,7 @@ export function PrivateTuitionWizard() {
                     key={l}
                     type="button"
                     onClick={() => set("level", l)}
-                    className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.level === l ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
+                    className={choiceClass(form.level === l)}
                   >
                     {l}
                   </button>
@@ -272,7 +280,7 @@ export function PrivateTuitionWizard() {
                   key={s}
                   type="button"
                   onClick={() => set("subject", s)}
-                  className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.subject === s ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
+                  className={choiceClass(form.subject === s)}
                 >
                   {s}
                 </button>
@@ -315,7 +323,7 @@ export function PrivateTuitionWizard() {
                       key={d}
                       type="button"
                       onClick={() => set("days", d)}
-                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.days === d ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
+                      className={`block w-full text-left ${choiceClass(form.days === d)}`}
                     >
                       {d}
                     </button>
@@ -330,7 +338,7 @@ export function PrivateTuitionWizard() {
                       key={t}
                       type="button"
                       onClick={() => set("time", t)}
-                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.time === t ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
+                      className={`block w-full text-left ${choiceClass(form.time === t)}`}
                     >
                       {t}
                     </button>
@@ -364,7 +372,7 @@ export function PrivateTuitionWizard() {
                 key={t}
                 type="button"
                 onClick={() => set("tutorPreference", t)}
-                className={`block w-full rounded-xl border px-4 py-3 text-sm text-left ${form.tutorPreference === t ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
+                className={`block w-full text-left ${choiceClass(form.tutorPreference === t)}`}
               >
                 {t}
               </button>

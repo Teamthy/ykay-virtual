@@ -600,11 +600,11 @@ func main() {
 		Learning:          httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
 		DashboardInsights: httpapi.NewDashboardInsightsHandler(dashSvc, profileAuthz),
 		Waitlist:          httpapi.NewWaitlistHandler(waitlistSvc),
-		AvailabilityPublic: httpapi.NewAvailabilityPublicHandler(repos.Availability),
-		Mastery:            httpapi.NewMasteryHandler(masterySvc, profileAuthz),
-		Revision:           httpapi.NewRevisionHandler(revisionSvc, profileAuthz),
-		PlayerNotes:        httpapi.NewPlayerNoteHandler(playerNoteSvc, lessonSvc),
-		Digest:             httpapi.NewDigestHandler(digestSvc),
+		TutorAvailability: httpapi.NewAvailabilityPublicHandler(repos.Availability),
+		Mastery:           httpapi.NewMasteryHandler(masterySvc, profileAuthz),
+		Revision:          httpapi.NewRevisionHandler(revisionSvc, profileAuthz),
+		PlayerNotes:       httpapi.NewPlayerNoteHandler(playerNoteSvc, lessonSvc),
+		Digest:            httpapi.NewDigestHandler(digestSvc),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
@@ -809,8 +809,8 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 			ProgressReports:    store.Learning,
 			Analytics:          memory.NewAnalyticsMemory(store),
 			Availability:       memory.NewAvailabilityMemory(),
-		Waitlist:           memory.NewWaitlistMemory(),
-		Mastery:            memory.NewMasteryMemory(),
+			Waitlist:           memory.NewWaitlistMemory(),
+			Mastery:            memory.NewMasteryMemory(),
 			Revision:           memory.NewRevisionMemory(),
 			PlayerNotes:        memory.NewPlayerNoteMemory(),
 			Digest:             memory.NewDigestMemory(),

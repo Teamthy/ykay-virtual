@@ -2,7 +2,6 @@ package memory
 
 import (
 	"context"
-	"errors"
 	"sync"
 	"time"
 

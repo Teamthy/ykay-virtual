@@ -67,7 +67,7 @@ func TestSummarize_CountsOnlyScoredAttemptsSince(t *testing.T) {
 		{SubmittedAt: ptr(since.Add(2 * time.Hour)), Score: ptr(90)},   // in window
 		{SubmittedAt: ptr(since.Add(3 * time.Hour)), Score: ptr(70)},   // in window → avg 80
 		{SubmittedAt: ptr(since.Add(-1 * time.Hour)), Score: ptr(100)}, // before window — excluded
-		{SubmittedAt: ptr(since.Add(1 * time.Hour))},                    // no score — excluded
+		{SubmittedAt: ptr(since.Add(1 * time.Hour))},                   // no score — excluded
 		{SubmittedAt: nil, Score: ptr(100)},                            // not submitted — excluded
 	}
 	count, avg := summarize(attempts, since)
@@ -144,7 +144,7 @@ func TestSendDigests_SkipsParentWithoutEmail(t *testing.T) {
 	parent := uuid.New()
 	child := uuid.New()
 	require.NoError(t, prefs.Upsert(ctx, &digest.Prefs{ParentUserID: parent, Enabled: true}))
-	users := fakeUserRepo{byID: map[uuid.UUID]*identity.User{{ID: parent, Email: ""}}} // no email
+	users := fakeUserRepo{byID: map[uuid.UUID]*identity.User{parent: {ID: parent, Email: ""}}} // no email
 	students := fakeStudentRepo{byParent: map[uuid.UUID][]identity.StudentProfile{parent: {{ID: child}}}}
 	recent := time.Now().Add(-time.Hour)
 	prac := fakePracticeRepo{byStudent: map[uuid.UUID][]practice.Attempt{child: {{SubmittedAt: &recent, Score: ptr(60)}}}}

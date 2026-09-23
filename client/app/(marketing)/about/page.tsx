@@ -127,6 +127,33 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <section className="w-full bg-[#0F2A1A] py-16 text-white lg:py-20">
+        <div className="container-x grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#D6FF57]">Two schools. One family.</p>
+            <h2 className="mt-3 font-display text-[clamp(2.2rem,5vw,4rem)] uppercase leading-[0.92]">
+              YKAY COLLEGE
+              <span className="block text-[#D6FF57]">and YK-Virtual</span>
+            </h2>
+            <p className="mt-5 max-w-[48ch] text-[15px] leading-relaxed text-white/75">
+              The campus school in Sango Ota and the live-class platform share one founder, one standard of teaching, and one family of learners. Campus life stays on campus. Online lessons, CBT practice and exam revision live here.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/college" className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-[13px] font-bold text-[#0F2A1A] hover:bg-[#C8F030]">
+                Visit Ykay College <ArrowRight size={14} />
+              </Link>
+              <Link href="/cbt" className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3 text-[13px] font-bold text-white hover:bg-white/10">
+                CBT practice
+              </Link>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-[20px] border border-white/10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/home/campus-hero.jpg" alt="YKAY COLLEGE campus in Sango Ota" className="h-[280px] w-full object-cover sm:h-[340px]" />
+          </div>
+        </div>
+      </section>
+
       {/* The founder portrait spans the viewport: no container around the image. */}
       <section aria-labelledby="founder-heading" className="relative isolate min-h-[520px] w-full overflow-hidden bg-[#0F2A1A] lg:min-h-[760px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}

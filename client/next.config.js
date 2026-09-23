@@ -11,6 +11,8 @@ const isVercel = !!process.env.VERCEL;
 
 const nextConfig = {
   reactStrictMode: true,
+  // Arena's preview iframe serves the dev server on a proxied host.
+  allowedDevOrigins: ["*.e2b.app", "*.e2b.dev"],
   // Self-contained server build for the Docker image (Phase 40) — skipped
   // on Vercel, which does not need it.
   ...(isVercel

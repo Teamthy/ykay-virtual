@@ -24,11 +24,12 @@ export function CollegeBridge() {
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
               <GraduationCap size={12} className="text-[#D6FF57]" /> The Ykay family · Campus
             </div>
-            <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3.2rem)] leading-[0.85] tracking-[-0.02em] uppercase">
-              YKAY <span className="text-[#D6FF57]">COLLEGE</span>
+            <h2 className="mt-4 font-display text-[clamp(2.2rem,4.4vw,3.8rem)] leading-[0.88] tracking-[-0.02em] uppercase">
+              Two schools.
+              <span className="block text-[#D6FF57]">One family.</span>
             </h2>
             <p className="mt-4 text-[14px] leading-[1.6] text-white/70 max-w-[48ch]">
-              The campus school in Sango Ota — JSS1 to SS3, science laboratories, sports, clubs and a full IT academy on the timetable. Same family, same standard, on campus and on YK-Virtual.
+              YKAY COLLEGE is the campus school in Sango Ota — JSS1 to SS3, science laboratories, sports, clubs and a full IT academy on the timetable. YK-Virtual is the live-class and CBT platform that grew out of it.
             </p>
 
             <div className="mt-6 grid grid-cols-2 gap-3 max-w-[420px]">

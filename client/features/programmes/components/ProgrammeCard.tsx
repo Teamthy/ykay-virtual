@@ -98,7 +98,7 @@ export function ProgrammeCard({ p }: { p: ProgrammeCardData }) {
         <div className="mt-auto flex items-center justify-between border-t border-black/10 pt-4">
           <div className="flex items-center gap-1.5 text-[12px] text-[#0F2A1A]/65">
             <CalendarDays size={14} className="text-[#0F2A1A]" />
-            {nextStart ? <><span className="font-semibold text-[#0F2A1A]/75">{nextStart}</span></> : <span className="font-medium">Starts soon</span>}
+            {nextStart ? <span className="font-semibold text-[#0F2A1A]/75">{nextStart}</span> : <span className="font-medium">Start date not published</span>}
           </div>
           <span className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A] group-hover:underline">View programme</span>
         </div>

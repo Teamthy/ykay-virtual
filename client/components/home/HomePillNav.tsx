@@ -5,31 +5,20 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
+import {
+  MobileServiceGroups,
+  PRIMARY_LINKS,
+  ServicesDropdown,
+  ServicesToggle,
+  navActive,
+} from "@/components/layout/public-nav";
 import { cn } from "@/lib/utils";
 
 /**
  * Floating pill nav — homepage only (the global Header yields on "/").
- * Dark rounded pill: brand lockup · centred links · lime "Download app"
- * CTA, per the reference hero design. Collapses to a hamburger + dark
- * dropdown panel below md.
+ * Same College / CBT / Services set as every other public page, in the
+ * dark rounded pill.
  */
-
-const PILL_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Blog", href: "/blog" },
-  { label: "Support", href: "/help" },
-];
-
-/** Extra routes surfaced only in the compact mobile panel. */
-const MOBILE_LINKS = [
-  { label: "Programmes", href: "/programmes" },
-  { label: "Cohorts", href: "/cohorts" },
-  { label: "Tutors", href: "/tutors" },
-  { label: "How it works", href: "/how-it-works" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Ykay College", href: "/college" },
-];
 
 function AppleGlyph({ className }: { className?: string }) {
   return (
@@ -50,6 +39,12 @@ function PlayStoreGlyph({ className }: { className?: string }) {
 export function HomePillNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+
+  const close = () => {
+    setOpen(false);
+    setServicesOpen(false);
+  };
 
   return (
     <div className="absolute inset-x-0 top-4 z-40 mx-auto w-full max-w-[980px] px-4 sm:top-6 sm:px-6">
@@ -57,45 +52,37 @@ export function HomePillNav() {
         aria-label="Primary"
         className="relative flex h-14 items-center justify-between gap-3 rounded-full bg-[var(--home-pill)] py-2 pe-2 ps-5 shadow-[0_18px_44px_rgba(0,0,0,0.28)] sm:h-16 sm:pe-2.5 sm:ps-7"
       >
-        <Link
-          href="/"
-          className="flex-none"
-          aria-label="YK-Virtual home"
-          onClick={() => setOpen(false)}
-        >
+        <Link href="/" className="flex-none" aria-label="YK-Virtual home" onClick={close}>
           <Logo dark markClassName="size-7 sm:size-8" className="text-[1.15rem] sm:text-[1.35rem]" />
         </Link>
 
-        {/* Centred links (md+) */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-7 md:flex">
-          {PILL_LINKS.map((l) => {
-            const active = pathname === l.href;
+        <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 md:flex">
+          {PRIMARY_LINKS.map((l) => {
+            const active = navActive(pathname, l.href);
             return (
               <Link
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  "pointer-events-auto relative rounded-sm py-1 text-[13px] font-medium transition-colors",
+                  "pointer-events-auto relative rounded-full px-4 py-2 text-[13px] font-medium transition-colors",
                   active ? "text-white" : "text-white/70 hover:text-white",
                 )}
                 aria-current={active ? "page" : undefined}
               >
                 {l.label}
-                {active && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-x-0 -bottom-0.5 h-[2px] rounded-full bg-white"
-                  />
-                )}
               </Link>
             );
           })}
+          <div className="relative">
+            <ServicesToggle open={servicesOpen} onToggle={() => setServicesOpen((v) => !v)} />
+            <ServicesDropdown open={servicesOpen} onClose={() => setServicesOpen(false)} />
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Link
             href="/download"
-            className="inline-flex h-10 whitespace-nowrap items-center gap-2 rounded-full bg-[#D6FF57] px-4 text-[12px] font-bold text-[#0F2A1A] transition hover:bg-[#C8F030] sm:h-11 sm:px-5 sm:text-[13px]"
+            className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full bg-[#D6FF57] px-4 text-[12px] font-bold text-[#0F2A1A] transition hover:bg-[#C8F030] sm:h-11 sm:px-5 sm:text-[13px]"
           >
             Download app
             <AppleGlyph className="size-3.5" />
@@ -114,21 +101,20 @@ export function HomePillNav() {
         </div>
       </nav>
 
-      {/* Mobile panel */}
       {open && (
         <div
           id="pill-nav-panel"
           className="mt-2 rounded-[1.75rem] bg-[var(--home-pill)] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.32)] md:hidden"
         >
           <ul className="grid list-none grid-cols-2 gap-x-3 gap-y-0.5">
-            {[...PILL_LINKS, ...MOBILE_LINKS].map((l) => (
+            {PRIMARY_LINKS.map((l) => (
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  onClick={() => setOpen(false)}
+                  onClick={close}
                   className={cn(
                     "block rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    pathname === l.href
+                    navActive(pathname, l.href)
                       ? "bg-white/10 text-white"
                       : "text-white/75 hover:bg-white/10 hover:text-white",
                   )}
@@ -138,17 +124,18 @@ export function HomePillNav() {
               </li>
             ))}
           </ul>
+          <MobileServiceGroups onNavigate={close} />
           <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
             <Link
               href="/login"
-              onClick={() => setOpen(false)}
+              onClick={close}
               className="grid place-items-center rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
             >
               Sign in
             </Link>
             <Link
               href="/hometutors#booking"
-              onClick={() => setOpen(false)}
+              onClick={close}
               className="grid place-items-center rounded-full bg-[#D6FF57] px-4 py-2.5 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030]"
             >
               Book a tutor
