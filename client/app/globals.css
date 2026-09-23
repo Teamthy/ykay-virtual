@@ -130,8 +130,11 @@
      Layout
      ---------------------------------------------------------- */
 
-  --container-width: 1400px;
+  --container-width: 1920px;
   --container-padding: 24px;
+  --ref-dark: #0F2A1A;
+  --ref-lime: #D6FF57;
+  --ref-cream: #F9F6ED;
 }
 
 /* ============================================================
@@ -406,12 +409,53 @@
   .container-x {
     width: 100%;
     max-width: var(--container-width);
-
     margin-left: auto;
     margin-right: auto;
-
     padding-left: var(--container-padding);
     padding-right: var(--container-padding);
+  }
+
+  /* Full-bleed wrapper matching reference: edge-to-edge background, inner max 1920 with responsive gutters */
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
+  .ref-card {
+    border-radius: 20px;
+    background: white;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 4px 24px rgba(15,42,26,0.06);
+    transition: transform 0.3s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease;
+  }
+  .ref-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(15,42,26,0.12);
+  }
+
+  .ref-card-lime {
+    border-radius: 20px;
+    background: #D6FF57;
+    color: #0F2A1A;
+  }
+
+  .ref-card-dark {
+    border-radius: 20px;
+    background: #0F2A1A;
+    color: white;
+  }
+
+  .ref-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.6rem 1.2rem;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   /* ----------------------------------------------------------
