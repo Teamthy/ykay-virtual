@@ -159,14 +159,14 @@ export default async function ExamPrepSubjectPage(props: Props) {
           {/* How YK-Virtual prepares you */}
           <section className="rounded-2xl bg-[#0F2A1A] p-6 text-white">
             <h2 className="flex items-center gap-2 font-display text-lg tracking-[0.02em] text-white">
-              <GraduationCap size={18} className="text-[#0F2A1A]" /> How
+              <GraduationCap size={18} className="text-[#D6FF57]" /> How
               YK-Virtual prepares you
             </h2>
             <ul className="mt-4 space-y-2.5 text-sm text-white/85">
               <li>· Vetted subject specialists matched to your syllabus</li>
               <li>· Past-paper practice mapped to each topic</li>
-              <li>· Timed mocks with feedback and a predicted-grade view</li>
-              <li>· Weekly progress reports for parents</li>
+              <li>· Timed mocks marked with feedback — not a predicted grade</li>
+              <li>· Progress notes after sessions, for parents</li>
             </ul>
             <div className="mt-5 space-y-2.5">
               <Link

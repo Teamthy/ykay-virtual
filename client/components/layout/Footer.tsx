@@ -8,6 +8,7 @@ const PRODUCTS = [
   { href: "/online-classes", label: "Online Classes" },
   { href: "/utme-2026", label: "UTME 2026 Prep" },
   { href: "/exam-prep", label: "Exam Prep" },
+  { href: "/cbt", label: "CBT Practice" },
   { href: "/plus", label: "YK-Virtual Plus" },
 ];
 

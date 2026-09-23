@@ -147,6 +147,15 @@ export default function CollegePage() {
         </div>
       </section>
 
+      <section className="w-full bg-[#F9F6ED] pb-12">
+        <div className="container-x flex flex-wrap items-center gap-3">
+          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#0F2A1A]/55">Also in the family</span>
+          <a href="/cbt" className="rounded-full bg-[#D6FF57] px-4 py-2 text-[12px] font-bold text-[#0F2A1A]">CBT practice</a>
+          <a href="/exam-prep" className="rounded-full border border-black/10 bg-white px-4 py-2 text-[12px] font-bold text-[#0F2A1A]">Exam preparation</a>
+          <a href="/hometutors" className="rounded-full border border-black/10 bg-white px-4 py-2 text-[12px] font-bold text-[#0F2A1A]">K-12 academics</a>
+        </div>
+      </section>
+
       {/* ── Why families choose the college ── */}
       <section className="w-full border-t border-black/10 bg-white py-16 md:py-24">
         <div className="container-x grid gap-10 md:grid-cols-2">
@@ -173,7 +182,7 @@ export default function CollegePage() {
           <ul className="grid gap-4 sm:grid-cols-2">
             {[
               ["A real campus in Sango Ota", "Modern labs, classrooms and co-curricular life."],
-              ["WAEC · NECO · JAMB record", "Structured revision, mocks, verified results."],
+              ["WAEC · NECO · JAMB prep", "Revision and mocks on the timetable. Results belong to the learner — we don't publish a pass rate."],
               ["Digital skills academy", "Python, AI basics, cybersecurity, Microsoft Office."],
               ["Verified records", "Report cards and certificates checkable online."],
             ].map(([title, desc], i) => (
