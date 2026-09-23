@@ -103,7 +103,7 @@ export default function ExamPrepPage() {
   return (
     <main>
       <PageHero
-        cover="/hero/exam-prep.jpg"
+        cover="/home/card-exam.jpg"
         eyebrow="Exam season, handled"
         title="Examination Preparation"
         subtitle="Revision cohorts, past-paper practice and mock examinations - built for WAEC, NECO, JAMB, IGCSE and A-Level candidates."

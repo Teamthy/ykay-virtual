@@ -68,7 +68,7 @@ export function DownloadAppCTA() {
                 <div className="rounded-[20px] bg-white p-4">
                   <div className="aspect-[9/14] overflow-hidden rounded-[16px] bg-[#F9F6ED]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/ykay-students.png" alt="Students" className="h-full w-full object-cover" />
+                    <img src="/hero/student-learning.jpg" alt="Student learning on a laptop" className="h-full w-full object-cover object-[58%_30%]" />
                   </div>
                   <div className="mt-3">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">YK-Virtual</p>

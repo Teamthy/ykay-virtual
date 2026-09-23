@@ -33,7 +33,7 @@ export default function HomeTutorsPage() {
 
       {/* Hero - background image cover */}
       <PageHero
-        cover="/hero/home-tutoring.jpg"
+        cover="/home/card-tutoring.jpg"
         announcement="Home tutoring · Vetted tutors"
         title="Better, Brighter Future For Your Kids."
         subtitle="Get personalized home tutoring that is designed to guide your children toward exam success, boost their confidence, and get better school grades."

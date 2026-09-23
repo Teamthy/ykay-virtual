@@ -69,15 +69,11 @@ export default function PrivateTuitionPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }}
       />
       <PageHero
-        cover="/hero/home-tutoring.jpg"
+        cover="/home/card-tuition.jpg"
         eyebrow="One learner, one tutor"
         title="Private Tuition"
         subtitle="Tell us what your learner needs - we match a vetted tutor and hold payment in escrow until lessons are delivered."
         crumbs={[{ name: "Home", href: "/" }, { name: "Private Tuition" }]}
-        image={{
-          src: "/hero/home-tutoring.jpg",
-          alt: "One-to-one home tutoring session",
-        }}
       />
 
       <div className="container-x mx-auto max-w-5xl space-y-8 pb-16 pt-16 md:pt-20">

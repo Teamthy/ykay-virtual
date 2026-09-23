@@ -38,7 +38,10 @@ export async function UpcomingCohorts() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">{"<<"} Cohorts & Live Classes {">>"}</p>
-              <h2 className="mt-3 font-display text-[clamp(1.4rem,2.8vw,2.2rem)] leading-[0.95] tracking-[-0.02em] text-[#0F2A1A] uppercase max-w-[20ch]">Structured cohorts starting soon — limited seats</h2>
+              <h2 className="mt-3 font-display text-[clamp(1.4rem,2.8vw,2.2rem)] leading-[1.02] tracking-[-0.02em] text-[#0F2A1A] uppercase max-w-[22ch]">
+                <span className="block">Structured cohorts</span>
+                <span className="block">starting soon — limited seats.</span>
+              </h2>
             </div>
             <Link href="/cohorts" className="hidden md:inline-flex items-center gap-2 rounded-full bg-[#0F2A1A] px-5 py-2.5 text-[13px] font-bold text-white hover:bg-black">
               View all <span className="grid size-6 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]"><ArrowRight size={12} /></span>

@@ -6,7 +6,7 @@ const CARDS = [
     id: "1",
     title: "STUDY SKILLS",
     desc: "How to Build a Consistent Study Routine That Actually Works for JSS & SSS",
-    img: "/home/ykay-students.png",
+    img: "/home/card-jss.jpg",
     href: "/study-skills",
     tag: "Study Tips",
   },

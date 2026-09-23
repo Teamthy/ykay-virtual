@@ -1511,8 +1511,9 @@ html.dark .keep-light .text-deep {
     linear-gradient(to bottom, rgba(23, 43, 34, 0.05) 1px, transparent 1px);
   --home-grid-size: 88px 88px;
 
-  /* Pastel stage circle behind the hero learner (reference redesign). */
-  --home-circle: #D6FF57;
+  /* Pastel stage circle behind the hero learner (reference redesign).
+     Intentional exception to the lime accent palette. */
+  --home-circle: #D9F1C6;
   --home-pill: #0F2A1A; /* floating pill nav */
 
   /* Floating chip elevations. */
@@ -1569,7 +1570,20 @@ html.dark .keep-light .text-deep {
   animation-delay: 0.48s;
 }
 
-/* Programme rail marquee — CSS-driven drift, pauses on interaction. */
+/* Programme rail marquee — CSS-driven drift, pauses on interaction.
+   The "Find your track" rail renders its 11 cards twice (11+11) with a
+   `gap-5`; shifting by -50% minus half the gap (0.625rem) lands exactly
+   on the duplicate set, so the loop is seamless. Reduced-motion users get
+   a static rail via the global guard + `motion-reduce:animate-none`. */
+@keyframes railMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--rail-shift, -50%));
+  }
+}
+
 .rail-marquee-paused .animate-rail-marquee,
 .home-screen-track:hover .animate-rail-marquee,
 .home-screen-track:focus-within .animate-rail-marquee,

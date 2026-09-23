@@ -10,7 +10,7 @@ const CARDS = [
     title: ["Junior", "Programs"],
     chips: ["JSS 1–3", "BECE track"],
     blurb: "Live online classes for JSS1–JSS3, built on the NERDC scheme of work.",
-    img: "/home/ykay-students.png",
+    img: "/home/card-jss.jpg",
     href: "/online-classes",
   },
   {

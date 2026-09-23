@@ -17,7 +17,9 @@ export type AuthShellProps = {
   skip?: { href: string; label?: string };
 };
 
-const IMG = "/home/ykay-students.png";
+// ykay-students.png is reserved for the Ykay College bridge + /college;
+// auth panels use a learner portrait instead.
+const IMG = "/hero/african-student.jpg";
 
 export function AuthShell({
   title,
