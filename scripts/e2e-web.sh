@@ -98,6 +98,7 @@ if curl -sf -m 2 "http://localhost:${API_PORT}/health" >/dev/null 2>&1; then
   pkill -f "[.]e2e-api" 2>/dev/null || true
   sleep 1
 fi
+E2E_STAGE="API binary build"
 rm -f .e2e-api && "${GO:-go}" build -o .e2e-api ./cmd/api
 # Raise the rate limits for browser E2E: the auth-journey spec runs many
 # auth steps in a burst and would otherwise trip the 40/min auth limiter.
@@ -114,18 +115,37 @@ if [ -n "${DATABASE_URL:-}" ] && psql "$DATABASE_URL" -c "SELECT 1" >/dev/null 2
     AUTH_RATE_LIMIT_PER_MINUTE=100000 RATE_LIMIT_PER_MINUTE=100000
     ALLOWED_ORIGINS="http://localhost:${WEB_PORT}"
     DATABASE_URL="$DATABASE_URL")
+  E2E_STAGE="PostgreSQL schema reset"
   psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" >/dev/null
+  E2E_STAGE="PostgreSQL migration"
   "${GO:-go}" run ./cmd/migrate --cmd=up
+  E2E_STAGE="reference data seed"
   psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f scripts/seed-refs.sql
+  E2E_STAGE="browser admin seed"
   psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f scripts/seed-e2e-admin.sql
   echo "e2e-web: API in PostgreSQL mode"
 else
   echo "e2e-web: API in memory demo mode"
 fi
+E2E_STAGE="API health check"
 env "${API_ENV[@]}" ./.e2e-api >/tmp/e2e-web-api.log 2>&1 &
 API_PID=$!
-for i in $(seq 1 30); do curl -sf -m 1 "http://localhost:$API_PORT/health" >/dev/null 2>&1 && break; sleep 0.5; done
-curl -sf -m 1 "http://localhost:$API_PORT/health" >/dev/null || { echo "API failed"; tail -20 /tmp/e2e-web-api.log; exit 1; }
+# Shared CI runners can take longer than 15 seconds to open PG connections
+# after the schema is reset. Match the generous Lighthouse boot window and
+# stop waiting immediately if the API process exits.
+for i in $(seq 1 60); do
+  curl -sf -m 2 "http://localhost:$API_PORT/health" >/dev/null 2>&1 && break
+  kill -0 "$API_PID" 2>/dev/null || break
+  sleep 1
+done
+curl -sf -m 2 "http://localhost:$API_PORT/health" >/dev/null || {
+  echo "e2e-web: API failed to become healthy" >&2
+  tail -40 /tmp/e2e-web-api.log >&2
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    echo "::error title=Browser E2E API boot failed::$(tail -1 /tmp/e2e-web-api.log)" >&2
+  fi
+  exit 1
+}
 
 # ── 3. Web standalone ──────────────────────────────────────────────────────
 E2E_STAGE="standalone web boot"
@@ -153,8 +173,12 @@ if ! kill -0 "$WEB_PID" 2>/dev/null; then
   tail -20 /tmp/e2e-web-server.log
   exit 1
 fi
-for i in $(seq 1 30); do curl -sf -m 1 "http://localhost:$WEB_PORT/" >/dev/null 2>&1 && break; sleep 0.5; done
-curl -sf -m 1 "http://localhost:$WEB_PORT/" >/dev/null || { echo "web failed"; tail -20 /tmp/e2e-web-server.log; exit 1; }
+for i in $(seq 1 60); do
+  curl -sf -m 2 "http://localhost:$WEB_PORT/" >/dev/null 2>&1 && break
+  kill -0 "$WEB_PID" 2>/dev/null || break
+  sleep 1
+done
+curl -sf -m 2 "http://localhost:$WEB_PORT/" >/dev/null || { echo "web failed"; tail -20 /tmp/e2e-web-server.log; exit 1; }
 
 # ── 4. Playwright ──────────────────────────────────────────────────────────
 E2E_STAGE="Playwright browser scenarios"
