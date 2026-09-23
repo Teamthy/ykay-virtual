@@ -58,7 +58,6 @@ export function Header() {
     setMobileOpen(false);
   };
 
-  const activePath = pathname;
 
   return (
     <header className="sticky top-0 z-50 w-full px-3 pt-3 sm:px-4 sm:pt-4">
@@ -75,7 +74,7 @@ export function Header() {
               tablet never gets one without the other. */}
           <div className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1 xl:flex">
             {PRIMARY_LINKS.map((l) => {
-              const active = navActive(activePath, l.href);
+              const active = navActive(pathname, l.href);
               return (
                 <Link
                   key={l.href}
@@ -168,7 +167,7 @@ export function Header() {
                     onClick={closeAll}
                     className={cn(
                       "rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                      navActive(activePath, l.href) ? "bg-white/10 text-white" : "text-white/75 hover:bg-white/10 hover:text-white",
+                      navActive(pathname, l.href) ? "bg-white/10 text-white" : "text-white/75 hover:bg-white/10 hover:text-white",
                     )}
                   >
                     {l.label}
