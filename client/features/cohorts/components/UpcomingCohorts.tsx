@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 type Cohort = {
   id: string;
+  slug?: string | null;
   title: string;
   start_date: string;
   end_date: string;

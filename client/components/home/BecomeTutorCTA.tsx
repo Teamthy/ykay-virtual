@@ -1,80 +1,61 @@
 import Link from "next/link";
-import { ArrowRight, GraduationCap, Wallet, Calendar, ShieldCheck } from "lucide-react";
+import { ArrowRight, Wallet, Calendar, ShieldCheck, GraduationCap, Users, Star } from "lucide-react";
 
 export function BecomeTutorCTA() {
   return (
-    <section className="relative w-full overflow-hidden bg-[#F9F6ED]">
+    <section className="relative w-full overflow-hidden bg-[#0F2A1A]">
+      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`, backgroundSize: '28px 28px' }} />
       <div className="relative mx-auto w-full max-w-[1920px] px-4 py-12 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 lg:py-20">
         <div className="mx-auto max-w-[1200px]">
-          <div className="rounded-[24px] bg-[#0F2A1A] p-6 lg:p-10 overflow-hidden relative">
-            <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`, backgroundSize: '24px 24px' }} />
-            <div className="absolute -right-[15%] -top-[20%] h-[60%] w-[40%] rounded-full bg-[#D6FF57]/20 blur-[80px]" />
+          <div className="text-center max-w-[700px] mx-auto">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">{"<<"} Become a tutor {">>"}</p>
+            <h2 className="mt-3 font-display text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[0.9] tracking-[-0.02em] text-white uppercase">
+              Teach what you love. <span className="text-[#D6FF57]">Get paid to do it.</span>
+            </h2>
+            <p className="mt-4 text-[14px] leading-relaxed text-white/60">Join 500+ vetted tutors. Set your rates, choose your schedule, teach online or in-person. We handle bookings, payments and students.</p>
+          </div>
 
-            <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#D6FF57]">
-                  <GraduationCap size={12} /> Now onboarding vetted tutors
-                </div>
-                <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[0.9] tracking-[-0.02em] text-white uppercase">
-                  Teach what you love. <span className="text-[#D6FF57]">Get paid to do it.</span>
-                </h2>
-                <p className="mt-4 max-w-[50ch] text-[14px] leading-[1.6] text-white/70">
-                  Join YK-Virtual&apos;s community of vetted tutors. Set your own rates and schedule, teach online or in person, and get paid for delivered lessons — while we handle bookings, payments and students for you.
-                </p>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {/* card 1 */}
+            <div className="rounded-[20px] bg-white p-6">
+              <div className="grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white"><GraduationCap size={16} /></div>
+              <h3 className="mt-4 font-display text-[16px] uppercase text-[#0F2A1A]">You set the terms</h3>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/60">Your rates, your hours, your subjects. Online, at home, or hybrid — you choose.</p>
+              <ul className="mt-4 space-y-2">
+                {["Set your own rates", "Choose online / in-person", "Pick subjects you love"].map((s) => (
+                  <li key={s} className="flex items-center gap-2 text-[11px] font-bold text-[#0F2A1A]/70"><span className="size-1.5 rounded-full bg-[#0F2A1A]" /> {s}</li>
+                ))}
+              </ul>
+            </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3 max-w-[420px]">
-                  {[
-                    { icon: Wallet, label: "Set your rates" },
-                    { icon: Calendar, label: "Your schedule" },
-                    { icon: ShieldCheck, label: "Escrow paid" },
-                  ].map((f) => (
-                    <div key={f.label} className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-center">
-                      <f.icon size={14} className="mx-auto text-[#D6FF57]" />
-                      <p className="mt-1 text-[11px] font-bold text-white">{f.label}</p>
-                    </div>
+            {/* card 2 lime */}
+            <div className="rounded-[20px] bg-[#D6FF57] p-6">
+              <div className="grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white"><Wallet size={16} /></div>
+              <h3 className="mt-4 font-display text-[16px] uppercase text-[#0F2A1A]">Escrow & weekly payouts</h3>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/70">No chasing payments. Escrow releases after delivery, paid weekly to your bank.</p>
+              <div className="mt-5 rounded-[12px] bg-white p-3">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/50">Avg. top tutor this month</p>
+                <p className="mt-1 text-[20px] font-extrabold text-[#0F2A1A]">₦ 285,000</p>
+                <p className="text-[11px] text-[#0F2A1A]/60">12 lessons · 4.9★ · Escrow released</p>
+              </div>
+              <Link href="/become-tutor" className="mt-5 inline-flex w-full items-center justify-between rounded-full bg-[#0F2A1A] px-5 py-3 text-[13px] font-bold text-white"><span>Apply to teach</span><span className="grid size-7 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]"><ArrowRight size={14} /></span></Link>
+            </div>
+
+            {/* card 3 */}
+            <div className="rounded-[20px] bg-white p-6">
+              <div className="grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white"><Users size={16} /></div>
+              <h3 className="mt-4 font-display text-[16px] uppercase text-[#0F2A1A]">We bring students</h3>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/60">3,000+ families search for tutors. Vetted tutors get priority placement and bookings.</p>
+              <div className="mt-4 flex items-center gap-2">
+                <div className="flex -space-x-1">
+                  {["/tutors/chinasa.jpg", "/tutors/judith.jpg", "/tutors/olanike.jpg"].map((s) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={s} src={s} alt="" className="size-6 rounded-full border-2 border-white object-cover" />
                   ))}
                 </div>
-
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Link href="/become-tutor" className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-[13px] font-bold text-[#0F2A1A] hover:bg-[#c8f030]">
-                    Apply to teach <span className="grid size-6 place-items-center rounded-full bg-[#0F2A1A] text-white"><ArrowRight size={12} /></span>
-                  </Link>
-                  <Link href="/how-it-works" className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-[13px] font-bold text-white hover:bg-white/10">
-                    How it works
-                  </Link>
-                </div>
+                <span className="text-[11px] font-bold text-[#0F2A1A]">500+ tutors onboarded</span>
               </div>
-
-              <div className="relative">
-                <div className="rounded-[20px] bg-white p-5 shadow-xl">
-                  <div className="flex items-center gap-3">
-                    <div className="size-12 rounded-full bg-[#0F2A1A] text-white grid place-items-center font-bold">A</div>
-                    <div>
-                      <p className="text-[13px] font-bold text-[#0F2A1A]">Adaeze O.</p>
-                      <p className="text-[11px] text-[#0F2A1A]/60">Maths & Physics · 4.9 ★ · 120 students</p>
-                    </div>
-                    <span className="ml-auto rounded-full bg-[#D6FF57] px-2.5 py-1 text-[10px] font-bold text-[#0F2A1A]">TOP TUTOR</span>
-                  </div>
-                  <div className="mt-4 rounded-[12px] bg-[#F9F6ED] p-3">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/50">This month</p>
-                    <p className="mt-1 text-[20px] font-extrabold text-[#0F2A1A]">₦ 285,000</p>
-                    <p className="text-[11px] text-[#0F2A1A]/60">12 lessons delivered · Escrow released</p>
-                    <div className="mt-2 h-1.5 rounded-full bg-black/10">
-                      <div className="h-full w-[85%] rounded-full bg-[#0F2A1A]" />
-                    </div>
-                  </div>
-                  <div className="mt-3 flex gap-2">
-                    <span className="rounded-full bg-[#0F2A1A]/5 px-2.5 py-1 text-[10px] font-bold text-[#0F2A1A]">Online</span>
-                    <span className="rounded-full bg-[#0F2A1A]/5 px-2.5 py-1 text-[10px] font-bold text-[#0F2A1A]">In-person</span>
-                    <span className="rounded-full bg-[#D6FF57] px-2.5 py-1 text-[10px] font-bold text-[#0F2A1A]">Verified</span>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-4 -left-4 rounded-[14px] bg-[#D6FF57] px-4 py-3 shadow-lg hidden lg:block">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/60">Avg. rating</p>
-                  <p className="text-[14px] font-extrabold text-[#0F2A1A]">4.9/5 from parents ★★★★★</p>
-                </div>
-              </div>
+              <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#0F2A1A]/5 px-3 py-1.5 text-[11px] font-bold text-[#0F2A1A]"><Star size={11} className="fill-amber-400 text-amber-400" /> 4.9/5 parent rating</div>
             </div>
           </div>
         </div>
