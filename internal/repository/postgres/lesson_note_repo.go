@@ -10,13 +10,13 @@ import (
 	"ykay-virtual/internal/domain/lessonnote"
 )
 
-// LessonNoteRepo — postgres implementation of lessonnote.Repository (migration
+// PlayerNoteRepo — postgres implementation of lessonnote.Repository (migration
 // 000078). Distinct from booking.LessonNote (tutor post-lesson summaries).
-type LessonNoteRepo struct{ db TxQuerier }
+type PlayerNoteRepo struct{ db TxQuerier }
 
-func NewLessonNoteRepo(db TxQuerier) *LessonNoteRepo { return &LessonNoteRepo{db: db} }
+func NewPlayerNoteRepo(db TxQuerier) *PlayerNoteRepo { return &PlayerNoteRepo{db: db} }
 
-func (r *LessonNoteRepo) Add(ctx context.Context, n *lessonnote.PlayerNote) error {
+func (r *PlayerNoteRepo) Add(ctx context.Context, n *lessonnote.PlayerNote) error {
 	return r.db.QueryRowContext(ctx, `
 		INSERT INTO lesson_player_notes (lesson_id, user_id, role, timestamp_sec, is_bookmark, text)
 		VALUES ($1,$2,$3,$4,$5,$6)
@@ -37,7 +37,7 @@ func scanPlayerNotes(rows interface{ Next() bool; Scan(...any) error }) ([]lesso
 	return out, nil
 }
 
-func (r *LessonNoteRepo) ListByLesson(ctx context.Context, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
+func (r *PlayerNoteRepo) ListByLesson(ctx context.Context, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id, lesson_id, user_id, role, timestamp_sec, is_bookmark, text, created_at
 		FROM lesson_player_notes WHERE lesson_id=$1 ORDER BY timestamp_sec`, lessonID)
@@ -48,7 +48,7 @@ func (r *LessonNoteRepo) ListByLesson(ctx context.Context, lessonID uuid.UUID) (
 	return scanPlayerNotes(rows)
 }
 
-func (r *LessonNoteRepo) ListByUser(ctx context.Context, userID, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
+func (r *PlayerNoteRepo) ListByUser(ctx context.Context, userID, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT id, lesson_id, user_id, role, timestamp_sec, is_bookmark, text, created_at
 		FROM lesson_player_notes WHERE user_id=$1 AND lesson_id=$2 ORDER BY timestamp_sec`, userID, lessonID)
@@ -59,7 +59,7 @@ func (r *LessonNoteRepo) ListByUser(ctx context.Context, userID, lessonID uuid.U
 	return scanPlayerNotes(rows)
 }
 
-func (r *LessonNoteRepo) Delete(ctx context.Context, id, userID uuid.UUID) error {
+func (r *PlayerNoteRepo) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	res, err := r.db.ExecContext(ctx,
 		`DELETE FROM lesson_player_notes WHERE id=$1 AND user_id=$2`, id, userID)
 	if err != nil {
@@ -71,4 +71,4 @@ func (r *LessonNoteRepo) Delete(ctx context.Context, id, userID uuid.UUID) error
 	return nil
 }
 
-var _ lessonnote.Repository = (*LessonNoteRepo)(nil)
+var _ lessonnote.Repository = (*PlayerNoteRepo)(nil)

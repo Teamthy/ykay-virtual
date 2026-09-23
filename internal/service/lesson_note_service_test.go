@@ -14,7 +14,7 @@ import (
 
 func TestLessonNote_AddValidatesAndDeletesOwnerOnly(t *testing.T) {
 	ctx := context.Background()
-	svc := NewLessonNoteService(memory.NewLessonNoteMemory())
+	svc := NewLessonNoteService(memory.NewPlayerNoteMemory())
 	lesson := uuid.New()
 	owner := uuid.New()
 	other := uuid.New()

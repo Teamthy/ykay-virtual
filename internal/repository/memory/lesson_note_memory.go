@@ -12,17 +12,17 @@ import (
 	"ykay-virtual/internal/domain/lessonnote"
 )
 
-// LessonNoteMemory — in-memory lessonnote.Repository for tests + dev fallback.
-type LessonNoteMemory struct {
+// PlayerNoteMemory — in-memory lessonnote.Repository for tests + dev fallback.
+type PlayerNoteMemory struct {
 	mu    sync.RWMutex
 	notes []*lessonnote.PlayerNote
 }
 
-func NewLessonNoteMemory() *LessonNoteMemory {
-	return &LessonNoteMemory{notes: []*lessonnote.PlayerNote{}}
+func NewPlayerNoteMemory() *PlayerNoteMemory {
+	return &PlayerNoteMemory{notes: []*lessonnote.PlayerNote{}}
 }
 
-func (m *LessonNoteMemory) Add(_ context.Context, n *lessonnote.PlayerNote) error {
+func (m *PlayerNoteMemory) Add(_ context.Context, n *lessonnote.PlayerNote) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	n.ID = uuid.New()
@@ -33,7 +33,7 @@ func (m *LessonNoteMemory) Add(_ context.Context, n *lessonnote.PlayerNote) erro
 	return nil
 }
 
-func (m *LessonNoteMemory) ListByLesson(_ context.Context, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
+func (m *PlayerNoteMemory) ListByLesson(_ context.Context, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	out := []lessonnote.PlayerNote{}
@@ -46,7 +46,7 @@ func (m *LessonNoteMemory) ListByLesson(_ context.Context, lessonID uuid.UUID) (
 	return out, nil
 }
 
-func (m *LessonNoteMemory) ListByUser(_ context.Context, userID, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
+func (m *PlayerNoteMemory) ListByUser(_ context.Context, userID, lessonID uuid.UUID) ([]lessonnote.PlayerNote, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	out := []lessonnote.PlayerNote{}
@@ -59,7 +59,7 @@ func (m *LessonNoteMemory) ListByUser(_ context.Context, userID, lessonID uuid.U
 	return out, nil
 }
 
-func (m *LessonNoteMemory) Delete(_ context.Context, id, userID uuid.UUID) error {
+func (m *PlayerNoteMemory) Delete(_ context.Context, id, userID uuid.UUID) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	out := m.notes[:0]
@@ -81,4 +81,4 @@ func (m *LessonNoteMemory) Delete(_ context.Context, id, userID uuid.UUID) error
 	return nil
 }
 
-var _ lessonnote.Repository = (*LessonNoteMemory)(nil)
+var _ lessonnote.Repository = (*PlayerNoteMemory)(nil)
