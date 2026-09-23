@@ -159,8 +159,8 @@ function Chip({
       className={cn(
         "inline-flex items-center justify-center gap-1.5 rounded-lg border px-3.5 py-2.5 text-sm font-semibold transition-colors",
         selected
-          ? "border-primary bg-primary-light text-deep"
-          : "border-ink-200 bg-white text-ink-600 hover:border-ink-300 hover:text-ink-800",
+          ? "border-[#D6FF57] bg-[#F9F6ED] text-[#0F2A1A]"
+          : "border-black/10 bg-white text-[#0F2A1A]/70 hover:border-black/10 hover:text-[#0F2A1A]/85",
         className,
       )}
     >
@@ -185,7 +185,7 @@ function ContinueBtn({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
+      className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:pointer-events-none disabled:opacity-50"
     >
       {label}
     </button>
@@ -220,14 +220,14 @@ function Step1({
   return (
     <div className="space-y-5">
       <GoogleButton />
-      <div className="flex items-center gap-3 text-xs uppercase text-ink-400 before:flex-1 before:border-t before:border-ink-200 before:me-4 after:flex-1 after:border-t after:border-ink-200 after:ms-4">
+      <div className="flex items-center gap-3 text-xs uppercase text-[#0F2A1A]/65 before:flex-1 before:border-t before:border-black/10 before:me-4 after:flex-1 after:border-t after:border-black/10 after:ms-4">
         Or create your account
       </div>
       <div className="space-y-4">
         <div>
           <label
             htmlFor="ob-name"
-            className="mb-1.5 block text-sm font-medium text-ink-800"
+            className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
           >
             Full name
           </label>
@@ -245,7 +245,7 @@ function Step1({
         <div>
           <label
             htmlFor="ob-email"
-            className="mb-1.5 block text-sm font-medium text-ink-800"
+            className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
           >
             Email address
           </label>
@@ -264,24 +264,24 @@ function Step1({
           type="button"
           onClick={onContinue}
           disabled={submitting}
-          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? "Creating account…" : "Continue"}
         </button>
       </div>
-      <p className="text-xs leading-5 text-ink-400">
+      <p className="text-xs leading-5 text-[#0F2A1A]/65">
         We&apos;ll send a 6-digit code to your email to verify it. By continuing
         you agree to our{" "}
         <Link
           href="/terms"
-          className="font-medium text-primary-dark hover:underline"
+          className="font-medium text-[#0F2A1A] hover:underline"
         >
           Terms
         </Link>{" "}
         and{" "}
         <Link
           href="/privacy"
-          className="font-medium text-primary-dark hover:underline"
+          className="font-medium text-[#0F2A1A] hover:underline"
         >
           Privacy Policy
         </Link>
@@ -314,15 +314,15 @@ function Step2({
 }) {
   return (
     <div className="space-y-5">
-      <div className="rounded-lg border border-ink-200 bg-surface-muted px-4 py-3 text-sm text-ink-600">
+      <div className="rounded-lg border border-black/10 bg-[#F9F6ED] px-4 py-3 text-sm text-[#0F2A1A]/70">
         We emailed a 6-digit code to{" "}
-        <span className="font-semibold text-deep">{email}</span>. Enter it below
+        <span className="font-semibold text-[#0F2A1A]">{email}</span>. Enter it below
         to verify your email.
       </div>
       <div>
         <label
           htmlFor="ob-code"
-          className="mb-1.5 block text-sm font-medium text-ink-800"
+          className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
         >
           Verification code
         </label>
@@ -346,7 +346,7 @@ function Step2({
           type="button"
           onClick={onSend}
           disabled={submitting || countdown > 0}
-          className="inline-flex h-11 flex-1 items-center justify-center rounded-lg border border-ink-300 bg-white px-4 text-sm font-semibold text-ink-700 transition-colors hover:border-ink-400 disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 flex-1 items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-semibold text-[#0F2A1A]/75 transition-colors hover:border-black/10 disabled:pointer-events-none disabled:opacity-50"
         >
           {countdown > 0
             ? `Resend in ${countdown}s`
@@ -358,12 +358,12 @@ function Step2({
           type="button"
           onClick={onVerify}
           disabled={submitting || code.length !== 6}
-          className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? "Verifying…" : "Verify email"}
         </button>
       </div>
-      <p className="text-xs leading-5 text-ink-400">
+      <p className="text-xs leading-5 text-[#0F2A1A]/65">
         The code expires in 10 minutes. Check your spam folder if it
         doesn&apos;t arrive.
       </p>
@@ -395,29 +395,29 @@ function Step3({
           className={cn(
             "flex w-full items-start gap-4 rounded-xl border-2 p-4 text-left transition-colors",
             selected === r.value
-              ? "border-primary bg-primary-light"
-              : "border-ink-200 bg-white hover:border-ink-300",
+              ? "border-[#D6FF57] bg-[#F9F6ED]"
+              : "border-black/10 bg-white hover:border-black/10",
           )}
         >
           <span className="text-2xl" aria-hidden="true">
             {r.icon}
           </span>
           <span className="flex-1">
-            <span className="block text-sm font-bold text-deep">{r.label}</span>
-            <span className="mt-0.5 block text-sm text-ink-500">{r.desc}</span>
+            <span className="block text-sm font-bold text-[#0F2A1A]">{r.label}</span>
+            <span className="mt-0.5 block text-sm text-[#0F2A1A]/65">{r.desc}</span>
           </span>
           <span
             className={cn(
               "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border-2",
               selected === r.value
-                ? "border-primary bg-primary"
-                : "border-ink-300",
+                ? "border-[#D6FF57] bg-[#D6FF57]"
+                : "border-black/10",
             )}
             aria-hidden="true"
           >
             {selected === r.value && (
               <svg
-                className="size-3 text-ink-900"
+                className="size-3 text-[#0F2A1A]"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
@@ -456,7 +456,7 @@ function Step4({
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+          <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
             Who is learning with YK-Virtual?
           </span>
           <div className="flex flex-wrap gap-2">
@@ -478,7 +478,7 @@ function Step4({
             <div>
               <label
                 htmlFor="ob-child"
-                className="mb-1.5 block text-sm font-medium text-ink-800"
+                className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
               >
                 Learner&apos;s name
               </label>
@@ -496,7 +496,7 @@ function Step4({
               />
             </div>
             <div>
-              <span className="mb-1.5 block text-sm font-medium text-ink-800">
+              <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
                 Learner&apos;s level
               </span>
               <CurriculumLevelSelect
@@ -508,7 +508,7 @@ function Step4({
               <div className="mt-3">
                 <label
                   htmlFor="ob-child-dob"
-                  className="mb-1.5 block text-sm font-medium text-ink-800"
+                  className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                 >
                   Learner&apos;s date of birth
                 </label>
@@ -524,7 +524,7 @@ function Step4({
                     })
                   }
                 />
-                <p className="mt-1 text-xs text-ink-400">
+                <p className="mt-1 text-xs text-[#0F2A1A]/65">
                   Under 15? Their account stays parent-guided — you manage
                   bookings and payments.
                 </p>
@@ -539,7 +539,7 @@ function Step4({
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+          <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
             What are you preparing for?
           </span>
           <div className="flex flex-wrap gap-2">
@@ -572,7 +572,7 @@ function Step4({
           </div>
         </div>
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+          <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
             Your level
           </span>
           <CurriculumLevelSelect
@@ -587,7 +587,7 @@ function Step4({
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+          <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
             What would you like to teach?
           </span>
           <div className="flex flex-wrap gap-2">
@@ -623,7 +623,7 @@ function Step4({
           </div>
         </div>
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+          <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
             Levels
           </span>
           <div className="flex flex-wrap gap-2">
@@ -653,11 +653,11 @@ function Step4({
           </div>
         </div>
         <ContinueBtn onClick={onNext} label="Continue" />
-        <p className="text-xs leading-5 text-ink-400">
+        <p className="text-xs leading-5 text-[#0F2A1A]/65">
           Want to teach on YK-Virtual? Complete your profile, then{" "}
           <Link
             href="/become-tutor/apply"
-            className="font-semibold text-primary-dark hover:underline"
+            className="font-semibold text-[#0F2A1A] hover:underline"
           >
             apply to become a tutor
           </Link>
@@ -669,7 +669,7 @@ function Step4({
     return (
       <div className="space-y-4">
         <div>
-          <span className="mb-1.5 block text-sm font-medium text-ink-800">
+          <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
             What kind of institution?
           </span>
           <div className="flex flex-wrap gap-2">
@@ -691,7 +691,7 @@ function Step4({
         <div>
           <label
             htmlFor="ob-city"
-            className="mb-1.5 block text-sm font-medium text-ink-800"
+            className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
           >
             City
           </label>
@@ -709,11 +709,11 @@ function Step4({
           />
         </div>
         <ContinueBtn onClick={onNext} label="Continue" />
-        <p className="text-xs leading-5 text-ink-400">
+        <p className="text-xs leading-5 text-[#0F2A1A]/65">
           Want to set up your school on YK-Virtual?{" "}
           <Link
             href="/for-schools"
-            className="font-semibold text-primary-dark hover:underline"
+            className="font-semibold text-[#0F2A1A] hover:underline"
           >
             Explore YK-Virtual for schools
           </Link>
@@ -722,7 +722,7 @@ function Step4({
       </div>
     );
   return (
-    <p className="text-sm text-ink-500">
+    <p className="text-sm text-[#0F2A1A]/65">
       Pick a role on the previous step to continue.
     </p>
   );
@@ -758,15 +758,15 @@ function StrengthMeter({ pw }: { pw: string }) {
             key={i}
             className={cn(
               "h-1.5 flex-1 rounded-full",
-              i < s ? colors[Math.max(s - 1, 0)] : "bg-ink-100",
+              i < s ? colors[Math.max(s - 1, 0)] : "bg-[#F9F6ED]",
             )}
           />
         ))}
       </div>
-      <p className="mt-1 text-xs text-ink-500">
+      <p className="mt-1 text-xs text-[#0F2A1A]/65">
         Password strength: <span className="font-semibold">{labels[s]}</span>
         {s < 3 && (
-          <span className="text-ink-400">
+          <span className="text-[#0F2A1A]/65">
             {" "}
             - aim for 8+ characters with mixed case, a number and a symbol.
           </span>
@@ -797,10 +797,10 @@ function Step5({
       <div>
         <label
           htmlFor="ob-phone"
-          className="mb-1.5 block text-sm font-medium text-ink-800"
+          className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
         >
           Phone number{" "}
-          <span className="font-normal text-ink-400">(optional)</span>
+          <span className="font-normal text-[#0F2A1A]/65">(optional)</span>
         </label>
         <input
           id="ob-phone"
@@ -846,7 +846,7 @@ function Step5({
         label={submitting ? "Saving…" : "Save & continue"}
         disabled={submitting}
       />
-      <p className="text-xs leading-5 text-ink-400">
+      <p className="text-xs leading-5 text-[#0F2A1A]/65">
         Leave the password empty to keep using email codes to sign in - you can
         add one later.
       </p>
@@ -870,10 +870,10 @@ function Step6({
       <div>
         <label
           htmlFor="ob-bio"
-          className="mb-1.5 block text-sm font-medium text-ink-800"
+          className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
         >
           Tell us about yourself{" "}
-          <span className="font-normal text-ink-400">(optional)</span>
+          <span className="font-normal text-[#0F2A1A]/65">(optional)</span>
         </label>
         <textarea
           id="ob-bio"
@@ -885,7 +885,7 @@ function Step6({
         />
       </div>
       <div>
-        <span className="mb-1.5 block text-sm font-medium text-ink-800">
+        <span className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
           Preferred language
         </span>
         <div className="flex flex-wrap gap-2">
@@ -916,16 +916,16 @@ function Step7({ state, onDone }: { state: ObState; onDone: () => void }) {
   return (
     <div className="space-y-5 text-center">
       <div
-        className="mx-auto grid size-16 place-items-center rounded-full bg-primary-light text-4xl"
+        className="mx-auto grid size-16 place-items-center rounded-full bg-[#F9F6ED] text-4xl"
         aria-hidden="true"
       >
         🎉
       </div>
       <div>
-        <h3 className="text-xl font-extrabold text-deep">
+        <h3 className="text-xl font-extrabold text-[#0F2A1A]">
           You&apos;re all set, {first}!
         </h3>
-        <p className="mt-1.5 text-sm leading-6 text-ink-500">
+        <p className="mt-1.5 text-sm leading-6 text-[#0F2A1A]/65">
           Your YK-Virtual account is ready. Head to your dashboard to explore
           programmes, cohorts and tutors.
         </p>
@@ -933,11 +933,11 @@ function Step7({ state, onDone }: { state: ObState; onDone: () => void }) {
       <button
         type="button"
         onClick={onDone}
-        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover"
+        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030]"
       >
         Go to my dashboard
       </button>
-      <p className="text-xs text-ink-400">
+      <p className="text-xs text-[#0F2A1A]/65">
         You&apos;ll be taken to your {roleLabel} dashboard.
       </p>
     </div>
@@ -947,7 +947,7 @@ function Step7({ state, onDone }: { state: ObState; onDone: () => void }) {
 // ── Page ──────────────────────────────────────────────────────────────────
 
 function Loading() {
-  return <p className="py-20 text-center text-ink-500">Loading…</p>;
+  return <p className="py-20 text-center text-[#0F2A1A]/65">Loading…</p>;
 }
 
 function OnboardingInner() {
@@ -1352,7 +1352,7 @@ function OnboardingInner() {
           <button
             type="button"
             onClick={() => go(step - 1)}
-            className="text-sm font-medium text-ink-500 transition-colors hover:text-deep"
+            className="text-sm font-medium text-[#0F2A1A]/65 transition-colors hover:text-[#0F2A1A]"
           >
             ← Back to previous step
           </button>

@@ -85,10 +85,10 @@ export function WhatsAppHomeCard({
         <WhatsAppIcon size={24} />
       </span>
       <span className="flex-1">
-        <span className="block text-sm font-bold text-ink-900">
+        <span className="block text-sm font-bold text-[#0F2A1A]">
           Chat on WhatsApp
         </span>
-        <span className="block text-xs text-ink-500">
+        <span className="block text-xs text-[#0F2A1A]/65">
           Live chat with our team — payments, enrolment, help
         </span>
       </span>
@@ -108,7 +108,7 @@ function ChevronRightIcon() {
       strokeWidth={2.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="shrink-0 text-ink-400"
+      className="shrink-0 text-[#0F2A1A]/65"
       aria-hidden="true"
     >
       <path d="m9 18 6-6-6-6" />

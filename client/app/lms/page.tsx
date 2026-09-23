@@ -36,10 +36,10 @@ function Stat({
   hint?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-      <p className="text-3xl font-extrabold text-deep">{value}</p>
-      <p className="mt-1 text-sm font-semibold text-ink-700">{label}</p>
-      {hint && <p className="mt-0.5 text-xs text-ink-500">{hint}</p>}
+    <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+      <p className="text-3xl font-extrabold text-[#0F2A1A]">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-[#0F2A1A]/75">{label}</p>
+      {hint && <p className="mt-0.5 text-xs text-[#0F2A1A]/65">{hint}</p>}
     </div>
   );
 }
@@ -56,7 +56,7 @@ function Section({
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-[#0F2A1A]">
           {title}
         </h2>
         {action}
@@ -171,14 +171,14 @@ export default function LmsHomePage() {
     <DashboardPage>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-ink-900">My courses</h2>
-          <p className="text-sm text-ink-500">
+          <h2 className="text-2xl font-bold text-[#0F2A1A]">My courses</h2>
+          <p className="text-sm text-[#0F2A1A]/65">
             Track live classes, assignments and course access from one place.
           </p>
         </div>
         <Link
           href="/cohorts"
-          className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-primary"
+          className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[#0F2A1A]/75 hover:border-[#D6FF57]"
         >
           Browse cohorts
         </Link>
@@ -219,28 +219,28 @@ export default function LmsHomePage() {
           action={
             <Link
               href="/cohorts"
-              className="text-sm font-semibold text-primary-dark hover:underline"
+              className="text-sm font-semibold text-[#0F2A1A] hover:underline"
             >
               View all →
             </Link>
           }
         >
           {lessons.isLoading ? (
-            <p className="py-8 text-center text-sm text-ink-500">
+            <p className="py-8 text-center text-sm text-[#0F2A1A]/65">
               Loading your courses…
             </p>
           ) : courses.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
-              <GraduationCap size={28} className="text-deep" />
-              <p className="mt-2 font-semibold text-ink-700">
+            <div className="rounded-2xl border border-dashed border-black/10 bg-white p-10 text-center">
+              <GraduationCap size={28} className="text-[#0F2A1A]" />
+              <p className="mt-2 font-semibold text-[#0F2A1A]/75">
                 You&apos;re not enrolled in any course yet.
               </p>
-              <p className="mt-1 text-sm text-ink-500">
+              <p className="mt-1 text-sm text-[#0F2A1A]/65">
                 Explore programmes and join a cohort to get started.
               </p>
               <Link
                 href="/programmes"
-                className="mt-4 inline-flex rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-primary-hover"
+                className="mt-4 inline-flex rounded-lg bg-[#D6FF57] px-5 py-2.5 text-sm font-semibold text-[#0F2A1A] hover:bg-[#C8F030]"
               >
                 Browse programmes
               </Link>
@@ -262,11 +262,11 @@ export default function LmsHomePage() {
                 return (
                   <article
                     key={c.cohortId}
-                    className="overflow-hidden rounded-3xl border border-ink-100 bg-white shadow-soft"
+                    className="overflow-hidden rounded-3xl border border-black/10 bg-white shadow-soft"
                   >
-                    <div className="flex items-center justify-between bg-primary px-5 py-4 text-ink-900">
+                    <div className="flex items-center justify-between bg-[#D6FF57] px-5 py-4 text-[#0F2A1A]">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-900/70">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#0F2A1A]/70">
                           Cohort
                         </p>
                         <h3 className="font-display text-xl tracking-wide">
@@ -280,34 +280,34 @@ export default function LmsHomePage() {
                     <div className="grid gap-4 p-5 md:grid-cols-[1fr_220px]">
                       <div>
                         {next && (
-                          <p className="text-sm text-ink-600">{next.title}</p>
+                          <p className="text-sm text-[#0F2A1A]/70">{next.title}</p>
                         )}
-                        <p className="mt-3 text-xs font-bold uppercase tracking-wide text-ink-400">
+                        <p className="mt-3 text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
                           Progress
                         </p>
                         <div className="mt-1 flex items-center gap-3">
-                          <div className="h-2 flex-1 rounded-full bg-ink-100">
+                          <div className="h-2 flex-1 rounded-full bg-[#F9F6ED]">
                             <div
-                              className="h-2 rounded-full bg-deep"
+                              className="h-2 rounded-full bg-[#0F2A1A]"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <span className="text-sm font-bold text-ink-800">
+                          <span className="text-sm font-bold text-[#0F2A1A]/85">
                             {pct}%
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-ink-500">
+                        <p className="mt-1 text-xs text-[#0F2A1A]/65">
                           {done} of {c.lessons.length} lessons completed
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <div className="rounded-2xl bg-ink-50 px-4 py-3 text-xs text-ink-500">
+                        <div className="rounded-2xl bg-[#F9F6ED] px-4 py-3 text-xs text-[#0F2A1A]/65">
                           Last visited
-                          <p className="font-bold text-ink-800">
+                          <p className="font-bold text-[#0F2A1A]/85">
                             Open LMS to continue
                           </p>
                         </div>
-                        <div className="rounded-2xl bg-primary-light px-4 py-3 text-xs text-deep">
+                        <div className="rounded-2xl bg-[#F9F6ED] px-4 py-3 text-xs text-[#0F2A1A]">
                           Next live class
                           <p className="font-bold">
                             {next
@@ -327,7 +327,7 @@ export default function LmsHomePage() {
                             ? `/lms/courses/${c.cohortId}`
                             : "/lms"
                         }
-                      className="flex h-12 items-center justify-center gap-2 bg-deep text-sm font-bold text-white hover:bg-deep-light"
+                      className="flex h-12 items-center justify-center gap-2 bg-[#0F2A1A] text-sm font-bold text-white hover:bg-[#0F2A1A]"
                     >
                       Continue learning
                     </Link>
@@ -344,20 +344,20 @@ export default function LmsHomePage() {
           action={
             <Link
               href="/lms"
-              className="text-sm font-semibold text-primary-dark hover:underline"
+              className="text-sm font-semibold text-[#0F2A1A] hover:underline"
             >
               Manage →
             </Link>
           }
         >
           {assignments.isLoading ? (
-            <p className="py-6 text-center text-sm text-ink-500">Loading…</p>
+            <p className="py-6 text-center text-sm text-[#0F2A1A]/65">Loading…</p>
           ) : (assignments.data ?? []).length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-6 text-center text-sm text-ink-500">
+            <p className="rounded-2xl border border-dashed border-black/10 bg-white p-6 text-center text-sm text-[#0F2A1A]/65">
               No assignments yet.
             </p>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
               {(assignments.data ?? []).map((a) => {
                 const sub = (submissions.data ?? []).find(
                   (s) => s.assignment_id === a.id,
@@ -365,11 +365,11 @@ export default function LmsHomePage() {
                 return (
                   <div
                     key={a.id}
-                    className="flex w-full items-center justify-between gap-4 border-b border-ink-100 px-5 py-4 text-left last:border-0 hover:bg-[#F8EBCF]"
+                    className="flex w-full items-center justify-between gap-4 border-b border-black/10 px-5 py-4 text-left last:border-0 hover:bg-[#F9F6ED]"
                   >
                     <div>
-                      <p className="font-semibold text-ink-800">{a.title}</p>
-                      <p className="mt-0.5 text-xs text-ink-500">
+                      <p className="font-semibold text-[#0F2A1A]/85">{a.title}</p>
+                      <p className="mt-0.5 text-xs text-[#0F2A1A]/65">
                         {a.due_at
                           ? `Due ${new Date(a.due_at).toLocaleDateString()}`
                           : "No deadline"}
@@ -382,8 +382,8 @@ export default function LmsHomePage() {
                         sub?.score !== undefined
                           ? "bg-green-100 text-green-700"
                           : sub
-                            ? "bg-primary-light text-deep"
-                            : "bg-ink-100 text-ink-500",
+                            ? "bg-[#F9F6ED] text-[#0F2A1A]"
+                            : "bg-[#F9F6ED] text-[#0F2A1A]/65",
                       )}
                     >
                       {sub?.score !== undefined
@@ -406,13 +406,13 @@ export default function LmsHomePage() {
             <span className="flex gap-4">
               <Link
                 href="/lms/practice"
-                className="text-sm font-semibold text-primary-dark hover:underline"
+                className="text-sm font-semibold text-[#0F2A1A] hover:underline"
               >
                 CBT Practice →
               </Link>
               <Link
                 href="/lms/exams"
-                className="text-sm font-semibold text-primary-dark hover:underline"
+                className="text-sm font-semibold text-[#0F2A1A] hover:underline"
               >
                 Course exams →
               </Link>
@@ -420,12 +420,12 @@ export default function LmsHomePage() {
           }
         >
           {(quizzes.data ?? []).length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center">
-              <p className="text-sm text-ink-500">
+            <div className="rounded-2xl border border-dashed border-black/10 bg-white p-8 text-center">
+              <p className="text-sm text-[#0F2A1A]/65">
                 No course exams yet — your tutor will publish them. Meanwhile,{" "}
                 <Link
                   href="/lms/practice"
-                  className="font-bold text-primary-dark hover:underline"
+                  className="font-bold text-[#0F2A1A] hover:underline"
                 >
                   sit a CBT practice paper →
                 </Link>
@@ -437,12 +437,12 @@ export default function LmsHomePage() {
                 <Link
                   key={q.id}
                   href={q.cohort_id ? `/lms/courses/${q.cohort_id}` : "/lms"}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-white px-5 py-4 shadow-sm transition-colors hover:border-primary/50"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm transition-colors hover:border-[#D6FF57]/50"
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-bold text-ink-800">{q.title}</p>
-                    <p className="mt-0.5 text-xs text-ink-500">
-                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-deep">
+                    <p className="truncate font-bold text-[#0F2A1A]/85">{q.title}</p>
+                    <p className="mt-0.5 text-xs text-[#0F2A1A]/65">
+                      <span className="rounded-full bg-[#F9F6ED] px-2 py-0.5 text-[10px] font-bold text-[#0F2A1A]">
                         {subjectName(subjectMap, q.subject_id)}
                       </span>{" "}
                       Pass {q.pass_threshold}%
@@ -451,7 +451,7 @@ export default function LmsHomePage() {
                         : ""}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-bold text-ink-900">
+                  <span className="shrink-0 rounded-full bg-[#D6FF57] px-4 py-2 text-xs font-bold text-[#0F2A1A]">
                     Take exam
                   </span>
                 </Link>
@@ -463,7 +463,7 @@ export default function LmsHomePage() {
         {/* Recent reports */}
         <Section title="Progress reports">
           {(reports.data ?? []).length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-6 text-center text-sm text-ink-500">
+            <p className="rounded-2xl border border-dashed border-black/10 bg-white p-6 text-center text-sm text-[#0F2A1A]/65">
               No progress reports yet — your tutor will share them here.
             </p>
           ) : (
@@ -471,24 +471,24 @@ export default function LmsHomePage() {
               {(reports.data ?? []).map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm"
+                  className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-ink-700">
+                    <p className="text-sm font-semibold text-[#0F2A1A]/75">
                       {new Date(r.period_start).toLocaleDateString()} –{" "}
                       {new Date(r.period_end).toLocaleDateString()}
                     </p>
-                    <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-xs font-bold text-deep">
+                    <span className="rounded-full bg-[#F9F6ED] px-2.5 py-0.5 text-xs font-bold text-[#0F2A1A]">
                       ★ {r.overall_rating}/5
                     </span>
                   </div>
                   {r.strengths && (
-                    <p className="mt-2 text-sm text-ink-600">
+                    <p className="mt-2 text-sm text-[#0F2A1A]/70">
                       💪 {r.strengths}
                     </p>
                   )}
                   {r.recommendations && (
-                    <p className="mt-1 text-sm text-ink-600">
+                    <p className="mt-1 text-sm text-[#0F2A1A]/70">
                       🎯 {r.recommendations}
                     </p>
                   )}

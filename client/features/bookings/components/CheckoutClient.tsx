@@ -160,7 +160,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         <Skeleton className="h-6 w-2/3" />
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-5/6" />
-        <p className="text-sm text-ink-500 pt-2">
+        <p className="text-sm text-[#0F2A1A]/65 pt-2">
           {step.name === "creating" ? "Creating your secure booking order…" : "Connecting to the payment gateway…"}
         </p>
       </div>
@@ -172,8 +172,8 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
   // of an empty learner select and a forever-disabled pay button.
   if (!user) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-card">
-        <div className="bg-deep px-6 py-8 text-white md:px-8">
+      <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-card">
+        <div className="bg-[#0F2A1A] px-6 py-8 text-white md:px-8">
           <h2 className="font-display text-xl tracking-[0.02em]">Secure checkout</h2>
           <p className="mt-1 text-sm text-white/70">
             {cohort.title} · ₦{cohort.fee.toLocaleString()} {cohort.currency}
@@ -187,7 +187,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
             </>
           ) : (
             <>
-              <p className="text-sm text-ink-600">
+              <p className="text-sm text-[#0F2A1A]/70">
                 One quick step before payment: sign in (or create a free parent account) so we can
                 secure your seat, hold the payment in escrow and give you instant receipts.
               </p>
@@ -204,10 +204,10 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                   Create free account
                 </Button>
               </div>
-              <p className="flex items-center justify-center gap-4 border-t border-ink-100 pt-4 text-[11px] font-semibold text-ink-400">
-                <span className="flex items-center gap-1.5"><Lock size={12} className="text-brand-green" /> 256-bit SSL</span>
-                <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-brand-green" /> Escrow protected</span>
-                <span className="flex items-center gap-1.5"><RefreshCcw size={12} className="text-brand-green" /> Idempotent orders</span>
+              <p className="flex items-center justify-center gap-4 border-t border-black/10 pt-4 text-[11px] font-semibold text-[#0F2A1A]/65">
+                <span className="flex items-center gap-1.5"><Lock size={12} className="text-[#0F2A1A]" /> 256-bit SSL</span>
+                <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-[#0F2A1A]" /> Escrow protected</span>
+                <span className="flex items-center gap-1.5"><RefreshCcw size={12} className="text-[#0F2A1A]" /> Idempotent orders</span>
               </p>
             </>
           )}
@@ -227,15 +227,15 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         e.stopPropagation();
         void form.handleSubmit();
       }}
-      className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-card"
+      className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-card"
       noValidate
     >
       {/* Navy summary header (Tuteria payment flow) */}
       <div
-        className="bg-cover bg-center px-6 py-8 text-white md:px-8"
+        className="bg-cover bg-center px-6 py-8 text-white md:px-8 bg-[#0F2A1A]"
         style={{
           backgroundImage:
-            "linear-gradient(120deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/checkout.jpg)",
+            "linear-gradient(120deg, rgba(15,42,26,0.88), rgba(15,42,26,0.7)), url(/hero/checkout.jpg)",
         }}
       >
         <div className="flex items-baseline justify-between gap-4">
@@ -249,8 +249,8 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
       </div>
 
       <div className="space-y-5 p-6">
-        <div className="rounded-xl bg-brand-blue-light/50 p-4 text-sm text-ink-600 space-y-1">
-          <p className="font-semibold text-ink-800">{cohort.title}</p>
+        <div className="rounded-xl bg-[#F9F6ED]/50 p-4 text-sm text-[#0F2A1A]/70 space-y-1">
+          <p className="font-semibold text-[#0F2A1A]/85">{cohort.title}</p>
           <p>
             {cohort.start_date} → {cohort.end_date} · {cohort.timezone} · {cohort.location_mode}
           </p>
@@ -268,19 +268,19 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         </div>
 
         {/* Steps */}
-        <ol className="flex items-center gap-2 text-[11px] font-bold text-ink-500">
+        <ol className="flex items-center gap-2 text-[11px] font-bold text-[#0F2A1A]/65">
           {["Details", "Pay", "Confirmation"].map((s2, i) => (
             <li key={s2} className="flex items-center gap-2">
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-brand-navy text-white">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#0F2A1A] text-white">
                 {i + 1}
               </span>
               {s2}
-              {i < 2 && <span className="h-px w-8 bg-ink-200" aria-hidden="true" />}
+              {i < 2 && <span className="h-px w-8 bg-[#F9F6ED]" aria-hidden="true" />}
             </li>
           ))}
         </ol>
 
-        <p className="text-xs text-ink-500 leading-relaxed">
+        <p className="text-xs text-[#0F2A1A]/65 leading-relaxed">
           Payment is held in escrow and only released to the tutor after delivery is confirmed (or auto-released
           after 3 days). Your booking order is idempotent — retrying never double-charges.
         </p>
@@ -290,7 +290,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
             <label className="block text-sm">
               <span className="font-medium">Learner</span>
               <select
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
@@ -303,8 +303,8 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                 ))}
               </select>
               {(learners.data ?? []).length === 0 && !learners.isLoading ? (
-                <span className="mt-1 block text-xs text-ink-500">
-                  No learners linked yet — <a href="/onboarding/learner" className="font-semibold text-brand-blue hover:underline">add a learner</a> first.
+                <span className="mt-1 block text-xs text-[#0F2A1A]/65">
+                  No learners linked yet — <a href="/onboarding/learner" className="font-semibold text-[#0F2A1A] hover:underline">add a learner</a> first.
                 </span>
               ) : null}
               {field.state.meta.errors?.length ? (
@@ -320,7 +320,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
               <span className="font-medium">Billing email</span>
               <input
                 type="email"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
                 placeholder="parent@example.com"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -345,8 +345,8 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                     onClick={() => field.handleChange(p)}
                     className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
                       field.state.value === p
-                        ? "border-brand-blue bg-brand-blue text-white"
-                        : "border-ink-200 bg-white text-ink-700 hover:border-ink-400"
+                        ? "border-[#0F2A1A] bg-[#0F2A1A] text-white"
+                        : "border-black/10 bg-white text-[#0F2A1A]/75 hover:border-black/10"
                     }`}
                   >
                     {p === "PAYSTACK" ? "Card · Paystack" : "Bank · Flutterwave"}
@@ -358,9 +358,9 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         </form.Field>
 
         {/* Coupon / discount (gap #6) */}
-        <div className="rounded-xl border border-ink-100 bg-surface-muted/50 p-3">
+        <div className="rounded-xl border border-black/10 bg-[#F9F6ED]/50 p-3">
           <label className="text-sm">
-            <span className="font-medium text-ink-700">Promo code (optional)</span>
+            <span className="font-medium text-[#0F2A1A]/75">Promo code (optional)</span>
             <div className="mt-1 flex gap-2">
               <input
                 type="text"
@@ -371,7 +371,7 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
                   setCouponError(null);
                 }}
                 placeholder="e.g. SAVE10"
-                className="min-w-0 flex-1 rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                className="min-w-0 flex-1 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
               />
               <Button
                 type="button"
@@ -428,10 +428,10 @@ export function CheckoutClient({ cohort }: { cohort: Cohort }) {
         </form.Subscribe>
 
         {/* Secure badges */}
-        <div className="flex items-center justify-center gap-5 border-t border-ink-100 pt-4 text-[11px] font-semibold text-ink-400">
-          <span className="flex items-center gap-1.5"><Lock size={12} className="text-brand-green" /> 256-bit SSL</span>
-          <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-brand-green" /> Escrow protected</span>
-          <span className="flex items-center gap-1.5"><RefreshCcw size={12} className="text-brand-green" /> Idempotent orders</span>
+        <div className="flex items-center justify-center gap-5 border-t border-black/10 pt-4 text-[11px] font-semibold text-[#0F2A1A]/65">
+          <span className="flex items-center gap-1.5"><Lock size={12} className="text-[#0F2A1A]" /> 256-bit SSL</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-[#0F2A1A]" /> Escrow protected</span>
+          <span className="flex items-center gap-1.5"><RefreshCcw size={12} className="text-[#0F2A1A]" /> Idempotent orders</span>
         </div>
       </div>
     </form>
@@ -489,11 +489,11 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
   const stillPending = status === "PENDING";
   return (
     <div className="border rounded-2xl p-8 text-center space-y-4" data-testid="payment-link-card">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-brand-green">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-[#0F2A1A]">
         <ShieldCheck size={26} />
       </div>
-      <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy">Order {order.order_number} — ready to pay</h2>
-      <p className="text-sm text-ink-600">
+      <h2 className="font-display text-2xl tracking-[0.02em] text-[#0F2A1A]">Order {order.order_number} — ready to pay</h2>
+      <p className="text-sm text-[#0F2A1A]/70">
         {payment.amount.toLocaleString()} {payment.currency} via{" "}
         {payment.provider === "PAYSTACK" ? "Paystack" : "Flutterwave"}.
         <br />
@@ -536,11 +536,11 @@ function PaymentLinkCard({ order, payment }: { order: Order; payment: InitiatePa
         </div>
       )}
       {stillPending && (
-        <p className="text-xs text-ink-400">
+        <p className="text-xs text-[#0F2A1A]/65">
           Waiting for payment confirmation… {checked > 0 ? `(checked ${checked}×)` : "this page refreshes automatically"}
         </p>
       )}
-      <p className="text-xs text-ink-400">
+      <p className="text-xs text-[#0F2A1A]/65">
         Order reference: <span className="font-mono">{payment.provider_reference}</span>
       </p>
     </div>

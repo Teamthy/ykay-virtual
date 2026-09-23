@@ -195,7 +195,7 @@ export default function ParentDashboardPage() {
                 type="button"
                 onClick={() => setSection(n.key)}
                 className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                  section === n.key ? "bg-deep text-white" : "bg-white text-ink-700 ring-1 ring-ink-200 hover:bg-ink-50"
+                  section === n.key ? "bg-[#0F2A1A] text-white" : "bg-white text-[#0F2A1A]/75 ring-1 ring-black/10 hover:bg-[#F9F6ED]"
                 }`}
               >
                 {n.icon}
@@ -203,11 +203,11 @@ export default function ParentDashboardPage() {
               </button>
             ))}
             <label className="ml-auto flex items-center gap-2 text-sm">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-ink-400">Learner</span>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Learner</span>
               <select
                 value={selectedLearner || activeLearner?.id || ""}
                 onChange={(e) => setSelectedLearner(e.target.value)}
-                className="rounded-full border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-800"
+                className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[#0F2A1A]/85"
               >
                 {(learners.data ?? []).map((l) => (
                   <option key={l.id} value={l.id}>{l.first_name} {l.last_name}</option>
@@ -219,10 +219,10 @@ export default function ParentDashboardPage() {
           <RecommendationsForYou />
 
           {!learnerId && (
-            <div className="rounded-2xl border border-deep/20 bg-primary-light/60 p-6 text-sm">
-              <strong className="text-deep">No learner linked yet.</strong>{" "}
-              <span className="text-ink-600">Add your first learner to see schedules, attendance and progress.</span>{" "}
-              <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-deep hover:underline">
+            <div className="rounded-2xl border border-[#0F2A1A]/20 bg-[#F9F6ED]/60 p-6 text-sm">
+              <strong className="text-[#0F2A1A]">No learner linked yet.</strong>{" "}
+              <span className="text-[#0F2A1A]/70">Add your first learner to see schedules, attendance and progress.</span>{" "}
+              <button type="button" onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 font-semibold text-[#0F2A1A] hover:underline">
                 <UserPlus size={15} /> Add a learner →
               </button>
             </div>
@@ -235,11 +235,11 @@ export default function ParentDashboardPage() {
                   <CreditCard size={18} />
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-ink-800">Payment pending — {nextPayment.order_number}</p>
-                  <p className="text-xs text-ink-500">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} · completes your booking</p>
+                  <p className="text-sm font-bold text-[#0F2A1A]/85">Payment pending — {nextPayment.order_number}</p>
+                  <p className="text-xs text-[#0F2A1A]/65">{nextPayment.currency} {nextPayment.total_amount.toLocaleString()} · completes your booking</p>
                 </div>
               </div>
-              <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-primary px-6 py-3 text-sm font-bold text-deep hover:bg-primary-dark transition-colors">
+              <a href={nextPayment.checkout_cohort_id ? `/checkout/${nextPayment.checkout_cohort_id}` : "/cohorts"} className="rounded-xl bg-[#D6FF57] px-6 py-3 text-sm font-bold text-[#0F2A1A] hover:bg-[#0F2A1A] transition-colors">
                 Complete payment
               </a>
             </div>
@@ -278,31 +278,31 @@ export default function ParentDashboardPage() {
                         setSection(a.section);
                       }
                     }}
-                    className="flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-sm font-semibold text-deep transition-all hover:border-deep hover:shadow-lift"
+                    className="flex flex-col items-start gap-2 rounded-2xl border border-black/10 bg-white p-4 text-sm font-semibold text-[#0F2A1A] transition-all hover:border-[#0F2A1A] hover:shadow-lift"
                   >
-                    <span className="grid size-8 place-items-center rounded-lg bg-primary-light text-deep">{a.icon}</span>
+                    <span className="grid size-8 place-items-center rounded-lg bg-[#F9F6ED] text-[#0F2A1A]">{a.icon}</span>
                     {a.label}
                   </Link>
                 ))}
               </div>
 
               {nextLesson ? (
-                <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+                <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                         <CalendarDays size={20} />
                       </span>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Next lesson</p>
-                        <p className="font-bold text-ink-800">{nextLesson.title}</p>
-                        <p className="text-xs text-ink-500">
+                        <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">Next lesson</p>
+                        <p className="font-bold text-[#0F2A1A]/85">{nextLesson.title}</p>
+                        <p className="text-xs text-[#0F2A1A]/65">
                           {new Date(nextLesson.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {nextLesson.timezone}
                         </p>
                       </div>
                     </div>
                     {nextLesson.meeting_url && (
-                      <a href={nextLesson.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-deep px-5 py-2.5 text-sm font-bold text-white hover:bg-deep-light transition-colors">
+                      <a href={nextLesson.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0F2A1A] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0F2A1A] transition-colors">
                         Join class
                       </a>
                     )}
@@ -314,7 +314,7 @@ export default function ParentDashboardPage() {
                   title="No upcoming lessons"
                   description="When lessons are booked they appear here with time and join links."
                   action={
-                    <Link href="/private-tuition" className="rounded-full bg-primary px-6 py-3 text-sm font-bold text-ink-900 hover:bg-primary-hover">
+                    <Link href="/private-tuition" className="rounded-full bg-[#D6FF57] px-6 py-3 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]">
                       Book tuition
                     </Link>
                   }
@@ -360,7 +360,7 @@ export default function ParentDashboardPage() {
                     key={t}
                     onClick={() => setTab(t)}
                     className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-                      tab === t ? "bg-primary text-ink-900" : "bg-white text-ink-600 ring-1 ring-ink-200 hover:bg-ink-100"
+                      tab === t ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-white text-[#0F2A1A]/70 ring-1 ring-black/10 hover:bg-[#F9F6ED]"
                     }`}
                   >
                     {t}
@@ -369,7 +369,7 @@ export default function ParentDashboardPage() {
               </div>
 
               {!learnerId ? (
-                <p className="text-sm text-ink-500">Link a learner to see their schedule.</p>
+                <p className="text-sm text-[#0F2A1A]/65">Link a learner to see their schedule.</p>
               ) : lessons.isLoading ? (
                 <div className="space-y-3"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>
               ) : filtered.length === 0 ? (
@@ -381,15 +381,15 @@ export default function ParentDashboardPage() {
               ) : (
                 <ul className="space-y-3">
                   {filtered.map((l) => (
-                    <li key={l.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+                    <li key={l.id} className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-4">
-                          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
+                          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                             <CalendarDays size={18} />
                           </span>
                           <div>
-                            <p className="font-bold text-ink-800">{l.title}</p>
-                            <p className="text-xs text-ink-500">
+                            <p className="font-bold text-[#0F2A1A]/85">{l.title}</p>
+                            <p className="text-xs text-[#0F2A1A]/65">
                               {new Date(l.start_at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                             </p>
                           </div>
@@ -397,7 +397,7 @@ export default function ParentDashboardPage() {
                         <div className="flex items-center gap-3">
                           <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                           {l.meeting_url && (l.status === "SCHEDULED" || l.status === "ONGOING") && (
-                            <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light transition-colors">
+                            <a href={l.meeting_url} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white hover:bg-[#0F2A1A] transition-colors">
                               Join class
                             </a>
                           )}
@@ -412,8 +412,8 @@ export default function ParentDashboardPage() {
 
           {/* Section: Payments */}
           {section === "payments" && (
-            <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-              <h2 className="font-bold text-ink-800">Payments &amp; receipts</h2>
+            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+              <h2 className="font-bold text-[#0F2A1A]/85">Payments &amp; receipts</h2>
               {orders.isLoading ? (
                 <Skeleton className="h-16 w-full mt-4" />
               ) : (orders.data?.length ?? 0) === 0 ? (
@@ -427,14 +427,14 @@ export default function ParentDashboardPage() {
                   {orders.data?.map((o) => (
                     <li key={o.id} className="flex items-center justify-between gap-3 py-3">
                       <div>
-                        <span className="font-mono text-xs text-ink-600">{o.order_number}</span>
+                        <span className="font-mono text-xs text-[#0F2A1A]/70">{o.order_number}</span>
                         <div className="mt-1"><StatusBadge label={o.status} kind={statusKindFor(o.status)} /></div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-ink-800">{o.currency} {o.total_amount.toLocaleString()}</span>
+                        <span className="font-bold text-[#0F2A1A]/85">{o.currency} {o.total_amount.toLocaleString()}</span>
                         <button
                           onClick={() => void openReceipt(o.id)}
-                          className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-deep hover:bg-primary-light transition-colors"
+                          className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-[#0F2A1A] hover:bg-[#F9F6ED] transition-colors"
                         >
                           Receipt
                         </button>
@@ -449,49 +449,49 @@ export default function ParentDashboardPage() {
           {/* Section: Progress */}
           {section === "progress" && (
             <div className="space-y-6">
-              <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-                <h2 className="font-bold text-ink-800">Attendance summary</h2>
+              <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+                <h2 className="font-bold text-[#0F2A1A]/85">Attendance summary</h2>
                 {attendance.data ? (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                     {[
-                      { label: "Present", value: attendance.data.present, cls: "text-primary" },
+                      { label: "Present", value: attendance.data.present, cls: "text-[#0F2A1A]" },
                       { label: "Absent", value: attendance.data.absent, cls: "text-red-600" },
                       { label: "Late", value: attendance.data.late, cls: "text-amber-600" },
-                      { label: "Rate", value: `${attendance.data.rate.toFixed(0)}%`, cls: "text-deep" },
+                      { label: "Rate", value: `${attendance.data.rate.toFixed(0)}%`, cls: "text-[#0F2A1A]" },
                     ].map((s) => (
-                      <div key={s.label} className="rounded-xl bg-surface-muted p-3">
+                      <div key={s.label} className="rounded-xl bg-[#F9F6ED] p-3">
                         <div className={`text-2xl font-extrabold ${s.cls}`}>{s.value}</div>
-                        <div className="text-[10px] text-ink-500">{s.label}</div>
+                        <div className="text-[10px] text-[#0F2A1A]/65">{s.label}</div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-ink-500">Attendance appears after lessons begin.</p>
+                  <p className="mt-3 text-sm text-[#0F2A1A]/65">Attendance appears after lessons begin.</p>
                 )}
               </div>
-              <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-                <h2 className="font-bold text-ink-800">Progress reports</h2>
+              <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+                <h2 className="font-bold text-[#0F2A1A]/85">Progress reports</h2>
                 {reports.isLoading ? (
                   <Skeleton className="mt-3 h-24 w-full" />
                 ) : (reports.data ?? []).length === 0 ? (
-                  <p className="mt-3 text-sm text-ink-500 rounded-xl border border-dashed border-ink-200 p-6 text-center">
+                  <p className="mt-3 text-sm text-[#0F2A1A]/65 rounded-xl border border-dashed border-black/10 p-6 text-center">
                     No progress reports yet — your tutor shares them here after lessons begin.
                   </p>
                 ) : (
                   <div className="mt-4 space-y-3">
                     {(reports.data ?? []).map((r) => (
-                      <div key={r.id} className="rounded-xl border border-ink-100 p-4">
+                      <div key={r.id} className="rounded-xl border border-black/10 p-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-semibold text-ink-700">
+                          <p className="text-sm font-semibold text-[#0F2A1A]/75">
                             {new Date(r.period_start).toLocaleDateString()} – {new Date(r.period_end).toLocaleDateString()}
                           </p>
-                          <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-xs font-bold text-deep">
+                          <span className="rounded-full bg-[#F9F6ED] px-2.5 py-0.5 text-xs font-bold text-[#0F2A1A]">
                             ★ {r.overall_rating}/5
                           </span>
                         </div>
-                        {r.strengths && <p className="mt-2 flex items-start gap-2 text-sm text-ink-600"><TrendingUp size={15} className="mt-0.5 shrink-0 text-primary" /> {r.strengths}</p>}
-                        {r.weaknesses && <p className="mt-1 flex items-start gap-2 text-sm text-ink-600"><AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-600" /> {r.weaknesses}</p>}
-                        {r.recommendations && <p className="mt-1 flex items-start gap-2 text-sm text-ink-700"><Compass size={15} className="mt-0.5 shrink-0 text-deep" /> {r.recommendations}</p>}
+                        {r.strengths && <p className="mt-2 flex items-start gap-2 text-sm text-[#0F2A1A]/70"><TrendingUp size={15} className="mt-0.5 shrink-0 text-[#0F2A1A]" /> {r.strengths}</p>}
+                        {r.weaknesses && <p className="mt-1 flex items-start gap-2 text-sm text-[#0F2A1A]/70"><AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-600" /> {r.weaknesses}</p>}
+                        {r.recommendations && <p className="mt-1 flex items-start gap-2 text-sm text-[#0F2A1A]/75"><Compass size={15} className="mt-0.5 shrink-0 text-[#0F2A1A]" /> {r.recommendations}</p>}
                       </div>
                     ))}
                   </div>
@@ -502,12 +502,12 @@ export default function ParentDashboardPage() {
 
           {/* Section: Learners */}
           {section === "learners" && (
-            <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+            <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-bold text-ink-800">Learners</h2>
+                <h2 className="font-bold text-[#0F2A1A]/85">Learners</h2>
                 <button
                   onClick={() => setAddOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-5 py-2.5 text-sm font-bold text-[#0F2A1A] transition-colors hover:bg-[#C8F030]"
                 >
                   <UserPlus size={15} /> Add a learner
                 </button>
@@ -525,12 +525,12 @@ export default function ParentDashboardPage() {
                   {(learners.data ?? []).map((l) => (
                     <li key={l.id} className="flex items-center justify-between gap-3 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-light font-bold text-deep">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#F9F6ED] font-bold text-[#0F2A1A]">
                           {l.first_name?.[0]?.toUpperCase() ?? "?"}
                         </span>
                         <div>
-                          <p className="font-bold text-ink-800">{l.first_name} {l.last_name ?? ""}</p>
-                          <p className="text-xs text-ink-500">
+                          <p className="font-bold text-[#0F2A1A]/85">{l.first_name} {l.last_name ?? ""}</p>
+                          <p className="text-xs text-[#0F2A1A]/65">
                             {l.current_level ?? "Level not set"}
                             {l.school_name ? ` · ${l.school_name}` : ""}
                           </p>
@@ -538,7 +538,7 @@ export default function ParentDashboardPage() {
                       </div>
                       <button
                         onClick={() => { setSelectedLearner(l.id); setSection("bookings"); }}
-                        className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-semibold text-deep hover:bg-primary-light transition-colors"
+                        className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-[#0F2A1A] hover:bg-[#F9F6ED] transition-colors"
                       >
                         View bookings
                       </button>
@@ -551,7 +551,7 @@ export default function ParentDashboardPage() {
 
           <Link
             href="/account"
-            className="mt-4 block rounded-2xl border border-ink-100 bg-white p-5 shadow-soft text-center text-sm font-bold text-deep hover:border-primary"
+            className="mt-4 block rounded-2xl border border-black/10 bg-white p-5 shadow-soft text-center text-sm font-bold text-[#0F2A1A] hover:border-[#D6FF57]"
           >
             <span className="inline-flex items-center gap-2"><Settings size={16} /> Account</span>
           </Link>
@@ -587,21 +587,21 @@ export default function ParentDashboardPage() {
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">First name *</span>
-              <input required value={addForm.first_name} onChange={(e) => setAddForm({ ...addForm, first_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">First name *</span>
+              <input required value={addForm.first_name} onChange={(e) => setAddForm({ ...addForm, first_name: e.target.value })} className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30" />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Last name *</span>
-              <input required value={addForm.last_name} onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">Last name *</span>
+              <input required value={addForm.last_name} onChange={(e) => setAddForm({ ...addForm, last_name: e.target.value })} className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30" />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Date of birth</span>
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">Date of birth</span>
               <input
                 type="date"
                 max={new Date().toISOString().split("T")[0]}
                 value={addForm.date_of_birth}
                 onChange={(e) => setAddForm({ ...addForm, date_of_birth: e.target.value })}
-                className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
               />
             </label>
             <div className="sm:col-span-2">
@@ -611,12 +611,12 @@ export default function ParentDashboardPage() {
               />
             </div>
             <label className="block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">School (optional)</span>
-              <input value={addForm.school_name} onChange={(e) => setAddForm({ ...addForm, school_name: e.target.value })} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">School (optional)</span>
+              <input value={addForm.school_name} onChange={(e) => setAddForm({ ...addForm, school_name: e.target.value })} className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30" />
             </label>
           </div>
           {addError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{addError}</p>}
-          <button type="submit" disabled={addSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover disabled:opacity-50">
+          <button type="submit" disabled={addSubmitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#D6FF57] text-sm font-bold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:opacity-50">
             {addSubmitting ? "Adding…" : "Add learner"}
           </button>
         </form>
@@ -631,29 +631,29 @@ export default function ParentDashboardPage() {
       >
         {receipt && (
           <div className="space-y-4 text-sm">
-            <div className="rounded-xl bg-surface-muted p-4 space-y-1.5">
-              <div className="flex justify-between"><span className="text-ink-500">Status</span><StatusBadge label={receipt.order.status} kind={statusKindFor(receipt.order.status)} /></div>
-              <div className="flex justify-between"><span className="text-ink-500">Date</span><span className="font-semibold text-ink-800">{new Date(receipt.order.created_at).toLocaleDateString()}</span></div>
+            <div className="rounded-xl bg-[#F9F6ED] p-4 space-y-1.5">
+              <div className="flex justify-between"><span className="text-[#0F2A1A]/65">Status</span><StatusBadge label={receipt.order.status} kind={statusKindFor(receipt.order.status)} /></div>
+              <div className="flex justify-between"><span className="text-[#0F2A1A]/65">Date</span><span className="font-semibold text-[#0F2A1A]/85">{new Date(receipt.order.created_at).toLocaleDateString()}</span></div>
             </div>
             <div>
-              <h3 className="text-sm font-bold mb-2 text-ink-800">Items</h3>
+              <h3 className="text-sm font-bold mb-2 text-[#0F2A1A]/85">Items</h3>
               <ul className="space-y-1.5">
                 {receipt.items.map((it, i) => (
-                  <li key={i} className="flex justify-between text-ink-600">
+                  <li key={i} className="flex justify-between text-[#0F2A1A]/70">
                     <span>{it.description ?? it.item_type.replace(/_/g, " ")} × {it.quantity}</span>
-                    <span className="font-semibold text-ink-800">{receipt.order.currency} {it.total_price.toLocaleString()}</span>
+                    <span className="font-semibold text-[#0F2A1A]/85">{receipt.order.currency} {it.total_price.toLocaleString()}</span>
                   </li>
                 ))}
               </ul>
-              <div className="flex justify-between border-t border-ink-100 pt-2 mt-2 font-bold text-ink-800">
+              <div className="flex justify-between border-t border-black/10 pt-2 mt-2 font-bold text-[#0F2A1A]/85">
                 <span>Total</span><span>{receipt.order.currency} {receipt.order.total_amount.toLocaleString()}</span>
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-bold mb-2 text-ink-800">Payments</h3>
+              <h3 className="text-sm font-bold mb-2 text-[#0F2A1A]/85">Payments</h3>
               <ul className="space-y-1.5 text-xs">
                 {receipt.payments.map((p) => (
-                  <li key={p.id} className="flex justify-between text-ink-600">
+                  <li key={p.id} className="flex justify-between text-[#0F2A1A]/70">
                     <span>{p.provider.replace(/_/g, " ")}{p.provider_reference ? ` · ${p.provider_reference.slice(0, 14)}…` : ""}</span>
                     <StatusBadge label={p.status} kind={statusKindFor(p.status)} />
                   </li>

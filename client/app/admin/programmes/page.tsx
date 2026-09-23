@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
 const INPUT_CLS =
-  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
+  "mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30";
 
 export default function AdminProgrammesPage() {
   const qc = useQueryClient();
@@ -79,10 +79,10 @@ export default function AdminProgrammesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-deep flex items-center gap-2">
-            <BookOpen className="text-primary" /> Programmes
+          <h1 className="text-3xl font-extrabold text-[#0F2A1A] flex items-center gap-2">
+            <BookOpen className="text-[#0F2A1A]" /> Programmes
           </h1>
-          <p className="text-ink-500 text-sm mt-1">
+          <p className="text-[#0F2A1A]/65 text-sm mt-1">
             Create programme pages, then open a roster for cohorts, students and tutors.
           </p>
         </div>
@@ -91,14 +91,14 @@ export default function AdminProgrammesPage() {
             setError(null);
             setCreating(true);
           }}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover"
+          className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-5 py-2.5 text-sm font-bold text-[#0F2A1A] transition-colors hover:bg-[#C8F030]"
         >
           <Plus size={15} /> Create programme
         </button>
       </div>
 
       {programmes.isLoading ? (
-        <p className="text-sm text-ink-500">Loading programmes…</p>
+        <p className="text-sm text-[#0F2A1A]/65">Loading programmes…</p>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<BookOpen size={20} />}
@@ -106,41 +106,41 @@ export default function AdminProgrammesPage() {
           description="Create your first programme page here - it starts as a DRAFT and goes live when you publish it."
         />
       ) : (
-        <ul className="divide-y divide-ink-100 rounded-2xl border border-ink-100 bg-white shadow-soft">
+        <ul className="divide-y divide-ink-100 rounded-2xl border border-black/10 bg-white shadow-soft">
           {rows.map((p) => (
             <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div>
-                <p className="font-bold text-ink-800">{p.title}</p>
-                <p className="text-xs text-ink-500">{p.slug} · {p.format}</p>
+                <p className="font-bold text-[#0F2A1A]/85">{p.title}</p>
+                <p className="text-xs text-[#0F2A1A]/65">{p.slug} · {p.format}</p>
               </div>
               <div className="flex items-center gap-3">
                 <StatusBadge label={p.status} kind={statusKindFor(p.status)} />
                 <Link
                   href={`/programmes/${p.slug}`}
-                  className="text-xs font-semibold text-deep hover:underline"
+                  className="text-xs font-semibold text-[#0F2A1A] hover:underline"
                 >
                   Public page ↗
                 </Link>
                 <Link
                   href={`/admin/programmes/${p.slug}`}
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-ink-900"
+                  className="rounded-full bg-[#D6FF57] px-4 py-2 text-xs font-bold text-[#0F2A1A]"
                 >
                   Open roster
                 </Link>
                 <button
                   onClick={() => setEditing(p)}
-                  className="rounded-full border border-ink-200 px-4 py-2 text-xs font-bold text-ink-700 hover:border-ink-300"
+                  className="rounded-full border border-black/10 px-4 py-2 text-xs font-bold text-[#0F2A1A]/75 hover:border-black/10"
                 >
                   Edit
                 </button>
                 {p.status === "DRAFT" && (
-                  <button onClick={() => statusMut.mutate({ id: p.id, status: "PUBLISHED" })} className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white">Publish</button>
+                  <button onClick={() => statusMut.mutate({ id: p.id, status: "PUBLISHED" })} className="rounded-full bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white">Publish</button>
                 )}
                 {p.status === "PUBLISHED" && (
                   <button onClick={() => statusMut.mutate({ id: p.id, status: "ARCHIVED" })} className="rounded-full border border-red-200 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Archive</button>
                 )}
                 {p.status === "ARCHIVED" && (
-                  <button onClick={() => statusMut.mutate({ id: p.id, status: "DRAFT" })} className="rounded-full border border-ink-200 px-4 py-2 text-xs font-bold text-ink-700">Restore</button>
+                  <button onClick={() => statusMut.mutate({ id: p.id, status: "DRAFT" })} className="rounded-full border border-black/10 px-4 py-2 text-xs font-bold text-[#0F2A1A]/75">Restore</button>
                 )}
               </div>
             </li>
@@ -169,7 +169,7 @@ export default function AdminProgrammesPage() {
           }}
         >
           <label className="block text-sm">
-            <span className="font-medium text-ink-700">Title *</span>
+            <span className="font-medium text-[#0F2A1A]/75">Title *</span>
             <input
               autoFocus
               value={form.title}
@@ -179,7 +179,7 @@ export default function AdminProgrammesPage() {
             />
           </label>
           <label className="block text-sm">
-            <span className="font-medium text-ink-700">Slug (URL) — auto-generated from the title when blank</span>
+            <span className="font-medium text-[#0F2A1A]/75">Slug (URL) — auto-generated from the title when blank</span>
             <input
               value={form.slug}
               onChange={(e) => setForm({ ...form, slug: e.target.value })}
@@ -188,7 +188,7 @@ export default function AdminProgrammesPage() {
             />
           </label>
           <label className="block text-sm">
-            <span className="font-medium text-ink-700">Summary</span>
+            <span className="font-medium text-[#0F2A1A]/75">Summary</span>
             <textarea
               value={form.summary}
               onChange={(e) => setForm({ ...form, summary: e.target.value })}
@@ -199,7 +199,7 @@ export default function AdminProgrammesPage() {
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Format</span>
+              <span className="font-medium text-[#0F2A1A]/75">Format</span>
               <select value={form.format} onChange={(e) => setForm({ ...form, format: e.target.value })} className={INPUT_CLS}>
                 <option>COHORT</option>
                 <option>PRIVATE</option>
@@ -210,11 +210,11 @@ export default function AdminProgrammesPage() {
               </select>
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Currency</span>
+              <span className="font-medium text-[#0F2A1A]/75">Currency</span>
               <input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className={INPUT_CLS} />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Price from</span>
+              <span className="font-medium text-[#0F2A1A]/75">Price from</span>
               <input
                 type="number"
                 min="0"
@@ -224,7 +224,7 @@ export default function AdminProgrammesPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Price to</span>
+              <span className="font-medium text-[#0F2A1A]/75">Price to</span>
               <input
                 type="number"
                 min="0"
@@ -239,19 +239,19 @@ export default function AdminProgrammesPage() {
             <button
               type="submit"
               disabled={busy}
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 disabled:opacity-50"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] disabled:opacity-50"
             >
               {busy ? "Creating…" : "Create DRAFT programme"}
             </button>
             <button
               type="button"
               onClick={() => setCreating(false)}
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-200 px-4 text-sm font-semibold text-ink-700"
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-black/10 px-4 text-sm font-semibold text-[#0F2A1A]/75"
             >
               Cancel
             </button>
           </div>
-          <p className="text-xs text-ink-400">
+          <p className="text-xs text-[#0F2A1A]/65">
             The page goes live at <code>/programmes/&lt;slug&gt;</code> once you publish it from this console.
           </p>
         </form>
@@ -307,24 +307,24 @@ function ProgrammeEditForm({ programme, onDone }: { programme: { id: string; tit
     >
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{error}</p>}
       <label className="block text-sm">
-        <span className="font-medium text-ink-700">Title *</span>
+        <span className="font-medium text-[#0F2A1A]/75">Title *</span>
         <input autoFocus value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={INPUT_CLS} />
       </label>
       <label className="block text-sm">
-        <span className="font-medium text-ink-700">Summary</span>
+        <span className="font-medium text-[#0F2A1A]/75">Summary</span>
         <textarea rows={3} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} className={INPUT_CLS} />
       </label>
       <div className="grid grid-cols-3 gap-3">
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Price min</span>
+          <span className="font-medium text-[#0F2A1A]/75">Price min</span>
           <input type="number" value={form.price_min} onChange={(e) => setForm({ ...form, price_min: e.target.value })} className={INPUT_CLS} />
         </label>
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Price max</span>
+          <span className="font-medium text-[#0F2A1A]/75">Price max</span>
           <input type="number" value={form.price_max} onChange={(e) => setForm({ ...form, price_max: e.target.value })} className={INPUT_CLS} />
         </label>
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Currency</span>
+          <span className="font-medium text-[#0F2A1A]/75">Currency</span>
           <input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className={INPUT_CLS} />
         </label>
       </div>

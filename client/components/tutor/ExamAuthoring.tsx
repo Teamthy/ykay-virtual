@@ -151,20 +151,20 @@ export function ExamAuthoring() {
     return (
       <div className="space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl text-deep">
+          <h2 className="font-display text-2xl text-[#0F2A1A]">
             {draft.id ? "Edit paper" : "New practice paper"}
           </h2>
           <button
             type="button"
             onClick={() => setDraft(null)}
-            className="text-sm font-bold text-ink-500 hover:underline"
+            className="text-sm font-bold text-[#0F2A1A]/65 hover:underline"
           >
             Cancel
           </button>
         </div>
 
-        <div className="grid gap-4 rounded-3xl border border-ink-100 bg-white p-6 shadow-sm sm:grid-cols-2">
-          <label className="block text-sm font-bold text-ink-700">
+        <div className="grid gap-4 rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:grid-cols-2">
+          <label className="block text-sm font-bold text-[#0F2A1A]/75">
             Subject
             <input
               value={draft.subject}
@@ -172,10 +172,10 @@ export function ExamAuthoring() {
                 setDraft((d) => (d ? { ...d, subject: e.target.value } : d))
               }
               placeholder="e.g. Mathematics"
-              className="mt-1.5 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm font-normal text-ink-800 outline-none focus:border-primary"
+              className="mt-1.5 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm font-normal text-[#0F2A1A]/85 outline-none focus:border-[#D6FF57]"
             />
           </label>
-          <label className="block text-sm font-bold text-ink-700">
+          <label className="block text-sm font-bold text-[#0F2A1A]/75">
             Title
             <input
               value={draft.title}
@@ -183,10 +183,10 @@ export function ExamAuthoring() {
                 setDraft((d) => (d ? { ...d, title: e.target.value } : d))
               }
               placeholder="e.g. Algebra basics — JSS3 mock"
-              className="mt-1.5 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm font-normal text-ink-800 outline-none focus:border-primary"
+              className="mt-1.5 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm font-normal text-[#0F2A1A]/85 outline-none focus:border-[#D6FF57]"
             />
           </label>
-          <label className="block text-sm font-bold text-ink-700 sm:col-span-2">
+          <label className="block text-sm font-bold text-[#0F2A1A]/75 sm:col-span-2">
             Description (optional)
             <input
               value={draft.description}
@@ -194,10 +194,10 @@ export function ExamAuthoring() {
                 setDraft((d) => (d ? { ...d, description: e.target.value } : d))
               }
               placeholder="What this paper covers"
-              className="mt-1.5 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm font-normal text-ink-800 outline-none focus:border-primary"
+              className="mt-1.5 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm font-normal text-[#0F2A1A]/85 outline-none focus:border-[#D6FF57]"
             />
           </label>
-          <label className="block text-sm font-bold text-ink-700">
+          <label className="block text-sm font-bold text-[#0F2A1A]/75">
             Duration (minutes, 1–180)
             <input
               type="number"
@@ -217,10 +217,10 @@ export function ExamAuthoring() {
                     : d,
                 )
               }
-              className="mt-1.5 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm font-normal text-ink-800 outline-none focus:border-primary"
+              className="mt-1.5 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm font-normal text-[#0F2A1A]/85 outline-none focus:border-[#D6FF57]"
             />
           </label>
-          <label className="block text-sm font-bold text-ink-700">
+          <label className="block text-sm font-bold text-[#0F2A1A]/75">
             Pass mark (%, 0–100)
             <input
               type="number"
@@ -240,7 +240,7 @@ export function ExamAuthoring() {
                     : d,
                 )
               }
-              className="mt-1.5 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm font-normal text-ink-800 outline-none focus:border-primary"
+              className="mt-1.5 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm font-normal text-[#0F2A1A]/85 outline-none focus:border-[#D6FF57]"
             />
           </label>
         </div>
@@ -249,10 +249,10 @@ export function ExamAuthoring() {
           {q.map((x, i) => (
             <div
               key={i}
-              className="rounded-3xl border border-ink-100 bg-white p-6 shadow-sm"
+              className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm"
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-widest text-ink-400">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#0F2A1A]/65">
                   Question {i + 1} of {q.length}
                 </p>
                 <div className="flex items-center gap-1">
@@ -268,7 +268,7 @@ export function ExamAuthoring() {
                         return { ...d, questions: qs };
                       })
                     }
-                    className="grid size-8 place-items-center rounded-lg text-ink-500 hover:bg-ink-100 disabled:opacity-30"
+                    className="grid size-8 place-items-center rounded-lg text-[#0F2A1A]/65 hover:bg-[#F9F6ED] disabled:opacity-30"
                   >
                     <ChevronUp size={15} />
                   </button>
@@ -284,7 +284,7 @@ export function ExamAuthoring() {
                         return { ...d, questions: qs };
                       })
                     }
-                    className="grid size-8 place-items-center rounded-lg text-ink-500 hover:bg-ink-100 disabled:opacity-30"
+                    className="grid size-8 place-items-center rounded-lg text-[#0F2A1A]/65 hover:bg-[#F9F6ED] disabled:opacity-30"
                   >
                     <ChevronDown size={15} />
                   </button>
@@ -315,7 +315,7 @@ export function ExamAuthoring() {
                 onChange={(e) => setQ(i, { text: e.target.value })}
                 placeholder="The question text"
                 rows={2}
-                className="mt-3 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-sm font-semibold text-ink-800 outline-none focus:border-primary"
+                className="mt-3 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm font-semibold text-[#0F2A1A]/85 outline-none focus:border-[#D6FF57]"
               />
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {x.options.map((o, oi) => (
@@ -323,8 +323,8 @@ export function ExamAuthoring() {
                     key={oi}
                     className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2 transition ${
                       x.correct_index === oi
-                        ? "border-primary bg-primary-light/50"
-                        : "border-ink-100"
+                        ? "border-[#D6FF57] bg-[#F9F6ED]/50"
+                        : "border-black/10"
                     }`}
                   >
                     <button
@@ -334,8 +334,8 @@ export function ExamAuthoring() {
                       aria-pressed={x.correct_index === oi}
                       className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold ${
                         x.correct_index === oi
-                          ? "bg-deep text-white"
-                          : "bg-ink-100 text-ink-500"
+                          ? "bg-[#0F2A1A] text-white"
+                          : "bg-[#F9F6ED] text-[#0F2A1A]/65"
                       }`}
                     >
                       {LETTERS[oi]}
@@ -350,7 +350,7 @@ export function ExamAuthoring() {
                         })
                       }
                       placeholder={`Option ${LETTERS[oi]}`}
-                      className="w-full bg-transparent text-sm text-ink-800 outline-none"
+                      className="w-full bg-transparent text-sm text-[#0F2A1A]/85 outline-none"
                     />
                     {x.options.length > 2 ? (
                       <button
@@ -365,7 +365,7 @@ export function ExamAuthoring() {
                                 : x.correct_index,
                           })
                         }
-                        className="shrink-0 text-ink-300 hover:text-red-500"
+                        className="shrink-0 text-[#0F2A1A]/65 hover:text-red-500"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -377,7 +377,7 @@ export function ExamAuthoring() {
                 <button
                   type="button"
                   onClick={() => setQ(i, { options: [...x.options, ""] })}
-                  className="mt-2 text-xs font-bold text-primary-dark hover:underline"
+                  className="mt-2 text-xs font-bold text-[#0F2A1A] hover:underline"
                 >
                   + add option
                 </button>
@@ -386,7 +386,7 @@ export function ExamAuthoring() {
                 value={x.explanation}
                 onChange={(e) => setQ(i, { explanation: e.target.value })}
                 placeholder="Explanation shown in the student's review (optional)"
-                className="mt-3 w-full rounded-xl border border-ink-200 px-3.5 py-2.5 text-xs text-ink-600 outline-none focus:border-primary"
+                className="mt-3 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-xs text-[#0F2A1A]/70 outline-none focus:border-[#D6FF57]"
               />
             </div>
           ))}
@@ -401,7 +401,7 @@ export function ExamAuthoring() {
                 d ? { ...d, questions: [...d.questions, blankQuestion()] } : d,
               )
             }
-            className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink-200 bg-white px-5 py-2.5 text-sm font-bold text-ink-700 transition hover:bg-ink-50 disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-black/10 bg-white px-5 py-2.5 text-sm font-bold text-[#0F2A1A]/75 transition hover:bg-[#F9F6ED] disabled:opacity-40"
           >
             <Plus size={15} /> Add question
           </button>
@@ -414,7 +414,7 @@ export function ExamAuthoring() {
                 ? ""
                 : "Fill the subject, title and every question (2+ options each)"
             }
-            className="inline-flex items-center gap-2 rounded-full bg-deep px-7 py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-full bg-[#0F2A1A] px-7 py-2.5 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-40"
           >
             {saving ? "Publishing…" : draft.id ? "Save paper" : "Publish paper"}
           </button>
@@ -432,8 +432,8 @@ export function ExamAuthoring() {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl text-deep">Your CBT papers</h2>
-          <p className="mt-1 text-sm text-ink-500">
+          <h2 className="font-display text-2xl text-[#0F2A1A]">Your CBT papers</h2>
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">
             Papers without a cohort are open to every learner; papers attached
             to a cohort are visible to its students only.
           </p>
@@ -441,16 +441,16 @@ export function ExamAuthoring() {
         <button
           type="button"
           onClick={() => setDraft(blankDraft())}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-deep px-5 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#0F2A1A] px-5 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
         >
           <Plus size={15} /> New paper
         </button>
       </div>
 
       {exams.isLoading ? (
-        <p className="text-sm text-ink-500">Loading…</p>
+        <p className="text-sm text-[#0F2A1A]/65">Loading…</p>
       ) : rows.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
+        <p className="rounded-2xl border border-dashed border-black/10 bg-white p-8 text-center text-sm text-[#0F2A1A]/65">
           No papers yet — write your first practice paper.
         </p>
       ) : (
@@ -458,15 +458,15 @@ export function ExamAuthoring() {
           {rows.map((e) => (
             <div
               key={e.id}
-              className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm"
+              className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <span className="rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-deep">
+                  <span className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#0F2A1A]">
                     {e.subject}
                   </span>
-                  <p className="mt-2 font-bold text-ink-800">{e.title}</p>
-                  <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-ink-500">
+                  <p className="mt-2 font-bold text-[#0F2A1A]/85">{e.title}</p>
+                  <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-[#0F2A1A]/65">
                     <span className="inline-flex items-center gap-1.5">
                       <Clock size={13} /> {e.duration_minutes} min
                     </span>
@@ -484,7 +484,7 @@ export function ExamAuthoring() {
                     onClick={() =>
                       setResultsFor(resultsFor === e.id ? null : e.id)
                     }
-                    className="rounded-full border-[1.5px] border-ink-200 px-4 py-2 text-xs font-bold text-ink-700 transition hover:bg-ink-50"
+                    className="rounded-full border-[1.5px] border-black/10 px-4 py-2 text-xs font-bold text-[#0F2A1A]/75 transition hover:bg-[#F9F6ED]"
                   >
                     Results
                   </button>
@@ -508,7 +508,7 @@ export function ExamAuthoring() {
                         })),
                       });
                     }}
-                    className="grid size-9 place-items-center rounded-full border-[1.5px] border-ink-200 text-ink-500 transition hover:bg-ink-50"
+                    className="grid size-9 place-items-center rounded-full border-[1.5px] border-black/10 text-[#0F2A1A]/65 transition hover:bg-[#F9F6ED]"
                   >
                     <Pencil size={14} />
                   </button>
@@ -527,7 +527,7 @@ export function ExamAuthoring() {
                         queryKey: ["cbt", "tutor", "exams"],
                       });
                     }}
-                    className="grid size-9 place-items-center rounded-full border-[1.5px] border-ink-200 text-red-500 transition hover:bg-red-50"
+                    className="grid size-9 place-items-center rounded-full border-[1.5px] border-black/10 text-red-500 transition hover:bg-red-50"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -535,15 +535,15 @@ export function ExamAuthoring() {
               </div>
 
               {resultsFor === e.id ? (
-                <div className="mt-4 border-t border-ink-100 pt-4">
+                <div className="mt-4 border-t border-black/10 pt-4">
                   {results.isLoading ? (
-                    <p className="text-xs text-ink-500">Loading results…</p>
+                    <p className="text-xs text-[#0F2A1A]/65">Loading results…</p>
                   ) : (results.data ?? []).length === 0 ? (
-                    <p className="text-xs text-ink-500">No sittings yet.</p>
+                    <p className="text-xs text-[#0F2A1A]/65">No sittings yet.</p>
                   ) : (
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-left text-xs uppercase tracking-wider text-ink-400">
+                        <tr className="text-left text-xs uppercase tracking-wider text-[#0F2A1A]/65">
                           <th className="py-2 font-bold">Student</th>
                           <th className="py-2 font-bold">Score</th>
                           <th className="py-2 font-bold">Outcome</th>
@@ -554,19 +554,19 @@ export function ExamAuthoring() {
                         {(results.data ?? []).map((a) => (
                           <tr
                             key={a.attempt_id}
-                            className="border-t border-ink-50"
+                            className="border-t border-black/10"
                           >
-                            <td className="py-2.5 font-semibold text-ink-700">
+                            <td className="py-2.5 font-semibold text-[#0F2A1A]/75">
                               {a.student_name ?? "Student"}
                             </td>
-                            <td className="py-2.5 font-display tabular-nums text-deep">
+                            <td className="py-2.5 font-display tabular-nums text-[#0F2A1A]">
                               {a.score !== null && a.score !== undefined
                                 ? `${a.score}%`
                                 : "—"}
                             </td>
                             <td className="py-2.5">
                               {a.passed === true ? (
-                                <span className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-bold text-deep">
+                                <span className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-xs font-bold text-[#0F2A1A]">
                                   Passed
                                 </span>
                               ) : a.passed === false ? (
@@ -574,12 +574,12 @@ export function ExamAuthoring() {
                                   Below mark
                                 </span>
                               ) : (
-                                <span className="text-xs text-ink-400">
+                                <span className="text-xs text-[#0F2A1A]/65">
                                   In progress / expired
                                 </span>
                               )}
                             </td>
-                            <td className="py-2.5 text-xs text-ink-500">
+                            <td className="py-2.5 text-xs text-[#0F2A1A]/65">
                               {a.submitted_at
                                 ? new Date(a.submitted_at).toLocaleString(
                                     undefined,
@@ -602,11 +602,11 @@ export function ExamAuthoring() {
         </div>
       )}
 
-      <p className="text-xs text-ink-400">
+      <p className="text-xs text-[#0F2A1A]/65">
         Students sit your papers at{" "}
         <Link
           href="/lms/exams"
-          className="font-bold text-primary-dark hover:underline"
+          className="font-bold text-[#0F2A1A] hover:underline"
         >
           /lms/exams
         </Link>{" "}

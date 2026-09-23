@@ -14,8 +14,8 @@ export type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement
 };
 
 export const INPUT_CLS =
-  "h-11 w-full rounded-lg border border-ink-200 bg-white px-4 text-sm text-ink-900 " +
-  "placeholder:text-ink-400 transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none disabled:opacity-50";
+  "h-11 w-full rounded-lg border border-black/10 bg-white px-4 text-sm text-[#0F2A1A] " +
+  "placeholder:text-[#0F2A1A]/65 transition-colors focus:border-[#D6FF57] focus:ring-2 focus:ring-[#D6FF57]/30 focus:outline-none disabled:opacity-50";
 
 export function PasswordInput({ id, label, error, className, ...props }: PasswordInputProps) {
   const [show, setShow] = React.useState(false);
@@ -23,7 +23,7 @@ export function PasswordInput({ id, label, error, className, ...props }: Passwor
   return (
     <div>
       {label && (
-        <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-ink-800">
+        <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
           {label}
         </label>
       )}
@@ -39,7 +39,7 @@ export function PasswordInput({ id, label, error, className, ...props }: Passwor
           onClick={() => setShow((s) => !s)}
           aria-label={show ? "Hide password" : "Show password"}
           aria-pressed={show}
-          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-ink-400 transition-colors hover:text-ink-700"
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-[#0F2A1A]/65 transition-colors hover:text-[#0F2A1A]/75"
         >
           {show ? <EyeOff size={17} /> : <Eye size={17} />}
         </button>

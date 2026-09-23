@@ -131,9 +131,9 @@ export default function ExamPrepPage() {
               <Link
                 key={e.code}
                 href={e.href}
-                className="flex min-h-[240px] flex-col justify-end overflow-hidden rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+                className="flex min-h-[240px] flex-col justify-end overflow-hidden rounded-2xl bg-cover bg-center p-6 text-white shadow-card bg-[#0F2A1A]"
                 style={{
-                  backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.25), rgba(6,15,38,0.88)), url(${e.photo})`,
+                  backgroundImage: `linear-gradient(180deg, rgba(15,42,26,0.25), rgba(15,42,26,0.88)), url(${e.photo})`,
                 }}
               >
                 <div className="font-display text-3xl tracking-[0.02em]">
@@ -141,16 +141,16 @@ export default function ExamPrepPage() {
                 </div>
                 <h2 className="mt-1 font-bold">{e.name}</h2>
                 <p className="mt-2 text-sm text-white/80">{e.desc}</p>
-                <span className="mt-4 text-sm font-semibold text-brand-gold">
+                <span className="mt-4 text-sm font-semibold text-[#D6FF57]">
                   Explore →
                 </span>
               </Link>
             ))}
             <div
-              className="flex min-h-[240px] flex-col justify-between rounded-2xl bg-cover bg-center p-6 text-white"
+              className="flex min-h-[240px] flex-col justify-between rounded-2xl bg-cover bg-center p-6 text-white bg-[#0F2A1A]"
               style={{
                 backgroundImage:
-                  "linear-gradient(165deg, rgba(1,57,32,0.88), rgba(6,15,38,0.75)), url(/hero/checkout.jpg)",
+                  "linear-gradient(165deg, rgba(15,42,26,0.88), rgba(15,42,26,0.75)), url(/hero/checkout.jpg)",
               }}
             >
               <div>
@@ -162,7 +162,7 @@ export default function ExamPrepPage() {
               </div>
               <Link
                 href="/private-tuition"
-                className="mt-4 inline-flex items-center justify-center rounded-xl bg-white text-brand-blue font-bold text-sm px-5 py-3"
+                className="mt-4 inline-flex items-center justify-center rounded-xl bg-white text-[#0F2A1A] font-bold text-sm px-5 py-3"
               >
                 Request a plan
               </Link>
@@ -176,11 +176,11 @@ export default function ExamPrepPage() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {METHOD.map((m) => (
                 <div key={m.step} className="border rounded-2xl p-6">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-blue text-white font-extrabold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0F2A1A] text-white font-extrabold">
                     {m.step}
                   </div>
                   <h3 className="font-bold mt-3">{m.title}</h3>
-                  <p className="mt-2 text-sm text-ink-600">{m.body}</p>
+                  <p className="mt-2 text-sm text-[#0F2A1A]/70">{m.body}</p>
                 </div>
               ))}
             </div>
@@ -190,7 +190,7 @@ export default function ExamPrepPage() {
             <h2 className="text-2xl font-extrabold mb-2">
               Browse by exam &amp; subject
             </h2>
-            <p className="text-sm text-ink-600 mb-6">
+            <p className="text-sm text-[#0F2A1A]/70 mb-6">
               Pick your exam, then a subject, to see the paper structure and
               what the subject covers.
             </p>
@@ -198,17 +198,17 @@ export default function ExamPrepPage() {
               {EXAM_MATRIX.map((exam) => (
                 <div key={exam.slug} className="border rounded-2xl p-6">
                   <div className="flex items-baseline gap-3">
-                    <span className="text-lg font-extrabold text-brand-blue">
+                    <span className="text-lg font-extrabold text-[#0F2A1A]">
                       {exam.code}
                     </span>
-                    <span className="text-sm text-ink-500">{exam.name}</span>
+                    <span className="text-sm text-[#0F2A1A]/65">{exam.name}</span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {exam.subjects.map((s) => (
                       <Link
                         key={s.slug}
                         href={`/exam-prep/${exam.slug}/${s.slug}`}
-                        className="rounded-full border border-ink-200 px-3 py-1.5 text-xs font-semibold text-ink-700 transition-colors hover:border-brand-gold hover:text-brand-blue"
+                        className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold text-[#0F2A1A]/75 transition-colors hover:border-[#D6FF57] hover:text-[#0F2A1A]"
                       >
                         {s.name}
                       </Link>

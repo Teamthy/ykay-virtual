@@ -75,7 +75,7 @@ export function SubjectsClient() {
             }
           }}
           placeholder="Search subjects…"
-          className="flex-1 max-w-sm rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          className="flex-1 max-w-sm rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
         />
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => (
@@ -83,7 +83,7 @@ export function SubjectsClient() {
               key={c}
               onClick={() => selectCategory(c)}
               className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-                category === c ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+                category === c ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
               }`}
             >
               {c}
@@ -114,9 +114,9 @@ export function SubjectsClient() {
             <Link
               key={s.id}
               href={s.slug.startsWith("/") ? s.slug : `/subjects/${s.slug}`}
-              className="overflow-hidden rounded-2xl border border-ink-100 bg-cover bg-center p-5 text-white shadow-soft"
+              className="overflow-hidden rounded-2xl border border-black/10 bg-cover bg-center p-5 text-white shadow-soft bg-[#0F2A1A]"
               style={{
-                backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.82), rgba(1,57,32,0.55)), url(${s.photo ?? "/hero/subjects.jpg"})`,
+                backgroundImage: `linear-gradient(165deg, rgba(15,42,26,0.82), rgba(15,42,26,0.55)), url(${s.photo ?? "/hero/subjects.jpg"})`,
               }}
             >
               <h3 className="font-bold text-white">{s.name}</h3>

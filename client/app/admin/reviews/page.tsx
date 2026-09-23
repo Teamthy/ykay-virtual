@@ -32,7 +32,7 @@ export default function AdminReviewsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold">Review moderation</h1>
-        <p className="text-ink-500 text-sm mt-1">
+        <p className="text-[#0F2A1A]/65 text-sm mt-1">
           Reviews publish only with reviewer consent - SEO Review JSON-LD uses published reviews only.
         </p>
       </div>
@@ -46,7 +46,7 @@ export default function AdminReviewsPage() {
               setPage(1);
             }}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
             }`}
           >
             {s}
@@ -71,10 +71,10 @@ export default function AdminReviewsPage() {
             <li key={rv.id} className="border rounded-2xl p-5">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-extrabold text-primary">★ {rv.rating}.0</span>
+                  <span className="text-lg font-extrabold text-[#0F2A1A]">★ {rv.rating}.0</span>
                   <div>
                     <p className="text-sm font-semibold">{rv.title ?? "Untitled review"}</p>
-                    <p className="text-[11px] text-ink-400">
+                    <p className="text-[11px] text-[#0F2A1A]/65">
                       tutor {rv.tutor_profile_id.slice(0, 8)}… · reviewer {rv.reviewer_user_id.slice(0, 8)}… ·{" "}
                       {new Date(rv.created_at).toLocaleDateString()}
                     </p>
@@ -89,7 +89,7 @@ export default function AdminReviewsPage() {
                   )}
                 </div>
               </div>
-              {rv.comment && <p className="mt-3 text-sm text-ink-600">{rv.comment}</p>}
+              {rv.comment && <p className="mt-3 text-sm text-[#0F2A1A]/70">{rv.comment}</p>}
               {rv.status === "PENDING" && (
                 <div className="mt-4 flex gap-2">
                   <Button
@@ -128,7 +128,7 @@ export default function AdminReviewsPage() {
           <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
             Prev
           </Button>
-          <span className="text-sm text-ink-500 self-center">
+          <span className="text-sm text-[#0F2A1A]/65 self-center">
             Page {meta.page} / {meta.total_pages}
           </span>
           <Button size="sm" variant="outline" disabled={!meta.has_next} onClick={() => setPage(page + 1)}>

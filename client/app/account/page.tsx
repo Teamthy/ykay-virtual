@@ -226,7 +226,7 @@ export default function AccountPage() {
   };
 
   if (isLoading || !user)
-    return <p className="py-24 text-center text-ink-400">Loading…</p>;
+    return <p className="py-24 text-center text-[#0F2A1A]/65">Loading…</p>;
 
   return (
     <DashboardPage
@@ -235,7 +235,7 @@ export default function AccountPage() {
     >
       <div className="grid gap-6 lg:grid-cols-[200px_1fr]">
         {/* Tabs */}
-        <aside className="h-fit rounded-2xl border border-ink-100 bg-white p-3 shadow-sm">
+        <aside className="h-fit rounded-2xl border border-black/10 bg-white p-3 shadow-sm">
           {tabs.map((t) => (
             <button
               key={t}
@@ -244,8 +244,8 @@ export default function AccountPage() {
               className={cn(
                 "block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold",
                 tab === t
-                  ? "bg-primary text-ink-900"
-                  : "text-ink-600 hover:bg-ink-50",
+                  ? "bg-[#D6FF57] text-[#0F2A1A]"
+                  : "text-[#0F2A1A]/70 hover:bg-[#F9F6ED]",
               )}
             >
               {t}
@@ -255,8 +255,8 @@ export default function AccountPage() {
 
         <div className="space-y-6">
           {tab === "Profile" && (
-            <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-deep">Profile</h2>
+            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-[#0F2A1A]">Profile</h2>
               <div className="mt-4 flex items-center gap-4">
                 <div className="relative">
                   {user.avatar_url ? (
@@ -264,10 +264,10 @@ export default function AccountPage() {
                     <img
                       src={user.avatar_url}
                       alt="Your profile"
-                      className="size-20 rounded-full object-cover ring-2 ring-primary"
+                      className="size-20 rounded-full object-cover ring-2 ring-[#D6FF57]"
                     />
                   ) : (
-                    <div className="grid size-20 place-items-center rounded-full bg-deep text-2xl font-bold text-white">
+                    <div className="grid size-20 place-items-center rounded-full bg-[#0F2A1A] text-2xl font-bold text-white">
                       {(
                         user.first_name?.[0] ??
                         user.email[0] ??
@@ -276,7 +276,7 @@ export default function AccountPage() {
                     </div>
                   )}
                   <label
-                    className="absolute -bottom-1 -right-1 grid size-8 cursor-pointer place-items-center rounded-full bg-primary text-ink-900 shadow-md transition-transform hover:scale-105"
+                    className="absolute -bottom-1 -right-1 grid size-8 cursor-pointer place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A] shadow-md transition-transform hover:scale-105"
                     title="Upload photo"
                   >
                     <Camera size={15} />
@@ -293,8 +293,8 @@ export default function AccountPage() {
                     />
                   </label>
                 </div>
-                <div className="text-sm text-ink-500">
-                  <p className="font-semibold text-ink-800">
+                <div className="text-sm text-[#0F2A1A]/65">
+                  <p className="font-semibold text-[#0F2A1A]/85">
                     {uploadingAvatar ? "Uploading…" : "Profile photo"}
                   </p>
                   <p>JPEG or PNG · up to 10 MB</p>
@@ -304,7 +304,7 @@ export default function AccountPage() {
                 <div>
                   <label
                     htmlFor="ac-first"
-                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                    className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                   >
                     First name
                   </label>
@@ -320,7 +320,7 @@ export default function AccountPage() {
                 <div>
                   <label
                     htmlFor="ac-last"
-                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                    className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                   >
                     Last name
                   </label>
@@ -336,7 +336,7 @@ export default function AccountPage() {
                 <div>
                   <label
                     htmlFor="ac-phone"
-                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                    className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                   >
                     Phone
                   </label>
@@ -352,7 +352,7 @@ export default function AccountPage() {
                 <div>
                   <label
                     htmlFor="ac-tz"
-                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                    className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                   >
                     Timezone
                   </label>
@@ -380,7 +380,7 @@ export default function AccountPage() {
                 <div>
                   <label
                     htmlFor="ac-lang"
-                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                    className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                   >
                     Preferred language
                   </label>
@@ -408,7 +408,7 @@ export default function AccountPage() {
                 <div className="sm:col-span-2">
                   <label
                     htmlFor="ac-bio"
-                    className="mb-1.5 block text-sm font-medium text-ink-800"
+                    className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                   >
                     About you
                   </label>
@@ -427,7 +427,7 @@ export default function AccountPage() {
                 type="button"
                 onClick={() => saveProfile.mutate()}
                 disabled={saveProfile.isPending}
-                className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-50"
+                className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-[#D6FF57] px-6 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-50"
               >
                 {saveProfile.isPending ? "Saving…" : "Save changes"}
               </button>
@@ -435,22 +435,22 @@ export default function AccountPage() {
           )}
 
           {tab === "Learners" && (
-            <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-deep">Learners</h2>
-              <p className="mt-1 text-sm text-ink-500">
+            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-[#0F2A1A]">Learners</h2>
+              <p className="mt-1 text-sm text-[#0F2A1A]/65">
                 Learners linked to your account (you book for them).
               </p>
               <ul className="mt-4 space-y-2">
                 {(learners.data ?? []).map((l: Learner) => (
                   <li
                     key={l.id}
-                    className="flex items-center justify-between rounded-xl border border-ink-100 bg-surface-muted px-4 py-3"
+                    className="flex items-center justify-between rounded-xl border border-black/10 bg-[#F9F6ED] px-4 py-3"
                   >
                     <div>
-                      <p className="font-semibold text-ink-800">
+                      <p className="font-semibold text-[#0F2A1A]/85">
                         {l.first_name} {l.last_name}
                       </p>
-                      <p className="text-xs text-ink-500">
+                      <p className="text-xs text-[#0F2A1A]/65">
                         {l.current_level || "Level not set"}
                         {l.school_name ? ` · ${l.school_name}` : ""}
                       </p>
@@ -458,7 +458,7 @@ export default function AccountPage() {
                   </li>
                 ))}
                 {(learners.data ?? []).length === 0 && (
-                  <li className="rounded-xl border border-dashed border-ink-200 px-4 py-6 text-center text-sm text-ink-500">
+                  <li className="rounded-xl border border-dashed border-black/10 px-4 py-6 text-center text-sm text-[#0F2A1A]/65">
                     No learners yet — add one to book tuition.
                   </li>
                 )}
@@ -466,7 +466,7 @@ export default function AccountPage() {
               {user.roles.includes("PARENT") && (
                 <Link
                   href="/dashboard?section=learners"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink-300 px-5 py-2.5 text-sm font-bold text-ink-800 transition-colors hover:border-primary"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 px-5 py-2.5 text-sm font-bold text-[#0F2A1A]/85 transition-colors hover:border-[#D6FF57]"
                 >
                   <UserPlus size={15} /> Add a learner
                 </Link>
@@ -477,8 +477,8 @@ export default function AccountPage() {
           {tab === "Referrals" && <ReferralCard userId={user.id} />}
 
           {tab === "Security" && (
-            <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-deep">Change password</h2>
+            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-[#0F2A1A]">Change password</h2>
               <div className="mt-4 max-w-md space-y-4">
                 <PasswordInput
                   id="ac-current-pw"
@@ -516,7 +516,7 @@ export default function AccountPage() {
                     newPw !== newPw2
                   }
                   onClick={() => savePassword.mutate({ currentPw, pw: newPw })}
-                  className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                  className="inline-flex h-11 items-center justify-center rounded-lg bg-[#D6FF57] px-6 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
                 >
                   {savePassword.isPending ? "Updating…" : "Update password"}
                 </button>
@@ -525,16 +525,16 @@ export default function AccountPage() {
           )}
 
           {tab === "Devices" && (
-            <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-deep">Push devices</h2>
-              <p className="mt-1 text-sm text-ink-500">
+            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-[#0F2A1A]">Push devices</h2>
+              <p className="mt-1 text-sm text-[#0F2A1A]/65">
                 Devices that receive notifications from YK-Virtual.
               </p>
               <div className="mt-4 space-y-2">
                 {(devices.data ?? []).map((d: Device) => (
                   <div
                     key={d.id}
-                    className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3"
+                    className="flex items-center justify-between rounded-xl border border-black/10 px-4 py-3"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xl">
@@ -545,10 +545,10 @@ export default function AccountPage() {
                             : "🌐"}
                       </span>
                       <div>
-                        <p className="text-sm font-semibold text-ink-800">
+                        <p className="text-sm font-semibold text-[#0F2A1A]/85">
                           {d.platform} · v{d.app_version ?? "?"}
                         </p>
-                        <p className="text-xs text-ink-400">
+                        <p className="text-xs text-[#0F2A1A]/65">
                           {d.token.slice(0, 24)}… · last seen{" "}
                           {new Date(d.last_seen_at).toLocaleDateString()}
                         </p>
@@ -557,14 +557,14 @@ export default function AccountPage() {
                     <button
                       type="button"
                       onClick={() => removeDev.mutate(d.id)}
-                      className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-bold text-red-600 hover:border-red-300"
+                      className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold text-red-600 hover:border-red-300"
                     >
                       Remove
                     </button>
                   </div>
                 ))}
                 {(devices.data ?? []).length === 0 && (
-                  <p className="rounded-xl border border-dashed border-ink-200 p-6 text-center text-sm text-ink-500">
+                  <p className="rounded-xl border border-dashed border-black/10 p-6 text-center text-sm text-[#0F2A1A]/65">
                     No devices registered yet — install the app or allow
                     notifications to see them here.
                   </p>
@@ -574,9 +574,9 @@ export default function AccountPage() {
           )}
 
           {tab === "Preferences" && (
-            <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-deep">Email preferences</h2>
-              <p className="mt-1 text-sm text-ink-500">
+            <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-[#0F2A1A]">Email preferences</h2>
+              <p className="mt-1 text-sm text-[#0F2A1A]/65">
                 Stored on this device for now — server-side preferences ship
                 with the notification centre.
               </p>
@@ -588,14 +588,14 @@ export default function AccountPage() {
                 ].map(([key, label]) => (
                   <label
                     key={key}
-                    className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3 text-sm"
+                    className="flex items-center justify-between rounded-xl border border-black/10 px-4 py-3 text-sm"
                   >
-                    <span className="font-medium text-ink-700">{label}</span>
+                    <span className="font-medium text-[#0F2A1A]/75">{label}</span>
                     <input
                       type="checkbox"
                       checked={prefs[key] ?? true}
                       onChange={() => togglePref(key)}
-                      className="size-4 accent-[#70F250]"
+                      className="size-4 accent-[#D6FF57]"
                     />
                   </label>
                 ))}
@@ -605,17 +605,17 @@ export default function AccountPage() {
 
           {tab === "Data" && (
             <div className="space-y-6">
-              <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-deep">
+              <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-bold text-[#0F2A1A]">
                   Export your data
                 </h2>
-                <p className="mt-1 text-sm leading-6 text-ink-500">
+                <p className="mt-1 text-sm leading-6 text-[#0F2A1A]/65">
                   Download everything we hold on your account: profile, roles,
                   learners, devices and chat history — as a JSON file. This
                   fulfils the export right in our{" "}
                   <Link
                     href="/privacy"
-                    className="font-semibold text-primary-dark hover:underline"
+                    className="font-semibold text-[#0F2A1A] hover:underline"
                   >
                     privacy policy
                   </Link>
@@ -624,7 +624,7 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={() => void doExport()}
-                  className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-deep px-6 text-sm font-bold text-white hover:bg-deep/90"
+                  className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-[#0F2A1A] px-6 text-sm font-bold text-white hover:bg-[#0F2A1A]/90"
                 >
                   ⬇ Download my data
                 </button>

@@ -19,7 +19,8 @@ import { CookieConsent } from "@/components/layout/CookieConsent";
 import { SkipLink } from "@/components/layout/SkipLink";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { ShellVisibility } from "@/components/layout/ShellVisibility";
-import { HomeOnly } from "@/components/layout/HomeOnly";
+import { MainContent } from "@/components/layout/MainContent";
+import { PublicOnly } from "@/components/layout/HomeOnly";
 import { Providers } from "@/components/providers";
 import { RegisterSW } from "@/components/register-sw";
 import { Toaster } from "@/components/toaster";
@@ -74,7 +75,7 @@ export const metadata: Metadata = {
     title: "YK-Virtual",
   },
   other: {
-    "theme-color": "#013920",
+    "theme-color": "#0F2A1A",
     "mobile-web-app-capable": "yes",
   },
 };
@@ -100,42 +101,37 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <Providers>
+          <SkipLink />
           {/* Marketing chrome renders ONLY on public routes; dashboards use
               their own personalized DashboardShell (Batch 1). */}
           <ShellVisibility>
             <Header />
             <MobileNav />
           </ShellVisibility>
-          <div
-            id="main-content"
-            tabIndex={-1}
-            className="min-w-0 max-w-[100vw] overflow-x-clip pb-16 outline-none lg:pb-0"
-          >
+          <MainContent>
             <AmbientBackdrop />
             <MotionProvider>
               <div className="relative z-10">{children}</div>
             </MotionProvider>
-          </div>
-          {/* Footer appears ONLY on the marketing home page; the floating
-              AI assistant (moveable launcher) is available on EVERY page. */}
-          <HomeOnly>
+          </MainContent>
+          {/* The same four-column footer closes all public pages; application
+              and authentication flows have their own dedicated chrome. */}
+          <PublicOnly>
             <div className="relative z-10">
               <Footer />
             </div>
-          </HomeOnly>
-          <ChatWidget />
-          {/* WhatsApp live chat — floating button above the AI launcher;
-              hides itself when WHATSAPP_BUSINESS_NUMBER is not configured. */}
-          <div className="pointer-events-none fixed bottom-24 right-4 z-40 lg:right-6">
-            <WhatsAppButton className="pointer-events-auto block" />
-          </div>
+          </PublicOnly>
           <ShellVisibility>
+            <ChatWidget />
+            {/* Public live chat hides when the channel is not configured. */}
+            <div className="pointer-events-none fixed bottom-24 right-4 z-40 lg:right-6">
+              <WhatsAppButton className="pointer-events-auto block" />
+            </div>
             {/* Consent + install banners are public-route chrome; on
                 dashboards they overlay form buttons (wizard "Finish"). */}
             <InstallPrompt />
             <CookieConsent />
           </ShellVisibility>
-          <SkipLink />
           <RegisterSW />
           <Toaster />
         </Providers>

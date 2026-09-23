@@ -116,14 +116,14 @@ function WizardInner() {
   };
 
   if (isLoading || !user) {
-    return <div className="min-h-screen bg-surface" />;
+    return <div className="min-h-screen bg-white" />;
   }
 
   const roleLabel = isTutor ? "tutor" : isStudent ? "learner" : "parent";
 
   return (
-    <main className="min-h-screen bg-surface flex items-center justify-center p-6">
-      <div className="w-full max-w-lg rounded-3xl border border-ink-200 bg-white p-8 shadow-card">
+    <main className="min-h-screen bg-white flex items-center justify-center p-6">
+      <div className="w-full max-w-lg rounded-3xl border border-black/10 bg-white p-8 shadow-card">
         {/* Stepper */}
         <ol
           className="flex items-center gap-2 mb-8"
@@ -140,10 +140,10 @@ function WizardInner() {
           ].map((label, i) => (
             <li key={label} className="flex-1">
               <div
-                className={`h-1.5 rounded-full ${i <= step ? "bg-primary" : "bg-ink-100"}`}
+                className={`h-1.5 rounded-full ${i <= step ? "bg-[#D6FF57]" : "bg-[#F9F6ED]"}`}
               />
               <p
-                className={`mt-2 text-[11px] font-bold uppercase tracking-wide ${i <= step ? "text-ink-900" : "text-ink-400"}`}
+                className={`mt-2 text-[11px] font-bold uppercase tracking-wide ${i <= step ? "text-[#0F2A1A]" : "text-[#0F2A1A]/65"}`}
               >
                 {i + 1}. {label}
               </p>
@@ -154,11 +154,11 @@ function WizardInner() {
         {step === 0 && (
           <section>
             <p className="tag-handwritten mb-2">Welcome</p>
-            <h1 className="font-display text-3xl text-deep">
+            <h1 className="font-display text-3xl text-[#0F2A1A]">
               Let&apos;s set you up,{" "}
               {user.first_name || user.email.split("@")[0]}
             </h1>
-            <p className="mt-3 text-sm text-ink-600 leading-relaxed">
+            <p className="mt-3 text-sm text-[#0F2A1A]/70 leading-relaxed">
               You&apos;re signed in as a <strong>{roleLabel}</strong>. In two
               quick steps we&apos;ll personalise your dashboard, recommendations
               and notifications.
@@ -166,7 +166,7 @@ function WizardInner() {
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
               <Link
                 href="/onboarding?step=3"
-                className="text-sm font-semibold text-deep hover:underline"
+                className="text-sm font-semibold text-[#0F2A1A] hover:underline"
               >
                 Choose a different role
               </Link>
@@ -177,20 +177,20 @@ function WizardInner() {
 
         {step === 1 && isParent && (
           <section>
-            <h2 className="font-display text-2xl text-deep">
+            <h2 className="font-display text-2xl text-[#0F2A1A]">
               Add your first learner
             </h2>
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               We use their level to recommend cohorts, programmes and tutors.
             </p>
-            <label className="mt-6 block text-xs font-bold uppercase tracking-wide text-ink-500">
+            <label className="mt-6 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
               First name
             </label>
             <input
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="e.g. Kemi"
-              className="mt-2 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="mt-2 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
             />
             <div className="mt-4">
               <CurriculumLevelSelect value={level} onChange={setLevel} />
@@ -208,16 +208,16 @@ function WizardInner() {
 
         {step === 1 && isStudent && (
           <section>
-            <h2 className="font-display text-2xl text-deep">
+            <h2 className="font-display text-2xl text-[#0F2A1A]">
               What level are you at?
             </h2>
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               Recommendations and quizzes tune to your level.
             </p>
             <div className="mt-6">
               <CurriculumLevelSelect value={level} onChange={setLevel} />
             </div>
-            <label className="mt-4 block text-xs font-bold uppercase tracking-wide text-ink-500">
+            <label className="mt-4 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
               Date of birth
             </label>
             <input
@@ -225,10 +225,10 @@ function WizardInner() {
               value={dob}
               max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setDob(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="mt-2 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
             />
             {dob && isMinor && (
-              <p className="mt-2 rounded-xl bg-primary-light px-4 py-3 text-xs font-semibold text-deep">
+              <p className="mt-2 rounded-xl bg-[#F9F6ED] px-4 py-3 text-xs font-semibold text-[#0F2A1A]">
                 🛡️ You&apos;re under 15, so this will be a{" "}
                 <strong>parent-guided account</strong> — a parent or guardian
                 manages bookings and payments for you. Everything you see here
@@ -246,10 +246,10 @@ function WizardInner() {
 
         {step === 1 && isTutor && (
           <section>
-            <h2 className="font-display text-2xl text-deep">
+            <h2 className="font-display text-2xl text-[#0F2A1A]">
               What do you teach?
             </h2>
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               You&apos;ll pick subjects during vetting - for now, tell us your
               strongest area so we can order your onboarding.
             </p>
@@ -266,8 +266,8 @@ function WizardInner() {
                   onClick={() => setLevel(s)}
                   className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
                     level === s
-                      ? "bg-primary text-ink-900"
-                      : "border border-ink-200 text-ink-600 hover:bg-ink-50"
+                      ? "bg-[#D6FF57] text-[#0F2A1A]"
+                      : "border border-black/10 text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
                   }`}
                 >
                   {s}
@@ -285,8 +285,8 @@ function WizardInner() {
 
         {step === 1 && !isParent && !isStudent && !isTutor && (
           <section>
-            <h2 className="font-display text-2xl text-deep">Almost there</h2>
-            <p className="mt-2 text-sm text-ink-600">
+            <h2 className="font-display text-2xl text-[#0F2A1A]">Almost there</h2>
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               Your admin console is ready - pick your goals to finish setup.
             </p>
             <div className="mt-8 flex justify-between">
@@ -300,10 +300,10 @@ function WizardInner() {
 
         {step === 2 && (
           <section>
-            <h2 className="font-display text-2xl text-deep">
+            <h2 className="font-display text-2xl text-[#0F2A1A]">
               What are your goals?
             </h2>
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               Pick as many as you like - they shape your “For you” feed.
             </p>
             <div className="mt-6 space-y-2">
@@ -321,8 +321,8 @@ function WizardInner() {
                     }
                     className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors ${
                       active
-                        ? "border-primary bg-primary/10 text-ink-900"
-                        : "border-ink-200 text-ink-600 hover:bg-ink-50"
+                        ? "border-[#D6FF57] bg-[#D6FF57]/10 text-[#0F2A1A]"
+                        : "border-black/10 text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
                     }`}
                   >
                     <span aria-hidden>{g.icon}</span> {g.label}
@@ -347,7 +347,7 @@ function WizardInner() {
 
 export default function WizardPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-surface" />}>
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
       <WizardInner />
     </Suspense>
   );

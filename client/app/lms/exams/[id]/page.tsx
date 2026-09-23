@@ -26,7 +26,7 @@ export default function ExamPage() {
     <DashboardPage className="space-y-6">
       <Link
         href="/lms/exams"
-        className="inline-flex items-center gap-1.5 text-sm font-bold text-primary-dark hover:underline"
+        className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0F2A1A] hover:underline"
       >
         <ArrowLeft size={15} /> Practice exams
       </Link>
@@ -39,10 +39,10 @@ export default function ExamPage() {
       ) : paper.error ? (
         <div className="rounded-3xl border border-orange-200 bg-orange-50 p-8 text-center">
           <AlertTriangle size={28} className="mx-auto text-orange-500" />
-          <p className="mt-3 font-bold text-ink-800">
+          <p className="mt-3 font-bold text-[#0F2A1A]/85">
             This paper is not available
           </p>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">
             {paper.error instanceof Error
               ? paper.error.message
               : "Please try again later."}

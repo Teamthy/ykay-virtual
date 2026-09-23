@@ -74,7 +74,7 @@ export function LoadingScreen() {
         <motion.div
           exit={{ y: "-100%" }}
           transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-deep-green"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0F2A1A]"
           aria-hidden="true"
         >
           {/* PLEASE WAIT — letter by letter */}
@@ -107,7 +107,7 @@ export function LoadingScreen() {
           </motion.p>
 
           {/* Counter */}
-          <div className="mt-10 flex items-baseline gap-1 font-display text-primary">
+          <div className="mt-10 flex items-baseline gap-1 font-display text-[#0F2A1A]">
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -121,7 +121,7 @@ export function LoadingScreen() {
           {/* progress hairline */}
           <div className="mt-6 h-px w-48 overflow-hidden bg-white/15 sm:w-64">
             <div
-              className="h-full bg-primary transition-[width] duration-100 ease-linear"
+              className="h-full bg-[#D6FF57] transition-[width] duration-100 ease-linear"
               style={{ width: `${count}%` }}
             />
           </div>

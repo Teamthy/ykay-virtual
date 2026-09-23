@@ -63,7 +63,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
           <Skeleton className="h-16 w-full" />
         </div>
       ) : data.length === 0 ? (
-        <p className="mt-3 text-sm text-ink-500 border border-dashed border-ink-200 rounded-xl p-6 text-center">
+        <p className="mt-3 text-sm text-[#0F2A1A]/65 border border-dashed border-black/10 rounded-xl p-6 text-center">
           No published reviews yet - every review appears with the reviewer's explicit consent.
         </p>
       ) : (
@@ -71,11 +71,11 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
           {data.map((r) => (
             <li key={r.id} className="border rounded-2xl p-5">
               <div className="flex items-center gap-2">
-                <span className="text-brand-gold font-extrabold">★ {r.rating}.0</span>
+                <span className="text-[#0F2A1A] font-extrabold">★ {r.rating}.0</span>
                 {r.title && <span className="font-semibold text-sm">{r.title}</span>}
               </div>
-              {r.comment && <p className="mt-2 text-sm text-ink-600">{r.comment}</p>}
-              <p className="mt-2 text-[10px] text-ink-400">
+              {r.comment && <p className="mt-2 text-sm text-[#0F2A1A]/70">{r.comment}</p>}
+              <p className="mt-2 text-[10px] text-[#0F2A1A]/65">
                 Verified parent · consent given · {new Date(r.created_at).toLocaleDateString()}
               </p>
             </li>
@@ -96,7 +96,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
                     key={n}
                     type="button"
                     onClick={() => setRating(n)}
-                    className={`text-2xl transition-transform ${n <= rating ? "text-brand-gold scale-110" : "text-ink-200 hover:scale-105"}`}
+                    className={`text-2xl transition-transform ${n <= rating ? "text-[#0F2A1A] scale-110" : "text-ink-200 hover:scale-105"}`}
                     aria-label={`${n} star`}
                   >
                     ★
@@ -109,7 +109,7 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
             <label className="block text-sm">
@@ -118,10 +118,10 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
                 rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
-            <label className="flex items-start gap-2 text-xs text-ink-600 cursor-pointer">
+            <label className="flex items-start gap-2 text-xs text-[#0F2A1A]/70 cursor-pointer">
               <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
               <span>
                 I consent to this review being published publicly on this tutor&apos;s profile (required).
@@ -139,8 +139,8 @@ export function ReviewsSection({ tutorSlug, tutorId }: { tutorSlug: string; tuto
           </div>
         </div>
       ) : (
-        <p className="mt-4 text-sm text-ink-500">
-          <a href="/login" className="text-brand-blue font-semibold hover:underline">Log in</a> to leave a review after your tuition.
+        <p className="mt-4 text-sm text-[#0F2A1A]/65">
+          <a href="/login" className="text-[#0F2A1A] font-semibold hover:underline">Log in</a> to leave a review after your tuition.
         </p>
       )}
     </section>

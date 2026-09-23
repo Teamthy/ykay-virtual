@@ -49,10 +49,10 @@ function Stat({
   hint?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-4">
-      <p className="text-2xl font-extrabold text-deep">{value ?? "-"}</p>
-      <p className="mt-0.5 text-xs font-semibold text-ink-500">{label}</p>
-      {hint && <p className="mt-0.5 text-[11px] text-ink-500">{hint}</p>}
+    <div className="rounded-2xl border border-black/10 bg-white p-4">
+      <p className="text-2xl font-extrabold text-[#0F2A1A]">{value ?? "-"}</p>
+      <p className="mt-0.5 text-xs font-semibold text-[#0F2A1A]/65">{label}</p>
+      {hint && <p className="mt-0.5 text-[11px] text-[#0F2A1A]/65">{hint}</p>}
     </div>
   );
 }
@@ -116,14 +116,14 @@ export default function SuperAdminPage() {
           chipTitle="Locked"
           chipHint="Access"
         />
-        <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
-          <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-deep">
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center">
+          <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#F9F6ED] text-[#0F2A1A]">
             <Lock size={26} />
           </div>
-          <h2 className="mt-4 text-lg font-extrabold text-deep">
+          <h2 className="mt-4 text-lg font-extrabold text-[#0F2A1A]">
             SUPER_ADMIN access only
           </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#0F2A1A]/65">
             This control center is restricted to SUPER_ADMIN. Academic admins
             can manage content, cohorts and operations from the admin console,
             but platform-level controls require the SUPER_ADMIN role.
@@ -380,7 +380,7 @@ export default function SuperAdminPage() {
               >
                 <span className="font-semibold text-amber-900">{a.label}</span>
                 <span
-                  className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${a.warn ? "bg-amber-600 text-white" : "bg-ink-100 text-ink-600"}`}
+                  className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${a.warn ? "bg-amber-600 text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70"}`}
                 >
                   {a.count}
                 </span>
@@ -392,7 +392,7 @@ export default function SuperAdminPage() {
 
       {/* Quick actions */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-[#0F2A1A]">
           Quick actions
         </h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -402,20 +402,20 @@ export default function SuperAdminPage() {
               <Link
                 key={a.href + a.label}
                 href={a.href}
-                className="group flex items-start justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition-all hover:border-primary hover:shadow-lift"
+                className="group flex items-start justify-between gap-2 rounded-2xl border border-black/10 bg-white p-4 transition-all hover:border-[#D6FF57] hover:shadow-lift"
               >
                 <div className="flex items-start gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                     <Icon size={16} />
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-deep">{a.label}</p>
-                    <p className="text-xs text-ink-500">{a.desc}</p>
+                    <p className="text-sm font-bold text-[#0F2A1A]">{a.label}</p>
+                    <p className="text-xs text-[#0F2A1A]/65">{a.desc}</p>
                   </div>
                 </div>
                 <ArrowUpRight
                   size={16}
-                  className="mt-1 shrink-0 text-ink-600 transition-colors group-hover:text-primary"
+                  className="mt-1 shrink-0 text-[#0F2A1A]/70 transition-colors group-hover:text-[#0F2A1A]"
                 />
               </Link>
             );
@@ -425,7 +425,7 @@ export default function SuperAdminPage() {
 
       {/* Platform modules */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-[#0F2A1A]">
           Platform modules
         </h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -435,16 +435,16 @@ export default function SuperAdminPage() {
               <Link
                 key={m.href}
                 href={m.href}
-                className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-white p-5 transition-all hover:border-primary hover:shadow-lift"
+                className="flex items-start gap-3 rounded-2xl border border-black/10 bg-white p-5 transition-all hover:border-[#D6FF57] hover:shadow-lift"
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-light text-deep">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                   <Icon size={18} />
                 </span>
                 <span>
-                  <span className="block text-sm font-bold text-deep">
+                  <span className="block text-sm font-bold text-[#0F2A1A]">
                     {m.label}
                   </span>
-                  <span className="mt-0.5 block text-xs text-ink-500">
+                  <span className="mt-0.5 block text-xs text-[#0F2A1A]/65">
                     {m.desc}
                   </span>
                 </span>
@@ -455,24 +455,24 @@ export default function SuperAdminPage() {
       </section>
 
       {/* Recent audit trail */}
-      <section className="rounded-2xl border border-ink-100 bg-white p-5">
+      <section className="rounded-2xl border border-black/10 bg-white p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History size={18} className="text-primary" />
-            <h2 className="font-display text-base font-bold text-deep">
+            <History size={18} className="text-[#0F2A1A]" />
+            <h2 className="font-display text-base font-bold text-[#0F2A1A]">
               Recent audit trail
             </h2>
           </div>
           <Link
             href="/admin/users"
-            className="text-xs font-bold text-deep hover:underline"
+            className="text-xs font-bold text-[#0F2A1A] hover:underline"
           >
             Manage users →
           </Link>
         </div>
-        <div className="mt-3 overflow-hidden rounded-xl border border-ink-100">
+        <div className="mt-3 overflow-hidden rounded-xl border border-black/10">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-ink-100 bg-ink-50/60 text-[11px] uppercase tracking-[0.12em] text-ink-500">
+            <thead className="border-b border-black/10 bg-[#F9F6ED]/60 text-[11px] uppercase tracking-[0.12em] text-[#0F2A1A]/65">
               <tr>
                 <th className="px-3 py-2 font-bold">When</th>
                 <th className="px-3 py-2 font-bold">Action</th>
@@ -482,7 +482,7 @@ export default function SuperAdminPage() {
             <tbody className="divide-y divide-ink-100">
               {(auditLogs.data ?? []).map((a) => (
                 <tr key={a.id}>
-                  <td className="whitespace-nowrap px-3 py-2 text-xs text-ink-500">
+                  <td className="whitespace-nowrap px-3 py-2 text-xs text-[#0F2A1A]/65">
                     {a.created_at
                       ? new Date(a.created_at).toLocaleString("en-GB", {
                           day: "numeric",
@@ -493,11 +493,11 @@ export default function SuperAdminPage() {
                       : "-"}
                   </td>
                   <td className="px-3 py-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-700">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#F9F6ED] px-2 py-0.5 text-[11px] font-bold text-[#0F2A1A]/75">
                       <ShieldAlert size={11} /> {a.action}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-xs text-ink-600">
+                  <td className="px-3 py-2 text-xs text-[#0F2A1A]/70">
                     {a.target_type}
                     {a.target_id ? ` · ${a.target_id.slice(0, 8)}` : ""}
                   </td>
@@ -507,7 +507,7 @@ export default function SuperAdminPage() {
                 <tr>
                   <td
                     colSpan={3}
-                    className="px-3 py-6 text-center text-xs text-ink-500"
+                    className="px-3 py-6 text-center text-xs text-[#0F2A1A]/65"
                   >
                     No audit entries yet.
                   </td>
@@ -516,51 +516,51 @@ export default function SuperAdminPage() {
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-[11px] text-ink-500">
+        <p className="mt-2 text-[11px] text-[#0F2A1A]/65">
           Super-admin visible only. Logs money, access and role/status changes.
         </p>
       </section>
 
       {/* Revenue / growth note */}
       <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-ink-100 bg-white p-6">
+        <div className="rounded-2xl border border-black/10 bg-white p-6">
           <div className="flex items-center gap-2">
-            <TrendingUp size={18} className="text-primary" />
-            <h2 className="font-display text-base font-bold text-deep">
+            <TrendingUp size={18} className="text-[#0F2A1A]" />
+            <h2 className="font-display text-base font-bold text-[#0F2A1A]">
               Revenue position
             </h2>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-ink-500">
+              <p className="text-xs text-[#0F2A1A]/65">
                 In escrow (not yet paid to tutors)
               </p>
-              <p className="text-xl font-extrabold text-deep">
+              <p className="text-xl font-extrabold text-[#0F2A1A]">
                 {fmtNGN(s?.revenue_in_escrow)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-ink-500">Paid out to tutors</p>
-              <p className="text-xl font-extrabold text-primary">
+              <p className="text-xs text-[#0F2A1A]/65">Paid out to tutors</p>
+              <p className="text-xl font-extrabold text-[#0F2A1A]">
                 {fmtNGN(s?.revenue_paid_out)}
               </p>
             </div>
           </div>
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-[#0F2A1A]/65">
             {revenueGrowth
               ? "Escrow holds represent committed revenue that releases to tutors after delivery."
               : "No paid-out revenue yet — escrow auto-releases on the weekly payout cycle."}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-ink-100 bg-white p-6">
+        <div className="rounded-2xl border border-black/10 bg-white p-6">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={18} className="text-primary" />
-            <h2 className="font-display text-base font-bold text-deep">
+            <ShieldCheck size={18} className="text-[#0F2A1A]" />
+            <h2 className="font-display text-base font-bold text-[#0F2A1A]">
               Role model &amp; security
             </h2>
           </div>
-          <ul className="mt-3 space-y-2 text-sm text-ink-600">
+          <ul className="mt-3 space-y-2 text-sm text-[#0F2A1A]/70">
             <li>
               · <b>SUPER_ADMIN</b> — full platform access, incl. role management
               (server-side only).
@@ -605,23 +605,23 @@ export default function SuperAdminPage() {
       </section>
 
       {/* Email delivery check */}
-      <section className="rounded-2xl border border-ink-100 bg-white p-6">
+      <section className="rounded-2xl border border-black/10 bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Mail size={18} className="text-primary" />
-            <h2 className="font-display text-base font-bold text-deep">
+            <Mail size={18} className="text-[#0F2A1A]" />
+            <h2 className="font-display text-base font-bold text-[#0F2A1A]">
               Email delivery check
             </h2>
           </div>
           <button
             type="button"
             onClick={() => void testEmail()}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover"
+            className="rounded-full bg-[#D6FF57] px-5 py-2 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
           >
             Send test email to myself
           </button>
         </div>
-        <p className="mt-2 text-sm text-ink-600">
+        <p className="mt-2 text-sm text-[#0F2A1A]/70">
           Verifies Resend/SMTP end to end — the API log also prints the active
           provider at boot (<code>email provider active</code>). If this test
           doesn&apos;t arrive, login codes and receipts aren&apos;t either.
@@ -629,12 +629,12 @@ export default function SuperAdminPage() {
       </section>
 
       {/* Recent activity */}
-      <section className="rounded-2xl border border-ink-100 bg-white p-6">
-        <h2 className="font-display text-base font-bold text-deep">
+      <section className="rounded-2xl border border-black/10 bg-white p-6">
+        <h2 className="font-display text-base font-bold text-[#0F2A1A]">
           Recent platform activity
         </h2>
         {(overview.data?.recent_audit ?? []).length === 0 ? (
-          <p className="mt-2 text-sm text-ink-400">No activity yet.</p>
+          <p className="mt-2 text-sm text-[#0F2A1A]/65">No activity yet.</p>
         ) : (
           <ul className="mt-3 divide-y divide-ink-50">
             {(overview.data?.recent_audit ?? []).slice(0, 8).map((a) => (
@@ -642,16 +642,16 @@ export default function SuperAdminPage() {
                 key={a.id}
                 className="flex items-center justify-between gap-3 py-2.5 text-sm"
               >
-                <span className="text-ink-700">
+                <span className="text-[#0F2A1A]/75">
                   <span className="font-bold">
                     {String(a.action ?? "").replace(/_/g, " ")}
                   </span>
-                  <span className="text-ink-500">
+                  <span className="text-[#0F2A1A]/65">
                     {" "}
                     · {a.target_type ?? "platform"}
                   </span>
                 </span>
-                <span className="text-xs text-ink-400">
+                <span className="text-xs text-[#0F2A1A]/65">
                   {new Date(a.created_at).toLocaleString([], {
                     day: "numeric",
                     month: "short",

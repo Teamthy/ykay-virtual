@@ -10,20 +10,20 @@ import { FileText, ChevronDown } from "lucide-react";
 export function TranscriptPanel({ text, title = "Lesson transcript" }: { text: string; title?: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mt-3 rounded-xl border border-ink-100 bg-ink-50/60">
+    <div className="mt-3 rounded-xl border border-black/10 bg-[#F9F6ED]/60">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-xs font-bold text-ink-700"
+        className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-xs font-bold text-[#0F2A1A]/75"
       >
         <span className="flex items-center gap-1.5">
-          <FileText size={13} className="text-primary-dark" /> {title}
+          <FileText size={13} className="text-[#0F2A1A]" /> {title}
         </span>
         <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <p className="max-h-72 overflow-y-auto whitespace-pre-wrap border-t border-ink-100 px-4 py-3 text-sm leading-relaxed text-ink-700">
+        <p className="max-h-72 overflow-y-auto whitespace-pre-wrap border-t border-black/10 px-4 py-3 text-sm leading-relaxed text-[#0F2A1A]/75">
           {text}
         </p>
       )}

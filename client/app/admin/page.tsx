@@ -44,21 +44,21 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-5 ${accent ? "bg-deep text-white border-deep" : "bg-white"}`}
+      className={`rounded-2xl border p-5 ${accent ? "bg-[#0F2A1A] text-white border-[#0F2A1A]" : "bg-white"}`}
     >
       <div
-        className={`text-2xl font-extrabold ${accent ? "text-white" : "text-deep"}`}
+        className={`text-2xl font-extrabold ${accent ? "text-white" : "text-[#0F2A1A]"}`}
       >
         {value}
       </div>
       <div
-        className={`text-xs mt-1 ${accent ? "text-white/80" : "text-ink-500"}`}
+        className={`text-xs mt-1 ${accent ? "text-white/80" : "text-[#0F2A1A]/65"}`}
       >
         {label}
       </div>
       {sub && (
         <div
-          className={`text-[10px] mt-1 ${accent ? "text-white/60" : "text-ink-400"}`}
+          className={`text-[10px] mt-1 ${accent ? "text-white/60" : "text-[#0F2A1A]/65"}`}
         >
           {sub}
         </div>
@@ -365,9 +365,9 @@ export default function AdminOverviewPage() {
 
       {/* Today's classes */}
       {((o?.lessons_today ?? []).length ?? 0) > 0 && (
-        <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-          <h2 className="flex items-center gap-2 font-bold text-deep">
-            <CalendarDays size={16} className="text-primary" /> Today&apos;s
+        <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
+          <h2 className="flex items-center gap-2 font-bold text-[#0F2A1A]">
+            <CalendarDays size={16} className="text-[#0F2A1A]" /> Today&apos;s
             classes
           </h2>
           <ul className="mt-3 divide-y divide-ink-50">
@@ -376,8 +376,8 @@ export default function AdminOverviewPage() {
                 key={l.id}
                 className="flex items-center justify-between gap-3 py-2.5 text-sm"
               >
-                <span className="font-semibold text-ink-800">{l.title}</span>
-                <span className="text-xs text-ink-500">
+                <span className="font-semibold text-[#0F2A1A]/85">{l.title}</span>
+                <span className="text-xs text-[#0F2A1A]/65">
                   {new Date(l.start_at).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -390,12 +390,12 @@ export default function AdminOverviewPage() {
       )}
 
       {/* Recent activity */}
-      <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-        <h2 className="flex items-center gap-2 font-bold text-deep">
-          <History size={16} className="text-primary" /> Recent activity
+      <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
+        <h2 className="flex items-center gap-2 font-bold text-[#0F2A1A]">
+          <History size={16} className="text-[#0F2A1A]" /> Recent activity
         </h2>
         {(o?.recent_audit ?? []).length === 0 ? (
-          <p className="mt-2 text-sm text-ink-400">No activity recorded yet.</p>
+          <p className="mt-2 text-sm text-[#0F2A1A]/65">No activity recorded yet.</p>
         ) : (
           <ul className="mt-3 divide-y divide-ink-50">
             {(o?.recent_audit ?? []).slice(0, 8).map((a) => (
@@ -403,16 +403,16 @@ export default function AdminOverviewPage() {
                 key={a.id}
                 className="flex items-center justify-between gap-3 py-2.5 text-sm"
               >
-                <span className="text-ink-700">
+                <span className="text-[#0F2A1A]/75">
                   <span className="font-bold">
                     {String(a.action ?? "").replace(/_/g, " ")}
                   </span>
-                  <span className="text-ink-500">
+                  <span className="text-[#0F2A1A]/65">
                     {" "}
                     · {a.target_type ?? "platform"}
                   </span>
                 </span>
-                <span className="text-xs text-ink-400">
+                <span className="text-xs text-[#0F2A1A]/65">
                   {new Date(a.created_at).toLocaleString([], {
                     day: "numeric",
                     month: "short",
@@ -442,7 +442,7 @@ export default function AdminOverviewPage() {
               >
                 <span className="font-semibold text-amber-900">{a.label}</span>
                 <span
-                  className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${a.warn ? "bg-amber-600 text-white" : "bg-ink-100 text-ink-600"}`}
+                  className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold ${a.warn ? "bg-amber-600 text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70"}`}
                 >
                   {a.count}
                 </span>
@@ -454,7 +454,7 @@ export default function AdminOverviewPage() {
 
       {/* Quick actions */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-[#0F2A1A]">
           Quick actions
         </h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -464,20 +464,20 @@ export default function AdminOverviewPage() {
               <Link
                 key={a.href + a.label}
                 href={a.href}
-                className="group flex items-start justify-between gap-2 rounded-2xl border border-ink-100 bg-white p-4 transition-all hover:border-deep hover:shadow-lift"
+                className="group flex items-start justify-between gap-2 rounded-2xl border border-black/10 bg-white p-4 transition-all hover:border-[#0F2A1A] hover:shadow-lift"
               >
                 <div className="flex items-start gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-deep/10 text-deep">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#0F2A1A]/10 text-[#0F2A1A]">
                     <Icon size={16} />
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-deep">{a.label}</p>
-                    <p className="text-xs text-ink-500">{a.desc}</p>
+                    <p className="text-sm font-bold text-[#0F2A1A]">{a.label}</p>
+                    <p className="text-xs text-[#0F2A1A]/65">{a.desc}</p>
                   </div>
                 </div>
                 <ArrowUpRight
                   size={16}
-                  className="mt-1 shrink-0 text-ink-600 transition-colors group-hover:text-deep"
+                  className="mt-1 shrink-0 text-[#0F2A1A]/70 transition-colors group-hover:text-[#0F2A1A]"
                 />
               </Link>
             );
@@ -487,7 +487,7 @@ export default function AdminOverviewPage() {
 
       {/* Module quick links */}
       <section>
-        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-deep">
+        <h2 className="font-display text-lg font-bold tracking-[0.02em] text-[#0F2A1A]">
           Operations modules
         </h2>
         <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -497,16 +497,16 @@ export default function AdminOverviewPage() {
               <Link
                 key={m.href}
                 href={m.href}
-                className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-white p-5 transition-all hover:border-deep hover:shadow-lift"
+                className="flex items-start gap-3 rounded-2xl border border-black/10 bg-white p-5 transition-all hover:border-[#0F2A1A] hover:shadow-lift"
               >
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-deep/10 text-deep">
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#0F2A1A]/10 text-[#0F2A1A]">
                   <Icon size={18} />
                 </span>
                 <span>
-                  <span className="block text-sm font-bold text-deep">
+                  <span className="block text-sm font-bold text-[#0F2A1A]">
                     {m.label}
                   </span>
-                  <span className="mt-0.5 block text-xs text-ink-500">
+                  <span className="mt-0.5 block text-xs text-[#0F2A1A]/65">
                     {m.desc}
                   </span>
                 </span>
@@ -516,7 +516,7 @@ export default function AdminOverviewPage() {
         </div>
       </section>
 
-      <p className="flex items-center gap-1.5 text-xs text-ink-400">
+      <p className="flex items-center gap-1.5 text-xs text-[#0F2A1A]/65">
         <UserPlus size={13} /> Non-super-admin accounts can review users but
         cannot see SUPER_ADMIN accounts or grant roles.
       </p>

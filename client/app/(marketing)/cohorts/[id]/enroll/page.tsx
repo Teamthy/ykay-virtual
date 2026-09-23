@@ -47,11 +47,11 @@ export default async function CohortEnrollPage(props: Props) {
 
       <div className="container-x mx-auto max-w-5xl space-y-8 pb-20 pt-16 md:pt-20">
         <CheckoutClient cohort={cohort} />
-        <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-          <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">
+        <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+          <h2 className="font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
             What you get
           </h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-ink-600">
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#0F2A1A]/70">
             <li>Live lessons with an approved, vetted tutor</li>
             <li>Recordings, resources and homework after every lesson</li>
             <li>Weekly progress reports for parents</li>

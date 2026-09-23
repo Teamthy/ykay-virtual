@@ -21,6 +21,22 @@ const APP_PREFIXES = [
   "/chat",
   "/offline",
   "/onboarding",
+  // Tutor application is a signed-in, multi-step onboarding flow; the
+  // /become-tutor landing page itself stays public.
+  "/become-tutor/apply",
+  "/become-tutor/subjects",
+  "/become-tutor/documents",
+  "/become-tutor/assessment",
+  "/become-tutor/status",
+  "/receipts",
+  "/login",
+  "/login-code",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/auth",
+  "/logout",
 ];
 
 export function isAppRoute(pathname: string): boolean {

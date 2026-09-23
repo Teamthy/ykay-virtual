@@ -28,7 +28,7 @@ const STATUS_BADGE: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-700",
   QUALIFIED: "bg-blue-100 text-blue-700",
   REWARDED: "bg-green-100 text-green-700",
-  EXPIRED: "bg-ink-100 text-ink-400",
+  EXPIRED: "bg-[#F9F6ED] text-[#0F2A1A]/65",
 };
 
 export function ReferralCard({ userId }: { userId: string }) {
@@ -65,7 +65,7 @@ export function ReferralCard({ userId }: { userId: string }) {
   return (
     <div className="border rounded-2xl p-6">
       <h2 className="font-bold">Refer & earn ₦{info.data?.reward ?? 2000}</h2>
-      <p className="text-xs text-ink-500 mt-1">
+      <p className="text-xs text-[#0F2A1A]/65 mt-1">
         When a friend signs up with your code and pays for their first order, the reward lands in
         your wallet.
       </p>
@@ -74,7 +74,7 @@ export function ReferralCard({ userId }: { userId: string }) {
         <Skeleton className="h-12 w-full mt-4" />
       ) : (
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="rounded-xl bg-brand-blue/10 border border-brand-blue/30 px-5 py-3 font-mono text-lg font-extrabold tracking-widest text-brand-blue">
+          <span className="rounded-xl bg-[#0F2A1A]/10 border border-[#0F2A1A]/30 px-5 py-3 font-mono text-lg font-extrabold tracking-widest text-[#0F2A1A]">
             {info.data?.code}
           </span>
           <button onClick={() => void copy()} className="btn-gold text-sm">
@@ -84,28 +84,28 @@ export function ReferralCard({ userId }: { userId: string }) {
       )}
 
       <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-xl bg-ink-50 p-3">
-          <div className="text-xl font-extrabold text-brand-blue">{(mine.data ?? []).length}</div>
-          <div className="text-[10px] text-ink-500">Invited</div>
+        <div className="rounded-xl bg-[#F9F6ED] p-3">
+          <div className="text-xl font-extrabold text-[#0F2A1A]">{(mine.data ?? []).length}</div>
+          <div className="text-[10px] text-[#0F2A1A]/65">Invited</div>
         </div>
-        <div className="rounded-xl bg-ink-50 p-3">
-          <div className="text-xl font-extrabold text-brand-blue">{(mine.data ?? []).filter((r) => r.status === "QUALIFIED").length}</div>
-          <div className="text-[10px] text-ink-500">Qualified</div>
+        <div className="rounded-xl bg-[#F9F6ED] p-3">
+          <div className="text-xl font-extrabold text-[#0F2A1A]">{(mine.data ?? []).filter((r) => r.status === "QUALIFIED").length}</div>
+          <div className="text-[10px] text-[#0F2A1A]/65">Qualified</div>
         </div>
         <div className="rounded-xl bg-green-50 p-3">
           <div className="text-xl font-extrabold text-green-700">{rewarded}</div>
-          <div className="text-[10px] text-ink-500">Rewarded</div>
+          <div className="text-[10px] text-[#0F2A1A]/65">Rewarded</div>
         </div>
       </div>
 
       {(mine.data ?? []).length > 0 && (
         <ul className="mt-5 space-y-2">
           {(mine.data ?? []).slice(0, 5).map((r) => (
-            <li key={r.id} className="flex items-center justify-between text-sm border-b border-ink-100 pb-2">
-              <span className="font-mono text-xs text-ink-500">{(r.referred_user_id ?? "").slice(0, 13)}…</span>
+            <li key={r.id} className="flex items-center justify-between text-sm border-b border-black/10 pb-2">
+              <span className="font-mono text-xs text-[#0F2A1A]/65">{(r.referred_user_id ?? "").slice(0, 13)}…</span>
               <span className="flex items-center gap-2">
                 <span className="font-semibold">₦{r.reward_amount.toLocaleString()}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_BADGE[r.status] ?? "bg-ink-100"}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_BADGE[r.status] ?? "bg-[#F9F6ED]"}`}>
                   {r.status}
                 </span>
               </span>

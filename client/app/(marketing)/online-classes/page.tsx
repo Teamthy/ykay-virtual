@@ -90,12 +90,12 @@ export default function OnlineClassesPage() {
               <div
                 key={c.title}
                 data-card
-                className="flex min-h-[220px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+                className="flex min-h-[220px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card bg-[#0F2A1A]"
                 style={{
-                  backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.82), rgba(1,57,32,0.55)), url(${c.photo})`,
+                  backgroundImage: `linear-gradient(165deg, rgba(15,42,26,0.82), rgba(15,42,26,0.55)), url(${c.photo})`,
                 }}
               >
-                <div className="text-xs font-semibold uppercase tracking-wide text-brand-gold">
+                <div className="text-xs font-semibold uppercase tracking-wide text-[#D6FF57]">
                   {c.level}
                 </div>
                 <h3 className="mt-2 font-bold text-lg leading-tight">
@@ -104,7 +104,7 @@ export default function OnlineClassesPage() {
                 <p className="mt-3 text-sm text-white/80">{c.note}</p>
                 <Link
                   href={c.href}
-                  className="mt-auto pt-5 text-sm font-bold text-brand-gold"
+                  className="mt-auto pt-5 text-sm font-bold text-[#D6FF57]"
                 >
                   Open this track →
                 </Link>
@@ -117,7 +117,7 @@ export default function OnlineClassesPage() {
               <h2 className="text-2xl font-bold">
                 What a live cohort includes
               </h2>
-              <ul className="mt-4 space-y-3 text-ink-700 list-disc pl-5">
+              <ul className="mt-4 space-y-3 text-[#0F2A1A]/75 list-disc pl-5">
                 <li>
                   Past-paper patterns used to plan the syllabus (not a secret
                   15-year AI score)
@@ -130,15 +130,15 @@ export default function OnlineClassesPage() {
                 <li>Weekly progress notes to parents</li>
               </ul>
             </div>
-            <div className="rounded-2xl bg-ink-100 p-8">
+            <div className="rounded-2xl bg-[#F9F6ED] p-8">
               <h3 className="font-bold">One site, one login</h3>
-              <p className="mt-2 text-sm text-ink-600">
+              <p className="mt-2 text-sm text-[#0F2A1A]/70">
                 Cohorts sit on virtual.ykaycollege.com - same wallet and account
                 as private tuition. There is no second prep domain.
               </p>
               <Link
                 href="/cohorts"
-                className="mt-4 inline-block text-sm font-bold text-brand-navy"
+                className="mt-4 inline-block text-sm font-bold text-[#0F2A1A]"
               >
                 Browse live cohorts →
               </Link>

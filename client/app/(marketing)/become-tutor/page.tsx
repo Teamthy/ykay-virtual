@@ -112,23 +112,23 @@ export default function BecomeTutorPage() {
           {STEPS.map((s, i) => (
             <div
               key={s.title}
-              className="flex flex-col rounded-2xl border border-ink-100 bg-white p-5 shadow-soft"
+              className="flex flex-col rounded-2xl border border-black/10 bg-white p-5 shadow-soft"
             >
               <div className="flex items-center justify-between">
-                <span className="grid size-10 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
+                <span className="grid size-10 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                   <s.icon size={18} />
                 </span>
-                <span className="text-xs font-bold text-ink-500">0{i + 1}</span>
+                <span className="text-xs font-bold text-[#0F2A1A]/65">0{i + 1}</span>
               </div>
-              <h2 className="mt-4 font-display text-base tracking-[0.02em] text-brand-navy">
+              <h2 className="mt-4 font-display text-base tracking-[0.02em] text-[#0F2A1A]">
                 {s.title}
               </h2>
-              <p className="mt-2 flex-1 text-xs leading-relaxed text-ink-600">
+              <p className="mt-2 flex-1 text-xs leading-relaxed text-[#0F2A1A]/70">
                 {s.desc}
               </p>
               <Link
                 href={s.href}
-                className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-green hover:underline"
+                className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[#0F2A1A] hover:underline"
               >
                 Go to step →
               </Link>
@@ -146,7 +146,7 @@ export default function BecomeTutorPage() {
                 <summary className="font-semibold cursor-pointer">
                   {f.question}
                 </summary>
-                <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
+                <p className="mt-2 text-sm text-[#0F2A1A]/70">{f.answer}</p>
               </details>
             ))}
           </div>

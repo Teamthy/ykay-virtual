@@ -46,20 +46,20 @@ export function HeroSearch() {
     <form onSubmit={submit} className="rounded-2xl bg-white/95 backdrop-blur p-3 shadow-lift flex flex-col md:flex-row gap-2">
       {/* Subject */}
       <div className="flex-1 flex items-center gap-3 px-4 py-2.5">
-        <Search size={16} className="text-brand-blue shrink-0" />
+        <Search size={16} className="text-[#0F2A1A] shrink-0" />
         <input
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder="Subject (e.g. Mathematics, Computer Science)"
-          className="w-full bg-transparent text-sm text-ink-800 placeholder:text-ink-400 focus:outline-none"
+          className="w-full bg-transparent text-sm text-[#0F2A1A]/85 placeholder:text-[#0F2A1A]/65 focus:outline-none"
         />
       </div>
       {/* Curriculum / Exam */}
-      <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-ink-100 px-4 py-2.5">
+      <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-black/10 px-4 py-2.5">
         <select
           value={path}
           onChange={(e) => setPath(e.target.value)}
-          className="bg-transparent text-sm font-semibold text-ink-700 focus:outline-none cursor-pointer"
+          className="bg-transparent text-sm font-semibold text-[#0F2A1A]/75 focus:outline-none cursor-pointer"
           aria-label="Curriculum or exam"
         >
           <optgroup label="Curriculum">
@@ -71,11 +71,11 @@ export function HeroSearch() {
         </select>
       </div>
       {/* Level */}
-      <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-ink-100 px-4 py-2.5">
+      <div className="flex items-center gap-2 border-t md:border-t-0 md:border-l border-black/10 px-4 py-2.5">
         <select
           value={level}
           onChange={(e) => setLevel(e.target.value)}
-          className="bg-transparent text-sm text-ink-700 focus:outline-none cursor-pointer"
+          className="bg-transparent text-sm text-[#0F2A1A]/75 focus:outline-none cursor-pointer"
           aria-label="Level"
         >
           <option value="">Any level</option>

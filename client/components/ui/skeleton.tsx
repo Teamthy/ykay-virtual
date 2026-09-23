@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
 
 export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("animate-pulse rounded-xl bg-ink-100 dark:bg-[#173b2a]", className)} {...props} />;
+  return <div className={cn("animate-pulse rounded-xl bg-[#F9F6ED] ", className)} {...props} />;
 }
 
 export function TutorRowSkeleton() {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-ink-100 bg-white p-3">
+    <div className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3">
       <Skeleton className="size-12 shrink-0 rounded-full" />
       <div className="min-w-0 flex-1 space-y-2">
         <Skeleton className="h-4 w-40" />
@@ -19,7 +19,7 @@ export function TutorRowSkeleton() {
 
 export function CohortCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-black/10 bg-white">
       <Skeleton className="h-20 w-full rounded-none" />
       <div className="space-y-2 p-4">
         <Skeleton className="h-4 w-3/4" />

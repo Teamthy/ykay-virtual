@@ -37,7 +37,7 @@ function markLeadShown() {
 }
 
 const INPUT_CLS =
-  "mt-1.5 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
+  "mt-1.5 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30";
 
 export function LeadCapture({
   source,
@@ -141,14 +141,14 @@ export function LeadCapture({
           markLeadShown();
           setOpen(true);
         }}
-        className="inline-flex items-center gap-2 rounded-full border border-primary bg-primary-light px-4 py-2 text-xs font-bold text-primary-dark transition-colors hover:bg-primary hover:text-ink-900"
+        className="inline-flex items-center gap-2 rounded-full border border-[#D6FF57] bg-[#F9F6ED] px-4 py-2 text-xs font-bold text-[#0F2A1A] transition-colors hover:bg-[#D6FF57] hover:text-[#0F2A1A]"
       >
         <Phone size={13} /> {ctaLabel}
       </button>
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink-900/50 p-4 sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-[#0F2A1A]/50 p-4 sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-label={heading}
@@ -157,7 +157,7 @@ export function LeadCapture({
           }}
         >
           <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-card">
-            <div className="flex items-start justify-between gap-4 bg-deep p-5">
+            <div className="flex items-start justify-between gap-4 bg-[#0F2A1A] p-5">
               <div>
                 <p className="font-display text-lg font-bold text-white">
                   {sent ? "You're on the list 🎉" : heading}
@@ -180,7 +180,7 @@ export function LeadCapture({
 
             {sent ? (
               <div className="space-y-4 p-6">
-                <p className="text-sm leading-relaxed text-ink-600">
+                <p className="text-sm leading-relaxed text-[#0F2A1A]/70">
                   Thanks <strong>{name.split(" ")[0]}</strong>! Our team will
                   call <strong>{phone}</strong> shortly. Want to talk right now
                   instead?
@@ -193,19 +193,19 @@ export function LeadCapture({
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-bold text-[#013920]"
+                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-bold text-[#0F2A1A]"
                   >
                     Chat with us now on WhatsApp
                   </a>
                 ) : (
-                  <p className="text-sm font-semibold text-ink-700">
+                  <p className="text-sm font-semibold text-[#0F2A1A]/75">
                     Keep your phone close — we&apos;ll be in touch soon.
                   </p>
                 )}
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="inline-flex h-11 w-full items-center justify-center rounded-full border border-ink-200 px-4 text-sm font-semibold text-ink-700"
+                  className="inline-flex h-11 w-full items-center justify-center rounded-full border border-black/10 px-4 text-sm font-semibold text-[#0F2A1A]/75"
                 >
                   Done
                 </button>
@@ -219,11 +219,11 @@ export function LeadCapture({
                   void submit();
                 }}
               >
-                <p className="text-sm leading-relaxed text-ink-600">{body}</p>
+                <p className="text-sm leading-relaxed text-[#0F2A1A]/70">{body}</p>
 
                 <div>
                   <label
-                    className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500"
+                    className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65"
                     htmlFor="lead-name"
                   >
                     Your name
@@ -240,7 +240,7 @@ export function LeadCapture({
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label
-                      className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500"
+                      className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65"
                       htmlFor="lead-phone"
                     >
                       Phone (WhatsApp) *
@@ -256,7 +256,7 @@ export function LeadCapture({
                   </div>
                   <div>
                     <label
-                      className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500"
+                      className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65"
                       htmlFor="lead-email"
                     >
                       Email (optional)
@@ -273,7 +273,7 @@ export function LeadCapture({
                 </div>
                 <div>
                   <label
-                    className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500"
+                    className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65"
                     htmlFor="lead-msg"
                   >
                     Anything specific? (optional)
@@ -297,11 +297,11 @@ export function LeadCapture({
                 <button
                   type="submit"
                   disabled={busy}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover disabled:opacity-50"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#D6FF57] px-4 text-sm font-bold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:opacity-50"
                 >
                   <Phone size={15} /> {busy ? "Sending…" : "Call me back"}
                 </button>
-                <p className="text-center text-[11px] text-ink-400">
+                <p className="text-center text-[11px] text-[#0F2A1A]/65">
                   We only use these details to call you about YK-Virtual — no
                   spam, ever.
                 </p>

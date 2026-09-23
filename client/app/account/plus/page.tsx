@@ -86,7 +86,7 @@ export default function PlusPage() {
 
   return (
     <div className="space-y-6">
-      <div className="relative isolate overflow-hidden rounded-3xl bg-deep p-6 text-white md:p-8">
+      <div className="relative isolate overflow-hidden rounded-3xl bg-[#0F2A1A] p-6 text-white md:p-8">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/home/ribs-green.jpg"
@@ -94,14 +94,14 @@ export default function PlusPage() {
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover opacity-35"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-deep via-deep/90 to-deep/55" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0F2A1A] via-[#0F2A1A]/90 to-[#0F2A1A]/55" />
         <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#D6FF57]">
               Membership
             </p>
             <h1 className="mt-1 flex items-center gap-2 font-display text-3xl md:text-4xl">
-              <Crown className="text-primary" /> YK-Virtual Plus
+              <Crown className="text-[#D6FF57]" /> YK-Virtual Plus
             </h1>
             <p className="mt-2 max-w-lg text-sm text-white/75">
               Extra CBT sittings, transcripts, certificates and a higher AI
@@ -110,7 +110,7 @@ export default function PlusPage() {
             </p>
           </div>
           {me?.active ? (
-            <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-deep">
+            <span className="rounded-full bg-[#D6FF57] px-3 py-1 text-xs font-bold text-[#0F2A1A]">
               Active
             </span>
           ) : (
@@ -124,12 +124,12 @@ export default function PlusPage() {
       {status.isLoading ? (
         <Skeleton className="h-64 rounded-2xl" />
       ) : me?.active ? (
-        <div className="rounded-2xl border border-brand-gold/60 bg-brand-gold-light p-6 shadow-soft">
-          <p className="text-lg font-bold text-deep">
+        <div className="rounded-2xl border border-[#D6FF57]/60 bg-[#F9F6ED] p-6 shadow-soft">
+          <p className="text-lg font-bold text-[#0F2A1A]">
             {plusDisplayName(myPlan, me.subscription?.plan_code)} — active
           </p>
           {me.subscription && (
-            <p className="mt-1 text-sm text-ink-600">
+            <p className="mt-1 text-sm text-[#0F2A1A]/70">
               {me.subscription.trial_ends_at
                 ? `Trial until ${new Date(me.subscription.trial_ends_at).toLocaleDateString()}`
                 : `Renews ${new Date(me.subscription.ends_at).toLocaleDateString()}`}
@@ -166,11 +166,11 @@ export default function PlusPage() {
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-          <h2 className="text-lg font-bold text-ink-900">
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+          <h2 className="text-lg font-bold text-[#0F2A1A]">
             Unlock premium learning
           </h2>
-          <p className="mt-1 text-sm text-ink-600">
+          <p className="mt-1 text-sm text-[#0F2A1A]/70">
             7-day free trial. Cancel anytime.
           </p>
 
@@ -181,12 +181,12 @@ export default function PlusPage() {
                 onClick={() => setPlanCode(p.code)}
                 className={`rounded-2xl border p-4 text-left transition-colors ${
                   planCode === p.code
-                    ? "border-brand-gold bg-brand-gold-light"
-                    : "border-ink-200 hover:border-ink-300"
+                    ? "border-[#D6FF57] bg-[#F9F6ED]"
+                    : "border-black/10 hover:border-black/10"
                 }`}
               >
-                <p className="font-bold text-ink-900">{plusDisplayName(p)}</p>
-                <p className="mt-1 text-sm text-ink-500">
+                <p className="font-bold text-[#0F2A1A]">{plusDisplayName(p)}</p>
+                <p className="mt-1 text-sm text-[#0F2A1A]/65">
                   ₦{p.price.toLocaleString()}/
                   {p.billing === "MONTHLY" ? "mo" : "yr"}
                 </p>
@@ -194,7 +194,7 @@ export default function PlusPage() {
             ))}
           </div>
 
-          <div className="mt-5 space-y-2 text-sm text-ink-700">
+          <div className="mt-5 space-y-2 text-sm text-[#0F2A1A]/75">
             <CheckItem>Full practice-exam &amp; CBT vault</CheckItem>
             <CheckItem>Verified, shareable completion certificates</CheckItem>
             <CheckItem>Recorded-lesson transcripts</CheckItem>
@@ -215,7 +215,7 @@ export default function PlusPage() {
             </Button>
             <button
               onClick={() => setTrialMode((v) => !v)}
-              className="self-center text-xs font-semibold text-brand-blue hover:underline"
+              className="self-center text-xs font-semibold text-[#0F2A1A] hover:underline"
             >
               {trialMode
                 ? "Skip trial — pay now"
@@ -223,7 +223,7 @@ export default function PlusPage() {
             </button>
             <Link
               href="/plus"
-              className="self-center text-sm font-semibold text-brand-blue hover:underline"
+              className="self-center text-sm font-semibold text-[#0F2A1A] hover:underline"
             >
               Learn more about YK-Virtual Plus
             </Link>
@@ -238,11 +238,11 @@ function EntitlementRow({ on, label }: { on: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2 text-sm">
       {on ? (
-        <Check size={16} className="text-brand-green" />
+        <Check size={16} className="text-[#0F2A1A]" />
       ) : (
-        <X size={16} className="text-ink-300" />
+        <X size={16} className="text-[#0F2A1A]/65" />
       )}
-      <span className={on ? "font-medium text-ink-800" : "text-ink-400"}>
+      <span className={on ? "font-medium text-[#0F2A1A]/85" : "text-[#0F2A1A]/65"}>
         {label}
       </span>
     </div>
@@ -252,7 +252,7 @@ function EntitlementRow({ on, label }: { on: boolean; label: string }) {
 function CheckItem({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
-      <Check size={16} className="text-brand-green" /> {children}
+      <Check size={16} className="text-[#0F2A1A]" /> {children}
     </div>
   );
 }
@@ -266,23 +266,23 @@ function AdvisorCard() {
   if (advisor.isLoading) return null;
   if (advisor.isError || !advisor.data) return null;
   return (
-    <div className="mt-5 rounded-xl border border-ink-100 bg-white p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-ink-400">
+    <div className="mt-5 rounded-xl border border-black/10 bg-white p-4">
+      <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
         Your Learning Advisor
       </p>
-      <p className="mt-1 font-bold text-ink-900">
+      <p className="mt-1 font-bold text-[#0F2A1A]">
         {advisor.data.advisor_name || "Your advisor"}
       </p>
       {advisor.data.advisor_email && (
         <a
           href={`mailto:${advisor.data.advisor_email}`}
-          className="text-sm text-brand-blue hover:underline"
+          className="text-sm text-[#0F2A1A] hover:underline"
         >
           {advisor.data.advisor_email}
         </a>
       )}
       {advisor.data.note && (
-        <p className="mt-1 text-xs text-ink-500">{advisor.data.note}</p>
+        <p className="mt-1 text-xs text-[#0F2A1A]/65">{advisor.data.note}</p>
       )}
     </div>
   );
@@ -310,29 +310,29 @@ function LearningPlanCard() {
   if (plan.isLoading || plan.isError || !plan.data) return null;
   const p = plan.data;
   return (
-    <div className="mt-3 rounded-xl border border-brand-gold/40 bg-brand-gold-light p-4">
+    <div className="mt-3 rounded-xl border border-[#D6FF57]/40 bg-[#F9F6ED] p-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold uppercase tracking-wide text-ink-500">
+        <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
           Your learning plan
         </p>
         {p.source === "DIAGNOSTIC" && (
-          <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-bold text-ink-600">
+          <span className="rounded-full bg-[#F9F6ED] px-2 py-0.5 text-[10px] font-bold text-[#0F2A1A]/70">
             Auto-generated from a diagnostic
           </span>
         )}
       </div>
       {p.goals && (
-        <p className="mt-1 text-sm text-ink-800">
+        <p className="mt-1 text-sm text-[#0F2A1A]/85">
           <strong>Goals:</strong> {p.goals}
         </p>
       )}
       {p.focus_areas && (
-        <p className="mt-1 text-sm text-ink-700">
+        <p className="mt-1 text-sm text-[#0F2A1A]/75">
           <strong>Focus:</strong> {p.focus_areas}
         </p>
       )}
       {p.recommendations && (
-        <p className="mt-1 text-sm text-ink-700">
+        <p className="mt-1 text-sm text-[#0F2A1A]/75">
           <strong>Recommended:</strong> {p.recommendations}
         </p>
       )}

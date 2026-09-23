@@ -59,17 +59,17 @@ const SERVICES = [
 
 export function ServicesShowcase() {
   return (
-    <section className="backdrop-brand-light w-full border-t border-ink-100 bg-white py-12">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+    <section className="backdrop-brand-light w-full border-t border-black/10 bg-white py-12">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         <div className="flex items-end justify-between gap-4">
           <AnimatedText
             as="h2"
-            className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl"
+            className="font-display text-2xl tracking-[0.02em] text-[#0F2A1A] md:text-3xl"
             text="Popular services"
           />
           <Link
             href="/programmes"
-            className="text-sm font-bold text-deep-green hover:text-deep"
+            className="text-sm font-bold text-[#0F2A1A] hover:text-[#0F2A1A]"
           >
             See all →
           </Link>
@@ -79,9 +79,9 @@ export function ServicesShowcase() {
             <Link
               key={s.label}
               href={s.href}
-              className="group overflow-hidden rounded-2xl border border-ink-100 bg-cover bg-center p-5 text-white shadow-soft"
+              className="group overflow-hidden rounded-2xl border border-black/10 bg-cover bg-center p-5 text-white shadow-soft bg-[#0F2A1A]"
               style={{
-                backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.78), rgba(1,57,32,0.55)), url(${s.photo ?? "/hero/programmes.jpg"})`,
+                backgroundImage: `linear-gradient(165deg, rgba(15,42,26,0.78), rgba(15,42,26,0.55)), url(${s.photo ?? "/hero/programmes.jpg"})`,
               }}
             >
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">

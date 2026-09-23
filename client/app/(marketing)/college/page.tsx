@@ -25,30 +25,34 @@ export default function CollegePage() {
   return (
     <>
       {/* ── Editorial header ── */}
-      <section className="w-full border-b border-ink-100 px-6 pb-10 pt-28 md:px-10 md:pb-14 dark:border-ink-800">
-        <div className="mx-auto w-full max-w-[1400px]">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-ink-100 bg-surface px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-500 dark:border-ink-800">
-            <Globe size={12} className="text-deep dark:text-primary" /> The Ykay family
+      <section className="w-full bg-[#0F2A1A] py-14 text-white lg:py-20">
+        <div className="container-x">
+          <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#D6FF57]">
+            <Globe size={12} /> The Ykay family
           </p>
-          <h1 className="font-display text-[clamp(2.75rem,9vw,8rem)] leading-[0.85] tracking-[-0.015em] text-ink-950 dark:text-white">
+          <h1 className="font-display text-[clamp(2.75rem,8vw,7rem)] uppercase leading-[0.9] tracking-[-0.015em] text-white">
             <AnimatedText heavy stagger={0.03} text="TWO SCHOOLS." delay={0.0} className="block" />
-            <span className="block text-deep dark:text-primary">
+            <span className="block text-[#D6FF57]">
               <AnimatedText heavy stagger={0.03} text="ONE FAMILY." delay={0.2} />
             </span>
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-500 md:text-lg">
+          <p className="mt-6 max-w-[56ch] text-[15px] leading-relaxed text-white/80 md:text-[17px]">
             Learn online with YK-Virtual, or on campus with Ykay College — the same
             teachers, the same standards, whichever fits your child.
           </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a href="/programmes" className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-[13px] font-bold text-[#0F2A1A] hover:bg-[#C8F030]">Explore online programmes <ArrowRight size={14} /></a>
+            <a href={COLLEGE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-[13px] font-bold text-white hover:bg-white/10">Visit the campus <ArrowUpRight size={14} /></a>
+          </div>
         </div>
       </section>
 
       {/* ── The two cards ── */}
-      <section className="w-full px-6 py-10 md:px-10 md:py-14">
-        <div className="mx-auto grid w-full max-w-[1400px] gap-6 md:grid-cols-2">
+      <section className="w-full bg-[#F9F6ED] py-12 lg:py-16">
+        <div className="container-x grid gap-6 md:grid-cols-2">
           {/* 01 — the online school (you are here) */}
           <Reveal>
-            <div className="group relative flex min-h-[26rem] flex-col justify-end overflow-hidden rounded-3xl border border-ink-100 shadow-lg dark:border-ink-800">
+            <div className="group relative flex min-h-[26rem] flex-col justify-end overflow-hidden rounded-[20px] border border-black/10 bg-[#0F2A1A] shadow-lg">
               <Image
                 src="/hero/cohorts.jpg"
                 alt="Students in a live YK-Virtual online class"
@@ -56,12 +60,12 @@ export default function CollegePage() {
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-deep-green/95 via-deep-green/55 to-deep-green/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0F2A1A]/95 via-[#0F2A1A]/55 to-[#0F2A1A]/10" />
 
               <div className="relative flex h-full flex-col justify-between p-7 md:p-9">
                 <div className="flex items-start justify-between">
                   <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur-sm">
-                    <Globe size={11} className="text-primary" /> You are here
+                    <Globe size={11} className="text-[#D6FF57]" /> You are here
                   </span>
                   <span className="font-display text-xl tracking-widest text-white/50">
                     (01)
@@ -79,7 +83,7 @@ export default function CollegePage() {
                   <div className="mt-6 flex flex-wrap items-center gap-4">
                     <a
                       href="/programmes"
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-ink-900 transition-all duration-300 hover:scale-[1.03] hover:bg-primary-hover active:scale-[0.97]"
+                      className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[#0F2A1A] transition-all duration-300 hover:scale-[1.03] hover:bg-[#C8F030] active:scale-[0.97]"
                     >
                       Explore programmes <ArrowRight size={13} />
                     </a>
@@ -94,7 +98,7 @@ export default function CollegePage() {
 
           {/* 02 — the campus school (destination) */}
           <Reveal delay={80}>
-            <div className="group relative flex min-h-[26rem] flex-col justify-end overflow-hidden rounded-3xl border border-ink-100 shadow-lg dark:border-ink-800">
+            <div className="group relative flex min-h-[26rem] flex-col justify-end overflow-hidden rounded-[20px] border border-black/10 bg-[#0F2A1A] shadow-lg">
               <Image
                 src="/hero/african-student.jpg"
                 alt="A Ykay College student on campus"
@@ -102,12 +106,12 @@ export default function CollegePage() {
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#002A18]/95 via-[#002A18]/55 to-[#002A18]/10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0F2A1A]/95 via-[#0F2A1A]/55 to-[#0F2A1A]/10" />
 
               <div className="relative flex h-full flex-col justify-between p-7 md:p-9">
                 <div className="flex items-start justify-between">
                   <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur-sm">
-                    <MapPin size={11} className="text-primary" /> Campus · Sango Ota
+                    <MapPin size={11} className="text-[#D6FF57]" /> Campus · Sango Ota
                   </span>
                   <span className="font-display text-xl tracking-widest text-white/50">
                     (02)
@@ -117,7 +121,7 @@ export default function CollegePage() {
                 <div>
                   <h2 className="font-display text-[clamp(2.25rem,5vw,4.25rem)] leading-[0.88] tracking-[-0.01em] text-white">
                     YKAY
-                    <span className="block text-primary">COLLEGE</span>
+                    <span className="block text-[#D6FF57]">COLLEGE</span>
                   </h2>
                   <p className="mt-3 max-w-md text-sm leading-relaxed text-white/80">
                     The campus school — JSS1 to SS3 with science laboratories, sports,
@@ -128,7 +132,7 @@ export default function CollegePage() {
                       href={COLLEGE_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-ink-900 transition-all duration-300 hover:scale-[1.03] hover:bg-primary-hover active:scale-[0.97]"
+                      className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-xs font-bold uppercase tracking-[0.15em] text-[#0F2A1A] transition-all duration-300 hover:scale-[1.03] hover:bg-[#C8F030] active:scale-[0.97]"
                     >
                       Continue to Ykay College <ArrowUpRight size={13} />
                     </a>
@@ -144,15 +148,15 @@ export default function CollegePage() {
       </section>
 
       {/* ── Why families choose the college ── */}
-      <section className="w-full border-t border-ink-100 bg-surface-muted py-16 dark:border-ink-800 md:py-24">
-        <div className="mx-auto grid w-full max-w-[1400px] gap-10 px-6 md:grid-cols-2 md:px-10">
+      <section className="w-full border-t border-black/10 bg-white py-16 md:py-24">
+        <div className="container-x grid gap-10 md:grid-cols-2">
           <div>
             <AnimatedText
               as="h2"
-              className="font-display text-3xl text-ink-950 dark:text-white md:text-4xl"
+              className="font-display text-3xl text-[#0F2A1A] md:text-4xl"
               text="Why families choose Ykay College"
             />
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-500 md:text-base">
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-[#0F2A1A]/65 md:text-base">
               Ykay College &amp; Leadership Academy is where the Ykay family began — a
               physical secondary school in Sango Ota, Ogun State, combining academic
               excellence with leadership and digital skills.
@@ -161,7 +165,7 @@ export default function CollegePage() {
               href={COLLEGE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-deep-green px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-white transition-all duration-300 hover:scale-[1.03] hover:bg-deep-green-light active:scale-[0.97] dark:bg-primary dark:text-ink-900 dark:hover:bg-primary-hover"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#0F2A1A] px-7 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-white transition-all duration-300 hover:scale-[1.03] hover:bg-[#0F2A1A] active:scale-[0.97]"
             >
               Visit {COLLEGE_URL.replace(/^https?:\/\//, "")} <ArrowUpRight size={14} />
             </a>
@@ -175,13 +179,13 @@ export default function CollegePage() {
             ].map(([title, desc], i) => (
               <li
                 key={title}
-                className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-soft"
+                className="rounded-[20px] border border-black/10 bg-[#F9F6ED] p-5 shadow-soft"
               >
-                <span className="font-display text-sm tracking-widest text-deep dark:text-primary">
+                <span className="font-display text-sm tracking-widest text-[#0F2A1A]">
                   ({String(i + 1).padStart(2, "0")})
                 </span>
-                <h3 className="mt-2 text-sm font-bold text-ink-950">{title}</h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-ink-600">{desc}</p>
+                <h3 className="mt-2 text-sm font-bold text-[#0F2A1A]">{title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-[#0F2A1A]/70">{desc}</p>
               </li>
             ))}
           </ul>

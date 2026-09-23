@@ -16,12 +16,12 @@ export function DashboardPage({
 }) {
   return (
     <div className={cn("min-h-screen w-full bg-[#F9F6ED]", className)}>
-      <div className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 lg:py-8">
+      <div className="mx-auto w-full max-w-[1920px] px-4 py-6 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 lg:py-8">
         {(title || actions) && (
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               {title && <h2 className="font-display text-[clamp(1.4rem,2.5vw,2rem)] leading-[0.95] tracking-[-0.02em] text-[#0F2A1A] uppercase">{title}</h2>}
-              {subtitle && <p className="mt-2 text-[14px] leading-relaxed text-[#0F2A1A]/60 max-w-[60ch]">{subtitle}</p>}
+              {subtitle && <p className="mt-2 text-[14px] leading-relaxed text-[#0F2A1A]/65 max-w-[60ch]">{subtitle}</p>}
             </div>
             {actions && <div className="flex items-center gap-2">{actions}</div>}
           </div>

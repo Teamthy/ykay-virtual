@@ -63,14 +63,14 @@ export default function AdminPaymentsPage() {
   const total = orders.data?.total ?? 0;
 
   return (
-    <main className="min-h-screen bg-[#FFF7E4] pb-16">
-      <header className="border-b border-ink-100 bg-white">
+    <main className="min-h-screen bg-[#F9F6ED] pb-16">
+      <header className="border-b border-black/10 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/admin" className="hover:text-primary-dark">Admin</Link> / Payments
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0F2A1A]/65">
+            <Link href="/admin" className="hover:text-[#0F2A1A]">Admin</Link> / Payments
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-deep">Payments console</h1>
-          <p className="mt-1 text-sm text-ink-500">
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-[#0F2A1A]">Payments console</h1>
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">
             {total} orders · {pendingCount} pending · {paidCount} paid on this page
           </p>
         </div>
@@ -78,21 +78,21 @@ export default function AdminPaymentsPage() {
 
       <div className="mx-auto max-w-6xl px-6 py-6">
         {/* Orders */}
-        <section className="rounded-2xl border border-ink-100 bg-white shadow-sm">
-          <div className="border-b border-ink-100 px-5 py-4">
-            <h2 className="font-display text-lg font-bold text-deep">Orders</h2>
+        <section className="rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div className="border-b border-black/10 px-5 py-4">
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Orders</h2>
           </div>
           {orders.isLoading ? (
             <div className="space-y-2 p-4">
               {[0, 1, 2].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
           ) : (orders.data?.orders ?? []).length === 0 ? (
-            <p className="py-10 text-center text-sm text-ink-400">No orders yet.</p>
+            <p className="py-10 text-center text-sm text-[#0F2A1A]/65">No orders yet.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-ink-100 text-xs uppercase tracking-wide text-ink-400">
+                  <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[#0F2A1A]/65">
                     <th className="px-5 py-3">Order</th>
                     <th className="px-3 py-3">Status</th>
                     <th className="px-3 py-3">Amount</th>
@@ -102,20 +102,20 @@ export default function AdminPaymentsPage() {
                 </thead>
                 <tbody>
                   {(orders.data?.orders ?? []).map((o) => (
-                    <tr key={o.id} className="border-b border-ink-50 last:border-0 hover:bg-[#FFF7E4]">
+                    <tr key={o.id} className="border-b border-black/10 last:border-0 hover:bg-[#F9F6ED]">
                       <td className="px-5 py-3">
-                        <Link href={`/admin/payments/${o.id}`} className="font-semibold text-deep hover:underline">
+                        <Link href={`/admin/payments/${o.id}`} className="font-semibold text-[#0F2A1A] hover:underline">
                           {o.order_number}
                         </Link>
-                        <p className="text-xs text-ink-400">{o.id.slice(0, 8)}… · open details</p>
+                        <p className="text-xs text-[#0F2A1A]/65">{o.id.slice(0, 8)}… · open details</p>
                       </td>
                       <td className="px-3 py-3">
                         <StatusBadge label={o.status} kind={statusKindFor(o.status)} />
                       </td>
-                      <td className="px-3 py-3 font-semibold text-ink-800">
+                      <td className="px-3 py-3 font-semibold text-[#0F2A1A]/85">
                         ₦{o.total_amount.toLocaleString()}
                       </td>
-                      <td className="px-3 py-3 text-ink-500">
+                      <td className="px-3 py-3 text-[#0F2A1A]/65">
                         {new Date(o.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-5 py-3">
@@ -125,7 +125,7 @@ export default function AdminPaymentsPage() {
                               type="button"
                               disabled={confirm.isPending}
                               onClick={() => confirm.mutate(o.id)}
-                              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                              className="rounded-lg bg-[#D6FF57] px-3 py-1.5 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
                             >
                               Confirm payment
                             </button>
@@ -147,13 +147,13 @@ export default function AdminPaymentsPage() {
               </table>
             </div>
           )}
-          <div className="flex items-center justify-between border-t border-ink-100 px-5 py-3 text-sm text-ink-500">
+          <div className="flex items-center justify-between border-t border-black/10 px-5 py-3 text-sm text-[#0F2A1A]/65">
             <span>Page {page}</span>
             <div className="flex gap-2">
-              <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold disabled:opacity-40">
+              <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="rounded-lg border border-black/10 px-3 py-1 text-xs font-bold disabled:opacity-40">
                 ← Prev
               </button>
-              <button type="button" disabled={(orders.data?.orders ?? []).length < 25} onClick={() => setPage((p) => p + 1)} className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold disabled:opacity-40">
+              <button type="button" disabled={(orders.data?.orders ?? []).length < 25} onClick={() => setPage((p) => p + 1)} className="rounded-lg border border-black/10 px-3 py-1 text-xs font-bold disabled:opacity-40">
                 Next →
               </button>
             </div>
@@ -161,17 +161,17 @@ export default function AdminPaymentsPage() {
         </section>
 
         {/* Payouts */}
-        <section className="mt-6 rounded-2xl border border-ink-100 bg-white shadow-sm">
-          <div className="border-b border-ink-100 px-5 py-4">
-            <h2 className="font-display text-lg font-bold text-deep">Tutor payouts</h2>
+        <section className="mt-6 rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div className="border-b border-black/10 px-5 py-4">
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Tutor payouts</h2>
           </div>
           {(payouts.data ?? []).length === 0 ? (
-            <p className="py-10 text-center text-sm text-ink-400">No payouts yet - released escrow generates them on the payout schedule.</p>
+            <p className="py-10 text-center text-sm text-[#0F2A1A]/65">No payouts yet - released escrow generates them on the payout schedule.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-ink-100 text-xs uppercase tracking-wide text-ink-400">
+                  <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[#0F2A1A]/65">
                     <th className="px-5 py-3">Payout</th>
                     <th className="px-3 py-3">Tutor</th>
                     <th className="px-3 py-3">Amount</th>
@@ -181,16 +181,16 @@ export default function AdminPaymentsPage() {
                 </thead>
                 <tbody>
                   {(payouts.data ?? []).map((p) => (
-                    <tr key={p.id} className="border-b border-ink-50 last:border-0">
-                      <td className="px-5 py-3 font-mono text-xs text-ink-500">{p.id.slice(0, 8)}…</td>
-                      <td className="px-3 py-3 text-ink-600">{p.tutor_profile_id.slice(0, 8)}…</td>
-                      <td className="px-3 py-3 font-semibold text-ink-800">₦{p.amount.toLocaleString()}</td>
+                    <tr key={p.id} className="border-b border-black/10 last:border-0">
+                      <td className="px-5 py-3 font-mono text-xs text-[#0F2A1A]/65">{p.id.slice(0, 8)}…</td>
+                      <td className="px-3 py-3 text-[#0F2A1A]/70">{p.tutor_profile_id.slice(0, 8)}…</td>
+                      <td className="px-3 py-3 font-semibold text-[#0F2A1A]/85">₦{p.amount.toLocaleString()}</td>
                       <td className="px-3 py-3">
-                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-bold", p.status === "PAID" ? "bg-green-100 text-green-700" : "bg-ink-100 text-ink-500")}>
+                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-bold", p.status === "PAID" ? "bg-green-100 text-green-700" : "bg-[#F9F6ED] text-[#0F2A1A]/65")}>
                           {p.status}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-ink-500">{new Date(p.created_at).toLocaleDateString()}</td>
+                      <td className="px-5 py-3 text-[#0F2A1A]/65">{new Date(p.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -204,8 +204,8 @@ export default function AdminPaymentsPage() {
       {refundFor && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="font-display text-lg font-bold text-deep">Refund order</h3>
-            <p className="mt-1 text-sm text-ink-500">
+            <h3 className="font-display text-lg font-bold text-[#0F2A1A]">Refund order</h3>
+            <p className="mt-1 text-sm text-[#0F2A1A]/65">
               Escrow is returned to the parent&apos;s wallet and the order is marked refunded.
             </p>
             <input
@@ -227,7 +227,7 @@ export default function AdminPaymentsPage() {
               <button
                 type="button"
                 onClick={() => setRefundFor(null)}
-                className="flex-1 rounded-lg border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-600"
+                className="flex-1 rounded-lg border border-black/10 px-4 py-2.5 text-sm font-semibold text-[#0F2A1A]/70"
               >
                 Cancel
               </button>

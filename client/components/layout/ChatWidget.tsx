@@ -252,10 +252,10 @@ export function ChatWidget() {
   return (
     <>
       {open && (
-        <div className="fixed bottom-24 right-4 z-50 flex h-[min(92vh,560px)] w-[min(94vw,380px)] flex-col overflow-hidden rounded-3xl border border-ink-100 bg-ink-50 shadow-2xl animate-slide-up">
-          <div className="flex items-center justify-between bg-deep px-4 py-3 text-white">
+        <div className="fixed bottom-24 right-4 z-50 flex h-[min(92vh,560px)] w-[min(94vw,380px)] flex-col overflow-hidden rounded-3xl border border-black/10 bg-[#F9F6ED] shadow-2xl animate-slide-up">
+          <div className="flex items-center justify-between bg-[#0F2A1A] px-4 py-3 text-white">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center overflow-hidden rounded-full bg-primary text-lg font-bold text-ink-900">
+              <span className="grid size-10 place-items-center overflow-hidden rounded-full bg-[#D6FF57] text-lg font-bold text-[#0F2A1A]">
                 N
               </span>
               <div>
@@ -283,7 +283,7 @@ export function ChatWidget() {
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto bg-ink-50 p-3">
+          <div className="min-h-0 flex-1 overflow-y-auto bg-[#F9F6ED] p-3">
             {tab === "home" && (
               <div className="space-y-3">
                 <button
@@ -291,24 +291,24 @@ export function ChatWidget() {
                   onClick={() => setTab("conversation")}
                   className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-soft"
                 >
-                  <span className="grid size-12 place-items-center rounded-full bg-primary text-lg font-bold text-ink-900">
+                  <span className="grid size-12 place-items-center rounded-full bg-[#D6FF57] text-lg font-bold text-[#0F2A1A]">
                     N
                   </span>
                   <span className="flex-1">
-                    <span className="block text-sm font-bold text-ink-900">
+                    <span className="block text-sm font-bold text-[#0F2A1A]">
                       Chat with YK-Virtual
                     </span>
-                    <span className="block text-xs text-ink-500">
+                    <span className="block text-xs text-[#0F2A1A]/65">
                       Lessons, payments, accounts — ask now
                     </span>
                   </span>
-                  <ChevronRight size={16} className="text-ink-400" />
+                  <ChevronRight size={16} className="text-[#0F2A1A]/65" />
                 </button>
 
                 <WhatsAppHomeCard prefill="Hello YK-Virtual! I'd like to chat with your team on WhatsApp." />
 
                 <div className="overflow-hidden rounded-2xl bg-white shadow-soft">
-                  <p className="px-4 pt-3 text-sm font-bold text-ink-900">
+                  <p className="px-4 pt-3 text-sm font-bold text-[#0F2A1A]">
                     Articles
                   </p>
                   <ul className="mt-1">
@@ -322,12 +322,12 @@ export function ChatWidget() {
                               setOpenFaq(a.q);
                               setTab("kb");
                             }}
-                            className="flex w-full items-center justify-between gap-2 border-t border-ink-50 px-4 py-3 text-left text-sm text-ink-800 hover:bg-ink-50"
+                            className="flex w-full items-center justify-between gap-2 border-t border-black/10 px-4 py-3 text-left text-sm text-[#0F2A1A]/85 hover:bg-[#F9F6ED]"
                           >
                             {a.q}
                             <ChevronRight
                               size={14}
-                              className="shrink-0 text-ink-400"
+                              className="shrink-0 text-[#0F2A1A]/65"
                             />
                           </button>
                         </li>
@@ -336,29 +336,29 @@ export function ChatWidget() {
                   <button
                     type="button"
                     onClick={() => setTab("kb")}
-                    className="w-full border-t border-ink-50 py-3 text-center text-sm font-semibold text-ink-700"
+                    className="w-full border-t border-black/10 py-3 text-center text-sm font-semibold text-[#0F2A1A]/75"
                   >
                     View all
                   </button>
                 </div>
 
                 <div className="rounded-2xl bg-white p-4 shadow-soft">
-                  <p className="text-sm font-bold text-ink-900">
+                  <p className="text-sm font-bold text-[#0F2A1A]">
                     Previous conversations
                   </p>
                   {!user ? (
-                    <p className="mt-3 text-center text-sm text-ink-400">
+                    <p className="mt-3 text-center text-sm text-[#0F2A1A]/65">
                       <button
                         type="button"
                         onClick={() => router.push(loginWithReturn())}
-                        className="font-semibold text-primary-dark hover:underline"
+                        className="font-semibold text-[#0F2A1A] hover:underline"
                       >
                         Log in
                       </button>{" "}
                       to keep a history
                     </p>
                   ) : (threads.data ?? []).length === 0 ? (
-                    <p className="mt-3 text-center text-sm text-ink-400">
+                    <p className="mt-3 text-center text-sm text-[#0F2A1A]/65">
                       No previous conversation
                     </p>
                   ) : (
@@ -371,7 +371,7 @@ export function ChatWidget() {
                               setThreadId(t.id);
                               setTab("conversation");
                             }}
-                            className="w-full truncate rounded-lg px-2 py-2 text-left text-sm text-ink-700 hover:bg-ink-50"
+                            className="w-full truncate rounded-lg px-2 py-2 text-left text-sm text-[#0F2A1A]/75 hover:bg-[#F9F6ED]"
                           >
                             {t.title || "Conversation"}
                           </button>
@@ -388,10 +388,10 @@ export function ChatWidget() {
                 <div className="flex-1 space-y-3 pb-3">
                   {showWelcome && (
                     <div className="flex items-start gap-2">
-                      <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">
+                      <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-[#D6FF57] text-xs font-bold text-[#0F2A1A]">
                         N
                       </span>
-                      <div className="rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-800 shadow-sm">
+                      <div className="rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13px] leading-relaxed text-[#0F2A1A]/85 shadow-sm">
                         Hi, I&apos;m YK-Virtual. I help with courses,
                         assignments, payments and what to do next. What can I
                         help with?
@@ -407,7 +407,7 @@ export function ChatWidget() {
                       )}
                     >
                       {m.role !== "user" && (
-                        <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-ink-900">
+                        <span className="mt-1 grid size-7 shrink-0 place-items-center rounded-full bg-[#D6FF57] text-xs font-bold text-[#0F2A1A]">
                           N
                         </span>
                       )}
@@ -415,8 +415,8 @@ export function ChatWidget() {
                         className={cn(
                           "max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
                           m.role === "user"
-                            ? "rounded-br-md bg-deep text-white"
-                            : "rounded-tl-md bg-white text-ink-800 shadow-sm",
+                            ? "rounded-br-md bg-[#0F2A1A] text-white"
+                            : "rounded-tl-md bg-white text-[#0F2A1A]/85 shadow-sm",
                         )}
                       >
                         {m.content}
@@ -424,7 +424,7 @@ export function ChatWidget() {
                     </div>
                   ))}
                   {sending && (
-                    <p className="pl-9 text-xs text-ink-400">
+                    <p className="pl-9 text-xs text-[#0F2A1A]/65">
                       YK-Virtual is typing…
                     </p>
                   )}
@@ -434,14 +434,14 @@ export function ChatWidget() {
                     </p>
                   )}
                   {escalated && (
-                    <p className="rounded-xl bg-primary-light px-3 py-2 text-xs font-semibold text-deep">
+                    <p className="rounded-xl bg-[#F9F6ED] px-3 py-2 text-xs font-semibold text-[#0F2A1A]">
                       A human on the YK-Virtual team will pick this up. Watch
                       your inbox and Notifications.
                     </p>
                   )}
                   {showWelcome && (
                     <div>
-                      <p className="mb-2 text-xs font-semibold text-ink-500">
+                      <p className="mb-2 text-xs font-semibold text-[#0F2A1A]/65">
                         Suggested questions
                       </p>
                       <div className="space-y-2">
@@ -450,7 +450,7 @@ export function ChatWidget() {
                             key={s}
                             type="button"
                             onClick={() => void send(s)}
-                            className="w-full rounded-full border border-ink-200 bg-white px-4 py-2.5 text-left text-sm text-ink-800 hover:border-primary"
+                            className="w-full rounded-full border border-black/10 bg-white px-4 py-2.5 text-left text-sm text-[#0F2A1A]/85 hover:border-[#D6FF57]"
                           >
                             {s}
                           </button>
@@ -460,7 +460,7 @@ export function ChatWidget() {
                   )}
                   {user && liveMsgs.length >= 2 && !rated && (
                     <div className="rounded-2xl bg-white px-3 py-2.5 shadow-sm">
-                      <p className="text-[11px] font-semibold text-ink-500">
+                      <p className="text-[11px] font-semibold text-[#0F2A1A]/65">
                         Was this helpful?
                       </p>
                       <div className="mt-1 flex gap-1">
@@ -469,13 +469,13 @@ export function ChatWidget() {
                             key={n}
                             type="button"
                             onClick={() => void submitRating(n)}
-                            className="p-1 text-ink-500 hover:text-primary-dark"
+                            className="p-1 text-[#0F2A1A]/65 hover:text-[#0F2A1A]"
                             aria-label={`${n} stars`}
                           >
                             <Star
                               size={16}
                               fill={rating >= n ? "currentColor" : "none"}
-                              className={rating >= n ? "text-primary" : ""}
+                              className={rating >= n ? "text-[#0F2A1A]" : ""}
                             />
                           </button>
                         ))}
@@ -483,7 +483,7 @@ export function ChatWidget() {
                     </div>
                   )}
                   {rated && (
-                    <p className="text-center text-[11px] text-ink-400">
+                    <p className="text-center text-[11px] text-[#0F2A1A]/65">
                       Thanks for the rating.
                     </p>
                   )}
@@ -497,16 +497,16 @@ export function ChatWidget() {
                 <div className="relative">
                   <Search
                     size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0F2A1A]/65"
                   />
                   <input
                     value={kbQuery}
                     onChange={(e) => setKbQuery(e.target.value)}
                     placeholder="Search articles"
-                    className="h-10 w-full rounded-full border border-ink-200 bg-white pl-9 pr-3 text-sm text-ink-900"
+                    className="h-10 w-full rounded-full border border-black/10 bg-white pl-9 pr-3 text-sm text-[#0F2A1A]"
                   />
                 </div>
-                <p className="text-sm font-bold text-ink-900">
+                <p className="text-sm font-bold text-[#0F2A1A]">
                   Frequently asked
                 </p>
                 <div className="space-y-2">
@@ -522,14 +522,14 @@ export function ChatWidget() {
                       className="rounded-2xl bg-white p-3 shadow-soft"
                     >
                       <summary className="cursor-pointer list-none">
-                        <span className="inline-block rounded-md bg-primary-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-deep">
+                        <span className="inline-block rounded-md bg-[#F9F6ED] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]">
                           {a.category.title}
                         </span>
-                        <span className="mt-1 block text-sm font-semibold text-ink-900">
+                        <span className="mt-1 block text-sm font-semibold text-[#0F2A1A]">
                           {a.q}
                         </span>
                       </summary>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                      <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
                         {a.a}
                       </p>
                     </details>
@@ -540,13 +540,13 @@ export function ChatWidget() {
           </div>
 
           {tab === "conversation" && (
-            <div className="border-t border-ink-100 bg-white p-3">
+            <div className="border-t border-black/10 bg-white p-3">
               <div className="mb-2 flex justify-end">
                 <button
                   type="button"
                   onClick={() => void askHuman()}
                   disabled={sending || escalated}
-                  className="text-[11px] font-bold text-primary-dark hover:underline disabled:opacity-40"
+                  className="text-[11px] font-bold text-[#0F2A1A] hover:underline disabled:opacity-40"
                 >
                   Talk to a person
                 </button>
@@ -557,25 +557,25 @@ export function ChatWidget() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && void send()}
                   placeholder="Ask YK-Virtual anything…"
-                  className="h-11 flex-1 rounded-full border border-ink-200 px-4 text-sm text-ink-900"
+                  className="h-11 flex-1 rounded-full border border-black/10 px-4 text-sm text-[#0F2A1A]"
                 />
                 <button
                   type="button"
                   onClick={() => void send()}
                   disabled={!input.trim() || sending}
-                  className="grid size-11 place-items-center rounded-2xl bg-deep text-white disabled:opacity-40"
+                  className="grid size-11 place-items-center rounded-2xl bg-[#0F2A1A] text-white disabled:opacity-40"
                   aria-label="Send"
                 >
                   <Send size={16} />
                 </button>
               </div>
-              <p className="mt-2 text-center text-[10px] text-ink-400">
+              <p className="mt-2 text-center text-[10px] text-[#0F2A1A]/65">
                 YK-Virtual can be wrong — check fees and dates on the page.
               </p>
             </div>
           )}
 
-          <nav className="grid grid-cols-3 border-t border-ink-100 bg-white">
+          <nav className="grid grid-cols-3 border-t border-black/10 bg-white">
             {(
               [
                 ["home", "Home", Home],
@@ -589,13 +589,13 @@ export function ChatWidget() {
                 onClick={() => setTab(id)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold",
-                  tab === id ? "text-deep" : "text-ink-400",
+                  tab === id ? "text-[#0F2A1A]" : "text-[#0F2A1A]/65",
                 )}
               >
                 <Icon size={18} />
                 {label}
                 {tab === id && (
-                  <span className="mt-0.5 h-0.5 w-8 rounded-full bg-deep" />
+                  <span className="mt-0.5 h-0.5 w-8 rounded-full bg-[#0F2A1A]" />
                 )}
               </button>
             ))}
@@ -611,7 +611,7 @@ export function ChatWidget() {
         onPointerUp={launcherUp}
         onPointerCancel={launcherUp}
         aria-label={open ? "Close chat" : "Open chat"}
-        className="grid size-14 touch-none select-none place-items-center rounded-full bg-primary text-ink-900 shadow-brand transition-transform hover:scale-105 active:cursor-grabbing"
+        className="grid size-14 touch-none select-none place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A] shadow-brand transition-transform hover:scale-105 active:cursor-grabbing"
       >
         {open ? <X size={26} /> : <MessageSquare size={26} />}
       </button>

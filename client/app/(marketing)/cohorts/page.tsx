@@ -54,18 +54,18 @@ export default async function CohortsPage() {
 
       <div className="container-x mt-10 grid gap-4 pb-20 md:grid-cols-2 lg:grid-cols-3">
         {cohorts.length === 0 ? (
-          <div className="rounded-2xl border p-12 text-center text-ink-500 md:col-span-2 lg:col-span-3">
+          <div className="rounded-2xl border p-12 text-center text-[#0F2A1A]/65 md:col-span-2 lg:col-span-3">
             No cohorts are open for enrolment right now -{" "}
             <Link
               href="/programmes"
-              className="font-semibold text-brand-blue hover:underline"
+              className="font-semibold text-[#0F2A1A] hover:underline"
             >
               explore programmes
             </Link>{" "}
             or{" "}
             <Link
               href="/private-tuition"
-              className="font-semibold text-brand-blue hover:underline"
+              className="font-semibold text-[#0F2A1A] hover:underline"
             >
               request private tuition
             </Link>
@@ -79,19 +79,19 @@ export default async function CohortsPage() {
               <Link
                 key={c.id}
                 href={`/cohorts/${c.id}`}
-                className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft"
+                className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-soft"
               >
                 <div
                   className="h-24 bg-cover bg-center"
                   style={{
-                    backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.1), rgba(6,15,38,0.55)), url(${coverFor(c.title + c.id)})`,
+                    backgroundImage: `linear-gradient(180deg, rgba(15,42,26,0.1), rgba(15,42,26,0.55)), url(${coverFor(c.title + c.id)})`,
                   }}
                 />
                 <div className="p-4">
-                  <h2 className="line-clamp-2 text-base font-semibold leading-snug text-brand-navy">
+                  <h2 className="line-clamp-2 text-base font-semibold leading-snug text-[#0F2A1A]">
                     {c.title}
                   </h2>
-                  <div className="mt-2 space-y-1 text-xs text-ink-600">
+                  <div className="mt-2 space-y-1 text-xs text-[#0F2A1A]/70">
                     <p>
                       🗓️ {new Date(c.start_date).toLocaleDateString()} →{" "}
                       {new Date(c.end_date).toLocaleDateString()}
@@ -101,13 +101,13 @@ export default async function CohortsPage() {
                       {c.location_mode.replace(/_/g, " ").toLowerCase()}
                     </p>
                     {c.schedule_description && (
-                      <p className="line-clamp-2 text-[11px] text-ink-500">
+                      <p className="line-clamp-2 text-[11px] text-[#0F2A1A]/65">
                         {c.schedule_description}
                       </p>
                     )}
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-sm font-extrabold text-brand-blue">
+                    <span className="text-sm font-extrabold text-[#0F2A1A]">
                       {c.currency} {c.fee.toLocaleString()}
                     </span>
                     <span
@@ -127,7 +127,7 @@ export default async function CohortsPage() {
         )}
       </div>
       {total > cohorts.length && (
-        <p className="container-x pb-10 text-center text-sm text-ink-500">
+        <p className="container-x pb-10 text-center text-sm text-[#0F2A1A]/65">
           Showing {cohorts.length} of {total} cohorts - more launching soon.
         </p>
       )}

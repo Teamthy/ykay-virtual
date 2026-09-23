@@ -81,10 +81,10 @@ export default function AdminLeadsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-deep">
-          <Users className="text-primary" /> Leads
+        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-[#0F2A1A]">
+          <Users className="text-[#0F2A1A]" /> Leads
         </h1>
-        <p className="mt-1 text-sm text-ink-500">
+        <p className="mt-1 text-sm text-[#0F2A1A]/65">
           Visitors who didn&apos;t enroll — new ones also land on the ops
           WhatsApp. Follow up fast: most conversions happen in the first hour.
         </p>
@@ -117,15 +117,15 @@ export default function AdminLeadsPage() {
             }}
             className={`rounded-2xl border bg-white p-4 text-left shadow-soft transition ${
               status === c.key
-                ? "border-primary ring-2 ring-primary/20"
-                : "border-ink-100 hover:border-ink-200"
+                ? "border-[#D6FF57] ring-2 ring-[#D6FF57]/20"
+                : "border-black/10 hover:border-black/10"
             }`}
           >
-            <p className="flex items-center gap-1.5 text-xs font-semibold text-ink-500">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-[#0F2A1A]/65">
               {c.icon}
               {c.label}
             </p>
-            <p className="mt-1 font-display text-2xl text-deep">
+            <p className="mt-1 font-display text-2xl text-[#0F2A1A]">
               {counts?.[c.key] ?? "…"}
             </p>
           </button>
@@ -144,8 +144,8 @@ export default function AdminLeadsPage() {
             }}
             className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
               status === t.key
-                ? "bg-primary text-ink-900"
-                : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300"
+                ? "bg-[#D6FF57] text-[#0F2A1A]"
+                : "border border-black/10 bg-white text-[#0F2A1A]/70 hover:border-black/10"
             }`}
           >
             {t.label}
@@ -154,7 +154,7 @@ export default function AdminLeadsPage() {
       </div>
 
       {q.isLoading ? (
-        <p className="text-sm text-ink-500">Loading leads…</p>
+        <p className="text-sm text-[#0F2A1A]/65">Loading leads…</p>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Users size={20} />}
@@ -162,7 +162,7 @@ export default function AdminLeadsPage() {
           description="New callback requests and unfinished enrollments appear here."
         />
       ) : (
-        <ul className="divide-y divide-ink-100 overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft">
+        <ul className="divide-y divide-ink-100 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-soft">
           {rows.map((l) => {
             const wa = leadWhatsAppHref(l);
             return (
@@ -172,27 +172,27 @@ export default function AdminLeadsPage() {
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-bold text-ink-800">{l.name}</p>
+                    <p className="font-bold text-[#0F2A1A]/85">{l.name}</p>
                     <StatusBadge
                       label={l.status}
                       kind={STATUS_KIND[l.status]}
                     />
-                    <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-deep">
+                    <span className="rounded-full bg-[#F9F6ED] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]">
                       {intentLabel(l.intent)}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-ink-600">
+                  <p className="mt-1 text-sm text-[#0F2A1A]/70">
                     {l.phone ? (
                       <span className="font-semibold">{l.phone}</span>
                     ) : null}
                     {l.email ? <span> · {l.email}</span> : null}
                   </p>
                   {l.message && (
-                    <p className="mt-1 max-w-xl text-xs italic text-ink-500">
+                    <p className="mt-1 max-w-xl text-xs italic text-[#0F2A1A]/65">
                       “{l.message}”
                     </p>
                   )}
-                  <p className="mt-1 text-[11px] text-ink-400">
+                  <p className="mt-1 text-[11px] text-[#0F2A1A]/65">
                     {l.source} ·{" "}
                     {new Date(l.created_at).toLocaleString("en-GB", {
                       day: "numeric",
@@ -210,7 +210,7 @@ export default function AdminLeadsPage() {
                       href={wa}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-[#013920] hover:opacity-90"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-[#0F2A1A] hover:opacity-90"
                     >
                       <PhoneCall size={13} /> WhatsApp
                     </a>
@@ -220,7 +220,7 @@ export default function AdminLeadsPage() {
                       type="button"
                       disabled={busyId === l.id}
                       onClick={() => void setLead(l.id, "CONTACTED")}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-deep px-4 text-xs font-bold text-deep hover:bg-primary-light disabled:opacity-50"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#0F2A1A] px-4 text-xs font-bold text-[#0F2A1A] hover:bg-[#F9F6ED] disabled:opacity-50"
                     >
                       <CheckCheck size={13} /> Mark contacted
                     </button>
@@ -230,7 +230,7 @@ export default function AdminLeadsPage() {
                       type="button"
                       disabled={busyId === l.id}
                       onClick={() => void setLead(l.id, "CONVERTED")}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-primary px-4 text-xs font-bold text-primary-dark hover:bg-primary-light disabled:opacity-50"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#D6FF57] px-4 text-xs font-bold text-[#0F2A1A] hover:bg-[#F9F6ED] disabled:opacity-50"
                     >
                       <Trophy size={13} /> Enrolled
                     </button>
@@ -240,7 +240,7 @@ export default function AdminLeadsPage() {
                       type="button"
                       disabled={busyId === l.id}
                       onClick={() => void setLead(l.id, "CLOSED")}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink-200 px-4 text-xs font-bold text-ink-500 hover:bg-ink-50 disabled:opacity-50"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-black/10 px-4 text-xs font-bold text-[#0F2A1A]/65 hover:bg-[#F9F6ED] disabled:opacity-50"
                     >
                       <XCircle size={13} /> Close
                     </button>
@@ -259,18 +259,18 @@ export default function AdminLeadsPage() {
             type="button"
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-full border border-ink-200 px-4 py-2 font-semibold text-ink-600 disabled:opacity-40"
+            className="rounded-full border border-black/10 px-4 py-2 font-semibold text-[#0F2A1A]/70 disabled:opacity-40"
           >
             ← Prev
           </button>
-          <span className="text-ink-500">
+          <span className="text-[#0F2A1A]/65">
             Page {page} · {data.meta.total_items} leads
           </span>
           <button
             type="button"
             disabled={page * 20 >= data.meta.total_items}
             onClick={() => setPage((p) => p + 1)}
-            className="rounded-full border border-ink-200 px-4 py-2 font-semibold text-ink-600 disabled:opacity-40"
+            className="rounded-full border border-black/10 px-4 py-2 font-semibold text-[#0F2A1A]/70 disabled:opacity-40"
           >
             Next →
           </button>

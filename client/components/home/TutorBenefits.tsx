@@ -29,18 +29,18 @@ const BENEFITS = [
 export function TutorBenefits() {
   return (
     <section className="py-16 bg-white">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         <div className="grid sm:grid-cols-2 gap-6">
           {BENEFITS.map((b) => (
             <div
               key={b.title}
-              className="rounded-2xl border border-ink-100 bg-surface-muted p-7"
+              className="rounded-2xl border border-black/10 bg-[#F9F6ED] p-7"
             >
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-navy text-white">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#0F2A1A] text-white">
                 {b.icon}
               </div>
-              <h3 className="mt-4 font-bold text-brand-navy">{b.title}</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+              <h3 className="mt-4 font-bold text-[#0F2A1A]">{b.title}</h3>
+              <p className="mt-2 text-sm text-[#0F2A1A]/70 leading-relaxed">
                 {b.desc}
               </p>
             </div>

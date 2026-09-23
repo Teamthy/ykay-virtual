@@ -1,17 +1,11 @@
 import { cn } from "@/lib/utils";
 import { HeroIntro } from "@/components/ui/motion";
 
-// InnerHero — the inner-page hero wrapper with three deliberate variants
-// (design audit A5: no repetitive single template):
-//   - split     (default) full-width wrapper around the page's own header
-//               content — detail pages with tags/stats/CTA cards
-//   - centered  centered, copy-led heroes for article/listing pages
-//   - imageLeft rounded image beside the content for subject/exam pages
-// Flat surfaces only: subtle grid texture on split/centered, no gradients.
-
-const GRID_BG =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M40 0H0v40' fill='none' stroke='%2370F250' stroke-opacity='0.10' stroke-width='1'/%3E%3C/svg%3E\")";
-
+/**
+ * Editorial detail-page hero: a full-bleed forest band with a readable cream
+ * card. Detail pages can keep their richer inner content (tags, price cards,
+ * CTAs) without painting dark type directly onto the dark band.
+ */
 type InnerHeroProps = {
   children: React.ReactNode;
   className?: string;
@@ -27,59 +21,25 @@ export function InnerHero({
   image,
   eyebrow,
 }: InnerHeroProps) {
-  if (variant === "imageLeft" && image) {
-    return (
-      <section
-        className={cn("w-full border-b border-ink-100 bg-surface", className)}
-      >
-        <div className="mx-auto grid max-w-[1400px] items-center gap-8 px-6 py-10 md:grid-cols-[0.85fr_1fr] md:px-10 md:py-14">
-          <div className="overflow-hidden rounded-xl border border-ink-100 shadow-soft">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={image.src}
-              alt={image.alt}
-              className="aspect-[4/3] w-full object-cover"
-            />
-          </div>
-          <div>
+  return (
+    <section className={cn("full-bleed relative bg-[#0F2A1A] py-8 sm:py-12 lg:py-16", className)}>
+      <div className="container-x">
+        <div className={cn(
+          "relative overflow-hidden rounded-[20px] bg-[#F9F6ED] p-6 text-[#0F2A1A] shadow-[0_16px_50px_rgba(0,0,0,0.15)] sm:p-10 lg:p-12",
+          variant === "centered" && "mx-auto text-center",
+          variant === "imageLeft" && image && "grid items-center gap-8 lg:grid-cols-[0.8fr_1fr] lg:gap-12",
+        )}>
+          {variant === "imageLeft" && image && (
+            <div className="overflow-hidden rounded-[20px] bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={image.src} alt={image.alt} className="aspect-[4/3] w-full object-cover" />
+            </div>
+          )}
+          <div className={cn(variant === "centered" && "mx-auto max-w-[900px]")}>
+            {eyebrow && <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">{eyebrow}</p>}
             <HeroIntro>{children}</HeroIntro>
           </div>
         </div>
-      </section>
-    );
-  }
-
-  if (variant === "centered") {
-    return (
-      <section
-        className={cn(
-          "w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center",
-          className,
-        )}
-        style={{ backgroundImage: GRID_BG }}
-      >
-        <div className="mx-auto max-w-3xl px-6 pb-12 pt-14 text-center md:pb-16 md:pt-20">
-          {eyebrow && (
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-primary-dark">
-              {eyebrow}
-            </p>
-          )}
-          <HeroIntro>{children}</HeroIntro>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section
-      className={cn(
-        "w-full border-b border-ink-100 bg-surface bg-no-repeat bg-cover bg-center",
-        className,
-      )}
-      style={{ backgroundImage: GRID_BG }}
-    >
-      <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-12 md:px-10 md:pb-14 md:pt-16">
-        <HeroIntro>{children}</HeroIntro>
       </div>
     </section>
   );

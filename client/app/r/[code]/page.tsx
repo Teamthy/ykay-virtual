@@ -44,28 +44,28 @@ export default async function ReferralLandingPage(props: Props) {
 
   return (
     <main className="container-x flex min-h-[70vh] items-center justify-center py-16">
-      <div className="w-full max-w-2xl rounded-3xl border border-ink-100 bg-white p-10 text-center shadow-card">
+      <div className="w-full max-w-2xl rounded-3xl border border-black/10 bg-white p-10 text-center shadow-card">
         {valid ? (
           <>
-            <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-brand-gold-light text-brand-green">
+            <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#F9F6ED] text-[#0F2A1A]">
               <Gift size={28} />
             </span>
-            <h1 className="mt-6 font-display text-3xl tracking-[0.02em] text-brand-navy md:text-5xl">
+            <h1 className="mt-6 font-display text-3xl tracking-[0.02em] text-[#0F2A1A] md:text-5xl">
               {info.referrer_name
                 ? `${info.referrer_name} invited you to YK-Virtual`
                 : "You've been invited to YK-Virtual"}
             </h1>
-            <p className="mx-auto mt-4 max-w-md leading-relaxed text-ink-600">
+            <p className="mx-auto mt-4 max-w-md leading-relaxed text-[#0F2A1A]/70">
               Create an account with the referral code below and your friend
               earns{" "}
-              <span className="font-bold text-brand-navy">
+              <span className="font-bold text-[#0F2A1A]">
                 {info.currency} {info.reward.toLocaleString()}
               </span>{" "}
               when you pay for your first lesson.
             </p>
 
-            <div className="mx-auto mt-7 flex items-center justify-center gap-3 rounded-2xl border border-dashed border-brand-gold bg-surface-muted px-6 py-4">
-              <span className="font-mono text-2xl font-extrabold tracking-[0.2em] text-brand-navy">
+            <div className="mx-auto mt-7 flex items-center justify-center gap-3 rounded-2xl border border-dashed border-[#D6FF57] bg-[#F9F6ED] px-6 py-4">
+              <span className="font-mono text-2xl font-extrabold tracking-[0.2em] text-[#0F2A1A]">
                 {code}
               </span>
             </div>
@@ -73,42 +73,42 @@ export default async function ReferralLandingPage(props: Props) {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href={`/onboarding?ref=${encodeURIComponent(code)}`}
-                className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-7 py-3.5 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030] hover:-translate-y-0.5"
               >
                 Create your account <ArrowRight size={15} />
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full border border-black/10 px-7 py-3.5 text-sm font-bold text-[#0F2A1A]/85 transition hover:border-[#0F2A1A] hover:bg-[#0F2A1A] hover:text-white"
               >
                 Learn more first
               </Link>
             </div>
 
-            <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-ink-500">
-              <ShieldCheck size={13} className="text-brand-green" />
+            <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-[#0F2A1A]/65">
+              <ShieldCheck size={13} className="text-[#0F2A1A]" />
               Escrow-protected payments · ID-verified tutors
             </p>
           </>
         ) : (
           <>
-            <h1 className="font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
+            <h1 className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A] md:text-4xl">
               This invite link isn&apos;t valid
             </h1>
-            <p className="mx-auto mt-4 max-w-md leading-relaxed text-ink-600">
+            <p className="mx-auto mt-4 max-w-md leading-relaxed text-[#0F2A1A]/70">
               The referral code may have expired or the link is incomplete. You
               can still join YK-Virtual directly - no code needed.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/onboarding"
-                className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-7 py-3.5 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030] hover:-translate-y-0.5"
               >
                 Create your account <ArrowRight size={15} />
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-7 py-3.5 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full border border-black/10 px-7 py-3.5 text-sm font-bold text-[#0F2A1A]/85 transition hover:border-[#0F2A1A] hover:bg-[#0F2A1A] hover:text-white"
               >
                 Back to home
               </Link>

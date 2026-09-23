@@ -85,30 +85,30 @@ function SearchInner() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#FFF7E4] pb-16">
-      <header className="border-b border-ink-100 bg-white">
-        <div className="mx-auto max-w-5xl px-6 py-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-            <Link href="/" className="hover:text-brand-gold-dark">
+    <main className="min-h-screen bg-[#F9F6ED] pb-16">
+      <header className="bg-[#0F2A1A] text-white">
+        <div className="container-x py-12 lg:py-16">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">
+            <Link href="/" className="text-white/70 hover:text-[#D6FF57]">
               YK-Virtual
             </Link>{" "}
             / Search
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold tracking-[0.02em] text-brand-navy">
+          <h1 className="mt-4 font-display text-[clamp(2.5rem,5vw,4.5rem)] uppercase tracking-[-0.02em] text-white">
             Search YK-Virtual
           </h1>
-          <form onSubmit={submit} className="mt-4 flex max-w-2xl gap-2">
+          <form onSubmit={submit} className="mt-7 flex max-w-3xl flex-wrap gap-2 sm:flex-nowrap">
             <input
               type="search"
               autoFocus
               placeholder="Try “mathematics”, “UTME”, “Lagos tutor”…"
-              className={INPUT_CLS}
+              className={`${INPUT_CLS} min-w-0 flex-1 rounded-full bg-white text-[#0F2A1A]`}
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
             <button
               type="submit"
-              className="shrink-0 rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+              className="shrink-0 rounded-full bg-[#D6FF57] px-7 py-3 text-[13px] font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
             >
               Search
             </button>
@@ -116,9 +116,9 @@ function SearchInner() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-6">
+      <div className="container-x py-6">
         {!activeQ ? (
-          <p className="py-16 text-center text-ink-400">
+          <p className="py-16 text-center text-[#0F2A1A]/65">
             {debounced.length === 1
               ? "Keep typing - search needs at least 2 characters."
               : "Type above to search tutors, programmes and subjects."}
@@ -134,28 +134,28 @@ function SearchInner() {
                   onClick={() => setActiveGroup(g.key)}
                   className={`rounded-full px-4 py-1.5 text-xs font-bold ${
                     activeGroup === g.key
-                      ? "bg-brand-gold text-ink-900"
-                      : "bg-ink-100 text-ink-500 hover:bg-ink-200"
+                      ? "bg-[#D6FF57] text-[#0F2A1A]"
+                      : "bg-[#F9F6ED] text-[#0F2A1A]/65 hover:bg-[#F9F6ED]"
                   }`}
                 >
                   {g.label} ({g.count})
                 </button>
               ))}
               {anyLoading && (
-                <Loader2 size={15} className="animate-spin text-ink-400" />
+                <Loader2 size={15} className="animate-spin text-[#0F2A1A]/65" />
               )}
             </div>
 
             {/* Tutor filters */}
             {activeGroup === "tutors" && (
-              <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white p-3">
-                <SlidersHorizontal size={15} className="text-ink-400" />
+              <div className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl border border-black/10 bg-white p-3">
+                <SlidersHorizontal size={15} className="text-[#0F2A1A]/65" />
                 <label className="flex items-center gap-2 text-sm">
-                  <span className="text-ink-500">Subject</span>
+                  <span className="text-[#0F2A1A]/65">Subject</span>
                   <select
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-sm text-ink-700 focus:border-brand-gold focus:outline-none"
+                    className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-sm text-[#0F2A1A]/75 focus:border-[#D6FF57] focus:outline-none"
                   >
                     <option value="">All subjects</option>
                     {(allSubjects.data?.data ?? []).map((s: Subject) => (
@@ -165,12 +165,12 @@ function SearchInner() {
                     ))}
                   </select>
                 </label>
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[#0F2A1A]/75">
                   <input
                     type="checkbox"
                     checked={onlineOnly}
                     onChange={(e) => setOnlineOnly(e.target.checked)}
-                    className="size-4 accent-[#013920]"
+                    className="size-4 accent-[#0F2A1A]"
                   />
                   Online only
                 </label>
@@ -185,20 +185,20 @@ function SearchInner() {
                     return (
                       <div
                         key={t.id}
-                        className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                        className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                       >
                         <Link
                           href={`/tutors/${t.slug}`}
                           className="flex min-w-0 flex-1 items-center gap-4"
                         >
-                          <span className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-gold-light font-bold text-brand-navy">
+                          <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#F9F6ED] font-bold text-[#0F2A1A]">
                             {t.display_name.slice(0, 1)}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block font-bold text-brand-navy">
+                            <span className="block font-bold text-[#0F2A1A]">
                               {t.display_name}
                             </span>
-                            <span className="block truncate text-sm text-ink-500">
+                            <span className="block truncate text-sm text-[#0F2A1A]/65">
                               {(t.subjects ?? [])
                                 .map((s) => s.name)
                                 .join(" · ") || "Tutor"}
@@ -224,14 +224,14 @@ function SearchInner() {
                               : `Save ${t.display_name}`
                           }
                           aria-pressed={saved}
-                          className={`grid size-9 shrink-0 place-items-center rounded-full transition-transform hover:scale-110 ${saved ? "bg-red-50" : "bg-ink-50"}`}
+                          className={`grid size-9 shrink-0 place-items-center rounded-full transition-transform hover:scale-110 ${saved ? "bg-red-50" : "bg-[#F9F6ED]"}`}
                         >
                           <Heart
                             size={17}
                             className={
                               saved
                                 ? "fill-red-500 text-red-500"
-                                : "text-ink-400"
+                                : "text-[#0F2A1A]/65"
                             }
                           />
                         </button>
@@ -239,7 +239,7 @@ function SearchInner() {
                     );
                   })}
                   {tutorCount === 0 && !anyLoading && (
-                    <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
+                    <p className="rounded-2xl border border-dashed border-black/10 bg-white p-8 text-center text-sm text-[#0F2A1A]/65">
                       No tutors match “{activeQ}”
                       {subject || onlineOnly ? " with those filters" : ""}. Try
                       a broader term.
@@ -254,21 +254,21 @@ function SearchInner() {
                     <Link
                       key={p.id}
                       href={`/programmes/${p.slug}`}
-                      className="flex items-center justify-between rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                      className="flex items-center justify-between rounded-2xl border border-black/10 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                     >
                       <div>
-                        <p className="font-bold text-brand-navy">{p.title}</p>
-                        <p className="text-sm text-ink-500">
+                        <p className="font-bold text-[#0F2A1A]">{p.title}</p>
+                        <p className="text-sm text-[#0F2A1A]/65">
                           {p.format} programme
                         </p>
                       </div>
-                      <span className="text-xs font-bold text-brand-gold-dark">
+                      <span className="text-xs font-bold text-[#0F2A1A]">
                         View →
                       </span>
                     </Link>
                   ))}
                   {programmeCount === 0 && !anyLoading && (
-                    <p className="rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
+                    <p className="rounded-2xl border border-dashed border-black/10 bg-white p-8 text-center text-sm text-[#0F2A1A]/65">
                       No programmes match “{activeQ}”.
                     </p>
                   )}
@@ -281,13 +281,13 @@ function SearchInner() {
                     <Link
                       key={s.id}
                       href={`/subjects/${s.slug}`}
-                      className="rounded-2xl border border-ink-100 bg-white px-5 py-3 font-semibold text-brand-navy shadow-sm hover:border-brand-gold"
+                      className="rounded-2xl border border-black/10 bg-white px-5 py-3 font-semibold text-[#0F2A1A] shadow-sm hover:border-[#D6FF57]"
                     >
                       {s.name}
                     </Link>
                   ))}
                   {subjectCount === 0 && !anyLoading && (
-                    <p className="w-full rounded-2xl border border-dashed border-ink-200 bg-white p-8 text-center text-sm text-ink-500">
+                    <p className="w-full rounded-2xl border border-dashed border-black/10 bg-white p-8 text-center text-sm text-[#0F2A1A]/65">
                       No subjects match “{activeQ}”.
                     </p>
                   )}
@@ -304,7 +304,7 @@ function SearchInner() {
 export default function SearchPage() {
   return (
     <Suspense
-      fallback={<p className="py-24 text-center text-ink-400">Loading…</p>}
+      fallback={<p className="py-24 text-center text-[#0F2A1A]/65">Loading…</p>}
     >
       <SearchInner />
     </Suspense>

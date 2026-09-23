@@ -108,17 +108,17 @@ function LoginCodeInner() {
       footer={
         <>
           Prefer a password?{" "}
-          <Link href={withNext("/login", next)} className="text-brand-blue font-semibold hover:underline">
+          <Link href={withNext("/login", next)} className="text-[#0F2A1A] font-semibold hover:underline">
             Log in instead
           </Link>
         </>
       }
     >
-      <div className="space-y-4 rounded-2xl border border-ink-100 bg-white p-7 shadow-soft">
+      <div className="space-y-4 rounded-2xl border border-black/10 bg-white p-7 shadow-soft">
         {step === "email" ? (
           <>
             <label className="block text-sm">
-              <span className="font-semibold text-ink-700">Email</span>
+              <span className="font-semibold text-[#0F2A1A]/75">Email</span>
               <input
                 type="email"
                 autoComplete="email"
@@ -127,7 +127,7 @@ function LoginCodeInner() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && void request()}
                 placeholder="you@example.com"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -138,7 +138,7 @@ function LoginCodeInner() {
         ) : (
           <>
             <label className="block text-sm">
-              <span className="font-semibold text-ink-700">Login code</span>
+              <span className="font-semibold text-[#0F2A1A]/75">Login code</span>
               <input
                 inputMode="numeric"
                 autoFocus
@@ -147,9 +147,9 @@ function LoginCodeInner() {
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(e) => e.key === "Enter" && void confirm()}
                 placeholder="••••••"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-center text-2xl font-extrabold tracking-[0.4em] text-brand-navy focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-center text-2xl font-extrabold tracking-[0.4em] text-[#0F2A1A] focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
-              <p className="mt-2 text-xs text-ink-400">Expires in 10 minutes · single use</p>
+              <p className="mt-2 text-xs text-[#0F2A1A]/65">Expires in 10 minutes · single use</p>
             </label>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <Button variant="gold" size="lg" className="w-full" disabled={busy} onClick={() => void confirm()}>
@@ -159,7 +159,7 @@ function LoginCodeInner() {
               type="button"
               disabled={cooldown > 0}
               onClick={() => void request()}
-              className="w-full text-center text-sm font-semibold text-brand-blue hover:underline disabled:opacity-50"
+              className="w-full text-center text-sm font-semibold text-[#0F2A1A] hover:underline disabled:opacity-50"
             >
               {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
             </button>

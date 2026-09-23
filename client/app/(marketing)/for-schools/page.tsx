@@ -41,28 +41,28 @@ export default function ForSchoolsPage() {
         <div className="mt-10 grid md:grid-cols-3 gap-6">
           <div className="border rounded-2xl p-6">
             <h3 className="font-bold">Bulk Enrolment</h3>
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               Upload CSV of students, auto-create student profiles + parent
               links, enrol into cohorts.
             </p>
           </div>
           <div className="border rounded-2xl p-6">
             <h3 className="font-bold">Institution Dashboard</h3>
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               Membership roles OWNER/ADMIN/TEACHER/STUDENT/BILLING, audit-logged
               PII access.
             </p>
           </div>
           <div className="border rounded-2xl p-6">
             <h3 className="font-bold">Pooled Billing</h3>
-            <p className="mt-2 text-sm text-ink-600">
+            <p className="mt-2 text-sm text-[#0F2A1A]/70">
               One wallet, multiple learners, monthly consolidated invoices,
               institutional discounts.
             </p>
           </div>
         </div>
 
-        <section className="mt-12 rounded-2xl bg-brand-blue text-white p-8">
+        <section className="mt-12 rounded-2xl bg-[#0F2A1A] text-white p-8">
           <h2 className="text-2xl font-bold">Beyond Tuteria: What we add</h2>
           <ul className="mt-4 list-disc pl-5 space-y-2 text-white/90">
             <li>

@@ -32,14 +32,14 @@ export function CardCarousel({ children }: { children: React.ReactNode }) {
         <button
           aria-label="Scroll left"
           onClick={() => scrollByCard(-1)}
-          className="grid h-9 w-9 place-items-center rounded-full border border-ink-200 text-ink-600 transition-colors hover:border-primary hover:bg-primary hover:text-ink-900"
+          className="grid h-9 w-9 place-items-center rounded-full border border-black/10 text-[#0F2A1A]/70 transition-colors hover:border-[#D6FF57] hover:bg-[#D6FF57] hover:text-[#0F2A1A]"
         >
           <ChevronLeft size={18} />
         </button>
         <button
           aria-label="Scroll right"
           onClick={() => scrollByCard(1)}
-          className="grid h-9 w-9 place-items-center rounded-full border border-ink-200 text-ink-600 transition-colors hover:border-primary hover:bg-primary hover:text-ink-900"
+          className="grid h-9 w-9 place-items-center rounded-full border border-black/10 text-[#0F2A1A]/70 transition-colors hover:border-[#D6FF57] hover:bg-[#D6FF57] hover:text-[#0F2A1A]"
         >
           <ChevronRight size={18} />
         </button>

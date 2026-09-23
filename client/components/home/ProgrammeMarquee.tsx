@@ -103,23 +103,23 @@ function ProgrammeCard({ p, i }: { p: Programme; i: number }) {
   return (
     <Link
       href={p.href}
-      className={`group/card relative flex w-[228px] shrink-0 flex-col overflow-hidden rounded-[22px] border border-ink-100 bg-white shadow-soft transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-lg dark:border-white/10 dark:bg-white/[0.06] sm:w-[248px] lg:w-[264px] ${
+      className={`group/card relative flex w-[228px] shrink-0 flex-col overflow-hidden rounded-[22px] border border-black/10 bg-white shadow-soft transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-lg   sm:w-[248px] lg:w-[264px] ${
         p.drop ? "md:mt-7" : ""
       }`}
       aria-label={`${p.title} — ${p.category}`}
     >
       {/* copy zone */}
       <div className="flex min-h-[9.5rem] flex-col px-5 pb-4 pt-5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-deep dark:text-primary">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#0F2A1A] ">
           {p.category}
         </p>
-        <h3 className="mt-2 font-display text-[1.35rem] leading-tight text-ink-950 dark:text-white">
+        <h3 className="mt-2 font-display text-[1.35rem] leading-tight text-[#0F2A1A] ">
           {p.title}
         </h3>
-        <p className="mt-1.5 text-xs leading-relaxed text-ink-500 dark:text-white/70">
+        <p className="mt-1.5 text-xs leading-relaxed text-[#0F2A1A]/65 ">
           {p.description}
         </p>
-        <span className="mt-auto inline-flex items-center gap-1 pt-3 text-[11px] font-bold uppercase tracking-[0.14em] text-deep-green transition-colors group-hover/card:text-brand-green dark:text-primary">
+        <span className="mt-auto inline-flex items-center gap-1 pt-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0F2A1A] transition-colors group-hover/card:text-[#0F2A1A] ">
           Explore
           <ArrowUpRight
             size={13}
@@ -159,8 +159,8 @@ export function ProgrammeMarquee() {
           ))}
         </div>
         {/* barely-there edge fades so cards feel like they enter/leave */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-14 bg-gradient-to-r from-peach to-transparent dark:from-deep-green" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-14 bg-gradient-to-l from-peach to-transparent dark:from-deep-green" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-14 bg-gradient-to-r from-[#F9F6ED] to-transparent " />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-14 bg-gradient-to-l from-[#F9F6ED] to-transparent " />
       </div>
     </div>
   );

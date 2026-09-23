@@ -77,7 +77,7 @@ export function ProgrammesHub() {
       key={value}
       onClick={() => { onChange(current === value ? "" : value); push({ [param]: current === value ? "" : value }); }}
       className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
-        current === value ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+        current === value ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
       }`}
     >
       {label}
@@ -90,24 +90,24 @@ export function ProgrammesHub() {
       <aside className="border rounded-2xl p-5 space-y-5 lg:sticky lg:top-28">
         <h2 className="font-bold">Filters</h2>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-2">Curriculum</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65 mb-2">Curriculum</p>
           <div className="flex flex-col gap-1.5">
             {CURRICULA.map((c) => (
               <button key={c.value} onClick={() => { setCurriculum(curriculum === c.value ? "" : c.value); push({ curriculum: curriculum === c.value ? "" : c.value }); }}
-                className={`text-left text-sm rounded-xl px-3 py-2 transition-colors ${curriculum === c.value ? "bg-brand-blue text-white font-semibold" : "text-ink-700 hover:bg-ink-50"}`}>
+                className={`text-left text-sm rounded-xl px-3 py-2 transition-colors ${curriculum === c.value ? "bg-[#0F2A1A] text-white font-semibold" : "text-[#0F2A1A]/75 hover:bg-[#F9F6ED]"}`}>
                 {c.label}
               </button>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-2">Exam</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65 mb-2">Exam</p>
           <div className="flex flex-wrap gap-1.5">
             {EXAMS.map((e) => filterChip(e.toUpperCase(), e, exam, setExam, "exam"))}
           </div>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-2">Level</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65 mb-2">Level</p>
           <div className="flex flex-wrap gap-1.5">
             {LEVELS.map((l) => filterChip(l.replace("-", " ").toUpperCase(), l, level, setLevel, "level"))}
           </div>
@@ -126,10 +126,10 @@ export function ProgrammesHub() {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && push({ q: search })}
             placeholder="Search programmes…"
-            className="w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+            className="w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
           />
           <div className="flex flex-wrap gap-2">
-            <span className="text-xs font-bold uppercase tracking-wide text-ink-400 self-center">Format:</span>
+            <span className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65 self-center">Format:</span>
             {FORMATS.map((f) => filterChip(f.replace(/_/g, " ").toLowerCase(), f, format, setFormat, "format"))}
           </div>
         </div>
@@ -142,12 +142,12 @@ export function ProgrammesHub() {
         ) : query.isError ? (
           <div className="border rounded-2xl p-10 text-center text-red-600">Could not load programmes.</div>
         ) : programmes.length === 0 ? (
-          <div className="border rounded-2xl p-12 text-center text-ink-500">
+          <div className="border rounded-2xl p-12 text-center text-[#0F2A1A]/65">
             No programmes match those filters - try clearing a filter or two.
           </div>
         ) : (
           <>
-            <p className="text-sm text-ink-500 mb-4">
+            <p className="text-sm text-[#0F2A1A]/65 mb-4">
               {live.length > 0
                 ? `${query.data?.pages[0]?.meta?.total_items ?? programmes.length} programme(s)`
                 : "Sample tracks - enrol from a live cohort when one is published."}

@@ -8,7 +8,7 @@ export function Toaster() {
     <Sonner
       position="top-center"
       toastOptions={{
-        className: "rounded-xl border border-ink-100 shadow-lift",
+        className: "rounded-xl border border-black/10 shadow-lift",
         duration: 4000,
       }}
       richColors

@@ -37,7 +37,7 @@ export async function UpcomingCohorts() {
         <div className="mx-auto max-w-[1200px]">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/50">{"<<"} Cohorts & Live Classes {">>"}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">{"<<"} Cohorts & Live Classes {">>"}</p>
               <h2 className="mt-3 font-display text-[clamp(1.4rem,2.8vw,2.2rem)] leading-[0.95] tracking-[-0.02em] text-[#0F2A1A] uppercase max-w-[20ch]">Structured cohorts starting soon — limited seats</h2>
             </div>
             <Link href="/cohorts" className="hidden md:inline-flex items-center gap-2 rounded-full bg-[#0F2A1A] px-5 py-2.5 text-[13px] font-bold text-white hover:bg-black">
@@ -56,11 +56,11 @@ export async function UpcomingCohorts() {
                     <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${fill >= 80 ? "bg-red-100 text-red-700" : "bg-[#D6FF57] text-[#0F2A1A]"}`}>{seatsLeft} seats left</span>
                   </div>
                   <h3 className="mt-4 font-display text-[18px] leading-[1.05] text-[#0F2A1A] line-clamp-2">{c.title}</h3>
-                  <p className="mt-2 text-[12px] text-[#0F2A1A]/60">{new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}</p>
+                  <p className="mt-2 text-[12px] text-[#0F2A1A]/65">{new Date(c.start_date).toLocaleDateString()} → {new Date(c.end_date).toLocaleDateString()}</p>
 
                   <div className="mt-4">
                     <div className="flex justify-between text-[11px] font-bold uppercase tracking-wide">
-                      <span className="text-[#0F2A1A]/60">Enrolment</span>
+                      <span className="text-[#0F2A1A]/65">Enrolment</span>
                       <span className="text-[#0F2A1A]">{fill}%</span>
                     </div>
                     <div className="mt-1.5 h-1.5 rounded-full bg-black/10">

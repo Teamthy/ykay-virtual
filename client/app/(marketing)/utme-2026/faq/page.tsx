@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+import { PageHero } from "@/components/layout/PageHero";
+import { ArrowRight } from "lucide-react";
 
 export const revalidate = 600;
 
@@ -19,24 +21,24 @@ const FAQS = [
       "Our UTME prep covers Use of English, Mathematics, Physics, Chemistry and Biology. For other subjects, request private tuition and we'll match a specialist tutor.",
   },
   {
-    question: "Why are our courses better than one-to-one tuition?",
+    question: "How is a cohort different from one-to-one tuition?",
     answer:
-      "You get expert-led live classes, a structured curriculum, 200+ practice exams, weekly mock CBT and peer support - plus remedial classes when you need them. That combination is far more effective than isolated private lessons.",
+      "Cohorts add a structured plan, tutor-led lessons and peer learning to individual practice. One-to-one tuition is available for students who need a more personalised pace; neither option can guarantee a score.",
   },
   {
     question: "When are the live lessons?",
     answer:
-      "Live classes run January to April 2026, on weekday evenings and weekend mornings, so they fit around school. All classes are recorded and can be re-watched anytime.",
+      "The 2026 session has ended. Check the live cohorts catalogue or ask an advisor for the next published timetable and the availability of recordings.",
   },
   {
     question: "How can I be sure that each student gets enough attention?",
     answer:
-      "Cohorts are small, every student gets weekly performance reports, and the Plus plan includes a dedicated mentor plus remedial classes for anyone who needs extra help.",
+      "Cohorts are kept small, with progress notes for families. Ask about group size and whether named mentor support is available in the current intake before enrolling.",
   },
   {
     question: "How can I be sure that the course will be effective for me?",
     answer:
-      "Our AI has analyzed 20,000+ JAMB questions from the past 15 years to focus the curriculum on the most likely exam topics - and our 2025 cohort produced scores of 345, 341, 338 and 317.",
+      "Tutors use past-question patterns, topic practice and timed mocks to identify weak areas. We do not predict the exam paper or guarantee a score or university place.",
   },
   {
     question: "What exam boards do the courses cover?",
@@ -46,12 +48,12 @@ const FAQS = [
   {
     question: "Are there any special requirements for enrolling?",
     answer:
-      "None - any candidate writing JAMB 2026 can join. We run a free diagnostic test at enrolment to place you on the right track.",
+      "Ask an advisor which intake is open and whether a diagnostic is required. Prices and schedules must be confirmed before you pay.",
   },
   {
     question: "What happens if I miss a lesson?",
     answer:
-      "All live classes are recorded and available for re-watch anytime, so you never fall behind. You can also join remedial classes if you need to catch up on a topic.",
+      "Where recordings are included, you can rewatch the lesson and ask a tutor about topics you missed. Ask an advisor which catch-up options your plan includes.",
   },
 ];
 
@@ -64,102 +66,45 @@ export default function UtmeFaqPage() {
   const faq = faqJsonLd(FAQS);
 
   return (
-    <main className="bg-[#FFF7E4] min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+    <main className="min-h-screen bg-[#F9F6ED]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
+      <PageHero
+        eyebrow="UTME / questions answered"
+        title="Good questions make a better plan."
+        subtitle="How lessons, mocks and mentoring work — and what you should confirm before choosing your next intake."
+        crumbs={[{ name: "Home", href: "/" }, { name: "UTME 2026", href: "/utme-2026" }, { name: "FAQs" }]}
+        ctas={[{ label: "See the packages", href: "/utme-2026/pricing", primary: true }]}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }}
-      />
-
-      {/* Header */}
-      <header className="border-b border-ink-100 bg-white">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-6">
-          <nav className="flex items-center justify-between gap-4">
-            <Link
-              href="/utme-2026"
-              className="font-display text-xl tracking-[0.02em] text-[#013920]"
-            >
-              YK-Virtual <span className="text-[#4CCB31]">Prep</span>
-            </Link>
-            <div className="flex items-center gap-5 text-sm font-bold">
-              <Link
-                href="/utme-2026"
-                className="text-ink-600 hover:text-[#013920]"
-              >
-                Overview
-              </Link>
-              <Link
-                href="/utme-2026/pricing"
-                className="text-ink-600 hover:text-[#013920]"
-              >
-                Pricing
-              </Link>
-              <Link href="/utme-2026/faq" className="text-[#4CCB31]">
-                FAQ
-              </Link>
-              <Link
-                href="/utme-2026"
-                className="rounded-xl bg-[#013920] px-5 py-2.5 text-white hover:bg-[#0A4D32] transition-colors"
-              >
-                Get Started
-              </Link>
-            </div>
-          </nav>
-        </div>
-      </header>
-
-      <section className="py-16">
-        <div className="max-w-[860px] mx-auto px-6 md:px-10">
-          <div className="text-center">
-            <p className="inline-flex items-center gap-2 rounded-full bg-[#4CCB31] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[#013920]">
-              Read our FAQs
-            </p>
-            <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-[#013920] md:text-5xl">
-              UTME 2026 - Frequently Asked Questions
-            </h1>
+      <section className="w-full py-14 lg:py-20">
+        <div className="container-x grid items-start gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
+          <div className="lg:sticky lg:top-28">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#0F2A1A]/65">Before you begin</p>
+            <h2 className="mt-3 max-w-[17ch] font-display text-[clamp(2rem,3vw,3rem)] uppercase text-[#0F2A1A]">Everything you need to know.</h2>
+            <p className="mt-4 max-w-[40ch] text-[14px] leading-relaxed text-[#0F2A1A]/70">The 2026 sitting has passed. Ask an advisor about the next intake, fee and timetable rather than relying on last year&apos;s dates.</p>
+            <Link href="/contact" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0F2A1A] px-5 py-3 text-[12px] font-bold text-white hover:bg-[#194732]">Talk to an advisor <ArrowRight size={14} /></Link>
           </div>
-
-          <div className="mt-10 space-y-3">
-            {FAQS.map((f) => (
-              <details
-                key={f.question}
-                className="rounded-2xl border border-ink-100 bg-white shadow-soft open:shadow-card"
-              >
-                <summary className="cursor-pointer px-6 py-5 font-bold text-ink-800">
-                  {f.question}
+          <div className="space-y-3">
+            {FAQS.map((item, index) => (
+              <details key={item.question} className="group rounded-[20px] border border-black/10 bg-white p-5 shadow-soft open:border-[#0F2A1A]/20 sm:p-6">
+                <summary className="flex cursor-pointer list-none items-center gap-4 text-left font-bold text-[#0F2A1A] marker:hidden">
+                  <span className="shrink-0 font-display text-[15px] text-[#0F2A1A]/65">0{index + 1}</span>
+                  <span className="flex-1 text-[14px] sm:text-[16px]">{item.question}</span>
+                  <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A] transition group-open:rotate-45">+</span>
                 </summary>
-                <p className="px-6 pb-5 text-sm leading-relaxed text-ink-600">
-                  {f.answer}
-                </p>
+                <p className="mt-4 border-t border-black/10 pt-4 text-[13px] leading-relaxed text-[#0F2A1A]/70">{item.answer}</p>
               </details>
             ))}
           </div>
-
-          <div className="mt-10 rounded-2xl bg-[#013920] p-8 text-center text-white">
-            <p className="font-display text-2xl tracking-[0.02em]">
-              Still have questions?
-            </p>
-            <p className="mt-2 text-white/70">
-              Chat with our advisors - we answer within one business day.
-            </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/utme-2026#callback"
-                className="rounded-xl bg-[#4CCB31] px-7 py-3.5 text-sm font-bold text-[#013920] hover:bg-[#5FE63F] transition-colors"
-              >
-                Get a callback
-              </Link>
-              <Link
-                href="/contact"
-                className="rounded-xl border border-white/30 px-7 py-3.5 text-sm font-bold text-white hover:bg-white/10 transition-colors"
-              >
-                Contact support
-              </Link>
-            </div>
+        </div>
+      </section>
+      <section className="w-full bg-[#0F2A1A] py-12 text-white lg:py-16">
+        <div className="container-x flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#D6FF57]">Need a human answer?</p>
+            <h2 className="mt-2 font-display text-[clamp(1.7rem,3vw,3rem)] uppercase text-white">Let&apos;s find your next step.</h2>
           </div>
+          <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-[13px] font-bold text-[#0F2A1A] hover:bg-[#C8F030]">Contact support <ArrowRight size={15} /></Link>
         </div>
       </section>
     </main>

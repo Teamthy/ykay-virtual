@@ -39,12 +39,12 @@ export default function BecomeTutorStatusPage() {
   }, [isLoading, user, router]);
 
   if (isLoading || !user) {
-    return <main className="container-x py-20 text-center text-ink-500">Loading…</main>;
+    return <main className="container-x py-20 text-center text-[#0F2A1A]/65">Loading…</main>;
   }
 
   return (
     <main className="container-x py-12 max-w-2xl">
-      <Link href="/become-tutor" className="text-sm text-brand-blue font-semibold hover:underline">← Back to Become a Tutor</Link>
+      <Link href="/become-tutor" className="text-sm text-[#0F2A1A] font-semibold hover:underline">← Back to Become a Tutor</Link>
       <div className="mt-4">
         <OnboardingStepper current={4} />
         {profile.isLoading ? (
@@ -53,7 +53,7 @@ export default function BecomeTutorStatusPage() {
           <SubmittedState profile={profile.data} />
         ) : (
           <div className="border rounded-2xl p-8 text-center">
-            <p className="text-ink-500">No application yet - start with your profile.</p>
+            <p className="text-[#0F2A1A]/65">No application yet - start with your profile.</p>
             <Link href="/become-tutor/apply" className="btn-gold mt-4 inline-block">Start application</Link>
           </div>
         )}
@@ -65,7 +65,7 @@ export default function BecomeTutorStatusPage() {
               onClick={() => {
                 if (state.profileId) submit.mutate(state.profileId);
               }}
-              className="rounded-full bg-brand-green px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-brand-green/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-[#D6FF57] px-8 py-3.5 text-sm font-bold text-[#0F2A1A] transition-all hover:-translate-y-0.5 hover:bg-[#D6FF57]/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submit.isPending ? "Submitting…" : "Submit application for review"}
             </button>
@@ -77,19 +77,19 @@ export default function BecomeTutorStatusPage() {
             )}
           </div>
         )}
-        <p className="mt-6 text-center text-xs text-ink-400">
+        <p className="mt-6 text-center text-xs text-[#0F2A1A]/65">
           Application id: {state.profileId ? state.profileId.slice(0, 8) : "-"} · saved locally so you can return anytime
         </p>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-sm font-bold text-[#0F2A1A] transition-all hover:bg-[#C8F030] hover:-translate-y-0.5"
           >
             Go to my dashboard
           </Link>
           <Link
             href="/become-tutor/apply"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-ink-300 px-6 py-3 text-sm font-bold text-ink-800 transition-all hover:border-brand-gold"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-black/10 px-6 py-3 text-sm font-bold text-[#0F2A1A]/85 transition-all hover:border-[#D6FF57]"
           >
             Continue application
           </Link>

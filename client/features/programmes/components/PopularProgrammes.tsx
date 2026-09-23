@@ -33,7 +33,7 @@ export async function PopularProgrammes() {
     <section className="relative w-full overflow-hidden bg-[#F9F6ED]">
       <div className="relative mx-auto w-full max-w-[1920px] px-4 py-12 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 lg:py-20">
         <div className="mx-auto max-w-[900px] text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/50">{"<<"} Learning & Insights {">>"}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">{"<<"} Learning & Insights {">>"}</p>
           <h2 className="mt-4 font-display text-[clamp(1.4rem,3vw,2.2rem)] leading-[1.05] tracking-[-0.02em] text-[#0F2A1A] uppercase">
             Learning tips and guidance to support your progress every step of the way
           </h2>
@@ -50,7 +50,7 @@ export async function PopularProgrammes() {
                 <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">{card.title}</p>
                 <p className="mt-2 text-[13px] leading-[1.4] text-[#0F2A1A]/70 line-clamp-3">{card.desc}</p>
                 <div className="mt-5 flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/60 group-hover:text-[#0F2A1A] transition">Read More</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65 group-hover:text-[#0F2A1A] transition">Read More</span>
                   <span className="grid size-7 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A] transition group-hover:bg-[#0F2A1A] group-hover:text-white">
                     <ArrowRight size={14} />
                   </span>

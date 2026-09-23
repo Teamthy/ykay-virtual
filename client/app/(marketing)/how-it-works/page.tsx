@@ -57,10 +57,10 @@ export default function HowItWorksPage() {
                 <div key={s.title} className="rounded-[20px] bg-white p-6">
                   <div className="flex justify-between items-start">
                     <div className="grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white"><s.icon size={16} /></div>
-                    <span className="text-[11px] font-bold text-[#0F2A1A]/30">{s.n}</span>
+                    <span className="text-[11px] font-bold text-[#0F2A1A]/65">{s.n}</span>
                   </div>
                   <h3 className="mt-5 font-display text-[16px] leading-none uppercase text-[#0F2A1A]">{s.title}</h3>
-                  <p className="mt-2 text-[12px] leading-[1.5] text-[#0F2A1A]/60">{s.body}</p>
+                  <p className="mt-2 text-[12px] leading-[1.5] text-[#0F2A1A]/65">{s.body}</p>
                   <ul className="mt-4 space-y-1">
                     {s.points.map((p) => (
                       <li key={p} className="flex items-center gap-1.5 text-[11px] font-semibold text-[#0F2A1A]/70"><CheckCircle2 size={11} /> {p}</li>
@@ -81,17 +81,17 @@ export default function HowItWorksPage() {
       <section className="relative w-full bg-[#F9F6ED] py-12 lg:py-20">
         <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="mx-auto max-w-[1200px]">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/50">{"<<"} For tutors {">>"}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">{"<<"} For tutors {">>"}</p>
             <h2 className="mt-3 font-display text-[clamp(1.6rem,3vw,2.4rem)] leading-[0.9] text-[#0F2A1A] uppercase max-w-[14ch]">Four steps for tutors</h2>
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {TUTOR_STEPS.map((s) => (
                 <div key={s.title} className="rounded-[20px] bg-white border border-black/10 p-6 shadow-[0_4px_24px_rgba(15,42,26,0.06)]">
                   <div className="flex justify-between items-start">
                     <div className="grid size-10 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]"><s.icon size={16} /></div>
-                    <span className="text-[11px] font-bold text-[#0F2A1A]/30">{s.n}</span>
+                    <span className="text-[11px] font-bold text-[#0F2A1A]/65">{s.n}</span>
                   </div>
                   <h3 className="mt-5 font-display text-[16px] leading-none uppercase text-[#0F2A1A]">{s.title}</h3>
-                  <p className="mt-2 text-[12px] leading-[1.5] text-[#0F2A1A]/60">{s.body}</p>
+                  <p className="mt-2 text-[12px] leading-[1.5] text-[#0F2A1A]/65">{s.body}</p>
                   <ul className="mt-4 space-y-1">
                     {s.points.map((p) => (
                       <li key={p} className="flex items-center gap-1.5 text-[11px] font-semibold text-[#0F2A1A]/70"><CheckCircle2 size={11} /> {p}</li>

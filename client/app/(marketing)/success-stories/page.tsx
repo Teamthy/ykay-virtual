@@ -93,18 +93,18 @@ export default async function SuccessStoriesPage() {
           {RESULTS.map((r) => (
             <div
               key={r.title}
-              className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft"
+              className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft"
             >
-              <span className="grid size-11 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
+              <span className="grid size-11 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                 <r.icon size={20} />
               </span>
-              <span className="mt-4 inline-block rounded-full bg-surface-muted px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-600">
+              <span className="mt-4 inline-block rounded-full bg-[#F9F6ED] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/70">
                 {r.tag}
               </span>
-              <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-brand-navy">
+              <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
                 {r.title}
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">
+              <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
                 {r.body}
               </p>
             </div>
@@ -113,23 +113,23 @@ export default async function SuccessStoriesPage() {
 
         {/* Parent stories - consent-gated, live from the API */}
         <section className="mt-16">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
             Parent stories
           </p>
-          <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-brand-navy">
+          <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-[#0F2A1A]">
             What families say
           </h2>
 
           {testimonials.length === 0 ? (
-            <div className="mt-8 rounded-2xl border border-dashed border-ink-200 bg-white p-10 text-center">
-              <Quote size={24} className="mx-auto text-ink-600" />
-              <p className="mt-4 text-sm text-ink-600">
+            <div className="mt-8 rounded-2xl border border-dashed border-black/10 bg-white p-10 text-center">
+              <Quote size={24} className="mx-auto text-[#0F2A1A]/70" />
+              <p className="mt-4 text-sm text-[#0F2A1A]/70">
                 Parent stories are published here as soon as families give their
                 consent.
               </p>
               <Link
                 href="/contact"
-                className="mt-4 inline-block font-bold text-brand-green hover:underline"
+                className="mt-4 inline-block font-bold text-[#0F2A1A] hover:underline"
               >
                 Share your family&apos;s story →
               </Link>
@@ -139,25 +139,25 @@ export default async function SuccessStoriesPage() {
               {testimonials.map((t) => (
                 <figure
                   key={t.id}
-                  className="flex flex-col rounded-2xl border border-ink-100 bg-white p-6 shadow-soft"
+                  className="flex flex-col rounded-2xl border border-black/10 bg-white p-6 shadow-soft"
                 >
-                  <Quote size={20} className="text-brand-green" />
-                  <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-ink-700">
+                  <Quote size={20} className="text-[#0F2A1A]" />
+                  <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-[#0F2A1A]/75">
                     &ldquo;{t.body}&rdquo;
                   </blockquote>
-                  <figcaption className="mt-5 flex items-center justify-between border-t border-ink-100 pt-4">
+                  <figcaption className="mt-5 flex items-center justify-between border-t border-black/10 pt-4">
                     <div>
-                      <p className="text-sm font-bold text-ink-900">
+                      <p className="text-sm font-bold text-[#0F2A1A]">
                         {t.author_name}
                       </p>
                       {t.author_location && (
-                        <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-500">
+                        <p className="mt-0.5 flex items-center gap-1 text-xs text-[#0F2A1A]/65">
                           <MapPin size={11} /> {t.author_location}
                         </p>
                       )}
                     </div>
                     {t.rating != null && (
-                      <span className="rounded-full bg-brand-gold-light px-2.5 py-1 text-xs font-bold text-brand-green">
+                      <span className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-xs font-bold text-[#0F2A1A]">
                         {t.rating.toFixed(1)} ★
                       </span>
                     )}

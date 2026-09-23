@@ -46,16 +46,16 @@ const NEEDS = [
 
 export function LearningNeeds() {
   return (
-    <section className="border-t border-ink-100 bg-white py-16">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+    <section className="border-t border-black/10 bg-white py-16">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
+          <h2 className="font-display text-2xl tracking-[0.02em] text-[#0F2A1A] md:text-3xl">
             <AnimatedText
               text="No Matter The Learning Need, There's A Tutor For Your Child!"
               delay={0.0}
             />
           </h2>
-          <p className="mt-3 text-ink-600">
+          <p className="mt-3 text-[#0F2A1A]/70">
             We have all the solutions your child needs to excel in school.
           </p>
         </div>
@@ -65,15 +65,15 @@ export function LearningNeeds() {
             <Link
               key={n.label}
               href={n.href}
-              className="group rounded-2xl border border-ink-100 bg-surface-muted p-6 text-center transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-card"
+              className="group rounded-2xl border border-black/10 bg-[#F9F6ED] p-6 text-center transition-all hover:-translate-y-1 hover:border-[#D6FF57]/40 hover:shadow-card"
             >
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-deep-green shadow-soft transition-colors group-hover:bg-deep-green group-hover:text-primary">
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-[#0F2A1A] shadow-soft transition-colors group-hover:bg-[#0F2A1A] group-hover:text-[#D6FF57]">
                 {n.icon}
               </div>
-              <p className="mt-4 text-sm font-bold leading-snug text-ink-800">
+              <p className="mt-4 text-sm font-bold leading-snug text-[#0F2A1A]/85">
                 {n.label}
               </p>
-              <p className="mt-2 text-xs leading-relaxed text-ink-500">
+              <p className="mt-2 text-xs leading-relaxed text-[#0F2A1A]/65">
                 {n.desc}
               </p>
             </Link>

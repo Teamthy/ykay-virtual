@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 const FIELD =
-  "mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30";
+  "mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-[#0F2A1A] placeholder:text-[#0F2A1A]/65 focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30";
 
 export function GmatLeadForm() {
   const [form, setForm] = useState({ first_name: "", phone: "", country: "Nigeria", email: "" });
@@ -50,11 +50,11 @@ export function GmatLeadForm() {
   if (done) {
     return (
       <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
-        <h3 className="text-xl font-bold text-ink-900">Request received</h3>
-        <p className="mt-2 text-sm text-ink-600">
+        <h3 className="text-xl font-bold text-[#0F2A1A]">Request received</h3>
+        <p className="mt-2 text-sm text-[#0F2A1A]/70">
           We will contact <b>{form.first_name}</b> at {form.phone}.
         </p>
-        <button type="button" onClick={() => setDone(false)} className="mt-4 text-sm font-semibold text-brand-gold-dark hover:underline">
+        <button type="button" onClick={() => setDone(false)} className="mt-4 text-sm font-semibold text-[#0F2A1A] hover:underline">
           Submit another request
         </button>
       </div>
@@ -70,12 +70,12 @@ export function GmatLeadForm() {
       className="rounded-2xl bg-white p-6 shadow-lg sm:p-7"
     >
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-ink-900">Get a GMAT tutor</h3>
-        <p className="mt-2 text-sm text-ink-600">Tell us your goal and we will match a vetted tutor.</p>
+        <h3 className="text-2xl font-bold text-[#0F2A1A]">Get a GMAT tutor</h3>
+        <p className="mt-2 text-sm text-[#0F2A1A]/70">Tell us your goal and we will match a vetted tutor.</p>
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm font-medium text-ink-800">
+        <label className="block text-sm font-medium text-[#0F2A1A]/85">
           First name
           <input
             type="text"
@@ -85,7 +85,7 @@ export function GmatLeadForm() {
             onChange={(e) => setForm({ ...form, first_name: e.target.value })}
           />
         </label>
-        <label className="block text-sm font-medium text-ink-800">
+        <label className="block text-sm font-medium text-[#0F2A1A]/85">
           Country
           <select
             className={FIELD}
@@ -101,7 +101,7 @@ export function GmatLeadForm() {
         </label>
       </div>
 
-      <label className="mt-4 block text-sm font-medium text-ink-800">
+      <label className="mt-4 block text-sm font-medium text-[#0F2A1A]/85">
         Phone number
         <input
           type="tel"
@@ -112,7 +112,7 @@ export function GmatLeadForm() {
         />
       </label>
 
-      <label className="mt-4 block text-sm font-medium text-ink-800">
+      <label className="mt-4 block text-sm font-medium text-[#0F2A1A]/85">
         Email
         <input
           type="email"
@@ -128,7 +128,7 @@ export function GmatLeadForm() {
       <button
         type="submit"
         disabled={busy}
-        className="mt-5 w-full rounded-lg bg-brand-gold py-3 px-4 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-50"
+        className="mt-5 w-full rounded-lg bg-[#D6FF57] py-3 px-4 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-50"
       >
         {busy ? "Sending…" : "Send request"}
       </button>

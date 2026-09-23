@@ -21,15 +21,15 @@ export default function BecomeTutorApplyPage() {
   }, [isLoading, user, router]);
 
   if (isLoading || !user) {
-    return <main className="container-x py-20 text-center text-ink-500">Loading…</main>;
+    return <main className="container-x py-20 text-center text-[#0F2A1A]/65">Loading…</main>;
   }
 
   return (
     <main className="container-x py-12 max-w-2xl">
-      <Link href="/become-tutor" className="text-sm text-brand-blue font-semibold hover:underline">← Back to Become a Tutor</Link>
+      <Link href="/become-tutor" className="text-sm text-[#0F2A1A] font-semibold hover:underline">← Back to Become a Tutor</Link>
       <div className="mt-6 text-center">
-        <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">You belong here!</p>
-        <p className="mt-2 text-sm text-ink-500">Create your tutor profile and start earning money teaching what you love.</p>
+        <p className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A]">You belong here!</p>
+        <p className="mt-2 text-sm text-[#0F2A1A]/65">Create your tutor profile and start earning money teaching what you love.</p>
       </div>
       <div className="mt-6">
         <OnboardingStepper current={0} />

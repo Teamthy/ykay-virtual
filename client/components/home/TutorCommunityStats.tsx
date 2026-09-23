@@ -24,17 +24,17 @@ const POINTS = [
 
 export function TutorCommunityStats() {
   return (
-    <section className="py-16 bg-surface-muted">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark">
+    <section className="py-16 bg-[#F9F6ED]">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
           You belong here
         </p>
         <AnimatedText
           as="h2"
-          className="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight text-brand-navy"
+          className="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight text-[#0F2A1A]"
           text="Teach with YK-Virtual"
         />
-        <p className="mt-3 max-w-2xl mx-auto text-ink-600">
+        <p className="mt-3 max-w-2xl mx-auto text-[#0F2A1A]/70">
           YK-Virtual is building a Nigeria-first tutoring marketplace -
           escrow-protected payouts and a support team, without inflated
           community numbers.
@@ -43,15 +43,15 @@ export function TutorCommunityStats() {
           {POINTS.map((s) => (
             <div
               key={s.title}
-              className="rounded-2xl border border-ink-100 bg-white p-7 shadow-soft"
+              className="rounded-2xl border border-black/10 bg-white p-7 shadow-soft"
             >
-              <div className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-brand-blue-light text-brand-blue">
+              <div className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                 {s.icon}
               </div>
-              <p className="mt-4 text-lg font-extrabold tracking-tight text-brand-navy">
+              <p className="mt-4 text-lg font-extrabold tracking-tight text-[#0F2A1A]">
                 {s.title}
               </p>
-              <p className="mt-1 text-sm font-semibold text-ink-500">
+              <p className="mt-1 text-sm font-semibold text-[#0F2A1A]/65">
                 {s.body}
               </p>
             </div>
@@ -59,7 +59,7 @@ export function TutorCommunityStats() {
         </div>
         <Link
           href="/become-tutor/apply"
-          className="mt-10 inline-block rounded-xl bg-[#111111] px-8 py-4 text-sm font-bold text-white hover:bg-brand-blue transition-colors"
+          className="mt-10 inline-block rounded-xl bg-[#0F2A1A] px-8 py-4 text-sm font-bold text-white hover:bg-[#0F2A1A] transition-colors"
         >
           Become a tutor
         </Link>

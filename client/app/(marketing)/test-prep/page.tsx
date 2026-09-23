@@ -48,15 +48,15 @@ export default function TestPrepPage() {
       />
 
       <section id="tests" className="scroll-mt-28 bg-white py-16">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
+        <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
             {TESTS.map((t) => (
               <Link
                 key={t.code}
                 href={t.href}
-                className="group rounded-2xl border border-ink-100 bg-surface-muted p-6 text-center transition hover:-translate-y-1 hover:shadow-card"
+                className="group rounded-2xl border border-black/10 bg-[#F9F6ED] p-6 text-center transition hover:-translate-y-1 hover:shadow-card"
               >
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-brand-blue shadow-soft group-hover:bg-brand-navy group-hover:text-white">
+                <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white text-[#0F2A1A] shadow-soft group-hover:bg-[#0F2A1A] group-hover:text-white">
                   {t.code === "GMAT" || t.code === "GRE" ? (
                     <GraduationCap size={20} />
                   ) : t.code === "SAT" || t.code === "ACT" ? (
@@ -65,10 +65,10 @@ export default function TestPrepPage() {
                     <Languages size={20} />
                   )}
                 </div>
-                <div className="mt-4 font-display text-2xl text-brand-navy">
+                <div className="mt-4 font-display text-2xl text-[#0F2A1A]">
                   {t.code}
                 </div>
-                <p className="mt-1 text-xs font-semibold text-ink-500">
+                <p className="mt-1 text-xs font-semibold text-[#0F2A1A]/65">
                   {t.name}
                 </p>
               </Link>
@@ -77,8 +77,8 @@ export default function TestPrepPage() {
         </div>
       </section>
 
-      <section className="bg-brand-navy py-14 text-white">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
+      <section className="bg-[#0F2A1A] py-14 text-white">
+        <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <h2 className="font-display text-3xl tracking-[0.02em]">
             How YK-Virtual prep works - on mobile too
           </h2>
@@ -100,7 +100,7 @@ export default function TestPrepPage() {
           </div>
           <Link
             href="/private-tuition"
-            className="mt-8 inline-block rounded-xl bg-brand-gold px-8 py-4 text-sm font-bold text-ink-900"
+            className="mt-8 inline-block rounded-xl bg-[#D6FF57] px-8 py-4 text-sm font-bold text-[#0F2A1A]"
           >
             Request a test-prep tutor
           </Link>

@@ -67,36 +67,35 @@ export default function GmatPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }}
       />
 
-      {/* Preline hero: announcement + gradient title + buttons */}
-      <section className="relative overflow-hidden bg-white">
-        <div
-          className="pointer-events-none absolute inset-0 before:absolute before:inset-x-0 before:top-0 before:h-full before:bg-[radial-gradient(ellipse_at_top,rgba(244,180,0,0.10),transparent_55%)]"
-          aria-hidden="true"
-        />
-        <div className="mx-auto max-w-[1400px] px-6 pb-10 pt-14 md:px-10 md:pt-20">
+      {/* Full-bleed editorial hero, with the photograph under a forest scrim. */}
+      <section className="relative isolate overflow-hidden bg-[#0F2A1A] text-white">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hero/test-prep.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0F2A1A] via-[#0F2A1A]/90 to-[#0F2A1A]/70" />
+        <div className="container-x relative py-14 lg:py-24">
           {/* Announcement banner */}
           <div className="flex justify-center">
             <a
               href="#lead"
-              className="inline-flex items-center gap-x-2 rounded-full border border-ink-200 bg-white p-1 ps-3 text-sm text-ink-800 shadow-sm transition hover:border-brand-gold"
+              className="inline-flex items-center gap-x-2 rounded-full border border-white/20 bg-white/10 p-1 ps-3 text-sm text-white shadow-sm transition hover:border-[#D6FF57]"
             >
               GMAT prep with a vetted tutor
-              <span className="inline-flex items-center gap-x-2 rounded-full bg-brand-gold-light px-2.5 py-1.5 font-semibold text-brand-gold-dark">
+              <span className="inline-flex items-center gap-x-2 rounded-full bg-[#D6FF57] px-2.5 py-1.5 font-semibold text-[#0F2A1A]">
                 Diagnostic first
               </span>
             </a>
           </div>
 
           {/* Title */}
-          <div className="mx-auto mt-6 max-w-2xl text-center">
-            <h1 className="font-display text-4xl tracking-[0.02em] text-ink-900 md:text-5xl lg:text-6xl">
+          <div className="mx-auto mt-6 max-w-[860px] text-center">
+            <h1 className="font-display text-[clamp(2.75rem,5vw,5.5rem)] uppercase leading-[0.95] text-white">
               Prepare for GMAT{" "}
-              <span className="text-brand-gold-dark">from your diagnostic</span>
+              <span className="text-[#D6FF57]">from your diagnostic</span>
             </h1>
           </div>
 
           <div className="mx-auto mt-5 max-w-3xl text-center">
-            <p className="text-lg text-ink-600">
+            <p className="text-[15px] leading-relaxed text-white/80 md:text-[17px]">
               Work a plan from your diagnostic - Quant, Verbal, IR and AWA. We
               do not promise a sitting, school or score.
             </p>
@@ -106,21 +105,21 @@ export default function GmatPage() {
           <div className="mt-8 flex justify-center gap-3">
             <a
               href="#lead"
-              className="inline-flex items-center gap-x-3 rounded-md bg-primary-dark py-3 px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-primary-hover"
+              className="inline-flex items-center gap-x-3 rounded-full bg-[#D6FF57] px-6 py-3 text-[13px] font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
             >
               Get a GMAT tutor
               <ArrowRight size={16} />
             </a>
             <a
               href="#stats"
-              className="inline-flex items-center gap-x-2 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+              className="inline-flex items-center gap-x-2 rounded-full border border-white/30 px-6 py-3 text-[13px] font-bold text-white hover:bg-white/10"
             >
               How prep works
             </a>
           </div>
 
           {/* Meta row */}
-          <p className="mt-6 text-center text-sm text-ink-500">
+          <p className="mt-7 text-center text-[13px] text-white/70">
             Quant, Verbal, IR and AWA - plan from your diagnostic, not a
             published average.
           </p>
@@ -129,7 +128,7 @@ export default function GmatPage() {
 
       {/* Stats + quote */}
       <section id="stats" className="scroll-mt-24 bg-white py-16">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-[1fr_1fr] gap-12 items-center">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 grid lg:grid-cols-[1fr_1fr] gap-12 items-center">
           <div>
             <div className="grid grid-cols-3 gap-4">
               {[
@@ -139,22 +138,22 @@ export default function GmatPage() {
               ].map((s) => (
                 <div
                   key={s.l}
-                  className="rounded-2xl border border-ink-100 bg-surface-muted p-5 text-center"
+                  className="rounded-2xl border border-black/10 bg-[#F9F6ED] p-5 text-center"
                 >
-                  <p className="font-display text-2xl text-brand-navy">{s.v}</p>
-                  <p className="mt-2 text-xs font-semibold text-ink-500">
+                  <p className="font-display text-2xl text-[#0F2A1A]">{s.v}</p>
+                  <p className="mt-2 text-xs font-semibold text-[#0F2A1A]/65">
                     {s.l}
                   </p>
                 </div>
               ))}
             </div>
-            <p className="mt-8 text-sm italic leading-relaxed text-ink-600">
+            <p className="mt-8 text-sm italic leading-relaxed text-[#0F2A1A]/70">
               &ldquo;I had 530 in the diagnostic test with Quant being my
               lowest; my goal was at least 700 to get into INSEAD MBA. Getting a
               GMAT tutor was the best decision I made. I was challenged,
               encouraged and thankfully, got the executive MBA admission.&rdquo;
             </p>
-            <p className="mt-3 text-sm font-bold text-ink-800">
+            <p className="mt-3 text-sm font-bold text-[#0F2A1A]/85">
               - Past YK-Virtual GMAT student
             </p>
           </div>
@@ -187,21 +186,21 @@ export default function GmatPage() {
       />
 
       {/* Benefits */}
-      <section className="bg-surface-muted py-16">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-          <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
+      <section className="bg-[#F9F6ED] py-16">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          <h2 className="font-display text-2xl tracking-[0.02em] text-[#0F2A1A] md:text-3xl">
             Enjoy the benefits of passing GMAT
           </h2>
-          <p className="mt-2 text-ink-600">
+          <p className="mt-2 text-[#0F2A1A]/70">
             No matter your reason for taking GMAT, we&apos;ll help you reach
             your goal.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <div
-              className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white"
+              className="rounded-2xl border border-black/10 bg-cover bg-center p-7 text-white bg-[#0F2A1A]"
               style={{
                 backgroundImage:
-                  "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/international.jpg)",
+                  "linear-gradient(165deg, rgba(15,42,26,0.88), rgba(15,42,26,0.7)), url(/hero/international.jpg)",
               }}
             >
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
@@ -214,16 +213,16 @@ export default function GmatPage() {
               </p>
               <Link
                 href="/gmat"
-                className="mt-4 inline-block text-sm font-bold text-brand-gold"
+                className="mt-4 inline-block text-sm font-bold text-[#D6FF57]"
               >
                 Start a plan →
               </Link>
             </div>
             <div
-              className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white"
+              className="rounded-2xl border border-black/10 bg-cover bg-center p-7 text-white bg-[#0F2A1A]"
               style={{
                 backgroundImage:
-                  "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/international.jpg)",
+                  "linear-gradient(165deg, rgba(15,42,26,0.88), rgba(15,42,26,0.7)), url(/hero/international.jpg)",
               }}
             >
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
@@ -236,16 +235,16 @@ export default function GmatPage() {
               </p>
               <Link
                 href="/gmat"
-                className="mt-4 inline-block text-sm font-bold text-brand-gold"
+                className="mt-4 inline-block text-sm font-bold text-[#D6FF57]"
               >
                 Get a tutor →
               </Link>
             </div>
             <div
-              className="rounded-2xl border border-ink-100 bg-cover bg-center p-7 text-white"
+              className="rounded-2xl border border-black/10 bg-cover bg-center p-7 text-white bg-[#0F2A1A]"
               style={{
                 backgroundImage:
-                  "linear-gradient(165deg, rgba(6,15,38,0.88), rgba(1,57,32,0.7)), url(/hero/test-prep.jpg)",
+                  "linear-gradient(165deg, rgba(15,42,26,0.88), rgba(15,42,26,0.7)), url(/hero/test-prep.jpg)",
               }}
             >
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/15 text-white">
@@ -258,14 +257,14 @@ export default function GmatPage() {
               </p>
               <Link
                 href="/online-classes"
-                className="mt-4 inline-block text-sm font-bold text-brand-gold"
+                className="mt-4 inline-block text-sm font-bold text-[#D6FF57]"
               >
                 Book online lessons →
               </Link>
             </div>
           </div>
-          <div className="mt-8 rounded-2xl border border-ink-100 bg-white p-6">
-            <ul className="grid gap-3 sm:grid-cols-2 text-sm text-ink-600">
+          <div className="mt-8 rounded-2xl border border-black/10 bg-white p-6">
+            <ul className="grid gap-3 sm:grid-cols-2 text-sm text-[#0F2A1A]/70">
               {[
                 "Personalised study plan from your diagnostic",
                 "Section drills - Quant, Verbal, IR, AWA",
@@ -275,7 +274,7 @@ export default function GmatPage() {
                 <li key={f} className="flex items-start gap-2.5">
                   <Check
                     size={15}
-                    className="mt-0.5 shrink-0 text-brand-green"
+                    className="mt-0.5 shrink-0 text-[#0F2A1A]"
                   />{" "}
                   {f}
                 </li>

@@ -61,12 +61,12 @@ export default async function TutorsPage(props: Props) {
       />
       <div className="container-x pt-12 pb-16">
         {!marketplaceEnabled && (
-          <div className="mb-8 rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-5 text-sm text-ink-700">
+          <div className="mb-8 rounded-2xl border border-[#0F2A1A]/20 bg-[#0F2A1A]/5 p-5 text-sm text-[#0F2A1A]/75">
             <strong>Managed matching mode:</strong> tell us what your learner
             needs and our advisors will match a vetted tutor —{" "}
             <a
               href="/private-tuition"
-              className="font-semibold text-brand-blue hover:underline"
+              className="font-semibold text-[#0F2A1A] hover:underline"
             >
               request a tutor
             </a>

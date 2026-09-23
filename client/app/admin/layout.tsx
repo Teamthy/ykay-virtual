@@ -9,15 +9,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isLoading } = useSession();
 
   if (isLoading) {
-    return <main className="px-6 py-20 text-center text-ink-500">Loading admin console…</main>;
+    return <main className="px-6 py-20 text-center text-[#0F2A1A]/65">Loading admin console…</main>;
   }
 
   if (!user || !isAdmin(user)) {
     return (
       <main className="px-6 py-24 text-center">
         <div className="text-5xl">🔒</div>
-        <h1 className="mt-4 text-2xl font-extrabold text-deep">Admin access required</h1>
-        <p className="mt-2 text-sm text-ink-500">You need an administrator account to view this console.</p>
+        <h1 className="mt-4 text-2xl font-extrabold text-[#0F2A1A]">Admin access required</h1>
+        <p className="mt-2 text-sm text-[#0F2A1A]/65">You need an administrator account to view this console.</p>
         <Link href="/login" className="btn-primary mt-6 inline-block">
           Log in as admin
         </Link>

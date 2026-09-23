@@ -55,7 +55,7 @@ export default async function HelpArticlePage(props: Props) {
             { name: article.q },
           ]}
         />
-        <div className="text-xs font-semibold uppercase text-brand-blue">
+        <div className="text-xs font-semibold uppercase text-[#0F2A1A]">
           {article.category.title}
         </div>
         <h1 className="mt-2 max-w-2xl text-3xl font-extrabold leading-tight md:text-4xl">
@@ -64,12 +64,12 @@ export default async function HelpArticlePage(props: Props) {
       </InnerHero>
 
       <article className="mx-auto mt-8 max-w-3xl">
-        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft md:p-8">
-          <p className="leading-relaxed text-ink-700">{article.a}</p>
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft md:p-8">
+          <p className="leading-relaxed text-[#0F2A1A]/75">{article.a}</p>
         </div>
         <Link
           href="/help"
-          className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-blue hover:underline"
+          className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#0F2A1A] hover:underline"
         >
           <ArrowLeft size={15} /> Back to Help Center
         </Link>
@@ -77,18 +77,18 @@ export default async function HelpArticlePage(props: Props) {
 
       {related.length > 0 && (
         <section className="mx-auto mt-12 max-w-3xl">
-          <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+          <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
             Related questions
           </h2>
-          <ul className="mt-4 divide-y divide-ink-100 rounded-2xl border border-ink-100 bg-white">
+          <ul className="mt-4 divide-y divide-ink-100 rounded-2xl border border-black/10 bg-white">
             {related.map((r) => (
               <li key={r.slug}>
                 <Link
                   href={`/help/${r.slug}`}
-                  className="flex items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-ink-800 transition-colors hover:text-brand-blue"
+                  className="flex items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-[#0F2A1A]/85 transition-colors hover:text-[#0F2A1A]"
                 >
                   <span>{r.q}</span>
-                  <ArrowRight size={15} className="shrink-0 text-ink-400" />
+                  <ArrowRight size={15} className="shrink-0 text-[#0F2A1A]/65" />
                 </Link>
               </li>
             ))}
@@ -96,8 +96,8 @@ export default async function HelpArticlePage(props: Props) {
         </section>
       )}
 
-      <section className="mx-auto mt-14 max-w-3xl rounded-3xl bg-brand-navy p-10 text-center text-white">
-        <LifeBuoy size={28} className="mx-auto text-brand-gold" />
+      <section className="mx-auto mt-14 max-w-3xl rounded-3xl bg-[#0F2A1A] p-10 text-center text-white">
+        <LifeBuoy size={28} className="mx-auto text-[#0F2A1A]" />
         <h2 className="mt-4 font-display text-2xl tracking-[0.02em] text-white">
           Still need help?
         </h2>
@@ -106,7 +106,7 @@ export default async function HelpArticlePage(props: Props) {
         </p>
         <Link
           href="/contact"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-7 py-3.5 text-sm font-bold text-[#0F2A1A] transition hover:-translate-y-0.5 hover:bg-[#C8F030]"
         >
           Contact support <ArrowRight size={15} />
         </Link>

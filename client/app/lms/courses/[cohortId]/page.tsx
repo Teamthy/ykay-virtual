@@ -147,7 +147,7 @@ export default function LmsCoursePage() {
         cover="/hero/exam-prep.jpg"
         subline={`${cohort.data?.start_date ? `${new Date(cohort.data.start_date).toLocaleDateString()} - ${new Date(cohort.data.end_date).toLocaleDateString()}` : ""}${cohort.data?.schedule_description ? ` · ${cohort.data.schedule_description}` : ""}${cohort.data?.location_mode ? ` · ${cohort.data.location_mode}` : ""}`}
         actions={
-          <Link href="/lms" className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-300">
+          <Link href="/lms" className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[#0F2A1A]/75 hover:border-black/10">
             ← Back to My Learning
           </Link>
         }
@@ -157,8 +157,8 @@ export default function LmsCoursePage() {
         {/* Progress charts */}
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {/* Attendance per lesson */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-deep">Attendance</h3>
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-[#0F2A1A]">Attendance</h3>
             <div className="mt-3 flex items-end gap-1.5" style={{ height: 96 }}>
               {(lessons.data ?? []).slice(0, 8).map((l, i) => {
                 const row = (attendance.data ?? []).find((a) => (attendance.data ?? [])[i]?.lesson_id === l.id);
@@ -168,7 +168,7 @@ export default function LmsCoursePage() {
                   <div key={l.id} className="flex flex-1 flex-col items-center gap-1">
                     <span className="text-[10px] font-bold">{row ? "✓" : "-"}</span>
                     <div
-                      className={`w-full rounded-t ${present ? "bg-green-500" : late ? "bg-amber-400" : "bg-ink-200"}`}
+                      className={`w-full rounded-t ${present ? "bg-green-500" : late ? "bg-amber-400" : "bg-[#F9F6ED]"}`}
                       style={{ height: row ? 56 : 16 }}
                       title={l.title}
                     />
@@ -176,48 +176,48 @@ export default function LmsCoursePage() {
                 );
               })}
             </div>
-            <p className="mt-1 text-[11px] text-ink-500">Last lessons · green = present, amber = late, grey = untracked</p>
+            <p className="mt-1 text-[11px] text-[#0F2A1A]/65">Last lessons · green = present, amber = late, grey = untracked</p>
           </div>
 
           {/* Quiz pass rate */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-deep">Quizzes</h3>
-            <p className="mt-2 text-3xl font-extrabold text-deep">
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-[#0F2A1A]">Quizzes</h3>
+            <p className="mt-2 text-3xl font-extrabold text-[#0F2A1A]">
               {quizzesTotal > 0 ? Math.round((quizzesPassed / quizzesTotal) * 100) : "-"}
-              {quizzesTotal > 0 && <span className="text-base font-bold text-ink-500">% passed</span>}
+              {quizzesTotal > 0 && <span className="text-base font-bold text-[#0F2A1A]/65">% passed</span>}
             </p>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-100">
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#F9F6ED]">
               <div
-                className="h-full rounded-full bg-primary"
+                className="h-full rounded-full bg-[#D6FF57]"
                 style={{ width: quizzesTotal > 0 ? `${(quizzesPassed / quizzesTotal) * 100}%` : "0%" }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-ink-500">{quizzesPassed} of {quizzesTotal} quizzes passed</p>
+            <p className="mt-2 text-[11px] text-[#0F2A1A]/65">{quizzesPassed} of {quizzesTotal} quizzes passed</p>
           </div>
 
           {/* Report ratings */}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-deep">Tutor ratings</h3>
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-[#0F2A1A]">Tutor ratings</h3>
             <div className="mt-3 space-y-2">
               {(reports.data ?? []).slice(-4).map((r) => (
                 <div key={r.id} className="flex items-center gap-2">
-                  <span className="w-14 shrink-0 text-[10px] text-ink-500">
+                  <span className="w-14 shrink-0 text-[10px] text-[#0F2A1A]/65">
                     {new Date(r.period_start).toLocaleDateString(undefined, { month: "short" })}
                   </span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink-100">
-                    <div className="h-full rounded-full bg-deep" style={{ width: `${(r.overall_rating / 5) * 100}%` }} />
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#F9F6ED]">
+                    <div className="h-full rounded-full bg-[#0F2A1A]" style={{ width: `${(r.overall_rating / 5) * 100}%` }} />
                   </div>
-                  <span className="w-8 shrink-0 text-right text-[11px] font-bold text-deep">★{r.overall_rating}</span>
+                  <span className="w-8 shrink-0 text-right text-[11px] font-bold text-[#0F2A1A]">★{r.overall_rating}</span>
                 </div>
               ))}
-              {(reports.data ?? []).length === 0 && <p className="py-6 text-center text-[11px] text-ink-500">No reports yet</p>}
+              {(reports.data ?? []).length === 0 && <p className="py-6 text-center text-[11px] text-[#0F2A1A]/65">No reports yet</p>}
             </div>
           </div>
         </div>
 
         {/* Attendance strip */}
-        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white px-5 py-4 shadow-sm">
-          <span className="text-sm font-bold text-deep">Attendance</span>
+        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
+          <span className="text-sm font-bold text-[#0F2A1A]">Attendance</span>
           {["all", "PRESENT", "LATE", "ABSENT"].map((s) => (
             <button
               key={s}
@@ -225,13 +225,13 @@ export default function LmsCoursePage() {
               onClick={() => setAttendanceFilter(s)}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-bold capitalize",
-                attendanceFilter === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-500 hover:bg-ink-200"
+                attendanceFilter === s ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/65 hover:bg-[#F9F6ED]"
               )}
             >
               {s === "all" ? `All (${total})` : `${s.toLowerCase()} (${s === "PRESENT" ? present : s === "LATE" ? late : 0})`}
             </button>
           ))}
-          <span className="ml-auto text-sm text-ink-500">
+          <span className="ml-auto text-sm text-[#0F2A1A]/65">
             Present {present} · Late {late} · {total ? Math.round(((present + late) / total) * 100) : 0}% tracked
           </span>
         </div>
@@ -240,10 +240,10 @@ export default function LmsCoursePage() {
           {/* Left column */}
           <div className="space-y-6">
             {/* Course player - curriculum sidebar + persistent player */}
-            <section className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-sm">
+            <section className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
               <div className="grid lg:grid-cols-[300px_1fr]">
                 {/* Curriculum sidebar */}
-                <div className="border-b border-ink-100 bg-deep p-4 text-white lg:border-b-0 lg:border-r">
+                <div className="border-b border-black/10 bg-[#0F2A1A] p-4 text-white lg:border-b-0 lg:border-r">
                   <h2 className="px-1 text-xs font-bold uppercase tracking-[0.18em] text-white/80">
                     Course content
                   </h2>
@@ -255,12 +255,12 @@ export default function LmsCoursePage() {
                           key={l.id}
                           onClick={() => setActiveLessonId(l.id)}
                           className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
-                            active ? "bg-primary font-semibold text-ink-900" : "text-white/80 hover:bg-white/10"
+                            active ? "bg-[#D6FF57] font-semibold text-[#0F2A1A]" : "text-white/80 hover:bg-white/10"
                           }`}
                         >
                           <span
                             className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${
-                              active ? "bg-ink-900 text-white" : "bg-white/15 text-white"
+                              active ? "bg-[#0F2A1A] text-white" : "bg-white/15 text-white"
                             }`}
                           >
                             {i + 1}
@@ -301,11 +301,11 @@ export default function LmsCoursePage() {
                 <div className="p-5">
                   {(() => {
                     const active = (lessons.data ?? []).find((l) => l.id === activeLessonId) ?? (lessons.data ?? [])[0];
-                    if (!active) return <p className="py-16 text-center text-sm text-ink-500">Select a lesson to begin.</p>;
+                    if (!active) return <p className="py-16 text-center text-sm text-[#0F2A1A]/65">Select a lesson to begin.</p>;
                     return (
                       <>
-                        <div className="overflow-hidden rounded-xl border border-ink-200 bg-black">
-                          <div className="flex aspect-video w-full items-center justify-center bg-deep">
+                        <div className="overflow-hidden rounded-xl border border-black/10 bg-black">
+                          <div className="flex aspect-video w-full items-center justify-center bg-[#0F2A1A]">
                             {active.video_url ? (
                               <video
                                 key={active.id}
@@ -337,13 +337,13 @@ export default function LmsCoursePage() {
                         </div>
                         <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h3 className="font-display text-lg font-bold text-deep">{active.title}</h3>
-                            <p className="mt-0.5 text-xs text-ink-500">
+                            <h3 className="font-display text-lg font-bold text-[#0F2A1A]">{active.title}</h3>
+                            <p className="mt-0.5 text-xs text-[#0F2A1A]/65">
                               {new Date(active.start_at).toLocaleString()} · {active.timezone}
                               {active.meeting_provider ? ` · ${active.meeting_provider}` : ""}
                             </p>
                             {active.description && (
-                              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600">{active.description}</p>
+                              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#0F2A1A]/70">{active.description}</p>
                             )}
                           </div>
                           {active.meeting_url && (
@@ -351,7 +351,7 @@ export default function LmsCoursePage() {
                               href={active.meeting_url}
                               target="_blank"
                               rel="noreferrer"
-                              className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover"
+                              className="rounded-lg bg-[#D6FF57] px-4 py-2 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
                             >
                               Join live ↗
                             </a>
@@ -365,15 +365,15 @@ export default function LmsCoursePage() {
             </section>
 
             {/* Assignments */}
-            <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-deep">Assignments</h2>
+            <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+              <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Assignments</h2>
               <div className="mt-3 space-y-3">
                 {(assignments.data ?? []).map((a) => (
-                  <div key={a.id} className="rounded-xl border border-ink-100 p-4">
+                  <div key={a.id} className="rounded-xl border border-black/10 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-ink-800">{a.title}</p>
-                        <p className="mt-0.5 text-xs text-ink-500">
+                        <p className="font-semibold text-[#0F2A1A]/85">{a.title}</p>
+                        <p className="mt-0.5 text-xs text-[#0F2A1A]/65">
                           {a.instructions}
                           {a.due_at ? ` · Due ${new Date(a.due_at).toLocaleDateString()}` : ""}
                           {a.max_score ? ` · Max ${a.max_score} pts` : ""}
@@ -384,7 +384,7 @@ export default function LmsCoursePage() {
                       <input
                         type="text"
                         placeholder="Paste your answer / link to your work…"
-                        className="h-10 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                        className="h-10 flex-1 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                         value={submitText[a.id] ?? ""}
                         onChange={(e) => setSubmitText((m) => ({ ...m, [a.id]: e.target.value }))}
                       />
@@ -392,7 +392,7 @@ export default function LmsCoursePage() {
                         type="button"
                         disabled={!submitText[a.id]?.trim() || submit.isPending}
                         onClick={() => submit.mutate({ assignmentId: a.id, content: submitText[a.id] })}
-                        className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                        className="rounded-lg bg-[#D6FF57] px-4 py-2 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
                       >
                         Submit
                       </button>
@@ -400,22 +400,22 @@ export default function LmsCoursePage() {
                   </div>
                 ))}
                 {(assignments.data ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-ink-500">No assignments yet.</p>
+                  <p className="py-6 text-center text-sm text-[#0F2A1A]/65">No assignments yet.</p>
                 )}
               </div>
             </section>
 
             {/* Quizzes */}
-            <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-deep">Quizzes & assessments</h2>
+            <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+              <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Quizzes & assessments</h2>
               <div className="mt-3 space-y-3">
                 {(quizzes.data ?? []).map((q) => (
-                  <div key={q.id} className="rounded-xl border border-ink-100 p-4">
+                  <div key={q.id} className="rounded-xl border border-black/10 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-ink-800">{q.title}</p>
-                        <p className="mt-0.5 text-xs text-ink-500">
-                          <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-deep">
+                        <p className="font-semibold text-[#0F2A1A]/85">{q.title}</p>
+                        <p className="mt-0.5 text-xs text-[#0F2A1A]/65">
+                          <span className="rounded-full bg-[#F9F6ED] px-2 py-0.5 text-[10px] font-bold text-[#0F2A1A]">
                             {subjectName(subjectMap, q.subject_id)}
                           </span>{" "}
                           {q.instructions ?? "Auto-graded quiz"}
@@ -434,7 +434,7 @@ export default function LmsCoursePage() {
                             setQuiz({ phase: "starting" });
                             startQuiz.mutate(q.id);
                           }}
-                          className="rounded-lg bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep/90 disabled:opacity-40"
+                          className="rounded-lg bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white hover:bg-[#0F2A1A]/90 disabled:opacity-40"
                         >
                           {quiz.phase === "starting" ? "Starting…" : "Start quiz"}
                         </button>
@@ -443,7 +443,7 @@ export default function LmsCoursePage() {
                   </div>
                 ))}
                 {(quizzes.data ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-ink-500">No quizzes yet.</p>
+                  <p className="py-6 text-center text-sm text-[#0F2A1A]/65">No quizzes yet.</p>
                 )}
               </div>
             </section>
@@ -452,8 +452,8 @@ export default function LmsCoursePage() {
           {/* Right column */}
           <div className="space-y-6">
             {/* Resources */}
-            <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-deep">Resources</h2>
+            <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+              <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Resources</h2>
               <div className="mt-3 space-y-2">
                 {(resources.data ?? []).map((r) => (
                   <a
@@ -461,41 +461,41 @@ export default function LmsCoursePage() {
                     href={r.file_url ?? "#"}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-ink-100 px-4 py-3 text-sm hover:border-primary"
+                    className="flex items-center gap-3 rounded-xl border border-black/10 px-4 py-3 text-sm hover:border-[#D6FF57]"
                   >
                     <span>📄</span>
                     <span className="flex-1">
-                      <span className="block font-semibold text-ink-800">{r.title}</span>
-                      {r.description && <span className="block text-xs text-ink-500">{r.description}</span>}
+                      <span className="block font-semibold text-[#0F2A1A]/85">{r.title}</span>
+                      {r.description && <span className="block text-xs text-[#0F2A1A]/65">{r.description}</span>}
                     </span>
                   </a>
                 ))}
                 {(resources.data ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-ink-500">No resources yet.</p>
+                  <p className="py-6 text-center text-sm text-[#0F2A1A]/65">No resources yet.</p>
                 )}
               </div>
             </section>
 
             {/* Notes */}
-            <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-deep">Lesson notes</h2>
+            <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+              <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Lesson notes</h2>
               <div className="mt-3 space-y-2">
                 {(notes.data ?? []).map((n) => (
-                  <div key={n.id} className="rounded-xl bg-[#F8EBCF] px-4 py-3 text-sm">
-                    <p className="text-ink-700">{n.content}</p>
-                    {n.homework && <p className="mt-1 text-xs font-semibold text-primary-dark">Homework: {n.homework}</p>}
-                    <p className="mt-1 text-[11px] text-ink-500">{new Date(n.created_at).toLocaleDateString()}</p>
+                  <div key={n.id} className="rounded-xl bg-[#F9F6ED] px-4 py-3 text-sm">
+                    <p className="text-[#0F2A1A]/75">{n.content}</p>
+                    {n.homework && <p className="mt-1 text-xs font-semibold text-[#0F2A1A]">Homework: {n.homework}</p>}
+                    <p className="mt-1 text-[11px] text-[#0F2A1A]/65">{new Date(n.created_at).toLocaleDateString()}</p>
                   </div>
                 ))}
                 {(notes.data ?? []).length === 0 && (
-                  <p className="py-4 text-center text-sm text-ink-500">No notes yet.</p>
+                  <p className="py-4 text-center text-sm text-[#0F2A1A]/65">No notes yet.</p>
                 )}
               </div>
               <div className="mt-3 flex gap-2">
                 <input
                   type="text"
                   placeholder="Add a note…"
-                  className="h-10 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                  className="h-10 flex-1 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
                 />
@@ -503,7 +503,7 @@ export default function LmsCoursePage() {
                   type="button"
                   disabled={!noteText.trim() || addNote.isPending}
                   onClick={() => addNote.mutate((lessons.data ?? [])[0]?.id ?? "")}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                  className="rounded-lg bg-[#D6FF57] px-4 py-2 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
                 >
                   Save
                 </button>
@@ -511,24 +511,24 @@ export default function LmsCoursePage() {
             </section>
 
             {/* Progress reports */}
-            <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-deep">Progress</h2>
+            <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+              <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Progress</h2>
               <div className="mt-3 space-y-3">
                 {(reports.data ?? []).map((r) => (
-                  <div key={r.id} className="rounded-xl border border-ink-100 p-4 text-sm">
+                  <div key={r.id} className="rounded-xl border border-black/10 p-4 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-ink-500">
+                      <span className="text-xs font-semibold text-[#0F2A1A]/65">
                         {new Date(r.period_start).toLocaleDateString()} - {new Date(r.period_end).toLocaleDateString()}
                       </span>
-                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-xs font-bold text-deep">★ {r.overall_rating}/5</span>
+                      <span className="rounded-full bg-[#F9F6ED] px-2 py-0.5 text-xs font-bold text-[#0F2A1A]">★ {r.overall_rating}/5</span>
                     </div>
-                    {r.strengths && <p className="mt-2 text-ink-700">💪 {r.strengths}</p>}
-                    {r.weaknesses && <p className="mt-1 text-ink-600">⚠️ {r.weaknesses}</p>}
-                    {r.recommendations && <p className="mt-1 text-ink-700">🎯 {r.recommendations}</p>}
+                    {r.strengths && <p className="mt-2 text-[#0F2A1A]/75">💪 {r.strengths}</p>}
+                    {r.weaknesses && <p className="mt-1 text-[#0F2A1A]/70">⚠️ {r.weaknesses}</p>}
+                    {r.recommendations && <p className="mt-1 text-[#0F2A1A]/75">🎯 {r.recommendations}</p>}
                   </div>
                 ))}
                 {(reports.data ?? []).length === 0 && (
-                  <p className="py-4 text-center text-sm text-ink-500">No reports yet.</p>
+                  <p className="py-4 text-center text-sm text-[#0F2A1A]/65">No reports yet.</p>
                 )}
               </div>
             </section>
@@ -541,21 +541,21 @@ export default function LmsCoursePage() {
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
           <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold text-deep">{quiz.data.title}</h3>
+              <h3 className="font-display text-xl font-bold text-[#0F2A1A]">{quiz.data.title}</h3>
               <button
                 type="button"
                 onClick={() => setQuiz({ phase: "idle" })}
-                className="grid size-8 place-items-center rounded-full bg-ink-100 text-ink-500 hover:bg-ink-200"
+                className="grid size-8 place-items-center rounded-full bg-[#F9F6ED] text-[#0F2A1A]/65 hover:bg-[#F9F6ED]"
                 aria-label="Close quiz"
               >
                 ✕
               </button>
             </div>
-            <p className="mt-1 text-xs text-ink-500">Pass mark: {quiz.data.pass_threshold}% · Answer all questions, then submit.</p>
+            <p className="mt-1 text-xs text-[#0F2A1A]/65">Pass mark: {quiz.data.pass_threshold}% · Answer all questions, then submit.</p>
             <div className="mt-4 space-y-5">
               {quiz.data.questions.map((q, qi) => (
-                <div key={q.id} className="rounded-xl border border-ink-100 p-4">
-                  <p className="text-sm font-semibold text-ink-800">
+                <div key={q.id} className="rounded-xl border border-black/10 p-4">
+                  <p className="text-sm font-semibold text-[#0F2A1A]/85">
                     {qi + 1}. {q.question}
                   </p>
                   <div className="mt-3 grid gap-2">
@@ -569,8 +569,8 @@ export default function LmsCoursePage() {
                         className={cn(
                           "rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition-colors",
                           quiz.answers[q.id] === oi
-                            ? "border-primary bg-primary-light text-deep"
-                            : "border-ink-200 text-ink-600 hover:border-ink-300"
+                            ? "border-[#D6FF57] bg-[#F9F6ED] text-[#0F2A1A]"
+                            : "border-black/10 text-[#0F2A1A]/70 hover:border-black/10"
                         )}
                       >
                         {String.fromCharCode(65 + oi)}. {opt}
@@ -584,7 +584,7 @@ export default function LmsCoursePage() {
               type="button"
               disabled={gradeQuiz.isPending || Object.keys(quiz.answers).length < quiz.data.questions.length}
               onClick={() => gradeQuiz.mutate({ id: quiz.data.attempt.assessment_id, answers: quiz.answers })}
-              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
             >
               {gradeQuiz.isPending ? "Grading…" : `Submit quiz (${Object.keys(quiz.answers).length}/${quiz.data.questions.length})`}
             </button>
@@ -596,19 +596,19 @@ export default function LmsCoursePage() {
       {quiz.phase === "done" && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
-            <div className="grid size-16 place-items-center rounded-2xl bg-primary-light text-primary">{quiz.result.passed ? <PartyPopper size={32} /> : <BookOpen size={32} />}</div>
-            <h3 className="mt-3 font-display text-xl font-bold text-deep">
+            <div className="grid size-16 place-items-center rounded-2xl bg-[#F9F6ED] text-[#0F2A1A]">{quiz.result.passed ? <PartyPopper size={32} /> : <BookOpen size={32} />}</div>
+            <h3 className="mt-3 font-display text-xl font-bold text-[#0F2A1A]">
               {quiz.result.passed ? "Quiz passed!" : "Keep practicing"}
             </h3>
-            <p className="mt-2 text-sm text-ink-500">
-              You scored <span className="font-extrabold text-deep">{quiz.result.score}/{quiz.result.max_score}</span>{" "}
+            <p className="mt-2 text-sm text-[#0F2A1A]/65">
+              You scored <span className="font-extrabold text-[#0F2A1A]">{quiz.result.score}/{quiz.result.max_score}</span>{" "}
               ({quiz.result.correct}/{quiz.result.total} correct)
               {quiz.result.passed ? "" : " - you can retake it anytime."}
             </p>
             <button
               type="button"
               onClick={() => setQuiz({ phase: "idle" })}
-              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-bold text-ink-900 hover:bg-primary-hover"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
             >
               Done
             </button>

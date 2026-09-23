@@ -21,12 +21,12 @@ export default function BecomeTutorAssessmentPage() {
   }, [isLoading, user, state.profileId, router]);
 
   if (isLoading || !user || !state.profileId) {
-    return <main className="container-x py-20 text-center text-ink-500">Loading…</main>;
+    return <main className="container-x py-20 text-center text-[#0F2A1A]/65">Loading…</main>;
   }
 
   return (
     <main className="container-x py-12 max-w-2xl">
-      <Link href="/become-tutor/documents" className="text-sm text-brand-blue font-semibold hover:underline">← Back</Link>
+      <Link href="/become-tutor/documents" className="text-sm text-[#0F2A1A] font-semibold hover:underline">← Back</Link>
       <div className="mt-4">
         <OnboardingStepper current={3} />
         <AssessmentStep

@@ -14,10 +14,10 @@ import {
 } from "@/features/admin/api";
 
 const STATUS_BADGE: Record<string, string> = {
-  DRAFT: "bg-ink-100 text-ink-600",
+  DRAFT: "bg-[#F9F6ED] text-[#0F2A1A]/70",
   SCHEDULED: "bg-blue-100 text-blue-700",
   PUBLISHED: "bg-green-100 text-green-700",
-  ARCHIVED: "bg-ink-100 text-ink-400",
+  ARCHIVED: "bg-[#F9F6ED] text-[#0F2A1A]/65",
 };
 
 export default function AdminBlogPage() {
@@ -50,7 +50,7 @@ export default function AdminBlogPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-extrabold">Blog CMS</h1>
-          <p className="text-ink-500 text-sm mt-1">
+          <p className="text-[#0F2A1A]/65 text-sm mt-1">
             Create, edit and publish SEO content (subject/exam-tagged).
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function AdminBlogPage() {
               setPage(1);
             }}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
             }`}
           >
             {s || "All"}
@@ -91,7 +91,7 @@ export default function AdminBlogPage() {
             setPage(1);
           }}
           placeholder="Search title or slug…"
-          className="ml-auto rounded-xl border border-ink-200 px-4 py-2 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
+          className="ml-auto rounded-xl border border-black/10 px-4 py-2 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
         />
       </div>
 
@@ -103,13 +103,13 @@ export default function AdminBlogPage() {
           <Skeleton className="h-12 w-full" />
         </div>
       ) : data.length === 0 ? (
-        <div className="border rounded-2xl p-12 text-center text-ink-500">
+        <div className="border rounded-2xl p-12 text-center text-[#0F2A1A]/65">
           No posts yet - publish your first study guide.
         </div>
       ) : (
         <div className="border rounded-2xl overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
-            <thead className="bg-ink-50 text-left text-xs text-ink-500">
+            <thead className="bg-[#F9F6ED] text-left text-xs text-[#0F2A1A]/65">
               <tr>
                 <th className="px-5 py-3 font-semibold">Title</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
@@ -120,15 +120,15 @@ export default function AdminBlogPage() {
             </thead>
             <tbody>
               {data.map((p: BlogPost) => (
-                <tr key={p.id} className="border-t border-ink-100 hover:bg-ink-50/50">
+                <tr key={p.id} className="border-t border-black/10 hover:bg-[#F9F6ED]/50">
                   <td className="px-5 py-3 font-semibold max-w-[280px] truncate">{p.title}</td>
                   <td className="px-5 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_BADGE[p.status]}`}>
                       {p.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 font-mono text-xs text-ink-500">{p.slug}</td>
-                  <td className="px-5 py-3 text-xs text-ink-500">
+                  <td className="px-5 py-3 font-mono text-xs text-[#0F2A1A]/65">{p.slug}</td>
+                  <td className="px-5 py-3 text-xs text-[#0F2A1A]/65">
                     {new Date(p.updated_at).toLocaleDateString()}
                   </td>
                   <td className="px-5 py-3 text-right">
@@ -170,7 +170,7 @@ export default function AdminBlogPage() {
           <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
             Prev
           </Button>
-          <span className="text-sm text-ink-500 self-center">
+          <span className="text-sm text-[#0F2A1A]/65 self-center">
             Page {meta.page} / {meta.total_pages}
           </span>
           <Button size="sm" variant="outline" disabled={!meta.has_next} onClick={() => setPage(page + 1)}>
@@ -223,13 +223,13 @@ function CreatePostForm({ onDone }: { onDone: () => void }) {
       {rows ? (
         <textarea
           rows={rows}
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
           value={form[key]}
           onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         />
       ) : (
         <input
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
+          className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
           value={form[key]}
           onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         />
@@ -253,7 +253,7 @@ function CreatePostForm({ onDone }: { onDone: () => void }) {
       <label className="block text-sm">
         <span className="font-medium">Status</span>
         <select
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+          className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
           value={form.status}
           onChange={(e) => setForm({ ...form, status: e.target.value as BlogStatus })}
         >

@@ -28,14 +28,14 @@ export default function InstitutionsConsolePage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900">My institutions</h1>
-          <p className="mt-1 text-sm text-ink-500">
+          <h1 className="text-2xl font-bold text-[#0F2A1A]">My institutions</h1>
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">
             Manage your school or organisation profile, members and learners.
           </p>
         </div>
         <Link
           href="/for-schools"
-          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-deep px-4 py-2 text-sm font-bold text-white hover:bg-deep/90"
+          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-[#0F2A1A] px-4 py-2 text-sm font-bold text-white hover:bg-[#0F2A1A]/90"
         >
           <Plus size={16} /> New institution
         </Link>
@@ -58,19 +58,19 @@ export default function InstitutionsConsolePage() {
             <Link
               key={v.institution_id}
               href={`/account/institutions/${v.institution_id}`}
-              className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition-shadow hover:shadow-card"
+              className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft transition-shadow hover:shadow-card"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-deep text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0F2A1A] text-white">
                   <Building2 size={22} />
                 </div>
                 <div>
-                  <h2 className="font-bold text-ink-900">{v.institution.name}</h2>
-                  <p className="text-xs text-ink-500">{v.institution.type.toLowerCase()}</p>
+                  <h2 className="font-bold text-[#0F2A1A]">{v.institution.name}</h2>
+                  <p className="text-xs text-[#0F2A1A]/65">{v.institution.type.toLowerCase()}</p>
                 </div>
               </div>
               <div className="mt-3 flex items-center justify-between">
-                <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-xs font-bold text-ink-600">
+                <span className="rounded-full bg-[#F9F6ED] px-2.5 py-0.5 text-xs font-bold text-[#0F2A1A]/70">
                   {ROLE_LABEL[v.role] ?? v.role}
                 </span>
                 {!v.institution.is_active && (

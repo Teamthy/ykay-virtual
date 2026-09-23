@@ -36,14 +36,14 @@ function ForgotPasswordInner() {
   if (sent) {
     return (
       <AuthShell title="Check your inbox">
-        <div className="rounded-2xl border border-ink-100 bg-white p-7 text-center shadow-soft">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand-blue-light text-2xl">📬</div>
-          <h2 className="mt-4 text-xl font-extrabold text-brand-navy">Check your inbox</h2>
-          <p className="mt-2 text-sm text-ink-600">
+        <div className="rounded-2xl border border-black/10 bg-white p-7 text-center shadow-soft">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#F9F6ED] text-2xl">📬</div>
+          <h2 className="mt-4 text-xl font-extrabold text-[#0F2A1A]">Check your inbox</h2>
+          <p className="mt-2 text-sm text-[#0F2A1A]/70">
             If an account exists for <strong>{email}</strong>, a password reset link is on its way. The link
             expires in 24 hours.
           </p>
-          <Link href={withNext("/login", next)} className="mt-4 block text-sm text-brand-blue font-semibold hover:underline">
+          <Link href={withNext("/login", next)} className="mt-4 block text-sm text-[#0F2A1A] font-semibold hover:underline">
             Back to login
           </Link>
         </div>
@@ -58,7 +58,7 @@ function ForgotPasswordInner() {
       footer={
         <>
           Remembered it?{" "}
-          <Link href={withNext("/login", next)} className="text-brand-blue font-semibold hover:underline">
+          <Link href={withNext("/login", next)} className="text-[#0F2A1A] font-semibold hover:underline">
             Back to login
           </Link>
         </>
@@ -66,7 +66,7 @@ function ForgotPasswordInner() {
     >
       <div className="space-y-4">
         <div>
-          <label htmlFor="fp-email" className="mb-1.5 block text-sm font-medium text-ink-800">Email</label>
+          <label htmlFor="fp-email" className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">Email</label>
           <input
             id="fp-email"
             type="email"
@@ -85,7 +85,7 @@ function ForgotPasswordInner() {
           type="button"
           disabled={submitting}
           onClick={() => void submit()}
-          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? "Sending…" : "Send reset link"}
         </button>

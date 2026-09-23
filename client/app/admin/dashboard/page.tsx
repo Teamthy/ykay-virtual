@@ -29,10 +29,10 @@ export default function AdminDashboardFeaturesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-deep">
-          <LayoutDashboard className="text-primary" /> Student Dashboard
+        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-[#0F2A1A]">
+          <LayoutDashboard className="text-[#0F2A1A]" /> Student Dashboard
         </h1>
-        <p className="mt-1 text-sm text-ink-500">
+        <p className="mt-1 text-sm text-[#0F2A1A]/65">
           The student dashboard ships a set of industry-standard learning widgets plus a daily welcome
           quote for every user. These are student-facing; the toggle below shows the API surface is live.
         </p>
@@ -40,22 +40,22 @@ export default function AdminDashboardFeaturesPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f) => (
-          <div key={f.title} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+          <div key={f.title} className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
             <div className="flex items-center gap-2">
-              <span className="grid size-9 place-items-center rounded-xl bg-primary-light text-deep">{f.icon}</span>
-              <h3 className="font-bold text-ink-900">{f.title}</h3>
+              <span className="grid size-9 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">{f.icon}</span>
+              <h3 className="font-bold text-[#0F2A1A]">{f.title}</h3>
             </div>
-            <p className="mt-2 text-sm text-ink-500">{f.desc}</p>
+            <p className="mt-2 text-sm text-[#0F2A1A]/65">{f.desc}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-        <h3 className="font-bold text-ink-900">API status</h3>
+      <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
+        <h3 className="font-bold text-[#0F2A1A]">API status</h3>
         {sample.isLoading ? (
           <Skeleton className="mt-2 h-8 w-40" />
         ) : (
-          <p className="mt-2 text-sm text-ink-500">
+          <p className="mt-2 text-sm text-[#0F2A1A]/65">
             Gradebook API reachable: <span className="font-bold text-green-700">✓ live</span> (returns{" "}
             {sample.data?.data?.length ?? 0} subject rows).
           </p>

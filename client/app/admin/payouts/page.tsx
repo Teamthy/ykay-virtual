@@ -112,10 +112,10 @@ export default function AdminPayoutsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-deep">
-          <Banknote className="text-primary" /> Tutor payouts
+        <h1 className="flex items-center gap-2 text-3xl font-extrabold text-[#0F2A1A]">
+          <Banknote className="text-[#0F2A1A]" /> Tutor payouts
         </h1>
-        <p className="mt-1 text-sm text-ink-500">
+        <p className="mt-1 text-sm text-[#0F2A1A]/65">
           {paystackEnabled
             ? "One-click Paystack bank transfers — the tutor is notified on WhatsApp the moment the money moves."
             : "Transfer each pending amount to the tutor&apos;s bank account, then confirm it here with the transaction reference — the tutor is notified on WhatsApp."}
@@ -130,15 +130,15 @@ export default function AdminPayoutsPage() {
             onClick={() => setStatus(f.key)}
             className={`rounded-full px-4 py-2 text-xs font-bold transition-colors ${
               status === f.key
-                ? "bg-primary text-ink-900"
-                : "border border-ink-200 bg-white text-ink-600 hover:border-ink-300"
+                ? "bg-[#D6FF57] text-[#0F2A1A]"
+                : "border border-black/10 bg-white text-[#0F2A1A]/70 hover:border-black/10"
             }`}
           >
             {f.label}
           </button>
         ))}
         {status === "PENDING" && (
-          <span className="ml-auto rounded-full bg-primary-light px-4 py-2 text-xs font-bold text-deep">
+          <span className="ml-auto rounded-full bg-[#F9F6ED] px-4 py-2 text-xs font-bold text-[#0F2A1A]">
             Pending total: {rows[0]?.payout.currency ?? "NGN"}{" "}
             {pendingTotal.toLocaleString()}
           </span>
@@ -146,7 +146,7 @@ export default function AdminPayoutsPage() {
       </div>
 
       {q.isLoading ? (
-        <p className="text-sm text-ink-500">Loading payouts…</p>
+        <p className="text-sm text-[#0F2A1A]/65">Loading payouts…</p>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<Landmark size={20} />}
@@ -158,12 +158,12 @@ export default function AdminPayoutsPage() {
           {rows.map((r) => (
             <li
               key={r.payout.id}
-              className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft"
+              className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-bold text-ink-800">
+                    <p className="font-bold text-[#0F2A1A]/85">
                       {r.tutor_display_name || r.tutor_profile_id.slice(0, 8)}
                     </p>
                     <StatusBadge
@@ -171,7 +171,7 @@ export default function AdminPayoutsPage() {
                       kind={statusKindFor(r.payout.status)}
                     />
                   </div>
-                  <p className="mt-1 text-sm text-ink-600">
+                  <p className="mt-1 text-sm text-[#0F2A1A]/70">
                     <span className="font-extrabold">
                       {r.payout.currency} {r.payout.amount.toLocaleString()}
                     </span>
@@ -184,7 +184,7 @@ export default function AdminPayoutsPage() {
                     })}
                   </p>
                   {r.tutor_email && (
-                    <p className="text-xs text-ink-500">
+                    <p className="text-xs text-[#0F2A1A]/65">
                       {r.tutor_email}
                       {r.tutor_phone ? ` · ${r.tutor_phone}` : ""}
                     </p>
@@ -192,7 +192,7 @@ export default function AdminPayoutsPage() {
                 </div>
 
                 {r.payout.status === "PAID" ? (
-                  <div className="text-right text-xs text-ink-500">
+                  <div className="text-right text-xs text-[#0F2A1A]/65">
                     <p className="font-bold text-green-600">
                       Transfer completed
                     </p>
@@ -221,19 +221,19 @@ export default function AdminPayoutsPage() {
                         it in their Earnings tab.
                       </p>
                     ) : (
-                      <div className="rounded-xl border border-ink-100 bg-surface-muted p-3 text-xs text-ink-700">
+                      <div className="rounded-xl border border-black/10 bg-[#F9F6ED] p-3 text-xs text-[#0F2A1A]/75">
                         <p>
-                          <span className="font-bold text-ink-500">Bank: </span>
+                          <span className="font-bold text-[#0F2A1A]/65">Bank: </span>
                           {r.bank_name}
                         </p>
                         <p>
-                          <span className="font-bold text-ink-500">
+                          <span className="font-bold text-[#0F2A1A]/65">
                             Account:{" "}
                           </span>
                           {r.account_number}
                         </p>
                         <p>
-                          <span className="font-bold text-ink-500">Name: </span>
+                          <span className="font-bold text-[#0F2A1A]/65">Name: </span>
                           {r.account_name}
                         </p>
                       </div>
@@ -243,7 +243,7 @@ export default function AdminPayoutsPage() {
                         type="button"
                         disabled={paystackBusyId === r.payout.id}
                         onClick={() => void sendPaystack(r)}
-                        className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#0BA4DB] px-4 py-2 text-xs font-bold text-[#013920] hover:opacity-90 disabled:opacity-50"
+                        className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#0BA4DB] px-4 py-2 text-xs font-bold text-[#0F2A1A] hover:opacity-90 disabled:opacity-50"
                       >
                         {paystackBusyId === r.payout.id ? (
                           <Loader2 size={13} className="animate-spin" />
@@ -260,13 +260,13 @@ export default function AdminPayoutsPage() {
                           setRefs({ ...refs, [r.payout.id]: e.target.value })
                         }
                         placeholder="Manual transfer reference"
-                        className="min-w-0 flex-1 rounded-xl border border-ink-200 px-3 py-2 text-xs"
+                        className="min-w-0 flex-1 rounded-xl border border-black/10 px-3 py-2 text-xs"
                       />
                       <button
                         type="button"
                         disabled={busyId === r.payout.id}
                         onClick={() => void confirm(r)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#D6FF57] px-4 py-2 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-50"
                       >
                         {busyId === r.payout.id ? (
                           <Loader2 size={13} className="animate-spin" />
@@ -293,10 +293,10 @@ export default function AdminPayoutsPage() {
             className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold text-ink-900">
+            <h2 className="text-lg font-bold text-[#0F2A1A]">
               Enter transfer OTP
             </h2>
-            <p className="mt-1 text-sm text-ink-500">
+            <p className="mt-1 text-sm text-[#0F2A1A]/65">
               Paystack sent an OTP to the tutor&apos;s bank-registered phone or
               email. Enter it to finalize the transfer.
             </p>
@@ -309,14 +309,14 @@ export default function AdminPayoutsPage() {
               maxLength={6}
               inputMode="numeric"
               placeholder="6-digit OTP"
-              className="mt-4 w-full rounded-xl border border-ink-200 px-4 py-3 text-center text-xl tracking-[0.4em]"
+              className="mt-4 w-full rounded-xl border border-black/10 px-4 py-3 text-center text-xl tracking-[0.4em]"
             />
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
                 disabled={otpBusy || otpValue.trim().length === 0}
                 onClick={() => void sendOTP()}
-                className="flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-ink-900 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-[#D6FF57] px-4 py-2.5 text-sm font-bold text-[#0F2A1A] disabled:opacity-50"
               >
                 {otpBusy ? "Finalizing…" : "Finalize transfer"}
               </button>
@@ -326,7 +326,7 @@ export default function AdminPayoutsPage() {
                   setOtpFor(null);
                   setOtpValue("");
                 }}
-                className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-semibold text-ink-600"
+                className="rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold text-[#0F2A1A]/70"
               >
                 Cancel
               </button>

@@ -204,7 +204,7 @@ export default function LmsTutorCohortPage() {
         cover="/hero/how-it-works.jpg"
         subline={`Teaching console - attendance, grading and reports.${cohort.data ? `  |  ${cohort.data.enrolled_count} enrolled` : ""}`}
         actions={
-          <Link href="/lms/tutor" className="rounded-lg border border-ink-200 bg-white px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-300">
+          <Link href="/lms/tutor" className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[#0F2A1A]/75 hover:border-black/10">
             ← Back to My Teaching
           </Link>
         }
@@ -213,9 +213,9 @@ export default function LmsTutorCohortPage() {
       <div className="mx-auto max-w-6xl">
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* Lesson schedule — reschedule / cancel (FR-23) */}
-          <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm lg:col-span-2">
-            <h2 className="font-display text-lg font-bold text-deep">Lesson schedule</h2>
-            <p className="mt-1 text-xs text-ink-500">
+          <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm lg:col-span-2">
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Lesson schedule</h2>
+            <p className="mt-1 text-xs text-[#0F2A1A]/65">
               Move or cancel a lesson — learners see the change instantly. Overlapping times are rejected automatically.
             </p>
             <div className="mt-3 space-y-2">
@@ -223,14 +223,14 @@ export default function LmsTutorCohortPage() {
                 <LessonScheduleRow key={l.id} lesson={l} cohortId={cohortId} />
               ))}
               {(lessons.data ?? []).length === 0 && (
-                <p className="py-4 text-center text-sm text-ink-400">No lessons scheduled yet.</p>
+                <p className="py-4 text-center text-sm text-[#0F2A1A]/65">No lessons scheduled yet.</p>
               )}
             </div>
           </section>
 
           {/* Attendance console */}
-          <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-deep">Attendance</h2>
+          <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Attendance</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {(lessons.data ?? []).map((l) => (
                 <button
@@ -239,7 +239,7 @@ export default function LmsTutorCohortPage() {
                   onClick={() => setSelectedLessonId(l.id)}
                   className={cn(
                     "rounded-lg px-3 py-1.5 text-xs font-bold",
-                    lessonId === l.id ? "bg-deep text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+                    lessonId === l.id ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
                   )}
                 >
                   {l.title}
@@ -248,13 +248,13 @@ export default function LmsTutorCohortPage() {
             </div>
             <div className="mt-4 space-y-2">
               {(attendanceRows.data ?? []).map((row) => (
-                <div key={row.student_profile_id} className="flex items-center gap-3 rounded-xl border border-ink-100 px-4 py-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary-light text-xs font-bold text-deep">
+                <div key={row.student_profile_id} className="flex items-center gap-3 rounded-xl border border-black/10 px-4 py-3">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#F9F6ED] text-xs font-bold text-[#0F2A1A]">
                     {row.student_profile_id.slice(-2).toUpperCase()}
                   </span>
-                  <span className="flex-1 truncate text-sm font-semibold text-ink-700">{row.student_profile_id}</span>
+                  <span className="flex-1 truncate text-sm font-semibold text-[#0F2A1A]/75">{row.student_profile_id}</span>
                   <select
-                    className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs font-semibold text-ink-700 focus:border-primary focus:outline-none"
+                    className="rounded-lg border border-black/10 px-2 py-1.5 text-xs font-semibold text-[#0F2A1A]/75 focus:border-[#D6FF57] focus:outline-none"
                     value={attendance[row.student_profile_id] ?? row.status}
                     onChange={(e) => setAttendance((m) => ({ ...m, [row.student_profile_id]: e.target.value }))}
                   >
@@ -266,14 +266,14 @@ export default function LmsTutorCohortPage() {
                     type="button"
                     disabled={mark.isPending}
                     onClick={() => mark.mutate(row)}
-                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                    className="rounded-lg bg-[#D6FF57] px-3 py-1.5 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
                   >
                     Save
                   </button>
                 </div>
               ))}
               {(attendanceRows.data ?? []).length === 0 && (
-                <p className="py-6 text-center text-sm text-ink-400">
+                <p className="py-6 text-center text-sm text-[#0F2A1A]/65">
                   No attendance records for this lesson yet. {lessonId ? "Try another lesson." : ""}
                 </p>
               )}
@@ -281,44 +281,44 @@ export default function LmsTutorCohortPage() {
           </section>
 
           {/* Grading console */}
-          <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-deep">Grading</h2>
+          <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Grading</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {(assignments.data ?? []).map((a) => (
-                <span key={a.id} className="rounded-lg bg-primary-light px-3 py-1.5 text-xs font-bold text-deep">
+                <span key={a.id} className="rounded-lg bg-[#F9F6ED] px-3 py-1.5 text-xs font-bold text-[#0F2A1A]">
                   {a.title}
                 </span>
               ))}
             </div>
             <div className="mt-4 space-y-3">
               {(submissions.data ?? []).map((s) => (
-                <div key={s.id} className="rounded-xl border border-ink-100 p-4">
+                <div key={s.id} className="rounded-xl border border-black/10 p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-ink-700">Submission {s.student_profile_id.slice(-4)}</span>
+                    <span className="text-sm font-semibold text-[#0F2A1A]/75">Submission {s.student_profile_id.slice(-4)}</span>
                     {s.score !== undefined ? (
                       <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
                         {s.score}/10 graded
                       </span>
                     ) : (
-                      <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-xs font-bold text-ink-500">Pending</span>
+                      <span className="rounded-full bg-[#F9F6ED] px-2.5 py-0.5 text-xs font-bold text-[#0F2A1A]/65">Pending</span>
                     )}
                   </div>
-                  {s.content && <p className="mt-2 rounded-lg bg-[#FFF7E4] p-3 text-sm text-ink-600">{s.content}</p>}
-                  {s.feedback && <p className="mt-1 text-xs text-ink-400">Feedback: {s.feedback}</p>}
+                  {s.content && <p className="mt-2 rounded-lg bg-[#F9F6ED] p-3 text-sm text-[#0F2A1A]/70">{s.content}</p>}
+                  {s.feedback && <p className="mt-1 text-xs text-[#0F2A1A]/65">Feedback: {s.feedback}</p>}
                   <div className="mt-3 flex gap-2">
                     <input
                       type="number"
                       min={0}
                       max={10}
                       placeholder="Score /10"
-                      className="h-10 w-24 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                      className="h-10 w-24 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                       value={grade[s.id] ?? s.score ?? ""}
                       onChange={(e) => setGrade((m) => ({ ...m, [s.id]: e.target.value }))}
                     />
                     <input
                       type="text"
                       placeholder="Feedback..."
-                      className="h-10 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                      className="h-10 flex-1 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                       value={feedback[s.id] ?? s.feedback ?? ""}
                       onChange={(e) => setFeedback((m) => ({ ...m, [s.id]: e.target.value }))}
                     />
@@ -326,7 +326,7 @@ export default function LmsTutorCohortPage() {
                       type="button"
                       disabled={gradeIt.isPending || grade[s.id] === "" && s.score === undefined}
                       onClick={() => gradeIt.mutate(s)}
-                      className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                      className="rounded-lg bg-[#D6FF57] px-4 py-2 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
                     >
                       Grade
                     </button>
@@ -334,22 +334,22 @@ export default function LmsTutorCohortPage() {
                 </div>
               ))}
               {(submissions.data ?? []).length === 0 && (
-                <p className="py-6 text-center text-sm text-ink-400">No submissions to grade yet.</p>
+                <p className="py-6 text-center text-sm text-[#0F2A1A]/65">No submissions to grade yet.</p>
               )}
             </div>
           </section>
         </div>
 
         {/* Roster */}
-        <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold text-deep">Class roster ({cohort.data?.enrolled_count ?? roster.data?.length ?? "-"})</h2>
-            <span className="text-xs text-ink-400">Learners enrolled in this cohort</span>
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Class roster ({cohort.data?.enrolled_count ?? roster.data?.length ?? "-"})</h2>
+            <span className="text-xs text-[#0F2A1A]/65">Learners enrolled in this cohort</span>
           </div>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-ink-100 text-xs uppercase tracking-wide text-ink-400">
+                <tr className="border-b border-black/10 text-xs uppercase tracking-wide text-[#0F2A1A]/65">
                   <th className="py-2 pr-4">Learner</th>
                   <th className="py-2 pr-4">Status</th>
                   <th className="py-2">Enrolled</th>
@@ -357,16 +357,16 @@ export default function LmsTutorCohortPage() {
               </thead>
               <tbody>
                 {(roster.data ?? []).map((r) => (
-                  <tr key={r.student_profile_id} className="border-b border-ink-50 last:border-0">
-                    <td className="py-2.5 pr-4 font-semibold text-ink-800">{r.name || r.student_profile_id.slice(0, 8) + "..."}</td>
+                  <tr key={r.student_profile_id} className="border-b border-black/10 last:border-0">
+                    <td className="py-2.5 pr-4 font-semibold text-[#0F2A1A]/85">{r.name || r.student_profile_id.slice(0, 8) + "..."}</td>
                     <td className="py-2.5 pr-4">
-                      <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-xs font-bold text-deep">{r.status}</span>
+                      <span className="rounded-full bg-[#F9F6ED] px-2.5 py-0.5 text-xs font-bold text-[#0F2A1A]">{r.status}</span>
                     </td>
-                    <td className="py-2.5 text-ink-500">{new Date(r.enrolled_at).toLocaleDateString()}</td>
+                    <td className="py-2.5 text-[#0F2A1A]/65">{new Date(r.enrolled_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
                 {(roster.data ?? []).length === 0 && (
-                  <tr><td colSpan={3} className="py-6 text-center text-ink-400">No enrollments yet.</td></tr>
+                  <tr><td colSpan={3} className="py-6 text-center text-[#0F2A1A]/65">No enrollments yet.</td></tr>
                 )}
               </tbody>
             </table>
@@ -374,24 +374,24 @@ export default function LmsTutorCohortPage() {
         </section>
 
         {/* Authoring console */}
-        <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-bold text-deep">Create content</h2>
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Create content</h2>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setShowQuizBuilder((v) => !v)} className="rounded-lg bg-deep px-3 py-1.5 text-xs font-bold text-white hover:bg-deep/90">+ Quiz</button>
-              <button type="button" onClick={() => setShowAssignmentForm((v) => !v)} className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-ink-900 hover:bg-primary-hover">+ Assignment</button>
-              <button type="button" onClick={() => setShowResourceForm((v) => !v)} className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-700 hover:border-ink-300">+ Resource</button>
+              <button type="button" onClick={() => setShowQuizBuilder((v) => !v)} className="rounded-lg bg-[#0F2A1A] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#0F2A1A]/90">+ Quiz</button>
+              <button type="button" onClick={() => setShowAssignmentForm((v) => !v)} className="rounded-lg bg-[#D6FF57] px-3 py-1.5 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030]">+ Assignment</button>
+              <button type="button" onClick={() => setShowResourceForm((v) => !v)} className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold text-[#0F2A1A]/75 hover:border-black/10">+ Resource</button>
             </div>
           </div>
 
           {showQuizBuilder && (
-            <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
-              <p className="text-sm font-bold text-ink-700">New quiz</p>
+            <div className="mt-4 space-y-3 rounded-xl border border-black/10 p-4">
+              <p className="text-sm font-bold text-[#0F2A1A]/75">New quiz</p>
               <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-wide text-ink-500">Subject (from your teaching scope)</span>
+                <span className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Subject (from your teaching scope)</span>
                 <select
                   aria-label="Quiz subject"
-                  className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                  className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                   value={quizDraft.subject_id}
                   onChange={(e) => setQuizDraft((d) => ({ ...d, subject_id: e.target.value }))}
                 >
@@ -400,28 +400,28 @@ export default function LmsTutorCohortPage() {
                     <option key={sub.subject_id} value={sub.subject_id}>{sub.name}</option>
                   ))}
                 </select>
-                <span className="mt-0.5 block text-[11px] text-ink-400">
+                <span className="mt-0.5 block text-[11px] text-[#0F2A1A]/65">
                   Exams are always based on a subject you were vetted to teach.
                 </span>
               </label>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" aria-label="Quiz title" placeholder="Quiz title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
-                <input type="number" aria-label="Pass percentage" placeholder="Pass %" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={quizDraft.pass_threshold} onChange={(e) => setQuizDraft((d) => ({ ...d, pass_threshold: e.target.value }))} />
+                <input type="text" aria-label="Quiz title" placeholder="Quiz title" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={quizDraft.title} onChange={(e) => setQuizDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={quizDraft.instructions} onChange={(e) => setQuizDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" aria-label="Pass percentage" placeholder="Pass %" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={quizDraft.pass_threshold} onChange={(e) => setQuizDraft((d) => ({ ...d, pass_threshold: e.target.value }))} />
               </div>
               <div className="space-y-3">
                 {quizDraft.questions.map((q, qi) => (
-                  <div key={qi} className="rounded-lg border border-ink-100 p-3">
+                  <div key={qi} className="rounded-lg border border-black/10 p-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-ink-400">Q{qi + 1}</span>
-                      <input type="text" aria-label="Question text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
+                      <span className="text-xs font-bold text-[#0F2A1A]/65">Q{qi + 1}</span>
+                      <input type="text" aria-label="Question text" placeholder="Question" className="h-9 flex-1 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={q.question} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, question: e.target.value } : x)) }))} />
                       <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: d.questions.filter((_, i) => i !== qi) }))} className="text-xs font-bold text-red-500">✕</button>
                     </div>
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
                       {q.options.map((opt, oi) => (
                         <div key={oi} className="flex items-center gap-2">
                           <input type="radio" checked={q.correct_index === oi} onChange={() => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, correct_index: oi } : x)) }))} title="Correct answer" />
-                          <input type="text" placeholder={`Option ${String.fromCharCode(65 + oi)}`} className="h-9 flex-1 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={opt} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, options: x.options.map((o, j) => (j === oi ? e.target.value : o)) } : x)) }))} />
+                          <input type="text" placeholder={`Option ${String.fromCharCode(65 + oi)}`} className="h-9 flex-1 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={opt} onChange={(e) => setQuizDraft((d) => ({ ...d, questions: d.questions.map((x, i) => (i === qi ? { ...x, options: x.options.map((o, j) => (j === oi ? e.target.value : o)) } : x)) }))} />
                         </div>
                       ))}
                     </div>
@@ -429,8 +429,8 @@ export default function LmsTutorCohortPage() {
                 ))}
               </div>
               <div className="flex gap-2">
-                <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: [...d.questions, { question: "", options: ["", "", "", ""], correct_index: 0 }] }))} className="rounded-lg border border-ink-200 px-3 py-2 text-xs font-bold text-ink-600 hover:border-ink-300">+ Add question</button>
-                <button type="button" disabled={createQuiz.isPending || !quizDraft.title.trim() || quizDraft.questions.filter((q) => q.question.trim()).length === 0} onClick={() => createQuiz.mutate()} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40">
+                <button type="button" onClick={() => setQuizDraft((d) => ({ ...d, questions: [...d.questions, { question: "", options: ["", "", "", ""], correct_index: 0 }] }))} className="rounded-lg border border-black/10 px-3 py-2 text-xs font-bold text-[#0F2A1A]/70 hover:border-black/10">+ Add question</button>
+                <button type="button" disabled={createQuiz.isPending || !quizDraft.title.trim() || quizDraft.questions.filter((q) => q.question.trim()).length === 0} onClick={() => createQuiz.mutate()} className="rounded-lg bg-[#D6FF57] px-4 py-2 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40">
                   {createQuiz.isPending ? "Publishing..." : "Publish quiz"}
                 </button>
               </div>
@@ -438,14 +438,14 @@ export default function LmsTutorCohortPage() {
           )}
 
           {showAssignmentForm && (
-            <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
-              <p className="text-sm font-bold text-ink-700">New assignment</p>
+            <div className="mt-4 space-y-3 rounded-xl border border-black/10 p-4">
+              <p className="text-sm font-bold text-[#0F2A1A]/75">New assignment</p>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" aria-label="Assignment title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={assignmentDraft.title} onChange={(e) => setAssignmentDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={assignmentDraft.instructions} onChange={(e) => setAssignmentDraft((d) => ({ ...d, instructions: e.target.value }))} />
-                <input type="number" aria-label="Max score" placeholder="Max score" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={assignmentDraft.max_score} onChange={(e) => setAssignmentDraft((d) => ({ ...d, max_score: e.target.value }))} />
+                <input type="text" aria-label="Assignment title" placeholder="Title" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={assignmentDraft.title} onChange={(e) => setAssignmentDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Quiz instructions" placeholder="Instructions" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={assignmentDraft.instructions} onChange={(e) => setAssignmentDraft((d) => ({ ...d, instructions: e.target.value }))} />
+                <input type="number" aria-label="Max score" placeholder="Max score" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={assignmentDraft.max_score} onChange={(e) => setAssignmentDraft((d) => ({ ...d, max_score: e.target.value }))} />
               </div>
-              <button type="button" disabled={createAssignment.isPending || !assignmentDraft.title.trim()} onClick={() => createAssignment.mutate()} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40">
+              <button type="button" disabled={createAssignment.isPending || !assignmentDraft.title.trim()} onClick={() => createAssignment.mutate()} className="rounded-lg bg-[#D6FF57] px-4 py-2 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40">
                 {createAssignment.isPending ? "Publishing..." : "Publish assignment"}
               </button>
             </div>
@@ -457,15 +457,15 @@ export default function LmsTutorCohortPage() {
                 const url = r.file_url ?? "";
                 const yt = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]{6,})/);
                 return (
-                  <li key={r.id} className="rounded-xl border border-ink-100 p-3">
-                    <p className="text-sm font-semibold text-ink-800">{r.title}</p>
-                    {r.description ? <p className="text-xs text-ink-500">{r.description}</p> : null}
+                  <li key={r.id} className="rounded-xl border border-black/10 p-3">
+                    <p className="text-sm font-semibold text-[#0F2A1A]/85">{r.title}</p>
+                    {r.description ? <p className="text-xs text-[#0F2A1A]/65">{r.description}</p> : null}
                     {yt ? (
                       <div className="mt-2 overflow-hidden rounded-lg bg-black aspect-video">
                         <iframe title={r.title} className="h-full w-full" src={`https://www.youtube.com/embed/${yt[1]}`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
                       </div>
                     ) : url ? (
-                      <a href={url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-bold text-deep underline">Open file / video</a>
+                      <a href={url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-bold text-[#0F2A1A] underline">Open file / video</a>
                     ) : null}
                   </li>
                 );
@@ -474,12 +474,12 @@ export default function LmsTutorCohortPage() {
           )}
 
           {showResourceForm && (
-            <div className="mt-4 space-y-3 rounded-xl border border-ink-100 p-4">
-              <p className="text-sm font-bold text-ink-700">Material or video</p>
-              <p className="text-xs text-ink-500">
+            <div className="mt-4 space-y-3 rounded-xl border border-black/10 p-4">
+              <p className="text-sm font-bold text-[#0F2A1A]/75">Material or video</p>
+              <p className="text-xs text-[#0F2A1A]/65">
                 Upload a file (PDF, Office, image, video up to 25&nbsp;MB) or paste a YouTube/Drive link.
               </p>
-              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-ink-200 p-3">
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-black/10 p-3">
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.webp,.mp4,.webm,.mp3,.md,.txt"
@@ -498,7 +498,7 @@ export default function LmsTutorCohortPage() {
                       e.target.value = "";
                     }
                   }}
-                  className="block text-xs text-ink-500 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-deep file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"
+                  className="block text-xs text-[#0F2A1A]/65 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-[#0F2A1A] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"
                   aria-label="Upload a material file"
                 />
                 {resourceDraft.file_url ? (
@@ -513,17 +513,17 @@ export default function LmsTutorCohortPage() {
                     </button>
                   </span>
                 ) : resourceUploading ? (
-                  <span className="text-xs font-semibold text-ink-500">Uploading…</span>
+                  <span className="text-xs font-semibold text-[#0F2A1A]/65">Uploading…</span>
                 ) : (
-                  <span className="text-xs text-ink-400">or paste a link below</span>
+                  <span className="text-xs text-[#0F2A1A]/65">or paste a link below</span>
                 )}
               </div>
               <div className="grid gap-3 md:grid-cols-3">
-                <input type="text" aria-label="Resource title" placeholder="Title" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
-                <input type="text" aria-label="Resource description" placeholder="Description" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
-                <input type="url" aria-label="File or video URL" placeholder="https://youtube.com/watch?v=... or file URL" className="h-10 rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
+                <input type="text" aria-label="Resource title" placeholder="Title" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={resourceDraft.title} onChange={(e) => setResourceDraft((d) => ({ ...d, title: e.target.value }))} />
+                <input type="text" aria-label="Resource description" placeholder="Description" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={resourceDraft.description} onChange={(e) => setResourceDraft((d) => ({ ...d, description: e.target.value }))} />
+                <input type="url" aria-label="File or video URL" placeholder="https://youtube.com/watch?v=... or file URL" className="h-10 rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none" value={resourceDraft.file_url} onChange={(e) => setResourceDraft((d) => ({ ...d, file_url: e.target.value }))} />
               </div>
-              <button type="button" disabled={createResource.isPending || resourceUploading || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40">
+              <button type="button" disabled={createResource.isPending || resourceUploading || !resourceDraft.title.trim()} onClick={() => createResource.mutate()} className="rounded-lg bg-[#D6FF57] px-4 py-2 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40">
                 {createResource.isPending ? "Adding..." : "Add material"}
               </button>
             </div>
@@ -532,33 +532,33 @@ export default function LmsTutorCohortPage() {
 
         {/* Quizzes + progress report */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-deep">Quizzes in this cohort</h2>
+          <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">Quizzes in this cohort</h2>
             <div className="mt-3 space-y-2">
               {(quizzes.data ?? []).map((q) => (
 
-                <div key={q.id} className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-3">
+                <div key={q.id} className="flex items-center justify-between rounded-xl border border-black/10 px-4 py-3">
                   <div>
-                    <p className="text-sm font-semibold text-ink-800">{q.title}</p>
-                    <p className="text-xs text-ink-400">
-                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-deep">
+                    <p className="text-sm font-semibold text-[#0F2A1A]/85">{q.title}</p>
+                    <p className="text-xs text-[#0F2A1A]/65">
+                      <span className="rounded-full bg-[#F9F6ED] px-2 py-0.5 text-[10px] font-bold text-[#0F2A1A]">
                         {subjectName(subjectMap, q.subject_id)}
                       </span>{" "}
                       Pass {q.pass_threshold}% · {q.status}
                     </p>
                   </div>
-                  <span className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-bold text-deep">Auto-graded</span>
+                  <span className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-xs font-bold text-[#0F2A1A]">Auto-graded</span>
                 </div>
               ))}
-              {(quizzes.data ?? []).length === 0 && <p className="py-6 text-center text-sm text-ink-400">No quizzes yet.</p>}
+              {(quizzes.data ?? []).length === 0 && <p className="py-6 text-center text-sm text-[#0F2A1A]/65">No quizzes yet.</p>}
             </div>
           </section>
 
-          <section className="rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
-            <h2 className="font-display text-lg font-bold text-deep">New progress report</h2>
+          <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+            <h2 className="font-display text-lg font-bold text-[#0F2A1A]">New progress report</h2>
             <div className="mt-3 space-y-3">
               <select
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                 value={reportStudentId}
                 onChange={(e) => setReportStudentId(e.target.value)}
               >
@@ -572,26 +572,26 @@ export default function LmsTutorCohortPage() {
               <input
                 type="text"
                 placeholder="Strengths (e.g. strong grasp of algebra)"
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                 value={report.strengths}
                 onChange={(e) => setReport((r) => ({ ...r, strengths: e.target.value }))}
               />
               <input
                 type="text"
                 placeholder="Weaknesses"
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                 value={report.weaknesses}
                 onChange={(e) => setReport((r) => ({ ...r, weaknesses: e.target.value }))}
               />
               <input
                 type="text"
                 placeholder="Recommendations"
-                className="h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none"
+                className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none"
                 value={report.recommendations}
                 onChange={(e) => setReport((r) => ({ ...r, recommendations: e.target.value }))}
               />
               <div className="flex items-center gap-2">
-                <span className="text-sm text-ink-500">Rating:</span>
+                <span className="text-sm text-[#0F2A1A]/65">Rating:</span>
                 {["1", "2", "3", "4", "5"].map((n) => (
                   <button
                     key={n}
@@ -599,7 +599,7 @@ export default function LmsTutorCohortPage() {
                     onClick={() => setReport((r) => ({ ...r, rating: n }))}
                     className={cn(
                       "grid size-9 place-items-center rounded-full text-sm font-bold",
-                      report.rating === n ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-500"
+                      report.rating === n ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/65"
                     )}
                   >
                     {n}
@@ -610,7 +610,7 @@ export default function LmsTutorCohortPage() {
                 type="button"
                 disabled={createReport.isPending || !report.strengths || !reportStudentId}
                 onClick={() => createReport.mutate()}
-                className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
               >
                 {createReport.isPending ? "Creating..." : "Publish report"}
               </button>
@@ -665,10 +665,10 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
   const done = lesson.status === "COMPLETED" || lesson.status === "CANCELLED";
 
   return (
-    <div className="rounded-xl border border-ink-100 px-4 py-3">
+    <div className="rounded-xl border border-black/10 px-4 py-3">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="flex-1 truncate text-sm font-semibold text-ink-800">{lesson.title}</span>
-        <span className="text-xs tabular-nums text-ink-500">
+        <span className="flex-1 truncate text-sm font-semibold text-[#0F2A1A]/85">{lesson.title}</span>
+        <span className="text-xs tabular-nums text-[#0F2A1A]/65">
           {new Date(lesson.start_at).toLocaleString()} → {new Date(lesson.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
         <span
@@ -678,7 +678,7 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
               ? "bg-red-100 text-red-700"
               : lesson.status === "RESCHEDULED"
                 ? "bg-amber-100 text-amber-700"
-                : "bg-ink-100 text-ink-600"
+                : "bg-[#F9F6ED] text-[#0F2A1A]/70"
           )}
         >
           {lesson.status}
@@ -688,14 +688,14 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
             <button
               type="button"
               onClick={() => setEditing((v) => !v)}
-              className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-700 hover:border-ink-300"
+              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold text-[#0F2A1A]/75 hover:border-black/10"
             >
               {editing ? "Close" : "Reschedule"}
             </button>
             <button
               type="button"
               onClick={() => setNotesOpen((v) => !v)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-bold ${lesson.transcript ? "border-primary/50 text-primary-dark" : "border-ink-200 text-ink-700 hover:border-ink-300"}`}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-bold ${lesson.transcript ? "border-[#D6FF57]/50 text-[#0F2A1A]" : "border-black/10 text-[#0F2A1A]/75 hover:border-black/10"}`}
             >
               {notesOpen ? "Close" : lesson.transcript ? "Transcript ✓" : "Add transcript"}
             </button>
@@ -713,8 +713,8 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
         )}
       </div>
       {notesOpen && (
-        <div className="mt-3 space-y-2 border-t border-ink-100 pt-3">
-          <p className="text-xs font-semibold text-ink-600">
+        <div className="mt-3 space-y-2 border-t border-black/10 pt-3">
+          <p className="text-xs font-semibold text-[#0F2A1A]/70">
             Lesson transcript / notes — learners read this under the recording (plain text).
           </p>
           <textarea
@@ -723,14 +723,14 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
             rows={6}
             maxLength={100000}
             placeholder="Key points covered, worked examples, homework set…"
-            className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm leading-relaxed focus:border-primary focus:outline-none"
+            className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm leading-relaxed focus:border-[#D6FF57] focus:outline-none"
           />
           <div className="flex gap-2">
             <button
               type="button"
               disabled={saveTranscript.isPending}
               onClick={() => saveTranscript.mutate()}
-              className="rounded-lg bg-deep px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+              className="rounded-lg bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
             >
               {saveTranscript.isPending ? "Saving…" : "Save transcript"}
             </button>
@@ -749,30 +749,30 @@ function LessonScheduleRow({ lesson, cohortId }: { lesson: { id: string; title: 
         </div>
       )}
       {editing && !done && (
-        <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-ink-100 pt-3">
-          <label className="block text-xs font-semibold text-ink-600">
+        <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-black/10 pt-3">
+          <label className="block text-xs font-semibold text-[#0F2A1A]/70">
             New start
             <input
               type="datetime-local"
               value={startAt}
               onChange={(e) => setStartAt(e.target.value)}
-              className="mt-1 block rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="mt-1 block rounded-lg border border-black/10 px-3 py-2 text-sm focus:border-[#D6FF57] focus:outline-none"
             />
           </label>
-          <label className="block text-xs font-semibold text-ink-600">
+          <label className="block text-xs font-semibold text-[#0F2A1A]/70">
             New end
             <input
               type="datetime-local"
               value={endAt}
               onChange={(e) => setEndAt(e.target.value)}
-              className="mt-1 block rounded-lg border border-ink-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              className="mt-1 block rounded-lg border border-black/10 px-3 py-2 text-sm focus:border-[#D6FF57] focus:outline-none"
             />
           </label>
           <button
             type="button"
             disabled={move.isPending || !startAt || !endAt}
             onClick={() => move.mutate()}
-            className="rounded-lg bg-deep px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+            className="rounded-lg bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
           >
             {move.isPending ? "Moving…" : "Confirm new time"}
           </button>

@@ -43,16 +43,16 @@ export default function RecordedLibraryPage() {
       <div>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-ink-900">
-              <Video className="text-primary" /> Recorded lessons
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-[#0F2A1A]">
+              <Video className="text-[#0F2A1A]" /> Recorded lessons
             </h1>
-            <p className="mt-1 text-sm text-ink-500">
+            <p className="mt-1 text-sm text-[#0F2A1A]/65">
               Rewatch your recorded classes any time. Only lessons from cohorts you&apos;re enrolled in appear here.
             </p>
           </div>
           <Link
             href="/library"
-            className="shrink-0 rounded-full bg-deep px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-deep/90"
+            className="shrink-0 rounded-full bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#0F2A1A]/90"
           >
             Browse library
           </Link>
@@ -61,11 +61,11 @@ export default function RecordedLibraryPage() {
 
       {pickerOptions.length > 1 && (
         <label className="block max-w-sm text-sm">
-          <span className="font-medium text-ink-700">Learner</span>
+          <span className="font-medium text-[#0F2A1A]/75">Learner</span>
           <select
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30"
+            className="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30"
           >
             {pickerOptions.map((l) => (
               <option key={l.id} value={l.id}>
@@ -97,16 +97,16 @@ export default function RecordedLibraryPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {rows.map((l) => (
-            <div key={l.id} className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+            <div key={l.id} className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-ink-900">{l.title}</h3>
-                  <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-500">
+                  <h3 className="font-bold text-[#0F2A1A]">{l.title}</h3>
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-[#0F2A1A]/65">
                     <Clock size={12} />
                     {new Date(l.start_at).toLocaleDateString()} · {l.timezone}
                   </p>
                 </div>
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/20 text-primary">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#D6FF57]/20 text-[#0F2A1A]">
                   <Play size={18} />
                 </span>
               </div>
@@ -115,12 +115,12 @@ export default function RecordedLibraryPage() {
                   href={l.video_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-5 text-sm font-bold text-ink-900 hover:bg-primary-hover"
+                  className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-[#D6FF57] px-5 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
                 >
                   Watch recording
                 </a>
               ) : (
-                <p className="mt-4 text-xs text-ink-400">Recording not yet available.</p>
+                <p className="mt-4 text-xs text-[#0F2A1A]/65">Recording not yet available.</p>
               )}
               {l.transcript ? <TranscriptPanel text={l.transcript} /> : null}
             </div>

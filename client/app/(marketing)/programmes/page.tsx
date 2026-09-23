@@ -27,7 +27,7 @@ export default function ProgrammesPage() {
       <div className="container-x mt-10 pb-16">
         <Suspense
           fallback={
-            <p className="text-center text-ink-500 py-10">
+            <p className="text-center text-[#0F2A1A]/65 py-10">
               Loading programmes…
             </p>
           }

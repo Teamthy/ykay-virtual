@@ -83,24 +83,24 @@ export function RecommendationsForYou() {
     <section aria-label="Recommended for you" className="mb-8">
       <div className="flex items-baseline justify-between gap-3 mb-3">
         <div>
-          <h2 className="font-display text-lg font-bold text-deep">For you</h2>
-          <p className="text-xs text-ink-500 mt-0.5">{data.basis}</p>
+          <h2 className="font-display text-lg font-bold text-[#0F2A1A]">For you</h2>
+          <p className="text-xs text-[#0F2A1A]/65 mt-0.5">{data.basis}</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         {/* Cohorts */}
         {data.cohorts.length > 0 && (
-          <div className="rounded-2xl border border-ink-200 bg-white p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500 mb-2">Cohorts starting soon</p>
+          <div className="rounded-2xl border border-black/10 bg-white p-4">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#0F2A1A]/65 mb-2">Cohorts starting soon</p>
             <ul className="space-y-2">
               {data.cohorts.slice(0, 2).map((c) => (
                 <li key={c.id}>
                   <Link href={`/cohorts/${c.id}`} className="group block">
-                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-deep">
+                    <span className="block text-sm font-semibold text-[#0F2A1A] group-hover:text-[#0F2A1A]">
                       {c.title}
                     </span>
-                    <span className="block text-xs text-ink-500">
+                    <span className="block text-xs text-[#0F2A1A]/65">
                       {c.reason} · {c.enrolled_count}/{c.capacity} enrolled
                     </span>
                   </Link>
@@ -112,16 +112,16 @@ export function RecommendationsForYou() {
 
         {/* Programmes */}
         {data.programmes.length > 0 && (
-          <div className="rounded-2xl border border-ink-200 bg-white p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500 mb-2">Programmes for your level</p>
+          <div className="rounded-2xl border border-black/10 bg-white p-4">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#0F2A1A]/65 mb-2">Programmes for your level</p>
             <ul className="space-y-2">
               {data.programmes.slice(0, 2).map((p) => (
                 <li key={p.id}>
                   <Link href={`/programmes/${p.slug ?? p.id}`} className="group block">
-                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-deep">
+                    <span className="block text-sm font-semibold text-[#0F2A1A] group-hover:text-[#0F2A1A]">
                       {p.title}
                     </span>
-                    <span className="block text-xs text-ink-500">{p.reason}</span>
+                    <span className="block text-xs text-[#0F2A1A]/65">{p.reason}</span>
                   </Link>
                 </li>
               ))}
@@ -131,16 +131,16 @@ export function RecommendationsForYou() {
 
         {/* Tutors */}
         {data.tutors.length > 0 && (
-          <div className="rounded-2xl border border-ink-200 bg-white p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-500 mb-2">Top-rated tutors</p>
+          <div className="rounded-2xl border border-black/10 bg-white p-4">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#0F2A1A]/65 mb-2">Top-rated tutors</p>
             <ul className="space-y-2">
               {data.tutors.slice(0, 2).map((t) => (
                 <li key={t.profile.id}>
                   <Link href={`/tutors/${t.profile.slug ?? t.profile.id}`} className="group block">
-                    <span className="block text-sm font-semibold text-ink-900 group-hover:text-deep">
+                    <span className="block text-sm font-semibold text-[#0F2A1A] group-hover:text-[#0F2A1A]">
                       {t.profile.display_name}
                     </span>
-                    <span className="block text-xs text-ink-500">
+                    <span className="block text-xs text-[#0F2A1A]/65">
                       ★ {(t.profile.rating_avg ?? 0).toFixed(1)} · {(t.subjects ?? []).slice(0, 2).join(", ") || "Verified tutor"}
                     </span>
                   </Link>

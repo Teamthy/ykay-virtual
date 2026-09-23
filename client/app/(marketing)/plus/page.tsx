@@ -80,38 +80,38 @@ export default function YKVirtualPlusPage() {
       <section className="bg-white py-16">
         <div className="container-x grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-brand-blue-light px-4 py-1.5 text-xs font-bold text-brand-navy">
-              <Star size={13} className="text-brand-gold" fill="currentColor" /> Premium matching and reporting
+            <p className="inline-flex items-center gap-2 rounded-full bg-[#F9F6ED] px-4 py-1.5 text-xs font-bold text-[#0F2A1A]">
+              <Star size={13} className="text-[#0F2A1A]" fill="currentColor" /> Premium matching and reporting
             </p>
-            <h2 className="mt-5 font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
+            <h2 className="mt-5 font-display text-3xl tracking-[0.02em] text-[#0F2A1A] md:text-4xl">
               A complete premium learning experience
             </h2>
-            <p className="mt-4 text-ink-600 leading-relaxed">
+            <p className="mt-4 text-[#0F2A1A]/70 leading-relaxed">
               YK-Virtual Plus bundles the advisor-led matching, premium materials and progress visibility into one
               subscription — designed for families who want white-glove support without an overseas price tag.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
               {PERKS.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-ink-600">
-                  <Check size={15} className="mt-0.5 shrink-0 text-brand-green" /> {f}
+                <li key={f} className="flex items-start gap-2.5 text-sm text-[#0F2A1A]/70">
+                  <Check size={15} className="mt-0.5 shrink-0 text-[#0F2A1A]" /> {f}
                 </li>
               ))}
             </ul>
           </div>
           <div className="space-y-5">
             {FEATURES.map((f) => (
-              <div key={f.title} className="flex items-start gap-4 rounded-2xl border border-ink-100 bg-surface-muted p-6">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-navy text-brand-gold">{f.icon}</span>
+              <div key={f.title} className="flex items-start gap-4 rounded-2xl border border-black/10 bg-[#F9F6ED] p-6">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#0F2A1A] text-[#D6FF57]">{f.icon}</span>
                 <div>
-                  <h3 className="font-bold text-ink-800">{f.title}</h3>
-                  <p className="mt-1 text-sm text-ink-500 leading-relaxed">{f.desc}</p>
+                  <h3 className="font-bold text-[#0F2A1A]/85">{f.title}</h3>
+                  <p className="mt-1 text-sm text-[#0F2A1A]/65 leading-relaxed">{f.desc}</p>
                 </div>
               </div>
             ))}
-            <div className="rounded-2xl border-2 border-brand-gold bg-brand-gold-light p-6 text-center">
-              <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">Local pricing</p>
-              <p className="mt-1 text-sm text-ink-600">Nigerian tutors — no invented discount percentage</p>
-              <Link href="/pricing" className="mt-4 inline-block rounded-full bg-brand-gold px-8 py-3 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover">
+            <div className="rounded-2xl border-2 border-[#D6FF57] bg-[#F9F6ED] p-6 text-center">
+              <p className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A]">Local pricing</p>
+              <p className="mt-1 text-sm text-[#0F2A1A]/70">Nigerian tutors — no invented discount percentage</p>
+              <Link href="/pricing" className="mt-4 inline-block rounded-full bg-[#D6FF57] px-8 py-3 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]">
                 See pricing
               </Link>
             </div>
@@ -120,7 +120,7 @@ export default function YKVirtualPlusPage() {
       </section>
 
       {/* Trust band */}
-      <section className="bg-deep py-10 text-white">
+      <section className="bg-[#0F2A1A] py-10 text-white">
         <div className="container-x grid gap-6 text-center sm:grid-cols-3">
           {[
             { icon: <ShieldCheck size={22} />, t: "Escrow-protected", d: "Your fee is held until the cohort delivers." },
@@ -128,7 +128,7 @@ export default function YKVirtualPlusPage() {
             { icon: <Clock size={22} />, t: "Priority scheduling", d: "Flexible rescheduling, near-term slots." },
           ].map((b) => (
             <div key={b.t} className="rounded-2xl bg-white/5 p-5">
-              <div className="mx-auto grid h-10 w-10 place-items-center rounded-xl bg-brand-gold text-ink-900">{b.icon}</div>
+              <div className="mx-auto grid h-10 w-10 place-items-center rounded-xl bg-[#D6FF57] text-[#0F2A1A]">{b.icon}</div>
               <p className="mt-3 font-bold">{b.t}</p>
               <p className="mt-1 text-sm text-white/70">{b.d}</p>
             </div>
@@ -137,15 +137,15 @@ export default function YKVirtualPlusPage() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="bg-surface-muted py-16 scroll-mt-24">
+      <section id="how" className="bg-[#F9F6ED] py-16 scroll-mt-24">
         <div className="container-x">
-          <h2 className="text-center font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">How YK-Virtual Plus works</h2>
+          <h2 className="text-center font-display text-2xl tracking-[0.02em] text-[#0F2A1A] md:text-3xl">How YK-Virtual Plus works</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((s) => (
-              <div key={s.n} className="rounded-2xl border border-ink-100 bg-white p-7 text-center shadow-soft">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-navy font-display text-xl text-white">{s.n}</div>
-                <h3 className="mt-4 font-bold text-ink-800">{s.t}</h3>
-                <p className="mt-2 text-sm text-ink-500 leading-relaxed">{s.d}</p>
+              <div key={s.n} className="rounded-2xl border border-black/10 bg-white p-7 text-center shadow-soft">
+                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#0F2A1A] font-display text-xl text-white">{s.n}</div>
+                <h3 className="mt-4 font-bold text-[#0F2A1A]/85">{s.t}</h3>
+                <p className="mt-2 text-sm text-[#0F2A1A]/65 leading-relaxed">{s.d}</p>
               </div>
             ))}
           </div>
@@ -155,14 +155,14 @@ export default function YKVirtualPlusPage() {
       {/* Testimonial carousel */}
       <section className="py-16">
         <div className="container-x">
-          <h2 className="text-center font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">Loved by families</h2>
+          <h2 className="text-center font-display text-2xl tracking-[0.02em] text-[#0F2A1A] md:text-3xl">Loved by families</h2>
           <div className="mt-10">
             <CardCarousel>
               {TESTIMONIALS.map((t) => (
-                <div key={t.name} data-card className="w-[320px] shrink-0 snap-start rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-                  <div className="text-brand-gold" aria-hidden="true">★★★★★</div>
-                  <p className="mt-3 text-sm text-ink-700">{t.quote}</p>
-                  <p className="mt-4 text-sm font-bold text-ink-900">{t.name}</p>
+                <div key={t.name} data-card className="w-[320px] shrink-0 snap-start rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+                  <div className="text-[#0F2A1A]" aria-hidden="true">★★★★★</div>
+                  <p className="mt-3 text-sm text-[#0F2A1A]/75">{t.quote}</p>
+                  <p className="mt-4 text-sm font-bold text-[#0F2A1A]">{t.name}</p>
                 </div>
               ))}
             </CardCarousel>

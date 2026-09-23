@@ -20,32 +20,32 @@ export function CalendarWidget({ lessons }: { lessons: Lesson[] }) {
     .slice(0, 6);
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-      <h3 className="flex items-center gap-2 font-bold text-ink-900">
-        <CalendarDays size={16} className="text-deep-green" /> Upcoming
+    <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
+      <h3 className="flex items-center gap-2 font-bold text-[#0F2A1A]">
+        <CalendarDays size={16} className="text-[#0F2A1A]" /> Upcoming
       </h3>
       {upcoming.length === 0 ? (
-        <p className="mt-2 text-sm text-ink-500">No upcoming classes yet. Join a cohort to fill your calendar.</p>
+        <p className="mt-2 text-sm text-[#0F2A1A]/65">No upcoming classes yet. Join a cohort to fill your calendar.</p>
       ) : (
         <ul className="mt-3 space-y-2">
           {upcoming.map((l) => {
             const d = new Date(l.start_at);
             return (
-              <li key={l.id} className="flex items-center gap-3 rounded-xl border border-ink-100 px-3 py-2">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-ink-50 text-center">
+              <li key={l.id} className="flex items-center gap-3 rounded-xl border border-black/10 px-3 py-2">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-[#F9F6ED] text-center">
                   <div>
-                    <p className="text-sm font-bold leading-none text-ink-900">{d.getDate()}</p>
-                    <p className="text-[9px] uppercase text-ink-400">{d.toLocaleString("en", { month: "short" })}</p>
+                    <p className="text-sm font-bold leading-none text-[#0F2A1A]">{d.getDate()}</p>
+                    <p className="text-[9px] uppercase text-[#0F2A1A]/65">{d.toLocaleString("en", { month: "short" })}</p>
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-ink-800">{l.title}</p>
-                  <p className="flex items-center gap-1 text-xs text-ink-500">
+                  <p className="truncate text-sm font-semibold text-[#0F2A1A]/85">{l.title}</p>
+                  <p className="flex items-center gap-1 text-xs text-[#0F2A1A]/65">
                     <Clock size={11} /> {d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
                 {(l.meeting_url || l.video_url) && (
-                  <Link href="/lms" className="text-xs font-bold text-brand-blue hover:underline">
+                  <Link href="/lms" className="text-xs font-bold text-[#0F2A1A] hover:underline">
                     Join
                   </Link>
                 )}

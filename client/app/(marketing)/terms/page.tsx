@@ -54,20 +54,25 @@ const SECTIONS = [
 
 export default function TermsPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-14">
+    <main className="bg-[#F9F6ED]">
       <PageHero
-        announcement="Legal"
+        announcement="Your rights, clearly explained"
         title="Terms of Service"
         subtitle="Last updated: August 2026"
+        crumbs={[{ name: "Home", href: "/" }, { name: "Terms of Service" }]}
       />
-
-      <div className="mt-8 space-y-8">
-        {SECTIONS.map((s) => (
-          <section key={s.h}>
-            <h2 className="text-lg font-bold text-brand-navy">{s.h}</h2>
-            <p className="mt-2 text-sm leading-7 text-ink-600">{s.body}</p>
-          </section>
-        ))}
+      <div className="container-x py-12 lg:py-20">
+        <div className="mx-auto max-w-[900px] rounded-[20px] border border-black/10 bg-white px-5 py-6 text-[#0F2A1A] sm:px-9 sm:py-10 lg:px-14 lg:py-12">
+          <p className="mb-8 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">YK-Virtual / legal</p>
+          <div className="space-y-8">
+            {SECTIONS.map((section) => (
+              <section key={section.h} className="border-t border-black/10 pt-7">
+                <h2 className="font-display text-[20px] uppercase text-[#0F2A1A]">{section.h}</h2>
+                <p className="mt-3 text-[14px] leading-[1.8] text-[#0F2A1A]/75">{section.body}</p>
+              </section>
+            ))}
+          </div>
+        </div>
       </div>
     </main>
   );

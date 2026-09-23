@@ -7,25 +7,25 @@ import { cn } from "@/lib/utils";
 
 const VARIANTS = {
   info: {
-    box: "border-deep/25 bg-primary-light/60 text-deep",
+    box: "border-[#0F2A1A]/25 bg-[#F9F6ED]/60 text-[#0F2A1A]",
     icon: <Info size={16} />,
-    iconColor: "text-deep",
+    iconColor: "text-[#0F2A1A]",
     label: "Info",
   },
   success: {
-    box: "border-primary/25 bg-green-50 text-deep",
+    box: "border-[#D6FF57]/25 bg-green-50 text-[#0F2A1A]",
     icon: <CheckCircle2 size={16} />,
-    iconColor: "text-primary",
+    iconColor: "text-[#0F2A1A]",
     label: "Success",
   },
   warning: {
-    box: "border-primary/40 bg-primary-light/70 text-deep",
+    box: "border-[#D6FF57]/40 bg-[#F9F6ED]/70 text-[#0F2A1A]",
     icon: <TriangleAlert size={16} />,
-    iconColor: "text-primary-dark",
+    iconColor: "text-[#0F2A1A]",
     label: "Attention",
   },
   error: {
-    box: "border-red-200 bg-red-50 text-deep",
+    box: "border-red-200 bg-red-50 text-[#0F2A1A]",
     icon: <AlertCircle size={16} />,
     iconColor: "text-red-600",
     label: "Error",
@@ -51,8 +51,8 @@ export function Alert({ variant = "info", title, children, className, action }: 
         {v.icon}
       </span>
       <div className="min-w-0 flex-1 text-sm">
-        {title && <p className="font-semibold text-ink-900">{title}</p>}
-        <div className={cn("text-ink-600", title && "mt-0.5")}>{children}</div>
+        {title && <p className="font-semibold text-[#0F2A1A]">{title}</p>}
+        <div className={cn("text-[#0F2A1A]/70", title && "mt-0.5")}>{children}</div>
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

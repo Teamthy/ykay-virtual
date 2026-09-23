@@ -95,7 +95,7 @@ export function HomePillNav() {
         <div className="flex items-center gap-2">
           <Link
             href="/download"
-            className="inline-flex h-10 whitespace-nowrap items-center gap-2 rounded-full bg-primary px-4 text-[12px] font-bold text-deep-green transition hover:bg-primary-hover sm:h-11 sm:px-5 sm:text-[13px]"
+            className="inline-flex h-10 whitespace-nowrap items-center gap-2 rounded-full bg-[#D6FF57] px-4 text-[12px] font-bold text-[#0F2A1A] transition hover:bg-[#C8F030] sm:h-11 sm:px-5 sm:text-[13px]"
           >
             Download app
             <AppleGlyph className="size-3.5" />
@@ -149,7 +149,7 @@ export function HomePillNav() {
             <Link
               href="/hometutors#booking"
               onClick={() => setOpen(false)}
-              className="grid place-items-center rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-deep-green transition hover:bg-primary-hover"
+              className="grid place-items-center rounded-full bg-[#D6FF57] px-4 py-2.5 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030]"
             >
               Book a tutor
             </Link>

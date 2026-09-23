@@ -56,7 +56,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-ink-100 bg-white p-4 shadow-soft">
+      <div className="rounded-2xl border border-black/10 bg-white p-4 shadow-soft">
         <form
           className="flex flex-col gap-3 md:flex-row md:items-center"
           onSubmit={(e) => {
@@ -65,19 +65,19 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
           }}
         >
           <label className="relative min-w-0 flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0F2A1A]/65" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search by name…"
-              className="w-full rounded-xl border border-ink-200 py-2.5 pl-10 pr-3 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+              className="w-full rounded-xl border border-black/10 py-2.5 pl-10 pr-3 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
             />
           </label>
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Subject (e.g. mathematics)"
-            className="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30 md:w-56"
+            className="w-full rounded-xl border border-black/10 px-3 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30 md:w-56"
           />
           <select
             value={sort}
@@ -85,7 +85,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
               setSort(e.target.value);
               applyFilters({ sort: e.target.value });
             }}
-            className="w-full rounded-xl border border-ink-200 px-3 py-2.5 text-sm md:w-44"
+            className="w-full rounded-xl border border-black/10 px-3 py-2.5 text-sm md:w-44"
           >
             <option value="ranking_score">Best match</option>
             <option value="rating">Highest rated</option>
@@ -105,7 +105,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
               applyFilters({ online: !online });
             }}
             className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-              online ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600"
+              online ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70"
             }`}
           >
             Online
@@ -117,14 +117,14 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
               applyFilters({ in_person: !inPerson });
             }}
             className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-              inPerson ? "bg-brand-navy text-white" : "bg-ink-100 text-ink-600"
+              inPerson ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70"
             }`}
           >
             In person
           </button>
           <button
             type="button"
-            className="text-xs font-semibold text-ink-500 hover:text-brand-navy"
+            className="text-xs font-semibold text-[#0F2A1A]/65 hover:text-[#0F2A1A]"
             onClick={() => {
               setQ("");
               setSubject("");
@@ -135,7 +135,7 @@ export function TutorsSearchClient({ initialSubject }: { initialSubject?: string
           >
             Clear
           </button>
-          <span className="ml-auto text-xs text-ink-500">{query.isLoading ? "Searching…" : `${total} tutor(s)`}</span>
+          <span className="ml-auto text-xs text-[#0F2A1A]/65">{query.isLoading ? "Searching…" : `${total} tutor(s)`}</span>
         </div>
       </div>
 

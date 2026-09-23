@@ -51,12 +51,12 @@ export default function PracticeSittingPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/lms/practice"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-primary-dark hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0F2A1A] hover:underline"
         >
           <ArrowLeft size={15} /> CBT Practice
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+          <label className="flex items-center gap-2 text-xs font-semibold text-[#0F2A1A]/65">
             Questions
             <select
               value={limit}
@@ -64,7 +64,7 @@ export default function PracticeSittingPage() {
                 setLimit(Number(e.target.value));
                 setNonce((n) => n + 1);
               }}
-              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
+              className="rounded-xl border border-black/10 bg-white px-3 py-1.5 text-sm font-bold text-[#0F2A1A]"
             >
               {[10, 20, 30, 40, 50, 60].map((n) => (
                 <option key={n} value={n}>
@@ -73,7 +73,7 @@ export default function PracticeSittingPage() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+          <label className="flex items-center gap-2 text-xs font-semibold text-[#0F2A1A]/65">
             Difficulty
             <select
               value={difficulty}
@@ -81,7 +81,7 @@ export default function PracticeSittingPage() {
                 setDifficulty(Number(e.target.value));
                 setNonce((n) => n + 1);
               }}
-              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
+              className="rounded-xl border border-black/10 bg-white px-3 py-1.5 text-sm font-bold text-[#0F2A1A]"
             >
               <option value={0}>Mixed</option>
               <option value={1}>Easy</option>
@@ -89,7 +89,7 @@ export default function PracticeSittingPage() {
               <option value={3}>Hard</option>
             </select>
           </label>
-          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+          <label className="flex items-center gap-2 text-xs font-semibold text-[#0F2A1A]/65">
             Topic
             <select
               value={topic}
@@ -97,7 +97,7 @@ export default function PracticeSittingPage() {
                 setTopic(e.target.value);
                 setNonce((n) => n + 1);
               }}
-              className="max-w-[12rem] rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
+              className="max-w-[12rem] rounded-xl border border-black/10 bg-white px-3 py-1.5 text-sm font-bold text-[#0F2A1A]"
             >
               <option value="">All topics</option>
               {(topics.data ?? []).map((t) => (
@@ -107,7 +107,7 @@ export default function PracticeSittingPage() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2 text-xs font-semibold text-ink-500">
+          <label className="flex items-center gap-2 text-xs font-semibold text-[#0F2A1A]/65">
             Time
             <select
               value={duration}
@@ -115,7 +115,7 @@ export default function PracticeSittingPage() {
                 setDuration(Number(e.target.value));
                 setNonce((n) => n + 1);
               }}
-              className="rounded-xl border border-ink-200 bg-white px-3 py-1.5 text-sm font-bold text-deep"
+              className="rounded-xl border border-black/10 bg-white px-3 py-1.5 text-sm font-bold text-[#0F2A1A]"
             >
               <option value={0}>Untimed</option>
               {[10, 20, 30, 45, 60, 90].map((n) => (
@@ -136,10 +136,10 @@ export default function PracticeSittingPage() {
       ) : paper.error ? (
         <div className="rounded-3xl border border-orange-200 bg-orange-50 p-8 text-center">
           <AlertTriangle size={28} className="mx-auto text-orange-500" />
-          <p className="mt-3 font-bold text-ink-800">
+          <p className="mt-3 font-bold text-[#0F2A1A]/85">
             No paper available for this subject
           </p>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">
             {paper.error instanceof Error
               ? paper.error.message
               : "Please try again later."}

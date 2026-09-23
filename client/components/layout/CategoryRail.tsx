@@ -49,9 +49,9 @@ export function CategoryRail() {
   return (
     <nav
       aria-label="Categories"
-      className="rounded-2xl border border-ink-100 bg-white p-2 shadow-soft"
+      className="rounded-2xl border border-black/10 bg-white p-2 shadow-soft"
     >
-      <p className="px-3 pb-2 pt-2 text-[10px] font-bold uppercase tracking-wider text-ink-400">
+      <p className="px-3 pb-2 pt-2 text-[10px] font-bold uppercase tracking-wider text-[#0F2A1A]/65">
         Categories
       </p>
       <ul className="space-y-0.5">
@@ -64,11 +64,11 @@ export function CategoryRail() {
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
                   active
-                    ? "bg-primary text-ink-900"
-                    : "text-ink-700 hover:bg-ink-100",
+                    ? "bg-[#D6FF57] text-[#0F2A1A]"
+                    : "text-[#0F2A1A]/75 hover:bg-[#F9F6ED]",
                 )}
               >
-                <span className={cn(active ? "text-ink-900" : "text-deep")}>
+                <span className={cn(active ? "text-[#0F2A1A]" : "text-[#0F2A1A]")}>
                   {c.icon}
                 </span>
                 {c.label}

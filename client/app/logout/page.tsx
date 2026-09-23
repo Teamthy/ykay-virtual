@@ -14,7 +14,7 @@ export default function LogoutRedirectPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <p className="px-6 py-16 text-center text-sm text-ink-500">
+    <p className="px-6 py-16 text-center text-sm text-[#0F2A1A]/65">
       Signing you out…
     </p>
   );

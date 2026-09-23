@@ -92,8 +92,8 @@ export function Footer() {
             </div>
 
             <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-5">
-              <p className="text-[11px] text-[#0F2A1A]/50">© 2026 YK-Virtual · British & Nigerian curricula · All rights reserved</p>
-              <div className="flex gap-4 text-[11px] text-[#0F2A1A]/50">
+              <p className="text-[11px] text-[#0F2A1A]/65">© 2026 YK-Virtual · British & Nigerian curricula · All rights reserved</p>
+              <div className="flex gap-4 text-[11px] text-[#0F2A1A]/65">
                 <Link href="/privacy" className="hover:text-[#0F2A1A] hover:underline">Privacy</Link>
                 <Link href="/terms" className="hover:text-[#0F2A1A] hover:underline">Terms</Link>
                 <Link href="/contact" className="hover:text-[#0F2A1A] hover:underline">Contact</Link>

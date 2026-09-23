@@ -15,7 +15,7 @@ export function AmbientBackdrop() {
         alt=""
         className="h-full w-full object-cover object-center"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FFF7E4]/75 via-[#FFF7E4]/50 to-[#DFFFF2]/40" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#F9F6ED]/75 via-[#F9F6ED]/50 to-[#F9F6ED]/40" />
     </div>
   );
 }

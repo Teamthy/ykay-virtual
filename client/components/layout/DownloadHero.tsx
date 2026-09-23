@@ -17,16 +17,16 @@ export async function DownloadHero() {
   const qr = qrUrl(`${await requestOrigin()}/download`);
 
   return (
-    <section className="w-full border-b border-ink-100 bg-surface py-14 md:py-20">
+    <section className="w-full border-b border-black/10 bg-white py-14 md:py-20">
       <div className="container-x grid items-center gap-10 lg:grid-cols-2">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
             YK-Virtual mobile
           </p>
-          <h1 className="mt-4 font-display text-4xl leading-tight tracking-[0.02em] text-deep md:text-6xl">
+          <h1 className="mt-4 font-display text-4xl leading-tight tracking-[0.02em] text-[#0F2A1A] md:text-6xl">
             Download YK-Virtual on the go
           </h1>
-          <p className="mt-5 max-w-md leading-relaxed text-ink-600">
+          <p className="mt-5 max-w-md leading-relaxed text-[#0F2A1A]/70">
             Learn anywhere - tutors, live cohorts, quizzes, progress reports and
             the AI assistant in one app.
           </p>
@@ -34,7 +34,7 @@ export async function DownloadHero() {
           <div className="mt-7 flex flex-wrap items-center gap-6">
             <a
               href="#pwa-install"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-deep transition-transform hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#D6FF57] px-6 py-3 text-sm font-bold text-[#0F2A1A] transition-transform hover:-translate-y-0.5"
             >
               <Smartphone size={18} />
               Install the app — free
@@ -47,21 +47,21 @@ export async function DownloadHero() {
                 alt="QR code — scan to open this page on your phone"
                 width={72}
                 height={72}
-                className="rounded-lg bg-white ring-1 ring-ink-100"
+                className="rounded-lg bg-white ring-1 ring-black/10"
               />
-              <p className="max-w-[10rem] text-xs leading-snug text-ink-600">
+              <p className="max-w-[10rem] text-xs leading-snug text-[#0F2A1A]/70">
                 Scan with your phone camera to install in seconds
               </p>
             </div>
           </div>
 
-          <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-ink-100 pt-6">
+          <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-black/10 pt-6">
             {PERKS.map((p) => (
               <li
                 key={p.text}
-                className="flex items-center gap-2 text-sm font-semibold text-ink-700"
+                className="flex items-center gap-2 text-sm font-semibold text-[#0F2A1A]/75"
               >
-                <p.icon size={16} className="text-primary" />
+                <p.icon size={16} className="text-[#0F2A1A]" />
                 {p.text}
               </li>
             ))}
@@ -76,7 +76,7 @@ export async function DownloadHero() {
             height={1376}
             sizes="(max-width: 768px) 90vw, 384px"
             priority={false}
-            className="w-full rounded-3xl object-cover shadow-card ring-1 ring-ink-100"
+            className="w-full rounded-3xl object-cover shadow-card ring-1 ring-black/10"
           />
         </div>
       </div>

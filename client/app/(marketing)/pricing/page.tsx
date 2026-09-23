@@ -75,8 +75,8 @@ export default function PricingPage() {
           {/* billing switch */}
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-white p-1.5 border border-black/10 shadow-sm">
-              <button onClick={() => setBilling("once")} className={`rounded-full px-5 py-2 text-[12px] font-bold transition ${billing === "once" ? "bg-[#0F2A1A] text-white" : "text-[#0F2A1A]/60 hover:text-[#0F2A1A]"}`}>Per term</button>
-              <button onClick={() => setBilling("monthly")} className={`rounded-full px-5 py-2 text-[12px] font-bold transition ${billing === "monthly" ? "bg-[#0F2A1A] text-white" : "text-[#0F2A1A]/60 hover:text-[#0F2A1A]"}`}>Monthly</button>
+              <button onClick={() => setBilling("once")} className={`rounded-full px-5 py-2 text-[12px] font-bold transition ${billing === "once" ? "bg-[#0F2A1A] text-white" : "text-[#0F2A1A]/65 hover:text-[#0F2A1A]"}`}>Per term</button>
+              <button onClick={() => setBilling("monthly")} className={`rounded-full px-5 py-2 text-[12px] font-bold transition ${billing === "monthly" ? "bg-[#0F2A1A] text-white" : "text-[#0F2A1A]/65 hover:text-[#0F2A1A]"}`}>Monthly</button>
             </div>
           </div>
 
@@ -88,9 +88,9 @@ export default function PricingPage() {
                 <h3 className="font-display text-[18px] uppercase text-[#0F2A1A]">{p.name}</h3>
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="font-display text-[32px] leading-none text-[#0F2A1A]">{billing === "once" ? p.priceOnce : p.priceMonthly}</span>
-                  <span className="text-[12px] text-[#0F2A1A]/60">{billing === "once" ? p.per : ""}</span>
+                  <span className="text-[12px] text-[#0F2A1A]/65">{billing === "once" ? p.per : ""}</span>
                 </div>
-                <p className="mt-2 text-[12px] text-[#0F2A1A]/60">{p.desc}</p>
+                <p className="mt-2 text-[12px] text-[#0F2A1A]/65">{p.desc}</p>
                 <ul className="mt-6 flex-1 space-y-2">
                   {p.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-[12px] font-medium text-[#0F2A1A]"><Check size={12} className="text-[#0F2A1A]" /> {f}</li>
@@ -110,7 +110,7 @@ export default function PricingPage() {
               <table className="w-full">
                 <thead className="border-b border-black/10">
                   <tr>
-                    <th className="px-6 py-4 text-left text-[12px] font-bold uppercase tracking-wide text-[#0F2A1A]/50">Features</th>
+                    <th className="px-6 py-4 text-left text-[12px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Features</th>
                     {PLANS.map((p) => (
                       <th key={p.name} className="px-6 py-4 text-center font-display text-[16px] uppercase text-[#0F2A1A]">{p.name}</th>
                     ))}

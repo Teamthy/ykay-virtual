@@ -75,7 +75,7 @@ export default function NotificationsPage() {
                 className={
                   n.is_read
                     ? "px-5 py-4"
-                    : "cursor-pointer border-deep/30 bg-primary-light/50 px-5 py-4 transition-colors hover:bg-primary-light/80"
+                    : "cursor-pointer border-[#0F2A1A]/30 bg-[#F9F6ED]/50 px-5 py-4 transition-colors hover:bg-[#F9F6ED]/80"
                 }
                 onClick={() => {
                   if (!n.is_read) markRead.mutate(n.id);
@@ -84,17 +84,17 @@ export default function NotificationsPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${n.is_read ? "bg-ink-200" : "bg-deep"}`}
+                      className={`h-2 w-2 shrink-0 rounded-full ${n.is_read ? "bg-[#F9F6ED]" : "bg-[#0F2A1A]"}`}
                       aria-hidden="true"
                     />
-                    <span className="truncate text-sm font-semibold text-ink-800">{n.title}</span>
+                    <span className="truncate text-sm font-semibold text-[#0F2A1A]/85">{n.title}</span>
                     {!n.is_read && <StatusBadge label="New" kind="info" />}
                   </div>
-                  <span className="shrink-0 text-[10px] text-ink-400">
+                  <span className="shrink-0 text-[10px] text-[#0F2A1A]/65">
                     {new Date(n.created_at).toLocaleString()}
                   </span>
                 </div>
-                {n.body ? <p className="mt-1 pl-[18px] text-sm text-ink-600">{n.body}</p> : null}
+                {n.body ? <p className="mt-1 pl-[18px] text-sm text-[#0F2A1A]/70">{n.body}</p> : null}
               </Card>
             </li>
           ))}

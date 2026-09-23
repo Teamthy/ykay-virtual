@@ -21,20 +21,20 @@ export default function StudySkillsPage() {
         <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="mx-auto max-w-[1200px] grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/50">{"<<"} The method {">>"}</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">{"<<"} The method {">>"}</p>
               <h2 className="mt-3 font-display text-[28px] leading-[0.9] uppercase text-[#0F2A1A] max-w-[20ch]">Consistency beats intensity — every time</h2>
               <div className="mt-8 grid gap-4">
                 {TIPS.map((t) => (
                   <div key={t.title} className="rounded-[16px] bg-white p-5 border border-black/10">
                     <h3 className="font-bold text-[#0F2A1A] flex items-center gap-2"><CheckCircle2 size={14} className="text-[#0F2A1A]" /> {t.title}</h3>
-                    <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/60">{t.body}</p>
+                    <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/65">{t.body}</p>
                   </div>
                 ))}
               </div>
             </div>
             <div className="space-y-4">
               <div className="rounded-[20px] bg-white p-6 shadow">
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/50"><Clock size={12} /> Daily routine</div>
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65"><Clock size={12} /> Daily routine</div>
                 <ul className="mt-4 space-y-3 text-[13px]">
                   {["4:00-4:45 PM Maths (active recall)", "5:00-5:45 PM English (past questions)", "6:00-6:30 PM Review & plan tomorrow"].map((s) => (
                     <li key={s} className="flex gap-2"><span className="size-1.5 rounded-full bg-[#0F2A1A] mt-2" /> {s}</li>

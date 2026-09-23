@@ -29,19 +29,19 @@ export async function TutorsShowcase() {
 
   if (tutors.length === 0) {
     return (
-      <section className="border-t border-ink-100 bg-white">
-        <div className="mx-auto max-w-[1400px] px-6 py-14 text-center md:px-10">
+      <section className="border-t border-black/10 bg-white">
+        <div className="mx-auto max-w-[1920px] px-4 py-14 text-center sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <AnimatedText
             as="h2"
-            className="font-display text-3xl tracking-[0.02em] text-brand-navy"
+            className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A]"
             text="Meet our tutors"
           />
-          <p className="mt-2 text-ink-600">
+          <p className="mt-2 text-[#0F2A1A]/70">
             Approved tutors appear here as they complete vetting.
           </p>
           <Link
             href="/tutors"
-            className="mt-5 inline-block text-sm font-semibold text-brand-blue hover:underline"
+            className="mt-5 inline-block text-sm font-semibold text-[#0F2A1A] hover:underline"
           >
             Browse the tutor directory →
           </Link>
@@ -51,15 +51,15 @@ export async function TutorsShowcase() {
   }
 
   return (
-    <section className="border-t border-ink-100 bg-white">
-      <div className="mx-auto max-w-[1400px] px-6 py-14 md:px-10 lg:py-14">
+    <section className="border-t border-black/10 bg-white">
+      <div className="mx-auto max-w-[1920px] px-4 py-14 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 lg:py-14">
         <div className="mx-auto mb-10 max-w-2xl text-center lg:mb-14">
           <AnimatedText
             as="h2"
-            className="font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl"
+            className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A] md:text-4xl"
             text="Meet some of our tutors"
           />
-          <p className="mt-1 text-ink-600">
+          <p className="mt-1 text-[#0F2A1A]/70">
             One-on-one instruction from vetted independent experts.
           </p>
         </div>
@@ -88,31 +88,31 @@ export async function TutorsShowcase() {
                     className="size-20 rounded-lg object-cover"
                   />
                 ) : (
-                  <span className="grid size-20 place-items-center rounded-lg bg-surface-muted text-lg font-bold text-brand-navy">
+                  <span className="grid size-20 place-items-center rounded-lg bg-[#F9F6ED] text-lg font-bold text-[#0F2A1A]">
                     {t.display_name.slice(0, 1)}
                   </span>
                 )}
                 <div className="grow">
-                  <h3 className="flex items-center gap-1.5 font-medium text-ink-900 transition-colors group-hover:text-brand-gold-dark">
+                  <h3 className="flex items-center gap-1.5 font-medium text-[#0F2A1A] transition-colors group-hover:text-[#0F2A1A]">
                     {t.display_name}
                     <BadgeCheck
                       size={15}
-                      className="text-brand-green"
+                      className="text-[#0F2A1A]"
                       aria-label="Verified"
                     />
                   </h3>
-                  <p className="mt-1 text-xs uppercase text-ink-500">{role}</p>
+                  <p className="mt-1 text-xs uppercase text-[#0F2A1A]/65">{role}</p>
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="flex items-center gap-1 text-xs font-bold text-ink-800">
+                    <span className="flex items-center gap-1 text-xs font-bold text-[#0F2A1A]/85">
                       <Star
                         size={13}
-                        className="text-brand-gold"
+                        className="text-[#0F2A1A]"
                         fill="currentColor"
                         strokeWidth={0}
                       />
                       {t.rating_avg ? t.rating_avg.toFixed(1) : "-"}
                     </span>
-                    <span className="text-xs text-ink-500">
+                    <span className="text-xs text-[#0F2A1A]/65">
                       {t.rating_count ? `${t.rating_count} reviews` : "New"}
                     </span>
                   </div>
@@ -124,12 +124,12 @@ export async function TutorsShowcase() {
             href="/tutors"
             className="flex flex-col items-start justify-center gap-3 sm:flex-row sm:items-center sm:gap-4"
           >
-            <span className="grid size-20 place-items-center rounded-lg border border-dashed border-ink-300 bg-surface-muted text-3xl">
+            <span className="grid size-20 place-items-center rounded-lg border border-dashed border-black/10 bg-[#F9F6ED] text-3xl">
               →
             </span>
             <div className="grow">
-              <h3 className="font-medium text-ink-900">Browse all tutors</h3>
-              <span className="text-sm font-medium text-brand-gold-dark">
+              <h3 className="font-medium text-[#0F2A1A]">Browse all tutors</h3>
+              <span className="text-sm font-medium text-[#0F2A1A]">
                 See the full directory
               </span>
             </div>

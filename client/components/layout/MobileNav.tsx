@@ -16,7 +16,7 @@ const items = [
 export function MobileNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-ink-100 bg-white/95 backdrop-blur lg:hidden safe-area-pb">
+    <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-black/10 bg-white/95 backdrop-blur lg:hidden safe-area-pb">
       <ul className="flex">
         {items.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || (href !== "/" && pathname.startsWith(href));
@@ -25,7 +25,7 @@ export function MobileNav() {
               <Link
                 href={href}
                 className={`flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold ${
-                  active ? "text-deep" : "text-ink-400"
+                  active ? "text-[#0F2A1A]" : "text-[#0F2A1A]/65"
                 }`}
               >
                 <Icon size={20} />

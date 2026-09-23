@@ -82,8 +82,8 @@ export default function PrivateTuitionPage() {
 
       <div className="container-x mx-auto max-w-5xl space-y-8 pb-16 pt-16 md:pt-20">
         <PrivateTuitionWizard />
-        <div className="rounded-2xl border border-ink-200 bg-white p-6 shadow-soft">
-          <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+          <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
             Why private tuition at YK-Virtual
           </h2>
           <ul className="mt-5 space-y-4">
@@ -94,17 +94,17 @@ export default function PrivateTuitionPage() {
               "Reschedule-friendly within your package window",
             ].map((t) => (
               <li key={t} className="flex items-start gap-3">
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-gold-light text-brand-green">
+                <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-[#F9F6ED] text-[#0F2A1A]">
                   <Check size={14} strokeWidth={3} />
                 </span>
-                <span className="text-sm leading-relaxed text-ink-700">
+                <span className="text-sm leading-relaxed text-[#0F2A1A]/75">
                   {t}
                 </span>
               </li>
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl bg-brand-navy p-6 text-white shadow-card">
+        <div className="rounded-2xl bg-[#0F2A1A] p-6 text-white shadow-card">
           <h2 className="font-display text-xl tracking-[0.02em]">
             Prefer to talk?
           </h2>
@@ -113,7 +113,7 @@ export default function PrivateTuitionPage() {
           </p>
           <a
             href="/contact"
-            className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand-gold px-5 py-3 text-sm font-bold text-ink-900"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-5 py-3 text-sm font-bold text-[#0F2A1A]"
           >
             <PhoneCall size={15} /> Contact an advisor
           </a>
@@ -128,7 +128,7 @@ export default function PrivateTuitionPage() {
                 <summary className="cursor-pointer font-semibold">
                   {f.question}
                 </summary>
-                <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
+                <p className="mt-2 text-sm text-[#0F2A1A]/70">{f.answer}</p>
               </details>
             ))}
           </div>

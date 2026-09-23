@@ -57,7 +57,7 @@ export default function AdminVettingPage() {
       <div className="flex items-center justify-between mb-2">
         <div>
           <h1 className="text-3xl font-extrabold">Tutor vetting queue</h1>
-          <p className="text-ink-500 text-sm mt-1">
+          <p className="text-[#0F2A1A]/65 text-sm mt-1">
             Review applications: documents, competency results, and full transition history.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function AdminVettingPage() {
             key={s}
             onClick={() => setStatus(s)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
             }`}
           >
             {STATUS_LABEL[s]}
@@ -96,14 +96,14 @@ export default function AdminVettingPage() {
                 <button
                   onClick={() => setSelected(p.id)}
                   className={`w-full text-left border rounded-2xl p-4 transition-colors ${
-                    selected === p.id ? "border-deep bg-deep/5" : "hover:border-ink-300"
+                    selected === p.id ? "border-[#0F2A1A] bg-[#0F2A1A]/5" : "hover:border-black/10"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold">{p.display_name}</span>
                     <StatusBadge label={STATUS_LABEL[p.status] ?? p.status} kind={statusKindFor(p.status)} />
                   </div>
-                  <p className="text-xs text-ink-500 mt-1">
+                  <p className="text-xs text-[#0F2A1A]/65 mt-1">
                     {p.years_experience} yrs · {p.headline ?? p.slug} · ranking {p.ranking_score.toFixed(1)}
                   </p>
                 </button>
@@ -171,13 +171,13 @@ function Dossier({
     <div className="border rounded-2xl p-6 space-y-6">
       <div>
         <h2 className="text-xl font-bold">{p.display_name}</h2>
-        <p className="text-sm text-ink-500">{p.headline}</p>
-        <p className="text-sm text-ink-600 mt-2">{p.bio}</p>
+        <p className="text-sm text-[#0F2A1A]/65">{p.headline}</p>
+        <p className="text-sm text-[#0F2A1A]/70 mt-2">{p.bio}</p>
         <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-          <div><dt className="text-ink-400">Experience</dt><dd className="font-semibold">{p.years_experience} years</dd></div>
-          <div><dt className="text-ink-400">Rate</dt><dd className="font-semibold">{p.currency} {p.hourly_rate_min?.toLocaleString()}/hr</dd></div>
-          <div><dt className="text-ink-400">Online</dt><dd className="font-semibold">{p.accepts_online ? "Yes" : "No"}</dd></div>
-          <div><dt className="text-ink-400">In person</dt><dd className="font-semibold">{p.accepts_in_person ? "Yes" : "No"}</dd></div>
+          <div><dt className="text-[#0F2A1A]/65">Experience</dt><dd className="font-semibold">{p.years_experience} years</dd></div>
+          <div><dt className="text-[#0F2A1A]/65">Rate</dt><dd className="font-semibold">{p.currency} {p.hourly_rate_min?.toLocaleString()}/hr</dd></div>
+          <div><dt className="text-[#0F2A1A]/65">Online</dt><dd className="font-semibold">{p.accepts_online ? "Yes" : "No"}</dd></div>
+          <div><dt className="text-[#0F2A1A]/65">In person</dt><dd className="font-semibold">{p.accepts_in_person ? "Yes" : "No"}</dd></div>
         </dl>
       </div>
 
@@ -209,7 +209,7 @@ function Dossier({
       <section>
         <h3 className="font-bold text-sm mb-2">Competency results</h3>
         {detail.competency.length === 0 ? (
-          <p className="text-sm text-ink-400">No assessments yet.</p>
+          <p className="text-sm text-[#0F2A1A]/65">No assessments yet.</p>
         ) : (
           <ul className="space-y-1 text-sm">
             {detail.competency.map((c) => (
@@ -228,13 +228,13 @@ function Dossier({
       {/* Timeline */}
       <section>
         <h3 className="font-bold text-sm mb-2">Timeline</h3>
-        <ol className="space-y-2 text-xs border-l border-ink-200 pl-4">
+        <ol className="space-y-2 text-xs border-l border-black/10 pl-4">
           {detail.events.map((e) => (
             <li key={e.id} className="relative">
-              <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-deep" />
+              <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-[#0F2A1A]" />
               <span className="font-semibold">{e.from_status ?? "-"} → {e.to_status}</span>
-              <span className="text-ink-400"> · {new Date(e.created_at).toLocaleString()}</span>
-              {e.notes ? <p className="text-ink-500">{e.notes}</p> : null}
+              <span className="text-[#0F2A1A]/65"> · {new Date(e.created_at).toLocaleString()}</span>
+              {e.notes ? <p className="text-[#0F2A1A]/65">{e.notes}</p> : null}
             </li>
           ))}
         </ol>
@@ -265,17 +265,17 @@ function Dossier({
         }
       >
         <label className="block text-sm">
-          <span className="font-semibold text-ink-700">Rejection reason *</span>
+          <span className="font-semibold text-[#0F2A1A]/75">Rejection reason *</span>
           <textarea
             value={rejectReason}
             onChange={(e) => { setRejectReason(e.target.value); setRejectError(null); }}
             rows={3}
             placeholder="e.g. Document is blurry or expired - please re-upload a clear copy."
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
           />
         </label>
         {rejectError && <p className="mt-2 text-xs text-red-600">{rejectError}</p>}
-        <p className="mt-3 text-xs text-ink-500">The tutor will see this reason and can re-upload.</p>
+        <p className="mt-3 text-xs text-[#0F2A1A]/65">The tutor will see this reason and can re-upload.</p>
       </Modal>
 
       {actionable && (
@@ -304,7 +304,7 @@ function Dossier({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Reason (required for reject)"
-              className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm"
+              className="flex-1 rounded-xl border border-black/10 px-3 py-2 text-sm"
             />
             <Button size="sm" variant="outline" disabled={act.isPending} onClick={() => act.mutate({ action: "hold", r: reason || "paused" })}>
               Hold
@@ -314,18 +314,18 @@ function Dossier({
               Reject
             </Button>
           </div>
-          {busy ? <p className="text-xs text-ink-400">Working…</p> : null}
+          {busy ? <p className="text-xs text-[#0F2A1A]/65">Working…</p> : null}
         </section>
       )}
 
       {p.status === "APPROVED" && (
         <section className="border-t pt-4">
-          <p className="text-xs text-ink-500 mb-2">
+          <p className="text-xs text-[#0F2A1A]/65 mb-2">
             Marketplace visibility — a tutor only appears in public search when{" "}
-            <code className="text-[10px] bg-ink-100 px-1 rounded">is_public = true</code>.
+            <code className="text-[10px] bg-[#F9F6ED] px-1 rounded">is_public = true</code>.
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-ink-700">
+            <span className="text-sm font-medium text-[#0F2A1A]/75">
               {p.is_public ? "Visible on the public marketplace" : "Hidden from the public marketplace"}
             </span>
             <Button

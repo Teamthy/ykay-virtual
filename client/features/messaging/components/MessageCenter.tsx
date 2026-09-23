@@ -123,10 +123,10 @@ export function MessageCenter() {
   return (
     <div className="grid lg:grid-cols-[340px_1fr] border rounded-2xl overflow-hidden h-[70vh]">
       {/* Conversation list */}
-      <aside className="border-r border-ink-100 overflow-y-auto bg-ink-50/50">
-        <div className="p-4 border-b border-ink-100">
+      <aside className="border-r border-black/10 overflow-y-auto bg-[#F9F6ED]/50">
+        <div className="p-4 border-b border-black/10">
           <h2 className="font-bold">Messages</h2>
-          <p className="text-xs text-ink-500 mt-1">Booking-scoped conversations</p>
+          <p className="text-xs text-[#0F2A1A]/65 mt-1">Booking-scoped conversations</p>
         </div>
         {conversations.isLoading ? (
           <div className="p-4 space-y-3">
@@ -135,7 +135,7 @@ export function MessageCenter() {
           </div>
         ) : conversationList.length === 0 ? (
           <div className="space-y-3 p-4">
-            <p className="text-sm text-ink-500">
+            <p className="text-sm text-[#0F2A1A]/65">
               {isTutor
                 ? "No conversations yet — they start when a learner enrols in your cohort, or you message one below."
                 : "No conversations yet. Message your tutor to start one — they appear as soon as you're enrolled."}
@@ -143,14 +143,14 @@ export function MessageCenter() {
             <button
               type="button"
               onClick={() => void openContacts()}
-              className="w-full rounded-xl border border-brand-gold bg-brand-gold-light px-4 py-2.5 text-sm font-bold text-brand-gold-dark hover:bg-brand-gold hover:text-ink-900"
+              className="w-full rounded-xl border border-[#D6FF57] bg-[#F9F6ED] px-4 py-2.5 text-sm font-bold text-[#0F2A1A] hover:bg-[#D6FF57] hover:text-[#0F2A1A]"
             >
               {isTutor ? "Message your learners" : "Message your tutor"}
             </button>
             {contacts !== null && (
               <div className="space-y-2">
                 {contacts.length === 0 ? (
-                  <p className="text-xs text-ink-400">
+                  <p className="text-xs text-[#0F2A1A]/65">
                     {isTutor
                       ? "No confirmed learners in your cohorts yet."
                       : "No tutor on your enrolments yet — book a class first."}
@@ -162,15 +162,15 @@ export function MessageCenter() {
                       type="button"
                       disabled={contactBusy === c.user_id}
                       onClick={() => void startWith(c)}
-                      className="flex w-full items-center justify-between gap-2 rounded-xl border border-ink-100 bg-white px-3 py-2.5 text-left text-sm hover:border-ink-200 disabled:opacity-50"
+                      className="flex w-full items-center justify-between gap-2 rounded-xl border border-black/10 bg-white px-3 py-2.5 text-left text-sm hover:border-black/10 disabled:opacity-50"
                     >
                       <span>
-                        <span className="block font-semibold text-ink-800">{c.name}</span>
-                        <span className="block text-[11px] text-ink-400">
+                        <span className="block font-semibold text-[#0F2A1A]/85">{c.name}</span>
+                        <span className="block text-[11px] text-[#0F2A1A]/65">
                           {c.role.toLowerCase()} · {c.cohort_title ?? "class"}
                         </span>
                       </span>
-                      <span className="text-xs font-bold text-brand-gold-dark">Start →</span>
+                      <span className="text-xs font-bold text-[#0F2A1A]">Start →</span>
                     </button>
                   ))
                 )}
@@ -183,7 +183,7 @@ export function MessageCenter() {
               <li key={c.id}>
                 <button
                   onClick={() => setSelected(c.id)}
-                  className={`w-full text-left px-4 py-3 border-b border-ink-100 transition-colors ${
+                  className={`w-full text-left px-4 py-3 border-b border-black/10 transition-colors ${
                     selected === c.id ? "bg-white shadow-sm" : "hover:bg-white/60"
                   }`}
                 >
@@ -192,12 +192,12 @@ export function MessageCenter() {
                       {c.other_user_name ?? c.type.toLowerCase()}
                     </span>
                     {c.unread_count > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-blue px-1.5 text-[10px] font-bold text-white">
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0F2A1A] px-1.5 text-[10px] font-bold text-white">
                         {c.unread_count}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-ink-500 truncate mt-0.5">{c.last_message ?? c.subject ?? ""}</p>
+                  <p className="text-xs text-[#0F2A1A]/65 truncate mt-0.5">{c.last_message ?? c.subject ?? ""}</p>
                 </button>
               </li>
             ))}
@@ -208,7 +208,7 @@ export function MessageCenter() {
       {/* Thread */}
       <section className="flex flex-col min-w-0">
         {!selected ? (
-          <div className="flex-1 grid place-items-center text-sm text-ink-400">
+          <div className="flex-1 grid place-items-center text-sm text-[#0F2A1A]/65">
             Select a conversation to view messages
           </div>
         ) : (
@@ -217,7 +217,7 @@ export function MessageCenter() {
               {messages.isLoading ? (
                 <Skeleton className="h-16 w-2/3" />
               ) : messageList.length === 0 ? (
-                <p className="text-sm text-ink-400 text-center pt-10">No messages yet - say hello!</p>
+                <p className="text-sm text-[#0F2A1A]/65 text-center pt-10">No messages yet - say hello!</p>
               ) : (
                 [...messageList].reverse().map((m) => {
                   const mine = m.sender_user_id === currentUserId;
@@ -225,11 +225,11 @@ export function MessageCenter() {
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                       <div
                         className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                          mine ? "bg-brand-blue text-white rounded-br-md" : "bg-ink-100 text-ink-800 rounded-bl-md"
+                          mine ? "bg-[#0F2A1A] text-white rounded-br-md" : "bg-[#F9F6ED] text-[#0F2A1A]/85 rounded-bl-md"
                         }`}
                       >
                         <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                        <p className={`text-[10px] mt-1 ${mine ? "text-white/70" : "text-ink-400"}`}>
+                        <p className={`text-[10px] mt-1 ${mine ? "text-white/70" : "text-[#0F2A1A]/65"}`}>
                           {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </p>
                       </div>
@@ -239,7 +239,7 @@ export function MessageCenter() {
               )}
               <div ref={listEndRef} />
             </div>
-            <div className="border-t border-ink-100 p-3 flex gap-2">
+            <div className="border-t border-black/10 p-3 flex gap-2">
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -250,7 +250,7 @@ export function MessageCenter() {
                   }
                 }}
                 placeholder="Type a message…"
-                className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="flex-1 rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
               <Button size="sm" onClick={submit} disabled={!draft.trim() || send.isPending}>
                 Send

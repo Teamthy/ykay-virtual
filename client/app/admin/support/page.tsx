@@ -42,15 +42,15 @@ export default function AdminSupportPage() {
       header: "Ticket",
       cell: (t) => (
         <button type="button" onClick={() => setOpen(t)} className="text-left">
-          <p className="font-semibold text-deep hover:underline">{t.subject}</p>
-          <p className="text-[11px] text-ink-400">{t.email} · {new Date(t.created_at).toLocaleString()}</p>
+          <p className="font-semibold text-[#0F2A1A] hover:underline">{t.subject}</p>
+          <p className="text-[11px] text-[#0F2A1A]/65">{t.email} · {new Date(t.created_at).toLocaleString()}</p>
         </button>
       ),
     },
     {
       key: "message",
       header: "Message",
-      cell: (t) => <p className="text-sm text-ink-600 line-clamp-2 max-w-md whitespace-pre-line">{t.message}</p>,
+      cell: (t) => <p className="text-sm text-[#0F2A1A]/70 line-clamp-2 max-w-md whitespace-pre-line">{t.message}</p>,
     },
     {
       key: "status",
@@ -79,14 +79,14 @@ export default function AdminSupportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-deep">Support tickets</h1>
-        <p className="text-ink-500 text-sm mt-1">Trackable enquiries from contact forms, private-tuition requests and signed-in users.</p>
+        <h1 className="text-3xl font-extrabold text-[#0F2A1A]">Support tickets</h1>
+        <p className="text-[#0F2A1A]/65 text-sm mt-1">Trackable enquiries from contact forms, private-tuition requests and signed-in users.</p>
       </div>
 
       <div className="flex gap-2 flex-wrap">
         {FILTERS.map((s) => (
           <button key={s || "all"} onClick={() => { setStatus(s); setPage(1); }}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}>
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"}`}>
             {s || "All"}
           </button>
         ))}
@@ -107,10 +107,10 @@ export default function AdminSupportPage() {
       {open && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setOpen(null)}>
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <p className="text-xs font-bold uppercase tracking-wide text-ink-400">{open.status}</p>
-            <h2 className="mt-1 text-xl font-bold text-ink-900">{open.subject}</h2>
-            <p className="mt-1 text-sm text-ink-500">{open.email} · {new Date(open.created_at).toLocaleString()}</p>
-            <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-ink-700">{open.message}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">{open.status}</p>
+            <h2 className="mt-1 text-xl font-bold text-[#0F2A1A]">{open.subject}</h2>
+            <p className="mt-1 text-sm text-[#0F2A1A]/65">{open.email} · {new Date(open.created_at).toLocaleString()}</p>
+            <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-[#0F2A1A]/75">{open.message}</p>
             <div className="mt-6 flex flex-wrap gap-2">
               {open.status === "OPEN" && (
                 <Button size="sm" onClick={() => { setStatusMut.mutate({ id: open.id, s: "IN_PROGRESS" }); setOpen({ ...open, status: "IN_PROGRESS" }); }}>Start working</Button>
@@ -127,7 +127,7 @@ export default function AdminSupportPage() {
       {meta && meta.total_pages > 1 && (
         <div className="flex justify-center gap-2">
           <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button>
-          <span className="text-sm text-ink-500 self-center">Page {meta.page} / {meta.total_pages}</span>
+          <span className="text-sm text-[#0F2A1A]/65 self-center">Page {meta.page} / {meta.total_pages}</span>
           <Button size="sm" variant="outline" disabled={!meta.has_next} onClick={() => setPage(page + 1)}>Next</Button>
         </div>
       )}

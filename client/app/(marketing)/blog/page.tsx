@@ -74,9 +74,9 @@ export default async function BlogPage() {
             <Link
               key={p.id}
               href={`/blog/${p.slug}`}
-              className="border rounded-2xl p-6 hover:shadow-lift hover:border-brand-blue/40 transition-all bg-white"
+              className="border rounded-2xl p-6 hover:shadow-lift hover:border-[#0F2A1A]/40 transition-all bg-white"
             >
-              <div className="text-xs font-semibold uppercase text-brand-blue">
+              <div className="text-xs font-semibold uppercase text-[#0F2A1A]">
                 {(p.exam_slugs ?? []).join(" • ") ||
                   (p.subject_slugs ?? []).join(" • ")}
               </div>
@@ -84,12 +84,12 @@ export default async function BlogPage() {
                 {p.title}
               </h3>
               {p.excerpt && (
-                <p className="mt-2 text-sm text-ink-600 line-clamp-3">
+                <p className="mt-2 text-sm text-[#0F2A1A]/70 line-clamp-3">
                   {p.excerpt}
                 </p>
               )}
               {p.published_at && (
-                <div className="mt-3 text-xs text-ink-400">
+                <div className="mt-3 text-xs text-[#0F2A1A]/65">
                   {p.published_at.slice(0, 10)}
                 </div>
               )}

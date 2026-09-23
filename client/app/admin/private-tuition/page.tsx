@@ -40,8 +40,8 @@ export default function AdminPrivateTuitionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold text-deep">Private tuition requests</h1>
-        <p className="text-ink-500 text-sm mt-1">
+        <h1 className="text-3xl font-extrabold text-[#0F2A1A]">Private tuition requests</h1>
+        <p className="text-[#0F2A1A]/65 text-sm mt-1">
           Parents request a vetted tutor; match one here to create their payable escrow order.
         </p>
       </div>
@@ -52,7 +52,7 @@ export default function AdminPrivateTuitionPage() {
             key={s}
             onClick={() => setStatus(s)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-              status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+              status === s ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
             }`}
           >
             {s}
@@ -109,17 +109,17 @@ function RequestCard({
   });
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+    <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-bold text-deep">{subjectName}</h3>
-          <p className="text-xs text-ink-500 mt-0.5">Requested {new Date(r.created_at).toLocaleDateString()}</p>
+          <h3 className="font-bold text-[#0F2A1A]">{subjectName}</h3>
+          <p className="text-xs text-[#0F2A1A]/65 mt-0.5">Requested {new Date(r.created_at).toLocaleDateString()}</p>
         </div>
         <StatusBadge label={r.status} kind={statusKindFor(r.status)} />
       </div>
 
-      {r.goals && <p className="mt-3 text-sm text-ink-600 line-clamp-2">{r.goals}</p>}
-      <p className="mt-2 text-xs text-ink-400">
+      {r.goals && <p className="mt-3 text-sm text-[#0F2A1A]/70 line-clamp-2">{r.goals}</p>}
+      <p className="mt-2 text-xs text-[#0F2A1A]/65">
         {[r.preferred_days, r.preferred_time_range].filter(Boolean).join(" · ") || "No schedule preference"} · {r.timezone}
       </p>
 
@@ -130,14 +130,14 @@ function RequestCard({
         </div>
       ) : (
         r.status === "PENDING" && (
-          <div className="mt-4 space-y-3 border-t border-ink-100 pt-4">
+          <div className="mt-4 space-y-3 border-t border-black/10 pt-4">
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block text-xs sm:col-span-3">
-                <span className="font-medium text-ink-700">Vetted tutor</span>
+                <span className="font-medium text-[#0F2A1A]/75">Vetted tutor</span>
                 <select
                   value={tutorId}
                   onChange={(e) => setTutorId(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm"
                 >
                   <option value="">Select approved tutor…</option>
                   {tutors.map((t) => (
@@ -146,12 +146,12 @@ function RequestCard({
                 </select>
               </label>
               <label className="block text-xs">
-                <span className="font-medium text-ink-700">Sessions</span>
-                <input type="number" min={1} max={60} value={sessions} onChange={(e) => setSessions(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-sm" />
+                <span className="font-medium text-[#0F2A1A]/75">Sessions</span>
+                <input type="number" min={1} max={60} value={sessions} onChange={(e) => setSessions(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm" />
               </label>
               <label className="block text-xs sm:col-span-2">
-                <span className="font-medium text-ink-700">Duration / session</span>
-                <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-ink-200 px-3 py-2 text-sm">
+                <span className="font-medium text-[#0F2A1A]/75">Duration / session</span>
+                <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm">
                   {[45, 60, 90, 120].map((d) => (
                     <option key={d} value={d}>{d} min</option>
                   ))}

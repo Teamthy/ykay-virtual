@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 const FIELD =
-  "mt-1 w-full rounded-xl border border-ink-200 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:border-[#4CCB31] focus:outline-none focus:ring-2 focus:ring-[#4CCB31]/30";
+  "mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-[#0F2A1A] placeholder:text-[#0F2A1A]/65 focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30";
 
 export function UtmeCallbackForm() {
   const [form, setForm] = useState({ name: "", phone: "", level: "SSS3" });
@@ -32,7 +31,7 @@ export function UtmeCallbackForm() {
     setBusy(true);
     setError(null);
     try {
-      await fetch(`${API_BASE}/support/tickets`, {
+      await apiFetch<unknown>("/support/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -42,7 +41,7 @@ export function UtmeCallbackForm() {
         }),
       });
       setDone(true);
-      toast.success("Request received - we will text to confirm");
+      toast.success("Request received — an advisor will contact you");
     } catch {
       setError("Could not submit - please use the contact page");
     } finally {
@@ -52,15 +51,15 @@ export function UtmeCallbackForm() {
 
   if (done) {
     return (
-      <div className="rounded-2xl bg-white p-7 text-center shadow-lg">
-        <h3 className="text-xl font-bold text-[#013920]">Request received</h3>
-        <p className="mt-2 text-sm text-ink-600">
-          We will text <b>{form.phone}</b> to confirm.
+      <div className="rounded-[20px] bg-white p-7 text-center text-[#0F2A1A] shadow-lg">
+        <h3 className="text-xl font-bold text-[#0F2A1A]">Request received</h3>
+        <p className="mt-2 text-sm text-[#0F2A1A]/70">
+          An advisor will contact <b>{form.phone}</b> about current availability.
         </p>
         <button
           type="button"
           onClick={() => setDone(false)}
-          className="mt-4 text-sm font-semibold text-[#4CCB31] hover:underline"
+          className="mt-4 text-sm font-semibold text-[#0F2A1A] hover:underline"
         >
           Submit another request
         </button>
@@ -70,21 +69,22 @@ export function UtmeCallbackForm() {
 
   return (
     <form
+      id="callback"
       onSubmit={(e) => {
         e.preventDefault();
         void submit();
       }}
-      className="rounded-2xl bg-white p-6 shadow-lg sm:p-7"
+      className="scroll-mt-24 rounded-[20px] border border-white/20 bg-white p-6 text-[#0F2A1A] shadow-[0_25px_70px_rgba(0,0,0,0.25)] sm:p-8"
     >
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-[#013920]">Start UTME prep</h3>
-        <p className="mt-2 text-sm text-ink-600">
-          We will text on SMS or WhatsApp to confirm your number.
+        <h3 className="text-2xl font-bold text-[#0F2A1A]">Ask about UTME prep</h3>
+        <p className="mt-2 text-sm text-[#0F2A1A]/70">
+          Tell us how to reach you; an advisor will confirm current timetable and pricing before you pay.
         </p>
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm font-medium text-ink-800">
+        <label className="block text-sm font-medium text-[#0F2A1A]/85">
           Parent / guardian name
           <input
             type="text"
@@ -94,7 +94,7 @@ export function UtmeCallbackForm() {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </label>
-        <label className="block text-sm font-medium text-ink-800">
+        <label className="block text-sm font-medium text-[#0F2A1A]/85">
           Current level
           <select
             className={FIELD}
@@ -109,7 +109,7 @@ export function UtmeCallbackForm() {
         </label>
       </div>
 
-      <label className="mt-4 block text-sm font-medium text-ink-800">
+      <label className="mt-4 block text-sm font-medium text-[#0F2A1A]/85">
         Phone number
         <input
           type="tel"
@@ -120,18 +120,18 @@ export function UtmeCallbackForm() {
         />
       </label>
 
-      <label className="mt-5 flex items-start gap-3 text-sm text-ink-800">
+      <label className="mt-5 flex items-start gap-3 text-sm text-[#0F2A1A]/85">
         <input
           type="checkbox"
           checked={accepted}
           onChange={(e) => setAccepted(e.target.checked)}
-          className="mt-1 size-4 rounded border-ink-300 text-[#4CCB31]"
+          className="mt-1 size-4 rounded border-black/10 text-[#0F2A1A]"
         />
         <span>
           I accept the{" "}
           <Link
             href="/terms"
-            className="font-medium text-[#4CCB31] hover:underline"
+            className="font-medium text-[#0F2A1A] hover:underline"
           >
             Terms
           </Link>
@@ -143,9 +143,9 @@ export function UtmeCallbackForm() {
       <button
         type="submit"
         disabled={busy}
-        className="mt-5 w-full rounded-lg bg-[#4CCB31] py-3 text-sm font-bold text-[#013920] hover:bg-[#5FE63F] disabled:opacity-50"
+        className="mt-5 w-full rounded-full bg-[#D6FF57] py-3 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-50"
       >
-        {busy ? "Submitting…" : "Get started"}
+        {busy ? "Submitting…" : "Request a callback"}
       </button>
     </form>
   );
