@@ -28,16 +28,30 @@ fi
 if [ "${E2E_WEB_NPM_CI:-}" = "1" ] || [ ! -x client/node_modules/.bin/next ]; then
   (cd client && npm ci --no-audit --no-fund >/dev/null)
 fi
-(cd client && TMPDIR=/var/tmp rm -rf .next && TMPDIR=/var/tmp npm run build >/tmp/e2e-web-build.log 2>&1)
+if ! (cd client && TMPDIR=/var/tmp rm -rf .next && TMPDIR=/var/tmp npm run build >/tmp/e2e-web-build.log 2>&1); then
+  echo "e2e-web: Next.js build failed (last 80 lines follow)" >&2
+  tail -80 /tmp/e2e-web-build.log >&2
+  # GitHub annotations remain available even when the runner's raw log
+  # archive cannot be downloaded; do not swallow the underlying build error.
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    echo "::error title=Browser E2E web build failed::$(tail -1 /tmp/e2e-web-build.log)" >&2
+  fi
+  exit 1
+fi
 
 API_PORT=8080
 WEB_PORT=3000
 GW_PORT=9990
+E2E_STAGE="gateway"
 export WEBHOOK_SECRET="${WEBHOOK_SECRET:-e2e-browser-secret}"
 export API_BASE_URL="http://localhost:${API_PORT}/api/v1"
 export WEB_BASE_URL="http://localhost:${WEB_PORT}"
 
 cleanup() {
+  result=$?
+  if [ "$result" -ne 0 ] && [ -n "${GITHUB_ACTIONS:-}" ]; then
+    echo "::error title=Browser E2E failed::${E2E_STAGE} exited with status ${result}" >&2
+  fi
   [ -n "${WEB_PID:-}" ] && kill "$WEB_PID" 2>/dev/null || true
   [ -n "${API_PID:-}" ] && kill "$API_PID" 2>/dev/null || true
   [ -n "${GW_PID:-}" ] && kill "$GW_PID" 2>/dev/null || true
@@ -76,6 +90,7 @@ GW_PID=$!
 for i in $(seq 1 20); do curl -sf -m 1 "http://localhost:$GW_PORT/health" >/dev/null 2>&1 && break; sleep 0.3; done
 
 # ── 2. API (PG when reachable, else memory + demo seed) ────────────────────
+E2E_STAGE="API boot and database seed"
 # Kill stale API squatters on the port (a previous run's binary would serve
 # stale code/state and poison the run — same guard as next-server below).
 if curl -sf -m 2 "http://localhost:${API_PORT}/health" >/dev/null 2>&1; then
@@ -113,6 +128,7 @@ for i in $(seq 1 30); do curl -sf -m 1 "http://localhost:$API_PORT/health" >/dev
 curl -sf -m 1 "http://localhost:$API_PORT/health" >/dev/null || { echo "API failed"; tail -20 /tmp/e2e-web-api.log; exit 1; }
 
 # ── 3. Web standalone ──────────────────────────────────────────────────────
+E2E_STAGE="standalone web boot"
 # Kill stale servers squatting on the ports (Next renames its process title
 # to "next-server" — generic pgreps miss them and poison the run with a
 # stale build). CI ports are clean; this protects local reruns.
@@ -141,4 +157,5 @@ for i in $(seq 1 30); do curl -sf -m 1 "http://localhost:$WEB_PORT/" >/dev/null 
 curl -sf -m 1 "http://localhost:$WEB_PORT/" >/dev/null || { echo "web failed"; tail -20 /tmp/e2e-web-server.log; exit 1; }
 
 # ── 4. Playwright ──────────────────────────────────────────────────────────
+E2E_STAGE="Playwright browser scenarios"
 (cd client && npx playwright test)
