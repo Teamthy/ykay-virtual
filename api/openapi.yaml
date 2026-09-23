@@ -2594,6 +2594,53 @@ paths:
       responses:
         '200': { description: Notes }
 
+  /lessons/{lessonId}/player-notes:
+    post:
+      tags: [learning]
+      summary: Add a timestamped player note or bookmark (feature 5, participants only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role, timestamp_sec]
+              properties:
+                role: { type: string, enum: [STUDENT, PARENT, TUTOR] }
+                timestamp_sec: { type: integer, minimum: 0 }
+                is_bookmark: { type: boolean, default: false }
+                text: { type: string }
+      responses:
+        '201': { description: Note created }
+    get:
+      tags: [learning]
+      summary: Shared participant notes/bookmarks for a lesson (ordered by time)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: lessonId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Player notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PlayerNote' }
+
+  /me/player-notes/{id}:
+    delete:
+      tags: [learning]
+      summary: Delete one of my player notes/bookmarks (owner only)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Deleted }
+        '404': { description: Not found or not the owner }
+
   /lessons/{lessonId}/reschedule:
     post:
       tags: [learning]
@@ -4722,6 +4769,18 @@ components:
         priority: { type: integer, minimum: 1, maximum: 3 }
         source: { type: string, enum: [seeded, rebalanced] }
         completed_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+
+    PlayerNote:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        lesson_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        role: { type: string, enum: [STUDENT, PARENT, TUTOR] }
+        timestamp_sec: { type: integer, minimum: 0 }
+        is_bookmark: { type: boolean }
+        text: { type: string }
         created_at: { type: string, format: date-time }
 
     OrderItem:

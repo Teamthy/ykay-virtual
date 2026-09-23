@@ -34,6 +34,7 @@ import (
 	"ykay-virtual/internal/domain/institution"
 	"ykay-virtual/internal/domain/leads"
 	"ykay-virtual/internal/domain/learning"
+	"ykay-virtual/internal/domain/lessonnote"
 	"ykay-virtual/internal/domain/library"
 	"ykay-virtual/internal/domain/mastery"
 	"ykay-virtual/internal/domain/messaging"
@@ -143,6 +144,7 @@ type Repositories struct {
 	Waitlist           waitlist.Repository
 	Mastery            mastery.Repository
 	Revision           revision.Repository
+	PlayerNotes        lessonnote.Repository
 	StorageBackend     string  // "postgres" | "memory"
 	CachePrefix        string  // namespaces the shared cache per backend
 	DB                 *sql.DB // raw handle (nil in memory mode) — boot migrations
@@ -285,6 +287,8 @@ func main() {
 	// Adaptive revision planner (feature 1, 000075): seeds + rebalances from
 	// the learner's weak topics.
 	revisionSvc := service.NewRevisionService(repos.Revision).WithMastery(masterySvc)
+	// Lesson bookmarks & timestamped player notes (feature 5, 000078).
+	playerNoteSvc := service.NewLessonNoteService(repos.PlayerNotes)
 	// (profileAuthz is created after the services block)
 	_ = dashSvc
 	plusTeamsSvc := service.NewPlusTeamsService(repos.PlusTeams, audit).WithUsers(repos.Users).
@@ -593,6 +597,7 @@ func main() {
 		AvailabilityPublic: httpapi.NewAvailabilityPublicHandler(repos.Availability),
 		Mastery:            httpapi.NewMasteryHandler(masterySvc, profileAuthz),
 		Revision:           httpapi.NewRevisionHandler(revisionSvc, profileAuthz),
+		PlayerNotes:        httpapi.NewPlayerNoteHandler(playerNoteSvc, lessonSvc),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in
@@ -800,6 +805,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Waitlist:           memory.NewWaitlistMemory(),
 		Mastery:            memory.NewMasteryMemory(),
 		Revision:           memory.NewRevisionMemory(),
+		PlayerNotes:        memory.NewLessonNoteMemory(),
 			Submissions:        store.Submissions,
 			Chat:               memory.NewChatMemory(),
 			Devices:            memory.NewDeviceMemory(),
@@ -876,6 +882,7 @@ func setupRepositories(ctx context.Context, cfg config.Config) (*Repositories, f
 		Waitlist:           postgres.NewWaitlistRepo(pg.DB()),
 		Mastery:            postgres.NewMasteryRepo(pg.DB()),
 		Revision:           postgres.NewRevisionRepo(pg.DB()),
+		PlayerNotes:        postgres.NewLessonNoteRepo(pg.DB()),
 		Submissions:        postgres.NewSubmissionRepo(pg.DB()),
 		Chat:               postgres.NewChatRepo(pg.DB()),
 		Devices:            postgres.NewDeviceRepo(pg.DB()),

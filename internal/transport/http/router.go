@@ -231,6 +231,11 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/admin/lessons/{lessonId}/video", handlers.LessonOps.SetRecordedVideo)
 	mux.HandleFunc("GET "+v1+"/me/recorded-lessons", handlers.LessonOps.MyRecordedLibrary)
 	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/notes", handlers.LessonOps.ListNotes)
+	// Lesson bookmarks & timestamped player notes (feature 5, 000078). Scoped
+	// to lesson participants via the same lesson-note authorization.
+	mux.HandleFunc("POST "+v1+"/lessons/{lessonId}/player-notes", handlers.PlayerNotes.Add)
+	mux.HandleFunc("GET "+v1+"/lessons/{lessonId}/player-notes", handlers.PlayerNotes.List)
+	mux.HandleFunc("DELETE "+v1+"/me/player-notes/{id}", handlers.PlayerNotes.Delete)
 
 	// Meeting links (G4.2) — tutor opens/refreshes, participants join
 	// inside the server-enforced join window.
@@ -624,6 +629,7 @@ type Handlers struct {
 	AvailabilityPublic *AvailabilityPublicHandler
 	Mastery           *MasteryHandler
 	Revision          *RevisionHandler
+	PlayerNotes       *PlayerNoteHandler
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).
