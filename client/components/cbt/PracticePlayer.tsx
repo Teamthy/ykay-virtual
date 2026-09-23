@@ -140,16 +140,16 @@ export function PracticePlayer({
   // ── brief ────────────────────────────────────────────────────────────────
   if (phase === "brief") {
     return (
-      <div className="rounded-3xl border border-ink-200 bg-white p-8 shadow-sm">
+      <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary-dark">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
               Practice paper · {paper.subject}
             </p>
-            <h1 className="mt-2 font-display text-3xl text-deep">
+            <h1 className="mt-2 font-display text-3xl text-[#0F2A1A]">
               {qs.length} randomly drawn questions
             </h1>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-600">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#0F2A1A]/70">
               This paper was drawn just for you — a fresh random set every time.{" "}
               {timed ? (
                 <>
@@ -166,12 +166,12 @@ export function PracticePlayer({
               )}
             </p>
           </div>
-          <div className="rounded-2xl bg-primary/10 px-5 py-4 text-center">
-            <Clock size={20} className="mx-auto text-primary-dark" />
-            <p className="mt-1 font-mono text-2xl font-bold text-deep">
+          <div className="rounded-2xl bg-[#D6FF57]/10 px-5 py-4 text-center">
+            <Clock size={20} className="mx-auto text-[#0F2A1A]" />
+            <p className="mt-1 font-mono text-2xl font-bold text-[#0F2A1A]">
               {fmt(timed ? remaining : qs.length * 45)}
             </p>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-500">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#0F2A1A]/65">
               {timed ? "enforced limit" : "pace guide"}
             </p>
           </div>
@@ -206,15 +206,15 @@ export function PracticePlayer({
           : "text-red-600";
     return (
       <div className="space-y-6">
-        <div className="rounded-3xl border border-ink-200 bg-white p-8 text-center shadow-sm">
-          <Trophy size={32} className="mx-auto text-primary-dark" />
-          <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-primary-dark">
+        <div className="rounded-3xl border border-black/10 bg-white p-8 text-center shadow-sm">
+          <Trophy size={32} className="mx-auto text-[#0F2A1A]" />
+          <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
             Practice result · {paper.subject}
           </p>
           <p className={`mt-2 font-display text-6xl font-bold ${band}`}>
             {result.score}%
           </p>
-          <p className="mt-2 text-sm text-ink-600">
+          <p className="mt-2 text-sm text-[#0F2A1A]/70">
             {result.correct} of {result.total} correct — every question below
             comes with the answer and a short explanation.
           </p>
@@ -248,7 +248,7 @@ export function PracticePlayer({
           {review.map((r, i) => (
             <div
               key={r.id}
-              className="rounded-3xl border border-ink-200 bg-white p-6 shadow-sm"
+              className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm"
             >
               <div className="flex items-start gap-3">
                 {r.correct ? (
@@ -260,7 +260,7 @@ export function PracticePlayer({
                   <XCircle size={20} className="mt-0.5 shrink-0 text-red-500" />
                 )}
                 <div className="min-w-0">
-                  <p className="font-semibold leading-relaxed text-ink-900">
+                  <p className="font-semibold leading-relaxed text-[#0F2A1A]">
                     {i + 1}. {r.text}
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -275,7 +275,7 @@ export function PracticePlayer({
                               ? "border-green-300 bg-green-50 font-semibold text-green-800"
                               : isPick
                                 ? "border-red-300 bg-red-50 text-red-700 line-through"
-                                : "border-ink-200 text-ink-600"
+                                : "border-black/10 text-[#0F2A1A]/70"
                           }`}
                         >
                           {LETTERS[j]}. {o}
@@ -311,20 +311,20 @@ export function PracticePlayer({
   return (
     <div className="space-y-5">
       {/* status bar */}
-      <div className="sticky top-2 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-white/95 px-5 py-3 shadow-sm backdrop-blur">
+      <div className="sticky top-2 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white/95 px-5 py-3 shadow-sm backdrop-blur">
         <div className="flex items-center gap-4 text-sm">
-          <span className="font-bold text-deep">
+          <span className="font-bold text-[#0F2A1A]">
             Question {idx + 1}{" "}
-            <span className="text-ink-400">/ {qs.length}</span>
+            <span className="text-[#0F2A1A]/65">/ {qs.length}</span>
           </span>
-          <span className="text-ink-500">
-            answered <strong className="text-deep">{answeredCount}</strong>
+          <span className="text-[#0F2A1A]/65">
+            answered <strong className="text-[#0F2A1A]">{answeredCount}</strong>
           </span>
         </div>
         <div className="flex items-center gap-3">
           <span
             className={`font-mono text-lg font-bold ${
-              remaining < 60 ? "animate-pulse text-red-600" : "text-deep"
+              remaining < 60 ? "animate-pulse text-red-600" : "text-[#0F2A1A]"
             }`}
           >
             {fmt(remaining)}
@@ -364,12 +364,12 @@ export function PracticePlayer({
 
       {/* question */}
       {q && (
-        <div className="rounded-3xl border border-ink-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
-            <span className="rounded-full bg-primary/10 px-3 py-1 uppercase tracking-wide text-primary-dark">
+            <span className="rounded-full bg-[#D6FF57]/10 px-3 py-1 uppercase tracking-wide text-[#0F2A1A]">
               {q.topic}
             </span>
-            <span className="rounded-full bg-ink-100 px-3 py-1 text-ink-500">
+            <span className="rounded-full bg-[#F9F6ED] px-3 py-1 text-[#0F2A1A]/65">
               {"★".repeat(q.difficulty)}
             </span>
             <button
@@ -377,13 +377,13 @@ export function PracticePlayer({
               className={`ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 ${
                 flags[q.id]
                   ? "bg-amber-100 text-amber-700"
-                  : "bg-ink-100 text-ink-500"
+                  : "bg-[#F9F6ED] text-[#0F2A1A]/65"
               }`}
             >
               <Flag size={12} /> {flags[q.id] ? "Flagged" : "Flag"}
             </button>
           </div>
-          <p className="mt-4 text-lg font-semibold leading-relaxed text-ink-900">
+          <p className="mt-4 text-lg font-semibold leading-relaxed text-[#0F2A1A]">
             {q.text}
           </p>
           <div className="mt-5 grid gap-3">
@@ -393,15 +393,15 @@ export function PracticePlayer({
                 onClick={() => setAnswers((a) => ({ ...a, [q.id]: j }))}
                 className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
                   answers[q.id] === j
-                    ? "border-primary bg-primary/10 font-semibold text-deep"
-                    : "border-ink-200 text-ink-700 hover:border-primary/50 hover:bg-primary/5"
+                    ? "border-[#D6FF57] bg-[#D6FF57]/10 font-semibold text-[#0F2A1A]"
+                    : "border-black/10 text-[#0F2A1A]/75 hover:border-[#D6FF57]/50 hover:bg-[#D6FF57]/5"
                 }`}
               >
                 <span
                   className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm font-bold ${
                     answers[q.id] === j
-                      ? "border-primary bg-primary text-deep-green"
-                      : "border-ink-200 text-ink-500"
+                      ? "border-[#D6FF57] bg-[#D6FF57] text-[#0F2A1A]"
+                      : "border-black/10 text-[#0F2A1A]/65"
                   }`}
                 >
                   {LETTERS[j]}
@@ -421,7 +421,7 @@ export function PracticePlayer({
             {answers[q.id] !== undefined && (
               <button
                 onClick={() => setAnswers(({ [q.id]: _drop, ...rest }) => rest)}
-                className="text-xs font-semibold text-ink-400 hover:text-ink-600"
+                className="text-xs font-semibold text-[#0F2A1A]/65 hover:text-[#0F2A1A]/70"
               >
                 Clear answer
               </button>
@@ -442,8 +442,8 @@ export function PracticePlayer({
       )}
 
       {/* palette */}
-      <div className="rounded-3xl border border-ink-200 bg-white p-5 shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-400">
+      <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0F2A1A]/65">
           Question palette
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -453,22 +453,22 @@ export function PracticePlayer({
               onClick={() => setIdx(i)}
               className={`h-9 w-9 rounded-xl border text-sm font-bold transition ${
                 i === idx
-                  ? "border-primary bg-primary text-deep-green"
+                  ? "border-[#D6FF57] bg-[#D6FF57] text-[#0F2A1A]"
                   : flags[x.id]
                     ? "border-amber-300 bg-amber-100 text-amber-700"
                     : answers[x.id] !== undefined
                       ? "border-green-300 bg-green-100 text-green-700"
-                      : "border-ink-200 text-ink-500 hover:border-primary/50"
+                      : "border-black/10 text-[#0F2A1A]/65 hover:border-[#D6FF57]/50"
               }`}
             >
               {i + 1}
             </button>
           ))}
         </div>
-        <p className="mt-3 text-[11px] text-ink-600">
+        <p className="mt-3 text-[11px] text-[#0F2A1A]/70">
           <span className="font-bold text-green-700">■</span> answered ·{" "}
           <span className="font-bold text-amber-600">■</span> flagged ·{" "}
-          <span className="font-bold text-ink-400">■</span> untouched
+          <span className="font-bold text-[#0F2A1A]/65">■</span> untouched
         </p>
       </div>
     </div>

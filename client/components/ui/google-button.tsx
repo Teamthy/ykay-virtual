@@ -33,7 +33,7 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
       type="button"
       onClick={() => void go()}
       disabled={busy}
-      className="inline-flex h-11 w-full items-center justify-center gap-x-2 rounded-lg border border-ink-200 bg-white px-4 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50 disabled:opacity-50"
+      className="inline-flex h-11 w-full items-center justify-center gap-x-2 rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[#0F2A1A]/85 shadow-sm transition-colors hover:bg-[#F9F6ED] disabled:opacity-50"
     >
       <svg className="h-4 w-auto" viewBox="0 0 46 47" fill="none" aria-hidden="true">
         <path d="M46 24.0287C46 22.09 45.8533 20.68 45.5013 19.2112H23.4694V27.9356H36.4069C36.1429 30.1094 34.7347 33.37 31.5957 35.5731L31.5663 35.8669L38.5191 41.2719L38.9885 41.3306C43.4477 37.2181 46 31.1669 46 24.0287Z" fill="#4285F4" />

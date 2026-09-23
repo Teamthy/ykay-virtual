@@ -66,12 +66,12 @@ export default function EntranceExamPage() {
 
       {/* Success rates */}
       <section id="rates" className="scroll-mt-24 bg-white py-16">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-center">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-center">
           <div>
-            <h2 className="font-display text-3xl tracking-[0.02em] text-brand-navy md:text-4xl">
+            <h2 className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A] md:text-4xl">
               Get top grades in tests &amp; exams
             </h2>
-            <p className="mt-4 text-ink-600 leading-relaxed">
+            <p className="mt-4 text-[#0F2A1A]/70 leading-relaxed">
               Prepare for entrance exams into top schools in Nigeria &amp; the
               UK - Loyola Jesuit, Grange, St. Saviour&apos;s, King&apos;s
               College UK, CIS and federal schools - with past-paper practice and
@@ -86,11 +86,11 @@ export default function EntranceExamPage() {
               ].map((f) => (
                 <li
                   key={f}
-                  className="flex items-start gap-2.5 text-sm text-ink-600"
+                  className="flex items-start gap-2.5 text-sm text-[#0F2A1A]/70"
                 >
                   <Check
                     size={15}
-                    className="mt-0.5 shrink-0 text-brand-green"
+                    className="mt-0.5 shrink-0 text-[#0F2A1A]"
                   />{" "}
                   {f}
                 </li>
@@ -101,12 +101,12 @@ export default function EntranceExamPage() {
             {TRACKS.map((r) => (
               <div
                 key={r.subject}
-                className="rounded-2xl border border-ink-100 bg-surface-muted p-6"
+                className="rounded-2xl border border-black/10 bg-[#F9F6ED] p-6"
               >
-                <p className="font-display text-xl text-brand-navy">
+                <p className="font-display text-xl text-[#0F2A1A]">
                   {r.subject}
                 </p>
-                <p className="mt-2 text-sm text-ink-500">{r.note}</p>
+                <p className="mt-2 text-sm text-[#0F2A1A]/65">{r.note}</p>
               </div>
             ))}
           </div>
@@ -114,21 +114,21 @@ export default function EntranceExamPage() {
       </section>
 
       {/* Exams covered */}
-      <section className="bg-surface-muted py-16">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-          <h2 className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl text-center">
+      <section className="bg-[#F9F6ED] py-16">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+          <h2 className="font-display text-2xl tracking-[0.02em] text-[#0F2A1A] md:text-3xl text-center">
             Exams we prepare for
           </h2>
           <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-5">
             {EXAMS.map((e) => (
               <div
                 key={e.code}
-                className="rounded-2xl border border-ink-100 bg-white p-6 text-center shadow-soft"
+                className="rounded-2xl border border-black/10 bg-white p-6 text-center shadow-soft"
               >
-                <div className="font-display text-3xl tracking-[0.02em] text-brand-blue">
+                <div className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A]">
                   {e.code}
                 </div>
-                <p className="mt-2 text-xs font-semibold text-ink-500 leading-snug">
+                <p className="mt-2 text-xs font-semibold text-[#0F2A1A]/65 leading-snug">
                   {e.name}
                 </p>
               </div>
@@ -137,7 +137,7 @@ export default function EntranceExamPage() {
           <div className="mt-10 text-center">
             <Link
               href="/exam-prep"
-              className="inline-block rounded-full bg-brand-gold px-9 py-3.5 text-sm font-bold text-ink-900 transition-all hover:bg-brand-gold-hover hover:-translate-y-0.5"
+              className="inline-block rounded-full bg-[#D6FF57] px-9 py-3.5 text-sm font-bold text-[#0F2A1A] transition-all hover:bg-[#C8F030] hover:-translate-y-0.5"
             >
               Explore exam prep programmes
             </Link>

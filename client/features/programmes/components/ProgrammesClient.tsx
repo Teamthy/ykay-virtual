@@ -51,7 +51,7 @@ export function ProgrammesClient() {
             }
           }}
           placeholder="Search programmes…"
-          className="flex-1 max-w-sm rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          className="flex-1 max-w-sm rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
         />
         <div className="flex flex-wrap gap-2">
           {FORMATS.map((f) => (
@@ -59,7 +59,7 @@ export function ProgrammesClient() {
               key={f}
               onClick={() => selectFormat(f)}
               className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-                format === f ? "bg-brand-blue text-white" : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+                format === f ? "bg-[#0F2A1A] text-white" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
               }`}
             >
               {f.replace(/_/g, " ").toLowerCase()}
@@ -77,7 +77,7 @@ export function ProgrammesClient() {
       ) : programmes.isError ? (
         <div className="border rounded-2xl p-10 text-center text-red-600">Could not load programmes.</div>
       ) : (programmes.data?.data ?? []).length === 0 ? (
-        <div className="border rounded-2xl p-10 text-center text-ink-500">
+        <div className="border rounded-2xl p-10 text-center text-[#0F2A1A]/65">
           No programmes match yet - new cohorts launch regularly.
         </div>
       ) : (
@@ -86,17 +86,17 @@ export function ProgrammesClient() {
             <Link
               key={p.id}
               href={`/programmes/${p.slug}`}
-              className="border rounded-2xl p-6 hover:border-brand-blue hover:shadow-lift transition-all bg-white"
+              className="border rounded-2xl p-6 hover:border-[#0F2A1A] hover:shadow-lift transition-all bg-white"
             >
               {p.is_featured && (
-                <span className="inline-block text-[10px] font-bold uppercase tracking-wide text-brand-gold bg-amber-50 px-2 py-0.5 rounded-full mb-2">
+                <span className="inline-block text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A] bg-amber-50 px-2 py-0.5 rounded-full mb-2">
                   Featured
                 </span>
               )}
               <h3 className="font-bold leading-snug">{p.title}</h3>
-              {p.summary && <p className="text-sm text-ink-600 mt-2 line-clamp-2">{p.summary}</p>}
+              {p.summary && <p className="text-sm text-[#0F2A1A]/70 mt-2 line-clamp-2">{p.summary}</p>}
               <div className="mt-4 flex items-center justify-between text-xs">
-                <span className="px-2 py-1 rounded-full bg-ink-100 text-ink-600">
+                <span className="px-2 py-1 rounded-full bg-[#F9F6ED] text-[#0F2A1A]/70">
                   {p.format.replace(/_/g, " ").toLowerCase()}
                 </span>
                 {p.price_min ? (
@@ -105,7 +105,7 @@ export function ProgrammesClient() {
                     {p.price_max && p.price_max !== p.price_min ? `-${p.price_max.toLocaleString()}` : ""}
                   </span>
                 ) : (
-                  <span className="text-ink-400">Price on request</span>
+                  <span className="text-[#0F2A1A]/65">Price on request</span>
                 )}
               </div>
             </Link>

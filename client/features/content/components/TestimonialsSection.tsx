@@ -28,9 +28,9 @@ export async function TestimonialsSection() {
         <div className="text-center max-w-2xl mx-auto">
           <p className="tag-handwritten">In their words</p>
           <h2 className="text-3xl font-extrabold mt-1">What families say</h2>
-          <p className="mt-4 text-sm text-ink-500 border border-dashed border-ink-200 rounded-2xl p-6">
+          <p className="mt-4 text-sm text-[#0F2A1A]/65 border border-dashed border-black/10 rounded-2xl p-6">
             Real stories are published here as families give their consent -{" "}
-            <a href="/success-stories" className="text-brand-blue font-semibold hover:underline">see our success stories</a>.
+            <a href="/success-stories" className="text-[#0F2A1A] font-semibold hover:underline">see our success stories</a>.
           </p>
         </div>
       </section>
@@ -46,11 +46,11 @@ export async function TestimonialsSection() {
       <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         {testimonials.slice(0, 6).map((t) => (
           <figure key={t.id} className="border rounded-2xl p-6 bg-white">
-            <div className="flex gap-0.5 text-brand-gold">
+            <div className="flex gap-0.5 text-[#0F2A1A]">
               {Array.from({ length: t.rating ?? 5 }).map((_, i) => <span key={i}>★</span>)}
             </div>
-            <blockquote className="mt-3 text-sm text-ink-700 leading-relaxed">“{t.body}”</blockquote>
-            <figcaption className="mt-4 text-xs font-semibold text-ink-500">
+            <blockquote className="mt-3 text-sm text-[#0F2A1A]/75 leading-relaxed">“{t.body}”</blockquote>
+            <figcaption className="mt-4 text-xs font-semibold text-[#0F2A1A]/65">
               - {t.author_name}
               {t.author_role ? `, ${t.author_role}` : ""}
               {t.author_location ? ` · ${t.author_location}` : ""}
@@ -58,7 +58,7 @@ export async function TestimonialsSection() {
           </figure>
         ))}
       </div>
-      <p className="mt-6 text-center text-[11px] text-ink-400">
+      <p className="mt-6 text-center text-[11px] text-[#0F2A1A]/65">
         Published with explicit consent · verified families
       </p>
     </section>

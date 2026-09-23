@@ -26,7 +26,7 @@ export default function GlobalError({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#FFF7E4",
+            background: "#F9F6ED",
             padding: 24,
           }}
         >
@@ -36,7 +36,7 @@ export default function GlobalError({
                 fontSize: 28,
                 fontWeight: 800,
                 letterSpacing: 4,
-                color: "#013920",
+                color: "#0F2A1A",
               }}
             >
               YK-Virtual
@@ -59,7 +59,7 @@ export default function GlobalError({
               <button
                 onClick={() => window.location.reload()}
                 style={{
-                  background: "#70F250",
+                  background: "#D6FF57",
                   border: "none",
                   borderRadius: 12,
                   padding: "12px 24px",

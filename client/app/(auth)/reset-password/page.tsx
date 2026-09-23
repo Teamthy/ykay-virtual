@@ -63,7 +63,7 @@ function ResetPasswordInner() {
       <div className="text-center space-y-4 py-6">
         <div className="text-5xl">🔒</div>
         <h1 className="text-2xl font-extrabold">Password updated</h1>
-        <p className="text-ink-600 text-sm">
+        <p className="text-[#0F2A1A]/70 text-sm">
           Your password was changed. All other sessions were signed out.
         </p>
         <Button
@@ -79,7 +79,7 @@ function ResetPasswordInner() {
   return (
     <div>
       <h1 className="text-3xl font-extrabold">Choose a new password</h1>
-      <p className="text-ink-500 text-sm mt-2">
+      <p className="text-[#0F2A1A]/65 text-sm mt-2">
         Minimum 8 characters. Signing in elsewhere will be required after this.
       </p>
       <form
@@ -121,13 +121,13 @@ function ResetPasswordInner() {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? "Updating…" : "Update password"}
         </button>
         <Link
           href={withNext("/login", next)}
-          className="block text-center text-sm font-semibold text-brand-gold-dark hover:underline"
+          className="block text-center text-sm font-semibold text-[#0F2A1A] hover:underline"
         >
           Back to login
         </Link>
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
       subtitle="Choose a strong password to secure your YK-Virtual account."
     >
       <Suspense
-        fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}
+        fallback={<p className="text-center text-[#0F2A1A]/65 py-10">Loading…</p>}
       >
         <ResetPasswordInner />
       </Suspense>

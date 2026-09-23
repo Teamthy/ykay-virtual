@@ -72,7 +72,7 @@ export function B2BLeadForm({ defaultType, ctaLabel }: { defaultType: string; ct
       <div className="border rounded-2xl p-8 text-center space-y-3">
         <div className="text-5xl">🏫</div>
         <h3 className="font-bold text-lg">Thank you!</h3>
-        <p className="text-sm text-ink-600 max-w-sm mx-auto">
+        <p className="text-sm text-[#0F2A1A]/70 max-w-sm mx-auto">
           Your institution application is in. Our partnerships team will reach out to{" "}
           <strong>{form.email}</strong> within one business day.
         </p>
@@ -89,13 +89,13 @@ export function B2BLeadForm({ defaultType, ctaLabel }: { defaultType: string; ct
       <label className="block text-sm">
         <span className="font-medium">Institution name *</span>
         <input value={form.name} onChange={(e) => set("name", e.target.value)}
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+          className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none" />
       </label>
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="block text-sm">
           <span className="font-medium">Type</span>
           <select value={form.type} onChange={(e) => set("type", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm">
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm">
             <option value="SCHOOL">School</option>
             <option value="CORPORATE">Corporate / Business</option>
             <option value="GOVERNMENT">Government</option>
@@ -106,29 +106,29 @@ export function B2BLeadForm({ defaultType, ctaLabel }: { defaultType: string; ct
         <label className="block text-sm">
           <span className="font-medium">Contact email *</span>
           <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none" />
         </label>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="block text-sm">
           <span className="font-medium">Phone</span>
           <input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+234…"
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none" />
         </label>
         <label className="block text-sm">
           <span className="font-medium">Website</span>
           <input value={form.website} onChange={(e) => set("website", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none" />
         </label>
       </div>
       <label className="block text-sm">
         <span className="font-medium">What do you need?</span>
         <textarea rows={3} value={form.description} onChange={(e) => set("description", e.target.value)}
           placeholder="e.g. Cohort learning for 200 students, staff training, exam prep for Year 11…"
-          className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none" />
+          className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none" />
       </label>
       {user && (
-        <p className="text-xs text-ink-400">
+        <p className="text-xs text-[#0F2A1A]/65">
           Signed in as <strong>{user.email}</strong> - you&apos;ll be added as the institution owner.
         </p>
       )}

@@ -23,14 +23,14 @@ export function ExamPrepGrid() {
                 className="group relative flex min-h-[180px] flex-col justify-between rounded-[20px] border border-white/10 bg-white/[0.06] p-5 backdrop-blur transition hover:-translate-y-1 hover:bg-white hover:border-white"
               >
                 <div className="flex justify-between items-start">
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-white/60 group-hover:text-[#0F2A1A]/60">{String(i+1).padStart(2, "0")}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-white/60 group-hover:text-[#0F2A1A]/65">{String(i+1).padStart(2, "0")}</span>
                   <span className="grid size-7 place-items-center rounded-full bg-white/10 text-white group-hover:bg-[#0F2A1A] group-hover:text-white transition">
                     <ArrowRight size={12} />
                   </span>
                 </div>
                 <div>
                   <h3 className="font-display text-[18px] leading-[0.95] text-white group-hover:text-[#0F2A1A]">{card.title}</h3>
-                  <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-white/50 group-hover:text-[#0F2A1A]/50">CBT · Past questions</p>
+                  <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-white/50 group-hover:text-[#0F2A1A]/65">CBT · Past questions</p>
                 </div>
                 <div className="mt-3">
                   <span className="inline-flex rounded-full bg-[#D6FF57] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A] opacity-0 group-hover:opacity-100 transition">Get Started</span>
@@ -38,7 +38,7 @@ export function ExamPrepGrid() {
               </Link>
             ))}
             <Link href="/exam-prep" className="group flex min-h-[180px] flex-col justify-center rounded-[20px] bg-[#D6FF57] p-5 transition hover:-translate-y-1">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/60">Need a plan?</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Need a plan?</p>
               <h3 className="mt-2 font-display text-[18px] leading-[0.95] text-[#0F2A1A]">Talk to an exam coach</h3>
               <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-[#0F2A1A] px-4 py-2 text-[12px] font-bold text-white">
                 Book call <ArrowRight size={12} />

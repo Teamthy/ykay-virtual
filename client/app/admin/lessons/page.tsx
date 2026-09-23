@@ -25,9 +25,9 @@ export default function AdminLessonsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-extrabold">Today&apos;s classes</h1>
-          <p className="text-ink-500 text-sm mt-1">Live overview of scheduled lessons, attendance and meeting links.</p>
+          <p className="text-[#0F2A1A]/65 text-sm mt-1">Live overview of scheduled lessons, attendance and meeting links.</p>
         </div>
-        <Link href="/admin/vetting" className="text-sm font-semibold text-deep hover:underline">Tutor vetting →</Link>
+        <Link href="/admin/vetting" className="text-sm font-semibold text-[#0F2A1A] hover:underline">Tutor vetting →</Link>
       </div>
 
       {lessons.isLoading ? (
@@ -44,14 +44,14 @@ export default function AdminLessonsPage() {
             <li key={l.id} className="border rounded-2xl p-5 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-semibold text-sm">{l.title}</p>
-                <p className="text-xs text-ink-500">
+                <p className="text-xs text-[#0F2A1A]/65">
                   {new Date(l.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - {new Date(l.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · {l.timezone}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <StatusBadge label={l.status} kind={statusKindFor(l.status)} />
                 {l.status === "SCHEDULED" && (
-                  <Link href={`/cohorts/${l.cohort_id ?? "list"}`} className="text-xs font-semibold text-deep hover:underline">Cohort →</Link>
+                  <Link href={`/cohorts/${l.cohort_id ?? "list"}`} className="text-xs font-semibold text-[#0F2A1A] hover:underline">Cohort →</Link>
                 )}
               </div>
             </li>
@@ -61,7 +61,7 @@ export default function AdminLessonsPage() {
 
       <section className="rounded-2xl border p-5">
         <h2 className="font-bold text-sm">Attendance exceptions</h2>
-        <p className="mt-1 text-xs text-ink-500">
+        <p className="mt-1 text-xs text-[#0F2A1A]/65">
           Lessons marked NO_SHOW or with missing attendance appear here as tutors complete their rosters.
         </p>
       </section>

@@ -101,7 +101,11 @@ const nextConfig = {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          // Arena's local development preview is embedded in an iframe.
+          // Keep the production anti-framing header intact.
+          ...(process.env.NODE_ENV === "production"
+            ? [{ key: "X-Frame-Options", value: "DENY" }]
+            : []),
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Strict-Transport-Security",
@@ -124,7 +128,9 @@ const nextConfig = {
               "media-src 'self' https: blob:",
               // Live classes embed meeting rooms on these hosts.
               "frame-src 'self' https://*.zoom.us https://*.google.com https://*.youtube.com https://*.youtube-nocookie.com https://*.whereby.com https://*.meet.jit.si https://teams.microsoft.com",
-              "frame-ancestors 'none'",
+              ...(process.env.NODE_ENV === "production"
+                ? ["frame-ancestors 'none'"]
+                : []),
               "object-src 'none'",
               "base-uri 'self'",
             ].join("; "),

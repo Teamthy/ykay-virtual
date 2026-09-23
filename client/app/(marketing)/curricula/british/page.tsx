@@ -143,9 +143,9 @@ export default function BritishCurriculumPage() {
               <div
                 key={s.title}
                 data-card
-                className="flex min-h-[280px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+                className="flex min-h-[280px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card bg-[#0F2A1A]"
                 style={{
-                  backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.78), rgba(1,57,32,0.62)), url(${s.photo})`,
+                  backgroundImage: `linear-gradient(165deg, rgba(15,42,26,0.78), rgba(15,42,26,0.62)), url(${s.photo})`,
                 }}
               >
                 <h2 className="text-xl font-extrabold">{s.title}</h2>
@@ -162,7 +162,7 @@ export default function BritishCurriculumPage() {
                 </div>
                 <Link
                   href="/tutors"
-                  className="mt-auto pt-5 inline-block text-sm font-semibold text-brand-gold"
+                  className="mt-auto pt-5 inline-block text-sm font-semibold text-[#D6FF57]"
                 >
                   Find a tutor →
                 </Link>
@@ -181,48 +181,48 @@ export default function BritishCurriculumPage() {
               {HOW.map((h) => (
                 <div
                   key={h.t}
-                  className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft"
+                  className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft"
                 >
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-light text-deep">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                     {h.icon}
                   </span>
-                  <p className="mt-3 font-bold text-ink-900">{h.t}</p>
-                  <p className="mt-1 text-sm text-ink-500">{h.d}</p>
+                  <p className="mt-3 font-bold text-[#0F2A1A]">{h.t}</p>
+                  <p className="mt-1 text-sm text-[#0F2A1A]/65">{h.d}</p>
                 </div>
               ))}
             </div>
           </div>
-          <div className="rounded-2xl bg-ink-50 border border-ink-100 p-6">
+          <div className="rounded-2xl bg-[#F9F6ED] border border-black/10 p-6">
             <h3 className="font-bold">Featured next steps</h3>
             <div className="mt-4 space-y-3">
               <Link
                 href="/programmes"
-                className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors"
+                className="block border rounded-xl bg-white p-4 hover:border-[#0F2A1A] transition-colors"
               >
                 <span className="font-semibold text-sm">
                   IGCSE Computer Science
                 </span>
-                <span className="block text-xs text-ink-500 mt-0.5">
+                <span className="block text-xs text-[#0F2A1A]/65 mt-0.5">
                   Year 10-11 · cohort + private
                 </span>
               </Link>
               <Link
                 href="/programmes"
-                className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors"
+                className="block border rounded-xl bg-white p-4 hover:border-[#0F2A1A] transition-colors"
               >
                 <span className="font-semibold text-sm">IGCSE Mathematics</span>
-                <span className="block text-xs text-ink-500 mt-0.5">
+                <span className="block text-xs text-[#0F2A1A]/65 mt-0.5">
                   Year 10-11 · cohort + private
                 </span>
               </Link>
               <Link
                 href="/private-tuition"
-                className="block border rounded-xl bg-white p-4 hover:border-brand-blue transition-colors"
+                className="block border rounded-xl bg-white p-4 hover:border-[#0F2A1A] transition-colors"
               >
                 <span className="font-semibold text-sm">
                   A-Level subject tuition
                 </span>
-                <span className="block text-xs text-ink-500 mt-0.5">
+                <span className="block text-xs text-[#0F2A1A]/65 mt-0.5">
                   Request a specialist tutor
                 </span>
               </Link>
@@ -242,7 +242,7 @@ export default function BritishCurriculumPage() {
                 <summary className="font-semibold cursor-pointer">
                   {f.question}
                 </summary>
-                <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
+                <p className="mt-2 text-sm text-[#0F2A1A]/70">{f.answer}</p>
               </details>
             ))}
           </div>

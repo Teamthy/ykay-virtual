@@ -182,7 +182,7 @@ function LoginInner() {
           New to YK-Virtual?{" "}
           <Link
             href={withNext("/onboarding", next)}
-            className="font-semibold text-brand-gold-dark hover:underline"
+            className="font-semibold text-[#0F2A1A] hover:underline"
           >
             Create an account
           </Link>
@@ -192,15 +192,15 @@ function LoginInner() {
       <div className="space-y-5">
         {mfaEmail ? (
           <div className="space-y-4">
-            <div className="rounded-lg border border-brand-blue/20 bg-brand-blue/5 px-4 py-3 text-sm text-ink-700">
+            <div className="rounded-lg border border-[#0F2A1A]/20 bg-[#0F2A1A]/5 px-4 py-3 text-sm text-[#0F2A1A]/75">
               Two-step verification: we emailed a 6-digit code to{" "}
-              <strong className="font-semibold text-brand-navy">
+              <strong className="font-semibold text-[#0F2A1A]">
                 {mfaEmail}
               </strong>
               . Enter it to finish signing in.
             </div>
             <label className="block text-sm">
-              <span className="font-medium text-ink-800">
+              <span className="font-medium text-[#0F2A1A]/85">
                 Verification code
               </span>
               <input
@@ -232,7 +232,7 @@ function LoginInner() {
               type="button"
               disabled={mfaSubmitting || mfaCode.length !== 6}
               onClick={() => void confirmMfaSubmit()}
-              className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:pointer-events-none disabled:opacity-50"
             >
               {mfaSubmitting ? "Verifying…" : "Verify & sign in"}
             </button>
@@ -243,7 +243,7 @@ function LoginInner() {
                 setMfaCode("");
                 setMfaError(null);
               }}
-              className="w-full text-center text-sm text-ink-500 hover:text-ink-800 hover:underline"
+              className="w-full text-center text-sm text-[#0F2A1A]/65 hover:text-[#0F2A1A]/85 hover:underline"
             >
               Use a different account
             </button>
@@ -261,12 +261,12 @@ function LoginInner() {
             <GoogleButton />
             <a
               href={`${collegePortal.replace(/\/$/, "")}/sso/virtual`}
-              className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-ink-200 bg-white px-4 text-sm font-medium text-ink-800 shadow-sm transition-colors hover:bg-ink-50"
+              className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-black/10 bg-white px-4 text-sm font-medium text-[#0F2A1A]/85 shadow-sm transition-colors hover:bg-[#F9F6ED]"
             >
               Continue with Ykay College
             </a>
 
-            <div className="flex items-center gap-3 text-xs uppercase text-ink-400 before:flex-1 before:border-t before:border-ink-200 before:me-4 after:flex-1 after:border-t after:border-ink-200 after:ms-4">
+            <div className="flex items-center gap-3 text-xs uppercase text-[#0F2A1A]/65 before:flex-1 before:border-t before:border-black/10 before:me-4 after:flex-1 after:border-t after:border-black/10 after:ms-4">
               Or
             </div>
 
@@ -284,7 +284,7 @@ function LoginInner() {
                   <div>
                     <label
                       htmlFor="login-email"
-                      className="mb-1.5 block text-sm font-medium text-ink-800"
+                      className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85"
                     >
                       Email
                     </label>
@@ -321,12 +321,12 @@ function LoginInner() {
                 )}
               </form.Field>
 
-              <label className="flex items-center gap-2 text-sm text-ink-700">
+              <label className="flex items-center gap-2 text-sm text-[#0F2A1A]/75">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="size-4 accent-[#0A1F44]"
+                  className="size-4 accent-[#0F2A1A]"
                 />
                 Remember me
               </label>
@@ -343,7 +343,7 @@ function LoginInner() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-gold-hover disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] transition-colors hover:bg-[#C8F030] disabled:pointer-events-none disabled:opacity-50"
               >
                 {submitting ? "Logging in…" : "Log in"}
               </button>
@@ -351,13 +351,13 @@ function LoginInner() {
               <div className="flex items-center justify-between text-sm">
                 <Link
                   href={withNext("/forgot-password", next)}
-                  className="font-medium text-brand-gold-dark hover:underline"
+                  className="font-medium text-[#0F2A1A] hover:underline"
                 >
                   Forgot your password?
                 </Link>
                 <Link
                   href={withNext("/login-code", next)}
-                  className="font-medium text-ink-500 hover:text-ink-800 hover:underline"
+                  className="font-medium text-[#0F2A1A]/65 hover:text-[#0F2A1A]/85 hover:underline"
                 >
                   Log in with a code
                 </Link>

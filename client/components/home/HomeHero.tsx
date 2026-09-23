@@ -19,7 +19,7 @@ function HeroBadge() {
 
 export function HomeHero() {
   return (
-    <section className="relative isolate w-full overflow-hidden bg-[#FFFEF8]">
+    <section className="relative isolate w-full overflow-hidden bg-[#F9F6ED]">
       {/* minimal background */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -left-[25%] top-[5%] h-[60%] w-[50%] rounded-full bg-[#D6FF57]/15 blur-[100px]" />
@@ -29,7 +29,7 @@ export function HomeHero() {
       <HomePillNav />
 
       {/* content - centered, minimal */}
-      <div className="relative z-10 mx-auto flex w-full max-w-[1280px] flex-col items-center px-4 pt-28 text-center sm:px-6 sm:pt-32 lg:pt-36">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1920px] flex-col items-center px-4 pt-28 text-center sm:px-6 sm:pt-32 lg:px-8 lg:pt-36 xl:px-12 2xl:px-16">
         <HeroBadge />
 
         <h1 className="hero-anim hero-anim--1 mt-6 max-w-[14ch] text-balance font-display text-[clamp(2.4rem,6.5vw,4.4rem)] leading-[0.88] tracking-[-0.03em] text-[#0F2A1A]">
@@ -58,7 +58,7 @@ export function HomeHero() {
           </div>
           <div className="flex items-center gap-1.5 text-[12px] font-bold text-[#0F2A1A]">
             <Star size={12} className="fill-amber-400 text-amber-400" /> 4.9/5
-            <span className="font-medium text-[#0F2A1A]/50">· 3k+ families</span>
+            <span className="font-medium text-[#0F2A1A]/65">· 3k+ families</span>
           </div>
         </div>
       </div>
@@ -66,7 +66,7 @@ export function HomeHero() {
       {/* stage - single circle + learner, no extra cards */}
       <div className="relative z-[5] mx-auto mt-10 h-[min(72vw,380px)] w-full max-w-[1200px] overflow-hidden sm:h-[min(52vw,480px)] lg:h-[min(42vw,560px)]">
         <div aria-hidden="true" className="absolute left-1/2 top-0 aspect-square w-[min(88vw,420px)] -translate-x-1/2 overflow-hidden rounded-full sm:w-[min(62vw,560px)] lg:w-[min(52vw,720px)]">
-          <div className="absolute inset-0 rounded-full bg-[#D9F1C6]" />
+          <div className="absolute inset-0 rounded-full bg-[#D6FF57]" />
           <div className="absolute inset-x-0 top-[4%] h-[98%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/home/hero-student.png" alt="" className="mx-auto block h-full w-auto object-contain object-top mix-blend-multiply" />

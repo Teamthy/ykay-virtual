@@ -48,7 +48,7 @@ export default function AdminAnalyticsPage() {
 
   const data = analytics.data;
   if (!data) {
-    return <p className="text-ink-500">Analytics unavailable.</p>;
+    return <p className="text-[#0F2A1A]/65">Analytics unavailable.</p>;
   }
 
   const maxFunnel = Math.max(
@@ -61,7 +61,7 @@ export default function AdminAnalyticsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold">Learning analytics</h1>
-          <p className="text-sm text-ink-500 mt-1">
+          <p className="text-sm text-[#0F2A1A]/65 mt-1">
             Enrolment funnel, cohort fill and revenue - conversion{" "}
             <b>{data.funnel.conversion_rate.toFixed(1)}%</b>.
           </p>
@@ -81,13 +81,13 @@ export default function AdminAnalyticsPage() {
                 );
               }
             }}
-            className="rounded-xl border px-4 py-2 text-sm font-semibold hover:bg-ink-50"
+            className="rounded-xl border px-4 py-2 text-sm font-semibold hover:bg-[#F9F6ED]"
           >
             ⬇ Attendance CSV
           </button>
           <a
             href={`${API_BASE}/admin/reports/revenue.csv`}
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-ink-900 hover:opacity-90"
+            className="rounded-xl bg-[#D6FF57] px-4 py-2 text-sm font-semibold text-[#0F2A1A] hover:opacity-90"
           >
             ⬇ Revenue CSV
           </a>
@@ -140,8 +140,8 @@ export default function AdminAnalyticsPage() {
               <div key={s.key}>
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{s.label}</span>
-                  <span className="text-ink-500">
-                    <b className="text-ink-900">{v.toLocaleString()}</b>
+                  <span className="text-[#0F2A1A]/65">
+                    <b className="text-[#0F2A1A]">{v.toLocaleString()}</b>
                     {i > 0 && (
                       <span className="ml-2 text-xs">
                         ({stepRate}% of previous)
@@ -149,9 +149,9 @@ export default function AdminAnalyticsPage() {
                     )}
                   </span>
                 </div>
-                <div className="mt-1 h-2.5 rounded-full bg-ink-100">
+                <div className="mt-1 h-2.5 rounded-full bg-[#F9F6ED]">
                   <div
-                    className="h-full rounded-full bg-primary transition-all"
+                    className="h-full rounded-full bg-[#D6FF57] transition-all"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -179,21 +179,21 @@ export default function AdminAnalyticsPage() {
               <div key={c.cohort_id}>
                 <div className="flex items-center justify-between text-sm">
                   <span className="truncate pr-2 font-medium">{c.title}</span>
-                  <span className="shrink-0 text-ink-500">
+                  <span className="shrink-0 text-[#0F2A1A]/65">
                     {c.enrolled}/{c.capacity} ·{" "}
-                    <b className="text-ink-800">
+                    <b className="text-[#0F2A1A]/85">
                       {Math.round(c.fill_rate * 100)}%
                     </b>
                   </span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-ink-100">
+                <div className="mt-1 h-2 rounded-full bg-[#F9F6ED]">
                   <div
                     className={`h-full rounded-full ${c.fill_rate >= 0.8 ? "bg-green-500" : c.fill_rate >= 0.5 ? "bg-amber-500" : "bg-red-400"}`}
                     style={{ width: `${Math.min(c.fill_rate * 100, 100)}%` }}
                   />
                 </div>
                 {c.lessons_count > 0 && (
-                  <div className="mt-1 flex items-center justify-between text-[11px] text-ink-400">
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-[#0F2A1A]/65">
                     <span>{c.lessons_count} lessons</span>
                     <span>
                       Attendance {Math.round((c.attendance_rate ?? 0) * 100)}%
@@ -228,16 +228,16 @@ export default function AdminAnalyticsPage() {
                   return data.revenue.slice(0, 6).map((r) => (
                     <div key={r.programme_id}>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="truncate pr-2 font-semibold text-ink-700">
+                        <span className="truncate pr-2 font-semibold text-[#0F2A1A]/75">
                           {r.programme_title || r.programme_id.slice(0, 8)}
                         </span>
-                        <span className="shrink-0 font-bold text-deep">
+                        <span className="shrink-0 font-bold text-[#0F2A1A]">
                           {fmtMoney(r.revenue)}
                         </span>
                       </div>
-                      <div className="mt-1 h-3 w-full overflow-hidden rounded-md bg-ink-100">
+                      <div className="mt-1 h-3 w-full overflow-hidden rounded-md bg-[#F9F6ED]">
                         <div
-                          className="h-full rounded-md bg-gradient-to-r from-primary to-deep"
+                          className="h-full rounded-md bg-gradient-to-r from-[#D6FF57] to-[#0F2A1A]"
                           style={{
                             width: `${Math.max((r.revenue / maxRev) * 100, r.revenue > 0 ? 4 : 0)}%`,
                           }}
@@ -250,7 +250,7 @@ export default function AdminAnalyticsPage() {
             )}
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-ink-400">
+                <tr className="border-b text-left text-[#0F2A1A]/65">
                   <th className="pb-2 font-semibold">Programme</th>
                   <th className="pb-2 text-right font-semibold">Orders</th>
                   <th className="pb-2 text-right font-semibold">Revenue</th>
@@ -262,7 +262,7 @@ export default function AdminAnalyticsPage() {
                     <td className="py-2.5 font-medium">
                       {r.programme_title || r.programme_id.slice(0, 8)}
                     </td>
-                    <td className="py-2.5 text-right text-ink-500">
+                    <td className="py-2.5 text-right text-[#0F2A1A]/65">
                       {r.orders}
                     </td>
                     <td className="py-2.5 text-right font-bold">

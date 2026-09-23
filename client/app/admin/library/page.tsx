@@ -38,17 +38,17 @@ function Row({ item }: { item: LibraryItem }) {
   };
 
   return (
-    <tr className="border-t border-ink-100 hover:bg-ink-50/50">
+    <tr className="border-t border-black/10 hover:bg-[#F9F6ED]/50">
       <td className="px-4 py-3">
         <div className="font-semibold">{item.title}</div>
-        <div className="text-xs text-ink-500">
+        <div className="text-xs text-[#0F2A1A]/65">
           {item.programme_title ?? "No programme"} {item.level_name ? `· ${item.level_name}` : ""}
         </div>
       </td>
-      <td className="px-4 py-3 text-xs text-ink-500">
+      <td className="px-4 py-3 text-xs text-[#0F2A1A]/65">
         {item.cohort_title ?? "-"}
       </td>
-      <td className="px-4 py-3 text-xs text-ink-500">
+      <td className="px-4 py-3 text-xs text-[#0F2A1A]/65">
         {item.duration_seconds ? formatDuration(item.duration_seconds) : "-"}
       </td>
       <td className="px-4 py-3">
@@ -57,7 +57,7 @@ function Row({ item }: { item: LibraryItem }) {
             type="button"
             onClick={() => toggle("visible")}
             className={`rounded-full px-3 py-1 text-xs font-bold ${
-              item.visible ? "bg-green-100 text-green-800" : "bg-ink-100 text-ink-500"
+              item.visible ? "bg-green-100 text-green-800" : "bg-[#F9F6ED] text-[#0F2A1A]/65"
             }`}
           >
             {item.visible ? "Visible" : "Hidden"}
@@ -66,7 +66,7 @@ function Row({ item }: { item: LibraryItem }) {
             type="button"
             onClick={() => toggle("featured")}
             className={`rounded-full px-3 py-1 text-xs font-bold ${
-              item.featured ? "bg-brand-gold text-deep" : "bg-ink-100 text-ink-500"
+              item.featured ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/65"
             }`}
           >
             {item.featured ? "Featured" : "Not featured"}
@@ -80,20 +80,20 @@ function Row({ item }: { item: LibraryItem }) {
               value={thumb}
               onChange={(e) => setThumb(e.target.value)}
               placeholder="Thumbnail URL"
-              className="w-56 rounded-lg border border-ink-200 px-2 py-1"
+              className="w-56 rounded-lg border border-black/10 px-2 py-1"
             />
             <div className="flex gap-2">
               <input
                 value={dur}
                 onChange={(e) => setDur(e.target.value)}
                 placeholder="seconds"
-                className="w-24 rounded-lg border border-ink-200 px-2 py-1"
+                className="w-24 rounded-lg border border-black/10 px-2 py-1"
               />
               <input
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 placeholder="order"
-                className="w-20 rounded-lg border border-ink-200 px-2 py-1"
+                className="w-20 rounded-lg border border-black/10 px-2 py-1"
               />
             </div>
             <div className="flex gap-2">
@@ -132,7 +132,7 @@ export default function AdminLibraryPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-extrabold">Recorded Lesson Library</h1>
-        <p className="mt-1 text-sm text-ink-500">
+        <p className="mt-1 text-sm text-[#0F2A1A]/65">
           Curate which recorded lessons appear in the on-demand library. Toggle visibility/featured and set
           thumbnail, duration and ordering.
         </p>
@@ -145,7 +145,7 @@ export default function AdminLibraryPage() {
           setPage(1);
         }}
         placeholder="Search lessons…"
-        className="w-full max-w-sm rounded-xl border border-ink-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+        className="w-full max-w-sm rounded-xl border border-black/10 px-4 py-2 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
       />
 
       {query.isLoading ? (
@@ -162,7 +162,7 @@ export default function AdminLibraryPage() {
       ) : (
         <div className="overflow-x-auto rounded-2xl border">
           <table className="w-full min-w-[720px] text-sm">
-            <thead className="bg-ink-50 text-left text-xs text-ink-500">
+            <thead className="bg-[#F9F6ED] text-left text-xs text-[#0F2A1A]/65">
               <tr>
                 <th className="px-4 py-3 font-semibold">Lesson</th>
                 <th className="px-4 py-3 font-semibold">Cohort</th>
@@ -185,7 +185,7 @@ export default function AdminLibraryPage() {
           <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             Prev
           </Button>
-          <span className="self-center text-sm text-ink-500">
+          <span className="self-center text-sm text-[#0F2A1A]/65">
             Page {meta.page} / {meta.total_pages}
           </span>
           <Button size="sm" variant="outline" disabled={!meta.has_next} onClick={() => setPage((p) => p + 1)}>

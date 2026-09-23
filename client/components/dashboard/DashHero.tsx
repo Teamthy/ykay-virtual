@@ -34,7 +34,7 @@ export function DashHero({
           <p className="mt-3 text-[14px] leading-[1.6] text-white/70">{body}</p>
         </div>
         <div className="rounded-[16px] bg-white p-4 text-[#0F2A1A] shadow-lg min-w-[160px]">
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/50">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">
             <Clock size={12} /> {chipHint || "Next"}
           </div>
           <p className="mt-2 text-[14px] font-extrabold leading-tight">{chipTitle}</p>

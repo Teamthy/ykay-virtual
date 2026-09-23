@@ -45,8 +45,8 @@ export default function LibraryPage() {
       <div className="container-x py-12">
         {featuredItems.length > 0 && (
           <section className="mb-12">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-ink-900">
-              <Sparkles className="text-brand-gold" /> Featured this week
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-[#0F2A1A]">
+              <Sparkles className="text-[#0F2A1A]" /> Featured this week
             </h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {featuredItems.map((it) => (
@@ -58,8 +58,8 @@ export default function LibraryPage() {
 
         <section>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-ink-900">
-              <Video className="text-brand-gold" /> All recorded lessons
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F2A1A]">
+              <Video className="text-[#0F2A1A]" /> All recorded lessons
             </h2>
             <form
               className="flex items-center gap-2"
@@ -69,7 +69,7 @@ export default function LibraryPage() {
               }}
             >
               <div className="relative">
-                <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#0F2A1A]/65" />
                 <input
                   value={q}
                   onChange={(e) => {
@@ -77,7 +77,7 @@ export default function LibraryPage() {
                     setPage(1);
                   }}
                   placeholder="Search lessons…"
-                  className="w-64 rounded-xl border border-ink-200 bg-white py-2 pl-9 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-64 rounded-xl border border-black/10 bg-white py-2 pl-9 pr-3 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
                 />
               </div>
             </form>
@@ -107,17 +107,17 @@ export default function LibraryPage() {
                   <button
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                    className="rounded-xl border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 disabled:opacity-40"
+                    className="rounded-xl border border-black/10 px-4 py-2 text-sm font-semibold text-[#0F2A1A]/75 disabled:opacity-40"
                   >
                     Previous
                   </button>
-                  <span className="text-sm text-ink-500">
+                  <span className="text-sm text-[#0F2A1A]/65">
                     Page {page} of {meta.total_pages}
                   </span>
                   <button
                     disabled={!meta.has_next}
                     onClick={() => setPage((p) => p + 1)}
-                    className="rounded-xl border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-700 disabled:opacity-40"
+                    className="rounded-xl border border-black/10 px-4 py-2 text-sm font-semibold text-[#0F2A1A]/75 disabled:opacity-40"
                   >
                     Next
                   </button>

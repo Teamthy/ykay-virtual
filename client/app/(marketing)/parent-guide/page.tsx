@@ -21,7 +21,7 @@ export default function ParentGuidePage() {
               <div key={c.title} className="rounded-[20px] bg-white p-6 border border-black/10">
                 <div className="grid size-10 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]"><c.icon size={16} /></div>
                 <h3 className="mt-4 font-display text-[18px] uppercase text-[#0F2A1A]">{c.title}</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/60">{c.body}</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/65">{c.body}</p>
               </div>
             ))}
           </div>

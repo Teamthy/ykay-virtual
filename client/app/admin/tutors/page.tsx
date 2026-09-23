@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
 
 const INPUT_CLS =
-  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
+  "mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30";
 
 type SubjectOption = { id: string; name: string; slug: string };
 
@@ -112,10 +112,10 @@ export default function AdminTutorsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="flex items-center gap-2 text-3xl font-extrabold text-deep">
-            <BadgeCheck className="text-primary" /> Tutors
+          <h1 className="flex items-center gap-2 text-3xl font-extrabold text-[#0F2A1A]">
+            <BadgeCheck className="text-[#0F2A1A]" /> Tutors
           </h1>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">
             Create vetted tutors from here — account, profile, approval and subjects in one step. No database access needed.
           </p>
         </div>
@@ -124,14 +124,14 @@ export default function AdminTutorsPage() {
             setError(null);
             setCreating(true);
           }}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 transition-colors hover:bg-primary-hover"
+          className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-5 py-2.5 text-sm font-bold text-[#0F2A1A] transition-colors hover:bg-[#C8F030]"
         >
           <Plus size={15} /> Add tutor
         </button>
       </div>
 
       {tutors.isLoading ? (
-        <p className="text-sm text-ink-500">Loading tutors…</p>
+        <p className="text-sm text-[#0F2A1A]/65">Loading tutors…</p>
       ) : (tutors.data ?? []).length === 0 ? (
         <EmptyState
           icon={<UserPlus size={20} />}
@@ -139,12 +139,12 @@ export default function AdminTutorsPage() {
           description="Create your first vetted tutor — they can be assigned to cohorts straight away."
         />
       ) : (
-        <ul className="divide-y divide-ink-100 overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft">
+        <ul className="divide-y divide-ink-100 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-soft">
           {(tutors.data ?? []).map((t) => (
             <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div>
-                <p className="font-bold text-ink-800">{t.display_name}</p>
-                <p className="text-xs text-ink-500">
+                <p className="font-bold text-[#0F2A1A]/85">{t.display_name}</p>
+                <p className="text-xs text-[#0F2A1A]/65">
                   {t.slug} · {t.years_experience} years
                   {t.hourly_rate_min ? ` · ₦${t.hourly_rate_min.toLocaleString()}/hr` : ""}
                 </p>
@@ -156,8 +156,8 @@ export default function AdminTutorsPage() {
                   onClick={() => togglePublic.mutate({ id: t.id, isPublic: !t.is_public })}
                   className={`rounded-full px-4 py-1.5 text-xs font-bold ${
                     t.is_public
-                      ? "border border-ink-200 text-ink-600 hover:bg-ink-50"
-                      : "border border-primary text-primary-dark hover:bg-primary-light"
+                      ? "border border-black/10 text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
+                      : "border border-[#D6FF57] text-[#0F2A1A] hover:bg-[#F9F6ED]"
                   }`}
                 >
                   {t.is_public ? "Hide from marketplace" : "Make public"}
@@ -178,7 +178,7 @@ export default function AdminTutorsPage() {
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Email *</span>
+              <span className="font-medium text-[#0F2A1A]/75">Email *</span>
               <input
                 autoFocus
                 value={form.email}
@@ -188,7 +188,7 @@ export default function AdminTutorsPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">
+              <span className="font-medium text-[#0F2A1A]/75">
                 Password {form.email && "— required for a new account"}
               </span>
               <input
@@ -200,7 +200,7 @@ export default function AdminTutorsPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Display name *</span>
+              <span className="font-medium text-[#0F2A1A]/75">Display name *</span>
               <input
                 value={form.display_name}
                 onChange={(e) => setForm({ ...form, display_name: e.target.value })}
@@ -209,7 +209,7 @@ export default function AdminTutorsPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Headline</span>
+              <span className="font-medium text-[#0F2A1A]/75">Headline</span>
               <input
                 value={form.headline}
                 onChange={(e) => setForm({ ...form, headline: e.target.value })}
@@ -219,7 +219,7 @@ export default function AdminTutorsPage() {
             </label>
           </div>
           <label className="block text-sm">
-            <span className="font-medium text-ink-700">Bio</span>
+            <span className="font-medium text-[#0F2A1A]/75">Bio</span>
             <textarea
               rows={2}
               value={form.bio}
@@ -230,7 +230,7 @@ export default function AdminTutorsPage() {
           </label>
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Years experience</span>
+              <span className="font-medium text-[#0F2A1A]/75">Years experience</span>
               <input
                 type="number"
                 min="0"
@@ -241,7 +241,7 @@ export default function AdminTutorsPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Rate from (₦/hr)</span>
+              <span className="font-medium text-[#0F2A1A]/75">Rate from (₦/hr)</span>
               <input
                 type="number"
                 min="0"
@@ -251,7 +251,7 @@ export default function AdminTutorsPage() {
               />
             </label>
             <label className="block text-sm">
-              <span className="font-medium text-ink-700">Rate to (₦/hr)</span>
+              <span className="font-medium text-[#0F2A1A]/75">Rate to (₦/hr)</span>
               <input
                 type="number"
                 min="0"
@@ -263,7 +263,7 @@ export default function AdminTutorsPage() {
           </div>
 
           <div>
-            <span className="font-medium text-ink-700">Teaching subjects</span>
+            <span className="font-medium text-[#0F2A1A]/75">Teaching subjects</span>
             <div className="mt-2 flex max-h-36 flex-wrap gap-2 overflow-y-auto">
               {(subjectsQ.data ?? []).map((s) => (
                 <button
@@ -273,8 +273,8 @@ export default function AdminTutorsPage() {
                   onClick={() => toggleSubject(s.slug)}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                     subjects.includes(s.slug)
-                      ? "bg-primary text-ink-900"
-                      : "border border-ink-200 text-ink-600 hover:border-ink-300"
+                      ? "bg-[#D6FF57] text-[#0F2A1A]"
+                      : "border border-black/10 text-[#0F2A1A]/70 hover:border-black/10"
                   }`}
                 >
                   {s.name}
@@ -283,14 +283,14 @@ export default function AdminTutorsPage() {
             </div>
           </div>
 
-          <label className="flex items-center gap-3 rounded-xl border border-primary bg-primary-light p-3">
+          <label className="flex items-center gap-3 rounded-xl border border-[#D6FF57] bg-[#F9F6ED] p-3">
             <input
               type="checkbox"
               checked={form.approve}
               onChange={(e) => setForm({ ...form, approve: e.target.checked })}
               className="size-4 accent-primary"
             />
-            <span className="text-sm font-semibold text-deep">
+            <span className="text-sm font-semibold text-[#0F2A1A]">
               Approve immediately (vetted tutor — public in the marketplace)
             </span>
           </label>
@@ -300,14 +300,14 @@ export default function AdminTutorsPage() {
             <button
               type="submit"
               disabled={busy}
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-ink-900 disabled:opacity-50"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-semibold text-[#0F2A1A] disabled:opacity-50"
             >
               {busy ? "Saving…" : form.approve ? "Create vetted tutor" : "Create tutor (DRAFT)"}
             </button>
             <button
               type="button"
               onClick={() => setCreating(false)}
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-200 px-4 text-sm font-semibold text-ink-700"
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-black/10 px-4 text-sm font-semibold text-[#0F2A1A]/75"
             >
               Cancel
             </button>

@@ -20,10 +20,10 @@ export default function CertificatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-deep flex items-center gap-2">
-          <Award className="text-primary" /> My certificates
+        <h1 className="text-2xl font-extrabold text-[#0F2A1A] flex items-center gap-2">
+          <Award className="text-[#0F2A1A]" /> My certificates
         </h1>
-        <p className="text-ink-500 text-sm mt-1">
+        <p className="text-[#0F2A1A]/65 text-sm mt-1">
           Credentials you earn when you complete a cohort. Each has a unique,
           verifiable number.
         </p>
@@ -46,26 +46,26 @@ export default function CertificatesPage() {
           {(certs.data ?? []).map((c) => (
             <div
               key={c.id}
-              className="rounded-2xl border border-primary/40 bg-gradient-to-br from-white to-primary/5 p-6 shadow-soft"
+              className="rounded-2xl border border-[#D6FF57]/40 bg-gradient-to-br from-white to-[#D6FF57]/5 p-6 shadow-soft"
             >
               <div className="flex items-start justify-between">
-                <span className="grid h-10 w-10 place-items-center rounded-full bg-deep text-primary">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-[#0F2A1A] text-[#D6FF57]">
                   <Award size={18} />
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
                   <ShieldCheck size={11} /> Verified
                 </span>
               </div>
-              <h2 className="mt-3 font-display text-lg font-bold text-deep">
+              <h2 className="mt-3 font-display text-lg font-bold text-[#0F2A1A]">
                 {c.title}
               </h2>
-              <p className="text-sm text-ink-600">
+              <p className="text-sm text-[#0F2A1A]/70">
                 This certifies that{" "}
-                <strong className="text-ink-800">{c.learner_name}</strong>{" "}
+                <strong className="text-[#0F2A1A]/85">{c.learner_name}</strong>{" "}
                 {c.programme_title ? (
                   <>
                     completed{" "}
-                    <strong className="text-ink-800">
+                    <strong className="text-[#0F2A1A]/85">
                       {c.programme_title}
                     </strong>
                   </>
@@ -73,11 +73,11 @@ export default function CertificatesPage() {
                   "completed the programme"
                 )}
               </p>
-              <p className="mt-3 text-xs text-ink-500">
+              <p className="mt-3 text-xs text-[#0F2A1A]/65">
                 Issued by {c.issued_by} ·{" "}
                 {new Date(c.issued_at).toLocaleDateString()}
               </p>
-              <p className="mt-1 font-mono text-[11px] text-ink-400">
+              <p className="mt-1 font-mono text-[11px] text-[#0F2A1A]/65">
                 #{c.credential_number}
               </p>
               <VerifiedButton certId={c.id} />
@@ -107,7 +107,7 @@ function VerifiedButton({ certId }: { certId: string }) {
     return (
       <Link
         href="/account/plus"
-        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-3 py-1.5 text-xs font-bold text-deep hover:bg-brand-gold-hover"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#D6FF57] px-3 py-1.5 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
       >
         <Crown size={13} /> Unlock verified share — YK-Virtual Plus
       </Link>
@@ -119,7 +119,7 @@ function VerifiedButton({ certId }: { certId: string }) {
         <input
           readOnly
           value={link}
-          className="w-full rounded-lg border border-ink-200 bg-ink-50 px-3 py-1.5 text-[11px] text-ink-600"
+          className="w-full rounded-lg border border-black/10 bg-[#F9F6ED] px-3 py-1.5 text-[11px] text-[#0F2A1A]/70"
           onFocus={(e) => e.target.select()}
         />
       </div>

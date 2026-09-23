@@ -21,6 +21,15 @@ const APP_PREFIXES = [
   "/chat",
   "/offline",
   "/onboarding",
+  "/receipts",
+  "/login",
+  "/login-code",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/auth",
+  "/logout",
 ];
 
 export function isAppRoute(pathname: string): boolean {

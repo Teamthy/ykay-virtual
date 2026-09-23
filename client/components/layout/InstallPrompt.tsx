@@ -87,32 +87,32 @@ export function InstallPrompt() {
   if (!deferred && !showIOS) return null;
 
   return (
-    <div className="fixed bottom-24 left-4 z-40 flex max-w-xs items-start gap-3 rounded-2xl border border-ink-100 bg-white p-3 shadow-xl lg:bottom-8 lg:left-8">
+    <div className="fixed bottom-24 left-4 z-40 flex max-w-xs items-start gap-3 rounded-2xl border border-black/10 bg-white p-3 shadow-xl lg:bottom-8 lg:left-8">
       <span
-        className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-light text-xl"
+        className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#F9F6ED] text-xl"
         aria-hidden="true"
       >
         📲
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-deep">Install YK-Virtual</p>
+        <p className="text-sm font-bold text-[#0F2A1A]">Install YK-Virtual</p>
         {deferred ? (
           <>
-            <p className="text-xs text-ink-500">
+            <p className="text-xs text-[#0F2A1A]/65">
               Add to your home screen for the app experience.
             </p>
             <div className="mt-1.5 flex gap-2">
               <button
                 type="button"
                 onClick={() => void install()}
-                className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-ink-900 hover:bg-primary-hover"
+                className="rounded-lg bg-[#D6FF57] px-3 py-1 text-xs font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
               >
                 Install
               </button>
               <button
                 type="button"
                 onClick={dismiss}
-                className="rounded-lg px-2 py-1 text-xs font-semibold text-ink-400 hover:text-ink-600"
+                className="rounded-lg px-2 py-1 text-xs font-semibold text-[#0F2A1A]/65 hover:text-[#0F2A1A]/70"
               >
                 Not now
               </button>
@@ -120,19 +120,19 @@ export function InstallPrompt() {
           </>
         ) : (
           <>
-            <p className="text-xs text-ink-500">On your iPhone or iPad:</p>
-            <ol className="mt-1 list-none space-y-1 text-xs text-ink-500">
-              <li className="flex items-center gap-1 font-semibold text-deep">
+            <p className="text-xs text-[#0F2A1A]/65">On your iPhone or iPad:</p>
+            <ol className="mt-1 list-none space-y-1 text-xs text-[#0F2A1A]/65">
+              <li className="flex items-center gap-1 font-semibold text-[#0F2A1A]">
                 1. Tap <Share size={12} className="inline" /> Share
               </li>
-              <li className="flex items-center gap-1 font-semibold text-deep">
+              <li className="flex items-center gap-1 font-semibold text-[#0F2A1A]">
                 2. Tap <Plus size={12} className="inline" /> Add to Home Screen
               </li>
             </ol>
             <button
               type="button"
               onClick={dismiss}
-              className="mt-1.5 rounded-lg px-2 py-1 text-xs font-semibold text-ink-400 hover:text-ink-600"
+              className="mt-1.5 rounded-lg px-2 py-1 text-xs font-semibold text-[#0F2A1A]/65 hover:text-[#0F2A1A]/70"
             >
               Not now
             </button>
@@ -142,7 +142,7 @@ export function InstallPrompt() {
       <button
         type="button"
         onClick={dismiss}
-        className="absolute -right-2 -top-2 grid size-6 place-items-center rounded-full bg-ink-100 text-ink-500 hover:bg-ink-200"
+        className="absolute -right-2 -top-2 grid size-6 place-items-center rounded-full bg-[#F9F6ED] text-[#0F2A1A]/65 hover:bg-[#F9F6ED]"
         aria-label="Dismiss"
       >
         <X size={12} />

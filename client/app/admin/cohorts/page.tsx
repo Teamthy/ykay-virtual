@@ -127,10 +127,10 @@ export default function AdminCohortsPage() {
       key: "title",
       header: "Title",
       cell: (c) => (
-        <span className="font-semibold text-ink-800 line-clamp-1 max-w-[220px]">
+        <span className="font-semibold text-[#0F2A1A]/85 line-clamp-1 max-w-[220px]">
           {c.title}
           {c.code && (
-            <span className="mt-0.5 block font-mono text-[10px] text-ink-400">
+            <span className="mt-0.5 block font-mono text-[10px] text-[#0F2A1A]/65">
               {c.code}
             </span>
           )}
@@ -141,7 +141,7 @@ export default function AdminCohortsPage() {
       key: "dates",
       header: "Dates",
       cell: (c) => (
-        <span className="text-xs text-ink-500">
+        <span className="text-xs text-[#0F2A1A]/65">
           {new Date(c.start_date).toLocaleDateString()} →{" "}
           {new Date(c.end_date).toLocaleDateString()}
           <span className="block text-[10px]">{c.timezone}</span>
@@ -162,7 +162,7 @@ export default function AdminCohortsPage() {
             size="sm"
             showValue={false}
           />
-          <span className="text-[11px] text-ink-500 tabular-nums">
+          <span className="text-[11px] text-[#0F2A1A]/65 tabular-nums">
             {c.enrolled_count}/{c.capacity}
           </span>
         </div>
@@ -209,7 +209,7 @@ export default function AdminCohortsPage() {
                 onChange={(e) =>
                   setTutorDraft((m) => ({ ...m, [c.id]: e.target.value }))
                 }
-                className="min-w-0 flex-1 rounded-lg border border-ink-200 bg-white px-2 py-1.5 text-xs focus:outline-none"
+                className="min-w-0 flex-1 rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none"
               >
                 <option value="">— none —</option>
                 {tutors.map((t) => (
@@ -231,7 +231,7 @@ export default function AdminCohortsPage() {
               </Button>
             </div>
             {approvedTutors.isLoading && (
-              <span className="text-[10px] text-ink-400">
+              <span className="text-[10px] text-[#0F2A1A]/65">
                 Loading approved tutors…
               </span>
             )}
@@ -300,15 +300,15 @@ export default function AdminCohortsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-deep">Cohorts</h1>
-          <p className="text-ink-500 text-sm mt-1">
+          <h1 className="text-3xl font-extrabold text-[#0F2A1A]">Cohorts</h1>
+          <p className="text-[#0F2A1A]/65 text-sm mt-1">
             Create cohorts, assign tutors, manage capacity, publish.
           </p>
         </div>
         <div className="flex gap-2">
           <Link
             href="/admin/programmes"
-            className="inline-flex items-center rounded-full border border-ink-200 px-4 py-2 text-sm font-semibold text-deep hover:border-primary"
+            className="inline-flex items-center rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-[#0F2A1A] hover:border-[#D6FF57]"
           >
             Programme rosters
           </Link>
@@ -329,10 +329,10 @@ export default function AdminCohortsPage() {
 
       {(pending.data?.length ?? 0) > 0 && (
         <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-6 shadow-soft">
-          <h2 className="font-bold text-deep">
+          <h2 className="font-bold text-[#0F2A1A]">
             Student enrolments awaiting payment
           </h2>
-          <p className="mt-1 text-xs text-ink-500">
+          <p className="mt-1 text-xs text-[#0F2A1A]/65">
             Checkouts that started but have not paid yet — the seat-release cron
             frees stale seats (≤2h). Different from tutor join requests below.
           </p>
@@ -343,8 +343,8 @@ export default function AdminCohortsPage() {
                 className="flex flex-wrap items-center justify-between gap-3 py-3"
               >
                 <div>
-                  <p className="font-semibold text-ink-800">{e.student_name}</p>
-                  <p className="text-xs text-ink-500">
+                  <p className="font-semibold text-[#0F2A1A]/85">{e.student_name}</p>
+                  <p className="text-xs text-[#0F2A1A]/65">
                     {e.cohort_title} · ₦{e.cohort_fee.toLocaleString()} ·
                     started {new Date(e.created_at).toLocaleString()}
                   </p>
@@ -370,9 +370,9 @@ export default function AdminCohortsPage() {
       )}
 
       {(joins.data?.length ?? 0) > 0 && (
-        <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-          <h2 className="font-bold text-deep">Tutor join requests</h2>
-          <p className="mt-1 text-xs text-ink-500">
+        <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+          <h2 className="font-bold text-[#0F2A1A]">Tutor join requests</h2>
+          <p className="mt-1 text-xs text-[#0F2A1A]/65">
             Approve assigns the tutor to that cohort. Reject leaves assignment
             unchanged.
           </p>
@@ -383,7 +383,7 @@ export default function AdminCohortsPage() {
                 className="flex flex-wrap items-center justify-between gap-3 py-3"
               >
                 <div className="min-w-0">
-                  <p className="flex items-center gap-2 font-semibold text-ink-800">
+                  <p className="flex items-center gap-2 font-semibold text-[#0F2A1A]/85">
                     {j.tutor_slug ? (
                       <a
                         href={`/tutors/${j.tutor_slug}`}
@@ -410,7 +410,7 @@ export default function AdminCohortsPage() {
                       </span>
                     ) : null}
                   </p>
-                  <p className="text-xs text-ink-500">
+                  <p className="text-xs text-[#0F2A1A]/65">
                     {j.tutor_email ? `${j.tutor_email} · ` : ""}
                     {j.tutor_years_experience
                       ? `${j.tutor_years_experience} yrs · `
@@ -454,7 +454,7 @@ export default function AdminCohortsPage() {
               setStatus(s);
               setPage(1);
             }}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-primary text-ink-900" : "bg-ink-100 text-ink-600 hover:bg-ink-200"}`}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${status === s ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"}`}
           >
             {s || "All"}
           </button>
@@ -484,7 +484,7 @@ export default function AdminCohortsPage() {
           >
             Prev
           </Button>
-          <span className="text-sm text-ink-500 self-center">
+          <span className="text-sm text-[#0F2A1A]/65 self-center">
             Page {meta.page} / {meta.total_pages}
           </span>
           <Button
@@ -603,26 +603,26 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
 
   const field = (key: keyof typeof form, label: string, type = "text") => (
     <label className="block text-sm">
-      <span className="font-medium text-ink-700">{label}</span>
+      <span className="font-medium text-[#0F2A1A]/75">{label}</span>
       <input
         type={type}
         value={form[key]}
         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-        className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
+        className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
       />
     </label>
   );
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6 space-y-4 shadow-soft">
-      <h2 className="font-bold text-deep">New cohort</h2>
+    <div className="rounded-2xl border border-black/10 bg-white p-6 space-y-4 shadow-soft">
+      <h2 className="font-bold text-[#0F2A1A]">New cohort</h2>
       <div className="grid md:grid-cols-2 gap-4">
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Programme *</span>
+          <span className="font-medium text-[#0F2A1A]/75">Programme *</span>
           <select
             value={form.programme_id}
             onChange={(e) => setForm({ ...form, programme_id: e.target.value })}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
           >
             <option value="">Select a programme…</option>
             {programmes.map((p) => (
@@ -632,7 +632,7 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
             ))}
           </select>
           {programmes.length === 0 && (
-            <span className="mt-1 block text-xs text-ink-400">
+            <span className="mt-1 block text-xs text-[#0F2A1A]/65">
               {programmesQ.isLoading
                 ? "Loading programmes…"
                 : "No published programmes yet."}
@@ -649,36 +649,36 @@ function CreateCohortForm({ onDone }: { onDone: () => void }) {
         {field("timezone", "Timezone")}
         {field("currency", "Currency")}
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">
+          <span className="font-medium text-[#0F2A1A]/75">
             Banner image (JPEG/PNG file)
           </span>
           <input
             type="file"
             accept="image/jpeg,image/png"
             onChange={(e) => pickBanner(e.target.files?.[0] ?? null)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#D6FF57] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
           />
           {bannerPreview ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={bannerPreview}
               alt="Banner preview"
-              className="mt-2 h-20 w-full rounded-lg object-cover ring-1 ring-ink-200"
+              className="mt-2 h-20 w-full rounded-lg object-cover ring-1 ring-black/10"
             />
           ) : (
-            <span className="mt-1 block text-xs text-ink-400">
+            <span className="mt-1 block text-xs text-[#0F2A1A]/65">
               Optional — upload a JPEG or PNG image (never a URL).
             </span>
           )}
         </label>
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Location mode</span>
+          <span className="font-medium text-[#0F2A1A]/75">Location mode</span>
           <select
             value={form.location_mode}
             onChange={(e) =>
               setForm({ ...form, location_mode: e.target.value })
             }
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
           >
             <option>ONLINE</option>
             <option>IN_PERSON</option>
@@ -750,7 +750,7 @@ function CohortEditDialog({
   };
 
   const field =
-    "mt-1 h-10 w-full rounded-lg border border-ink-200 px-3 text-sm focus:border-primary focus:outline-none";
+    "mt-1 h-10 w-full rounded-lg border border-black/10 px-3 text-sm focus:border-[#D6FF57] focus:outline-none";
 
   return (
     <div
@@ -761,10 +761,10 @@ function CohortEditDialog({
     >
       <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="text-lg font-extrabold text-deep">Edit cohort</h3>
+          <h3 className="text-lg font-extrabold text-[#0F2A1A]">Edit cohort</h3>
           <button
             onClick={onClose}
-            className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold text-ink-600"
+            className="rounded-lg border border-black/10 px-3 py-1 text-xs font-bold text-[#0F2A1A]/70"
           >
             Close
           </button>
@@ -775,7 +775,7 @@ function CohortEditDialog({
           </p>
         )}
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-xs font-bold text-ink-600 sm:col-span-2">
+          <label className="text-xs font-bold text-[#0F2A1A]/70 sm:col-span-2">
             Title
             <input
               value={form.title}
@@ -783,7 +783,7 @@ function CohortEditDialog({
               className={field}
             />
           </label>
-          <label className="text-xs font-bold text-ink-600">
+          <label className="text-xs font-bold text-[#0F2A1A]/70">
             Capacity
             <input
               type="number"
@@ -793,7 +793,7 @@ function CohortEditDialog({
               className={field}
             />
           </label>
-          <label className="text-xs font-bold text-ink-600">
+          <label className="text-xs font-bold text-[#0F2A1A]/70">
             Fee ({form.currency})
             <input
               type="number"
@@ -803,7 +803,7 @@ function CohortEditDialog({
               className={field}
             />
           </label>
-          <label className="text-xs font-bold text-ink-600">
+          <label className="text-xs font-bold text-[#0F2A1A]/70">
             Start date
             <input
               type="date"
@@ -812,7 +812,7 @@ function CohortEditDialog({
               className={field}
             />
           </label>
-          <label className="text-xs font-bold text-ink-600">
+          <label className="text-xs font-bold text-[#0F2A1A]/70">
             End date
             <input
               type="date"
@@ -821,7 +821,7 @@ function CohortEditDialog({
               className={field}
             />
           </label>
-          <label className="text-xs font-bold text-ink-600">
+          <label className="text-xs font-bold text-[#0F2A1A]/70">
             Enrolment opens (optional)
             <input
               type="date"
@@ -832,7 +832,7 @@ function CohortEditDialog({
               className={field}
             />
           </label>
-          <label className="text-xs font-bold text-ink-600">
+          <label className="text-xs font-bold text-[#0F2A1A]/70">
             Enrolment closes (optional)
             <input
               type="date"
@@ -844,13 +844,13 @@ function CohortEditDialog({
             />
           </label>
         </div>
-        <p className="mt-3 text-[11px] text-ink-400">
+        <p className="mt-3 text-[11px] text-[#0F2A1A]/65">
           Capacity cannot drop below the enrolled count; the server rejects it.
         </p>
         <button
           onClick={() => void save()}
           disabled={busy || !form.title}
-          className="mt-4 h-11 w-full rounded-xl bg-primary text-sm font-bold text-ink-900 disabled:opacity-40"
+          className="mt-4 h-11 w-full rounded-xl bg-[#D6FF57] text-sm font-bold text-[#0F2A1A] disabled:opacity-40"
         >
           {busy ? "Saving…" : "Save changes"}
         </button>

@@ -45,16 +45,16 @@ export async function RelatedContent({ subjectSlug }: { subjectSlug: string }) {
       <div className="grid md:grid-cols-3 gap-5">
         {tutors.length > 0 && (
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-3">Top tutors</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65 mb-3">Top tutors</h3>
             <ul className="space-y-2">
               {tutors.map((t) => (
                 <li key={t.id}>
                   <Link
                     href={`/tutors/${t.slug}`}
-                    className="block border rounded-xl px-4 py-3 hover:border-brand-blue hover:shadow-lift transition-all"
+                    className="block border rounded-xl px-4 py-3 hover:border-[#0F2A1A] hover:shadow-lift transition-all"
                   >
                     <span className="font-semibold text-sm">{t.display_name}</span>
-                    <span className="block text-xs text-ink-500">
+                    <span className="block text-xs text-[#0F2A1A]/65">
                       ★ {t.rating_avg.toFixed(1)} · {t.rating_count} reviews
                     </span>
                   </Link>
@@ -65,16 +65,16 @@ export async function RelatedContent({ subjectSlug }: { subjectSlug: string }) {
         )}
         {related.programmes.length > 0 && (
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-3">Programmes</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65 mb-3">Programmes</h3>
             <ul className="space-y-2">
               {related.programmes.map((p) => (
                 <li key={p.id}>
                   <Link
                     href={`/programmes/${p.slug}`}
-                    className="block border rounded-xl px-4 py-3 hover:border-brand-blue hover:shadow-lift transition-all"
+                    className="block border rounded-xl px-4 py-3 hover:border-[#0F2A1A] hover:shadow-lift transition-all"
                   >
                     <span className="font-semibold text-sm">{p.title}</span>
-                    <span className="block text-xs text-ink-500">{p.format.replace(/_/g, " ").toLowerCase()}</span>
+                    <span className="block text-xs text-[#0F2A1A]/65">{p.format.replace(/_/g, " ").toLowerCase()}</span>
                   </Link>
                 </li>
               ))}
@@ -83,16 +83,16 @@ export async function RelatedContent({ subjectSlug }: { subjectSlug: string }) {
         )}
         {related.posts.length > 0 && (
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-ink-400 mb-3">From the blog</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65 mb-3">From the blog</h3>
             <ul className="space-y-2">
               {related.posts.map((post) => (
                 <li key={post.id}>
                   <Link
                     href={`/blog/${post.slug}`}
-                    className="block border rounded-xl px-4 py-3 hover:border-brand-blue hover:shadow-lift transition-all"
+                    className="block border rounded-xl px-4 py-3 hover:border-[#0F2A1A] hover:shadow-lift transition-all"
                   >
                     <span className="font-semibold text-sm line-clamp-2">{post.title}</span>
-                    {post.excerpt && <span className="block text-xs text-ink-500 mt-1 line-clamp-2">{post.excerpt}</span>}
+                    {post.excerpt && <span className="block text-xs text-[#0F2A1A]/65 mt-1 line-clamp-2">{post.excerpt}</span>}
                   </Link>
                 </li>
               ))}

@@ -52,7 +52,7 @@ export function CollegeBridge() {
                 About campus
               </a>
             </div>
-            <p className="mt-6 text-[11px] font-bold uppercase tracking-wide text-white/40">Raising Role Models · est. 2021</p>
+            <p className="mt-6 text-[11px] font-bold uppercase tracking-wide text-white/65">Raising Role Models · est. 2021</p>
           </div>
         </div>
       </div>

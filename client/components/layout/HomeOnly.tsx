@@ -1,13 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { isAppRoute } from "@/components/layout/ShellVisibility";
 
-// HomeOnly - renders its children ONLY on the marketing home page (/).
-// Used to keep the global footer on the landing page only, so marketing
-// subpages and (via ShellVisibility) dashboards never show a homepage footer.
-
-export function HomeOnly({ children }: { children: React.ReactNode }) {
+/** Public pages share the same dark/footer-card ending; app and auth flows
+ * keep their dedicated chrome and never show marketing navigation. */
+export function PublicOnly({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname !== "/") return null;
+  if (isAppRoute(pathname)) return null;
   return <>{children}</>;
 }

@@ -10,9 +10,9 @@ export function WelcomeQuote({ variant = "light" }: { variant?: "light" | "deep"
   if (quote.isError || !quote.data) return null;
   const deep = variant === "deep";
   return (
-    <div className={`rounded-2xl border px-5 py-4 text-center ${deep ? "border-white/15 bg-white/5 text-white" : "border-primary/30 bg-primary-light"}`}>
-      <p className={`font-display text-lg italic ${deep ? "text-white" : "text-deep"}`}>"{quote.data}"</p>
-      <p className={`mt-1 flex items-center justify-center gap-1 text-[11px] uppercase tracking-wide ${deep ? "text-white/50" : "text-ink-400"}`}>
+    <div className={`rounded-2xl border px-5 py-4 text-center ${deep ? "border-white/15 bg-white/5 text-white" : "border-[#D6FF57]/30 bg-[#F9F6ED]"}`}>
+      <p className={`font-display text-lg italic ${deep ? "text-white" : "text-[#0F2A1A]"}`}>"{quote.data}"</p>
+      <p className={`mt-1 flex items-center justify-center gap-1 text-[11px] uppercase tracking-wide ${deep ? "text-white/50" : "text-[#0F2A1A]/65"}`}>
         <Sparkles size={11} /> Today's welcome — a new quote every day
       </p>
     </div>

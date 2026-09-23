@@ -39,7 +39,7 @@ export function HomeFAQ() {
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] max-w-[1200px] mx-auto items-start">
           {/* left */}
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/50">{"<<"} FAQ {">>"}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">{"<<"} FAQ {">>"}</p>
             <h2 className="mt-3 font-display text-[clamp(1.6rem,3vw,2.4rem)] leading-[0.95] tracking-[-0.02em] text-[#0F2A1A] uppercase">
               Frequently asked question
             </h2>

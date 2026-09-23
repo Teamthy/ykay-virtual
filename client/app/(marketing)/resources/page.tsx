@@ -95,12 +95,12 @@ export default function ResourcesPage() {
             <Link
               key={h.href}
               href={h.href}
-              className="border rounded-2xl p-6 hover:shadow-lift hover:border-brand-blue/40 transition-all"
+              className="border rounded-2xl p-6 hover:shadow-lift hover:border-[#0F2A1A]/40 transition-all"
             >
               <div className="text-3xl">{h.icon}</div>
               <h2 className="font-bold mt-3">{h.title}</h2>
-              <p className="mt-2 text-sm text-ink-600">{h.desc}</p>
-              <span className="mt-4 inline-block text-sm font-semibold text-brand-blue">
+              <p className="mt-2 text-sm text-[#0F2A1A]/70">{h.desc}</p>
+              <span className="mt-4 inline-block text-sm font-semibold text-[#0F2A1A]">
                 Explore →
               </span>
             </Link>
@@ -115,10 +115,10 @@ export default function ResourcesPage() {
             {TIPS.map((t) => (
               <div
                 key={t.title}
-                className="rounded-2xl bg-ink-50 border border-ink-100 p-6"
+                className="rounded-2xl bg-[#F9F6ED] border border-black/10 p-6"
               >
                 <h3 className="font-bold">{t.title}</h3>
-                <p className="mt-2 text-sm text-ink-700 leading-relaxed">
+                <p className="mt-2 text-sm text-[#0F2A1A]/75 leading-relaxed">
                   {t.body}
                 </p>
               </div>
@@ -128,7 +128,7 @@ export default function ResourcesPage() {
 
         <section className="mt-14 text-center border rounded-3xl p-10">
           <h2 className="text-2xl font-extrabold">Want guided help?</h2>
-          <p className="mt-2 text-ink-600 text-sm">
+          <p className="mt-2 text-[#0F2A1A]/70 text-sm">
             A tutor turns these techniques into a weekly plan with
             accountability.
           </p>

@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "British & Nigerian curriculum learning, examination preparation and expert private tuition online.",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#013920",
+    background_color: "#F9F6ED",
+    theme_color: "#0F2A1A",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },

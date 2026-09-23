@@ -90,23 +90,23 @@ export default async function SubjectPage(props: Props) {
       />
 
       <InnerHero variant="centered">
-        <span className="inline-flex rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-brand-green">
+        <span className="inline-flex rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#0F2A1A]">
           {subject.category}
         </span>
-        <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">
+        <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-[#0F2A1A] md:text-5xl">
           {subject.name}
         </h1>
-        <p className="mt-4 max-w-3xl leading-relaxed text-ink-600">{desc}</p>
+        <p className="mt-4 max-w-3xl leading-relaxed text-[#0F2A1A]/70">{desc}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={`/tutors?subject=${subject.slug}`}
-            className="inline-flex items-center gap-2 rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-full bg-[#D6FF57] px-6 py-3 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030] hover:-translate-y-0.5"
           >
             <Users size={15} /> Find a tutor
           </Link>
           <Link
             href={`/cohorts`}
-            className="inline-flex items-center gap-2 rounded-full border border-ink-300 px-6 py-3 text-sm font-bold text-ink-800 transition hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+            className="inline-flex items-center gap-2 rounded-full border border-black/10 px-6 py-3 text-sm font-bold text-[#0F2A1A]/85 transition hover:border-[#0F2A1A] hover:bg-[#0F2A1A] hover:text-white"
           >
             <BookOpen size={15} /> Browse cohorts
           </Link>
@@ -114,49 +114,49 @@ export default async function SubjectPage(props: Props) {
       </InnerHero>
 
       <div className="mt-10 grid gap-5 md:grid-cols-3">
-        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-          <Users size={20} className="text-brand-green" />
-          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-brand-navy">
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+          <Users size={20} className="text-[#0F2A1A]" />
+          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
             Private tuition
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-600">
+          <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
             1-to-1 online or in person, adaptive learning plan, escrow-protected
             payment.
           </p>
           <Link
             href={`/private-tuition?subject=${subject.slug}`}
-            className="mt-4 inline-block text-sm font-bold text-brand-green hover:underline"
+            className="mt-4 inline-block text-sm font-bold text-[#0F2A1A] hover:underline"
           >
             Book tuition →
           </Link>
         </div>
-        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-          <BookOpen size={20} className="text-brand-green" />
-          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-brand-navy">
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+          <BookOpen size={20} className="text-[#0F2A1A]" />
+          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
             Small-group cohorts
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-600">
+          <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
             Live classes with a vetted tutor, recordings and weekly progress
             reports.
           </p>
           <Link
             href={`/cohorts`}
-            className="mt-4 inline-block text-sm font-bold text-brand-green hover:underline"
+            className="mt-4 inline-block text-sm font-bold text-[#0F2A1A] hover:underline"
           >
             View cohorts →
           </Link>
         </div>
-        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-          <FileText size={20} className="text-brand-green" />
-          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-brand-navy">
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+          <FileText size={20} className="text-[#0F2A1A]" />
+          <h2 className="mt-3 font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
             Guides &amp; resources
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-600">
+          <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
             Exam strategy, study guides and subject advice from our tutors.
           </p>
           <Link
             href={`/blog`}
-            className="mt-4 inline-block text-sm font-bold text-brand-green hover:underline"
+            className="mt-4 inline-block text-sm font-bold text-[#0F2A1A] hover:underline"
           >
             Read guides →
           </Link>

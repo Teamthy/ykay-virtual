@@ -109,11 +109,11 @@ export default function AdminCBTBankPage() {
     <DashboardPage className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary-dark">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
             Curriculum
           </p>
-          <h1 className="mt-2 font-display text-3xl text-deep">CBT bank</h1>
-          <p className="mt-2 max-w-xl text-sm text-ink-600">
+          <h1 className="mt-2 font-display text-3xl text-[#0F2A1A]">CBT bank</h1>
+          <p className="mt-2 max-w-xl text-sm text-[#0F2A1A]/70">
             {total_qs.toLocaleString()} published questions across{" "}
             {(subjects.data ?? []).length} subjects. Papers draw at random per
             student; drafts never appear in papers.
@@ -165,7 +165,7 @@ export default function AdminCBTBankPage() {
             setSubject(e.target.value);
             setPage(1);
           }}
-          className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm font-semibold text-deep"
+          className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold text-[#0F2A1A]"
         >
           <option value="">All subjects</option>
           {(subjects.data ?? []).map((s) => (
@@ -175,7 +175,7 @@ export default function AdminCBTBankPage() {
           ))}
         </select>
         {meta && (
-          <span className="text-xs text-ink-400">
+          <span className="text-xs text-[#0F2A1A]/65">
             {meta.total_items.toLocaleString()} questions · page {meta.page} of{" "}
             {meta.total_pages}
           </span>
@@ -194,25 +194,25 @@ export default function AdminCBTBankPage() {
           {rows.map((q) => (
             <div
               key={q.id}
-              className="rounded-2xl border border-ink-200 bg-white p-4 shadow-sm"
+              className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 uppercase text-primary-dark">
+                    <span className="rounded-full bg-[#D6FF57]/10 px-2 py-0.5 uppercase text-[#0F2A1A]">
                       {q.subject_slug}
                     </span>
-                    <span className="text-ink-400">{q.topic}</span>
+                    <span className="text-[#0F2A1A]/65">{q.topic}</span>
                     <StatusBadge
                       label={q.status}
                       kind={q.status === "published" ? "success" : "neutral"}
                     />
-                    <span className="text-ink-300">{q.source}</span>
+                    <span className="text-[#0F2A1A]/65">{q.source}</span>
                   </div>
-                  <p className="mt-2 line-clamp-2 text-sm font-semibold text-ink-900">
+                  <p className="mt-2 line-clamp-2 text-sm font-semibold text-[#0F2A1A]">
                     {q.stem}
                   </p>
-                  <p className="mt-1 text-xs text-ink-400">
+                  <p className="mt-1 text-xs text-[#0F2A1A]/65">
                     Key: {LETTERS[q.correct_index]} ·{" "}
                     {q.options[q.correct_index]?.slice(0, 50)}
                   </p>
@@ -221,7 +221,7 @@ export default function AdminCBTBankPage() {
                   <button
                     onClick={() => void toggleStatus(q.id, q.status, q.stem)}
                     title={q.status === "published" ? "Move to draft" : "Publish"}
-                    className="grid h-9 w-9 place-items-center rounded-xl border border-ink-200 text-ink-500 hover:border-primary/40 hover:text-primary-dark"
+                    className="grid h-9 w-9 place-items-center rounded-xl border border-black/10 text-[#0F2A1A]/65 hover:border-[#D6FF57]/40 hover:text-[#0F2A1A]"
                   >
                     {q.status === "published" ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -242,7 +242,7 @@ export default function AdminCBTBankPage() {
                   </button>
                   <button
                     onClick={() => setConfirmDelete(null)}
-                    className="text-xs font-semibold text-ink-500 hover:underline"
+                    className="text-xs font-semibold text-[#0F2A1A]/65 hover:underline"
                   >
                     Cancel
                   </button>
@@ -251,8 +251,8 @@ export default function AdminCBTBankPage() {
             </div>
           ))}
           {rows.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-ink-200 p-10 text-center text-sm text-ink-400">
-              <BookOpenCheck size={24} className="mx-auto mb-2 text-ink-300" />
+            <div className="rounded-2xl border border-dashed border-black/10 p-10 text-center text-sm text-[#0F2A1A]/65">
+              <BookOpenCheck size={24} className="mx-auto mb-2 text-[#0F2A1A]/65" />
               No questions match this filter.
             </div>
           )}
@@ -269,7 +269,7 @@ export default function AdminCBTBankPage() {
           >
             <ChevronLeft size={14} /> Prev
           </button>
-          <span className="text-xs font-semibold text-ink-500">
+          <span className="text-xs font-semibold text-[#0F2A1A]/65">
             {meta.page} / {meta.total_pages}
           </span>
           <button
@@ -334,11 +334,11 @@ function CreateQuestionForm({
   };
 
   const input =
-    "w-full rounded-xl border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 focus:border-primary focus:outline-none";
+    "w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-[#0F2A1A] focus:border-[#D6FF57] focus:outline-none";
 
   return (
-    <div className="rounded-3xl border border-ink-200 bg-white p-6 shadow-sm">
-      <p className="text-sm font-bold text-deep">Add a question</p>
+    <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+      <p className="text-sm font-bold text-[#0F2A1A]">Add a question</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <select value={slug} onChange={(e) => setSlug(e.target.value)} className={input}>
           {[...new Set([...subjects, "mathematics", "english"])].map((s) => (
@@ -362,7 +362,7 @@ function CreateQuestionForm({
         />
         {(["optionA", "optionB", "optionC", "optionD"] as const).map((k, i) => (
           <div key={k} className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 text-xs font-bold text-ink-500">
+            <label className="flex items-center gap-1.5 text-xs font-bold text-[#0F2A1A]/65">
               <input
                 type="radio"
                 name="key"
@@ -391,7 +391,7 @@ function CreateQuestionForm({
         <button onClick={() => void submit()} disabled={saving} className="btn-primary text-sm disabled:opacity-50">
           {saving ? "Saving…" : "Save question"}
         </button>
-        <span className="text-[11px] text-ink-400">
+        <span className="text-[11px] text-[#0F2A1A]/65">
           Select the radio beside the CORRECT option — the key stays server-side.
         </span>
       </div>

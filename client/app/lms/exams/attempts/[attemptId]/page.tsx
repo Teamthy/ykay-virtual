@@ -29,7 +29,7 @@ export default function AttemptReviewPage() {
     <DashboardPage className="space-y-6">
       <Link
         href="/lms/exams"
-        className="inline-flex items-center gap-1.5 text-sm font-bold text-primary-dark hover:underline"
+        className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0F2A1A] hover:underline"
       >
         <ArrowLeft size={15} /> Practice exams
       </Link>
@@ -42,8 +42,8 @@ export default function AttemptReviewPage() {
       ) : review.error || !r ? (
         <div className="rounded-3xl border border-orange-200 bg-orange-50 p-8 text-center">
           <AlertTriangle size={28} className="mx-auto text-orange-500" />
-          <p className="mt-3 font-bold text-ink-800">Review not available</p>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="mt-3 font-bold text-[#0F2A1A]/85">Review not available</p>
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">
             {review.error instanceof Error
               ? review.error.message
               : "Please try again later."}
@@ -54,18 +54,18 @@ export default function AttemptReviewPage() {
           <div
             className={`rounded-3xl border p-8 text-center shadow-sm ${
               r.passed
-                ? "border-primary/50 bg-primary-light/60"
+                ? "border-[#D6FF57]/50 bg-[#F9F6ED]/60"
                 : "border-orange-200 bg-orange-50"
             }`}
           >
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-ink-500">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">
               {r.exam_subject} · {r.exam_title}
             </p>
-            <p className="mt-3 font-display text-6xl text-deep">{r.score}%</p>
-            <p className="mt-2 text-sm font-bold text-ink-700">
+            <p className="mt-3 font-display text-6xl text-[#0F2A1A]">{r.score}%</p>
+            <p className="mt-2 text-sm font-bold text-[#0F2A1A]/75">
               {r.correct} of {r.total} correct ·{" "}
               {r.passed ? (
-                <span className="text-primary-dark">PASSED</span>
+                <span className="text-[#0F2A1A]">PASSED</span>
               ) : (
                 <span className="text-orange-700">
                   Below the {r.passing_score}% pass mark
@@ -73,11 +73,11 @@ export default function AttemptReviewPage() {
               )}
             </p>
             {r.expired ? (
-              <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-ink-500">
+              <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-[#0F2A1A]/65">
                 <AlertTriangle size={13} /> time expired — auto-submitted
               </p>
             ) : null}
-            <p className="mt-2 text-xs text-ink-400">
+            <p className="mt-2 text-xs text-[#0F2A1A]/65">
               Submitted{" "}
               {new Date(r.submitted_at).toLocaleString(undefined, {
                 dateStyle: "medium",
@@ -92,17 +92,17 @@ export default function AttemptReviewPage() {
               return (
                 <div
                   key={q.id}
-                  className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm"
+                  className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm"
                 >
                   <div className="flex items-start gap-2.5">
                     <span className="mt-0.5 shrink-0">
                       {ok ? (
-                        <CheckCircle2 size={18} className="text-primary-dark" />
+                        <CheckCircle2 size={18} className="text-[#0F2A1A]" />
                       ) : (
                         <XCircle size={18} className="text-red-500" />
                       )}
                     </span>
-                    <p className="text-sm font-bold leading-relaxed text-ink-800">
+                    <p className="text-sm font-bold leading-relaxed text-[#0F2A1A]/85">
                       {i + 1}. {q.text}
                     </p>
                   </div>
@@ -112,17 +112,17 @@ export default function AttemptReviewPage() {
                         key={oi}
                         className={`rounded-lg px-3 py-2 text-sm ${
                           oi === q.correct_index
-                            ? "bg-primary-light font-semibold text-deep"
+                            ? "bg-[#F9F6ED] font-semibold text-[#0F2A1A]"
                             : oi === q.chosen_index
                               ? "bg-red-50 font-semibold text-red-700"
-                              : "text-ink-600"
+                              : "text-[#0F2A1A]/70"
                         }`}
                       >
                         {LETTERS[oi]}. {opt}
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-3 pl-8 text-xs leading-5 text-ink-500">
+                  <p className="mt-3 pl-8 text-xs leading-5 text-[#0F2A1A]/65">
                     {q.chosen_index === null ? (
                       <b className="text-orange-700">
                         You did not answer this question.{" "}

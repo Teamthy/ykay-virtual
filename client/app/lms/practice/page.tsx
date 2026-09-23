@@ -77,7 +77,7 @@ export default function PracticeBankPage() {
 
   return (
     <DashboardPage className="space-y-8">
-      <div className="relative isolate overflow-hidden rounded-3xl bg-deep px-6 py-10 text-white md:px-10">
+      <div className="relative isolate overflow-hidden rounded-3xl bg-[#0F2A1A] px-6 py-10 text-white md:px-10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/home/ribs-green.jpg"
@@ -85,9 +85,9 @@ export default function PracticeBankPage() {
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-deep via-deep/90 to-deep/65" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0F2A1A] via-[#0F2A1A]/90 to-[#0F2A1A]/65" />
         <div className="relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#D6FF57]">
             CBT Practice
           </p>
           <h1 className="mt-2 font-display text-4xl md:text-5xl">
@@ -123,38 +123,38 @@ export default function PracticeBankPage() {
         ].map((f) => (
           <div
             key={f.title}
-            className="rounded-2xl border border-ink-200 bg-white p-4 shadow-sm"
+            className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm"
           >
-            <div className="flex items-center gap-2 text-primary-dark">
+            <div className="flex items-center gap-2 text-[#0F2A1A]">
               {f.icon}
               <p className="text-sm font-bold">{f.title}</p>
             </div>
-            <p className="mt-1 text-xs leading-relaxed text-ink-500">{f.desc}</p>
+            <p className="mt-1 text-xs leading-relaxed text-[#0F2A1A]/65">{f.desc}</p>
           </div>
         ))}
       </div>
 
       <section className="space-y-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <h2 className="font-display text-2xl text-deep">Choose a subject</h2>
+          <h2 className="font-display text-2xl text-[#0F2A1A]">Choose a subject</h2>
           <div className="flex flex-col gap-2 sm:flex-row">
             <label className="relative block">
               <Search
                 size={14}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#0F2A1A]/65"
               />
               <input
                 type="search"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search subjects…"
-                className="w-full rounded-full border border-ink-200 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 sm:w-64"
+                className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-[#D6FF57] focus:ring-2 focus:ring-[#D6FF57]/30 sm:w-64"
               />
             </label>
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
-              className="rounded-full border border-ink-200 bg-white px-4 py-2.5 text-sm font-semibold text-ink-800 outline-none focus:border-primary"
+              className="rounded-full border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-[#0F2A1A]/85 outline-none focus:border-[#D6FF57]"
             >
               <option value="all">All levels</option>
               {LEVEL_ORDER.map((lv) => (
@@ -190,7 +190,7 @@ export default function PracticeBankPage() {
           <div className="space-y-10">
             {[...levelsPresent, ...extraLevels].map((lv) => (
               <div key={lv}>
-                <h3 className="mb-3 font-display text-xl text-deep">
+                <h3 className="mb-3 font-display text-xl text-[#0F2A1A]">
                   {LEVEL_LABELS[lv] ?? lv.toUpperCase()}
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -200,17 +200,17 @@ export default function PracticeBankPage() {
                       <Link
                         key={s.slug}
                         href={`/lms/practice/${s.slug}`}
-                        className="group rounded-2xl border border-ink-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                        className="group rounded-2xl border border-black/10 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#D6FF57]/40 hover:shadow-md"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-bold text-deep group-hover:text-primary-dark">
+                          <p className="font-bold text-[#0F2A1A] group-hover:text-[#0F2A1A]">
                             {s.name}
                           </p>
-                          <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary-dark">
+                          <span className="rounded-full bg-[#D6FF57]/10 px-2.5 py-1 text-xs font-bold text-[#0F2A1A]">
                             Start
                           </span>
                         </div>
-                        <p className="mt-1 text-xs capitalize text-ink-400">
+                        <p className="mt-1 text-xs capitalize text-[#0F2A1A]/65">
                           {s.department} · {s.class_level.toUpperCase()}
                         </p>
                         <div className="mt-4 flex items-center justify-between">
@@ -218,13 +218,13 @@ export default function PracticeBankPage() {
                             {LIMITS.slice(0, 3).map((n) => (
                               <span
                                 key={n}
-                                className="rounded-lg border border-ink-200 px-2 py-0.5 text-[11px] font-semibold text-ink-500"
+                                className="rounded-lg border border-black/10 px-2 py-0.5 text-[11px] font-semibold text-[#0F2A1A]/65"
                               >
                                 {n} q
                               </span>
                             ))}
                           </div>
-                          <span className="text-sm font-bold text-primary-dark opacity-0 transition group-hover:opacity-100">
+                          <span className="text-sm font-bold text-[#0F2A1A] opacity-0 transition group-hover:opacity-100">
                             Sit paper →
                           </span>
                         </div>

@@ -58,10 +58,10 @@ export function HowItWorksStrip() {
                   <div className="grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white">
                     <s.icon size={16} />
                   </div>
-                  <span className="text-[11px] font-extrabold tracking-wide text-[#0F2A1A]/30">{s.n}</span>
+                  <span className="text-[11px] font-extrabold tracking-wide text-[#0F2A1A]/65">{s.n}</span>
                 </div>
                 <h3 className="mt-5 font-display text-[16px] leading-[1] text-[#0F2A1A] uppercase">{s.title}</h3>
-                <p className="mt-2 text-[12px] leading-[1.5] text-[#0F2A1A]/60">{s.body}</p>
+                <p className="mt-2 text-[12px] leading-[1.5] text-[#0F2A1A]/65">{s.body}</p>
                 <ul className="mt-4 space-y-1.5">
                   {s.points.map((p) => (
                     <li key={p} className="flex items-center gap-1.5 text-[11px] font-semibold text-[#0F2A1A]/70">

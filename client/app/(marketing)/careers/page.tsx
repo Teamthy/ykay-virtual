@@ -111,7 +111,7 @@ export default function CareersPage() {
 
       <div className="container-x py-12">
         {/* Mission */}
-        <section className="mt-14 rounded-3xl bg-[#70F250] p-10 text-center md:p-14">
+        <section className="mt-14 rounded-3xl bg-[#D6FF57] p-10 text-center md:p-14">
           <h2 className="font-display text-2xl tracking-[0.02em] text-black md:text-3xl">
             Why work with us
           </h2>
@@ -124,25 +124,25 @@ export default function CareersPage() {
 
         {/* Values */}
         <section className="mt-14">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
             How we work
           </p>
-          <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-brand-navy">
+          <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-[#0F2A1A]">
             What we value
           </h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-2">
             {VALUES.map((v) => (
               <div
                 key={v.title}
-                className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft transition-colors hover:border-brand-gold"
+                className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft transition-colors hover:border-[#D6FF57]"
               >
-                <span className="grid size-11 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
+                <span className="grid size-11 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                   <v.icon size={20} />
                 </span>
-                <h3 className="mt-4 font-display text-lg tracking-[0.02em] text-brand-navy">
+                <h3 className="mt-4 font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
                   {v.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
                   {v.body}
                 </p>
               </div>
@@ -152,17 +152,17 @@ export default function CareersPage() {
 
         {/* What you'll work on + hiring process */}
         <section className="mt-16 grid gap-5 md:grid-cols-2">
-          <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">
+          <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
               What you will work on
             </h2>
             <ul className="mt-4 space-y-3">
               {WORK.map((t) => (
                 <li key={t} className="flex items-start gap-3">
-                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-gold-light text-brand-green">
+                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[#F9F6ED] text-[#0F2A1A]">
                     <Check size={12} strokeWidth={3} />
                   </span>
-                  <span className="text-sm leading-relaxed text-ink-700">
+                  <span className="text-sm leading-relaxed text-[#0F2A1A]/75">
                     {t}
                   </span>
                 </li>
@@ -170,19 +170,19 @@ export default function CareersPage() {
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">
+          <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
               Hiring process
             </h2>
             <ol className="mt-4 space-y-4">
               {PROCESS.map((p) => (
                 <li key={p.step} className="flex gap-4">
-                  <span className="font-display text-xl text-brand-gold">
+                  <span className="font-display text-xl text-[#0F2A1A]">
                     {p.step}
                   </span>
                   <div>
-                    <p className="font-bold text-brand-navy">{p.title}</p>
-                    <p className="text-sm leading-relaxed text-ink-600">
+                    <p className="font-bold text-[#0F2A1A]">{p.title}</p>
+                    <p className="text-sm leading-relaxed text-[#0F2A1A]/70">
                       {p.body}
                     </p>
                   </div>
@@ -194,32 +194,32 @@ export default function CareersPage() {
 
         {/* Open roles */}
         <section className="mt-16">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-green">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A]">
             Open roles
           </p>
-          <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-brand-navy">
+          <h2 className="mt-2 font-display text-3xl tracking-[0.02em] text-[#0F2A1A]">
             Join the team
           </h2>
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {ROLES.map((r) => (
               <div
                 key={r.title}
-                className="flex flex-col rounded-2xl border border-ink-100 bg-white p-6 shadow-soft transition-colors hover:border-brand-gold"
+                className="flex flex-col rounded-2xl border border-black/10 bg-white p-6 shadow-soft transition-colors hover:border-[#D6FF57]"
               >
-                <span className="grid size-11 place-items-center rounded-xl bg-brand-gold-light text-brand-green">
+                <span className="grid size-11 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                   <r.icon size={20} />
                 </span>
-                <h3 className="mt-4 font-display text-lg tracking-[0.02em] text-brand-navy">
+                <h3 className="mt-4 font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
                   {r.title}
                 </h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-[#0F2A1A]/70">
                   {r.body}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {r.tags.map((t) => (
                     <span
                       key={t}
-                      className="rounded-full bg-ink-100 px-3 py-1 text-xs font-semibold text-ink-600"
+                      className="rounded-full bg-[#F9F6ED] px-3 py-1 text-xs font-semibold text-[#0F2A1A]/70"
                     >
                       {t}
                     </span>
@@ -227,7 +227,7 @@ export default function CareersPage() {
                 </div>
                 <a
                   href={`mailto:support@ykaycollege.com?subject=${encodeURIComponent(`Application — ${r.title}`)}`}
-                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover"
+                  className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-[#D6FF57] px-5 py-2.5 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030]"
                 >
                   Apply <Send size={14} />
                 </a>
@@ -235,16 +235,16 @@ export default function CareersPage() {
             ))}
           </div>
 
-          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-dashed border-ink-200 bg-ink-50 p-5">
-            <Briefcase className="mt-0.5 size-5 shrink-0 text-brand-green" />
-            <p className="text-sm leading-relaxed text-ink-700">
-              <span className="font-bold text-brand-navy">
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-dashed border-black/10 bg-[#F9F6ED] p-5">
+            <Briefcase className="mt-0.5 size-5 shrink-0 text-[#0F2A1A]" />
+            <p className="text-sm leading-relaxed text-[#0F2A1A]/75">
+              <span className="font-bold text-[#0F2A1A]">
                 Don&apos;t see your role?
               </span>{" "}
               We review speculative applications from strong people. Write to{" "}
               <a
                 href="mailto:support@ykaycollege.com?subject=Careers%20%E2%80%94%20speculative%20application"
-                className="font-semibold text-brand-blue hover:underline"
+                className="font-semibold text-[#0F2A1A] hover:underline"
               >
                 support@ykaycollege.com
               </a>{" "}
@@ -254,7 +254,7 @@ export default function CareersPage() {
         </section>
 
         {/* CTA */}
-        <section className="mt-16 rounded-3xl bg-brand-navy p-12 text-center text-white">
+        <section className="mt-16 rounded-3xl bg-[#0F2A1A] p-12 text-center text-white">
           <h2 className="font-display text-2xl tracking-[0.02em] text-white md:text-3xl">
             Build with us
           </h2>
@@ -265,7 +265,7 @@ export default function CareersPage() {
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <a
               href="mailto:support@ykaycollege.com?subject=Careers%20application"
-              className="rounded-full bg-brand-gold px-7 py-3.5 text-sm font-bold text-ink-900 transition hover:-translate-y-0.5 hover:bg-brand-gold-hover"
+              className="rounded-full bg-[#D6FF57] px-7 py-3.5 text-sm font-bold text-[#0F2A1A] transition hover:-translate-y-0.5 hover:bg-[#C8F030]"
             >
               Apply now
             </a>

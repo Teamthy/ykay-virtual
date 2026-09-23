@@ -18,7 +18,7 @@ export function AuthCompleteFail() {
         <GoogleButton label="Continue with Google" />
         <Link
           href="/login"
-          className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-ink-200 px-4 text-sm font-semibold text-ink-700 hover:border-ink-300"
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-black/10 px-4 text-sm font-semibold text-[#0F2A1A]/75 hover:border-black/10"
         >
           Use email instead
         </Link>

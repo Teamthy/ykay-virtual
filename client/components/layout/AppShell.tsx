@@ -58,7 +58,7 @@ function NavList({
                 active ? "bg-[#0F2A1A] text-white shadow-sm" : "text-[#0F2A1A]/70 hover:bg-[#0F2A1A]/5 hover:text-[#0F2A1A]",
               )}
             >
-              <span className={cn("grid size-7 place-items-center rounded-full transition", active ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#0F2A1A]/5 text-[#0F2A1A]/60 group-hover:bg-[#0F2A1A]/10")}>
+              <span className={cn("grid size-7 place-items-center rounded-full transition", active ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#0F2A1A]/5 text-[#0F2A1A]/65 group-hover:bg-[#0F2A1A]/10")}>
                 <Icon size={14} />
               </span>
               {item.label}
@@ -113,16 +113,16 @@ export function AppShell({
       </div>
       <nav className="flex flex-1 flex-col gap-6 px-3 pb-6" aria-label={`${spec.title} navigation`}>
         <div>
-          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/40">Main</p>
+          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/65">Main</p>
           <NavList items={spec.main} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
         </div>
         <div>
-          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/40">More</p>
+          <p className="px-4 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0F2A1A]/65">More</p>
           <NavList items={spec.more} pathname={pathname} userRoles={user?.roles ?? []} unreadN={unreadN} onNavigate={() => setOpen(false)} />
         </div>
 
         <div className="mt-auto rounded-[16px] bg-[#D6FF57] p-4">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/60">Need help?</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Need help?</p>
           <p className="mt-1 text-[13px] font-bold leading-tight text-[#0F2A1A]">Book a free 15-min consultation</p>
           <Link href="/contact" className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#0F2A1A] px-4 py-2 text-[12px] font-bold text-white">
             Book now <ArrowRight size={12} />
@@ -139,7 +139,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between gap-3 border-b border-black/10 bg-white px-4 md:px-8">
+        <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between gap-3 border-b border-black/10 bg-white px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex min-w-0 items-center gap-3">
             <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-[#0F2A1A] lg:hidden" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)}>
               {open ? <X size={18} /> : <Menu size={18} />}
@@ -148,7 +148,7 @@ export function AppShell({
               <h1 className="truncate font-display text-[18px] leading-none tracking-[-0.01em] text-[#0F2A1A] uppercase md:text-[20px]">
                 {greetingWord()}, {isLoading ? "…" : name}
               </h1>
-              <p className="hidden truncate text-[12px] text-[#0F2A1A]/60 sm:block mt-1">{spec.subtitle}</p>
+              <p className="hidden truncate text-[12px] text-[#0F2A1A]/65 sm:block mt-1">{spec.subtitle}</p>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -166,7 +166,7 @@ export function AppShell({
                 name.charAt(0).toUpperCase()
               )}
             </Link>
-            <button type="button" onClick={() => setLogoutOpen(true)} aria-label="Log out" title="Log out" className="hidden h-10 w-10 items-center justify-center rounded-full border border-black/10 text-[#0F2A1A]/60 hover:bg-[#0F2A1A] hover:text-white sm:flex transition">
+            <button type="button" onClick={() => setLogoutOpen(true)} aria-label="Log out" title="Log out" className="hidden h-10 w-10 items-center justify-center rounded-full border border-black/10 text-[#0F2A1A]/65 hover:bg-[#0F2A1A] hover:text-white sm:flex transition">
               <LogOut size={16} />
             </button>
           </div>

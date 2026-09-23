@@ -29,7 +29,7 @@ export function TestimonialCarousel({ items }: { items: CarouselItem[] }) {
         <div className="mx-auto max-w-[1100px]">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/50">{"<<"} Parent Stories {">>"}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0F2A1A]/65">{"<<"} Parent Stories {">>"}</p>
               <h2 className="mt-3 font-display text-[clamp(1.6rem,3vw,2.4rem)] leading-[0.9] tracking-[-0.02em] text-[#0F2A1A] uppercase">Parents love YK-Virtual</h2>
             </div>
             {items.length > 1 && (
@@ -56,7 +56,7 @@ export function TestimonialCarousel({ items }: { items: CarouselItem[] }) {
                 <div className="mt-6 flex items-center justify-between">
                   <div>
                     <p className="text-[14px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">{current.name}</p>
-                    {current.location && <p className="mt-1 text-[12px] text-[#0F2A1A]/60">{current.location}</p>}
+                    {current.location && <p className="mt-1 text-[12px] text-[#0F2A1A]/65">{current.location}</p>}
                     <div className="mt-2 flex text-[12px]">★★★★★</div>
                   </div>
                   {items.length > 1 && (

@@ -24,31 +24,31 @@ const config: Config = {
          */
 
         primary: {
-          DEFAULT: "#70F250",
-          hover: "#5FE63F",
-          dark: "#4CCB31",
-          light: "#DFFFF2",
+          DEFAULT: "#D6FF57",
+          hover: "#C8F030",
+          dark: "#0F2A1A",
+          light: "#F9F6ED",
         },
 
         green: {
-          DEFAULT: "#70F250",
-          hover: "#5FE63F",
-          dark: "#4CCB31",
-          light: "#DFFFF2",
+          DEFAULT: "#D6FF57",
+          hover: "#C8F030",
+          dark: "#0F2A1A",
+          light: "#F9F6ED",
         },
 
         deep: {
-          DEFAULT: "#013920",
-          light: "#0A4D32",
-          dark: "#002A18",
+          DEFAULT: "#0F2A1A",
+          light: "#194732",
+          dark: "#091D12",
         },
 
         peach: {
-          DEFAULT: "#FFF7E4",
-          dark: "#F8EBCF",
+          DEFAULT: "#F9F6ED",
+          dark: "#F9F6ED",
         },
 
-        black: "#000000",
+        black: "#0F2A1A",
         white: "#FFFFFF",
 
         /*
@@ -58,17 +58,17 @@ const config: Config = {
          */
 
         ink: {
-          950: "#000000",
-          900: "#111111",
-          800: "#181818",
-          700: "#333333",
-          600: "#555555",
-          500: "#52645B",
-          400: "#71857A",
-          300: "#B8C4BD",
-          200: "#DCE5DE",
-          100: "#EDE8DC",
-          50: "#F8F7F2",
+          950: "#0F2A1A",
+          900: "#0F2A1A",
+          800: "#193B28",
+          700: "#365449",
+          600: "#496759",
+          500: "#536B5C",
+          400: "#596E61",
+          300: "#BBCBB8",
+          200: "#D6DFD1",
+          100: "#E8EEDF",
+          50: "#F9F6ED",
         },
 
         /*
@@ -78,12 +78,12 @@ const config: Config = {
          */
 
         surface: {
-          DEFAULT: "#FFF7E4",
+          DEFAULT: "#FFFFFF",
           white: "#FFFFFF",
-          muted: "#F8EBCF",
+          muted: "#F9F6ED",
           subtle: "#FFFFFF",
-          dark: "#013920",
-          black: "#000000",
+          dark: "#0F2A1A",
+          black: "#0F2A1A",
         },
 
         /*
@@ -93,9 +93,9 @@ const config: Config = {
          */
 
         border: {
-          DEFAULT: "#DCE5DE",
-          light: "#EDE8DC",
-          dark: "#285442",
+          DEFAULT: "#D6DFD1",
+          light: "#E8EEDF",
+          dark: "#315B41",
         },
 
         /*
@@ -105,8 +105,8 @@ const config: Config = {
          */
 
         success: {
-          DEFAULT: "#4CCB31",
-          light: "#E6FFDE",
+          DEFAULT: "#0F2A1A",
+          light: "#F2FFD2",
         },
 
         error: {
@@ -120,8 +120,8 @@ const config: Config = {
         },
 
         info: {
-          DEFAULT: "#013920",
-          light: "#DFFFF2",
+          DEFAULT: "#0F2A1A",
+          light: "#F9F6ED",
         },
 
         /*
@@ -140,48 +140,48 @@ const config: Config = {
          */
 
         brand: {
-          green: "#70F250",
-          "green-hover": "#5FE63F",
-          "green-dark": "#4CCB31",
-          "green-light": "#DFFFF2",
+          green: "#D6FF57",
+          "green-hover": "#C8F030",
+          "green-dark": "#0F2A1A",
+          "green-light": "#F9F6ED",
 
-          "deep-green": "#013920",
-          "deep-green-light": "#0A4D32",
-          "deep-green-dark": "#002A18",
+          "deep-green": "#0F2A1A",
+          "deep-green-light": "#194732",
+          "deep-green-dark": "#091D12",
 
-          peach: "#FFF7E4",
-          "peach-dark": "#F8EBCF",
+          peach: "#F9F6ED",
+          "peach-dark": "#F0EDDF",
 
-          black: "#000000",
+          black: "#0F2A1A",
           white: "#FFFFFF",
 
           /*
            * Legacy aliases
            */
 
-          navy: "#013920",
-          "navy-dark": "#002A18",
+          navy: "#0F2A1A",
+          "navy-dark": "#091D12",
 
-          blue: "#013920",
-          "blue-dark": "#0A4D32",
-          "blue-light": "#DFFFF2",
+          blue: "#0F2A1A",
+          "blue-dark": "#194732",
+          "blue-light": "#F9F6ED",
 
-          gold: "#70F250",
-          "gold-hover": "#5FE63F",
-          "gold-dark": "#4CCB31",
-          "gold-light": "#DFFFF2",
+          gold: "#D6FF57",
+          "gold-hover": "#C8F030",
+          "gold-dark": "#0F2A1A",
+          "gold-light": "#F9F6ED",
 
           /*
            * Kept only for old components.
            * These should eventually be removed.
            */
 
-          orange: "#70F250",
-          "orange-light": "#DFFFF2",
+          orange: "#D6FF57",
+          "orange-light": "#F9F6ED",
 
-          purple: "#013920",
+          purple: "#0F2A1A",
 
-          "prep-orange": "#70F250",
+          "prep-orange": "#D6FF57",
         },
       },
 
@@ -275,7 +275,9 @@ const config: Config = {
         sm: "8px",
         md: "12px",
         lg: "20px",
-        xl: "28px",
+        xl: "20px",
+        "2xl": "20px",
+        "3xl": "20px",
         "4xl": "2rem",
         full: "9999px",
       },
@@ -285,21 +287,21 @@ const config: Config = {
          ========================================================== */
 
       boxShadow: {
-        soft: "0 2px 8px rgba(1, 57, 32, 0.06)",
+        soft: "0 2px 8px rgba(15, 42, 26, 0.06)",
 
-        card: "0 8px 24px rgba(1, 57, 32, 0.10)",
+        card: "0 8px 24px rgba(15, 42, 26, 0.10)",
 
-        lift: "0 16px 40px rgba(1, 57, 32, 0.14)",
+        lift: "0 16px 40px rgba(15, 42, 26, 0.14)",
 
-        hero: "0 30px 80px rgba(1, 57, 32, 0.18)",
+        hero: "0 30px 80px rgba(15, 42, 26, 0.18)",
 
         chip: "var(--shadow-chip)",
 
         "chip-soft": "var(--shadow-chip-soft)",
 
-        brand: "0 10px 30px rgba(112, 242, 80, 0.28)",
+        brand: "0 10px 30px rgba(214, 255, 87, 0.28)",
 
-        "brand-lg": "0 20px 50px rgba(112, 242, 80, 0.22)",
+        "brand-lg": "0 20px 50px rgba(214, 255, 87, 0.22)",
       },
 
       /* ==========================================================

@@ -128,14 +128,14 @@ export function ProfileStep({
                   value={f.state.value}
                   onChange={(e) => f.handleChange(e.target.value)}
                   onBlur={f.handleBlur}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
                 />
               ) : (
                 <input
                   value={f.state.value}
                   onChange={(e) => f.handleChange(e.target.value)}
                   onBlur={f.handleBlur}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
                 />
               )}
               {f.state.meta.errors?.length ? (
@@ -157,7 +157,7 @@ export function ProfileStep({
                 min={1}
                 value={f.state.value}
                 onChange={(e) => f.handleChange(Number(e.target.value))}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
           )}
@@ -171,7 +171,7 @@ export function ProfileStep({
                 min={1000}
                 value={f.state.value}
                 onChange={(e) => f.handleChange(Number(e.target.value))}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
           )}
@@ -274,7 +274,7 @@ export function SubjectsStep({
   return (
     <div className="border rounded-2xl p-6 space-y-4">
       <h2 className="text-xl font-bold">What can you teach?</h2>
-      <p className="text-sm text-ink-600">
+      <p className="text-sm text-[#0F2A1A]/70">
         Choose at least one subject - you can add more later.
       </p>
       <input
@@ -282,7 +282,7 @@ export function SubjectsStep({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search subjects…"
-        className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+        className="w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
       />
       <div className="grid sm:grid-cols-2 gap-2 max-h-96 overflow-y-auto pr-1">
         {(subjects.data ?? [])
@@ -298,12 +298,12 @@ export function SubjectsStep({
               onClick={() => toggle(s.id)}
               className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
                 selected.has(s.id)
-                  ? "border-brand-blue bg-brand-blue/5 text-brand-blue font-semibold"
-                  : "border-ink-200 hover:border-ink-400"
+                  ? "border-[#0F2A1A] bg-[#0F2A1A]/5 text-[#0F2A1A] font-semibold"
+                  : "border-black/10 hover:border-black/10"
               }`}
             >
               {s.name}
-              <span className="block text-xs text-ink-400 font-normal">
+              <span className="block text-xs text-[#0F2A1A]/65 font-normal">
                 {s.category}
               </span>
             </button>
@@ -388,11 +388,11 @@ export function DocumentsStep({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft space-y-4">
-        <h2 className="text-xl font-bold text-brand-navy">
+      <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft space-y-4">
+        <h2 className="text-xl font-bold text-[#0F2A1A]">
           Identity verification
         </h2>
-        <p className="text-sm text-ink-600">
+        <p className="text-sm text-[#0F2A1A]/70">
           Upload a government-issued ID (national ID, passport, or driver&apos;s
           licence). Files go to a <strong>private bucket</strong> - only you and
           our review team can access them, via signed URLs.
@@ -439,7 +439,7 @@ export function DocumentsStep({
           </div>
         }
       >
-        <p className="text-sm text-ink-600">
+        <p className="text-sm text-[#0F2A1A]/70">
           You are about to submit{" "}
           <strong>
             {files.length} document{files.length === 1 ? "" : "s"}
@@ -450,18 +450,18 @@ export function DocumentsStep({
           {files.map((f) => (
             <li
               key={`${f.name}-${f.size}`}
-              className="flex items-center gap-2 text-sm text-ink-700"
+              className="flex items-center gap-2 text-sm text-[#0F2A1A]/75"
             >
               <FileText
                 size={14}
-                className="text-brand-blue"
+                className="text-[#0F2A1A]"
                 aria-hidden="true"
               />
               {f.name}
             </li>
           ))}
         </ul>
-        <p className="mt-4 rounded-xl bg-brand-gold-light px-4 py-3 text-xs text-ink-700">
+        <p className="mt-4 rounded-xl bg-[#F9F6ED] px-4 py-3 text-xs text-[#0F2A1A]/75">
           🛡️ Your documents are stored privately and only reviewed by the
           vetting team via signed URLs.
         </p>
@@ -533,7 +533,7 @@ export function AssessmentStep({
         <h2 className="text-xl font-bold">
           {result.passed ? "You passed!" : "Not quite this time"}
         </h2>
-        <p className="text-sm text-ink-700">
+        <p className="text-sm text-[#0F2A1A]/75">
           Score:{" "}
           <strong>
             {result.correct}/{result.total}
@@ -554,7 +554,7 @@ export function AssessmentStep({
     return (
       <div className="border rounded-2xl p-6 space-y-5">
         <h2 className="text-xl font-bold">Competency quiz</h2>
-        <p className="text-xs text-ink-500">
+        <p className="text-xs text-[#0F2A1A]/65">
           You have 30 minutes. Pass mark:{" "}
           {Math.round(attempt.pass_threshold * 100)}%.
         </p>
@@ -567,7 +567,7 @@ export function AssessmentStep({
               {q.options.map((opt, idx) => (
                 <label
                   key={idx}
-                  className="flex items-center gap-2 text-sm text-ink-700 cursor-pointer"
+                  className="flex items-center gap-2 text-sm text-[#0F2A1A]/75 cursor-pointer"
                 >
                   <input
                     type="radio"
@@ -602,7 +602,7 @@ export function AssessmentStep({
   return (
     <div className="border rounded-2xl p-6 space-y-4">
       <h2 className="text-xl font-bold">Competency assessment</h2>
-      <p className="text-sm text-ink-600">
+      <p className="text-sm text-[#0F2A1A]/70">
         Pick a subject from your teaching scope - 5 questions, 30 minutes, 70%
         to pass.
       </p>
@@ -613,7 +613,7 @@ export function AssessmentStep({
             type="button"
             disabled={busy}
             onClick={() => begin(s.subject_id)}
-            className="rounded-xl border border-ink-200 px-4 py-3 text-sm hover:border-brand-blue transition-colors disabled:opacity-50"
+            className="rounded-xl border border-black/10 px-4 py-3 text-sm hover:border-[#0F2A1A] transition-colors disabled:opacity-50"
           >
             {s.name}
           </button>
@@ -664,23 +664,23 @@ export function SubmittedState({ profile }: { profile: TutorProfile }) {
 
   return (
     <div className="border rounded-2xl p-8 text-center space-y-3">
-      <div className="mx-auto grid size-14 place-items-center rounded-full bg-brand-gold-light">
+      <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#F9F6ED]">
         {profile.status === "APPROVED" ? (
-          <CheckCircle2 size={26} className="text-brand-green" />
+          <CheckCircle2 size={26} className="text-[#0F2A1A]" />
         ) : (
-          <Clock size={26} className="text-brand-navy" />
+          <Clock size={26} className="text-[#0F2A1A]" />
         )}
       </div>
       <h2 className="text-xl font-bold">Application {st.label}</h2>
-      <p className="text-sm text-ink-600">{st.hint}</p>
-      <p className="text-xs text-ink-400">
+      <p className="text-sm text-[#0F2A1A]/70">{st.hint}</p>
+      <p className="text-xs text-[#0F2A1A]/65">
         Profile: {profile.display_name} · {profile.slug} · ranking{" "}
         {profile.ranking_score.toFixed(1)}
       </p>
       {profile.status === "APPROVED" && (
         <a
           href={`/tutors/${profile.slug}`}
-          className="inline-block rounded-full bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 transition hover:bg-brand-gold-hover"
+          className="inline-block rounded-full bg-[#D6FF57] px-6 py-3 text-sm font-bold text-[#0F2A1A] transition hover:bg-[#C8F030]"
         >
           View your public profile
         </a>

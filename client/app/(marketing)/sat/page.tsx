@@ -73,19 +73,19 @@ export default function SatPage() {
       />
       <section className="mx-auto max-w-5xl px-6 py-14">
         <div className="grid gap-8 md:grid-cols-2">
-          <div className="rounded-2xl border border-ink-100 bg-white p-6">
-            <h2 className="text-lg font-bold text-brand-navy">
+          <div className="rounded-2xl border border-black/10 bg-white p-6">
+            <h2 className="text-lg font-bold text-[#0F2A1A]">
               What&apos;s included
             </h2>
             <ul className="mt-4 space-y-3">
               {INCLUDES.map((item) => (
                 <li
                   key={item}
-                  className="flex items-start gap-3 text-sm text-ink-700"
+                  className="flex items-start gap-3 text-sm text-[#0F2A1A]/75"
                 >
                   <Check
                     size={16}
-                    className="mt-0.5 shrink-0 text-brand-gold-dark"
+                    className="mt-0.5 shrink-0 text-[#0F2A1A]"
                   />
                   {item}
                 </li>
@@ -93,22 +93,22 @@ export default function SatPage() {
             </ul>
             <Link
               href="/private-tuition?goal=sat"
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-gold px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#D6FF57] px-5 py-2.5 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
             >
               Request a tutor <ArrowRight size={15} />
             </Link>
           </div>
-          <div className="rounded-2xl border border-ink-100 bg-white p-6">
-            <h2 className="text-lg font-bold text-brand-navy">
+          <div className="rounded-2xl border border-black/10 bg-white p-6">
+            <h2 className="text-lg font-bold text-[#0F2A1A]">
               Common questions
             </h2>
             <div className="mt-4 space-y-4">
               {FAQS.map((f) => (
                 <div key={f.question}>
-                  <p className="text-sm font-semibold text-ink-800">
+                  <p className="text-sm font-semibold text-[#0F2A1A]/85">
                     {f.question}
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-ink-600">
+                  <p className="mt-1 text-sm leading-6 text-[#0F2A1A]/70">
                     {f.answer}
                   </p>
                 </div>

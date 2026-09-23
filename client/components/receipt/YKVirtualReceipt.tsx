@@ -28,39 +28,39 @@ export function YKVirtualReceipt({
 }) {
   const when = new Date(createdAt);
   return (
-    <article id="yk-virtual-receipt" className="mx-auto w-full max-w-[720px] rounded-3xl border border-ink-100 bg-white p-8 shadow-card print:shadow-none">
-      <header className="flex items-start justify-between gap-4 border-b border-ink-100 pb-6">
+    <article id="yk-virtual-receipt" className="mx-auto w-full max-w-[720px] rounded-3xl border border-black/10 bg-white p-8 shadow-card print:shadow-none">
+      <header className="flex items-start justify-between gap-4 border-b border-black/10 pb-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary-dark">YK-Virtual</p>
-          <h1 className="mt-1 font-display text-3xl text-deep">Payment receipt</h1>
-          <p className="mt-1 text-sm text-ink-500">Learning beyond boundaries · Africa/Lagos</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0F2A1A]">YK-Virtual</p>
+          <h1 className="mt-1 font-display text-3xl text-[#0F2A1A]">Payment receipt</h1>
+          <p className="mt-1 text-sm text-[#0F2A1A]/65">Learning beyond boundaries · Africa/Lagos</p>
         </div>
-        <div className="rounded-2xl bg-deep px-4 py-3 text-right text-white">
+        <div className="rounded-2xl bg-[#0F2A1A] px-4 py-3 text-right text-white">
           <p className="font-mono text-sm font-bold">{orderNumber}</p>
           <p className="text-[11px] text-white/70">{status}</p>
         </div>
       </header>
       <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-400">Date &amp; time</dt>
-          <dd className="font-semibold text-ink-900">{when.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</dd>
+          <dt className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Date &amp; time</dt>
+          <dd className="font-semibold text-[#0F2A1A]">{when.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</dd>
         </div>
         {payer && (
           <div>
-            <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-400">Billed to</dt>
-            <dd className="font-semibold text-ink-900">{payer}</dd>
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Billed to</dt>
+            <dd className="font-semibold text-[#0F2A1A]">{payer}</dd>
           </div>
         )}
         {learner && (
           <div>
-            <dt className="text-[11px] font-bold uppercase tracking-wide text-ink-400">Learner</dt>
-            <dd className="font-semibold text-ink-900">{learner}</dd>
+            <dt className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Learner</dt>
+            <dd className="font-semibold text-[#0F2A1A]">{learner}</dd>
           </div>
         )}
       </dl>
       <table className="mt-6 w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-ink-100 text-[11px] uppercase tracking-wide text-ink-400">
+          <tr className="border-b border-black/10 text-[11px] uppercase tracking-wide text-[#0F2A1A]/65">
             <th className="py-2">Item</th>
             <th className="py-2">Type</th>
             <th className="py-2 text-right">Amount</th>
@@ -68,20 +68,20 @@ export function YKVirtualReceipt({
         </thead>
         <tbody>
           {items.map((it, i) => (
-            <tr key={i} className="border-b border-ink-50">
-              <td className="py-3 font-semibold text-ink-800">{it.description || "Enrolment"}</td>
-              <td className="py-3 text-ink-500">{(it.item_type || "").replace(/_/g, " ")}</td>
-              <td className="py-3 text-right font-bold text-ink-900">
+            <tr key={i} className="border-b border-black/10">
+              <td className="py-3 font-semibold text-[#0F2A1A]/85">{it.description || "Enrolment"}</td>
+              <td className="py-3 text-[#0F2A1A]/65">{(it.item_type || "").replace(/_/g, " ")}</td>
+              <td className="py-3 text-right font-bold text-[#0F2A1A]">
                 {currency} {(it.total_price ?? 0).toLocaleString()}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="mt-4 text-right text-lg font-extrabold text-deep">
+      <p className="mt-4 text-right text-lg font-extrabold text-[#0F2A1A]">
         Total {currency} {total.toLocaleString()}
       </p>
-      <p className="mt-6 text-xs leading-relaxed text-ink-500">
+      <p className="mt-6 text-xs leading-relaxed text-[#0F2A1A]/65">
         Fees are held in escrow and released to the tutor after lessons are delivered. This is an official YK-Virtual receipt.
         Print this page or use your browser&apos;s Save as PDF.
       </p>

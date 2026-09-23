@@ -73,7 +73,7 @@ export default function ReceiptPage() {
 
   return (
     <DashboardPage>
-      {q.isLoading && <p className="text-ink-500">Loading receipt…</p>}
+      {q.isLoading && <p className="text-[#0F2A1A]/65">Loading receipt…</p>}
       {q.error && (
         <p className="text-red-600">
           This receipt is not available on your account.
@@ -92,7 +92,7 @@ export default function ReceiptPage() {
                   type="button"
                   onClick={() => void confirmNow()}
                   disabled={verifying}
-                  className="font-bold text-brand-navy underline disabled:opacity-50"
+                  className="font-bold text-[#0F2A1A] underline disabled:opacity-50"
                 >
                   {verifying
                     ? "Checking with the gateway…"
@@ -117,7 +117,7 @@ export default function ReceiptPage() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="rounded-full bg-deep px-5 py-2 text-sm font-bold text-white"
+              className="rounded-full bg-[#0F2A1A] px-5 py-2 text-sm font-bold text-white"
             >
               Print / Save PDF
             </button>

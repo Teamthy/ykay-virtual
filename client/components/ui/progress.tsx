@@ -18,8 +18,8 @@ export function Progress({ value, label, showValue = true, size = "md", classNam
     <div className={cn("w-full", className)}>
       {(label || showValue) && (
         <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
-          {label && <span className="font-semibold text-ink-600">{label}</span>}
-          {showValue && <span className="font-bold text-deep tabular-nums">{Math.round(clamped)}%</span>}
+          {label && <span className="font-semibold text-[#0F2A1A]/70">{label}</span>}
+          {showValue && <span className="font-bold text-[#0F2A1A] tabular-nums">{Math.round(clamped)}%</span>}
         </div>
       )}
       <div
@@ -28,11 +28,11 @@ export function Progress({ value, label, showValue = true, size = "md", classNam
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={label}
-        className={cn("w-full overflow-hidden rounded-full bg-ink-100", size === "sm" ? "h-1.5" : "h-2.5")}
+        className={cn("w-full overflow-hidden rounded-full bg-[#F9F6ED]", size === "sm" ? "h-1.5" : "h-2.5")}
       >
         <div
           className={cn(
-            "h-full rounded-full bg-primary transition-all duration-500",
+            "h-full rounded-full bg-[#D6FF57] transition-all duration-500",
             barClassName
           )}
           style={{ width: `${clamped}%` }}

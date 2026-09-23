@@ -79,11 +79,11 @@ function CheckRow({
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-2xl border border-ink-100 bg-white px-4 py-3.5 transition-colors hover:border-primary/50"
+      className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white px-4 py-3.5 transition-colors hover:border-[#D6FF57]/50"
     >
       <span
         className={`grid size-9 shrink-0 place-items-center rounded-full ${
-          done ? "bg-primary text-ink-900" : "bg-ink-50 text-ink-400"
+          done ? "bg-[#D6FF57] text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]/65"
         }`}
       >
         {done ? (
@@ -93,11 +93,11 @@ function CheckRow({
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-bold text-ink-900">{title}</span>
-        <span className="block text-xs text-ink-500">{hint}</span>
+        <span className="block text-sm font-bold text-[#0F2A1A]">{title}</span>
+        <span className="block text-xs text-[#0F2A1A]/65">{hint}</span>
       </span>
       <span
-        className={`text-xs font-bold ${done ? "text-primary-dark" : "text-ink-400"}`}
+        className={`text-xs font-bold ${done ? "text-[#0F2A1A]" : "text-[#0F2A1A]/65"}`}
       >
         {done ? "Done" : "To do"}
       </span>
@@ -216,14 +216,14 @@ export default function StudentDashboardPage() {
       />
 
       {me?.is_minor && (
-        <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary bg-primary-light px-5 py-4">
+        <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#D6FF57] bg-[#F9F6ED] px-5 py-4">
           <div className="flex items-start gap-3">
             <span className="text-xl" aria-hidden="true">
               🛡️
             </span>
             <div>
-              <p className="font-bold text-deep">Parent-guided account</p>
-              <p className="text-sm text-ink-600">
+              <p className="font-bold text-[#0F2A1A]">Parent-guided account</p>
+              <p className="text-sm text-[#0F2A1A]/70">
                 You&apos;re under 15, so a parent or guardian manages bookings
                 and payments for you. Your lessons, assignments and progress all
                 work right here.
@@ -232,7 +232,7 @@ export default function StudentDashboardPage() {
           </div>
           <Link
             href="/account"
-            className="text-sm font-bold text-primary-dark hover:underline"
+            className="text-sm font-bold text-[#0F2A1A] hover:underline"
           >
             View settings
           </Link>
@@ -241,11 +241,11 @@ export default function StudentDashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-6">
-          <section className="relative overflow-hidden rounded-3xl bg-deep p-6 text-white shadow-card md:p-8">
-            <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-primary/15" />
+          <section className="relative overflow-hidden rounded-3xl bg-[#0F2A1A] p-6 text-white shadow-card md:p-8">
+            <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#D6FF57]/15" />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-xl">
-                <div className="mb-4 grid size-11 place-items-center rounded-2xl bg-primary text-ink-900">
+                <div className="mb-4 grid size-11 place-items-center rounded-2xl bg-[#D6FF57] text-[#0F2A1A]">
                   <BookOpen size={20} />
                 </div>
                 <h2 className="font-display text-2xl tracking-wide md:text-3xl">
@@ -267,7 +267,7 @@ export default function StudentDashboardPage() {
                 </p>
               </div>
               <div className="rounded-2xl bg-white/10 px-4 py-3 text-center">
-                <Clock size={18} className="mx-auto text-primary" />
+                <Clock size={18} className="mx-auto text-[#0F2A1A]" />
                 <p className="mt-1 text-sm font-bold">
                   {next
                     ? new Date(next.start_at).toLocaleString([], {
@@ -300,14 +300,14 @@ export default function StudentDashboardPage() {
                   href={next.meeting_url || next.video_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-primary"
+                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-[#0F2A1A] hover:bg-[#D6FF57]"
                 >
                   Watch
                 </a>
               ) : (
                 <Link
                   href="/lms"
-                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-deep hover:bg-primary"
+                  className="inline-flex h-10 items-center rounded-full bg-white px-5 text-sm font-bold text-[#0F2A1A] hover:bg-[#D6FF57]"
                 >
                   Open LMS
                 </Link>
@@ -315,15 +315,15 @@ export default function StudentDashboardPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
+          <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft md:p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-ink-900">Before class begins</h3>
-                <p className="text-sm text-ink-500">
+                <h3 className="font-bold text-[#0F2A1A]">Before class begins</h3>
+                <p className="text-sm text-[#0F2A1A]/65">
                   Get yourself set up and ready
                 </p>
               </div>
-              <span className="text-sm font-bold text-ink-400">
+              <span className="text-sm font-bold text-[#0F2A1A]/65">
                 {checksDone}/4
               </span>
             </div>
@@ -358,8 +358,8 @@ export default function StudentDashboardPage() {
           {lessons.isLoading ? (
             <Skeleton className="h-28 w-full rounded-3xl" />
           ) : upcoming.length > 0 ? (
-            <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
-              <h3 className="font-bold text-ink-900">Upcoming classes</h3>
+            <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft">
+              <h3 className="font-bold text-[#0F2A1A]">Upcoming classes</h3>
               <ul className="mt-3 divide-y divide-ink-100">
                 {upcoming.slice(0, 4).map((l) => (
                   <li
@@ -367,10 +367,10 @@ export default function StudentDashboardPage() {
                     className="flex flex-wrap items-center justify-between gap-3 py-3"
                   >
                     <div>
-                      <p className="text-sm font-bold text-ink-800">
+                      <p className="text-sm font-bold text-[#0F2A1A]/85">
                         {l.title}
                       </p>
-                      <p className="text-xs text-ink-500">
+                      <p className="text-xs text-[#0F2A1A]/65">
                         {new Date(l.start_at).toLocaleString([], {
                           weekday: "short",
                           day: "numeric",
@@ -386,12 +386,12 @@ export default function StudentDashboardPage() {
                         href={l.meeting_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white"
+                        className="rounded-full bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white"
                       >
                         Join class
                       </a>
                     ) : (
-                      <span className="text-xs text-ink-400">{l.status}</span>
+                      <span className="text-xs text-[#0F2A1A]/65">{l.status}</span>
                     )}
                   </li>
                 ))}
@@ -400,15 +400,15 @@ export default function StudentDashboardPage() {
           ) : null}
 
           {/* ── My learning (Udemy-style) ─────────────────────────────── */}
-          <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
+          <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft md:p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-ink-900">My learning</h3>
-                <p className="text-sm text-ink-500">Keep your streak going</p>
+                <h3 className="font-bold text-[#0F2A1A]">My learning</h3>
+                <p className="text-sm text-[#0F2A1A]/65">Keep your streak going</p>
               </div>
               <Link
                 href="/lms"
-                className="text-sm font-bold text-primary-dark hover:underline"
+                className="text-sm font-bold text-[#0F2A1A] hover:underline"
               >
                 View all →
               </Link>
@@ -460,18 +460,18 @@ export default function StudentDashboardPage() {
           </section>
 
           {myCourses.length > 0 && (
-            <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
-              <h3 className="font-bold text-ink-900">My courses</h3>
+            <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft md:p-6">
+              <h3 className="font-bold text-[#0F2A1A]">My courses</h3>
               <div className="mt-3 space-y-4">
                 {myCourses.map((c) => (
                   <div
                     key={c.cohortId}
-                    className="rounded-2xl border border-ink-100 p-4 transition-colors hover:border-primary/50"
+                    className="rounded-2xl border border-black/10 p-4 transition-colors hover:border-[#D6FF57]/50"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <p className="font-bold text-ink-800">{c.title}</p>
-                        <p className="text-xs text-ink-500">
+                        <p className="font-bold text-[#0F2A1A]/85">{c.title}</p>
+                        <p className="text-xs text-[#0F2A1A]/65">
                           {c.watched}/{c.total} lessons completed
                         </p>
                       </div>
@@ -481,7 +481,7 @@ export default function StudentDashboardPage() {
                             ? `/lms/courses/${c.cohortId}`
                             : "/lms"
                         }
-                        className="rounded-full bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light"
+                        className="rounded-full bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white hover:bg-[#0F2A1A]"
                       >
                         {c.pct >= 100
                           ? "Review course"
@@ -502,10 +502,10 @@ export default function StudentDashboardPage() {
           )}
 
           {/* Achievements */}
-          <section className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft md:p-6">
+          <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft md:p-6">
             <div className="mb-3 flex items-center gap-2">
-              <Award size={16} className="text-primary" />
-              <h3 className="font-bold text-ink-900">Achievements</h3>
+              <Award size={16} className="text-[#0F2A1A]" />
+              <h3 className="font-bold text-[#0F2A1A]">Achievements</h3>
             </div>
             <div className="flex flex-wrap gap-2">
               {myAchievements.map((a) => (
@@ -513,8 +513,8 @@ export default function StudentDashboardPage() {
                   key={a.id}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${
                     a.earned
-                      ? "border-primary bg-primary-light text-primary-dark"
-                      : "border-ink-200 bg-ink-50 text-ink-400"
+                      ? "border-[#D6FF57] bg-[#F9F6ED] text-[#0F2A1A]"
+                      : "border-black/10 bg-[#F9F6ED] text-[#0F2A1A]/65"
                   }`}
                 >
                   <span aria-hidden="true">{a.icon}</span> {a.label}
@@ -569,69 +569,69 @@ export default function StudentDashboardPage() {
             link="Open inbox →"
             image="/home/card-exam.jpg"
           />
-          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft sm:col-span-3 xl:col-span-1">
-            <div className="mb-3 grid size-10 place-items-center rounded-full bg-peach text-deep">
+          <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft sm:col-span-3 xl:col-span-1">
+            <div className="mb-3 grid size-10 place-items-center rounded-full bg-[#F9F6ED] text-[#0F2A1A]">
               <UserRound size={18} />
             </div>
-            <h3 className="font-bold text-ink-900">New to the platform?</h3>
-            <p className="mt-1 text-sm text-ink-500">
+            <h3 className="font-bold text-[#0F2A1A]">New to the platform?</h3>
+            <p className="mt-1 text-sm text-[#0F2A1A]/65">
               Watch how YK-Virtual lessons, assignments and live classes work.
             </p>
             <Link
               href="/help"
-              className="mt-3 inline-block text-sm font-bold text-deep hover:underline"
+              className="mt-3 inline-block text-sm font-bold text-[#0F2A1A] hover:underline"
             >
               Watch guide →
             </Link>
           </div>
           {me && (
-            <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
-              <p className="text-xs font-bold uppercase tracking-wide text-ink-400">
+            <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
                 Your learner profile
               </p>
-              <p className="mt-2 font-bold text-ink-900">
+              <p className="mt-2 font-bold text-[#0F2A1A]">
                 {me.first_name} {me.last_name}
               </p>
-              <p className="text-sm text-ink-500">
+              <p className="text-sm text-[#0F2A1A]/65">
                 {me.current_level || "Level from onboarding"}
               </p>
               <Link
                 href="/account"
-                className="mt-3 inline-block text-sm font-bold text-primary-dark hover:underline"
+                className="mt-3 inline-block text-sm font-bold text-[#0F2A1A] hover:underline"
               >
                 Edit in settings →
               </Link>
             </div>
           )}
-          <div className="rounded-3xl border border-ink-100 bg-white p-5 shadow-soft">
-            <p className="text-xs font-bold uppercase tracking-wide text-ink-400">
+          <div className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
               Snapshot
             </p>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-ink-500">Attendance</dt>
-                <dd className="font-bold text-ink-900">
+                <dt className="text-[#0F2A1A]/65">Attendance</dt>
+                <dd className="font-bold text-[#0F2A1A]">
                   {enrolled && attendance.data
                     ? `${attendance.data.rate.toFixed(0)}%`
                     : "—"}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-ink-500">Assignments</dt>
-                <dd className="font-bold text-ink-900">
+                <dt className="text-[#0F2A1A]/65">Assignments</dt>
+                <dd className="font-bold text-[#0F2A1A]">
                   {submittedIds.size}/{assignments.data?.length ?? 0}
                 </dd>
               </div>
             </dl>
             <Link
               href="/lms"
-              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-deep py-2.5 text-sm font-bold text-white hover:bg-deep-light"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[#0F2A1A] py-2.5 text-sm font-bold text-white hover:bg-[#0F2A1A]"
             >
               Continue learning
             </Link>
             <Link
               href="/account"
-              className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-ink-200 py-2.5 text-sm font-bold text-ink-800"
+              className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-black/10 py-2.5 text-sm font-bold text-[#0F2A1A]/85"
             >
               Receipts &amp; settings
             </Link>

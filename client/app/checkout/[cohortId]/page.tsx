@@ -48,49 +48,49 @@ export default async function CheckoutPage(props: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
-      <nav aria-label="Breadcrumb" className="text-xs text-ink-500 mb-4">
-        <a href="/" className="hover:text-brand-blue">
+      <nav aria-label="Breadcrumb" className="text-xs text-[#0F2A1A]/65 mb-4">
+        <a href="/" className="hover:text-[#0F2A1A]">
           Home
         </a>
         <span className="mx-2">/</span>
-        <a href="/programmes" className="hover:text-brand-blue">
+        <a href="/programmes" className="hover:text-[#0F2A1A]">
           Programmes
         </a>
         <span className="mx-2">/</span>
-        <span className="text-ink-700 font-medium">{cohort.title}</span>
+        <span className="text-[#0F2A1A]/75 font-medium">{cohort.title}</span>
       </nav>
 
       <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 items-start">
         <div>
-          <h1 className="text-3xl font-extrabold text-brand-navy">
+          <h1 className="text-3xl font-extrabold text-[#0F2A1A]">
             Enrol in {cohort.title}
           </h1>
-          <p className="mt-3 text-ink-600 leading-relaxed">
+          <p className="mt-3 text-[#0F2A1A]/70 leading-relaxed">
             Your enrolment is confirmed instantly after payment. Lessons follow
             the published cohort schedule in {cohort.timezone}.
           </p>
-          <section className="mt-8 overflow-hidden rounded-2xl bg-deep p-6 text-white">
+          <section className="mt-8 overflow-hidden rounded-2xl bg-[#0F2A1A] p-6 text-white">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-bold">What you get</h2>
-              <span className="rounded-full bg-brand-gold px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
+              <span className="rounded-full bg-[#D6FF57] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]">
                 Escrow protected
               </span>
             </div>
             <ul className="mt-4 grid gap-3 text-sm text-white/85">
               <li className="flex items-center gap-3">
-                <GraduationCap size={16} className="text-brand-gold" /> Live
+                <GraduationCap size={16} className="text-[#0F2A1A]" /> Live
                 lessons with an approved, vetted tutor
               </li>
               <li className="flex items-center gap-3">
-                <BookOpen size={16} className="text-brand-gold" /> Recordings,
+                <BookOpen size={16} className="text-[#0F2A1A]" /> Recordings,
                 resources and homework after every lesson
               </li>
               <li className="flex items-center gap-3">
-                <LineChart size={16} className="text-brand-gold" /> Weekly
+                <LineChart size={16} className="text-[#0F2A1A]" /> Weekly
                 progress reports for parents
               </li>
               <li className="flex items-center gap-3">
-                <ShieldCheck size={16} className="text-brand-gold" /> Money-back
+                <ShieldCheck size={16} className="text-[#0F2A1A]" /> Money-back
                 guarantee while your payment is in escrow
               </li>
             </ul>

@@ -22,7 +22,7 @@ export async function fetchCurricula(): Promise<CurriculumOption[]> {
 }
 
 const SELECT_CLS =
-  "mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
+  "mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30";
 
 export function useCurricula() {
   return useQuery({
@@ -85,8 +85,8 @@ const lastValueRef = useRef<string>("");
   if (q.isLoading) {
     return (
       <div className="block">
-        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">{label}</span>
-        <div className={`${SELECT_CLS} animate-pulse bg-ink-100 text-transparent`}>…</div>
+        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">{label}</span>
+        <div className={`${SELECT_CLS} animate-pulse bg-[#F9F6ED] text-transparent`}>…</div>
       </div>
     );
   }
@@ -94,7 +94,7 @@ const lastValueRef = useRef<string>("");
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       <label className="block">
-        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">Curriculum</span>
+        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">Curriculum</span>
         <select
           value={selectedCurriculum}
           onChange={(e) => {
@@ -117,7 +117,7 @@ const lastValueRef = useRef<string>("");
         </select>
       </label>
       <label className="block">
-        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-ink-500">{label}</span>
+        <span className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">{label}</span>
         <select
           value={selectedLevel}
           required={required}

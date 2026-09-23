@@ -31,13 +31,13 @@ export function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-x-4 bottom-16 z-30 mx-auto max-w-lg rounded-2xl border border-ink-100 bg-white p-4 shadow-2xl lg:bottom-4 dark:border-ink-700 dark:bg-ink-800">
-      <p className="text-sm leading-6 text-ink-700 dark:text-ink-200">
+    <div className="fixed inset-x-4 bottom-16 z-30 mx-auto max-w-lg rounded-2xl border border-black/10 bg-white p-4 shadow-2xl lg:bottom-4  ">
+      <p className="text-sm leading-6 text-[#0F2A1A]/75 ">
         🍪 We use a session cookie to keep you signed in and a few preferences
         (theme, language).{" "}
         <Link
           href="/privacy"
-          className="font-semibold text-primary-dark hover:underline"
+          className="font-semibold text-[#0F2A1A] hover:underline"
         >
           Learn more
         </Link>
@@ -47,14 +47,14 @@ export function CookieConsent() {
           type="button"
           onClick={accept}
           data-testid="cookie-accept"
-          className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-ink-900 hover:bg-primary-hover"
+          className="flex-1 rounded-lg bg-[#D6FF57] px-4 py-2 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
         >
           Accept
         </button>
         <button
           type="button"
           onClick={accept}
-          className="rounded-lg border border-ink-200 px-4 py-2 text-sm font-semibold text-ink-600 hover:border-ink-300"
+          className="rounded-lg border border-black/10 px-4 py-2 text-sm font-semibold text-[#0F2A1A]/70 hover:border-black/10"
         >
           Dismiss
         </button>

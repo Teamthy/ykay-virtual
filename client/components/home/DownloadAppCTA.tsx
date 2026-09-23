@@ -18,7 +18,7 @@ export function DownloadAppCTA() {
                   <Smartphone size={14} className="text-[#0F2A1A]" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/60">Free · Install in seconds</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Free · Install in seconds</p>
                   <p className="text-[12px] font-extrabold uppercase leading-[1.1] text-[#0F2A1A]">BOOK YOUR 15-MINS FREE CONSULTATION</p>
                 </div>
               </div>
@@ -71,9 +71,9 @@ export function DownloadAppCTA() {
                     <img src="/home/ykay-students.png" alt="Students" className="h-full w-full object-cover" />
                   </div>
                   <div className="mt-3">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/50">YK-Virtual</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">YK-Virtual</p>
                     <p className="font-display text-[16px] leading-tight text-[#0F2A1A]">Full app. Same login.</p>
-                    <p className="mt-1 text-[11px] leading-[1.4] text-[#0F2A1A]/60">Add to Home Screen and open straight into My Learning, CBT and messages.</p>
+                    <p className="mt-1 text-[11px] leading-[1.4] text-[#0F2A1A]/65">Add to Home Screen and open straight into My Learning, CBT and messages.</p>
                   </div>
                 </div>
               </div>

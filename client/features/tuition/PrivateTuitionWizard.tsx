@@ -11,16 +11,16 @@ import { listSubjects } from "@/features/subjects/api/list";
 import { createPrivateTuitionRequest } from "@/features/tuition/api";
 
 const FLOAT_INPUT =
-  "peer p-3 block w-full bg-white border border-ink-200 rounded-lg text-sm text-ink-900 " +
-  "placeholder:text-transparent focus:border-brand-gold focus:ring-brand-gold " +
+  "peer p-3 block w-full bg-white border border-black/10 rounded-lg text-sm text-[#0F2A1A] " +
+  "placeholder:text-transparent focus:border-[#D6FF57] focus:ring-[#D6FF57] " +
   "focus:pt-6 focus:pb-2 not-placeholder-shown:pt-6 not-placeholder-shown:pb-2 " +
   "focus:outline-none transition-colors";
 const FLOAT_LABEL =
   "absolute top-0 inset-x-0 p-3 h-full text-sm truncate pointer-events-none transition ease-in-out duration-100 " +
-  "border border-transparent origin-top-left text-ink-800 " +
-  "peer-focus:scale-90 peer-focus:translate-x-0.5 peer-focus:-translate-y-1.5 peer-focus:text-ink-500 " +
+  "border border-transparent origin-top-left text-[#0F2A1A]/85 " +
+  "peer-focus:scale-90 peer-focus:translate-x-0.5 peer-focus:-translate-y-1.5 peer-focus:text-[#0F2A1A]/65 " +
   "peer-not-placeholder-shown:scale-90 peer-not-placeholder-shown:translate-x-0.5 " +
-  "peer-not-placeholder-shown:-translate-y-1.5 peer-not-placeholder-shown:text-ink-500";
+  "peer-not-placeholder-shown:-translate-y-1.5 peer-not-placeholder-shown:text-[#0F2A1A]/65";
 
 // 7-step private tuition request (per the YK-Virtual working document §8.7).
 // Submits a structured request via the support pipeline; our advisors match
@@ -200,7 +200,7 @@ export function PrivateTuitionWizard() {
       <div className="border rounded-2xl p-10 text-center space-y-4">
         <div className="text-5xl">🎉</div>
         <h2 className="text-2xl font-extrabold">Request received!</h2>
-        <p className="text-ink-600 text-sm max-w-md mx-auto">
+        <p className="text-[#0F2A1A]/70 text-sm max-w-md mx-auto">
           Our team will match {form.learnerName} with a vetted {form.subject}{" "}
           tutor and reach out to <strong>{user?.email ?? form.email}</strong>{" "}
           within 24 hours with a proposed schedule and quote.
@@ -227,7 +227,7 @@ export function PrivateTuitionWizard() {
       <div className="min-h-[260px]">
         {step === 0 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Who is this for?
             </h2>
             <div className="relative">
@@ -251,7 +251,7 @@ export function PrivateTuitionWizard() {
                     key={l}
                     type="button"
                     onClick={() => set("level", l)}
-                    className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.level === l ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}
+                    className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.level === l ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
                   >
                     {l}
                   </button>
@@ -263,7 +263,7 @@ export function PrivateTuitionWizard() {
 
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Which subject?
             </h2>
             <div className="grid sm:grid-cols-2 gap-2">
@@ -272,7 +272,7 @@ export function PrivateTuitionWizard() {
                   key={s}
                   type="button"
                   onClick={() => set("subject", s)}
-                  className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.subject === s ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}
+                  className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${form.subject === s ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
                 >
                   {s}
                 </button>
@@ -283,7 +283,7 @@ export function PrivateTuitionWizard() {
 
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Goals & challenges
             </h2>
             <label className="block text-sm">
@@ -295,7 +295,7 @@ export function PrivateTuitionWizard() {
                 value={form.goals}
                 onChange={(e) => set("goals", e.target.value)}
                 placeholder="e.g. Improve from C to A in IGCSE Mathematics before the November exams…"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
           </div>
@@ -303,7 +303,7 @@ export function PrivateTuitionWizard() {
 
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Preferred schedule
             </h2>
             <div className="grid sm:grid-cols-2 gap-3">
@@ -315,7 +315,7 @@ export function PrivateTuitionWizard() {
                       key={d}
                       type="button"
                       onClick={() => set("days", d)}
-                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.days === d ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}
+                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.days === d ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
                     >
                       {d}
                     </button>
@@ -330,7 +330,7 @@ export function PrivateTuitionWizard() {
                       key={t}
                       type="button"
                       onClick={() => set("time", t)}
-                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.time === t ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}
+                      className={`block w-full rounded-xl border px-4 py-2.5 text-sm text-left ${form.time === t ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
                     >
                       {t}
                     </button>
@@ -343,7 +343,7 @@ export function PrivateTuitionWizard() {
               <input
                 value={form.timezone}
                 onChange={(e) => set("timezone", e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
           </div>
@@ -351,7 +351,7 @@ export function PrivateTuitionWizard() {
 
         {step === 4 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Tutor preference (optional)
             </h2>
             {[
@@ -364,7 +364,7 @@ export function PrivateTuitionWizard() {
                 key={t}
                 type="button"
                 onClick={() => set("tutorPreference", t)}
-                className={`block w-full rounded-xl border px-4 py-3 text-sm text-left ${form.tutorPreference === t ? "border-brand-gold bg-brand-gold-light font-semibold" : "hover:border-ink-400"}`}
+                className={`block w-full rounded-xl border px-4 py-3 text-sm text-left ${form.tutorPreference === t ? "border-[#D6FF57] bg-[#F9F6ED] font-semibold" : "hover:border-black/10"}`}
               >
                 {t}
               </button>
@@ -375,16 +375,16 @@ export function PrivateTuitionWizard() {
 
         {step === 5 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Where should we reach you?
             </h2>
             {!user && (
-              <label className="block text-sm font-medium text-ink-800">
+              <label className="block text-sm font-medium text-[#0F2A1A]/85">
                 Email
                 <input
                   type="email"
                   id="wiz-email"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm placeholder:text-ink-400 focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                  className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm placeholder:text-[#0F2A1A]/65 focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
                   placeholder="parent@example.com"
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
@@ -392,7 +392,7 @@ export function PrivateTuitionWizard() {
               </label>
             )}
             {user && (
-              <p className="text-sm text-ink-500">
+              <p className="text-sm text-[#0F2A1A]/65">
                 We&apos;ll use your account email: <strong>{user.email}</strong>
               </p>
             )}
@@ -402,7 +402,7 @@ export function PrivateTuitionWizard() {
                 value={form.phone}
                 onChange={(e) => set("phone", e.target.value)}
                 placeholder="+234…"
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
           </div>
@@ -410,10 +410,10 @@ export function PrivateTuitionWizard() {
 
         {step === 6 && (
           <div className="space-y-4">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Review your request
             </h2>
-            <dl className="rounded-xl bg-ink-50 p-5 text-sm space-y-2">
+            <dl className="rounded-xl bg-[#F9F6ED] p-5 text-sm space-y-2">
               <SummaryRow k="Learner" v={form.learnerName} />
               <SummaryRow k="Level" v={form.level} />
               <SummaryRow k="Subject" v={form.subject} />
@@ -425,7 +425,7 @@ export function PrivateTuitionWizard() {
               <SummaryRow k="Tutor" v={form.tutorPreference} />
               <SummaryRow k="Contact" v={user?.email ?? form.email} />
             </dl>
-            <p className="text-xs text-ink-400">
+            <p className="text-xs text-[#0F2A1A]/65">
               Submitting creates a request ticket - our advisors match you with
               a vetted tutor and agree the price before any payment
               (escrow-protected).
@@ -467,8 +467,8 @@ export function PrivateTuitionWizard() {
 function SummaryRow({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex gap-3">
-      <dt className="w-24 shrink-0 text-ink-400 font-medium">{k}</dt>
-      <dd className="text-ink-800">{v}</dd>
+      <dt className="w-24 shrink-0 text-[#0F2A1A]/65 font-medium">{k}</dt>
+      <dd className="text-[#0F2A1A]/85">{v}</dd>
     </div>
   );
 }
@@ -479,7 +479,7 @@ function LinkToTutors() {
   return (
     <a
       href="/tutors"
-      className="text-sm text-brand-blue font-semibold hover:underline"
+      className="text-sm text-[#0F2A1A] font-semibold hover:underline"
     >
       Browse tutors on the marketplace →
     </a>

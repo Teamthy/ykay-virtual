@@ -49,10 +49,10 @@ export default function AdmissionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-deep flex items-center gap-2">
-            <GraduationCap className="text-primary" /> Admissions
+          <h1 className="text-2xl font-extrabold text-[#0F2A1A] flex items-center gap-2">
+            <GraduationCap className="text-[#0F2A1A]" /> Admissions
           </h1>
-          <p className="text-ink-500 text-sm mt-1">
+          <p className="text-[#0F2A1A]/65 text-sm mt-1">
             Apply to enrol a learner in a YK-Virtual school or programme.
           </p>
         </div>
@@ -128,15 +128,15 @@ function ApplyForm({ onDone }: { onDone: () => void }) {
     setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6 space-y-4 shadow-soft">
-      <h2 className="font-bold text-deep">New application</h2>
+    <div className="rounded-2xl border border-black/10 bg-white p-6 space-y-4 shadow-soft">
+      <h2 className="font-bold text-[#0F2A1A]">New application</h2>
       <div className="grid md:grid-cols-2 gap-4">
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Learner *</span>
+          <span className="font-medium text-[#0F2A1A]/75">Learner *</span>
           <select
             value={form.student_profile_id}
             onChange={(e) => set("student_profile_id", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
           >
             <option value="">Select a learner…</option>
             {(learners.data ?? []).map((l) => (
@@ -147,39 +147,39 @@ function ApplyForm({ onDone }: { onDone: () => void }) {
           </select>
         </label>
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Applicant name</span>
+          <span className="font-medium text-[#0F2A1A]/75">Applicant name</span>
           <input
             value={form.applicant_name}
             onChange={(e) => set("applicant_name", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
             placeholder="Learner's full name"
           />
         </label>
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Current level</span>
+          <span className="font-medium text-[#0F2A1A]/75">Current level</span>
           <input
             value={form.current_level}
             onChange={(e) => set("current_level", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
             placeholder="e.g. Year 9"
           />
         </label>
         <label className="block text-sm">
-          <span className="font-medium text-ink-700">Preferred term</span>
+          <span className="font-medium text-[#0F2A1A]/75">Preferred term</span>
           <input
             value={form.preferred_term}
             onChange={(e) => set("preferred_term", e.target.value)}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
             placeholder="e.g. Autumn 2026"
           />
         </label>
         <label className="block text-sm md:col-span-2">
-          <span className="font-medium text-ink-700">Notes</span>
+          <span className="font-medium text-[#0F2A1A]/75">Notes</span>
           <textarea
             value={form.notes}
             onChange={(e) => set("notes", e.target.value)}
             rows={3}
-            className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+            className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm"
             placeholder="Anything the admissions team should know"
           />
         </label>
@@ -222,13 +222,13 @@ function ApplicationCard({ app }: { app: Application }) {
   });
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
+    <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-bold text-deep">
+          <h3 className="font-bold text-[#0F2A1A]">
             {app.applicant_name || "Application"}
           </h3>
-          <p className="text-xs text-ink-500 mt-0.5">
+          <p className="text-xs text-[#0F2A1A]/65 mt-0.5">
             {app.current_level || "—"} ·{" "}
             {app.preferred_term || "Preferred term not set"}
           </p>
@@ -239,28 +239,28 @@ function ApplicationCard({ app }: { app: Application }) {
         />
       </div>
       {app.notes && (
-        <p className="mt-3 text-sm text-ink-600 line-clamp-2">{app.notes}</p>
+        <p className="mt-3 text-sm text-[#0F2A1A]/70 line-clamp-2">{app.notes}</p>
       )}
 
       {app.status === "OFFERED" && app.offer_fee ? (
         <div className="mt-3 rounded-xl bg-green-50 border border-green-200 p-3">
-          <p className="text-sm font-bold text-deep">
+          <p className="text-sm font-bold text-[#0F2A1A]">
             Offer fee: {app.offer_fee.toLocaleString()}{" "}
             {app.offer_currency || "NGN"}
           </p>
           {app.offer_message && (
-            <p className="mt-1 text-xs text-ink-600">{app.offer_message}</p>
+            <p className="mt-1 text-xs text-[#0F2A1A]/70">{app.offer_message}</p>
           )}
         </div>
       ) : null}
 
       <div className="mt-3 flex items-center justify-between">
-        <p className="text-[11px] text-ink-400">
+        <p className="text-[11px] text-[#0F2A1A]/65">
           Submitted {new Date(app.created_at).toLocaleDateString()}
         </p>
         <button
           onClick={() => setShowDocs((v) => !v)}
-          className="flex items-center gap-1 text-xs font-semibold text-brand-blue hover:underline"
+          className="flex items-center gap-1 text-xs font-semibold text-[#0F2A1A] hover:underline"
         >
           <FileText size={13} /> Documents ({docs.data?.length ?? 0})
         </button>
@@ -278,7 +278,7 @@ function ApplicationCard({ app }: { app: Application }) {
       )}
 
       {app.status === "OFFERED" && (
-        <div className="mt-4 border-t border-ink-100 pt-3">
+        <div className="mt-4 border-t border-black/10 pt-3">
           <Button
             variant="gold"
             onClick={() => accept.mutate()}
@@ -328,7 +328,7 @@ function DocumentsPanel({
   });
 
   return (
-    <div className="mt-3 rounded-xl border border-ink-100 bg-ink-50/50 p-3">
+    <div className="mt-3 rounded-xl border border-black/10 bg-[#F9F6ED]/50 p-3">
       <div className="space-y-2">
         {(docs.data ?? []).map((d) => (
           <div
@@ -339,20 +339,20 @@ function DocumentsPanel({
               href={d.url}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 text-brand-blue hover:underline"
+              className="flex items-center gap-1.5 text-[#0F2A1A] hover:underline"
             >
               <FileText size={14} /> {d.name}
             </a>
             <button
               onClick={() => remove.mutate(d.id)}
-              className="text-ink-400 hover:text-red-600"
+              className="text-[#0F2A1A]/65 hover:text-red-600"
             >
               <Trash2 size={14} />
             </button>
           </div>
         ))}
         {docs.data && docs.data.length === 0 && (
-          <p className="text-xs text-ink-500">No documents attached yet.</p>
+          <p className="text-xs text-[#0F2A1A]/65">No documents attached yet.</p>
         )}
       </div>
       <div className="mt-2 flex gap-2">
@@ -360,13 +360,13 @@ function DocumentsPanel({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Name (e.g. Birth certificate)"
-          className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs"
+          className="flex-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs"
         />
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://…"
-          className="flex-1 rounded-lg border border-ink-200 px-3 py-1.5 text-xs"
+          className="flex-1 rounded-lg border border-black/10 px-3 py-1.5 text-xs"
         />
         <Button
           size="sm"

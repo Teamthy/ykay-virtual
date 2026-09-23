@@ -110,30 +110,30 @@ export default function AdminChatPage() {
   ];
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl bg-[#FFF7E4] px-4 py-6 lg:px-6">
+    <main className="mx-auto min-h-screen max-w-6xl bg-[#F9F6ED] px-4 py-6 lg:px-6">
       <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-400">
-          <Link href="/admin" className="hover:text-primary-dark">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0F2A1A]/65">
+          <Link href="/admin" className="hover:text-[#0F2A1A]">
             Admin
           </Link>{" "}
           / Chat inbox
         </p>
-        <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-deep">
+        <h1 className="mt-1 font-display text-2xl font-bold tracking-[0.02em] text-[#0F2A1A]">
           Agent inbox{" "}
-          <span className="align-middle text-sm font-semibold text-ink-400">
+          <span className="align-middle text-sm font-semibold text-[#0F2A1A]/65">
             · {escalatedCount} waiting
           </span>
         </h1>
-        <p className="mt-1 text-sm text-ink-500">
+        <p className="mt-1 text-sm text-[#0F2A1A]/65">
           CSAT:{" "}
-          <span className="font-bold text-deep">
+          <span className="font-bold text-[#0F2A1A]">
             {analytics.data ? `${Math.round(analytics.data.csat)}%` : "-"}
           </span>{" "}
           satisfied ({analytics.data?.csat_responded ?? 0}/
           {analytics.data?.csat_total ?? 0} rated) ·{" "}
           <a
             href="/api/v1/admin/chat/csat.csv"
-            className="font-semibold text-primary-dark hover:underline"
+            className="font-semibold text-[#0F2A1A] hover:underline"
           >
             export CSV ↓
           </a>
@@ -141,12 +141,12 @@ export default function AdminChatPage() {
       </header>
 
       {/* Trends (last 14 days) */}
-      <div className="mt-5 rounded-2xl border border-ink-100 bg-white p-5 shadow-sm">
+      <div className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-deep">
+          <h2 className="font-display text-lg font-bold text-[#0F2A1A]">
             CSAT & volume - last 14 days
           </h2>
-          <span className="text-xs text-ink-400">
+          <span className="text-xs text-[#0F2A1A]/65">
             CSAT = % of that day&apos;s ratings ≥ 4★
           </span>
         </div>
@@ -158,10 +158,10 @@ export default function AdminChatPage() {
         {stats.map((s) => (
           <div
             key={s.label}
-            className="rounded-2xl border border-ink-100 bg-white p-4 shadow-sm"
+            className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm"
           >
-            <p className="text-xl font-extrabold text-deep">{s.value}</p>
-            <p className="mt-0.5 text-xs font-semibold text-ink-500">
+            <p className="text-xl font-extrabold text-[#0F2A1A]">{s.value}</p>
+            <p className="mt-0.5 text-xs font-semibold text-[#0F2A1A]/65">
               {s.label}
             </p>
           </div>
@@ -170,7 +170,7 @@ export default function AdminChatPage() {
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[300px_1fr]">
         {/* Thread list */}
-        <aside className="h-fit rounded-2xl border border-ink-100 bg-white p-3 shadow-sm">
+        <aside className="h-fit rounded-2xl border border-black/10 bg-white p-3 shadow-sm">
           {threads.isLoading ? (
             <div className="space-y-2 p-1">
               {[0, 1, 2].map((i) => (
@@ -178,7 +178,7 @@ export default function AdminChatPage() {
               ))}
             </div>
           ) : (threads.data ?? []).length === 0 ? (
-            <p className="p-4 text-center text-sm text-ink-400">
+            <p className="p-4 text-center text-sm text-[#0F2A1A]/65">
               No chat threads yet.
             </p>
           ) : (
@@ -191,8 +191,8 @@ export default function AdminChatPage() {
                   className={cn(
                     "block w-full rounded-xl px-3 py-2.5 text-left text-sm",
                     activeId === t.id
-                      ? "bg-primary-light font-semibold text-deep"
-                      : "text-ink-700 hover:bg-ink-50",
+                      ? "bg-[#F9F6ED] font-semibold text-[#0F2A1A]"
+                      : "text-[#0F2A1A]/75 hover:bg-[#F9F6ED]",
                   )}
                 >
                   <span className="flex items-center justify-between gap-2">
@@ -203,14 +203,14 @@ export default function AdminChatPage() {
                         t.status === "ESCALATED"
                           ? "bg-red-100 text-red-600"
                           : t.status === "CLOSED"
-                            ? "bg-ink-100 text-ink-500"
+                            ? "bg-[#F9F6ED] text-[#0F2A1A]/65"
                             : "bg-green-100 text-green-700",
                       )}
                     >
                       {t.status}
                     </span>
                   </span>
-                  <span className="mt-0.5 block text-[11px] text-ink-400">
+                  <span className="mt-0.5 block text-[11px] text-[#0F2A1A]/65">
                     {t.user_id.slice(0, 8)}… ·{" "}
                     {new Date(t.updated_at).toLocaleString()}
                     {t.rating
@@ -224,13 +224,13 @@ export default function AdminChatPage() {
         </aside>
 
         {/* Transcript + reply */}
-        <section className="flex min-h-[60vh] flex-col rounded-2xl border border-ink-100 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-ink-100 px-5 py-3">
+        <section className="flex min-h-[60vh] flex-col rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-black/10 px-5 py-3">
             <div>
-              <p className="text-sm font-bold text-deep">
+              <p className="text-sm font-bold text-[#0F2A1A]">
                 {activeThread?.title ?? "Select a thread"}
               </p>
-              <p className="text-xs text-ink-400">
+              <p className="text-xs text-[#0F2A1A]/65">
                 Thread {activeId ? activeId.slice(0, 8) : ""}…
               </p>
             </div>
@@ -239,7 +239,7 @@ export default function AdminChatPage() {
                 type="button"
                 disabled={close.isPending}
                 onClick={() => close.mutate()}
-                className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-bold text-ink-600 hover:border-ink-300 disabled:opacity-40"
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-bold text-[#0F2A1A]/70 hover:border-black/10 disabled:opacity-40"
               >
                 Close conversation
               </button>
@@ -248,7 +248,7 @@ export default function AdminChatPage() {
 
           <div className="flex-1 space-y-4 overflow-y-auto p-5">
             {!activeId ? (
-              <p className="grid flex-1 place-items-center text-center text-sm text-ink-400">
+              <p className="grid flex-1 place-items-center text-center text-sm text-[#0F2A1A]/65">
                 Select a thread from the inbox.
               </p>
             ) : messages.isLoading ? (
@@ -271,10 +271,10 @@ export default function AdminChatPage() {
                       className={cn(
                         "mb-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold",
                         m.role === "user"
-                          ? "bg-ink-100 text-ink-500"
+                          ? "bg-[#F9F6ED] text-[#0F2A1A]/65"
                           : m.role === "agent"
-                            ? "bg-primary text-ink-900"
-                            : "bg-primary-light text-deep",
+                            ? "bg-[#D6FF57] text-[#0F2A1A]"
+                            : "bg-[#F9F6ED] text-[#0F2A1A]",
                       )}
                     >
                       {m.role === "user"
@@ -287,10 +287,10 @@ export default function AdminChatPage() {
                       className={cn(
                         "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                         m.role === "user"
-                          ? "rounded-br-md bg-deep text-white"
+                          ? "rounded-br-md bg-[#0F2A1A] text-white"
                           : m.role === "agent"
-                            ? "rounded-bl-md border-2 border-primary bg-white text-ink-800"
-                            : "rounded-bl-md bg-[#F8EBCF] text-ink-800",
+                            ? "rounded-bl-md border-2 border-[#D6FF57] bg-white text-[#0F2A1A]/85"
+                            : "rounded-bl-md bg-[#F9F6ED] text-[#0F2A1A]/85",
                       )}
                     >
                       {m.content}
@@ -302,7 +302,7 @@ export default function AdminChatPage() {
           </div>
 
           {activeThread && activeThread.status !== "CLOSED" && (
-            <div className="border-t border-ink-100 p-4">
+            <div className="border-t border-black/10 p-4">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -312,13 +312,13 @@ export default function AdminChatPage() {
                     e.key === "Enter" && replyText.trim() && void reply.mutate()
                   }
                   placeholder="Reply as a human agent…"
-                  className="h-11 flex-1 rounded-lg border border-ink-200 px-4 text-sm focus:border-primary focus:outline-none"
+                  className="h-11 flex-1 rounded-lg border border-black/10 px-4 text-sm focus:border-[#D6FF57] focus:outline-none"
                 />
                 <button
                   type="button"
                   disabled={!replyText.trim() || reply.isPending}
                   onClick={() => reply.mutate()}
-                  className="shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-ink-900 hover:bg-primary-hover disabled:opacity-40"
+                  className="shrink-0 rounded-lg bg-[#D6FF57] px-5 py-2.5 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-40"
                 >
                   {reply.isPending ? "Sending…" : "Send"}
                 </button>
@@ -343,11 +343,11 @@ function TrendChart({ data }: { data: ChatTrendPoint[] }) {
             className="flex flex-1 flex-col items-center justify-end gap-1"
             style={{ width: `${barW}%` }}
           >
-            <span className="text-[10px] font-bold text-deep">
+            <span className="text-[10px] font-bold text-[#0F2A1A]">
               {d.rated > 0 ? `${Math.round(d.csat)}%` : "-"}
             </span>
             <div
-              className="w-full rounded-t bg-primary transition-all"
+              className="w-full rounded-t bg-[#D6FF57] transition-all"
               style={{
                 height: `${Math.max(3, (d.threads / maxThreads) * 100)}px`,
               }}
@@ -356,7 +356,7 @@ function TrendChart({ data }: { data: ChatTrendPoint[] }) {
           </div>
         ))}
       </div>
-      <div className="mt-1 flex gap-1 text-[9px] text-ink-400">
+      <div className="mt-1 flex gap-1 text-[9px] text-[#0F2A1A]/65">
         {data.map((d) => (
           <span key={d.date} className="flex-1 truncate text-center">
             {d.date.slice(5)}

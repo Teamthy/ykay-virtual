@@ -32,7 +32,7 @@ export async function brandCard({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          backgroundColor: "#013920",
+          backgroundColor: "#0F2A1A",
           padding: "72px 80px",
         }}
       >

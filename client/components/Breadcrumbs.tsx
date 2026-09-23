@@ -17,16 +17,16 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav aria-label="Breadcrumb" className="text-xs text-ink-500 mb-6">
+      <nav aria-label="Breadcrumb" className="text-xs text-[#0F2A1A]/65 mb-6">
         <ol className="flex flex-wrap items-center gap-1.5">
           {items.map((it, i) => {
             const last = i === items.length - 1;
             return (
               <li key={i} className="flex items-center gap-1.5">
-                {i > 0 && <span className="text-ink-300">/</span>}
+                {i > 0 && <span className="text-[#0F2A1A]/65">/</span>}
                 {last || !it.href ? (
                   <span
-                    className={last ? "text-ink-700 font-semibold" : ""}
+                    className={last ? "text-[#0F2A1A]/75 font-semibold" : ""}
                     aria-current={last ? "page" : undefined}
                   >
                     {it.name}
@@ -34,7 +34,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
                 ) : (
                   <a
                     href={it.href}
-                    className="hover:text-brand-blue transition-colors"
+                    className="hover:text-[#0F2A1A] transition-colors"
                   >
                     {it.name}
                   </a>

@@ -19,14 +19,14 @@ export function StepsToTutor({
 }) {
   return (
     <section className={cn("py-16 bg-white", className)}>
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         {title && (
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-brand-navy text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0F2A1A] text-center">
             <AnimatedText text={title} delay={0.0} />
           </h2>
         )}
         {!title && (
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold-dark text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0F2A1A] text-center">
             {eyebrow}
           </p>
         )}
@@ -34,13 +34,13 @@ export function StepsToTutor({
           {steps.map((s) => (
             <div
               key={s.n}
-              className="relative rounded-2xl border border-ink-100 bg-surface-muted p-7"
+              className="relative rounded-2xl border border-black/10 bg-[#F9F6ED] p-7"
             >
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-gold text-sm text-deep-green font-extrabold">
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-[#D6FF57] text-sm text-[#0F2A1A] font-extrabold">
                 {s.n}
               </div>
-              <h3 className="mt-4 font-bold text-brand-navy">{s.title}</h3>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">
+              <h3 className="mt-4 font-bold text-[#0F2A1A]">{s.title}</h3>
+              <p className="mt-2 text-sm text-[#0F2A1A]/70 leading-relaxed">
                 {s.desc}
               </p>
             </div>

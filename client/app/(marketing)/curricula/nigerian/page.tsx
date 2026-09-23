@@ -135,9 +135,9 @@ export default function NigerianCurriculumPage() {
               <div
                 key={s.title}
                 data-card
-                className="flex min-h-[260px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card"
+                className="flex min-h-[260px] w-[320px] shrink-0 snap-start flex-col rounded-2xl bg-cover bg-center p-6 text-white shadow-card bg-[#0F2A1A]"
                 style={{
-                  backgroundImage: `linear-gradient(165deg, rgba(6,15,38,0.8), rgba(1,57,32,0.6)), url(${s.photo})`,
+                  backgroundImage: `linear-gradient(165deg, rgba(15,42,26,0.8), rgba(15,42,26,0.6)), url(${s.photo})`,
                 }}
               >
                 <h2 className="text-xl font-extrabold">{s.title}</h2>
@@ -154,7 +154,7 @@ export default function NigerianCurriculumPage() {
                 </div>
                 <Link
                   href="/tutors"
-                  className="mt-auto inline-block pt-5 text-sm font-semibold text-brand-gold"
+                  className="mt-auto inline-block pt-5 text-sm font-semibold text-[#D6FF57]"
                 >
                   Find a tutor →
                 </Link>
@@ -164,13 +164,13 @@ export default function NigerianCurriculumPage() {
         </section>
 
         {/* Exam focus */}
-        <section className="mt-14 grid gap-8 rounded-3xl border border-ink-100 bg-ink-50 p-8 md:grid-cols-3 md:p-12">
+        <section className="mt-14 grid gap-8 rounded-3xl border border-black/10 bg-[#F9F6ED] p-8 md:grid-cols-3 md:p-12">
           {EXAMS.map((e) => (
             <div key={e.title} className="text-center">
-              <div className="text-2xl font-extrabold text-brand-blue">
+              <div className="text-2xl font-extrabold text-[#0F2A1A]">
                 {e.title}
               </div>
-              <p className="mt-2 text-sm text-ink-600">{e.desc}</p>
+              <p className="mt-2 text-sm text-[#0F2A1A]/70">{e.desc}</p>
             </div>
           ))}
         </section>
@@ -187,7 +187,7 @@ export default function NigerianCurriculumPage() {
                 <summary className="cursor-pointer font-semibold">
                   {f.question}
                 </summary>
-                <p className="mt-2 text-sm text-ink-600">{f.answer}</p>
+                <p className="mt-2 text-sm text-[#0F2A1A]/70">{f.answer}</p>
               </details>
             ))}
           </div>

@@ -116,14 +116,14 @@ export default function AdminUsersPage() {
     return (
       <div className="space-y-6">
         <PageHeader eyebrow="Staff" title="Users" cover="/hero/about.jpg" />
-        <div className="rounded-2xl border border-ink-100 bg-white p-8 text-center">
-          <div className="mx-auto grid size-14 place-items-center rounded-full bg-ink-100 text-deep">
+        <div className="rounded-2xl border border-black/10 bg-white p-8 text-center">
+          <div className="mx-auto grid size-14 place-items-center rounded-full bg-[#F9F6ED] text-[#0F2A1A]">
             <Lock size={26} />
           </div>
-          <h2 className="mt-4 text-lg font-extrabold text-deep">
+          <h2 className="mt-4 text-lg font-extrabold text-[#0F2A1A]">
             Admin access required
           </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-ink-500">
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#0F2A1A]/65">
             You need a platform admin account to view the user list.
           </p>
         </div>
@@ -156,8 +156,8 @@ export default function AdminUsersPage() {
             }}
             className={`rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
               tab === t.id
-                ? "bg-deep text-white"
-                : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+                ? "bg-[#0F2A1A] text-white"
+                : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
             }`}
           >
             {t.label}
@@ -166,9 +166,9 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-ink-100 bg-white p-4">
-        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink-200 px-3 focus-within:border-primary">
-          <Search size={16} className="shrink-0 text-ink-400" />
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-black/10 bg-white p-4">
+        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-black/10 px-3 focus-within:border-[#D6FF57]">
+          <Search size={16} className="shrink-0 text-[#0F2A1A]/65" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -180,7 +180,7 @@ export default function AdminUsersPage() {
           {search && (
             <button
               onClick={applySearch}
-              className="text-xs font-bold text-deep hover:underline"
+              className="text-xs font-bold text-[#0F2A1A] hover:underline"
             >
               Go
             </button>
@@ -192,7 +192,7 @@ export default function AdminUsersPage() {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="h-10 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-700 outline-none focus:border-primary"
+          className="h-10 rounded-xl border border-black/10 px-3 text-sm font-semibold text-[#0F2A1A]/75 outline-none focus:border-[#D6FF57]"
           aria-label="Filter by status"
         >
           <option value="">All statuses</option>
@@ -207,7 +207,7 @@ export default function AdminUsersPage() {
             setStatusFilter("");
             setPage(1);
           }}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-ink-200 px-3 text-sm font-semibold text-ink-600 hover:border-ink-300"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-black/10 px-3 text-sm font-semibold text-[#0F2A1A]/70 hover:border-black/10"
         >
           <RefreshCw size={14} /> Reset
         </button>
@@ -221,10 +221,10 @@ export default function AdminUsersPage() {
           ))}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-ink-100 bg-white">
+        <div className="overflow-hidden rounded-2xl border border-black/10 bg-white">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-ink-100 bg-ink-50/60 text-[11px] uppercase tracking-[0.12em] text-ink-500">
+              <thead className="border-b border-black/10 bg-[#F9F6ED]/60 text-[11px] uppercase tracking-[0.12em] text-[#0F2A1A]/65">
                 <tr>
                   <th className="px-4 py-3 font-bold">User</th>
                   <th className="px-4 py-3 font-bold">Status</th>
@@ -259,7 +259,7 @@ export default function AdminUsersPage() {
             </table>
           </div>
           {(usersQ.data?.users ?? []).length === 0 && (
-            <p className="p-10 text-center text-sm text-ink-400">
+            <p className="p-10 text-center text-sm text-[#0F2A1A]/65">
               No users match your filters.
             </p>
           )}
@@ -267,7 +267,7 @@ export default function AdminUsersPage() {
       )}
 
       {/* Pagination */}
-      <div className="flex items-center justify-between text-sm text-ink-500">
+      <div className="flex items-center justify-between text-sm text-[#0F2A1A]/65">
         <span>
           {usersQ.data?.total ?? 0} user(s) · page {page} of {totalPages}
         </span>
@@ -275,14 +275,14 @@ export default function AdminUsersPage() {
           <button
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
-            className="rounded-xl border border-ink-200 px-4 py-2 font-semibold text-ink-700 disabled:opacity-40 hover:border-ink-300"
+            className="rounded-xl border border-black/10 px-4 py-2 font-semibold text-[#0F2A1A]/75 disabled:opacity-40 hover:border-black/10"
           >
             Prev
           </button>
           <button
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="rounded-xl border border-ink-200 px-4 py-2 font-semibold text-ink-700 disabled:opacity-40 hover:border-ink-300"
+            className="rounded-xl border border-black/10 px-4 py-2 font-semibold text-[#0F2A1A]/75 disabled:opacity-40 hover:border-black/10"
           >
             Next
           </button>
@@ -296,7 +296,7 @@ export default function AdminUsersPage() {
         />
       )}
 
-      <p className="flex items-center gap-1.5 text-xs text-ink-400">
+      <p className="flex items-center gap-1.5 text-xs text-[#0F2A1A]/65">
         <ShieldCheck size={13} /> Role grants &amp; status changes are enforced
         server-side and audited. You cannot remove the last SUPER_ADMIN or
         suspend your own account.
@@ -344,22 +344,22 @@ function UserRow({
   };
 
   return (
-    <tr className={isSelf ? "bg-primary-light/30" : ""}>
+    <tr className={isSelf ? "bg-[#F9F6ED]/30" : ""}>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-deep text-xs font-extrabold text-white">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0F2A1A] text-xs font-extrabold text-white">
             {(u.first_name?.[0] ?? u.email[0] ?? "?").toUpperCase()}
           </span>
           <div className="min-w-0">
-            <p className="truncate font-semibold text-ink-800">
+            <p className="truncate font-semibold text-[#0F2A1A]/85">
               {u.first_name || u.email} {u.last_name || ""}
               {isSelf && (
-                <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-ink-900">
+                <span className="ml-2 rounded-full bg-[#D6FF57] px-2 py-0.5 text-[10px] font-bold text-[#0F2A1A]">
                   you
                 </span>
               )}
             </p>
-            <p className="truncate text-xs text-ink-400">{u.email}</p>
+            <p className="truncate text-xs text-[#0F2A1A]/65">{u.email}</p>
           </div>
         </div>
       </td>
@@ -371,17 +371,17 @@ function UserRow({
           {(u.roles ?? []).map((r) => (
             <span
               key={r}
-              className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-bold text-ink-600"
+              className="rounded-full bg-[#F9F6ED] px-2 py-0.5 text-[11px] font-bold text-[#0F2A1A]/70"
             >
               {r}
             </span>
           ))}
           {(u.roles ?? []).length === 0 && (
-            <span className="text-xs text-ink-400">no roles</span>
+            <span className="text-xs text-[#0F2A1A]/65">no roles</span>
           )}
         </div>
       </td>
-      <td className="px-4 py-3 text-xs text-ink-500">
+      <td className="px-4 py-3 text-xs text-[#0F2A1A]/65">
         {u.created_at
           ? new Date(u.created_at).toLocaleDateString("en-GB", {
               day: "numeric",
@@ -393,11 +393,11 @@ function UserRow({
       <td className="px-4 py-3">
         <div className="flex items-center justify-end gap-2">
           {!canManage && (
-            <span className="text-[11px] text-ink-400">View only</span>
+            <span className="text-[11px] text-[#0F2A1A]/65">View only</span>
           )}
           <button
             onClick={onView}
-            className="inline-flex items-center gap-1 rounded-lg border border-ink-200 px-2.5 py-1.5 text-[11px] font-bold text-ink-700 hover:border-ink-300"
+            className="inline-flex items-center gap-1 rounded-lg border border-black/10 px-2.5 py-1.5 text-[11px] font-bold text-[#0F2A1A]/75 hover:border-black/10"
             title="View full profile"
           >
             View
@@ -406,7 +406,7 @@ function UserRow({
             value=""
             onChange={(e) => e.target.value && toggleRole(e.target.value, true)}
             disabled={busy || !canManage}
-            className="h-9 rounded-lg border border-ink-200 px-2 text-xs font-semibold text-ink-700 disabled:opacity-50"
+            className="h-9 rounded-lg border border-black/10 px-2 text-xs font-semibold text-[#0F2A1A]/75 disabled:opacity-50"
             aria-label={`Add role to ${u.email}`}
           >
             <option value="">+ Role</option>
@@ -432,7 +432,7 @@ function UserRow({
                       ? "Cannot remove your own SUPER_ADMIN"
                       : `Remove ${r}`
                 }
-                className="rounded-lg border border-ink-200 px-2 py-1.5 text-[11px] font-bold text-red-500 hover:bg-red-50 disabled:opacity-40"
+                className="rounded-lg border border-black/10 px-2 py-1.5 text-[11px] font-bold text-red-500 hover:bg-red-50 disabled:opacity-40"
               >
                 −{r}
               </button>
@@ -443,7 +443,7 @@ function UserRow({
                 u.id && statusMut.mutate({ userId: u.id, status: "ACTIVE" })
               }
               disabled={busy || !canManage}
-              className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-[11px] font-bold text-ink-900 hover:opacity-90 disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-lg bg-[#D6FF57] px-2.5 py-1.5 text-[11px] font-bold text-[#0F2A1A] hover:opacity-90 disabled:opacity-40"
             >
               <UserCheck size={12} /> Reactivate
             </button>
@@ -494,10 +494,10 @@ function UserDetailDialog({
     >
       <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="text-lg font-extrabold text-deep">Profile details</h3>
+          <h3 className="text-lg font-extrabold text-[#0F2A1A]">Profile details</h3>
           <button
             onClick={onClose}
-            className="rounded-lg border border-ink-200 px-3 py-1 text-xs font-bold text-ink-600 hover:border-ink-300"
+            className="rounded-lg border border-black/10 px-3 py-1 text-xs font-bold text-[#0F2A1A]/70 hover:border-black/10"
           >
             Close
           </button>
@@ -566,7 +566,7 @@ function UserDetailDialog({
             )}
           </dl>
         )}
-        <p className="mt-4 border-t border-ink-100 pt-3 text-[11px] text-ink-400">
+        <p className="mt-4 border-t border-black/10 pt-3 text-[11px] text-[#0F2A1A]/65">
           View-only. Role and status changes are SUPER_ADMIN actions on the
           table row.
         </p>
@@ -577,11 +577,11 @@ function UserDetailDialog({
 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-ink-50 pb-2">
-      <dt className="text-xs font-bold uppercase tracking-wide text-ink-400">
+    <div className="flex items-start justify-between gap-4 border-b border-black/10 pb-2">
+      <dt className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">
         {label}
       </dt>
-      <dd className="max-w-[65%] break-words text-right font-semibold text-ink-800">
+      <dd className="max-w-[65%] break-words text-right font-semibold text-[#0F2A1A]/85">
         {value}
       </dd>
     </div>

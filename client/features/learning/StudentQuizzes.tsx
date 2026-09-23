@@ -76,7 +76,7 @@ export function StudentQuizzes() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold">{session.title || "Quiz in progress"}</h2>
-            <p className="text-sm text-ink-500">
+            <p className="text-sm text-[#0F2A1A]/65">
               Pass threshold: {Math.round(session.pass_threshold * 100)}% · {answered}/{session.questions.length} answered
             </p>
           </div>
@@ -96,7 +96,7 @@ export function StudentQuizzes() {
                   <label
                     key={oi}
                     className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
-                      answers[q.id] === oi ? "border-brand-blue bg-blue-50" : "hover:bg-ink-50"
+                      answers[q.id] === oi ? "border-[#0F2A1A] bg-blue-50" : "hover:bg-[#F9F6ED]"
                     }`}
                   >
                     <input
@@ -134,7 +134,7 @@ export function StudentQuizzes() {
             <p className={`mt-2 font-semibold ${result.passed ? "text-green-600" : "text-red-600"}`}>
               {result.passed ? "Passed 🎉" : "Not passed - keep practising!"}
             </p>
-            <p className="mt-1 text-sm text-ink-500">Score {Math.round(result.score * 100)}%</p>
+            <p className="mt-1 text-sm text-[#0F2A1A]/65">Score {Math.round(result.score * 100)}%</p>
             <Button className="mt-4" onClick={() => setResult(null)}>
               Back to quizzes
             </Button>
@@ -148,7 +148,7 @@ export function StudentQuizzes() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold">Quizzes & assessments</h2>
-        <p className="text-sm text-ink-500">One attempt per quiz - your result is graded automatically.</p>
+        <p className="text-sm text-[#0F2A1A]/65">One attempt per quiz - your result is graded automatically.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -157,10 +157,10 @@ export function StudentQuizzes() {
           <Card key={a.id}>
             <CardHeader>
               <CardTitle className="text-base">{a.title}</CardTitle>
-              {a.instructions && <p className="text-sm text-ink-500">{a.instructions}</p>}
+              {a.instructions && <p className="text-sm text-[#0F2A1A]/65">{a.instructions}</p>}
             </CardHeader>
             <CardContent className="flex items-center justify-between">
-              <span className="text-xs text-ink-400">
+              <span className="text-xs text-[#0F2A1A]/65">
                 Pass: {Math.round(a.pass_threshold * 100)}%{a.due_at ? ` · Due ${new Date(a.due_at).toLocaleDateString()}` : ""}
               </span>
               <Button size="sm" disabled={start.isPending} onClick={() => start.mutate(a.id)}>

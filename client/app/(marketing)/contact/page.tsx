@@ -90,8 +90,8 @@ export default function ContactPage() {
                     onClick={() => setCategory(c)}
                     className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
                       category === c
-                        ? "bg-brand-blue text-white"
-                        : "bg-ink-100 text-ink-600 hover:bg-ink-200"
+                        ? "bg-[#0F2A1A] text-white"
+                        : "bg-[#F9F6ED] text-[#0F2A1A]/70 hover:bg-[#F9F6ED]"
                     }`}
                   >
                     {c}
@@ -105,7 +105,7 @@ export default function ContactPage() {
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
                 />
               </label>
               <label className="block text-sm">
@@ -114,7 +114,7 @@ export default function ContactPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+234…"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
                 />
               </label>
             </div>
@@ -125,7 +125,7 @@ export default function ContactPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -134,7 +134,7 @@ export default function ContactPage() {
                 <select
                   value={learnerLevel}
                   onChange={(e) => setLearnerLevel(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
                 >
                   <option value="">Select level…</option>
                   <option>Year 7-9 (British)</option>
@@ -151,7 +151,7 @@ export default function ContactPage() {
                   value={enquirySubject}
                   onChange={(e) => setEnquirySubject(e.target.value)}
                   placeholder="e.g. Mathematics…"
-                  className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
                 />
               </label>
             </div>
@@ -162,7 +162,7 @@ export default function ContactPage() {
                 required
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
               />
             </label>
             <Button
@@ -174,7 +174,7 @@ export default function ContactPage() {
             >
               {busy ? "Sending…" : sent ? "Sent ✓" : "Send message"}
             </Button>
-            <p className="text-xs text-ink-400 text-center">
+            <p className="text-xs text-[#0F2A1A]/65 text-center">
               Your message creates a trackable support ticket. For safeguarding
               concerns, a senior team member reviews the ticket directly.
             </p>
@@ -183,14 +183,14 @@ export default function ContactPage() {
           <aside className="space-y-5 lg:sticky lg:top-28">
             <div className="border rounded-2xl p-6">
               <h2 className="font-bold">Advisor channels</h2>
-              <ul className="mt-3 space-y-3 text-sm text-ink-700">
+              <ul className="mt-3 space-y-3 text-sm text-[#0F2A1A]/75">
                 <li className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F2A1A]/10 text-[#0F2A1A]">
                     ✉️
                   </span>
                   <div>
                     <div className="font-semibold">Email</div>
-                    <div className="text-xs text-ink-500">
+                    <div className="text-xs text-[#0F2A1A]/65">
                       support@ykaycollege.com
                     </div>
                   </div>
@@ -201,7 +201,7 @@ export default function ContactPage() {
                   </span>
                   <div>
                     <div className="font-semibold">WhatsApp</div>
-                    <div className="text-xs text-ink-500">
+                    <div className="text-xs text-[#0F2A1A]/65">
                       +234 [number to confirm] · Mon-Sat, 8am-8pm
                     </div>
                   </div>
@@ -212,14 +212,14 @@ export default function ContactPage() {
                   </span>
                   <div>
                     <div className="font-semibold">Response time</div>
-                    <div className="text-xs text-ink-500">
+                    <div className="text-xs text-[#0F2A1A]/65">
                       Within one business day
                     </div>
                   </div>
                 </li>
               </ul>
             </div>
-            <div className="rounded-2xl bg-ink-50 border border-ink-100 p-6">
+            <div className="rounded-2xl bg-[#F9F6ED] border border-black/10 p-6">
               <h2 className="font-bold">Frequently asked</h2>
               <ul className="mt-3 space-y-2 text-sm">
                 {[
@@ -233,7 +233,7 @@ export default function ContactPage() {
                   <li key={f.q}>
                     <a
                       href={f.a}
-                      className="text-brand-blue font-semibold hover:underline"
+                      className="text-[#0F2A1A] font-semibold hover:underline"
                     >
                       {f.q} →
                     </a>

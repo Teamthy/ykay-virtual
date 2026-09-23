@@ -71,7 +71,7 @@ type AttendanceRow = {
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const STATUS_BADGE: Record<string, string> = {
-  DRAFT: "bg-ink-100 text-ink-600",
+  DRAFT: "bg-[#F9F6ED] text-[#0F2A1A]/70",
   SUBMITTED: "bg-amber-100 text-amber-700",
   UNDER_REVIEW: "bg-amber-100 text-amber-700",
   INTERVIEW: "bg-blue-100 text-blue-700",
@@ -79,7 +79,7 @@ const STATUS_BADGE: Record<string, string> = {
   APPROVED: "bg-green-100 text-green-700",
   REJECTED: "bg-red-100 text-red-700",
   SUSPENDED: "bg-red-100 text-red-700",
-  HOLD: "bg-ink-100 text-ink-600",
+  HOLD: "bg-[#F9F6ED] text-[#0F2A1A]/70",
 };
 
 const TABS = [
@@ -390,23 +390,23 @@ export default function TutorDashboardPage() {
           </div>
 
           {/* Application status */}
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="font-bold text-ink-800">Application</h2>
+                <h2 className="font-bold text-[#0F2A1A]/85">Application</h2>
                 {p ? (
                   <>
-                    <p className="text-sm text-ink-600 mt-1">
+                    <p className="text-sm text-[#0F2A1A]/70 mt-1">
                       {p.display_name} · {p.slug}
                     </p>
                     <span
-                      className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-bold ${STATUS_BADGE[p.status] ?? "bg-ink-100"}`}
+                      className={`mt-2 inline-block px-3 py-1 rounded-full text-xs font-bold ${STATUS_BADGE[p.status] ?? "bg-[#F9F6ED]"}`}
                     >
                       {p.status}
                     </span>
                   </>
                 ) : (
-                  <p className="text-sm text-ink-500 mt-1">
+                  <p className="text-sm text-[#0F2A1A]/65 mt-1">
                     You haven&apos;t started your application yet.
                   </p>
                 )}
@@ -420,13 +420,13 @@ export default function TutorDashboardPage() {
             </div>
             {p && (
               <div className="mt-4">
-                <div className="flex justify-between text-xs text-ink-500">
+                <div className="flex justify-between text-xs text-[#0F2A1A]/65">
                   <span>Profile completion</span>
                   <span>{profileCompletion}%</span>
                 </div>
-                <div className="mt-1 h-2 rounded-full bg-ink-100">
+                <div className="mt-1 h-2 rounded-full bg-[#F9F6ED]">
                   <div
-                    className="h-2 rounded-full bg-deep"
+                    className="h-2 rounded-full bg-[#0F2A1A]"
                     style={{ width: `${profileCompletion}%` }}
                   />
                 </div>
@@ -435,12 +435,12 @@ export default function TutorDashboardPage() {
           </section>
 
           {/* Today's lessons */}
-          <section className="rounded-2xl bg-primary text-ink-900 p-6">
-            <h2 className="font-bold text-ink-900">Today</h2>
+          <section className="rounded-2xl bg-[#D6FF57] text-[#0F2A1A] p-6">
+            <h2 className="font-bold text-[#0F2A1A]">Today</h2>
             {lessons.isLoading ? (
               <Skeleton className="h-12 w-full mt-3 bg-white/20" />
             ) : today.length === 0 ? (
-              <p className="mt-3 text-sm text-ink-800/70">No lessons today.</p>
+              <p className="mt-3 text-sm text-[#0F2A1A]/70">No lessons today.</p>
             ) : (
               <ul className="mt-4 space-y-3">
                 {upcoming.slice(0, 5).map((l) => (
@@ -450,7 +450,7 @@ export default function TutorDashboardPage() {
                   >
                     <div>
                       <div className="font-semibold">{l.title}</div>
-                      <div className="text-xs text-ink-800/70">
+                      <div className="text-xs text-[#0F2A1A]/70">
                         {new Date(l.start_at).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -468,7 +468,7 @@ export default function TutorDashboardPage() {
                         href={l.meeting_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-xl bg-white text-deep text-sm font-bold px-4 py-2"
+                        className="rounded-xl bg-white text-[#0F2A1A] text-sm font-bold px-4 py-2"
                       >
                         Join class
                       </a>
@@ -482,10 +482,10 @@ export default function TutorDashboardPage() {
           {/* Teaching (Udemy-style course cards) */}
           <section>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-bold text-ink-800">Your courses</h2>
+              <h2 className="font-bold text-[#0F2A1A]/85">Your courses</h2>
               <Link
                 href="/lms/tutor"
-                className="text-sm font-bold text-primary-dark hover:underline"
+                className="text-sm font-bold text-[#0F2A1A] hover:underline"
               >
                 Manage courses →
               </Link>
@@ -493,9 +493,9 @@ export default function TutorDashboardPage() {
             {teachingCohorts.isLoading ? (
               <Skeleton className="h-24 w-full" />
             ) : (teachingCohorts.data ?? []).length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-ink-200 p-6 text-center">
-                <p className="text-sm text-ink-500">No cohorts assigned yet.</p>
-                <p className="mt-1 text-xs text-ink-400">
+              <div className="rounded-2xl border border-dashed border-black/10 p-6 text-center">
+                <p className="text-sm text-[#0F2A1A]/65">No cohorts assigned yet.</p>
+                <p className="mt-1 text-xs text-[#0F2A1A]/65">
                   Request to join a cohort from the Cohorts tab, or ask an admin
                   to assign you — your LMS fills automatically.
                 </p>
@@ -506,15 +506,15 @@ export default function TutorDashboardPage() {
                   <Link
                     key={c.cohortId}
                     href={`/lms/tutor/cohorts/${c.cohortId}`}
-                    className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-primary/50"
+                    className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-[#D6FF57]/50"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-bold text-ink-800">{c.title}</p>
-                      <span className="rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-bold text-deep">
+                      <p className="font-bold text-[#0F2A1A]/85">{c.title}</p>
+                      <span className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-[10px] font-bold text-[#0F2A1A]">
                         {c.lessonCount} lesson{c.lessonCount === 1 ? "" : "s"}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-ink-500">
+                    <p className="mt-1 text-xs text-[#0F2A1A]/65">
                       {c.enrolled}/{c.capacity || "—"} enrolled
                     </p>
                     <Progress
@@ -535,17 +535,17 @@ export default function TutorDashboardPage() {
           {/* This week (availability) */}
           <section>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-bold text-ink-800">Your teaching schedule</h2>
+              <h2 className="font-bold text-[#0F2A1A]/85">Your teaching schedule</h2>
               <button
                 type="button"
                 onClick={() => setTab("availability")}
-                className="text-sm font-bold text-primary-dark hover:underline"
+                className="text-sm font-bold text-[#0F2A1A] hover:underline"
               >
                 Edit availability →
               </button>
             </div>
             {(availability.data ?? []).length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-ink-200 p-6 text-center text-sm text-ink-400">
+              <p className="rounded-2xl border border-dashed border-black/10 p-6 text-center text-sm text-[#0F2A1A]/65">
                 No availability set yet — add slots so bookings can find you.
               </p>
             ) : (
@@ -558,15 +558,15 @@ export default function TutorDashboardPage() {
                     return (
                       <div
                         key={day}
-                        className={`min-w-24 rounded-2xl border p-3 ${slots.length ? "border-primary bg-primary-light" : "border-ink-100 bg-white"}`}
+                        className={`min-w-24 rounded-2xl border p-3 ${slots.length ? "border-[#D6FF57] bg-[#F9F6ED]" : "border-black/10 bg-white"}`}
                       >
                         <p
-                          className={`text-center text-xs font-bold ${slots.length ? "text-primary-dark" : "text-ink-400"}`}
+                          className={`text-center text-xs font-bold ${slots.length ? "text-[#0F2A1A]" : "text-[#0F2A1A]/65"}`}
                         >
                           {day}
                         </p>
                         {slots.length ? (
-                          <p className="mt-1 text-center text-[11px] leading-tight text-ink-700">
+                          <p className="mt-1 text-center text-[11px] leading-tight text-[#0F2A1A]/75">
                             {slots
                               .map(
                                 (s) =>
@@ -575,7 +575,7 @@ export default function TutorDashboardPage() {
                               .join("\n")}
                           </p>
                         ) : (
-                          <p className="mt-1 text-center text-[11px] text-ink-300">
+                          <p className="mt-1 text-center text-[11px] text-[#0F2A1A]/65">
                             —
                           </p>
                         )}
@@ -589,7 +589,7 @@ export default function TutorDashboardPage() {
 
           {/* Quick links */}
           <section>
-            <h2 className="font-display text-lg tracking-[0.02em] text-deep">
+            <h2 className="font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
               Links
             </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -597,16 +597,16 @@ export default function TutorDashboardPage() {
                 <Link
                   key={q.href}
                   href={q.href}
-                  className="group flex flex-col items-start gap-2 rounded-2xl border border-ink-100 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary"
+                  className="group flex flex-col items-start gap-2 rounded-2xl border border-black/10 bg-white p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-[#D6FF57]"
                 >
-                  <span className="grid size-9 place-items-center rounded-xl bg-primary-light text-primary">
+                  <span className="grid size-9 place-items-center rounded-xl bg-[#F9F6ED] text-[#0F2A1A]">
                     <q.icon size={17} />
                   </span>
                   <span>
-                    <span className="block text-sm font-bold text-deep">
+                    <span className="block text-sm font-bold text-[#0F2A1A]">
                       {q.label}
                     </span>
-                    <span className="block text-xs text-ink-500">{q.desc}</span>
+                    <span className="block text-xs text-[#0F2A1A]/65">{q.desc}</span>
                   </span>
                 </Link>
               ))}
@@ -619,13 +619,13 @@ export default function TutorDashboardPage() {
       {tab === "lessons" && (
         <div className="mt-6 space-y-6">
           {/* Attendance to complete */}
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="flex items-center gap-2 font-bold text-ink-800">
-              <Users size={16} className="text-primary" /> Attendance to
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="flex items-center gap-2 font-bold text-[#0F2A1A]/85">
+              <Users size={16} className="text-[#0F2A1A]" /> Attendance to
               complete
             </h2>
             {recent.length === 0 ? (
-              <p className="mt-2 text-sm text-ink-500">
+              <p className="mt-2 text-sm text-[#0F2A1A]/65">
                 No completed lessons awaiting attendance.
               </p>
             ) : (
@@ -635,7 +635,7 @@ export default function TutorDashboardPage() {
                     <div className="flex justify-between items-center">
                       <div>
                         <div className="font-semibold text-sm">{l.title}</div>
-                        <div className="text-xs text-ink-500">
+                        <div className="text-xs text-[#0F2A1A]/65">
                           {new Date(l.start_at).toLocaleDateString()}
                         </div>
                       </div>
@@ -645,7 +645,7 @@ export default function TutorDashboardPage() {
                     </div>
                     <Link
                       href="/lms/tutor"
-                      className="mt-3 inline-flex items-center rounded-full border border-ink-200 px-4 py-1.5 text-xs font-semibold hover:border-deep transition-colors"
+                      className="mt-3 inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 text-xs font-semibold hover:border-[#0F2A1A] transition-colors"
                     >
                       Open roster to mark attendance →
                     </Link>
@@ -656,26 +656,26 @@ export default function TutorDashboardPage() {
           </section>
 
           {/* Lesson notes */}
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="flex items-center gap-2 font-bold text-ink-800">
-              <NotebookPen size={16} className="text-primary" /> Lesson notes
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="flex items-center gap-2 font-bold text-[#0F2A1A]/85">
+              <NotebookPen size={16} className="text-[#0F2A1A]" /> Lesson notes
               &amp; homework
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+            <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
               Write lesson notes and homework after each session — parents see
               them in their portal.
             </p>
             <Link
               href="/lms/tutor"
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-4 py-2 text-xs font-semibold text-deep transition-colors hover:border-deep"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-black/10 px-4 py-2 text-xs font-semibold text-[#0F2A1A] transition-colors hover:border-[#0F2A1A]"
             >
               Open the teaching console <BookOpen size={13} />
             </Link>
           </section>
 
           {/* All lessons */}
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="font-bold text-ink-800">All lessons</h2>
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="font-bold text-[#0F2A1A]/85">All lessons</h2>
             {lessons.isLoading ? (
               <Skeleton className="mt-3 h-20 w-full" />
             ) : (lessons.data?.length ?? 0) === 0 ? (
@@ -699,8 +699,8 @@ export default function TutorDashboardPage() {
                       className="flex flex-wrap items-center justify-between gap-3 py-3"
                     >
                       <div>
-                        <p className="font-bold text-ink-800">{l.title}</p>
-                        <p className="text-xs text-ink-500">
+                        <p className="font-bold text-[#0F2A1A]/85">{l.title}</p>
+                        <p className="text-xs text-[#0F2A1A]/65">
                           {new Date(l.start_at).toLocaleString([], {
                             weekday: "short",
                             day: "numeric",
@@ -723,7 +723,7 @@ export default function TutorDashboardPage() {
                               href={l.meeting_url}
                               target="_blank"
                               rel="noreferrer"
-                              className="rounded-xl bg-deep px-4 py-2 text-xs font-bold text-white hover:bg-deep-light transition-colors"
+                              className="rounded-xl bg-[#0F2A1A] px-4 py-2 text-xs font-bold text-white hover:bg-[#0F2A1A] transition-colors"
                             >
                               Join
                             </a>
@@ -747,9 +747,9 @@ export default function TutorDashboardPage() {
       {/* ── Cohorts ── */}
       {tab === "cohorts" && (
         <div className="mt-6 space-y-6">
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="font-bold text-ink-800">Request to join a cohort</h2>
-            <p className="mt-1 text-sm text-ink-500">
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="font-bold text-[#0F2A1A]/85">Request to join a cohort</h2>
+            <p className="mt-1 text-sm text-[#0F2A1A]/65">
               Approved tutors can ask to teach a published cohort. An admin
               still assigns you after review.
             </p>
@@ -777,8 +777,8 @@ export default function TutorDashboardPage() {
                       className="flex flex-wrap items-center justify-between gap-3 py-3"
                     >
                       <div>
-                        <p className="font-bold text-ink-800">{c.title}</p>
-                        <p className="text-xs text-ink-500">
+                        <p className="font-bold text-[#0F2A1A]/85">{c.title}</p>
+                        <p className="text-xs text-[#0F2A1A]/65">
                           {new Date(c.start_date).toLocaleDateString()} →{" "}
                           {new Date(c.end_date).toLocaleDateString()} ·{" "}
                           {c.enrolled_count}/{c.capacity} enrolled
@@ -814,9 +814,9 @@ export default function TutorDashboardPage() {
       {/* ── Availability ── */}
       {tab === "availability" && (
         <div className="mt-6 grid lg:grid-cols-[1fr_1.2fr] gap-6 items-start">
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="font-bold text-ink-800">Add a weekly slot</h2>
-            <p className="text-xs text-ink-500 mt-1">
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="font-bold text-[#0F2A1A]/85">Add a weekly slot</h2>
+            <p className="text-xs text-[#0F2A1A]/65 mt-1">
               Set recurring weekly windows learners can book.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -828,7 +828,7 @@ export default function TutorDashboardPage() {
                     day_of_week: Number(e.target.value),
                   })
                 }
-                className="rounded-xl border border-ink-200 px-2 py-2 text-sm"
+                className="rounded-xl border border-black/10 px-2 py-2 text-sm"
               >
                 {DAYS.map((d, i) => (
                   <option key={d} value={i}>
@@ -842,16 +842,16 @@ export default function TutorDashboardPage() {
                 onChange={(e) =>
                   setNewSlot({ ...newSlot, start_time: e.target.value })
                 }
-                className="rounded-xl border border-ink-200 px-2 py-2 text-sm"
+                className="rounded-xl border border-black/10 px-2 py-2 text-sm"
               />
-              <span className="self-center text-xs text-ink-400">–</span>
+              <span className="self-center text-xs text-[#0F2A1A]/65">–</span>
               <input
                 type="time"
                 value={newSlot.end_time}
                 onChange={(e) =>
                   setNewSlot({ ...newSlot, end_time: e.target.value })
                 }
-                className="rounded-xl border border-ink-200 px-2 py-2 text-sm"
+                className="rounded-xl border border-black/10 px-2 py-2 text-sm"
               />
             </div>
             <Button
@@ -864,8 +864,8 @@ export default function TutorDashboardPage() {
             </Button>
           </section>
 
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="font-bold text-ink-800">Current availability</h2>
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="font-bold text-[#0F2A1A]/85">Current availability</h2>
             {availability.isLoading ? (
               <Skeleton className="mt-3 h-16 w-full" />
             ) : (availability.data?.length ?? 0) === 0 ? (
@@ -879,9 +879,9 @@ export default function TutorDashboardPage() {
                 {availability.data?.map((a) => (
                   <li
                     key={a.id}
-                    className="flex items-center justify-between text-sm border-b border-ink-100 pb-1.5"
+                    className="flex items-center justify-between text-sm border-b border-black/10 pb-1.5"
                   >
-                    <span className="font-semibold text-ink-700">
+                    <span className="font-semibold text-[#0F2A1A]/75">
                       {DAYS[a.day_of_week]} · {a.start_time}–{a.end_time}
                     </span>
                     <button
@@ -900,54 +900,54 @@ export default function TutorDashboardPage() {
 
       {/* ── Earnings ── */}
       {tab === "earnings" && (
-        <section className="mt-6 rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+        <section className="mt-6 rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
           <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-bold text-deep">
-              <Wallet size={16} className="text-primary" /> Earnings
+            <h2 className="flex items-center gap-2 font-bold text-[#0F2A1A]">
+              <Wallet size={16} className="text-[#0F2A1A]" /> Earnings
             </h2>
-            <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-bold text-deep">
+            <span className="rounded-full bg-[#F9F6ED] px-3 py-1 text-xs font-bold text-[#0F2A1A]">
               Escrow-protected
             </span>
           </div>
-          <p className="mt-1 text-xs text-ink-500">
+          <p className="mt-1 text-xs text-[#0F2A1A]/65">
             Held until lessons are confirmed, then paid out on the weekly
             schedule.
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-deep">
+            <div className="rounded-xl bg-[#F9F6ED] p-3">
+              <div className="text-lg font-extrabold text-[#0F2A1A]">
                 ₦{(earnings.data?.held_total ?? 0).toLocaleString()}
               </div>
-              <div className="text-[10px] font-semibold text-ink-500">Held</div>
+              <div className="text-[10px] font-semibold text-[#0F2A1A]/65">Held</div>
             </div>
-            <div className="rounded-xl bg-surface-muted p-3">
-              <div className="text-lg font-extrabold text-deep">
+            <div className="rounded-xl bg-[#F9F6ED] p-3">
+              <div className="text-lg font-extrabold text-[#0F2A1A]">
                 ₦{(earnings.data?.released_total ?? 0).toLocaleString()}
               </div>
-              <div className="text-[10px] font-semibold text-ink-500">
+              <div className="text-[10px] font-semibold text-[#0F2A1A]/65">
                 Released
               </div>
             </div>
-            <div className="rounded-xl bg-primary-light p-3">
-              <div className="text-lg font-extrabold text-primary">
+            <div className="rounded-xl bg-[#F9F6ED] p-3">
+              <div className="text-lg font-extrabold text-[#0F2A1A]">
                 ₦{(earnings.data?.paid_total ?? 0).toLocaleString()}
               </div>
-              <div className="text-[10px] font-semibold text-ink-600">
+              <div className="text-[10px] font-semibold text-[#0F2A1A]/70">
                 Paid out
               </div>
             </div>
           </div>
-          <div className="mt-5 rounded-xl border border-ink-100 bg-surface-muted p-4">
-            <p className="text-sm font-bold text-ink-700">
+          <div className="mt-5 rounded-xl border border-black/10 bg-[#F9F6ED] p-4">
+            <p className="text-sm font-bold text-[#0F2A1A]/75">
               Payout destination (bank account)
             </p>
-            <p className="mt-0.5 text-xs text-ink-500">
+            <p className="mt-0.5 text-xs text-[#0F2A1A]/65">
               Earnings are transferred to this account. Ask the admin team to
               confirm each transfer.
             </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <label className="block">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">
                   Bank
                 </span>
                 <select
@@ -960,7 +960,7 @@ export default function TutorDashboardPage() {
                       bank_name: bankNameForCode(code),
                     });
                   }}
-                  className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
                 >
                   <option value="">Select your bank…</option>
                   {NIGERIAN_BANKS.map((b) => (
@@ -970,13 +970,13 @@ export default function TutorDashboardPage() {
                   ))}
                 </select>
                 {bankForm.bank_name && (
-                  <span className="mt-0.5 block text-[10px] text-ink-400">
+                  <span className="mt-0.5 block text-[10px] text-[#0F2A1A]/65">
                     {bankForm.bank_name} · code {bankForm.bank_code}
                   </span>
                 )}
               </label>
               <label className="block">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">
                   Account number
                 </span>
                 <input
@@ -990,11 +990,11 @@ export default function TutorDashboardPage() {
                   placeholder="0123456789"
                   maxLength={12}
                   inputMode="numeric"
-                  className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink-500">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">
                   Account name
                 </span>
                 <input
@@ -1003,7 +1003,7 @@ export default function TutorDashboardPage() {
                     setBankForm({ ...bankForm, account_name: e.target.value })
                   }
                   placeholder="e.g. Adaeze Okonkwo"
-                  className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
                 />
               </label>
             </div>
@@ -1014,16 +1014,16 @@ export default function TutorDashboardPage() {
               type="button"
               onClick={() => void saveBank()}
               disabled={bankSaving}
-              className="mt-3 rounded-full bg-deep px-5 py-2 text-xs font-bold text-white hover:bg-deep/90 disabled:opacity-50"
+              className="mt-3 rounded-full bg-[#0F2A1A] px-5 py-2 text-xs font-bold text-white hover:bg-[#0F2A1A]/90 disabled:opacity-50"
             >
               {bankSaving ? "Saving…" : "Save bank details"}
             </button>
           </div>
 
           <div className="mt-4">
-            <p className="text-sm font-bold text-ink-700">Recent payouts</p>
+            <p className="text-sm font-bold text-[#0F2A1A]/75">Recent payouts</p>
             {(earnings.data?.payouts ?? []).length === 0 ? (
-              <p className="mt-2 rounded-xl border border-dashed border-ink-200 p-4 text-center text-xs text-ink-400">
+              <p className="mt-2 rounded-xl border border-dashed border-black/10 p-4 text-center text-xs text-[#0F2A1A]/65">
                 No payouts yet — released earnings are paid out on the weekly
                 schedule.
               </p>
@@ -1032,18 +1032,18 @@ export default function TutorDashboardPage() {
                 {(earnings.data?.payouts ?? []).slice(0, 5).map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between rounded-xl border border-ink-100 px-4 py-2.5 text-sm"
+                    className="flex items-center justify-between rounded-xl border border-black/10 px-4 py-2.5 text-sm"
                   >
-                    <span className="font-semibold text-ink-700">
+                    <span className="font-semibold text-[#0F2A1A]/75">
                       ₦{p.amount.toLocaleString()}
                     </span>
-                    <span className="text-xs text-ink-400">
+                    <span className="text-xs text-[#0F2A1A]/65">
                       {new Date(p.created_at).toLocaleDateString()} ·{" "}
                       <span
                         className={
                           p.status === "PAID"
                             ? "font-bold text-green-600"
-                            : "font-semibold text-ink-500"
+                            : "font-semibold text-[#0F2A1A]/65"
                         }
                       >
                         {p.status}
@@ -1060,21 +1060,21 @@ export default function TutorDashboardPage() {
       {/* ── Profile ── */}
       {tab === "profile" && (
         <div className="mt-6 space-y-6">
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="font-bold text-ink-800">
+                <h2 className="font-bold text-[#0F2A1A]/85">
                   Application &amp; profile
                 </h2>
                 {p ? (
-                  <p className="text-sm text-ink-600 mt-1">
+                  <p className="text-sm text-[#0F2A1A]/70 mt-1">
                     {p.display_name} · {p.slug} ·{" "}
                     <span className="font-semibold">
                       {profileCompletion}% complete
                     </span>
                   </p>
                 ) : (
-                  <p className="text-sm text-ink-500 mt-1">
+                  <p className="text-sm text-[#0F2A1A]/65 mt-1">
                     Start your application to appear in tutor search.
                   </p>
                 )}
@@ -1088,11 +1088,11 @@ export default function TutorDashboardPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
             <TutorGradebook />
           </section>
 
-          <section className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+          <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
             <TutorProgressReports />
           </section>
         </div>

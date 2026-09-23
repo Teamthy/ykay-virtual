@@ -51,12 +51,12 @@ export function PrivateBookingForm({
 
   if (!user) {
     return (
-      <div className="rounded-2xl border border-ink-100 bg-white p-6 text-center">
-        <p className="text-sm text-ink-600">Book private lessons with this tutor.</p>
+      <div className="rounded-2xl border border-black/10 bg-white p-6 text-center">
+        <p className="text-sm text-[#0F2A1A]/70">Book private lessons with this tutor.</p>
         <button
           type="button"
           onClick={() => router.push(loginWithReturn())}
-          className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-brand-gold px-6 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+          className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-[#D6FF57] px-6 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
         >
           Log in to book
         </button>
@@ -112,29 +112,29 @@ export function PrivateBookingForm({
     return (
       <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
         <p className="text-3xl">🔒</p>
-        <h3 className="mt-2 font-bold text-brand-navy">Order {orderNumber} - ready to pay</h3>
-        <p className="mt-1 text-sm text-ink-600">
+        <h3 className="mt-2 font-bold text-[#0F2A1A]">Order {orderNumber} - ready to pay</h3>
+        <p className="mt-1 text-sm text-[#0F2A1A]/70">
           Funds are held in escrow until your lessons are delivered. Complete payment to secure your tutor.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <a
             href={paymentLink}
-            className="rounded-lg bg-brand-gold px-6 py-3 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover"
+            className="rounded-lg bg-[#D6FF57] px-6 py-3 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
           >
             Continue to payment gateway
           </a>
           <button
             type="button"
             onClick={() => void navigator.clipboard?.writeText(paymentLink)}
-            className="rounded-lg border border-ink-200 bg-white px-6 py-3 text-sm font-semibold text-ink-700 hover:border-ink-300"
+            className="rounded-lg border border-black/10 bg-white px-6 py-3 text-sm font-semibold text-[#0F2A1A]/75 hover:border-black/10"
           >
             Copy payment link
           </button>
         </div>
         {orderId && (
-          <p className="mt-3 text-xs text-ink-500">
+          <p className="mt-3 text-xs text-[#0F2A1A]/65">
             Already paid?{" "}
-            <a href={`/receipts/${orderId}`} className="font-semibold text-brand-green underline">
+            <a href={`/receipts/${orderId}`} className="font-semibold text-[#0F2A1A] underline">
               Track your order status
             </a>
           </p>
@@ -146,14 +146,14 @@ export function PrivateBookingForm({
   const defaultStudent = (learners.data ?? [])[0];
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-sm">
-      <h3 className="font-display text-lg font-bold text-brand-navy">Book private lessons</h3>
-      <p className="mt-1 text-sm text-ink-500">Pay per session - escrow-protected until each lesson is delivered.</p>
+    <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+      <h3 className="font-display text-lg font-bold text-[#0F2A1A]">Book private lessons</h3>
+      <p className="mt-1 text-sm text-[#0F2A1A]/65">Pay per session - escrow-protected until each lesson is delivered.</p>
 
       <div className="mt-5 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-800">Subject</label>
+            <label className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">Subject</label>
             <select className={INPUT_CLS} value={subject} onChange={(e) => setSubject(e.target.value)}>
               {subjects.map((s) => (
                 <option key={s} value={s}>{s}</option>
@@ -161,7 +161,7 @@ export function PrivateBookingForm({
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-800">Learner</label>
+            <label className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">Learner</label>
             <select className={INPUT_CLS} value={studentId} onChange={(e) => setStudentId(e.target.value)}>
               <option value="">{defaultStudent ? "Choose a learner…" : "No learners yet"}</option>
               {(learners.data ?? []).map((l) => (
@@ -171,15 +171,15 @@ export function PrivateBookingForm({
               ))}
             </select>
             {(learners.data ?? []).length === 0 && (
-              <p className="mt-1 text-xs text-ink-400">Add a learner in your dashboard to book for them.</p>
+              <p className="mt-1 text-xs text-[#0F2A1A]/65">Add a learner in your dashboard to book for them.</p>
             )}
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-800">Sessions</label>
+            <label className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">Sessions</label>
             <input type="number" min={1} max={60} className={INPUT_CLS} value={sessions} onChange={(e) => setSessions(Number(e.target.value))} />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-800">Duration per session</label>
+            <label className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">Duration per session</label>
             <select className={INPUT_CLS} value={duration} onChange={(e) => setDuration(Number(e.target.value))}>
               {[45, 60, 90, 120].map((d) => (
                 <option key={d} value={d}>{d} minutes</option>
@@ -187,15 +187,15 @@ export function PrivateBookingForm({
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-ink-800">Price per session (₦)</label>
-            <p className="rounded-lg border border-ink-100 bg-surface-muted px-3 py-2.5 text-sm font-semibold text-ink-800">
+            <label className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">Price per session (₦)</label>
+            <p className="rounded-lg border border-black/10 bg-[#F9F6ED] px-3 py-2.5 text-sm font-semibold text-[#0F2A1A]/85">
               {publishedRate > 0 ? `₦${publishedRate.toLocaleString()} (tutor's published rate)` : "Not published"}
             </p>
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-ink-800">
-            Learning goals <span className="font-normal text-ink-400">(optional)</span>
+          <label className="mb-1.5 block text-sm font-medium text-[#0F2A1A]/85">
+            Learning goals <span className="font-normal text-[#0F2A1A]/65">(optional)</span>
           </label>
           <textarea
             rows={3}
@@ -205,15 +205,15 @@ export function PrivateBookingForm({
             onChange={(e) => setGoals(e.target.value)}
           />
         </div>
-        <div className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink-600">
-          Estimated total: <span className="font-extrabold text-brand-navy">₦{(sessions * publishedRate).toLocaleString()}</span> for {sessions}{" "}
+        <div className="rounded-xl bg-[#F9F6ED] px-4 py-3 text-sm text-[#0F2A1A]/70">
+          Estimated total: <span className="font-extrabold text-[#0F2A1A]">₦{(sessions * publishedRate).toLocaleString()}</span> for {sessions}{" "}
           {duration}-minute sessions. Final amount is set by the server.
         </div>
         <button
           type="button"
           disabled={busy || publishedRate <= 0}
           onClick={() => void submit()}
-          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-gold px-4 text-sm font-bold text-ink-900 hover:bg-brand-gold-hover disabled:opacity-50"
+          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#D6FF57] px-4 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030] disabled:opacity-50"
         >
           {busy ? "Creating order…" : `Book ${sessions} sessions · ₦${(sessions * publishedRate).toLocaleString()}`}
         </button>

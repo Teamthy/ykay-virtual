@@ -88,7 +88,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-white">
-      <nav className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8 xl:px-12">
+      <nav className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
         <Link href="/" onClick={closeAll} className="flex-none" aria-label="YK-Virtual home">
           <Logo />
         </Link>
@@ -156,13 +156,13 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <form onSubmit={submitSearch} className="relative hidden lg:block">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0F2A1A]/40" />
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0F2A1A]/65" />
             <input
               type="text"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search subjects, tutors…"
-              className="w-56 rounded-full border border-black/10 bg-[#F9F6ED] py-2.5 pl-10 pr-4 text-[13px] font-medium text-[#0F2A1A] outline-none placeholder:text-[#0F2A1A]/40 focus:border-[#0F2A1A] focus:bg-white"
+              className="w-56 rounded-full border border-black/10 bg-[#F9F6ED] py-2.5 pl-10 pr-4 text-[13px] font-medium text-[#0F2A1A] outline-none placeholder:text-[#0F2A1A]/65 focus:border-[#0F2A1A] focus:bg-white"
             />
           </form>
 
@@ -189,7 +189,7 @@ export function Header() {
       {mobileOpen && (
         <div className="border-t border-black/10 bg-white px-4 py-4 sm:px-6">
           <form onSubmit={submitSearch} className="relative mb-4">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0F2A1A]/40" />
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0F2A1A]/65" />
             <input type="text" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className="w-full rounded-full border border-black/10 bg-[#F9F6ED] py-2.5 pl-10 pr-4 text-[13px]" />
           </form>
           <div className="grid gap-1">

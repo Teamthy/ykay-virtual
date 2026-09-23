@@ -105,11 +105,11 @@ export default function InstitutionDetailPage() {
 
   if (inst.isError || !data) {
     return (
-      <div className="py-16 text-center text-ink-500">
+      <div className="py-16 text-center text-[#0F2A1A]/65">
         <p>Institution not found or you don&apos;t have access.</p>
         <Link
           href="/account/institutions"
-          className="mt-3 inline-block font-semibold text-brand-blue hover:underline"
+          className="mt-3 inline-block font-semibold text-[#0F2A1A] hover:underline"
         >
           ← Back to my institutions
         </Link>
@@ -122,28 +122,28 @@ export default function InstitutionDetailPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/account/institutions"
-          className="text-ink-400 hover:text-ink-600"
+          className="text-[#0F2A1A]/65 hover:text-[#0F2A1A]/70"
         >
           ←
         </Link>
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-deep text-white">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0F2A1A] text-white">
           <Building2 size={20} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-ink-900">{data.name}</h1>
-          <p className="text-xs text-ink-500">
+          <h1 className="text-2xl font-bold text-[#0F2A1A]">{data.name}</h1>
+          <p className="text-xs text-[#0F2A1A]/65">
             {data.type.toLowerCase()} {data.verified_at ? "· verified" : ""}{" "}
             {!data.is_active && "· inactive"}
           </p>
         </div>
       </div>
 
-      <div className="flex gap-1 rounded-xl bg-ink-100 p-1 text-sm font-semibold">
+      <div className="flex gap-1 rounded-xl bg-[#F9F6ED] p-1 text-sm font-semibold">
         {(["profile", "members", "students", "plusteams"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 rounded-lg px-4 py-2 capitalize ${tab === t ? "bg-white text-deep shadow" : "text-ink-500"}`}
+            className={`flex-1 rounded-lg px-4 py-2 capitalize ${tab === t ? "bg-white text-[#0F2A1A] shadow" : "text-[#0F2A1A]/65"}`}
           >
             {t}
           </button>
@@ -151,49 +151,49 @@ export default function InstitutionDetailPage() {
       </div>
 
       {tab === "profile" && (
-        <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm">
-              <span className="font-medium text-ink-700">Name</span>
+              <span className="font-medium text-[#0F2A1A]/75">Name</span>
               <input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
               />
             </label>
             <label className="text-sm">
-              <span className="font-medium text-ink-700">Email</span>
+              <span className="font-medium text-[#0F2A1A]/75">Email</span>
               <input
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
               />
             </label>
             <label className="text-sm">
-              <span className="font-medium text-ink-700">Phone</span>
+              <span className="font-medium text-[#0F2A1A]/75">Phone</span>
               <input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
               />
             </label>
             <label className="text-sm">
-              <span className="font-medium text-ink-700">Website</span>
+              <span className="font-medium text-[#0F2A1A]/75">Website</span>
               <input
                 value={form.website}
                 onChange={(e) => setForm({ ...form, website: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
               />
             </label>
             <label className="text-sm sm:col-span-2">
-              <span className="font-medium text-ink-700">Description</span>
+              <span className="font-medium text-[#0F2A1A]/75">Description</span>
               <textarea
                 value={form.description}
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
                 rows={3}
-                className="mt-1 w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="mt-1 w-full rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none focus:ring-2 focus:ring-[#D6FF57]/30"
               />
             </label>
           </div>
@@ -252,19 +252,19 @@ function MembersPanel({ id }: { id: string }) {
   const rows = members.data ?? [];
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-      <h2 className="mb-4 font-bold text-ink-900">Team members</h2>
+    <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+      <h2 className="mb-4 font-bold text-[#0F2A1A]">Team members</h2>
       <div className="mb-5 flex flex-col gap-2 sm:flex-row">
         <input
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           placeholder="User ID (uuid)"
-          className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="flex-1 rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none"
         />
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as MembershipRole)}
-          className="rounded-xl border border-ink-200 px-3 py-2.5 text-sm"
+          className="rounded-xl border border-black/10 px-3 py-2.5 text-sm"
         >
           {ROLES.map((r) => (
             <option key={r} value={r}>
@@ -282,18 +282,18 @@ function MembersPanel({ id }: { id: string }) {
 
       <div className="space-y-2">
         {rows.length === 0 && (
-          <p className="text-sm text-ink-500">No members yet.</p>
+          <p className="text-sm text-[#0F2A1A]/65">No members yet.</p>
         )}
         {rows.map((m) => (
           <div
             key={m.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/10 px-4 py-2.5"
           >
             <div className="text-sm">
-              <span className="font-semibold text-ink-800">
+              <span className="font-semibold text-[#0F2A1A]/85">
                 {m.user_id.slice(0, 8)}…
               </span>
-              <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-xs font-bold text-ink-600">
+              <span className="ml-2 rounded-full bg-[#F9F6ED] px-2 py-0.5 text-xs font-bold text-[#0F2A1A]/70">
                 {m.role}
               </span>
             </div>
@@ -306,7 +306,7 @@ function MembersPanel({ id }: { id: string }) {
                     role: e.target.value as MembershipRole,
                   })
                 }
-                className="rounded-lg border border-ink-200 px-2 py-1 text-xs"
+                className="rounded-lg border border-black/10 px-2 py-1 text-xs"
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -316,7 +316,7 @@ function MembersPanel({ id }: { id: string }) {
               </select>
               <button
                 onClick={() => remove.mutate(m.user_id)}
-                className="text-ink-400 hover:text-red-600"
+                className="text-[#0F2A1A]/65 hover:text-red-600"
                 title="Remove member"
               >
                 <Trash2 size={16} />
@@ -364,13 +364,13 @@ function StudentsPanel({ id }: { id: string }) {
   const picker = learners.data ?? [];
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-      <h2 className="mb-4 font-bold text-ink-900">Linked learners</h2>
+    <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+      <h2 className="mb-4 font-bold text-[#0F2A1A]">Linked learners</h2>
       <div className="mb-5 flex flex-col gap-2 sm:flex-row">
         <select
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
-          className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+          className="flex-1 rounded-xl border border-black/10 px-4 py-2.5 text-sm"
         >
           <option value="">Select a learner…</option>
           {picker.map((l) => (
@@ -383,7 +383,7 @@ function StudentsPanel({ id }: { id: string }) {
           value={ref}
           onChange={(e) => setRef(e.target.value)}
           placeholder="Enrolment ref (optional)"
-          className="rounded-xl border border-ink-200 px-4 py-2.5 text-sm"
+          className="rounded-xl border border-black/10 px-4 py-2.5 text-sm"
         />
         <Button
           onClick={() => add.mutate()}
@@ -395,31 +395,31 @@ function StudentsPanel({ id }: { id: string }) {
 
       <div className="space-y-2">
         {rows.length === 0 && (
-          <p className="text-sm text-ink-500">No learners linked yet.</p>
+          <p className="text-sm text-[#0F2A1A]/65">No learners linked yet.</p>
         )}
         {rows.map((s) => (
           <div
             key={s.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/10 px-4 py-2.5"
           >
             <div className="text-sm">
-              <span className="font-semibold text-ink-800">
+              <span className="font-semibold text-[#0F2A1A]/85">
                 {s.student_name || s.student_profile_id.slice(0, 8)}
               </span>
               {s.student_level && (
-                <span className="ml-2 text-xs text-ink-500">
+                <span className="ml-2 text-xs text-[#0F2A1A]/65">
                   {s.student_level}
                 </span>
               )}
               {s.enrollment_ref && (
-                <span className="ml-2 rounded-full bg-ink-100 px-2 py-0.5 text-xs font-bold text-ink-600">
+                <span className="ml-2 rounded-full bg-[#F9F6ED] px-2 py-0.5 text-xs font-bold text-[#0F2A1A]/70">
                   {s.enrollment_ref}
                 </span>
               )}
             </div>
             <button
               onClick={() => remove.mutate(s.student_profile_id)}
-              className="text-ink-400 hover:text-red-600"
+              className="text-[#0F2A1A]/65 hover:text-red-600"
               title="Unlink learner"
             >
               <X size={16} />
@@ -477,14 +477,14 @@ function PlusTeamsPanel({ id }: { id: string }) {
   const rows = seats.data ?? [];
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+    <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-ink-900">YK-Virtual Plus Teams</h2>
-        <span className="rounded-full bg-brand-gold px-3 py-1 text-xs font-bold text-deep">
+        <h2 className="font-bold text-[#0F2A1A]">YK-Virtual Plus Teams</h2>
+        <span className="rounded-full bg-[#D6FF57] px-3 py-1 text-xs font-bold text-[#0F2A1A]">
           {a ? `${a.used_seats} / ${a.total_seats} seats` : "No seats yet"}
         </span>
       </div>
-      <p className="mt-1 text-sm text-ink-500">
+      <p className="mt-1 text-sm text-[#0F2A1A]/65">
         Allocate seats covered by your organisation&apos;s Plus Teams plan.
       </p>
 
@@ -495,7 +495,7 @@ function PlusTeamsPanel({ id }: { id: string }) {
           type="number"
           min={0}
           placeholder="Total seats"
-          className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="flex-1 rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none"
         />
         <Button
           onClick={() => saveSeats.mutate()}
@@ -510,7 +510,7 @@ function PlusTeamsPanel({ id }: { id: string }) {
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           placeholder="User ID to cover (uuid)"
-          className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+          className="flex-1 rounded-xl border border-black/10 px-4 py-2.5 text-sm focus:border-[#D6FF57] focus:outline-none"
         />
         <Button
           onClick={() => assign.mutate()}
@@ -523,26 +523,26 @@ function PlusTeamsPanel({ id }: { id: string }) {
 
       <div className="mt-5 space-y-2">
         {rows.length === 0 && (
-          <p className="text-sm text-ink-500">No seats assigned yet.</p>
+          <p className="text-sm text-[#0F2A1A]/65">No seats assigned yet.</p>
         )}
         {rows.map((s) => (
           <div
             key={s.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-100 px-4 py-2.5"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/10 px-4 py-2.5"
           >
             <div className="text-sm">
-              <span className="font-semibold text-ink-800">
+              <span className="font-semibold text-[#0F2A1A]/85">
                 {s.user_name || s.user_id.slice(0, 8)}
               </span>
               {s.user_email && (
-                <span className="ml-2 text-xs text-ink-500">
+                <span className="ml-2 text-xs text-[#0F2A1A]/65">
                   {s.user_email}
                 </span>
               )}
             </div>
             <button
               onClick={() => release.mutate(s.user_id)}
-              className="text-ink-400 hover:text-red-600"
+              className="text-[#0F2A1A]/65 hover:text-red-600"
               title="Release seat"
             >
               Release

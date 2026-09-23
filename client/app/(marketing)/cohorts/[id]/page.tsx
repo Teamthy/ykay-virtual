@@ -101,26 +101,26 @@ export default async function CohortDetailPage(props: Props) {
             {[
               {
                 icon: (
-                  <CalendarDays size={14} className="text-brand-gold-dark" />
+                  <CalendarDays size={14} className="text-[#0F2A1A]" />
                 ),
                 label: "Starts",
                 value: new Date(cohort.start_date).toLocaleDateString(),
               },
               {
                 icon: (
-                  <CalendarDays size={14} className="text-brand-gold-dark" />
+                  <CalendarDays size={14} className="text-[#0F2A1A]" />
                 ),
                 label: "Ends",
                 value: new Date(cohort.end_date).toLocaleDateString(),
               },
               {
-                icon: <Users size={14} className="text-brand-gold-dark" />,
+                icon: <Users size={14} className="text-[#0F2A1A]" />,
                 label: "Seats",
                 value: `${cohort.enrolled_count}/${cohort.capacity} taken`,
               },
             ].map((st) => (
               <div key={st.label} className="card p-4 text-center">
-                <div className="flex items-center justify-center gap-1.5 text-xs text-ink-500">
+                <div className="flex items-center justify-center gap-1.5 text-xs text-[#0F2A1A]/65">
                   {st.icon}
                   {st.label}
                 </div>
@@ -133,7 +133,7 @@ export default async function CohortDetailPage(props: Props) {
           <section className="mt-8">
             <h2 className="text-xl font-extrabold mb-4">Session schedule</h2>
             {lessons.length === 0 ? (
-              <p className="text-sm text-ink-500 border border-dashed border-ink-200 rounded-xl p-6 text-center">
+              <p className="text-sm text-[#0F2A1A]/65 border border-dashed border-black/10 rounded-xl p-6 text-center">
                 The full session schedule is released to enrolled families
                 shortly before the cohort begins.
               </p>
@@ -145,14 +145,14 @@ export default async function CohortDetailPage(props: Props) {
                     className="border rounded-2xl p-4 flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-blue text-white text-xs font-bold">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F2A1A] text-white text-xs font-bold">
                         {i + 1}
                       </span>
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate">
                           {l.title}
                         </div>
-                        <div className="text-xs text-ink-500">
+                        <div className="text-xs text-[#0F2A1A]/65">
                           {new Date(l.start_at).toLocaleString([], {
                             weekday: "short",
                             day: "numeric",
@@ -179,15 +179,15 @@ export default async function CohortDetailPage(props: Props) {
         <div>
           <div className="card space-y-4 p-6">
             <div className="flex items-baseline justify-between gap-3">
-              <h2 className="font-display text-lg tracking-[0.02em] text-brand-navy">
+              <h2 className="font-display text-lg tracking-[0.02em] text-[#0F2A1A]">
                 Enrol in this cohort
               </h2>
-              <span className="font-display text-2xl tracking-[0.02em] text-brand-navy">
+              <span className="font-display text-2xl tracking-[0.02em] text-[#0F2A1A]">
                 {cohort.currency} {cohort.fee.toLocaleString()}
               </span>
             </div>
             <p
-              className={`text-sm font-semibold ${full ? "text-brand-error" : "text-brand-green"}`}
+              className={`text-sm font-semibold ${full ? "text-brand-error" : "text-[#0F2A1A]"}`}
             >
               {full
                 ? "Cohort is full"
@@ -206,27 +206,27 @@ export default async function CohortDetailPage(props: Props) {
               showValue={false}
               barClassName={full ? "!bg-red-500" : undefined}
             />
-            <ul className="space-y-2 text-sm text-ink-600">
+            <ul className="space-y-2 text-sm text-[#0F2A1A]/70">
               <li className="flex gap-2">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Live lessons with a vetted tutor
               </li>
               <li className="flex gap-2">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Recordings, resources and homework
               </li>
               <li className="flex gap-2">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Weekly progress reports for parents
               </li>
               <li className="flex gap-2">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Escrow-protected payment
@@ -247,7 +247,7 @@ export default async function CohortDetailPage(props: Props) {
                 Enrol now - pay securely
               </Link>
             )}
-            <p className="text-[11px] text-ink-400 text-center">
+            <p className="text-[11px] text-[#0F2A1A]/65 text-center">
               Payment is held in escrow until lessons are delivered (or refunded
               per policy).
             </p>
@@ -256,12 +256,12 @@ export default async function CohortDetailPage(props: Props) {
       </div>
       {/* Conversion follow-up: questions before enrolling → ops calls back */}
       <div className="container-x pb-20">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-gold bg-brand-gold-light p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[#D6FF57] bg-[#F9F6ED] p-6">
           <div>
-            <p className="font-display text-xl font-bold text-brand-navy">
+            <p className="font-display text-xl font-bold text-[#0F2A1A]">
               Not sure yet? Talk to us first.
             </p>
-            <p className="mt-1 max-w-md text-sm text-ink-600">
+            <p className="mt-1 max-w-md text-sm text-[#0F2A1A]/70">
               Leave your number and a YK-Virtual advisor will call you back to
               answer questions about this cohort — no pressure, no spam.
             </p>

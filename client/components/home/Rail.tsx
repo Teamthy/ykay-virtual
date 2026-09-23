@@ -123,7 +123,7 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
       <h3 className="mt-4 font-display text-[26px] font-normal leading-[0.9] tracking-[-0.02em] text-[#0F2A1A] md:text-[28px]">
         {card.title[0]} <span className="block">{card.title[1]}</span>
       </h3>
-      <p className="mt-2 min-h-[3.4em] text-[12px] leading-relaxed text-[#0F2A1A]/60 group-hover:text-[#0F2A1A]/70">
+      <p className="mt-2 min-h-[3.4em] text-[12px] leading-relaxed text-[#0F2A1A]/65 group-hover:text-[#0F2A1A]/70">
         {card.blurb}
       </p>
 
@@ -165,14 +165,14 @@ export function Rail() {
   }, []);
 
   return (
-    <div id="programmes-rail" aria-labelledby="programmes-rail-title" className="relative isolate w-full overflow-hidden bg-[#FFFEF8]">
+    <div id="programmes-rail" aria-labelledby="programmes-rail-title" className="relative isolate w-full overflow-hidden bg-[#F9F6ED]">
       <div className="relative z-10 mx-auto w-full max-w-[1920px] px-4 pb-12 pt-10 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 md:pb-16 md:pt-14">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <h2 id="programmes-rail-title" className="font-display text-[clamp(1.8rem,3vw,2.6rem)] leading-[0.9] tracking-[-0.02em] text-[#0F2A1A] uppercase">
               Find your track
             </h2>
-            <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-[#0F2A1A]/60">
+            <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-[#0F2A1A]/65">
               Live cohorts, private tuition, exam prep and digital skills — choose the format that fits your learner&apos;s pace and goals.
             </p>
           </div>

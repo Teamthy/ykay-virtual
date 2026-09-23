@@ -45,15 +45,15 @@ export function DataTable<T>({ columns, rows, rowKey, loading, empty, className 
   }
 
   return (
-    <div className={cn("overflow-x-auto rounded-2xl border border-ink-100", className)}>
+    <div className={cn("overflow-x-auto rounded-2xl border border-black/10", className)}>
       <table className="w-full min-w-[560px] text-sm">
         <thead>
-          <tr className="border-b border-ink-100 bg-surface-muted text-left">
+          <tr className="border-b border-black/10 bg-[#F9F6ED] text-left">
             {columns.map((c) => (
               <th
                 key={c.key}
                 className={cn(
-                  "px-4 py-3 text-xs font-bold uppercase tracking-wide text-ink-500",
+                  "px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65",
                   c.align === "right" && "text-right",
                   c.align === "center" && "text-center",
                   c.className
@@ -66,12 +66,12 @@ export function DataTable<T>({ columns, rows, rowKey, loading, empty, className 
         </thead>
         <tbody className="divide-y divide-ink-100 bg-white">
           {rows.map((row) => (
-            <tr key={rowKey(row)} className="transition-colors hover:bg-surface-muted/60">
+            <tr key={rowKey(row)} className="transition-colors hover:bg-[#F9F6ED]/60">
               {columns.map((c) => (
                 <td
                   key={c.key}
                   className={cn(
-                    "px-4 py-3 align-middle text-ink-700",
+                    "px-4 py-3 align-middle text-[#0F2A1A]/75",
                     c.align === "right" && "text-right",
                     c.align === "center" && "text-center",
                     c.className

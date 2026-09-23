@@ -74,13 +74,13 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex gap-1 overflow-x-auto border-b border-ink-100 pb-px">
+      <div className="flex gap-1 overflow-x-auto border-b border-black/10 pb-px">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors ${
-              tab === t ? "text-brand-blue border-b-2 border-brand-blue" : "text-ink-500 hover:text-ink-800"
+              tab === t ? "text-[#0F2A1A] border-b-2 border-[#0F2A1A]" : "text-[#0F2A1A]/65 hover:text-[#0F2A1A]/85"
             }`}
           >
             {t}
@@ -93,25 +93,25 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
           <div className="max-w-3xl space-y-6">
             <section>
               <h2 className="text-xl font-extrabold mb-3">About this programme</h2>
-              <p className="text-ink-700 leading-relaxed whitespace-pre-line">
+              <p className="text-[#0F2A1A]/75 leading-relaxed whitespace-pre-line">
                 {programme.description ?? programme.title}
               </p>
             </section>
             <section>
               <h2 className="text-xl font-extrabold mb-3">Who it&apos;s for</h2>
-              <ul className="space-y-2 text-sm text-ink-700">
-                <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>{programme.level_name ?? "Learners at the programme's level"} students</li>
-                {programme.exam_name && <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Learners preparing for {programme.exam_name}</li>}
-                <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Families who want structured, accountable learning</li>
+              <ul className="space-y-2 text-sm text-[#0F2A1A]/75">
+                <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>{programme.level_name ?? "Learners at the programme's level"} students</li>
+                {programme.exam_name && <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Learners preparing for {programme.exam_name}</li>}
+                <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Families who want structured, accountable learning</li>
               </ul>
             </section>
             <section>
               <h2 className="text-xl font-extrabold mb-3">What&apos;s included</h2>
-              <ul className="space-y-2 text-sm text-ink-700">
-                <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Live lessons with a vetted, competency-assessed tutor</li>
-                <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Resources, homework and lesson notes after every session</li>
-                <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Weekly progress reports for parents</li>
-                <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Escrow-protected payment</li>
+              <ul className="space-y-2 text-sm text-[#0F2A1A]/75">
+                <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Live lessons with a vetted, competency-assessed tutor</li>
+                <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Resources, homework and lesson notes after every session</li>
+                <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Weekly progress reports for parents</li>
+                <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Escrow-protected payment</li>
               </ul>
             </section>
           </div>
@@ -120,14 +120,14 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
         {tab === "Topics" && (
           <div className="max-w-3xl">
             <h2 className="text-xl font-extrabold mb-3">Curriculum topics</h2>
-            <p className="text-sm text-ink-600 mb-4">
+            <p className="text-sm text-[#0F2A1A]/70 mb-4">
               The topic list follows the {programme.curriculum_name ?? "relevant"} curriculum{programme.exam_name ? ` and the ${programme.exam_name} syllabus` : ""}.
             </p>
             <ol className="space-y-2.5">
               {topicsFor(programme).map((t, i) => (
                 <li key={t} className="flex gap-3 border rounded-xl px-4 py-3 text-sm">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue text-xs font-bold">{i + 1}</span>
-                  <span className="text-ink-700">{t}</span>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0F2A1A]/10 text-[#0F2A1A] text-xs font-bold">{i + 1}</span>
+                  <span className="text-[#0F2A1A]/75">{t}</span>
                 </li>
               ))}
             </ol>
@@ -141,9 +141,9 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
             {cohorts.isLoading ? (
               <Skeleton className="h-24 w-full" />
             ) : (cohorts.data?.length ?? 0) === 0 ? (
-              <div className="border border-dashed border-ink-200 rounded-2xl p-8 text-center text-sm text-ink-500">
+              <div className="border border-dashed border-black/10 rounded-2xl p-8 text-center text-sm text-[#0F2A1A]/65">
                 No cohorts are open for enrolment yet - new cohorts launch regularly.{" "}
-                <Link href="/private-tuition" className="text-brand-blue font-semibold hover:underline">Request private tuition</Link> in the meantime.
+                <Link href="/private-tuition" className="text-[#0F2A1A] font-semibold hover:underline">Request private tuition</Link> in the meantime.
               </div>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
@@ -152,17 +152,17 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
                   return (
                     <div key={c.id} className="border rounded-2xl p-5">
                       <h3 className="font-bold text-sm">{c.title}</h3>
-                      <p className="mt-1.5 text-xs text-ink-500">
+                      <p className="mt-1.5 text-xs text-[#0F2A1A]/65">
                         {new Date(c.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} →{" "}
                         {new Date(c.end_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} · {c.timezone}
                       </p>
-                      {c.schedule_description && <p className="mt-1 text-xs text-ink-500">{c.schedule_description}</p>}
+                      {c.schedule_description && <p className="mt-1 text-xs text-[#0F2A1A]/65">{c.schedule_description}</p>}
                       <div className="mt-3 flex items-center justify-between">
-                        <span className="text-xs font-bold text-ink-600">{seatsLeft > 0 ? `${seatsLeft} seats left` : "Full"}</span>
-                        <span className="font-extrabold text-brand-blue">{c.currency} {c.fee.toLocaleString()}</span>
+                        <span className="text-xs font-bold text-[#0F2A1A]/70">{seatsLeft > 0 ? `${seatsLeft} seats left` : "Full"}</span>
+                        <span className="font-extrabold text-[#0F2A1A]">{c.currency} {c.fee.toLocaleString()}</span>
                       </div>
                       <Link href={seatsLeft > 0 ? `/cohorts/${c.id}/enroll` : `/cohorts/${c.id}`}
-                        className={`mt-3 block text-center rounded-xl py-2.5 text-sm font-bold ${seatsLeft > 0 ? "bg-brand-blue text-white hover:bg-brand-blue/90" : "bg-ink-100 text-ink-400"}`}>
+                        className={`mt-3 block text-center rounded-xl py-2.5 text-sm font-bold ${seatsLeft > 0 ? "bg-[#0F2A1A] text-white hover:bg-[#0F2A1A]/90" : "bg-[#F9F6ED] text-[#0F2A1A]/65"}`}>
                         {seatsLeft > 0 ? "Join cohort" : "View cohort"}
                       </Link>
                     </div>
@@ -176,14 +176,14 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
         {tab === "Private Tuition" && (
           <div className="max-w-2xl">
             <h2 className="text-xl font-extrabold mb-3">One-to-one support</h2>
-            <p className="text-sm text-ink-600 leading-relaxed">
+            <p className="text-sm text-[#0F2A1A]/70 leading-relaxed">
               Prefer one-to-one? Request private tuition and our advisors match your learner with a
               vetted tutor for {programme.title} - tailored pace, schedule and goals.
             </p>
-            <ul className="mt-4 space-y-2 text-sm text-ink-700">
-              <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Custom schedule around your family&apos;s week</li>
-              <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Lesson notes and homework after every session</li>
-              <li className="flex gap-2"><span className="text-brand-blue font-bold">✓</span>Escrow-protected payment</li>
+            <ul className="mt-4 space-y-2 text-sm text-[#0F2A1A]/75">
+              <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Custom schedule around your family&apos;s week</li>
+              <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Lesson notes and homework after every session</li>
+              <li className="flex gap-2"><span className="text-[#0F2A1A] font-bold">✓</span>Escrow-protected payment</li>
             </ul>
             <Link href="/private-tuition" className="btn-gold mt-6 inline-block text-sm">Request a tutor</Link>
           </div>
@@ -195,7 +195,7 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
             {tutors.isLoading ? (
               <Skeleton className="h-24 w-full" />
             ) : (tutors.data?.length ?? 0) === 0 ? (
-              <div className="border border-dashed border-ink-200 rounded-2xl p-8 text-center text-sm text-ink-500">
+              <div className="border border-dashed border-black/10 rounded-2xl p-8 text-center text-sm text-[#0F2A1A]/65">
                 Approved tutors for this programme appear here as cohorts are assigned.
               </div>
             ) : (
@@ -203,15 +203,15 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
                 {tutors.data?.map((t) => (
                   <div key={t.id} className="border rounded-2xl p-5 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-blue text-white font-bold">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0F2A1A] text-white font-bold">
                         {t.display_name.slice(0, 1)}
                       </span>
                       <div className="min-w-0">
                         <p className="font-semibold text-sm truncate">{t.display_name}</p>
-                        <p className="text-xs text-ink-500">★ {t.rating_avg.toFixed(1)} · {t.rating_count} reviews · verified</p>
+                        <p className="text-xs text-[#0F2A1A]/65">★ {t.rating_avg.toFixed(1)} · {t.rating_count} reviews · verified</p>
                       </div>
                     </div>
-                    <Link href={`/tutors/${t.slug}`} className="text-xs font-semibold text-brand-blue hover:underline shrink-0">View profile</Link>
+                    <Link href={`/tutors/${t.slug}`} className="text-xs font-semibold text-[#0F2A1A] hover:underline shrink-0">View profile</Link>
                   </div>
                 ))}
               </div>
@@ -228,7 +228,7 @@ export function ProgrammeDetailTabs({ programme }: { programme: ProgrammeDetail 
             ].map((f) => (
               <details key={f.q} className="border rounded-xl px-5 py-4">
                 <summary className="font-semibold cursor-pointer text-sm">{f.q}</summary>
-                <p className="mt-2 text-sm text-ink-600">{f.a}</p>
+                <p className="mt-2 text-sm text-[#0F2A1A]/70">{f.a}</p>
               </details>
             ))}
           </div>

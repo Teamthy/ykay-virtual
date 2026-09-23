@@ -30,8 +30,8 @@ export function DashboardTabs({
             className={cn(
               "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors",
               isActive
-                ? "bg-primary text-ink-900"
-                : "border border-ink-200 bg-white text-ink-600 hover:border-primary hover:text-ink-900"
+                ? "bg-[#D6FF57] text-[#0F2A1A]"
+                : "border border-black/10 bg-white text-[#0F2A1A]/70 hover:border-[#D6FF57] hover:text-[#0F2A1A]"
             )}
           >
             {t.label}
@@ -39,7 +39,7 @@ export function DashboardTabs({
               <span
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums",
-                  isActive ? "bg-black/10 text-ink-900" : "bg-primary-light text-primary-dark"
+                  isActive ? "bg-black/10 text-[#0F2A1A]" : "bg-[#F9F6ED] text-[#0F2A1A]"
                 )}
               >
                 {t.count}

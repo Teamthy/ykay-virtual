@@ -34,17 +34,17 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const s = slides[active];
 
   return (
-    <section className="relative overflow-hidden bg-deep">
+    <section className="relative overflow-hidden bg-[#0F2A1A]">
       {/* Background image per slide */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
-        style={{ backgroundImage: `linear-gradient(180deg, rgba(6,15,38,0.82) 0%, rgba(6,15,38,0.9) 100%), url("${s.cover}")` }}
+        style={{ backgroundImage: `linear-gradient(180deg, rgba(15,42,26,0.82) 0%, rgba(15,42,26,0.9) 100%), url("${s.cover}")` }}
         aria-hidden="true"
       />
 
       {/* Slide content */}
       <div className="container-x relative z-10 py-24 md:py-28 text-center text-white">
-        <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-gold">
+        <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#D6FF57]">
           {s.eyebrow}
         </p>
         <h1 className="mx-auto mt-5 max-w-3xl font-display text-4xl tracking-[0.02em] md:text-5xl">
@@ -84,7 +84,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               onClick={() => go(i)}
               className={cn(
                 "h-2.5 rounded-full transition-all",
-                i === active ? "w-7 bg-brand-gold" : "w-2.5 bg-white/40 hover:bg-white/70"
+                i === active ? "w-7 bg-[#D6FF57]" : "w-2.5 bg-white/40 hover:bg-white/70"
               )}
             />
           ))}

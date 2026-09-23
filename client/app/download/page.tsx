@@ -24,7 +24,7 @@ export default function DownloadPage() {
                 <Smartphone size={24} />
               </div>
               <h2 className="mt-5 text-center font-display text-[22px] uppercase leading-none text-[#0F2A1A]">Install instantly — Android and iPhone</h2>
-              <p className="mx-auto mt-3 max-w-[50ch] text-center text-[13px] leading-relaxed text-[#0F2A1A]/60">The full YK-Virtual app, straight from this website. Installs in seconds, takes almost no space, updates itself — no app store, no “unknown source” warnings.</p>
+              <p className="mx-auto mt-3 max-w-[50ch] text-center text-[13px] leading-relaxed text-[#0F2A1A]/65">The full YK-Virtual app, straight from this website. Installs in seconds, takes almost no space, updates itself — no app store, no “unknown source” warnings.</p>
 
               <div className="mt-8 grid gap-5 md:grid-cols-2">
                 <div id="android" className="scroll-mt-24 rounded-[16px] bg-[#F9F6ED] p-5 border border-black/5">
@@ -45,7 +45,7 @@ export default function DownloadPage() {
                 </div>
               </div>
 
-              <p className="mt-6 flex items-center justify-center gap-2 text-center text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/50"><Check size={12} /> Works offline · full-screen, no browser bar</p>
+              <p className="mt-6 flex items-center justify-center gap-2 text-center text-[11px] font-bold uppercase tracking-wide text-[#0F2A1A]/65"><Check size={12} /> Works offline · full-screen, no browser bar</p>
             </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -57,7 +57,7 @@ export default function DownloadPage() {
                 <div key={f.title} className="rounded-[16px] bg-white p-5 border border-black/10 text-center">
                   <span className="mx-auto grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white"><f.icon size={18} /></span>
                   <p className="mt-3 text-[13px] font-bold text-[#0F2A1A]">{f.title}</p>
-                  <p className="mt-1 text-[12px] leading-relaxed text-[#0F2A1A]/60">{f.desc}</p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-[#0F2A1A]/65">{f.desc}</p>
                 </div>
               ))}
             </div>

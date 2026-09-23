@@ -125,24 +125,24 @@ export default async function ProgrammeDetailPage(props: Props) {
                 .map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-brand-gold-light px-3 py-1 text-brand-gold-dark"
+                    className="rounded-full bg-[#F9F6ED] px-3 py-1 text-[#0F2A1A]"
                   >
                     {tag}
                   </span>
                 ))}
             </div>
-            <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">
+            <h1 className="mt-3 font-display text-4xl tracking-[0.02em] text-[#0F2A1A] md:text-5xl">
               {p.title}
             </h1>
             {p.summary && (
-              <p className="mt-3 text-ink-600 leading-relaxed">{p.summary}</p>
+              <p className="mt-3 text-[#0F2A1A]/70 leading-relaxed">{p.summary}</p>
             )}
             {(p.subjects?.length ?? 0) > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {p.subjects!.map((s) => (
                   <span
                     key={s}
-                    className="rounded-full bg-brand-blue-light px-2.5 py-1 text-xs font-semibold text-brand-blue"
+                    className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-xs font-semibold text-[#0F2A1A]"
                   >
                     {s}
                   </span>
@@ -154,9 +154,9 @@ export default async function ProgrammeDetailPage(props: Props) {
           {/* Sticky CTA card */}
           <div className="card w-full space-y-4 p-6 sm:w-72">
             {p.next_start && (
-              <p className="text-xs text-ink-500">
+              <p className="text-xs text-[#0F2A1A]/65">
                 Next cohort starts{" "}
-                <span className="font-semibold text-ink-800">
+                <span className="font-semibold text-[#0F2A1A]/85">
                   {new Date(p.next_start).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "short",
@@ -165,32 +165,32 @@ export default async function ProgrammeDetailPage(props: Props) {
                 </span>
               </p>
             )}
-            <p className="font-display text-3xl tracking-[0.02em] text-brand-navy">
+            <p className="font-display text-3xl tracking-[0.02em] text-[#0F2A1A]">
               {p.price_min != null
                 ? `${p.currency} ${p.price_min.toLocaleString()}${p.price_max && p.price_max !== p.price_min ? `-${p.price_max.toLocaleString()}` : ""}`
                 : "Price on request"}
             </p>
-            <ul className="space-y-2 text-xs text-ink-600">
+            <ul className="space-y-2 text-xs text-[#0F2A1A]/70">
               <li className="flex items-center gap-2">
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Live lessons with a vetted tutor
               </li>
               <li className="flex items-center gap-2">
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Recordings, resources &amp; homework
               </li>
               <li className="flex items-center gap-2">
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Weekly progress reports for parents
               </li>
               <li className="flex items-center gap-2">
-                <span className="grid h-4 w-4 place-items-center rounded-full bg-brand-gold-light text-[10px] font-bold text-brand-gold-dark">
+                <span className="grid h-4 w-4 place-items-center rounded-full bg-[#F9F6ED] text-[10px] font-bold text-[#0F2A1A]">
                   ✓
                 </span>
                 Escrow-protected payment
@@ -218,12 +218,12 @@ export default async function ProgrammeDetailPage(props: Props) {
       </div>
       {/* Conversion follow-up: browsing but not enrolling → ops calls back */}
       <div className="container-x pb-20">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-brand-gold bg-brand-gold-light p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-[#D6FF57] bg-[#F9F6ED] p-6">
           <div>
-            <p className="font-display text-xl font-bold text-brand-navy">
+            <p className="font-display text-xl font-bold text-[#0F2A1A]">
               Questions about this programme?
             </p>
-            <p className="mt-1 max-w-md text-sm text-ink-600">
+            <p className="mt-1 max-w-md text-sm text-[#0F2A1A]/70">
               Leave your details and our team will call you back to help you
               choose the right cohort or tutor.
             </p>

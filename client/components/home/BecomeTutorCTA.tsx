@@ -20,7 +20,7 @@ export function BecomeTutorCTA() {
             <div className="rounded-[20px] bg-white p-6">
               <div className="grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white"><GraduationCap size={16} /></div>
               <h3 className="mt-4 font-display text-[16px] uppercase text-[#0F2A1A]">You set the terms</h3>
-              <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/60">Your rates, your hours, your subjects. Online, at home, or hybrid — you choose.</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/65">Your rates, your hours, your subjects. Online, at home, or hybrid — you choose.</p>
               <ul className="mt-4 space-y-2">
                 {["Set your own rates", "Choose online / in-person", "Pick subjects you love"].map((s) => (
                   <li key={s} className="flex items-center gap-2 text-[11px] font-bold text-[#0F2A1A]/70"><span className="size-1.5 rounded-full bg-[#0F2A1A]" /> {s}</li>
@@ -34,9 +34,9 @@ export function BecomeTutorCTA() {
               <h3 className="mt-4 font-display text-[16px] uppercase text-[#0F2A1A]">Escrow & weekly payouts</h3>
               <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/70">No chasing payments. Escrow releases after delivery, paid weekly to your bank.</p>
               <div className="mt-5 rounded-[12px] bg-white p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/50">Avg. top tutor this month</p>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#0F2A1A]/65">Avg. top tutor this month</p>
                 <p className="mt-1 text-[20px] font-extrabold text-[#0F2A1A]">₦ 285,000</p>
-                <p className="text-[11px] text-[#0F2A1A]/60">12 lessons · 4.9★ · Escrow released</p>
+                <p className="text-[11px] text-[#0F2A1A]/65">12 lessons · 4.9★ · Escrow released</p>
               </div>
               <Link href="/become-tutor" className="mt-5 inline-flex w-full items-center justify-between rounded-full bg-[#0F2A1A] px-5 py-3 text-[13px] font-bold text-white"><span>Apply to teach</span><span className="grid size-7 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]"><ArrowRight size={14} /></span></Link>
             </div>
@@ -45,7 +45,7 @@ export function BecomeTutorCTA() {
             <div className="rounded-[20px] bg-white p-6">
               <div className="grid size-10 place-items-center rounded-full bg-[#0F2A1A] text-white"><Users size={16} /></div>
               <h3 className="mt-4 font-display text-[16px] uppercase text-[#0F2A1A]">We bring students</h3>
-              <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/60">3,000+ families search for tutors. Vetted tutors get priority placement and bookings.</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/65">3,000+ families search for tutors. Vetted tutors get priority placement and bookings.</p>
               <div className="mt-4 flex items-center gap-2">
                 <div className="flex -space-x-1">
                   {["/tutors/chinasa.jpg", "/tutors/judith.jpg", "/tutors/olanike.jpg"].map((s) => (

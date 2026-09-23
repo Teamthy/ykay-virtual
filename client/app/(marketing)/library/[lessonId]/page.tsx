@@ -32,8 +32,8 @@ export default function LibraryLessonPage() {
   if (item.isError || !item.data) {
     return (
       <main className="container-x py-16 text-center">
-        <p className="text-ink-500">This lesson isn&apos;t available.</p>
-        <Link href="/library" className="mt-3 inline-block font-semibold text-brand-blue hover:underline">
+        <p className="text-[#0F2A1A]/65">This lesson isn&apos;t available.</p>
+        <Link href="/library" className="mt-3 inline-block font-semibold text-[#0F2A1A] hover:underline">
           ← Back to the library
         </Link>
       </main>
@@ -44,13 +44,13 @@ export default function LibraryLessonPage() {
 
   return (
     <main className="container-x py-10">
-      <Link href="/library" className="mb-5 inline-block text-sm font-semibold text-brand-blue hover:underline">
+      <Link href="/library" className="mb-5 inline-block text-sm font-semibold text-[#0F2A1A] hover:underline">
         ← Recorded Lesson Library
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
         <div>
-          <div className="overflow-hidden rounded-2xl border border-ink-100 bg-deep">
+          <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#0F2A1A]">
             {it.entitled && it.video_url ? (
               <video
                 src={it.video_url}
@@ -59,9 +59,9 @@ export default function LibraryLessonPage() {
                 className="aspect-video w-full bg-black"
               />
             ) : (
-              <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-deep via-brand-navy to-ink-800 p-8 text-center">
+              <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-[#0F2A1A] via-[#0F2A1A] to-[#0F2A1A] p-8 text-center">
                 <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
-                  <Lock className="text-brand-gold" size={26} />
+                  <Lock className="text-[#0F2A1A]" size={26} />
                 </span>
                 <h2 className="text-xl font-bold text-white">Enrol to watch this lesson</h2>
                 <p className="max-w-md text-sm text-white/70">
@@ -71,7 +71,7 @@ export default function LibraryLessonPage() {
                 {it.cohort_id && (
                   <Link
                     href={`/cohorts/${it.cohort_id}/enroll`}
-                    className="mt-3 rounded-xl bg-brand-gold px-5 py-2.5 text-sm font-bold text-deep transition-colors hover:bg-brand-gold-hover"
+                    className="mt-3 rounded-xl bg-[#D6FF57] px-5 py-2.5 text-sm font-bold text-[#0F2A1A] transition-colors hover:bg-[#C8F030]"
                   >
                     Enrol in this cohort
                   </Link>
@@ -81,8 +81,8 @@ export default function LibraryLessonPage() {
           </div>
 
           <div className="mt-6">
-            <h1 className="font-display text-2xl font-bold tracking-[0.01em] text-ink-900">{it.title}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-500">
+            <h1 className="font-display text-2xl font-bold tracking-[0.01em] text-[#0F2A1A]">{it.title}</h1>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#0F2A1A]/65">
               {it.programme_title && <span>{it.programme_title}</span>}
               {it.level_name && <span>{it.level_name}</span>}
               {it.curriculum_name && <span>{it.curriculum_name}</span>}
@@ -96,36 +96,36 @@ export default function LibraryLessonPage() {
             {it.subjects.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {it.subjects.map((s) => (
-                  <span key={s} className="rounded-full bg-ink-100 px-2.5 py-1 text-xs font-medium text-ink-600">
+                  <span key={s} className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-xs font-medium text-[#0F2A1A]/70">
                     {s}
                   </span>
                 ))}
               </div>
             )}
-            {it.description && <p className="mt-4 text-sm leading-relaxed text-ink-600">{it.description}</p>}
+            {it.description && <p className="mt-4 text-sm leading-relaxed text-[#0F2A1A]/70">{it.description}</p>}
           </div>
         </div>
 
         <aside className="space-y-4">
           {it.cohort_title && (
-            <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-              <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Part of</p>
+            <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#0F2A1A]/65">Part of</p>
               <Link
                 href={it.cohort_id ? `/cohorts/${it.cohort_id}` : "#"}
-                className="mt-1 block font-bold text-ink-900 hover:text-brand-blue"
+                className="mt-1 block font-bold text-[#0F2A1A] hover:text-[#0F2A1A]"
               >
                 {it.cohort_title}
               </Link>
             </div>
           )}
-          <div className="rounded-2xl border border-ink-100 bg-white p-5 shadow-soft">
-            <h3 className="flex items-center gap-2 text-sm font-bold text-ink-900">
-              <FileText size={16} className="text-brand-gold" /> Lesson notes
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-[#0F2A1A]">
+              <FileText size={16} className="text-[#0F2A1A]" /> Lesson notes
             </h3>
             {it.entitled && it.transcript ? (
               <TranscriptPanel text={it.transcript} />
             ) : (
-              <p className="mt-3 text-sm text-ink-500">
+              <p className="mt-3 text-sm text-[#0F2A1A]/65">
                 {it.entitled ? "No transcript attached to this lesson yet." : "The transcript unlocks once you're enrolled in this cohort."}
               </p>
             )}

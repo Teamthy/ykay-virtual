@@ -117,7 +117,7 @@ export default async function TutorPage(props: Props) {
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_340px]">
         {/* ── Left: identity + booking ── */}
         <div>
-          <div className="mb-6 overflow-hidden rounded-3xl bg-brand-navy">
+          <div className="mb-6 overflow-hidden rounded-3xl bg-[#0F2A1A]">
             <Image
               src={tutorPortraitSrc(
                 tutor.slug,
@@ -132,19 +132,19 @@ export default async function TutorPage(props: Props) {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {verified ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-gold-light px-3 py-1 text-xs font-bold text-brand-green">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F9F6ED] px-3 py-1 text-xs font-bold text-[#0F2A1A]">
                 <BadgeCheck size={14} /> ID Verified
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1 text-xs font-bold text-ink-600">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F9F6ED] px-3 py-1 text-xs font-bold text-[#0F2A1A]/70">
                 YK-Virtual tutor
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-500">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F2A1A]/65">
               <Star
                 size={14}
                 fill="currentColor"
-                className="text-brand-gold"
+                className="text-[#0F2A1A]"
                 strokeWidth={0}
               />
               {tutor.rating_count > 0
@@ -153,16 +153,16 @@ export default async function TutorPage(props: Props) {
             </span>
           </div>
 
-          <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-brand-navy md:text-5xl">
+          <h1 className="mt-4 font-display text-4xl tracking-[0.02em] text-[#0F2A1A] md:text-5xl">
             {tutor.display_name}
           </h1>
           {tutor.headline && (
-            <p className="mt-2 text-lg font-medium text-ink-800">
+            <p className="mt-2 text-lg font-medium text-[#0F2A1A]/85">
               {tutor.headline}
             </p>
           )}
           {tutor.bio && (
-            <p className="mt-3 max-w-2xl leading-relaxed text-ink-600">
+            <p className="mt-3 max-w-2xl leading-relaxed text-[#0F2A1A]/70">
               {tutor.bio}
             </p>
           )}
@@ -172,7 +172,7 @@ export default async function TutorPage(props: Props) {
               {subjectNames.map((name) => (
                 <span
                   key={name}
-                  className="rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-semibold text-ink-700"
+                  className="rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-semibold text-[#0F2A1A]/75"
                 >
                   {name}
                 </span>
@@ -180,11 +180,11 @@ export default async function TutorPage(props: Props) {
             </div>
           )}
 
-          <section className="mt-8 rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+          <section className="mt-8 rounded-2xl border border-black/10 bg-white p-6 shadow-soft">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Child-centred teaching approach
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+            <p className="mt-2 text-sm leading-relaxed text-[#0F2A1A]/70">
               Adaptive learning plans, child-centred delivery and periodic
               evaluation - plus YK-Virtual progress reports with strengths,
               weaknesses and recommendations, all audited.
@@ -192,7 +192,7 @@ export default async function TutorPage(props: Props) {
           </section>
 
           <section id="book" className="mt-8">
-            <h2 className="font-display text-xl tracking-[0.02em] text-brand-navy">
+            <h2 className="font-display text-xl tracking-[0.02em] text-[#0F2A1A]">
               Request private tuition
             </h2>
             <div className="mt-4">
@@ -209,7 +209,7 @@ export default async function TutorPage(props: Props) {
 
         {/* ── Right: at-a-glance (sticky) ── */}
         <aside className="space-y-4 lg:sticky lg:top-28">
-          <div className="rounded-2xl bg-brand-navy p-6 text-white shadow-card">
+          <div className="rounded-2xl bg-[#0F2A1A] p-6 text-white shadow-card">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">
               Rate
             </p>
@@ -218,7 +218,7 @@ export default async function TutorPage(props: Props) {
             </p>
             <a
               href="#book"
-              className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-brand-gold px-5 py-3 text-sm font-bold text-ink-900 transition-transform hover:-translate-y-0.5"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-[#D6FF57] px-5 py-3 text-sm font-bold text-[#0F2A1A] transition-transform hover:-translate-y-0.5"
             >
               Request tuition
             </a>
@@ -231,37 +231,37 @@ export default async function TutorPage(props: Props) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-ink-100 bg-white p-4">
-              <GraduationCap size={18} className="text-brand-navy" />
-              <p className="mt-2 text-lg font-bold text-ink-900">
+            <div className="rounded-2xl border border-black/10 bg-white p-4">
+              <GraduationCap size={18} className="text-[#0F2A1A]" />
+              <p className="mt-2 text-lg font-bold text-[#0F2A1A]">
                 {tutor.years_experience ?? "-"} yrs
               </p>
-              <p className="text-xs text-ink-500">Experience</p>
+              <p className="text-xs text-[#0F2A1A]/65">Experience</p>
             </div>
-            <div className="rounded-2xl border border-ink-100 bg-white p-4">
-              <Users size={18} className="text-brand-navy" />
-              <p className="mt-2 text-lg font-bold text-ink-900">
+            <div className="rounded-2xl border border-black/10 bg-white p-4">
+              <Users size={18} className="text-[#0F2A1A]" />
+              <p className="mt-2 text-lg font-bold text-[#0F2A1A]">
                 {tutor.total_students ?? "-"}
               </p>
-              <p className="text-xs text-ink-500">Students</p>
+              <p className="text-xs text-[#0F2A1A]/65">Students</p>
             </div>
-            <div className="rounded-2xl border border-ink-100 bg-white p-4">
-              <Clock size={18} className="text-brand-navy" />
-              <p className="mt-2 text-lg font-bold text-ink-900">
+            <div className="rounded-2xl border border-black/10 bg-white p-4">
+              <Clock size={18} className="text-[#0F2A1A]" />
+              <p className="mt-2 text-lg font-bold text-[#0F2A1A]">
                 {tutor.total_hours_taught ?? "-"}
               </p>
-              <p className="text-xs text-ink-500">Hours taught</p>
+              <p className="text-xs text-[#0F2A1A]/65">Hours taught</p>
             </div>
-            <div className="rounded-2xl border border-ink-100 bg-white p-4">
-              <MapPin size={18} className="text-brand-navy" />
-              <p className="mt-2 truncate text-lg font-bold text-ink-900">
+            <div className="rounded-2xl border border-black/10 bg-white p-4">
+              <MapPin size={18} className="text-[#0F2A1A]" />
+              <p className="mt-2 truncate text-lg font-bold text-[#0F2A1A]">
                 {tutor.location ?? "Online"}
               </p>
-              <p className="text-xs text-ink-500">Location</p>
+              <p className="text-xs text-[#0F2A1A]/65">Location</p>
             </div>
           </div>
 
-          <p className="rounded-2xl border border-brand-gold/30 bg-brand-gold-light/40 p-4 text-xs leading-relaxed text-ink-700">
+          <p className="rounded-2xl border border-[#D6FF57]/30 bg-[#F9F6ED]/40 p-4 text-xs leading-relaxed text-[#0F2A1A]/75">
             Escrow protected - you pay into the YK-Virtual wallet; the tutor is
             paid after confirmation or a 3-day auto-release. No off-platform
             payment.

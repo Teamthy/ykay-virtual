@@ -43,10 +43,10 @@ export async function SuccessChampions() {
     <section className="bg-white py-16">
       <div className="container-x">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="font-display text-2xl tracking-[0.02em] text-brand-navy md:text-3xl">
+          <p className="font-display text-2xl tracking-[0.02em] text-[#0F2A1A] md:text-3xl">
             What families say
           </p>
-          <p className="mt-3 text-ink-600">
+          <p className="mt-3 text-[#0F2A1A]/70">
             Real results, published with explicit consent.
           </p>
         </div>
@@ -55,25 +55,25 @@ export async function SuccessChampions() {
           {stories.slice(0, 3).map((t) => (
             <figure
               key={t.id}
-              className="flex flex-col rounded-3xl border border-ink-100 bg-surface-muted p-7"
+              className="flex flex-col rounded-3xl border border-black/10 bg-[#F9F6ED] p-7"
             >
-              <Quote size={20} className="text-brand-green" />
-              <blockquote className="mt-4 flex-1 text-sm italic leading-relaxed text-ink-700">
+              <Quote size={20} className="text-[#0F2A1A]" />
+              <blockquote className="mt-4 flex-1 text-sm italic leading-relaxed text-[#0F2A1A]/75">
                 &ldquo;{t.body}&rdquo;
               </blockquote>
-              <figcaption className="mt-4 flex items-center justify-between border-t border-ink-100 pt-4">
+              <figcaption className="mt-4 flex items-center justify-between border-t border-black/10 pt-4">
                 <div>
-                  <p className="text-sm font-bold text-ink-800">
+                  <p className="text-sm font-bold text-[#0F2A1A]/85">
                     {t.author_name}
                   </p>
                   {t.author_location && (
-                    <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-500">
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-[#0F2A1A]/65">
                       <MapPin size={11} /> {t.author_location}
                     </p>
                   )}
                 </div>
                 {t.rating != null && (
-                  <span className="rounded-full bg-brand-gold-light px-2.5 py-1 text-xs font-bold text-brand-green">
+                  <span className="rounded-full bg-[#F9F6ED] px-2.5 py-1 text-xs font-bold text-[#0F2A1A]">
                     {t.rating.toFixed(1)} ★
                   </span>
                 )}

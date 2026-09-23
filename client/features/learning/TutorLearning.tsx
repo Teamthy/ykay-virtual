@@ -54,12 +54,12 @@ export function TutorGradebook() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold">Gradebook</h2>
-        <p className="text-sm text-ink-500">Score submissions and leave feedback - results release to the student.</p>
+        <p className="text-sm text-[#0F2A1A]/65">Score submissions and leave feedback - results release to the student.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         <label className="block">
-          <span className="text-xs font-semibold text-ink-500">Cohort</span>
+          <span className="text-xs font-semibold text-[#0F2A1A]/65">Cohort</span>
           <select
             value={cohortId}
             onChange={(e) => {
@@ -77,7 +77,7 @@ export function TutorGradebook() {
           </select>
         </label>
         <label className="block">
-          <span className="text-xs font-semibold text-ink-500">Assignment</span>
+          <span className="text-xs font-semibold text-[#0F2A1A]/65">Assignment</span>
           <select
             value={assignmentId}
             onChange={(e) => setAssignmentId(e.target.value)}
@@ -102,11 +102,11 @@ export function TutorGradebook() {
               <CardContent className="pt-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-xs text-ink-400">
+                    <p className="text-xs text-[#0F2A1A]/65">
                       Student {sub.student_profile_id.slice(0, 8)} · submitted{" "}
                       {new Date(sub.submitted_at).toLocaleString()}
                     </p>
-                    <p className="mt-1 text-sm text-ink-700 line-clamp-3">{sub.content ?? "-"}</p>
+                    <p className="mt-1 text-sm text-[#0F2A1A]/75 line-clamp-3">{sub.content ?? "-"}</p>
                     {sub.score !== undefined && (
                       <p className="mt-2 text-sm font-semibold text-green-600">
                         Scored {sub.score} · {sub.feedback}
@@ -205,7 +205,7 @@ export function TutorProgressReports() {
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-bold">Progress reports</h2>
-        <p className="text-sm text-ink-500">Write term/period reports - visible to the student and their linked parent.</p>
+        <p className="text-sm text-[#0F2A1A]/65">Write term/period reports - visible to the student and their linked parent.</p>
       </div>
 
       <Card>
@@ -215,7 +215,7 @@ export function TutorProgressReports() {
         <CardContent className="space-y-3">
           <div className="grid md:grid-cols-3 gap-3">
             <label className="block">
-              <span className="text-xs font-semibold text-ink-500">Student profile ID</span>
+              <span className="text-xs font-semibold text-[#0F2A1A]/65">Student profile ID</span>
               <input
                 value={form.student_profile_id}
                 onChange={(e) => set("student_profile_id", e.target.value)}
@@ -223,7 +223,7 @@ export function TutorProgressReports() {
               />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-ink-500">Period start</span>
+              <span className="text-xs font-semibold text-[#0F2A1A]/65">Period start</span>
               <input
                 type="date"
                 value={form.period_start}
@@ -232,7 +232,7 @@ export function TutorProgressReports() {
               />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-ink-500">Period end</span>
+              <span className="text-xs font-semibold text-[#0F2A1A]/65">Period end</span>
               <input
                 type="date"
                 value={form.period_end}
@@ -243,7 +243,7 @@ export function TutorProgressReports() {
           </div>
           <div className="grid md:grid-cols-3 gap-3">
             <label className="block">
-              <span className="text-xs font-semibold text-ink-500">Strengths</span>
+              <span className="text-xs font-semibold text-[#0F2A1A]/65">Strengths</span>
               <textarea
                 value={form.strengths}
                 onChange={(e) => set("strengths", e.target.value)}
@@ -252,7 +252,7 @@ export function TutorProgressReports() {
               />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-ink-500">Areas to improve</span>
+              <span className="text-xs font-semibold text-[#0F2A1A]/65">Areas to improve</span>
               <textarea
                 value={form.weaknesses}
                 onChange={(e) => set("weaknesses", e.target.value)}
@@ -261,7 +261,7 @@ export function TutorProgressReports() {
               />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-ink-500">Recommendations</span>
+              <span className="text-xs font-semibold text-[#0F2A1A]/65">Recommendations</span>
               <textarea
                 value={form.recommendations}
                 onChange={(e) => set("recommendations", e.target.value)}
@@ -272,7 +272,7 @@ export function TutorProgressReports() {
           </div>
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-3 text-sm">
-              <span className="font-semibold text-ink-500">Overall rating</span>
+              <span className="font-semibold text-[#0F2A1A]/65">Overall rating</span>
               <select
                 value={form.overall_rating}
                 onChange={(e) => set("overall_rating", Number(e.target.value))}
@@ -305,7 +305,7 @@ export function TutorProgressReports() {
                 <p className="text-sm font-semibold">
                   {new Date(r.period_start).toLocaleDateString()} - {new Date(r.period_end).toLocaleDateString()}
                 </p>
-                <p className="text-xs text-ink-500">Student {r.student_profile_id.slice(0, 8)} · {r.strengths ?? "no notes"}</p>
+                <p className="text-xs text-[#0F2A1A]/65">Student {r.student_profile_id.slice(0, 8)} · {r.strengths ?? "no notes"}</p>
               </div>
               <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">{r.overall_rating}/5</span>
             </CardContent>

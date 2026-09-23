@@ -47,7 +47,7 @@ function VerifyEmailInner() {
 
   if (state.phase === "working") {
     return (
-      <p className="text-center text-ink-500 py-10">Verifying your email…</p>
+      <p className="text-center text-[#0F2A1A]/65 py-10">Verifying your email…</p>
     );
   }
 
@@ -56,7 +56,7 @@ function VerifyEmailInner() {
       <div className="text-center space-y-4 py-6">
         <div className="text-5xl">✅</div>
         <h1 className="text-2xl font-extrabold">Email verified!</h1>
-        <p className="text-ink-600">
+        <p className="text-[#0F2A1A]/70">
           Your account is now active. Welcome to YK-Virtual.
         </p>
         <Button
@@ -80,7 +80,7 @@ function VerifyEmailInner() {
             ? "Check your inbox"
             : "Verification failed"}
         </h1>
-        <p className="text-ink-600 mt-2 text-sm">
+        <p className="text-[#0F2A1A]/70 mt-2 text-sm">
           {state.phase === "resend-sent"
             ? "We sent a verification link to your email. Click it to activate your account."
             : state.message}
@@ -95,7 +95,7 @@ function VerifyEmailInner() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="w-full rounded-xl border border-ink-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold focus:outline-none"
+          className="w-full rounded-xl border border-black/10 px-4 py-3 text-sm focus:ring-2 focus:ring-[#D6FF57]/30 focus:border-[#D6FF57] focus:outline-none"
         />
         <Button
           variant="gold"
@@ -110,7 +110,7 @@ function VerifyEmailInner() {
         </Button>
         <Link
           href={withNext("/login", next)}
-          className="block text-center text-sm text-brand-blue font-semibold hover:underline"
+          className="block text-center text-sm text-[#0F2A1A] font-semibold hover:underline"
         >
           Back to login
         </Link>
@@ -126,7 +126,7 @@ export default function VerifyEmailPage() {
       subtitle="Confirm your address to activate your YK-Virtual account."
     >
       <Suspense
-        fallback={<p className="text-center text-ink-500 py-10">Loading…</p>}
+        fallback={<p className="text-center text-[#0F2A1A]/65 py-10">Loading…</p>}
       >
         <VerifyEmailInner />
       </Suspense>

@@ -19,14 +19,14 @@ export default function AdminError({
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-20">
-      <div className="rounded-3xl border border-ink-100 bg-white p-8 text-center shadow-card">
+      <div className="rounded-3xl border border-black/10 bg-white p-8 text-center shadow-card">
         <p className="text-4xl" aria-hidden="true">⚠️</p>
-        <h1 className="mt-3 font-display text-2xl text-deep">This page hit a snag</h1>
-        <p className="mt-2 text-sm text-ink-600">
+        <h1 className="mt-3 font-display text-2xl text-[#0F2A1A]">This page hit a snag</h1>
+        <p className="mt-2 text-sm text-[#0F2A1A]/70">
           The error was logged to the browser console (F12 → Console). If it keeps happening,
           copy the message and send it to the engineering team.
         </p>
-        <p className="mt-4 rounded-xl bg-surface-muted px-4 py-3 text-left font-mono text-xs text-red-600">
+        <p className="mt-4 rounded-xl bg-[#F9F6ED] px-4 py-3 text-left font-mono text-xs text-red-600">
           {error.message || "Unknown runtime error"}
           {error.digest ? ` (digest ${error.digest})` : ""}
         </p>
@@ -34,15 +34,15 @@ export default function AdminError({
           <button
             type="button"
             onClick={reset}
-            className="rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-ink-900 hover:bg-primary-hover"
+            className="rounded-full bg-[#D6FF57] px-6 py-2.5 text-sm font-bold text-[#0F2A1A] hover:bg-[#C8F030]"
           >
             Reload this page
           </button>
-          <a href="/admin" className="rounded-full border border-ink-200 px-6 py-2.5 text-sm font-semibold text-ink-700">
+          <a href="/admin" className="rounded-full border border-black/10 px-6 py-2.5 text-sm font-semibold text-[#0F2A1A]/75">
             Back to admin home
           </a>
         </div>
-        <p className="mt-6 text-xs text-ink-400">
+        <p className="mt-6 text-xs text-[#0F2A1A]/65">
           Common cause: session expired on a different domain (cookie) — try logging in again.
         </p>
       </div>

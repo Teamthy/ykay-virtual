@@ -103,14 +103,14 @@ export default async function BlogSlugPage(props: Props) {
         variant="centered"
         eyebrow={(post.exam_slugs ?? []).join(" • ") || undefined}
       >
-        <div className="text-xs uppercase font-semibold text-brand-blue">
+        <div className="text-xs uppercase font-semibold text-[#0F2A1A]">
           {(post.exam_slugs ?? []).join(" • ")}
         </div>
         <h1 className="mt-2 text-3xl font-extrabold leading-tight md:text-4xl">
           {post.title}
         </h1>
         {post.published_at && (
-          <div className="mt-3 text-sm text-ink-400">
+          <div className="mt-3 text-sm text-[#0F2A1A]/65">
             Published{" "}
             {new Date(post.published_at).toLocaleDateString("en-GB", {
               year: "numeric",
@@ -120,7 +120,7 @@ export default async function BlogSlugPage(props: Props) {
           </div>
         )}
       </InnerHero>
-      <article className="mt-8 prose prose-lg max-w-none text-ink-700 leading-relaxed whitespace-pre-line">
+      <article className="mt-8 prose prose-lg max-w-none text-[#0F2A1A]/75 leading-relaxed whitespace-pre-line">
         {post.content}
       </article>
       {primarySubject && <RelatedContent subjectSlug={primarySubject} />}
