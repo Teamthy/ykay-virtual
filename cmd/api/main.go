@@ -579,6 +579,7 @@ func main() {
 		Learning:          httpapi.NewLearningHandler(learningSvc, analyticsSvc, lessonSvc, profileAuthz),
 		DashboardInsights: httpapi.NewDashboardInsightsHandler(dashSvc, profileAuthz),
 		Waitlist:          httpapi.NewWaitlistHandler(waitlistSvc),
+		AvailabilityPublic: httpapi.NewAvailabilityPublicHandler(repos.Availability),
 		// Security CF-2: the LocalStorage object-serving route is a DEVELOPMENT
 		// facility. In production, objects are served by S3/MinIO directly, so
 		// the route must NOT be mounted (a nil handler leaves it unregistered in

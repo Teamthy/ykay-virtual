@@ -201,6 +201,8 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("GET "+v1+"/subjects/{slug}", handlers.Subjects.GetBySlug)
 	mux.Handle("GET "+v1+"/tutors/search", cache60(handlers.Tutors.Search))
 	mux.HandleFunc("GET "+v1+"/tutors/{slug}", handlers.Tutors.GetBySlug)
+	// Tutor availability matching (feature 4): real slots for a tutor profile.
+	mux.Handle("GET "+v1+"/tutors/{id}/availability", cache60(handlers.AvailabilityPublic.ByTutor))
 	mux.HandleFunc("GET "+v1+"/programmes", handlers.Programmes.List)
 	mux.HandleFunc("GET "+v1+"/programmes/{slug}", handlers.Programmes.GetBySlug)
 	mux.Handle("GET "+v1+"/programmes/{slug}/tutors", cache60(handlers.Programmes.Tutors))
@@ -611,6 +613,7 @@ type Handlers struct {
 	Learning          *LearningHandler
 	Objects           *ObjectHandler
 	Waitlist          *WaitlistHandler
+	AvailabilityPublic *AvailabilityPublicHandler
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).

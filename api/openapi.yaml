@@ -1040,6 +1040,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedTutors'
 
+  /tutors/{id}/availability:
+    get:
+      tags: [tutors]
+      summary: A tutor's real recurring availability slots (feature 4, cached 60s)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Real availability slots for the tutor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TutorAvailability'
+
   /tutors/{slug}:
     get:
       tags: [tutors]
@@ -4549,6 +4565,19 @@ components:
         user_id: { type: string, format: uuid }
         position: { type: integer }
         notified_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+
+    TutorAvailability:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tutor_profile_id: { type: string, format: uuid }
+        day_of_week: { type: integer, minimum: 0, maximum: 6 }
+        start_time: { type: string }
+        end_time: { type: string }
+        is_recurring: { type: boolean }
+        valid_from: { type: string, format: date-time }
+        valid_to: { type: string, format: date-time }
         created_at: { type: string, format: date-time }
 
     OrderItem:
