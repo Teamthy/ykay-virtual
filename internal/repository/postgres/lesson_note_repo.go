@@ -25,7 +25,10 @@ func (r *PlayerNoteRepo) Add(ctx context.Context, n *lessonnote.PlayerNote) erro
 		Scan(&n.ID, &n.CreatedAt)
 }
 
-func scanPlayerNotes(rows interface{ Next() bool; Scan(...any) error }) ([]lessonnote.PlayerNote, error) {
+func scanPlayerNotes(rows interface {
+	Next() bool
+	Scan(...any) error
+}) ([]lessonnote.PlayerNote, error) {
 	out := []lessonnote.PlayerNote{}
 	for rows.Next() {
 		var n lessonnote.PlayerNote

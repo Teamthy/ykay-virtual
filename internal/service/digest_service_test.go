@@ -67,7 +67,7 @@ func TestSummarize_CountsOnlyScoredAttemptsSince(t *testing.T) {
 		{SubmittedAt: ptr(since.Add(2 * time.Hour)), Score: ptr(90)},   // in window
 		{SubmittedAt: ptr(since.Add(3 * time.Hour)), Score: ptr(70)},   // in window → avg 80
 		{SubmittedAt: ptr(since.Add(-1 * time.Hour)), Score: ptr(100)}, // before window — excluded
-		{SubmittedAt: ptr(since.Add(1 * time.Hour))},                    // no score — excluded
+		{SubmittedAt: ptr(since.Add(1 * time.Hour))},                   // no score — excluded
 		{SubmittedAt: nil, Score: ptr(100)},                            // not submitted — excluded
 	}
 	count, avg := summarize(attempts, since)

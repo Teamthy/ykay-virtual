@@ -31,7 +31,7 @@ type Task struct {
 	Topic       string     `json:"topic"`
 	WindowStart time.Time  `json:"window_start"`
 	WindowEnd   time.Time  `json:"window_end"`
-	Status      string     `json:"status"` // PENDING|DONE|SKIPPED
+	Status      string     `json:"status"`   // PENDING|DONE|SKIPPED
 	Priority    int        `json:"priority"` // 1 (high) .. 3 (low)
 	Source      string     `json:"source"`   // seeded|rebalanced
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
