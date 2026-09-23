@@ -386,6 +386,9 @@ func NewRouterWithOrigins(version string, handlers *Handlers, allowedOrigins str
 	mux.HandleFunc("POST "+v1+"/me/revision-plans/{id}/rebalance", handlers.Revision.Rebalance)
 	mux.HandleFunc("GET "+v1+"/me/revision-plans/{id}/tasks", handlers.Revision.Tasks)
 	mux.HandleFunc("POST "+v1+"/me/revision-plans/tasks/{id}/complete", handlers.Revision.CompleteTask)
+	// Weekly parent progress digest (feature 3, 000076): dashboard toggle.
+	mux.HandleFunc("GET "+v1+"/me/digest-prefs", handlers.Digest.Get)
+	mux.HandleFunc("PUT "+v1+"/me/digest-prefs", handlers.Digest.Set)
 	mux.HandleFunc("GET "+v1+"/admin/analytics", handlers.Learning.Analytics)
 	mux.HandleFunc("GET "+v1+"/admin/reports/attendance.csv", handlers.Learning.AttendanceCSV)
 	mux.HandleFunc("GET "+v1+"/admin/reports/revenue.csv", handlers.Learning.RevenueCSV)
@@ -630,6 +633,7 @@ type Handlers struct {
 	Mastery           *MasteryHandler
 	Revision          *RevisionHandler
 	PlayerNotes       *PlayerNoteHandler
+	Digest            *DigestHandler
 }
 
 // rateLimitPerMinute — global per-IP rate limit (env-tunable, G7 capacity).

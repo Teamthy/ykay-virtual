@@ -4470,6 +4470,43 @@ paths:
       responses:
         '200': { description: Completed }
 
+  /me/digest-prefs:
+    get:
+      tags: [learning]
+      summary: My weekly parent progress digest preference + last-sent watermark (feature 3)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Digest prefs (defaults to enabled=true when never toggled)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ParentDigestPrefs' }
+    put:
+      tags: [learning]
+      summary: Toggle my weekly parent progress digest on or off
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled: { type: boolean }
+      responses:
+        '200':
+          description: Updated prefs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ParentDigestPrefs' }
+
   /admin/analytics:
     get:
       tags: [analytics]
@@ -4782,6 +4819,12 @@ components:
         is_bookmark: { type: boolean }
         text: { type: string }
         created_at: { type: string, format: date-time }
+
+    ParentDigestPrefs:
+      type: object
+      properties:
+        enabled: { type: boolean, description: "Opt-in toggle for the weekly parent progress digest" }
+        last_sent_at: { type: string, format: date-time, description: "Watermark the worker uses to collect activity since the last digest (absent until the first send)" }
 
     OrderItem:
       type: object
