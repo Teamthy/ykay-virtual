@@ -11,7 +11,7 @@ Developed by Olusanya Timothy (DevTeamthy).
 | Layer    | Technology                                                                  |
 | -------- | --------------------------------------------------------------------------- |
 | Frontend | Next.js 15 App Router · React 18 · TypeScript · TanStack Query · Tailwind   |
-| Backend  | Go 1.22 modular monolith · REST `/api/v1` · PostgreSQL · Redis              |
+| Backend  | Go 1.26 modular monolith · REST `/api/v1` · PostgreSQL · Redis              |
 | Infra    | Docker Compose · S3-compatible storage · OpenTelemetry · Prometheus/Grafana |
 | Testing  | Go tests · Vitest · Playwright · k6                                         |
 

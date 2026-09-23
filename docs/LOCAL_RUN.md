@@ -7,7 +7,7 @@ Everything you need to develop and run the full stack on your machine.
 | Tool            | Version | Notes                               |
 | --------------- | ------- | ----------------------------------- |
 | Docker Desktop  | latest  | Postgres 16 + Redis 7 (one command) |
-| Go              | 1.22+   | API + worker + migrations           |
+| Go              | 1.26+   | API + worker + migrations           |
 | Node.js         | 20 LTS  | Next.js client                      |
 | npm             | 9+      |                                     |
 | (optional) psql | 16      | inspecting the DB                   |
@@ -78,7 +78,7 @@ go run ./cmd/worker       # Terminal 2
 cd client; npm install; npm run dev   # Terminal 3
 ```
 
-- **No Go yet?** Install Go 1.22+ from https://go.dev/dl/ (the API,
+- **No Go yet?** Install Go 1.26+ from https://go.dev/dl/ (the API,
   worker and migrations are Go binaries).
 - Ports: API 8080 · web 3000 · worker metrics 8081 · PG 5432 · Redis 6379.
 - The dev compose already provisions `ykvirtual/ykvirtual/ykvirtual`, which is

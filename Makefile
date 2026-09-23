@@ -3,7 +3,7 @@
 GO ?= go
 NPM ?= npm
 
-.PHONY: help infra migrate api worker web build typecheck test test-api test-web lint fmt fmt-check smoke
+.PHONY: help infra migrate api worker web build typecheck test test-api test-web lint fmt fmt-check smoke toolchain-check
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -44,6 +44,9 @@ lint: ## Go vet + gofmt check
 
 fmt: ## Format Go code
 	gofmt -w internal cmd pkg
+
+toolchain-check: ## Deploy gate: Dockerfile + CI Go versions must satisfy go.mod
+	bash scripts/check-toolchain.sh
 
 seed-users: ## Create local operator accounts with random passwords (prints once)
 	$(GO) run ./cmd/seedusers

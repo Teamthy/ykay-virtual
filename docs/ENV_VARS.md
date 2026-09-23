@@ -150,6 +150,8 @@ EXPO_ACCESS_TOKEN       (optional)
 | `API_PROXY_TARGET`                | `https://ykay-virtual.onrender.com` (server-side same-origin proxy `/api/v1/*` → API)               |
 | `NEXT_PUBLIC_MARKETPLACE_ENABLED` | `true`                                                                                              |
 | `NEXT_PUBLIC_APK_URL`             | **GO-LIVE** — e.g. `https://github.com/Teamthy/ykay-virtual/releases/latest/download/ykvirtual.apk` |
+| `API_PROXY_TIMEOUT_MS`            | *(optional)* how long the `/api/v1/*` proxy waits for the API's response headers — default `10000`. Only the header wait is capped, so SSE streams are unaffected. |
+| `SSR_FETCH_TIMEOUT_MS`            | *(optional)* hard ceiling for every server-side (RSC/SSR/SSG) API read — default `8000`. A dead API must never hang `next build` (see `client/lib/server-api.ts`); raise it only if a slow self-hosted API needs longer. |
 
 ### When the .com domain goes live (add, don't replace)
 
