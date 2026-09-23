@@ -129,7 +129,7 @@ test("home page: batch-2 sections present, healthcare gone, exam cards link", as
   // Become-a-tutor section rebuilt on the requested template.
   await expect(page.getByText("Teach what you love.")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Apply to teach" }),
+    page.locator("#main-content").getByRole("link", { name: "Apply to teach" }),
   ).toBeVisible();
 
   // Download-on-the-go section.

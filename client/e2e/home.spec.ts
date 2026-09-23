@@ -17,21 +17,36 @@ test.describe("virtual home", () => {
     await page.goto("/");
     await expect(page.getByText(/The Ykay family · Campus/i)).toBeVisible();
     await expect(page.getByRole("link", { name: /Visit Ykay College/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /What is the campus school/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /About campus/i })).toHaveAttribute("href", "/college");
   });
 
-  test("home sections are at least one viewport tall", async ({ page }) => {
+  test("about founder portrait is full-bleed, tall, and top-aligned", async ({ page }) => {
+    await page.goto("/about");
+    const founder = page.locator('section[aria-labelledby="founder-heading"]');
+    const portrait = founder.getByRole("img", { name: /Yinka Oladimeji/i });
+    await expect(portrait).toBeVisible();
+    const bounds = await founder.boundingBox();
+    expect(bounds?.width).toBeGreaterThanOrEqual((page.viewportSize()?.width ?? 1280) - 8);
+    expect(bounds?.height).toBeGreaterThanOrEqual((page.viewportSize()?.width ?? 1280) >= 1024 ? 760 : 520);
+    const imageStyle = await portrait.evaluate((img) => ({
+      fit: getComputedStyle(img).objectFit,
+      position: getComputedStyle(img).objectPosition,
+    }));
+    expect(imageStyle.fit).toBe("cover");
+    expect(imageStyle.position).toMatch(/(?:^| )0%$|top$/);
+  });
+
+  test("home sections have full-bleed backgrounds", async ({ page }) => {
     await page.goto("/");
-    const viewport = page.viewportSize()?.height ?? 720;
-    // Wait for the sections before measuring — evaluateAll does not
-    // auto-wait, and on a slow first paint it can observe an empty DOM
-    // (hydration/streaming still settling) and measure zero sections.
+    const viewport = page.viewportSize()?.width ?? 1280;
+    // The redesign uses edge-to-edge section backgrounds with inner 1920px
+    // containers. Sections need not all be a full viewport *tall*.
     const sections = page.locator("#main-content section");
     await expect(sections.first()).toBeVisible();
-    const heights = await sections.evaluateAll((els) =>
-      els.map((el) => (el as HTMLElement).offsetHeight),
+    const widths = await sections.evaluateAll((els) =>
+      els.map((el) => (el as HTMLElement).getBoundingClientRect().width),
     );
-    expect(heights.length).toBeGreaterThan(3);
-    for (const h of heights) expect(h).toBeGreaterThanOrEqual(viewport - 8);
+    expect(widths.length).toBeGreaterThan(3);
+    for (const width of widths) expect(width).toBeGreaterThanOrEqual(viewport - 8);
   });
 });
