@@ -42,7 +42,11 @@ jobs:
           cache: true
       - name: Lint (gofmt + vet)
         run: |
-          test -z "$(gofmt -l internal cmd pkg)" || (gofmt -l internal cmd pkg; exit 1)
+          diff=$(gofmt -d internal cmd pkg || true)
+          if [ -n "$diff" ]; then
+            printf '%s\n' "$diff" | awk 'BEGIN{n=0} {printf "::error::%s\n", $0; n++; if (n>=80) exit}'
+            exit 1
+          fi
           go vet ./...
       - name: Vulnerability gate (govulncheck)
         run: |
