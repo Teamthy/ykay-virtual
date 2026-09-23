@@ -23,7 +23,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * YK-Virtual site chrome — full-width white bar on every public route
- * (including home). Primary links + Services mega-menu.
+ * except home (the homepage hero ships its own floating pill nav).
+ * Primary links + Services mega-menu.
  * CBT Practice lives under Services → Tests & Exams (behind login).
  * Exam Hall is not in public chrome — it is an in-app LMS tool.
  */
@@ -89,6 +90,10 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [q, setQ] = useState("");
   const pathname = usePathname();
+
+  // The homepage hero ships its own floating pill nav (HomePillNav) — the
+  // full-width chrome below would duplicate it on "/".
+  if (pathname === "/") return null;
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();

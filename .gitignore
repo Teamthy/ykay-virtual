@@ -50,3 +50,6 @@ seed-quickstart.sql
 seed-local-users.once.txt
 # Local git-bundle patch artifacts from phased delivery (root level).
 *.bundle
+
+# Visual-QA screenshots (scripts/shot.mjs output)
+/shots/

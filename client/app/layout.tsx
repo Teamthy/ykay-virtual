@@ -1,6 +1,15 @@
 import "./globals.css";
+// Self-hosted brand fonts (OFL-licensed via Fontsource). Loaded as plain CSS
+// so builds never depend on Google Fonts at request time (sandboxes/CI with
+// no egress to fonts.googleapis.com fall back to system fonts otherwise).
+import "@fontsource/anton";
+import "@fontsource-variable/dm-sans";
+import "@fontsource/poppins/400.css";
+import "@fontsource/poppins/500.css";
+import "@fontsource/poppins/600.css";
+import "@fontsource/poppins/700.css";
+import "@fontsource/poppins/800.css";
 import type { Metadata } from "next";
-import { Anton, DM_Sans, Poppins } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ChatWidget } from "@/components/layout/ChatWidget";
@@ -70,26 +79,6 @@ export const metadata: Metadata = {
   },
 };
 
-const anton = Anton({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-display",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-});
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-poppins",
-  display: "swap",
-});
-
 export default function RootLayout({
   children,
 }: {
@@ -97,10 +86,7 @@ export default function RootLayout({
 }) {
   const orgLd = organizationJsonLd();
   return (
-    <html
-      lang="en"
-      className={`${anton.variable} ${dmSans.variable} ${poppins.variable}`}
-    >
+    <html lang="en">
       <head>
         <script
           type="application/ld+json"
