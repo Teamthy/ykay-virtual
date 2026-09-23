@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"ykay-virtual/internal/domain"
+	"ykay-virtual/internal/domain/mastery"
 	"ykay-virtual/internal/domain/revision"
 )
 
@@ -93,7 +94,10 @@ func (s *RevisionService) Rebalance(ctx context.Context, planID uuid.UUID) (chan
 		if t.Status != "PENDING" {
 			continue
 		}
-		prio := priorityForMastery(m[t.Topic])
+		prio := 2 // no mastery data yet — stay neutral
+		if cell, ok := m[t.Topic]; ok {
+			prio = priorityForHistory(cell.Mastery)
+		}
 		if prio != t.Priority || t.Source != "rebalanced" {
 			if err := s.repo.SetTaskPriority(ctx, t.ID, prio, "rebalanced"); err != nil {
 				return changed, err
@@ -123,8 +127,10 @@ func (s *RevisionService) weakTopicNames(ctx context.Context, studentProfileID u
 	return out
 }
 
-func (s *RevisionService) masteryByTopic(ctx context.Context, studentProfileID uuid.UUID, subject string) map[string]int {
-	out := map[string]int{}
+// masteryByTopic returns the measured cells per topic; absence of a key means
+// the topic has no attempt history (not the same as a measured 0%).
+func (s *RevisionService) masteryByTopic(ctx context.Context, studentProfileID uuid.UUID, subject string) map[string]mastery.TopicMastery {
+	out := map[string]mastery.TopicMastery{}
 	if s.mastery == nil {
 		return out
 	}
@@ -133,7 +139,7 @@ func (s *RevisionService) masteryByTopic(ctx context.Context, studentProfileID u
 		return out
 	}
 	for _, c := range cells {
-		out[c.Topic] = c.Mastery
+		out[c.Topic] = c
 	}
 	return out
 }
@@ -168,6 +174,19 @@ func priorityForMastery(m int) int {
 	switch {
 	case m == 0:
 		return 2 // unknown — neutral
+	case m < 50:
+		return 1 // weak — promote
+	case m < 75:
+		return 2 // developing
+	default:
+		return 3 // mastered — compress
+	}
+}
+
+// priorityForHistory maps a MEASURED mastery percentage (the topic has attempt
+// history, so a measured 0% is genuinely weak — not unknown) to a priority.
+func priorityForHistory(m int) int {
+	switch {
 	case m < 50:
 		return 1 // weak — promote
 	case m < 75:
