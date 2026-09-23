@@ -44,7 +44,7 @@ test.describe("virtual home", () => {
     const sections = page.locator("#main-content section");
     await expect(sections.first()).toBeVisible();
     const widths = await sections.evaluateAll((els) =>
-      els.map((el) => (el as HTMLElement).getBoundingClientRect().width),
+      els.map((el) => (el as HTMLElement).offsetWidth),
     );
     expect(widths.length).toBeGreaterThan(3);
     for (const width of widths) expect(width).toBeGreaterThanOrEqual(viewport - 8);
