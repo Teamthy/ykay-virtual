@@ -53,3 +53,6 @@ seed-local-users.once.txt
 
 # Visual-QA screenshots (scripts/shot.mjs output)
 /shots/
+
+# 10-user audit harness artifacts (client/e2e/audit) — screenshots/logs, never committed
+client/e2e/audit/.artifacts/
