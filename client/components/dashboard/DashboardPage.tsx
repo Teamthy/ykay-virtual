@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** Shared padding + max-width for every AppShell page. */
+/** Shared dashboard wrapper — full bleed, professional, same theme as home reference */
 export function DashboardPage({
   children,
   className,
@@ -15,17 +15,19 @@ export function DashboardPage({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full max-w-[1120px] px-4 py-6 md:px-8 md:py-8", className)}>
-      {(title || actions) && (
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            {title && <h2 className="text-2xl font-bold text-ink-900">{title}</h2>}
-            {subtitle && <p className="mt-1 text-sm text-ink-500">{subtitle}</p>}
+    <div className={cn("min-h-screen w-full bg-[#F9F6ED]", className)}>
+      <div className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 lg:py-8">
+        {(title || actions) && (
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              {title && <h2 className="font-display text-[clamp(1.4rem,2.5vw,2rem)] leading-[0.95] tracking-[-0.02em] text-[#0F2A1A] uppercase">{title}</h2>}
+              {subtitle && <p className="mt-2 text-[14px] leading-relaxed text-[#0F2A1A]/60 max-w-[60ch]">{subtitle}</p>}
+            </div>
+            {actions && <div className="flex items-center gap-2">{actions}</div>}
           </div>
-          {actions}
-        </div>
-      )}
-      {children}
+        )}
+        {children}
+      </div>
     </div>
   );
 }

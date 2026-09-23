@@ -3,17 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  Search,
-  ChevronDown,
-  Menu,
-  X,
-  GraduationCap,
-  BookOpen,
-  MonitorPlay,
-  Star,
-  ArrowRight,
-} from "lucide-react";
+import { Search, ChevronDown, Menu, X, GraduationCap, BookOpen, MonitorPlay, Star, ArrowRight } from "lucide-react";
 import { AuthNav } from "@/components/layout/AuthNav";
 import { useSession } from "@/hooks/useSession";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -21,18 +11,10 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { cn } from "@/lib/utils";
 
-/**
- * YK-Virtual site chrome — full-width white bar on every public route
- * except home (the homepage hero ships its own floating pill nav).
- * Primary links + Services mega-menu.
- * CBT Practice lives under Services → Tests & Exams (behind login).
- * Exam Hall is not in public chrome — it is an in-app LMS tool.
- */
-
 const SERVICE_GROUPS = [
   {
     title: "K-12 Academics",
-    icon: <GraduationCap size={15} />,
+    icon: <GraduationCap size={14} />,
     items: [
       { label: "Home Tutoring", href: "/hometutors" },
       { label: "Private Tuition", href: "/private-tuition" },
@@ -44,7 +26,7 @@ const SERVICE_GROUPS = [
   },
   {
     title: "Tests & Exams",
-    icon: <BookOpen size={15} />,
+    icon: <BookOpen size={14} />,
     items: [
       { label: "CBT Practice", href: "/login?next=/lms/practice" },
       { label: "UTME 2026 Prep", href: "/utme-2026" },
@@ -55,7 +37,7 @@ const SERVICE_GROUPS = [
   },
   {
     title: "Training & Digital",
-    icon: <MonitorPlay size={15} />,
+    icon: <MonitorPlay size={14} />,
     items: [
       { label: "Digital Skills", href: "/digital-skills" },
       { label: "Programmes", href: "/programmes" },
@@ -64,7 +46,7 @@ const SERVICE_GROUPS = [
   },
   {
     title: "The Ykay family",
-    icon: <Star size={15} />,
+    icon: <Star size={14} />,
     items: [
       { label: "Ykay College", href: "/college" },
       { label: "YK-Virtual Plus", href: "/plus" },
@@ -74,7 +56,7 @@ const SERVICE_GROUPS = [
   },
 ];
 
-const NAV_LINKS: { label: string; href: string; pill?: boolean }[] = [
+const NAV_LINKS = [
   { label: "Programmes", href: "/programmes" },
   { label: "Cohorts", href: "/cohorts" },
   { label: "Tutors", href: "/tutors" },
@@ -91,8 +73,6 @@ export function Header() {
   const [q, setQ] = useState("");
   const pathname = usePathname();
 
-  // The homepage hero ships its own floating pill nav (HomePillNav) — the
-  // full-width chrome below would duplicate it on "/".
   if (pathname === "/") return null;
 
   const submitSearch = (e: React.FormEvent) => {
@@ -107,30 +87,21 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full max-w-[100vw] overflow-x-clip border-b border-ink-200 bg-white dark:border-[#214c37] dark:bg-[#0d1f16]">
-      <nav className="flex w-full min-w-0 items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4 md:px-8 lg:px-10">
-        <Link
-          href="/"
-          onClick={closeAll}
-          className="flex-none"
-          aria-label="YK-Virtual home"
-        >
+    <header className="sticky top-0 z-50 w-full border-b border-black/10 bg-white">
+      <nav className="mx-auto flex w-full max-w-[1920px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8 xl:px-12">
+        <Link href="/" onClick={closeAll} className="flex-none" aria-label="YK-Virtual home">
           <Logo />
         </Link>
 
-        <div className="hidden min-w-0 items-center gap-0.5 xl:flex">
+        <div className="hidden items-center gap-1 xl:flex">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={closeAll}
               className={cn(
-                "flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors",
-                l.pill
-                  ? "rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-deep-green hover:bg-primary-hover"
-                  : pathname === l.href
-                    ? "text-deep-green"
-                    : "text-ink-700 hover:bg-ink-100 hover:text-ink-900",
+                "rounded-full px-4 py-2 text-[13px] font-bold transition",
+                pathname === l.href ? "bg-[#0F2A1A] text-white" : "text-[#0F2A1A]/70 hover:bg-[#0F2A1A]/5 hover:text-[#0F2A1A]",
               )}
             >
               {l.label}
@@ -141,70 +112,40 @@ export function Header() {
             <button
               onClick={() => setServicesOpen(!servicesOpen)}
               className={cn(
-                "flex items-center gap-1 rounded-lg p-2 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-900",
-                servicesOpen && "bg-ink-100",
+                "flex items-center gap-1 rounded-full px-4 py-2 text-[13px] font-bold transition",
+                servicesOpen ? "bg-[#0F2A1A] text-white" : "text-[#0F2A1A]/70 hover:bg-[#0F2A1A]/5",
               )}
-              aria-haspopup="menu"
-              aria-expanded={servicesOpen}
             >
-              Services
-              <ChevronDown
-                size={14}
-                className={cn(
-                  "transition-transform duration-300",
-                  servicesOpen && "rotate-180",
-                )}
-              />
+              Services <ChevronDown size={14} className={cn("transition", servicesOpen && "rotate-180")} />
             </button>
 
             {servicesOpen && (
-              <div className="absolute left-0 right-0 top-full z-20 mt-2 w-[min(92vw,760px)] overflow-hidden rounded-xl border border-ink-200 bg-white shadow-lg sm:left-auto sm:right-0">
-                <div className="grid grid-cols-1 sm:grid-cols-4">
-                  <div className="grid grid-cols-1 gap-0.5 p-3 sm:col-span-3 sm:grid-cols-2">
+              <div className="absolute left-1/2 top-full z-20 mt-3 w-[min(92vw,820px)] -translate-x-1/2 overflow-hidden rounded-[20px] border border-black/10 bg-white shadow-[0_16px_60px_rgba(15,42,26,0.15)]">
+                <div className="grid sm:grid-cols-[1.4fr_0.6fr]">
+                  <div className="grid grid-cols-2 gap-1 p-4">
                     {SERVICE_GROUPS.map((g) => (
-                      <div key={g.title} className="p-2">
-                        <span className="mb-2 ms-2.5 block text-xs font-semibold uppercase tracking-wide text-ink-500">
+                      <div key={g.title} className="rounded-[14px] bg-[#F9F6ED]/60 p-3">
+                        <span className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">
+                          <span className="grid size-6 place-items-center rounded-full bg-[#0F2A1A] text-white">{g.icon}</span>
                           {g.title}
                         </span>
-                        {g.items.map((it) => (
-                          <Link
-                            key={it.label}
-                            href={it.href}
-                            onClick={closeAll}
-                            className="flex items-center gap-3 rounded-lg p-2 text-sm font-medium text-ink-800 transition-colors hover:bg-ink-100"
-                          >
-                            <span className="shrink-0 text-primary-dark">
-                              {g.icon}
-                            </span>
-                            {it.label}
-                          </Link>
-                        ))}
+                        <div className="mt-2 space-y-0.5">
+                          {g.items.map((it) => (
+                            <Link key={it.label} href={it.href} onClick={closeAll} className="block rounded-full px-3 py-1.5 text-[12px] font-semibold text-[#0F2A1A]/70 hover:bg-white hover:text-[#0F2A1A]">
+                              {it.label}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
-
-                  <div className="flex flex-col bg-ink-50 p-4 sm:col-span-1">
-                    <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
-                      Ykay students
-                    </span>
+                  <div className="bg-[#0F2A1A] p-5 text-white">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-[#D6FF57]">Ykay students</span>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/home/ykay-students.png"
-                      alt="Ykay College students in school uniform"
-                      className="h-28 w-full rounded-lg object-cover object-top"
-                      loading="lazy"
-                    />
-                    <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                      One family — campus in Sango Ota, live classes and CBT
-                      online.
-                    </p>
-                    <Link
-                      href="/college"
-                      onClick={closeAll}
-                      className="mt-3 inline-flex items-center gap-x-1 text-sm font-bold text-deep-green hover:underline"
-                    >
-                      Visit Ykay College
-                      <ArrowRight size={14} />
+                    <img src="/home/ykay-students.png" alt="Ykay College students" className="mt-3 h-32 w-full rounded-[12px] object-cover" />
+                    <p className="mt-3 text-[12px] leading-relaxed text-white/70">One family — campus in Sango Ota, live classes and CBT online.</p>
+                    <Link href="/college" onClick={closeAll} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#D6FF57] px-4 py-2 text-[12px] font-bold text-[#0F2A1A]">
+                      Visit Ykay College <ArrowRight size={12} />
                     </Link>
                   </div>
                 </div>
@@ -213,112 +154,58 @@ export function Header() {
           </div>
         </div>
 
-        <form onSubmit={submitSearch} className="relative hidden lg:block">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
-          />
-          <input
-            type="text"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search subjects, tutors, exams…"
-            aria-label="Search subjects, tutors and exams"
-            className="w-52 rounded-full border border-ink-200 bg-ink-50 py-2 pl-8 pr-3 text-sm text-ink-800 outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/30 dark:border-[#214c37] dark:bg-[#0d1f16] dark:text-white xl:w-56"
-          />
-        </form>
-
-        <div className="hidden items-center gap-1.5 lg:flex">
-          <div className="mx-2 h-4 w-px bg-ink-200" aria-hidden="true" />
-          <ThemeToggle />
-          <LanguageSwitcher />
-          <AuthNav />
-          {!isLoading && !user && (
-            <Link
-              href="/onboarding"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:bg-primary-hover"
-            >
-              Get started
-            </Link>
-          )}
-        </div>
-
-        <ThemeToggle className="hidden sm:inline-flex lg:hidden" />
-        <LanguageSwitcher className="hidden sm:inline-flex lg:hidden" />
-        <div className="flex shrink-0 items-center gap-2 lg:hidden">
-          <AuthNav />
-          <button
-            type="button"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-expanded={mobileOpen}
-            aria-label="Toggle navigation"
-            className="relative flex size-9 items-center justify-center rounded-lg border border-ink-200 bg-white text-ink-800 hover:bg-ink-50"
-          >
-            {mobileOpen ? <X size={16} /> : <Menu size={16} />}
-          </button>
-        </div>
-      </nav>
-
-      {mobileOpen && (
-        <div className="max-h-[75vh] overflow-y-auto border-t border-ink-100 bg-white px-6 py-4 lg:hidden">
-          <form onSubmit={submitSearch} className="relative mb-3">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
-            />
+        <div className="flex items-center gap-2">
+          <form onSubmit={submitSearch} className="relative hidden lg:block">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0F2A1A]/40" />
             <input
               type="text"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search subjects, tutors, exams…"
-              className="w-full rounded-full border border-ink-200 bg-ink-50 py-2 pl-8 pr-3 text-sm outline-none focus:border-primary focus:bg-white"
+              placeholder="Search subjects, tutors…"
+              className="w-56 rounded-full border border-black/10 bg-[#F9F6ED] py-2.5 pl-10 pr-4 text-[13px] font-medium text-[#0F2A1A] outline-none placeholder:text-[#0F2A1A]/40 focus:border-[#0F2A1A] focus:bg-white"
             />
           </form>
-          <div className="space-y-0.5">
+
+          <div className="hidden items-center gap-1 lg:flex">
+            <ThemeToggle />
+            <LanguageSwitcher />
+            <AuthNav />
+            {!isLoading && !user && (
+              <Link href="/onboarding" className="ml-1 inline-flex items-center gap-2 rounded-full bg-[#0F2A1A] px-5 py-2.5 text-[13px] font-bold text-white hover:bg-black">
+                Get started <span className="grid size-6 place-items-center rounded-full bg-[#D6FF57] text-[#0F2A1A]"><ArrowRight size={12} /></span>
+              </Link>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 lg:hidden">
+            <AuthNav />
+            <button type="button" onClick={() => setMobileOpen(!mobileOpen)} className="grid size-10 place-items-center rounded-full border border-black/10 bg-white text-[#0F2A1A]">
+              {mobileOpen ? <X size={16} /> : <Menu size={16} />}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {mobileOpen && (
+        <div className="border-t border-black/10 bg-white px-4 py-4 sm:px-6">
+          <form onSubmit={submitSearch} className="relative mb-4">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0F2A1A]/40" />
+            <input type="text" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className="w-full rounded-full border border-black/10 bg-[#F9F6ED] py-2.5 pl-10 pr-4 text-[13px]" />
+          </form>
+          <div className="grid gap-1">
             {NAV_LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                onClick={closeAll}
-                className={cn(
-                  "block rounded-lg px-2 py-2 text-sm font-medium",
-                  l.pill
-                    ? "bg-primary font-bold uppercase tracking-wide text-deep-green"
-                    : "text-ink-800 hover:bg-ink-100",
-                )}
-              >
+              <Link key={l.href} href={l.href} onClick={closeAll} className="rounded-full px-4 py-2.5 text-[14px] font-bold text-[#0F2A1A] hover:bg-[#F9F6ED]">
                 {l.label}
               </Link>
             ))}
-            {SERVICE_GROUPS.map((g) => (
-              <div key={g.title} className="pt-2">
-                <span className="ms-2 block pb-1 text-xs font-semibold uppercase tracking-wide text-ink-400">
-                  {g.title}
-                </span>
-                {g.items.map((it) => (
-                  <Link
-                    key={it.label}
-                    href={it.href}
-                    onClick={closeAll}
-                    className="block rounded-lg px-2 py-2 text-sm font-medium text-ink-800 hover:bg-ink-100"
-                  >
-                    {it.label}
-                  </Link>
-                ))}
-              </div>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {SERVICE_GROUPS.flatMap((g) => g.items).slice(0, 6).map((it) => (
+              <Link key={it.label} href={it.href} onClick={closeAll} className="rounded-full bg-[#F9F6ED] px-4 py-2 text-[12px] font-semibold text-[#0F2A1A]/70">
+                {it.label}
+              </Link>
             ))}
           </div>
-          {!isLoading && !user && (
-            <div className="mt-3 border-t border-ink-100 pt-3">
-              <Link
-                href="/onboarding"
-                onClick={closeAll}
-                className="block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-ink-900"
-              >
-                Get started
-              </Link>
-            </div>
-          )}
         </div>
       )}
     </header>

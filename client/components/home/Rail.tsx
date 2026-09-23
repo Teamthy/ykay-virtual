@@ -4,11 +4,6 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-/**
- * Drifting programme rail under the home hero — CSS marquee card track with
- * manual arrows. Pauses on hover / focus / drag; disabled for reduced motion.
- */
-
 const CARDS = [
   {
     n: "01",
@@ -17,7 +12,6 @@ const CARDS = [
     blurb: "Live online classes for JSS1–JSS3, built on the NERDC scheme of work.",
     img: "/home/ykay-students.png",
     href: "/online-classes",
-    active: true,
   },
   {
     n: "02",
@@ -26,7 +20,6 @@ const CARDS = [
     blurb: "SS1–SS3 cohorts with structured WASSCE and UTME preparation.",
     img: "/home/card-ss.jpg",
     href: "/programmes",
-    active: false,
   },
   {
     n: "03",
@@ -35,7 +28,6 @@ const CARDS = [
     blurb: "Timed practice and coaching for UTME, WAEC and NECO sittings.",
     img: "/home/card-exam.jpg",
     href: "/exam-prep",
-    active: false,
   },
   {
     n: "04",
@@ -44,7 +36,6 @@ const CARDS = [
     blurb: "Personal tuition matched to your level, pace and schedule.",
     img: "/home/card-tuition.jpg",
     href: "/private-tuition",
-    active: false,
   },
   {
     n: "05",
@@ -53,7 +44,6 @@ const CARDS = [
     blurb: "Exam-hall simulations with instant scoring and explanations.",
     img: "/home/card-cbt.jpg",
     href: "/login?next=/lms/practice",
-    active: false,
   },
   {
     n: "06",
@@ -62,7 +52,6 @@ const CARDS = [
     blurb: "Vetted tutors matched to your child, at home or online.",
     img: "/home/card-tutoring.jpg",
     href: "/hometutors",
-    active: false,
   },
   {
     n: "07",
@@ -71,7 +60,6 @@ const CARDS = [
     blurb: "A structured 2026 UTME run: syllabus, mocks and weekly reviews.",
     img: "/home/card-utme.jpg",
     href: "/utme-2026",
-    active: false,
   },
   {
     n: "08",
@@ -80,7 +68,6 @@ const CARDS = [
     blurb: "Practical digital skills — coding, Office, and online literacy.",
     img: "/hero/digital.jpg",
     href: "/digital-skills",
-    active: false,
   },
   {
     n: "09",
@@ -89,7 +76,6 @@ const CARDS = [
     blurb: "Live cohorts with recordings, assignments and progress reports.",
     img: "/hero/cohorts.jpg",
     href: "/online-classes",
-    active: false,
   },
   {
     n: "10",
@@ -98,7 +84,6 @@ const CARDS = [
     blurb: "Year 7–13 British pathway with IGCSE and A-Level coaching.",
     img: "/hero/british.jpg",
     href: "/curricula/british",
-    active: false,
   },
   {
     n: "11",
@@ -107,7 +92,6 @@ const CARDS = [
     blurb: "NERDC-aligned JSS and SSS with BECE and WASSCE routes.",
     img: "/hero/nigerian.jpg",
     href: "/curricula/nigerian",
-    active: false,
   },
 ];
 
@@ -121,68 +105,38 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
     <article
       role={ariaHidden ? undefined : "group"}
       aria-label={ariaHidden ? undefined : `${card.title[0]} ${card.title[1]}`}
-      className={`relative w-[min(78vw,240px)] overflow-hidden rounded-3xl p-4 md:w-[280px] md:p-5 ${
-        card.active ? "bg-primary" : "bg-white"
-      }`}
+      className="group relative w-[min(78vw,260px)] overflow-hidden rounded-[20px] border border-black/10 bg-white p-5 shadow-[0_4px_24px_rgba(15,42,26,0.06)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#D6FF57] hover:shadow-[0_12px_40px_rgba(15,42,26,0.15)] md:w-[300px]"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
           {card.chips.map((chip) => (
-            <span
-              key={chip}
-              className={`rounded-full px-2.5 py-1 text-[9px] font-bold ${
-                card.active ? "bg-deep-green text-primary" : "bg-peach text-deep-green"
-              }`}
-            >
+            <span key={chip} className="rounded-full bg-black/5 px-2.5 py-1 text-[10px] font-bold text-[#0F2A1A] group-hover:bg-[#0F2A1A] group-hover:text-white transition">
               {chip}
             </span>
           ))}
         </div>
-        <span
-          aria-hidden="true"
-          className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[9px] font-bold ${
-            card.active ? "bg-deep-green text-primary" : "bg-peach text-deep-green"
-          }`}
-        >
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-black/5 text-[10px] font-bold text-[#0F2A1A] group-hover:bg-[#0F2A1A] group-hover:text-[#D6FF57] transition">
           {card.n}
         </span>
       </div>
 
-      <h3 className="mt-4 text-[26px] font-bold leading-[1.05] tracking-[-0.01em] text-[var(--home-ink-active)] md:text-3xl">
-        {card.title[0]}
-        <span className="block">{card.title[1]}</span>
+      <h3 className="mt-4 font-display text-[26px] font-normal leading-[0.9] tracking-[-0.02em] text-[#0F2A1A] md:text-[28px]">
+        {card.title[0]} <span className="block">{card.title[1]}</span>
       </h3>
-      <p
-        className={`mt-2 min-h-[3.4em] text-[11px] leading-relaxed ${
-          card.active ? "text-[var(--home-ink-active)]" : "text-ink-500"
-        }`}
-      >
+      <p className="mt-2 min-h-[3.4em] text-[12px] leading-relaxed text-[#0F2A1A]/60 group-hover:text-[#0F2A1A]/70">
         {card.blurb}
       </p>
 
-      <div className="relative mt-4 overflow-hidden rounded-2xl">
+      <div className="relative mt-4 overflow-hidden rounded-[14px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={card.img}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="aspect-[4/5] w-full object-cover object-top"
-        />
+        <img src={card.img} alt="" aria-hidden="true" loading="lazy" className="aspect-[4/3.2] w-full object-cover object-top transition duration-700 group-hover:scale-[1.05]" />
         {ariaHidden ? (
-          <span
-            aria-hidden="true"
-            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow"
-          >
-            Read more <ArrowRight size={11} />
+          <span aria-hidden="true" className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[11px] font-bold text-[#0F2A1A] shadow">
+            Read more <ArrowRight size={12} />
           </span>
         ) : (
-          <Link
-            href={card.href}
-            aria-label={`${card.title[0]} ${card.title[1]} — read more`}
-            className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[10px] font-bold text-deep-green shadow transition hover:bg-deep-green hover:text-primary"
-          >
-            Read more <ArrowRight size={11} aria-hidden="true" />
+          <Link href={card.href} className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[11px] font-bold text-[#0F2A1A] shadow transition group-hover:bg-[#0F2A1A] group-hover:text-white">
+            Read more <ArrowRight size={12} aria-hidden="true" />
           </Link>
         )}
       </div>
@@ -193,7 +147,6 @@ function Card({ card, ariaHidden }: { card: (typeof CARDS)[number]; ariaHidden?:
 export function Rail() {
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // Pause the marquee while the track is being dragged.
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -212,67 +165,36 @@ export function Rail() {
   }, []);
 
   return (
-    <div
-      id="programmes-rail"
-      aria-labelledby="programmes-rail-title"
-      className="home-screen relative isolate w-full scroll-mt-[var(--home-scroll-mt,7rem)] overflow-hidden bg-[var(--color-background)]"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/home/ribs-cream.jpg"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover object-top opacity-40 mix-blend-multiply"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-background)] via-[var(--color-background)]/70 to-primary-light/40" />
-
-      <div className="relative z-10 w-full px-4 pb-12 pt-8 sm:px-5 md:px-10 md:pb-16 md:pt-10">
-        <div className="flex items-end justify-between gap-6">
+    <div id="programmes-rail" aria-labelledby="programmes-rail-title" className="relative isolate w-full overflow-hidden bg-[#FFFEF8]">
+      <div className="relative z-10 mx-auto w-full max-w-[1920px] px-4 pb-12 pt-10 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 md:pb-16 md:pt-14">
+        <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-ink-400">
-              Programmes in motion
-            </p>
-            <h2
-              id="programmes-rail-title"
-              className="mt-1.5 font-display text-2xl tracking-[-0.01em] [color:var(--home-ink)] md:text-3xl"
-            >
+            <h2 id="programmes-rail-title" className="font-display text-[clamp(1.8rem,3vw,2.6rem)] leading-[0.9] tracking-[-0.02em] text-[#0F2A1A] uppercase">
               Find your track
             </h2>
+            <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-[#0F2A1A]/60">
+              Live cohorts, private tuition, exam prep and digital skills — choose the format that fits your learner&apos;s pace and goals.
+            </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2 pb-1">
-            <button
-              type="button"
-              onClick={() => scrollRailBy(trackRef.current, -1)}
-              aria-label="Scroll programmes left"
-              className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
-            >
-              <ArrowRight size={14} className="rotate-180" aria-hidden="true" />
+          <div className="flex shrink-0 items-center gap-2">
+            <button type="button" onClick={() => scrollRailBy(trackRef.current, -1)} aria-label="Scroll left" className="grid size-9 place-items-center rounded-full border border-black/10 bg-white text-[#0F2A1A] hover:bg-[#0F2A1A] hover:text-white transition">
+              <ArrowRight size={14} className="rotate-180" />
             </button>
-            <button
-              type="button"
-              onClick={() => scrollRailBy(trackRef.current, 1)}
-              aria-label="Scroll programmes right"
-              className="grid h-9 w-9 place-items-center rounded-full bg-deep-green text-primary transition hover:bg-black"
-            >
-              <ArrowRight size={14} aria-hidden="true" />
+            <button type="button" onClick={() => scrollRailBy(trackRef.current, 1)} aria-label="Scroll right" className="grid size-9 place-items-center rounded-full bg-[#0F2A1A] text-white hover:bg-black transition">
+              <ArrowRight size={14} />
             </button>
           </div>
         </div>
 
-        <div ref={trackRef} className="home-screen-track scrollbar-none mt-6 overflow-x-auto pb-2 md:mt-8">
-          <ul
-            className="flex w-max animate-rail-marquee list-none gap-4 motion-reduce:animate-none md:gap-5"
-            /* half the track (11 cards) + one gap = seamless wrap, matching
-               the legacy JS (dup.offsetLeft - first.offsetLeft) */
-            style={{ ["--rail-shift" as string]: "calc(-50% - 0.5rem)" }}
-          >
+        <div ref={trackRef} className="home-screen-track scrollbar-none mt-8 overflow-x-auto pb-4">
+          <ul className="flex w-max animate-rail-marquee list-none gap-5 motion-reduce:animate-none" style={{ ["--rail-shift" as string]: "calc(-50% - 0.625rem)" }}>
             {CARDS.map((card) => (
-              <li key={card.n} className="shrink-0 snap-start">
+              <li key={card.n} className="shrink-0">
                 <Card card={card} />
               </li>
             ))}
             {CARDS.map((card) => (
-              <li key={`dup-${card.n}`} aria-hidden="true" className="shrink-0 snap-start">
+              <li key={`dup-${card.n}`} aria-hidden="true" className="shrink-0">
                 <Card card={card} ariaHidden />
               </li>
             ))}
