@@ -70,6 +70,7 @@ export default function UtmeFaqPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }} />
       <PageHero
+        cover="/hero/utme.jpg"
         eyebrow="UTME / questions answered"
         title="Good questions make a better plan."
         subtitle="How lessons, mocks and mentoring work — and what you should confirm before choosing your next intake."

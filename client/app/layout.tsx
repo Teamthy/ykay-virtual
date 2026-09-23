@@ -27,7 +27,6 @@ import { Toaster } from "@/components/toaster";
 import { Analytics } from "@/components/layout/Analytics";
 import { organizationJsonLd } from "@/lib/seo";
 import { MotionProvider } from "@/components/ui/motion";
-import { AmbientBackdrop } from "@/components/layout/AmbientBackdrop";
 import { AppleSplash } from "@/components/layout/AppleSplash";
 
 export const metadata: Metadata = {
@@ -109,7 +108,6 @@ export default function RootLayout({
             <MobileNav />
           </ShellVisibility>
           <MainContent>
-            <AmbientBackdrop />
             <MotionProvider>
               <div className="relative z-10">{children}</div>
             </MotionProvider>

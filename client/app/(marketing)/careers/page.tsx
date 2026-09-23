@@ -102,6 +102,7 @@ export default function CareersPage() {
       />
 
       <PageHero
+        cover="/hero/cohorts.jpg"
         eyebrow="Join the team"
         title="Build the school of the future"
         subtitle="YK-Virtual is a full commercial, SEO-first virtual school — not just a lead-gen site. We hire people who want to build real education infrastructure: engineering, academic operations and tutor success."

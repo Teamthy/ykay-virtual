@@ -13,7 +13,7 @@ export const metadata: Metadata = buildMetadata({
 export default function DownloadPage() {
   return (
     <main className="w-full overflow-hidden bg-[#F9F6ED]">
-      <PageHero eyebrow="YK-Virtual mobile" title="Download YK-Virtual on the go" subtitle="Learn anywhere — tutors, live cohorts, quizzes, progress reports and the AI assistant in one app. Install free in seconds." crumbs={[{ name: "Home", href: "/" }, { name: "Download" }]} ctas={[{ label: "Install the app — free", href: "#pwa-install", primary: true }, { label: "How it works", href: "/how-it-works" }]} />
+      <PageHero cover="/hero/student-learning.jpg" eyebrow="YK-Virtual mobile" title="Download YK-Virtual on the go" subtitle="Learn anywhere — tutors, live cohorts, quizzes, progress reports and the AI assistant in one app. Install free in seconds." crumbs={[{ name: "Home", href: "/" }, { name: "Download" }]} ctas={[{ label: "Install the app — free", href: "#pwa-install", primary: true }, { label: "How it works", href: "/how-it-works" }]} />
 
       {/* install */}
       <section className="w-full bg-[#F9F6ED] py-12 lg:py-20">
@@ -25,6 +25,25 @@ export default function DownloadPage() {
               </div>
               <h2 className="mt-5 text-center font-display text-[22px] uppercase leading-none text-[#0F2A1A]">Install instantly — Android and iPhone</h2>
               <p className="mx-auto mt-3 max-w-[50ch] text-center text-[13px] leading-relaxed text-[#0F2A1A]/65">The full YK-Virtual app, straight from this website. Installs in seconds, takes almost no space, updates itself — no app store, no “unknown source” warnings.</p>
+
+              <div className="mt-8 flex flex-col items-center gap-5 rounded-[16px] border border-black/10 bg-[#F9F6ED] p-5 sm:flex-row sm:justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/brand/qr-download.png"
+                  alt="QR code linking to virtual.ykaycollege.com/download"
+                  width={144}
+                  height={144}
+                  className="size-36 rounded-[12px] border border-black/10 bg-white p-2"
+                />
+                <div className="max-w-[40ch] text-center sm:text-left">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">Scan to install</p>
+                  <p className="mt-2 text-[13px] leading-relaxed text-[#0F2A1A]/70">
+                    Point another phone&apos;s camera at this code — Android and iPhone both land on this
+                    page. Install with Chrome&apos;s <b className="text-[#0F2A1A]">Install app</b> or Safari&apos;s{" "}
+                    <b className="text-[#0F2A1A]">Add to Home Screen</b>. No app store needed.
+                  </p>
+                </div>
+              </div>
 
               <div className="mt-8 grid gap-5 md:grid-cols-2">
                 <div id="android" className="scroll-mt-24 rounded-[16px] bg-[#F9F6ED] p-5 border border-black/5">

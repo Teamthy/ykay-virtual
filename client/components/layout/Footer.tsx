@@ -37,8 +37,8 @@ export function Footer() {
         <div className="mx-auto max-w-[1200px]">
           {/* white card like reference */}
           <div className="rounded-[20px] bg-white p-6 lg:p-8 shadow-[0_8px_40px_rgba(0,0,0,0.15)]">
-            <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
-              <div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-[1.25fr_1fr_1fr_1fr_1fr]">
+              <div className="col-span-2 lg:col-span-1">
                 <Link href="/" aria-label="YK-Virtual home" className="inline-flex items-center gap-2">
                   <Logo />
                 </Link>
@@ -89,6 +89,26 @@ export function Footer() {
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <div className="col-span-2 lg:col-span-1">
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#0F2A1A]">Get the app</p>
+                <div className="mt-3 inline-flex items-center gap-3 rounded-[16px] border border-black/10 bg-[#F9F6ED] p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/brand/qr-download.png"
+                    alt="QR code linking to virtual.ykaycollege.com/download"
+                    width={96}
+                    height={96}
+                    className="size-24 rounded-[8px] bg-white p-1"
+                  />
+                  <div>
+                    <p className="text-[12px] font-bold text-[#0F2A1A]">Scan to install</p>
+                    <p className="mt-1 text-[11px] leading-[1.5] text-[#0F2A1A]/65">
+                      Android &amp; iPhone — opens the install page. No app store needed.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 

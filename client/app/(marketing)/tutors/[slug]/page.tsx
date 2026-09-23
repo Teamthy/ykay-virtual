@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { buildMetadata, personJsonLd } from "@/lib/seo";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageHero } from "@/components/layout/PageHero";
 import { RelatedContent } from "@/components/RelatedContent";
 import { ReviewsSection } from "@/features/reviews/components/ReviewsSection";
 import { notFound } from "next/navigation";
@@ -102,20 +102,21 @@ export default async function TutorPage(props: Props) {
   });
 
   return (
-    <main className="container-x py-10">
-      <Breadcrumbs
-        items={[
-          { name: "Home", href: "/" },
-          { name: "Tutors", href: "/tutors" },
-          { name: tutor.display_name },
-        ]}
-      />
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(person) }}
       />
-
-      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_340px]">
+      <PageHero
+        align="left"
+        eyebrow="YK-Virtual tutor"
+        title={tutor.display_name}
+        subtitle={tutor.headline}
+        cover="/hero/home-tutoring.jpg"
+        crumbs={[{ name: "Home", href: "/" }, { name: "Tutors", href: "/tutors" }, { name: tutor.display_name }]}
+      />
+      <main className="container-x py-10">
+      <div className="grid items-start gap-8 lg:grid-cols-[1fr_340px]">
         {/* ── Left: identity + booking ── */}
         <div>
           <div className="mb-6 overflow-hidden rounded-3xl bg-[#0F2A1A]">
@@ -285,6 +286,7 @@ export default async function TutorPage(props: Props) {
           .replace(/\s+/g, "-")}
       />
     </main>
+    </>
   );
 }
 

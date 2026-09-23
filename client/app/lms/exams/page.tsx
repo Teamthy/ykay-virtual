@@ -24,14 +24,7 @@ export default function PracticeExamsPage() {
   return (
     <DashboardPage className="space-y-10">
       <div className="relative isolate overflow-hidden rounded-3xl bg-[#0F2A1A] px-6 py-10 text-white md:px-10">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/home/ribs-green.jpg"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover opacity-35"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0F2A1A] via-[#0F2A1A]/90 to-transparent" />
+        <div aria-hidden="true" className="absolute -right-24 -top-48 size-[500px] rounded-full bg-[#D6FF57]/10 blur-[100px]" />
         <div className="relative z-10 max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#D6FF57]">
             Course exams

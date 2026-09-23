@@ -69,6 +69,7 @@ export default function ContactPage() {
   return (
     <main>
       <PageHero
+        cover="/hero/about.jpg"
         eyebrow="We're here to help"
         title="Contact & Support"
         subtitle="Questions about programmes, payments or your account - send a message and our team will respond within one business day."

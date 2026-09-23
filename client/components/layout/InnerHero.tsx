@@ -11,6 +11,8 @@ type InnerHeroProps = {
   className?: string;
   variant?: "split" | "centered" | "imageLeft";
   image?: { src: string; alt: string };
+  /** Full-bleed hero background photo (dimmed under the forest scrim). */
+  cover?: string;
   eyebrow?: string;
 };
 
@@ -19,11 +21,17 @@ export function InnerHero({
   className,
   variant = "split",
   image,
+  cover,
   eyebrow,
 }: InnerHeroProps) {
   return (
-    <section className={cn("full-bleed relative bg-[#0F2A1A] py-8 sm:py-12 lg:py-16", className)}>
-      <div className="container-x">
+    <section className={cn("full-bleed relative isolate overflow-hidden bg-[#0F2A1A] py-8 sm:py-12 lg:py-16", className)}>
+      {cover && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={cover} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+      )}
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#0F2A1A] via-[#0F2A1A]/90 to-[#0F2A1A]/75" />
+      <div className="container-x relative">
         <div className={cn(
           "relative overflow-hidden rounded-[20px] bg-[#F9F6ED] p-6 text-[#0F2A1A] shadow-[0_16px_50px_rgba(0,0,0,0.15)] sm:p-10 lg:p-12",
           variant === "centered" && "mx-auto text-center",

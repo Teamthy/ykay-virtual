@@ -67,6 +67,7 @@ export default function SatPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(FAQS)) }}
       />
       <PageHero
+        cover="/hero/entrance-exam.jpg"
         eyebrow="Exam preparation"
         title="SAT Prep - Target 1400+"
         subtitle="Master the Digital SAT with a vetted tutor, personalised drills and full-length practice tests."

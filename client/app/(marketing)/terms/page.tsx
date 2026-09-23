@@ -56,6 +56,7 @@ export default function TermsPage() {
   return (
     <main className="bg-[#F9F6ED]">
       <PageHero
+        cover="/hero/about.jpg"
         announcement="Your rights, clearly explained"
         title="Terms of Service"
         subtitle="Last updated: August 2026"

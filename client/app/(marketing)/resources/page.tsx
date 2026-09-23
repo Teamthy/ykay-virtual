@@ -82,6 +82,7 @@ export default function ResourcesPage() {
       />
 
       <PageHero
+        cover="/hero/test-prep.jpg"
         eyebrow="Learn how to learn"
         title="Resources"
         subtitle="Study guides, exam tips and curriculum guidance - everything families need to make the right learning decisions."

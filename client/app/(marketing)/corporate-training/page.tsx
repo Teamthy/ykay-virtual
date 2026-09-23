@@ -19,6 +19,7 @@ export default function CorporatePage() {
   return (
     <main>
       <PageHero
+        cover="/hero/digital.jpg"
         eyebrow="For organisations"
         title="Corporate Training & Workforce Academy"
         subtitle="Seat-based corporate accounts with cohort access, skills tracking and company-sponsored exam prep - one dashboard for your whole team."

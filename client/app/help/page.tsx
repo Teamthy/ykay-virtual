@@ -32,6 +32,7 @@ export default function HelpPage() {
     <main>
       
       <PageHero
+        cover="/hero/student-learning.jpg"
         eyebrow="Help Center"
         title="How can we help?"
         subtitle="Search for an answer, or browse by topic. If you can't find it, our team is one message away."

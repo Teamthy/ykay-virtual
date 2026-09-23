@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Exam Strategy - Revision Habits | YK
 export default function ExamStrategyPage() {
   return (
     <main className="w-full overflow-hidden">
-      <PageHero eyebrow="Exam Strategy" title="Simple revision habits to boost energy, focus and exam results" subtitle="UTME, WASSCE, NECO, IGCSE — timed CBT, past questions, and tutor clinics that build real exam confidence." crumbs={[{ name: "Home", href: "/" }, { name: "Exam Strategy" }]} ctas={[{ label: "Start CBT practice", href: "/login?next=/lms/practice", primary: true }, { label: "View exam prep", href: "/exam-prep" }]} />
+      <PageHero cover="/hero/exam-prep.jpg" eyebrow="Exam Strategy" title="Simple revision habits to boost energy, focus and exam results" subtitle="UTME, WASSCE, NECO, IGCSE — timed CBT, past questions, and tutor clinics that build real exam confidence." crumbs={[{ name: "Home", href: "/" }, { name: "Exam Strategy" }]} ctas={[{ label: "Start CBT practice", href: "/login?next=/lms/practice", primary: true }, { label: "View exam prep", href: "/exam-prep" }]} />
 
       <section className="w-full bg-[#F9F6ED] py-12 lg:py-20">
         <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12">
