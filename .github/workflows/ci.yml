@@ -41,10 +41,25 @@ jobs:
           go-version: "1.26"
           cache: true
       - name: Lint (gofmt + vet)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          diff=$(gofmt -d internal cmd pkg || true)
-          if [ -n "$diff" ]; then
-            printf '%s\n' "$diff" | awk 'BEGIN{n=0} {printf "::error::%s\n", $0; n++; if (n>=80) exit}'
+          files=$(gofmt -l internal cmd pkg || true)
+          if [ -n "$files" ]; then
+            {
+              echo 'gofmt -l'
+              echo '```'
+              echo "$files"
+              echo '```'
+              echo
+              echo 'gofmt -d (truncated)'
+              echo '```diff'
+              gofmt -d internal cmd pkg | head -c 50000
+              echo
+              echo '```'
+            } > /tmp/gofmt.md
+            gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/gofmt.md || true
+            printf '%s\n' "$files" | while read -r f; do echo "::error file=$f::gofmt"; done
             exit 1
           fi
           go vet ./...
