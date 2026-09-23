@@ -622,7 +622,7 @@ func RateLimitPerMinute() int {
 // every user behind the proxy shares one bucket and the limit collapses
 // platform-wide. Env-tunable via AUTH_RATE_LIMIT_PER_MINUTE.
 func AuthRateLimitPerMinute() int {
-	return envInt("AUTH_RATE_LIMIT_PER_MINUTE", 20)
+	return envInt("AUTH_RATE_LIMIT_PER_MINUTE", 120)
 }
 
 // envInt reads a positive integer env var, falling back to def on empty/parse

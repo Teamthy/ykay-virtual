@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buildMetadata, articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { jsonLd } from "@/lib/json-ld";
 import { PageHero } from "@/components/layout/PageHero";
 import {
   ArrowRight,
@@ -254,8 +255,8 @@ export default function Jamb2026BiologyTopicsPage() {
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(article) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
 
       <PageHero
         cover="/home/card-exam.jpg"
