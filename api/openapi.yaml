@@ -4335,6 +4335,94 @@ paths:
                   data:
                     type: array
                     items: { $ref: '#/components/schemas/TopicMastery' }
+
+  /me/revision-plans:
+    get:
+      tags: [learning]
+      summary: List the learner's revision plans (feature 1)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Revision plans
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/RevisionPlan' }
+    post:
+      tags: [learning]
+      summary: Create a revision plan (seeds tasks from weak topics)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: student_profile_id, in: query, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, window_start, window_end]
+              properties:
+                subject: { type: string }
+                exam: { type: string }
+                window_start: { type: string, format: date }
+                window_end: { type: string, format: date }
+      responses:
+        '201':
+          description: Created plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevisionPlan'
+
+  /me/revision-plans/{id}/rebalance:
+    post:
+      tags: [learning]
+      summary: Weekly rebalance — promote weak units, compress mastered ones
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Number of tasks reprioritised
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reprioritised: { type: integer }
+
+  /me/revision-plans/{id}/tasks:
+    get:
+      tags: [learning]
+      summary: A plan's task timeline (week view)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Ordered tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RevisionTask' }
+
+  /me/revision-plans/tasks/{id}/complete:
+    post:
+      tags: [learning]
+      summary: Mark a revision task complete (idempotent)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Completed }
+
   /admin/analytics:
     get:
       tags: [analytics]
@@ -4608,6 +4696,33 @@ components:
         attempts: { type: integer }
         correct: { type: integer }
         mastery: { type: integer, minimum: 0, maximum: 100 }
+
+    RevisionPlan:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        student_profile_id: { type: string, format: uuid }
+        subject: { type: string }
+        exam: { type: string }
+        window_start: { type: string, format: date }
+        window_end: { type: string, format: date }
+        status: { type: string, enum: [DRAFT, ACTIVE, ARCHIVED] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    RevisionTask:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        plan_id: { type: string, format: uuid }
+        topic: { type: string }
+        window_start: { type: string, format: date }
+        window_end: { type: string, format: date }
+        status: { type: string, enum: [PENDING, DONE, SKIPPED] }
+        priority: { type: integer, minimum: 1, maximum: 3 }
+        source: { type: string, enum: [seeded, rebalanced] }
+        completed_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
 
     OrderItem:
       type: object

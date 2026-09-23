@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { SideCard } from "@/components/dashboard/DashHero";
 import { MasteryHeatmap } from "@/features/learning/MasteryHeatmap";
+import { RevisionPlanner } from "@/features/learning/RevisionPlanner";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/hooks/useSession";
 import {
@@ -503,6 +504,14 @@ export default function StudentDashboardPage() {
           )}
 
           {/* Achievements */}
+          <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft md:p-6">
+            <div className="mb-3 flex items-center gap-2">
+              <Award size={16} className="text-[#0F2A1A]" />
+              <h3 className="font-bold text-[#0F2A1A]">Revision planner</h3>
+            </div>
+            <RevisionPlanner />
+          </section>
+
           <section className="rounded-3xl border border-black/10 bg-white p-5 shadow-soft md:p-6">
             <div className="mb-3 flex items-center gap-2">
               <Award size={16} className="text-[#0F2A1A]" />
