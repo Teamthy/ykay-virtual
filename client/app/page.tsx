@@ -11,9 +11,9 @@ import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 
-// YK-Virtual home — hero (light editorial stage + programme rail) → escrow →
-// programmes → how it works → cohorts → exam prep → testimonials →
-// campus → FAQ → app download → tutor CTA.
+// YK-Virtual home — hero (pill nav + pastel stage circle, reference redesign)
+// → programme rail → escrow → programmes → how it works → cohorts →
+// exam prep → testimonials → campus → FAQ → app download → tutor CTA.
 //
 // Removed for being unverifiable/duplicative (round 19):
 //   StatsBand        - invented "10k+ / 280k+ / 38k+ / 98%" + press logos
