@@ -60,6 +60,7 @@ export default function PrivacyPage() {
   return (
     <main className="bg-[#F9F6ED]">
       <PageHero
+        cover="/hero/african-student.jpg"
         announcement="Your rights, clearly explained"
         title="Privacy Policy"
         subtitle="Last updated: August 2026"

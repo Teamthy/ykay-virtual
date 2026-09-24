@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Clock, FileText, Lock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHero } from "@/components/layout/PageHero";
 import { getLibraryItem } from "@/features/library/api";
 import { formatDuration, formatRecordedDate } from "@/lib/format";
 import { TranscriptPanel } from "@/features/lms/components/TranscriptPanel";
@@ -44,7 +45,16 @@ export default function LibraryLessonPage() {
   const it = item.data;
 
   return (
-    <main className="container-x py-10">
+    <>
+      <PageHero
+        align="left"
+        eyebrow="Recorded lesson"
+        title={it.title}
+        subtitle={it.programme_title ?? it.cohort_title ?? undefined}
+        cover="/hero/student-learning.jpg"
+        crumbs={[{ name: "Home", href: "/" }, { name: "Library", href: "/library" }, { name: it.title }]}
+      />
+      <main className="container-x py-10">
       <Link href="/library" className="mb-5 inline-block text-sm font-semibold text-[#0F2A1A] hover:underline">
         ← Recorded Lesson Library
       </Link>
@@ -82,7 +92,6 @@ export default function LibraryLessonPage() {
           </div>
 
           <div className="mt-6">
-            <h1 className="font-display text-2xl font-bold tracking-[0.01em] text-[#0F2A1A]">{it.title}</h1>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#0F2A1A]/65">
               {it.programme_title && <span>{it.programme_title}</span>}
               {it.level_name && <span>{it.level_name}</span>}
@@ -139,6 +148,7 @@ export default function LibraryLessonPage() {
           </div>
         </aside>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

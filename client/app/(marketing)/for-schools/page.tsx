@@ -30,6 +30,7 @@ export default function ForSchoolsPage() {
       />
 
       <PageHero
+        cover="/home/campus.jpg"
         eyebrow="For institutions"
         title="For Schools - Institutional Accounts"
         subtitle="Schools, learning centres and NGOs get institutional accounts: bulk-enrol students, assign teachers, pool invoices and monitor attendance and progress in one dashboard."

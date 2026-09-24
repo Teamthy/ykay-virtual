@@ -12,10 +12,17 @@ export type ServiceGroup = {
   items: { label: string; href: string }[];
 };
 
-/** Shared public IA: College, CBT, and a Services menu whose section titles are links. */
+/** Shared public IA: the primary nav from the brand bar, plus a Services menu
+ * whose section titles are real links (K-12 Academics → /hometutors,
+ * Tests & Exams → /exam-prep, Training & Digital → /digital-skills,
+ * The Ykay family → /college). */
 export const PRIMARY_LINKS = [
+  { label: "Programmes", href: "/programmes" },
+  { label: "Cohorts", href: "/cohorts" },
+  { label: "Tutors", href: "/tutors" },
+  { label: "How it works", href: "/how-it-works" },
   { label: "College", href: "/college" },
-  { label: "CBT", href: "/cbt" },
+  { label: "About", href: "/about" },
 ] as const;
 
 export const SERVICE_GROUPS: ServiceGroup[] = [

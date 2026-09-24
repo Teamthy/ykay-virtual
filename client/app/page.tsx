@@ -11,7 +11,7 @@ import { HowItWorksStrip } from "@/components/home/HowItWorksStrip";
 import { HomeFAQ } from "@/components/home/HomeFAQ";
 import { DownloadAppCTA } from "@/components/home/DownloadAppCTA";
 
-// YK-Virtual home — hero (pill nav + pastel stage circle, reference redesign)
+// YK-Virtual home — hero (brand bar + pastel stage circle, reference redesign)
 // → programme rail → escrow → programmes → how it works → cohorts →
 // exam prep → testimonials → campus → FAQ → app download → tutor CTA.
 //

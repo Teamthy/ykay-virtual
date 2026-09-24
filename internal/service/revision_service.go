@@ -94,9 +94,12 @@ func (s *RevisionService) Rebalance(ctx context.Context, planID uuid.UUID) (chan
 		if t.Status != "PENDING" {
 			continue
 		}
-		prio := 2 // no mastery data yet — stay neutral
-		if cell, ok := m[t.Topic]; ok {
-			prio = priorityForHistory(cell.Mastery)
+		// priorityForMastery(0) means "no mastery data" (neutral). A topic with
+		// real attempts at 0% is weak evidence, not absence of evidence — floor
+		// its score into the weak band so it is promoted to priority 1.
+		prio := 2 // unknown — neutral
+		if score, ok := m[t.Topic]; ok {
+			prio = priorityForMastery(max(score, 1))
 		}
 		if prio != t.Priority || t.Source != "rebalanced" {
 			if err := s.repo.SetTaskPriority(ctx, t.ID, prio, "rebalanced"); err != nil {

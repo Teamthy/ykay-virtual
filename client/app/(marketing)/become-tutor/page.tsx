@@ -92,6 +92,7 @@ export default function BecomeTutorPage() {
       />
 
       <PageHero
+        cover="/hero/home-tutoring.jpg"
         announcement="Earn from what you love"
         title="Become a YK-Virtual tutor"
         subtitle="A five-step, stateful application: build your profile, pick your subjects, verify your identity, pass a short competency quiz - then track your application live."

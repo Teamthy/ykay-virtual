@@ -89,7 +89,7 @@ export default async function SubjectPage(props: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqs) }}
       />
 
-      <InnerHero variant="centered">
+      <InnerHero variant="centered" cover="/hero/subjects.jpg">
         <span className="inline-flex rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-[#0F2A1A]">
           {subject.category}
         </span>

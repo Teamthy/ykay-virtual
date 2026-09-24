@@ -67,8 +67,9 @@ func (m *PlayerNoteMemory) Delete(_ context.Context, id, userID uuid.UUID) error
 	for _, n := range m.notes {
 		if n.ID == id {
 			if n.UserID != userID {
-				// Only the owner may delete. Reported as not-found (like the
-				// Postgres WHERE user_id=$2 path) so existence isn't leaked.
+				// Owner only — non-owners get "not found" (no existence leak),
+				// matching the Postgres repo and the OpenAPI contract ("Not
+				// found or not the owner").
 				return domain.ErrNotFound
 			}
 			found = true

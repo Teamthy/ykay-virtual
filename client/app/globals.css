@@ -1204,99 +1204,6 @@ html.dark body {
   scrollbar-width: none;
 }
 
-/* ============================================================
-   AMBIENT BACKDROP (site-wide animated background)
-   Drifting brand glows + a breathing hairline grid, painted behind
-   all content by <AmbientBackdrop/>. Transform-only keyframes;
-   reduced-motion users get a static composition.
-   ============================================================ */
-.ambient-blob {
-  position: absolute;
-  width: 46vmax;
-  height: 46vmax;
-  border-radius: 9999px;
-  filter: blur(90px);
-  will-change: transform;
-}
-
-.ambient-blob-a {
-  left: -12vmax;
-  top: -14vmax;
-  background: radial-gradient(circle at center, #0f2a1a 0%, transparent 65%);
-  opacity: 0.14;
-  animation: ambient-drift-a 46s ease-in-out infinite alternate;
-}
-
-.ambient-blob-b {
-  right: -14vmax;
-  bottom: -16vmax;
-  background: radial-gradient(circle at center, #194732 0%, transparent 65%);
-  opacity: 0.12;
-  animation: ambient-drift-b 58s ease-in-out infinite alternate;
-}
-
-html.dark .ambient-blob-a {
-  background: radial-gradient(circle at center, #0f2a1a 0%, transparent 65%);
-  opacity: 0.1;
-}
-
-html.dark .ambient-blob-b {
-  background: radial-gradient(circle at center, #d6ff57 0%, transparent 65%);
-  opacity: 0.07;
-}
-
-.ambient-grid {
-  position: absolute;
-  inset: -60px;
-  background-image:
-    linear-gradient(rgba(1, 56, 32, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(1, 56, 32, 0.08) 1px, transparent 1px);
-  background-size: 56px 56px;
-  opacity: 0.5;
-  animation: ambient-grid-pan 120s linear infinite;
-}
-
-html.dark .ambient-grid {
-  background-image:
-    linear-gradient(rgba(76, 203, 49, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(76, 203, 49, 0.07) 1px, transparent 1px);
-}
-
-@keyframes ambient-drift-a {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(9vw, 12vh, 0) scale(1.15);
-  }
-}
-
-@keyframes ambient-drift-b {
-  from {
-    transform: translate3d(0, 0, 0) scale(1.1);
-  }
-  to {
-    transform: translate3d(-8vw, -10vh, 0) scale(0.95);
-  }
-}
-
-@keyframes ambient-grid-pan {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(56px, 56px, 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ambient-blob-a,
-  .ambient-blob-b,
-  .ambient-grid {
-    animation: none;
-  }
-}
-
 /* ── Premium ambient backdrop v2 ─────────────────────────────────────────
    Layered depth: twin brand glows + a slow aurora sweep + a fine dot field
    + edge vignette. Transform-only animations; disabled for reduced motion. */
@@ -1431,27 +1338,8 @@ html.dark .ambient2-vignette {
 }
 
 /* ============================================================
-   BRAND BACKDROPS — layered, never plain
+   LIGHT MARKETING SURFACES — stay light in dark mode
    ============================================================ */
-
-.backdrop-brand-dark {
-  background-color: #0f2a1a;
-  background-image:
-    linear-gradient(180deg, rgba(5, 5, 5, 0.55) 0%, rgba(15, 42, 26, 0.45) 100%),
-    url("/home/ribs-green.jpg");
-  background-size: cover;
-  background-position: center;
-}
-
-.backdrop-brand-light,
-.backdrop-brand-peach {
-  background-color: #f9f6ed;
-  background-image:
-    linear-gradient(180deg, rgba(249, 246, 237, 0.72) 0%, rgba(249, 246, 237, 0.4) 100%),
-    url("/home/ribs-cream.jpg");
-  background-size: cover;
-  background-position: center;
-}
 
 /* Peach / white marketing surfaces must stay light even in dark mode so
    deep-green type never sits on a dark-green card. */
@@ -1514,7 +1402,6 @@ html.dark .keep-light .text-deep {
   /* Pastel stage circle behind the hero learner (reference redesign).
      Intentional exception to the lime accent palette. */
   --home-circle: #D9F1C6;
-  --home-pill: #0F2A1A; /* floating pill nav */
 
   /* Floating chip elevations. */
   --shadow-chip: 0 16px 40px rgba(15, 42, 26, 0.12);

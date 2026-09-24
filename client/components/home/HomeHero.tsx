@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Play, ShieldCheck, BadgeCheck, CalendarCheck } from "lucide-react";
-import { HomePillNav } from "./HomePillNav";
 import { HeroLearnerCarousel } from "./HeroLearnerCarousel";
 
 const AVATARS = [
@@ -34,10 +33,11 @@ export function HomeHero() {
         <div className="absolute -right-[20%] bottom-[20%] h-[50%] w-[40%] rounded-full bg-[#0F2A1A]/5 blur-[80px]" />
       </div>
 
-      <HomePillNav />
+      {/* The shared dark-green brand bar (Header) sits above the hero on
+          every page — no per-page pill nav here. */}
 
       {/* content - centered, minimal */}
-      <div className="relative z-10 mx-auto flex w-full max-w-[1920px] flex-col items-center px-4 pt-28 text-center sm:px-6 sm:pt-32 lg:px-8 lg:pt-36 xl:px-12 2xl:px-16">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1920px] flex-col items-center px-4 pt-12 text-center sm:px-6 sm:pt-14 lg:px-8 lg:pt-16 xl:px-12 2xl:px-16">
         <HeroBadge />
 
         {/* Two-line headline, bold body face (DM Sans), not a display face. */}

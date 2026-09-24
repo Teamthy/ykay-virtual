@@ -87,14 +87,7 @@ export default function PlusPage() {
   return (
     <div className="space-y-6">
       <div className="relative isolate overflow-hidden rounded-3xl bg-[#0F2A1A] p-6 text-white md:p-8">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/home/ribs-green.jpg"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover opacity-35"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0F2A1A] via-[#0F2A1A]/90 to-[#0F2A1A]/55" />
+        <div aria-hidden="true" className="absolute -right-24 -top-48 size-[500px] rounded-full bg-[#D6FF57]/10 blur-[100px]" />
         <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#D6FF57]">
