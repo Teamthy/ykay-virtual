@@ -24,9 +24,12 @@ export const metadata: Metadata = buildMetadata({
 export default function CollegePage() {
   return (
     <>
-      {/* ── Editorial header ── */}
-      <section className="w-full bg-[#0F2A1A] py-14 text-white lg:py-20">
-        <div className="container-x">
+      {/* ── Editorial header (full-bleed campus photo under a forest scrim) ── */}
+      <section className="relative isolate w-full overflow-hidden bg-[#0F2A1A] py-14 text-white lg:py-20">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/home/campus-hero.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#0F2A1A] via-[#0F2A1A]/90 to-[#0F2A1A]/75" />
+        <div className="container-x relative">
           <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#D6FF57]">
             <Globe size={12} /> The Ykay family
           </p>

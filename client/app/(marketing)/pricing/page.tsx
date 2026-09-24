@@ -68,7 +68,7 @@ export default function PricingPage() {
 
   return (
     <main className="w-full overflow-hidden bg-[#F9F6ED]">
-      <PageHero announcement="Clear, honest pricing" title="Pricing" subtitle="Whatever your status, our offers evolve according to your needs — every payment is escrow-protected." crumbs={[{ name: "Home", href: "/" }, { name: "Pricing" }]} align="center" />
+      <PageHero cover="/hero/checkout.jpg" announcement="Clear, honest pricing" title="Pricing" subtitle="Whatever your status, our offers evolve according to your needs — every payment is escrow-protected." crumbs={[{ name: "Home", href: "/" }, { name: "Pricing" }]} align="center" />
 
       <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-12 lg:py-16">
         <div className="mx-auto max-w-[1200px]">

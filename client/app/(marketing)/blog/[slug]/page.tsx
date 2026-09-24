@@ -102,6 +102,7 @@ export default async function BlogSlugPage(props: Props) {
       />
       <InnerHero
         variant="centered"
+        cover="/hero/student-learning.jpg"
         eyebrow={(post.exam_slugs ?? []).join(" • ") || undefined}
       >
         <div className="text-xs uppercase font-semibold text-[#0F2A1A]">

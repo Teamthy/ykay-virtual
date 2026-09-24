@@ -111,7 +111,7 @@ export default async function ProgrammeDetailPage(props: Props) {
       />
 
       {/* Header - PrebuiltUI template background (InnerHero preserves content) */}
-      <InnerHero>
+      <InnerHero cover="/hero/programmes.jpg">
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div className="max-w-3xl">
             <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wide">

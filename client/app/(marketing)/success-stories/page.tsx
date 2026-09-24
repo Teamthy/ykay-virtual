@@ -80,6 +80,7 @@ export default async function SuccessStoriesPage() {
       />
 
       <PageHero
+        cover="/home/ykay-students.png"
         eyebrow="Real outcomes, verified"
         title="Success Stories"
         subtitle="Results, competition achievements and family stories. Testimonials are published with explicit consent only - no fabricated claims."

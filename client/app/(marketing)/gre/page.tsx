@@ -67,6 +67,7 @@ export default function GrePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(FAQS)) }}
       />
       <PageHero
+        cover="/hero/british.jpg"
         eyebrow="Exam preparation"
         title="GRE prep from your diagnostic"
         subtitle="Verbal, quant and analytical writing with a vetted tutor. We do not advertise a 320+ guarantee."

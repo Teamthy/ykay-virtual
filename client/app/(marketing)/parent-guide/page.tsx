@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Parent Guide - Support Learning at H
 export default function ParentGuidePage() {
   return (
     <main className="w-full overflow-hidden">
-      <PageHero eyebrow="Parent Guide" title="Proven strategies to support learning and maintain motivation at home" subtitle="How parents use YK-Virtual to stay visible, supportive and consistent — without micromanaging." crumbs={[{ name: "Home", href: "/" }, { name: "Parent Guide" }]} ctas={[{ label: "Create family account", href: "/onboarding", primary: true }, { label: "How it works", href: "/how-it-works" }]} />
+      <PageHero cover="/home/identity-learner.jpg" eyebrow="Parent Guide" title="Proven strategies to support learning and maintain motivation at home" subtitle="How parents use YK-Virtual to stay visible, supportive and consistent — without micromanaging." crumbs={[{ name: "Home", href: "/" }, { name: "Parent Guide" }]} ctas={[{ label: "Create family account", href: "/onboarding", primary: true }, { label: "How it works", href: "/how-it-works" }]} />
 
       <section className="w-full bg-[#F9F6ED] py-12 lg:py-20">
         <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12">
