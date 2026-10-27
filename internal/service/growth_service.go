@@ -248,7 +248,15 @@ func (s *ReferralService) Apply(ctx context.Context, referredUserID uuid.UUID, c
 
 // QualifyOnOrderPaid — called by the payment service when an order becomes
 // PAID. If the payer was referred, marks the referral QUALIFIED and credits
-// the referrer's wallet (idempotent: only PENDING referrals qualify).
+// the referrer's wallet.
+//
+// Exactly-once under any interleaving (concurrent settlements, crash-retries,
+// replayed webhooks) — enforced by idempotent resources, not check-then-act:
+//  1. terminal referrals (REWARDED / EXPIRED) are no-ops;
+//  2. PENDING|QUALIFIED both (re-)run the sequence, so a crash between any
+//     two steps resumes instead of stranding a half-issued reward;
+//  3. the wallet credit carries a per-referral ledger idempotency key and the
+//     reward row is UNIQUE per referral — re-execution never double-credits.
 func (s *ReferralService) QualifyOnOrderPaid(ctx context.Context, userID, orderID uuid.UUID) error {
 	if s.referrals == nil || s.wallets == nil {
 		return nil
@@ -260,17 +268,21 @@ func (s *ReferralService) QualifyOnOrderPaid(ctx context.Context, userID, orderI
 		}
 		return err
 	}
-	if ref.Status != "PENDING" {
-		return nil // already qualified/rewarded — idempotent
+	if ref.Status == "REWARDED" || ref.Status == "EXPIRED" {
+		return nil // terminal — idempotent replay
 	}
+	// PENDING→QUALIFIED compare-and-set (already-qualified is a safe no-op).
 	if err := s.referrals.Qualify(ctx, ref.ID, orderID); err != nil {
 		return err
 	}
-	// Wallet reward for the referrer.
+	// Wallet reward for the referrer — journaled, at-most-once.
 	if _, err := s.wallets.GetOrCreate(ctx, ref.ReferrerUserID, "NGN"); err != nil {
 		return err
 	}
-	if err := s.wallets.Credit(ctx, ref.ReferrerUserID, ref.RewardAmount); err != nil {
+	if err := s.wallets.CreditEntry(ctx, ref.ReferrerUserID, ref.RewardAmount, payment.WalletLedgerEntry{
+		RefType: "REFERRAL_REWARD", RefID: &ref.ID,
+		IdempotencyKey: "referral_reward:" + ref.ID.String(),
+	}); err != nil {
 		return err
 	}
 	rw := &referral.Reward{
@@ -281,7 +293,14 @@ func (s *ReferralService) QualifyOnOrderPaid(ctx context.Context, userID, orderI
 		Status:     "REWARDED",
 	}
 	if err := s.referrals.CreateReward(ctx, rw); err != nil {
-		return err
+		if !errors.Is(err, domain.ErrAlreadyExists) {
+			return err
+		}
+		// A concurrent/resumed qualifier already recorded this reward row —
+		// adopt it (UNIQUE(referral_id) guarantees one row per referral).
+		if existing, gerr := s.referrals.GetRewardByReferral(ctx, ref.ID); gerr == nil {
+			rw = existing
+		}
 	}
 	if err := s.referrals.MarkRewarded(ctx, ref.ID); err != nil {
 		return err

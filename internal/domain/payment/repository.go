@@ -19,6 +19,20 @@ type OrderRepository interface {
 	GetByIDempotencyKey(ctx context.Context, key string) (*Order, error)
 	GetByNumber(ctx context.Context, number string) (*Order, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status OrderStatus) error
+	// TryMarkPaid — atomic settle transition: PENDING or CANCELLED → PAID.
+	// CANCELLED is included deliberately: the checkout-abandon sweep cancels
+	// stale PENDING orders, and a late-but-real gateway capture must revive
+	// them (the designed "late webhook after expiry" flow). Returns true only
+	// for the single caller that wins the transition; every concurrent
+	// settler (webhook / verify / manual confirm) observes false and must
+	// treat the settlement as a duplicate. PAID and REFUNDED are never
+	// settleable — this is the exactly-once arbiter for order settlement.
+	TryMarkPaid(ctx context.Context, id uuid.UUID) (bool, error)
+	// CancelIfPending — atomic PENDING→CANCELLED compare-and-set for the
+	// checkout-abandon sweep: the cancellation only applies if the payment
+	// webhook has not settled the order first (returns false when it has), so
+	// a PAID order can never be overwritten to CANCELLED by the cron.
+	CancelIfPending(ctx context.Context, id uuid.UUID) (bool, error)
 	Update(ctx context.Context, o *Order) error
 	ListItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
 	// ListItemsByOrderIDs batch-loads items for many orders in one query
@@ -75,15 +89,32 @@ type PayoutRepository interface {
 	SetTransferMeta(ctx context.Context, id uuid.UUID, transferCode *string, otpRequired bool) error
 }
 
+// WalletLedgerEntry — journal metadata attached to a wallet mutation.
+// RefType/RefID answer "why did this balance change?" (e.g.
+// REFERRAL_REWARD, ESCROW_REFUND); IdempotencyKey makes the whole mutation
+// (journal row + balance change) apply at most once across any number of
+// retries, processes or replayed webhooks.
+type WalletLedgerEntry struct {
+	RefType        string     // e.g. "REFERRAL_REWARD", "ESCROW_REFUND"
+	RefID          *uuid.UUID // domain object responsible for the mutation
+	IdempotencyKey string     // unique across the ledger; empty = not keyed
+}
+
 type WalletRepository interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) (*Wallet, error)
 	Create(ctx context.Context, w *Wallet) error
 	// GetOrCreate ensures a wallet row exists for the user (created on first
 	// order so every paying parent has a wallet).
 	GetOrCreate(ctx context.Context, userID uuid.UUID, currency string) (*Wallet, error)
-	// Credit/Debit mutate balance atomically (UPDATE ... RETURNING inside tx).
+	// Credit/Debit mutate balance atomically and write an append-only
+	// wallet_transactions journal row in the same atomic step (no balance
+	// change without a ledger record).
 	Credit(ctx context.Context, userID uuid.UUID, amount float64) error
 	Debit(ctx context.Context, userID uuid.UUID, amount float64) error
+	// CreditEntry — Credit with journal metadata. When entry.IdempotencyKey
+	// is non-empty the mutation is applied at most once: a replayed call
+	// (crash-retry, duplicate webhook, concurrent qualifier) is a no-op.
+	CreditEntry(ctx context.Context, userID uuid.UUID, amount float64, entry WalletLedgerEntry) error
 }
 
 // CouponRepository — coupon/discount engine (gap #6).

@@ -156,3 +156,63 @@ days.
 | UptimeRobot                                    | uptimerobot.com free                                                                                | ₦0                                                 |
 
 All of this lands inside the ₦50k/3-month budget with ~₦42k to spare.
+
+## 7. Money-movement controls & reconciliation (2026-10-27 hardening)
+
+What the code now guarantees (enforced in this order — service CAS →
+DB constraints → ledger):
+
+1. **Exactly-once settlement.** Webhook, `POST /me/orders/{id}/verify` and the
+   admin manual-confirm all settle through one atomic
+   `PENDING|CANCELLED → PAID` compare-and-set (`orders.TryMarkPaid`). Only
+   one winner; every loser acknowledges the event as a duplicate and runs
+   **zero** side effects (no second escrow hold, enrollment, or Plus
+   activation). A late capture on a checkout abandoned by the seat-leak cron
+   still revives the order by design (CANCELLED is settleable; REFUNDED and
+   PAID never are).
+2. **Over-capture quarantine.** When the gateway captures funds for an
+   order that is already PAID, the webhook returns
+   `{"processed":true,"duplicate":true,"reason":"order_already_settled"}`,
+   the attempt stays visibly `PENDING`, and an audit row with
+   `action=duplicate_settlement_blocked` (type `payment_webhook`) records the
+   reference + amount. **Action:** refund that reference at Paystack and
+   note it on the order — never re-run settlement by hand.
+3. **Escrow backstop.** `uq_escrow_holds_order_id` — one hold per order is
+   impossible to violate at the storage layer (double-payout defense).
+   `payouts` additionally stays UNIQUE per escrow hold; release/refund go
+   through the YK-007 compare-and-set.
+4. **Wallet ledger (wallet_transactions).** Every balance change writes an
+   append-only journal row in the same atomic statement (`wallet_apply()`),
+   with a unique `idempotency_key` (`referral_reward:{id}`,
+   `escrow_refund:{holdId}`) so retried/concurrent credits apply exactly
+   once. Health invariant — run weekly (must return **zero rows**):
+
+   ```sql
+   SELECT w.user_id, w.balance,
+          COALESCE(SUM(CASE WHEN t.direction='CREDIT'  THEN t.amount END),0)
+        - COALESCE(SUM(CASE WHEN t.direction='DEBIT'   THEN t.amount END),0) AS ledger
+   FROM wallets w
+   LEFT JOIN wallet_transactions t ON t.wallet_id = w.id
+   GROUP BY w.user_id, w.balance
+   HAVING w.balance IS DISTINCT FROM
+          COALESCE(SUM(CASE WHEN t.direction='CREDIT' THEN t.amount END),0)
+        - COALESCE(SUM(CASE WHEN t.direction='DEBIT'  THEN t.amount END),0);
+   ```
+
+5. **Referral rewards are effectively-once** — ledger idempotency key +
+   `uq_referral_rewards_referral_id` (one reward row per referral), and the
+   sequence resumes safely from a crash between "qualified" and "rewarded".
+6. **Abandon sweep vs payment race** — the seat-leak cron cancels through
+   `CancelIfPending` (compare-and-set), so it can never overwrite a PAID
+   order; if it loses the race the seat stays taken.
+7. **Backups must prove readability.** `scripts/backup.sh` and the compose
+   backup service now run `pg_restore --list` on every dump before recording
+   the success heartbeat; `YKVirtualBackupStale` / failure heartbeats page
+   via Prometheus.
+
+**Known, accepted for launch:** Go carries money as `float64` while
+Postgres stores `DECIMAL(12,2)` (2-dp rounding at boundaries; integer minor
+units is a future refactor); backups are daily `pg_dump` (RPO ≤ 24 h — enable
+WAL archiving/PITR when the RPO must be lower); refunds stay
+`PAYMENT_REFUNDS_ENABLED=false` until the certified gateway refund flow is
+switched on (YK-006 fail-closed).

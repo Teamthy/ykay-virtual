@@ -33,6 +33,13 @@ trap fail_metric ERR
 echo "== Dumping $DATABASE_URL → $OUT =="
 pg_dump "$DATABASE_URL" -Fc -f "$OUT"
 
+# Data-loss guard: verify the archive is structurally readable BEFORE calling
+# the backup a success. A truncated/corrupt dump fails the TOC parse here,
+# trips `trap fail_metric ERR` and raises YKVirtualBackupFailed — a backup
+# nobody can restore is not a backup.
+echo "== Verifying archive integrity (pg_restore TOC) =="
+pg_restore --list "$OUT" >/dev/null
+
 echo "== Pruning older than ${BACKUP_RETENTION_DAYS:-14} days =="
 find "$DIR" -name "yk-virtual-*.dump" -mtime +"${BACKUP_RETENTION_DAYS:-14}" -delete
 

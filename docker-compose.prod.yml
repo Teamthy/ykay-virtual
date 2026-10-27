@@ -181,7 +181,7 @@ services:
       while true; do
         ts=$$(date -u +%Y%m%dT%H%M%SZ);
         out=/backups/yk-virtual-$$ts.dump;
-        if pg_dump -h postgres -U ${POSTGRES_USER:-ykvirtual} -d ${POSTGRES_DB:-ykvirtual} -Fc > $$out; then
+        if pg_dump -h postgres -U ${POSTGRES_USER:-ykvirtual} -d ${POSTGRES_DB:-ykvirtual} -Fc > $$out && pg_restore --list $$out > /dev/null; then
           printf "ykv_backup_last_success_timestamp %s\nykv_backup_size_bytes %s\n" \
             "$$(date +%s)" "$$(stat -c%s $$out)" > /metrics-textfile/ykv_backup.prom;
         else

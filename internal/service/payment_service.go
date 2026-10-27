@@ -444,9 +444,29 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 		return nil, err
 	}
 
-	cohortID, err := s.settleSuccessInUOW(ctx, uow, paymentRow, order, now)
+	cohortID, settled, err := s.settleSuccessInUOW(ctx, uow, paymentRow, order, now)
 	if err != nil {
 		return nil, err
+	}
+	if !settled {
+		// Duplicate settlement: this order is already PAID (a concurrent
+		// webhook / verify / manual confirm won the exactly-once race). The
+		// gateway captured funds against an already-settled order — ack the
+		// provider (200, no retry storm) and record a durable anomaly so
+		// ops reconciliation can refund the over-capture via the payments
+		// runbook. Side effects (escrow/enrollment/rewards) never re-run.
+		_ = uow.Webhooks().MarkProcessed(ctx, webhook.ID)
+		_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "payment_webhook",
+			&webhook.ID, nil, map[string]any{
+				"action": "duplicate_settlement_blocked", "reference": reference,
+				"amount": paymentRow.Amount, "currency": paymentRow.Currency,
+				"order_number": order.OrderNumber,
+				"note": "gateway captured funds for an already-PAID order — refund via payments runbook",
+			}, nil, nil)
+		if err := uow.Commit(ctx); err != nil {
+			return nil, err
+		}
+		return &WebhookResult{Processed: true, Duplicate: true, Reason: "order_already_settled", PaymentID: &paymentRow.ID}, nil
 	}
 
 	if err := uow.Webhooks().MarkProcessed(ctx, webhook.ID); err != nil {
@@ -463,47 +483,64 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 	return &WebhookResult{Processed: true, PaymentID: &paymentRow.ID}, nil
 }
 
-// settleSuccessInUOW — the single settlement path shared by the webhook and
-// the payer-facing verify endpoint (F-3). Runs inside the caller's UoW:
-// payment → SUCCESS, order → PAID, referral qualification, enrolment
-// confirmation, private-package activation, escrow hold and audit entries.
+// settleSuccessInUOW — the single settlement path shared by the webhook, the
+// payer-facing verify endpoint (F-3) and the admin manual-confirm flow. Runs
+// inside the caller's UoW: order PENDING→PAID (the exactly-once arbiter),
+// payment → SUCCESS, referral qualification, enrolment confirmation,
+// private-package / Plus activation, escrow hold and audit entries.
+//
+// Returns settled=false when the caller LOST the settlement race — a
+// concurrent settler already moved the order out of PENDING. The caller must
+// acknowledge the event as a duplicate and MUST NOT run any further side
+// effects (this is what makes double escrow holds / double rewards
+// structurally impossible under webhook↔verify↔manual races).
 // The caller commits and sends the receipt notifications.
 func (s *PaymentService) settleSuccessInUOW(ctx context.Context, uow repository.UnitOfWork,
-	paymentRow *payment.Payment, order *payment.Order, now time.Time) (uuid.UUID, error) {
-	if err := uow.Payments().UpdateStatus(ctx, paymentRow.ID, payment.PaymentSuccess, &now); err != nil {
-		return uuid.Nil, err
+	paymentRow *payment.Payment, order *payment.Order, now time.Time) (uuid.UUID, bool, error) {
+	// Exactly-once guard: atomic settle transition (PENDING|CANCELLED →
+	// PAID). Postgres re-evaluates the predicate after the row lock is
+	// released, so exactly one concurrent settler wins; everyone else
+	// observes settled=false. CANCELLED is included for the designed
+	// "late webhook after checkout-abandon expiry" revival.
+	settled, err := uow.Orders().TryMarkPaid(ctx, order.ID)
+	if err != nil {
+		return uuid.Nil, false, err
 	}
-	if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderPaid); err != nil {
-		return uuid.Nil, err
+	if !settled {
+		return uuid.Nil, false, nil
+	}
+	if err := uow.Payments().UpdateStatus(ctx, paymentRow.ID, payment.PaymentSuccess, &now); err != nil {
+		return uuid.Nil, false, err
 	}
 	if s.referrals != nil {
-		// Referral rewards qualify on first paid order (idempotent).
+		// Referral rewards qualify on first paid order (idempotent: ledger
+		// idempotency key + unique reward row make replays no-ops).
 		if err := s.referrals.QualifyOnOrderPaid(ctx, order.ParentUserID, order.ID); err != nil {
-			return uuid.Nil, err
+			return uuid.Nil, false, err
 		}
 	}
 
 	// Confirm the cohort enrollment tied to this order.
 	cohortID, err := s.confirmEnrollment(ctx, uow, order.ID, now)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, false, err
 	}
 	// YK-004: a private-tuition package becomes ACTIVE only now, in the same
 	// transaction that records the payment as successful — never before.
 	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, false, err
 	}
 	// YK-Virtual Plus: a paid PLUS_SUBSCRIPTION order item activates (or renews)
 	// the user's subscription in the same settlement transaction — access is
 	// granted only after the money actually clears.
 	if err := s.activatePlusOnPaid(ctx, uow, order); err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, false, err
 	}
 
 	// Escrow hold: money is captured but not yet released to the tutor.
 	hold, err := s.createEscrowHold(ctx, uow, order, paymentRow, now)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, false, err
 	}
 
 	_ = s.audit.LogStateChange(ctx, &order.ParentUserID, identity.AuditPayment, "order",
@@ -514,7 +551,7 @@ func (s *PaymentService) settleSuccessInUOW(ctx context.Context, uow repository.
 			&hold.ID, nil, map[string]any{"action": "held", "amount": hold.Amount, "release_at": hold.ReleaseAt},
 			nil, nil)
 	}
-	return cohortID, nil
+	return cohortID, true, nil
 }
 
 // confirmEnrollment flips the cohort enrollment linked to the order to
@@ -845,9 +882,15 @@ func (s *PaymentService) VerifyOrder(ctx context.Context, in VerifyOrderInput) (
 	}
 
 	now := s.Clock().UTC()
-	cohortID, err := s.settleSuccessInUOW(ctx, uow, paymentRow, freshOrder, now)
+	cohortID, settled, err := s.settleSuccessInUOW(ctx, uow, paymentRow, freshOrder, now)
 	if err != nil {
 		return nil, err
+	}
+	if !settled {
+		// A concurrent settler (webhook delivered mid-flight) won the
+		// exactly-once race — report the settled truth without re-running
+		// side effects; this UoW has written nothing, Rollback is a no-op.
+		return &VerifyOrderResult{OrderNumber: freshOrder.OrderNumber, OrderStatus: payment.OrderPaid, GatewayStatus: vr.Status}, nil
 	}
 	if err := uow.Commit(ctx); err != nil {
 		return nil, err
@@ -1085,7 +1128,13 @@ func (s *PaymentService) refundEscrowInUOW(ctx context.Context, uow repository.U
 	if !refunded {
 		return fmt.Errorf("%w: escrow hold %s was concurrently released/refunded", domain.ErrConflict, hold.ID)
 	}
-	if err := uow.Wallets().Credit(ctx, order.ParentUserID, hold.Amount); err != nil {
+	// Journaled + idempotent: the ledger row and balance change are one
+	// atomic step, and the hold-scoped key makes a replayed refund credit
+	// impossible even under a retried settlement.
+	if err := uow.Wallets().CreditEntry(ctx, order.ParentUserID, hold.Amount, payment.WalletLedgerEntry{
+		RefType: "ESCROW_REFUND", RefID: &hold.ID,
+		IdempotencyKey: "escrow_refund:" + hold.ID.String(),
+	}); err != nil {
 		return err
 	}
 	if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderRefunded); err != nil {
@@ -1139,8 +1188,12 @@ type ReferralQualifier interface {
 }
 
 // ConfirmManualPayment — admin-confirmed payment (manual/bank transfer path).
-// Mirrors the webhook success path: payment SUCCESS → order PAID → enrollment
-// CONFIRMED → escrow held → referral qualify. Idempotent for PAID orders.
+// Routes through the SAME settleSuccessInUOW used by webhooks and verify, so
+// every settlement surface shares one exactly-once guard: exactly one of
+// {webhook, verify, manual confirm} can win the order's PENDING→PAID CAS and
+// the rest report the existing settlement (no duplicate escrow holds, no
+// double Plus/enrollment side effects). Manual confirms also activate
+// PLUS_SUBSCRIPTION items — a gap the old hand-rolled path missed.
 func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orderID uuid.UUID, note *string) (*payment.Payment, error) {
 	uow, err := s.uows.Begin(ctx)
 	if err != nil {
@@ -1153,10 +1206,14 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 		return nil, err
 	}
 	if order.Status == payment.OrderPaid {
-		// Idempotent: already paid — return the existing payment.
+		// Idempotent: already paid — return the settled payment (never a
+		// leftover FAILED/PENDING attempt row).
 		payments, err := uow.Payments().GetByOrderID(ctx, orderID)
 		if err != nil {
 			return nil, err
+		}
+		if pay := firstSuccessfulPayment(payments); pay != nil {
+			return pay, nil
 		}
 		if len(payments) > 0 {
 			return &payments[0], nil
@@ -1174,35 +1231,42 @@ func (s *PaymentService) ConfirmManualPayment(ctx context.Context, adminID, orde
 		ProviderReference: &ref,
 		Amount:            order.TotalAmount,
 		Currency:          order.Currency,
-		Status:            payment.PaymentSuccess,
-		PaidAt:            &now,
+		Status:            payment.PaymentPending, // flipped to SUCCESS inside settlement (CAS-winner only)
 		Metadata:          &meta,
 	}
 	if err := uow.Payments().Create(ctx, p); err != nil {
 		return nil, err
 	}
-	if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderPaid); err != nil {
-		return nil, err
-	}
-	if s.referrals != nil {
-		if err := s.referrals.QualifyOnOrderPaid(ctx, order.ParentUserID, order.ID); err != nil {
-			return nil, err
-		}
-	}
-	cohortID, err := s.confirmEnrollment(ctx, uow, order.ID, now)
+	cohortID, settled, err := s.settleSuccessInUOW(ctx, uow, p, order, now)
 	if err != nil {
 		return nil, err
 	}
-	// YK-004: activate private packages in the same transaction as settlement.
-	if err := s.activatePrivatePackages(ctx, uow, order.ID); err != nil {
-		return nil, err
+	if !settled {
+		// A concurrent webhook/confirm settled the order first: keep exactly
+		// one settlement — void this placeholder attempt and return the
+		// winner's payment (idempotent admin UX).
+		if err := uow.Payments().UpdateStatus(ctx, p.ID, payment.PaymentFailed, nil); err != nil {
+			return nil, err
+		}
+		payments, err := uow.Payments().GetByOrderID(ctx, orderID)
+		if err != nil {
+			return nil, err
+		}
+		if pay := firstSuccessfulPayment(payments); pay != nil {
+			if err := uow.Commit(ctx); err != nil {
+				return nil, err
+			}
+			return pay, nil
+		}
+		_ = uow.Commit(ctx) // persist the placeholder → FAILED
+		return nil, fmt.Errorf("%w: order settled concurrently but no successful payment row found", domain.ErrConflict)
 	}
-	if _, err := s.createEscrowHold(ctx, uow, order, p, now); err != nil {
-		return nil, err
-	}
-	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditPayment, "order",
-		&order.ID, map[string]any{"status": payment.OrderPending}, map[string]any{
-			"status": payment.OrderPaid, "manual": true, "note": note,
+	p.Status = payment.PaymentSuccess
+	p.PaidAt = &now
+
+	_ = s.audit.LogStateChange(ctx, &adminID, identity.AuditPayment, "payment",
+		&p.ID, map[string]any{"status": payment.PaymentPending}, map[string]any{
+			"status": payment.PaymentSuccess, "manual": true, "note": noteOr(note, "admin confirmation"),
 		}, nil, nil)
 	if err := uow.Commit(ctx); err != nil {
 		return nil, err
@@ -1220,4 +1284,16 @@ func noteOr(note *string, fallback string) string {
 		return *note
 	}
 	return fallback
+}
+
+// firstSuccessfulPayment — picks the settled (SUCCESS) row out of an order's
+// payment attempts (a PENDING/FAILED attempt may sort first, in memory or by
+// created_at). Returns nil when no attempt has succeeded.
+func firstSuccessfulPayment(payments []payment.Payment) *payment.Payment {
+	for i := range payments {
+		if payments[i].Status == payment.PaymentSuccess {
+			return &payments[i]
+		}
+	}
+	return nil
 }
