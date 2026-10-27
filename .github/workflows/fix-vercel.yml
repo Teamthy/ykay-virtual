@@ -1,10 +1,8 @@
 name: Fix Vercel root directory
-# ONE-SHOT: the `ykay-virtual` Vercel project's Root Directory is " client"
-# (leading space) — documented in docs/AUDIT_PRE_PRODUCTION_2026.md:201 as the
-# reason its Git-integration deploys fail while `ykay-virtual-wtar` succeeds.
-# This patch fixes the setting through the Vercel API using the same secrets
-# the Deploy workflow consumes, then reports before/after as annotations.
-# Safe to delete after it has run green once.
+# DIAGNOSE + FIX (v2): first map what this token/team can see, then patch.
+# Known: ykay-virtual = prj_8vZMCgKG4nveomMXmwbU7ScGFTgw under team
+# team_6rdP3L4iWU3LBf5qigaJ2iiF; its Root Directory has a leading space
+# (" client") which breaks its Git-integration deploys (AUDIT doc:201).
 on:
   workflow_dispatch:
   push:
@@ -18,42 +16,50 @@ jobs:
   fix-root-directory:
     runs-on: ubuntu-latest
     steps:
-      - name: Patch project rootDirectory client
+      - name: Probe + patch
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           set -u
-          if [ -z "${VERCEL_TOKEN:-}" ] || [ -z "${VERCEL_ORG_ID:-}" ]; then
-            echo "::error::VERCEL_FIX missing secrets (VERCEL_TOKEN/VERCEL_ORG_ID) — cannot patch from CI; fix Root Directory in Vercel dashboard instead."
-            exit 1
-          fi
-          TARGET=prj_8vZMCgKG4nveomMXmwbU7ScGFTgw   # ykay-virtual (the failing project)
           auth=(-H "Authorization: Bearer $VERCEL_TOKEN")
           api() { curl -sS -o "$2" -w "%{http_code}" "${auth[@]}" "$1"; }
+          emit() { echo "::error::VERCEL_PROBE $1"; }
 
-          code=$(api "https://api.vercel.com/v9/projects/$TARGET?teamId=$VERCEL_ORG_ID" /tmp/before.json)
-          before=$(jq -r '.rootDirectory // "<null>"' /tmp/before.json 2>/dev/null || echo parse-err)
-          echo "VERCEL_FIX before rootDirectory=[$before] project=$TARGET http=$code"
-          if [ "$code" != "200" ]; then
-            echo "::error::VERCEL_FIX GET failed http=$code body=$(head -c 300 /tmp/before.json)"
-            exit 1
+          emit "org=${VERCEL_ORG_ID:-EMPTY} project_secret=${VERCEL_PROJECT_ID:-EMPTY}"
+
+          # 1. list projects visible with the configured team
+          code=$(api "https://api.vercel.com/v9/projects?teamId=${VERCEL_ORG_ID:-none}&limit=20" /tmp/withteam.json)
+          if [ "$code" = "200" ]; then
+            jq -r '.projects[] | "\(.id)|\(.name)|\(.rootDirectory // "<null>")"' /tmp/withteam.json | while IFS='|' read -r id name rd; do
+              emit "withteam id=$id name=$name rootDirectory=[$rd]"
+            done
+          else
+            emit "withteam http=$code body=$(head -c 200 /tmp/withteam.json)"
           fi
 
-          code=$(curl -sS -o /tmp/after.json -w "%{http_code}" -X PATCH "${auth[@]}" \
-            -H "Content-Type: application/json" \
-            -d '{"rootDirectory":"client"}' \
-            "https://api.vercel.com/v9/projects/$TARGET?teamId=$VERCEL_ORG_ID")
-          after=$(jq -r '.rootDirectory // "<null>"' /tmp/after.json 2>/dev/null || echo parse-err)
-          echo "VERCEL_FIX patch http=$code after rootDirectory=[$after]"
-          if [ "$code" != "200" ]; then
-            echo "::error::VERCEL_FIX PATCH failed http=$code body=$(head -c 300 /tmp/after.json)"
-            exit 1
+          # 2. list projects with token default scope (no teamId)
+          code=$(api "https://api.vercel.com/v9/projects?limit=20" /tmp/noteam.json)
+          if [ "$code" = "200" ]; then
+            jq -r '.projects[] | "\(.id)|\(.name)|\(.rootDirectory // "<null>")"' /tmp/noteam.json | while IFS='|' read -r id name rd; do
+              emit "noteam  id=$id name=$name rootDirectory=[$rd]"
+            done
+          else
+            emit "noteam http=$code body=$(head -c 200 /tmp/noteam.json)"
           fi
 
-          if [ "$after" != "client" ]; then
-            echo "::error::VERCEL_FIX after=[$after] expected [client] — check token scope (Project Settings write)."
-            exit 1
+          # 3. direct GET of the failing project, both ways
+          code=$(api "https://api.vercel.com/v9/projects/prj_8vZMCgKG4nveomMXmwbU7ScGFTgw?teamId=${VERCEL_ORG_ID:-none}" /tmp/t1.json)
+          emit "direct+team http=$code rootDirectory=[$(jq -r '.rootDirectory // "<null>"' /tmp/t1.json 2>/dev/null)]"
+          code=$(api "https://api.vercel.com/v9/projects/prj_8vZMCgKG4nveomMXmwbU7ScGFTgw" /tmp/t2.json)
+          rd=$(jq -r '.rootDirectory // "<null>"' /tmp/t2.json 2>/dev/null)
+          emit "direct-noteam http=$code rootDirectory=[$rd]"
+
+          # 4. if readable without teamId, patch it
+          if [ "$code" = "200" ] && [ "$rd" != "client" ]; then
+            pcode=$(curl -sS -o /tmp/p.json -w "%{http_code}" -X PATCH "${auth[@]}" \
+              -H "Content-Type: application/json" -d '{"rootDirectory":"client"}' \
+              "https://api.vercel.com/v9/projects/prj_8vZMCgKG4nveomMXmwbU7ScGFTgw")
+            emit "patch-noteam http=$pcode after=[$(jq -r '.rootDirectory // "<null>"' /tmp/p.json 2>/dev/null)]"
           fi
-          echo "::error::VERCEL_FIX OK project=$TARGET before=[$before] after=[$after]"
