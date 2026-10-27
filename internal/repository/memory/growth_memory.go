@@ -154,6 +154,9 @@ func (m *ReferralMemory) GetByReferredUser(_ context.Context, referredUserID uui
 func (m *ReferralMemory) Qualify(_ context.Context, referralID, orderID uuid.UUID) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	// Mirrors Postgres (`UPDATE referrals ... WHERE id AND status='PENDING'`):
+	// an unknown id or an already-qualified referral is a no-op, not an error,
+	// so a resumed qualifier can safely re-run the reward sequence.
 	for i := range m.rows {
 		if m.rows[i].ID == referralID && m.rows[i].Status == "PENDING" {
 			m.rows[i].Status = "QUALIFIED"
@@ -162,7 +165,7 @@ func (m *ReferralMemory) Qualify(_ context.Context, referralID, orderID uuid.UUI
 			return nil
 		}
 	}
-	return domain.ErrNotFound
+	return nil
 }
 
 func (m *ReferralMemory) MarkRewarded(_ context.Context, referralID uuid.UUID) error {
@@ -196,6 +199,13 @@ func (m *ReferralMemory) ListByReferrer(_ context.Context, referrerUserID uuid.U
 func (m *ReferralMemory) CreateReward(_ context.Context, rw *referral.Reward) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	// Mirrors the UNIQUE(referral_id) backstop (000080): one reward row per
+	// referral — a concurrent/resumed qualifier observes ErrAlreadyExists.
+	for _, existing := range m.rewards {
+		if existing.ReferralID == rw.ReferralID {
+			return domain.ErrAlreadyExists
+		}
+	}
 	if rw.ID == uuid.Nil {
 		rw.ID = uuid.New()
 	}

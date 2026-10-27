@@ -61,6 +61,24 @@ type Wallet struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// WalletTransaction — append-only journal entry for every wallet mutation.
+// Balance changes are never anonymous: each row records what happened
+// (direction/amount), where it landed (balance_after), why (ref_type/ref_id)
+// and is replay-safe via a unique idempotency_key. Reconciliation invariant:
+// for every wallet, balance == SUM(credits) − SUM(debits).
+type WalletTransaction struct {
+	ID             uuid.UUID  `json:"id"`
+	WalletID       uuid.UUID  `json:"wallet_id"`
+	UserID         uuid.UUID  `json:"user_id"`
+	Direction      string     `json:"direction"` // CREDIT | DEBIT
+	Amount         float64    `json:"amount"`
+	BalanceAfter   float64    `json:"balance_after"`
+	RefType        string     `json:"ref_type"`
+	RefID          *uuid.UUID `json:"ref_id,omitempty"`
+	IdempotencyKey *string    `json:"idempotency_key,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
+}
+
 type Order struct {
 	ID             uuid.UUID   `json:"id"`
 	OrderNumber    string      `json:"order_number"`

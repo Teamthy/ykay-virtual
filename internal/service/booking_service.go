@@ -720,8 +720,16 @@ func (s *BookingService) ExpireStalePendingEnrollments(ctx context.Context, olde
 				if order.Status != payment.OrderPending {
 					continue
 				}
-				if err := uow.Orders().UpdateStatus(ctx, order.ID, payment.OrderCancelled); err != nil {
+				// Atomic PENDING→CANCELLED: if the payment webhook settles the
+				// order inside this window, the CAS misses and the sweep skips
+				// this row — a PAID order can never be overwritten to
+				// CANCELLED (the webhook must win).
+				cancelled, err := uow.Orders().CancelIfPending(ctx, order.ID)
+				if err != nil {
 					return expired, err
+				}
+				if !cancelled {
+					continue
 				}
 			}
 		}

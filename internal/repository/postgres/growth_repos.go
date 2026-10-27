@@ -283,6 +283,12 @@ func (r *ReferralRepo) CreateReward(ctx context.Context, rw *referral.Reward) er
 		rw.ReferralID, rw.UserID, rw.Amount, rw.Currency, rw.Status,
 	).Scan(&rw.ID, &rw.CreatedAt)
 	if err != nil {
+		// UNIQUE(referral_id) (000080): a concurrent or resumed qualifier
+		// already recorded this referral's reward — exactly-once means the
+		// caller treats it as success, never as a failure to retry.
+		if isUniqueViolation(err) {
+			return fmt.Errorf("create referral reward: %w", domain.ErrAlreadyExists)
+		}
 		return fmt.Errorf("create referral reward: %w", err)
 	}
 	return nil

@@ -200,6 +200,12 @@ func (r *EscrowHoldRepo) Create(ctx context.Context, h *payment.EscrowHold) erro
 		h.OrderID, h.PaymentID, h.TutorProfileID, h.Amount, h.Status, h.ReleaseAt,
 	).Scan(&h.ID, &h.HeldAt, &h.CreatedAt, &h.UpdatedAt)
 	if err != nil {
+		// uq_escrow_holds_order_id (000080): storage-layer backstop — a
+		// second hold for one order is impossible, surfacing as a clean
+		// domain error instead of a raw 500.
+		if isUniqueViolation(err) {
+			return fmt.Errorf("create escrow hold: %w", domain.ErrAlreadyExists)
+		}
 		return fmt.Errorf("create escrow hold: %w", err)
 	}
 	return nil
@@ -527,28 +533,83 @@ func (r *WalletRepo) GetOrCreate(ctx context.Context, userID uuid.UUID, currency
 }
 
 func (r *WalletRepo) Credit(ctx context.Context, userID uuid.UUID, amount float64) error {
-	res, err := r.db.ExecContext(ctx,
-		"UPDATE wallets SET balance = balance + $1, updated_at = NOW() WHERE user_id = $2", amount, userID)
-	if err != nil {
-		return fmt.Errorf("credit wallet: %w", err)
+	_, err := r.apply(ctx, userID, amount, "CREDIT", payment.WalletLedgerEntry{RefType: "UNSPECIFIED"})
+	return err
+}
+
+// CreditEntry — Credit with journal metadata. The whole mutation (row lock →
+// idempotency claim → balance update → journal insert) happens inside the
+// wallet_apply() SQL function, i.e. one atomic statement: it is transaction-
+// safe inside a UoW (rolls back with the caller) and crash-safe when called
+// standalone on the pool (no claim-without-balance window).
+func (r *WalletRepo) CreditEntry(ctx context.Context, userID uuid.UUID, amount float64, entry payment.WalletLedgerEntry) error {
+	if entry.RefType == "" {
+		entry.RefType = "UNSPECIFIED"
 	}
-	if n, _ := res.RowsAffected(); n == 0 {
-		return domain.ErrNotFound
-	}
-	return nil
+	_, err := r.apply(ctx, userID, amount, "CREDIT", entry)
+	return err
 }
 
 func (r *WalletRepo) Debit(ctx context.Context, userID uuid.UUID, amount float64) error {
-	res, err := r.db.ExecContext(ctx,
-		"UPDATE wallets SET balance = balance - $1, updated_at = NOW() WHERE user_id = $2 AND balance >= $1",
-		amount, userID)
+	_, err := r.apply(ctx, userID, amount, "DEBIT", payment.WalletLedgerEntry{RefType: "UNSPECIFIED"})
+	return err
+}
+
+// apply — runs the wallet_apply() stored function (migration 000081) and
+// maps its declared SQLSTATEs back to domain errors:
+//   - no_data_found (P0002)      → domain.ErrNotFound (no wallet)
+//   - check_violation (23514)    → domain.ErrInsufficientBalance (debit guard)
+//   - idempotent replay          → returns the current balance, no mutation.
+func (r *WalletRepo) apply(ctx context.Context, userID uuid.UUID, amount float64,
+	direction string, entry payment.WalletLedgerEntry) (float64, error) {
+
+	var key any
+	if entry.IdempotencyKey != "" {
+		key = entry.IdempotencyKey
+	}
+	var balance float64
+	err := r.db.QueryRowContext(ctx,
+		`SELECT wallet_apply($1, $2, $3, $4, $5, $6)`,
+		userID, amount, direction, entry.RefType, uuidArgOrNil(entry.RefID), key,
+	).Scan(&balance)
 	if err != nil {
-		return fmt.Errorf("debit wallet: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			// wallet_apply always returns a row or raises — defensive only.
+			return 0, domain.ErrNotFound
+		}
+		switch sqlStateCode(err) {
+		case "P0002":
+			return 0, domain.ErrNotFound
+		case "23514":
+			return 0, domain.ErrInsufficientBalance
+		}
+		return 0, fmt.Errorf("wallet %s: %w", direction, err)
 	}
-	if n, _ := res.RowsAffected(); n == 0 {
-		return domain.ErrInsufficientBalance
+	return balance, nil
+}
+
+// uuidArgOrNil — a nil *uuid.UUID becomes a SQL NULL parameter (passing the
+// typed nil directly would go down the driver.Valuer path on a nil pointer).
+func uuidArgOrNil(p *uuid.UUID) any {
+	if p == nil {
+		return nil
 	}
-	return nil
+	return *p
+}
+
+// sqlStateCode — extracts the SQLSTATE across both driver error shapes
+// (lib/pq's *pq.Error exposes SQLState(); pgx-style errors expose Code()).
+// Returns "" when the error carries no SQLSTATE.
+func sqlStateCode(err error) string {
+	var pgErr interface{ Code() string }
+	if errors.As(err, &pgErr) {
+		return pgErr.Code()
+	}
+	var sqlState interface{ SQLState() string }
+	if errors.As(err, &sqlState) {
+		return sqlState.SQLState()
+	}
+	return ""
 }
 
 var _ payment.WalletRepository = (*WalletRepo)(nil)

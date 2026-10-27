@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"ykay-virtual/internal/domain"
@@ -213,6 +214,91 @@ func TestInstitution_Create_B2B(t *testing.T) {
 
 	_, err = svc.Create(ctx, CreateInstitutionInput{})
 	assert.ErrorIs(t, err, domain.ErrInvalidInput)
+}
+
+// Crash-resume: the qualifier died between "referral marked QUALIFIED" and
+// the wallet credit/reward. The resumed call must finish the sequence —
+// crediting exactly once (ledger idempotency key) with exactly one reward row.
+func TestReferral_ResumeQualifiedAfterCrash_RewardsExactlyOnce(t *testing.T) {
+	env := newGrowthEnv(t)
+	ctx := context.Background()
+
+	rc, err := env.referrals.GetOrCreateCode(ctx, env.parent)
+	require.NoError(t, err)
+	friend := uuid.New()
+	ref, err := env.referrals.Apply(ctx, friend, rc.Code)
+	require.NoError(t, err)
+
+	// Simulate the crash: CAS qualified, nothing else ran yet.
+	require.NoError(t, env.store.Referrals.Qualify(ctx, ref.ID, uuid.New()))
+	mid, _ := env.store.Referrals.GetByReferredUser(ctx, friend)
+	require.Equal(t, "QUALIFIED", mid.Status)
+
+	// Resume → reward completes exactly once.
+	require.NoError(t, env.referrals.QualifyOnOrderPaid(ctx, friend, uuid.New()))
+
+	w, err := env.store.Wallets.GetByUserID(ctx, env.parent)
+	require.NoError(t, err)
+	assert.Equal(t, ReferralRewardAmount, w.Balance)
+
+	ledger := env.store.Wallets.Ledger(env.parent)
+	require.Len(t, ledger, 1, "exactly one journal entry for the reward")
+	assert.Equal(t, "CREDIT", ledger[0].Direction)
+	assert.Equal(t, ReferralRewardAmount, ledger[0].Amount)
+	require.NotNil(t, ledger[0].IdempotencyKey)
+	assert.Equal(t, "referral_reward:"+ref.ID.String(), *ledger[0].IdempotencyKey)
+
+	rw, err := env.store.Referrals.GetRewardByReferral(ctx, ref.ID)
+	require.NoError(t, err)
+	assert.Equal(t, ReferralRewardAmount, rw.Amount)
+
+	done, _ := env.store.Referrals.GetByReferredUser(ctx, friend)
+	assert.Equal(t, "REWARDED", done.Status)
+
+	// Replaying the resume after success is a no-op.
+	require.NoError(t, env.referrals.QualifyOnOrderPaid(ctx, friend, uuid.New()))
+	assert.Len(t, env.store.Wallets.Ledger(env.parent), 1)
+}
+
+// Race: many concurrent settlements for the same referred user. The reward
+// must land exactly once — enforced by the ledger idempotency key and the
+// UNIQUE(referral_id) reward row, not by check-then-act luck.
+func TestReferral_ConcurrentQualify_ExactlyOnce(t *testing.T) {
+	env := newGrowthEnv(t)
+	ctx := context.Background()
+
+	rc, err := env.referrals.GetOrCreateCode(ctx, env.parent)
+	require.NoError(t, err)
+	friend := uuid.New()
+	_, err = env.referrals.Apply(ctx, friend, rc.Code)
+	require.NoError(t, err)
+
+	const n = 16
+	errs := make([]error, n)
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			errs[i] = env.referrals.QualifyOnOrderPaid(ctx, friend, uuid.New())
+		}(i)
+	}
+	wg.Wait()
+	for i := range errs {
+		require.NoError(t, errs[i])
+	}
+
+	w, err := env.store.Wallets.GetByUserID(ctx, env.parent)
+	require.NoError(t, err)
+	assert.Equal(t, ReferralRewardAmount, w.Balance, "reward credited exactly once under concurrency")
+
+	assert.Len(t, env.store.Wallets.Ledger(env.parent), 1, "exactly one ledger row")
+
+	ref, err := env.store.Referrals.GetByReferredUser(ctx, friend)
+	require.NoError(t, err)
+	assert.Equal(t, "REWARDED", ref.Status)
+	_, err = env.store.Referrals.GetRewardByReferral(ctx, ref.ID)
+	assert.NoError(t, err, "reward row exists")
 }
 
 var _ = referral.Referral{}

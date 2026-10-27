@@ -176,6 +176,42 @@ func (r *OrderRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status payme
 	return nil
 }
 
+// TryMarkPaid — atomic settle transition (PENDING|CANCELLED → PAID): the
+// single exactly-once settlement arbiter. Postgres re-evaluates the predicate
+// after any concurrent row lock is released, so when a webhook, the verify
+// endpoint and a manual confirm race, exactly one caller matches the WHERE
+// clause; every other observes RowsAffected=0 and reports a duplicate instead
+// of double-applying escrow/enrollment/subscription side effects. CANCELLED
+// is settleable on purpose (late capture revives an abandoned checkout).
+func (r *OrderRepo) TryMarkPaid(ctx context.Context, id uuid.UUID) (bool, error) {
+	res, err := r.db.ExecContext(ctx,
+		"UPDATE orders SET status = 'PAID', updated_at = NOW() WHERE id = $1 AND status IN ('PENDING','CANCELLED')", id)
+	if err != nil {
+		return false, fmt.Errorf("try mark paid (CAS): %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("try mark paid (CAS): %w", err)
+	}
+	return n == 1, nil
+}
+
+// CancelIfPending — atomic PENDING→CANCELLED compare-and-set for the
+// checkout-abandon sweep. When the payment webhook settles the order first,
+// the CAS misses and the sweep must leave the (now PAID) order alone.
+func (r *OrderRepo) CancelIfPending(ctx context.Context, id uuid.UUID) (bool, error) {
+	res, err := r.db.ExecContext(ctx,
+		"UPDATE orders SET status = 'CANCELLED', updated_at = NOW() WHERE id = $1 AND status = 'PENDING'", id)
+	if err != nil {
+		return false, fmt.Errorf("cancel if pending (CAS): %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("cancel if pending (CAS): %w", err)
+	}
+	return n == 1, nil
+}
+
 func (r *OrderRepo) Update(ctx context.Context, o *payment.Order) error {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE orders SET status=$1, subtotal=$2, discount_amount=$3, total_amount=$4, updated_at=NOW()

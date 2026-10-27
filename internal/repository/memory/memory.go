@@ -676,6 +676,35 @@ func (m *OrderMemory) UpdateStatus(_ context.Context, id uuid.UUID, status payme
 	return nil
 }
 
+// TryMarkPaid — atomic settle transition (PENDING|CANCELLED → PAID), the
+// exactly-once settlement arbiter. Only the first caller observes true;
+// concurrent or repeated settlers see false and must treat the settlement as
+// a duplicate. CANCELLED is settleable (late capture revives an abandoned
+// checkout); PAID/REFUNDED never are.
+func (m *OrderMemory) TryMarkPaid(_ context.Context, id uuid.UUID) (bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	o, ok := m.rows[id]
+	if !ok || (o.Status != payment.OrderPending && o.Status != payment.OrderCancelled) {
+		return false, nil
+	}
+	o.Status = payment.OrderPaid
+	return true, nil
+}
+
+// CancelIfPending — atomic PENDING→CANCELLED compare-and-set for the
+// checkout-abandon sweep: a concurrently settled (PAID) order is left alone.
+func (m *OrderMemory) CancelIfPending(_ context.Context, id uuid.UUID) (bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	o, ok := m.rows[id]
+	if !ok || o.Status != payment.OrderPending {
+		return false, nil
+	}
+	o.Status = payment.OrderCancelled
+	return true, nil
+}
+
 func (m *OrderMemory) Update(_ context.Context, o *payment.Order) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -882,6 +911,17 @@ func NewEscrowMemory() *EscrowMemory { return &EscrowMemory{rows: map[uuid.UUID]
 func (m *EscrowMemory) Create(_ context.Context, h *payment.EscrowHold) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	// One hold per order — mirrors uq_escrow_holds_order_id (000080): a
+	// second hold on the same order would double-release to the tutor.
+	// (Rows with an unset OrderID are test fixtures only; the FK makes
+	// order_id NOT NULL in Postgres.)
+	if h.OrderID != uuid.Nil {
+		for _, existing := range m.rows {
+			if existing.OrderID == h.OrderID {
+				return domain.ErrAlreadyExists
+			}
+		}
+	}
 	if h.ID == uuid.Nil {
 		h.ID = uuid.New()
 	}
@@ -1076,11 +1116,18 @@ func (m *PayoutMemory) ListByTutorProfileID(_ context.Context, tutorProfileID uu
 var _ payment.PayoutRepository = (*PayoutMemory)(nil)
 
 type WalletMemory struct {
-	mu   sync.RWMutex
-	rows map[uuid.UUID]*payment.Wallet
+	mu     sync.RWMutex
+	rows   map[uuid.UUID]*payment.Wallet
+	txs    []payment.WalletTransaction // append-only journal
+	byIdem map[string]struct{}         // idempotency-key index over txs
 }
 
-func NewWalletMemory() *WalletMemory { return &WalletMemory{rows: map[uuid.UUID]*payment.Wallet{}} }
+func NewWalletMemory() *WalletMemory {
+	return &WalletMemory{
+		rows:   map[uuid.UUID]*payment.Wallet{},
+		byIdem: map[string]struct{}{},
+	}
+}
 
 func (m *WalletMemory) GetByUserID(_ context.Context, userID uuid.UUID) (*payment.Wallet, error) {
 	m.mu.RLock()
@@ -1103,14 +1150,31 @@ func (m *WalletMemory) Create(_ context.Context, w *payment.Wallet) error {
 	return nil
 }
 
-func (m *WalletMemory) Credit(_ context.Context, userID uuid.UUID, amount float64) error {
+func (m *WalletMemory) Credit(ctx context.Context, userID uuid.UUID, amount float64) error {
+	return m.CreditEntry(ctx, userID, amount, payment.WalletLedgerEntry{})
+}
+
+// CreditEntry — balance credit + append-only journal row in one critical
+// section (the memory stand-in for the atomic wallet_apply() SQL function).
+// A non-empty IdempotencyKey makes the mutation apply at most once: replays
+// return nil without touching the balance or the journal.
+func (m *WalletMemory) CreditEntry(_ context.Context, userID uuid.UUID, amount float64, entry payment.WalletLedgerEntry) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	w, ok := m.rows[userID]
 	if !ok {
 		return domain.ErrNotFound
 	}
+	if amount <= 0 {
+		return domain.ErrInvalidInput
+	}
+	if entry.IdempotencyKey != "" {
+		if _, dup := m.byIdem[entry.IdempotencyKey]; dup {
+			return nil // already applied — replayed call is a no-op
+		}
+	}
 	w.Balance += amount
+	m.appendTxLocked(w, "CREDIT", amount, entry)
 	return nil
 }
 
@@ -1134,11 +1198,48 @@ func (m *WalletMemory) Debit(_ context.Context, userID uuid.UUID, amount float64
 	if !ok {
 		return domain.ErrNotFound
 	}
+	if amount <= 0 {
+		return domain.ErrInvalidInput
+	}
 	if w.Balance < amount {
 		return domain.ErrInsufficientBalance
 	}
 	w.Balance -= amount
+	m.appendTxLocked(w, "DEBIT", amount, payment.WalletLedgerEntry{})
 	return nil
+}
+
+// appendTxLocked — journal a completed mutation (caller holds the write
+// lock). Mirrors the wallet_transactions table + wallet_apply() function.
+func (m *WalletMemory) appendTxLocked(w *payment.Wallet, direction string, amount float64, entry payment.WalletLedgerEntry) {
+	tx := payment.WalletTransaction{
+		ID: uuid.New(), WalletID: w.ID, UserID: w.UserID, Direction: direction,
+		Amount: amount, BalanceAfter: w.Balance,
+		RefType: entry.RefType, RefID: entry.RefID, CreatedAt: time.Now().UTC(),
+	}
+	if tx.RefType == "" {
+		tx.RefType = "UNSPECIFIED"
+	}
+	if entry.IdempotencyKey != "" {
+		key := entry.IdempotencyKey
+		tx.IdempotencyKey = &key
+		m.byIdem[key] = struct{}{}
+	}
+	m.txs = append(m.txs, tx)
+}
+
+// Ledger — journal entries for a user's wallet in append order (tests and
+// the in-memory admin views; Postgres reads wallet_transactions directly).
+func (m *WalletMemory) Ledger(userID uuid.UUID) []payment.WalletTransaction {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := make([]payment.WalletTransaction, 0, len(m.txs))
+	for i := range m.txs {
+		if m.txs[i].UserID == userID {
+			out = append(out, m.txs[i])
+		}
+	}
+	return out
 }
 
 var _ payment.WalletRepository = (*WalletMemory)(nil)
