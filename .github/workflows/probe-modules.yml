@@ -3,6 +3,10 @@ name: Probe module sums
 # as annotations (sandbox cannot reach proxy.golang.org). Delete after use.
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "probe-modules.yml"
+      - ".github/workflows/probe-modules.yml"
 
 permissions:
   contents: read
