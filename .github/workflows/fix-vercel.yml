@@ -13,53 +13,14 @@ permissions:
   contents: read
 
 jobs:
-  fix-root-directory:
+  probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe + patch
+      - name: Hash-identify masked secrets
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          set -u
-          auth=(-H "Authorization: Bearer $VERCEL_TOKEN")
-          api() { curl -sS -o "$2" -w "%{http_code}" "${auth[@]}" "$1"; }
-          emit() { echo "::error::VERCEL_PROBE $1"; }
-
-          emit "org=${VERCEL_ORG_ID:-EMPTY} project_secret=${VERCEL_PROJECT_ID:-EMPTY}"
-
-          # 1. list projects visible with the configured team
-          code=$(api "https://api.vercel.com/v9/projects?teamId=${VERCEL_ORG_ID:-none}&limit=20" /tmp/withteam.json)
-          if [ "$code" = "200" ]; then
-            jq -r '.projects[] | "\(.id)|\(.name)|\(.rootDirectory // "<null>")"' /tmp/withteam.json | while IFS='|' read -r id name rd; do
-              emit "withteam id=$id name=$name rootDirectory=[$rd]"
-            done
-          else
-            emit "withteam http=$code body=$(head -c 200 /tmp/withteam.json)"
-          fi
-
-          # 2. list projects with token default scope (no teamId)
-          code=$(api "https://api.vercel.com/v9/projects?limit=20" /tmp/noteam.json)
-          if [ "$code" = "200" ]; then
-            jq -r '.projects[] | "\(.id)|\(.name)|\(.rootDirectory // "<null>")"' /tmp/noteam.json | while IFS='|' read -r id name rd; do
-              emit "noteam  id=$id name=$name rootDirectory=[$rd]"
-            done
-          else
-            emit "noteam http=$code body=$(head -c 200 /tmp/noteam.json)"
-          fi
-
-          # 3. direct GET of the failing project, both ways
-          code=$(api "https://api.vercel.com/v9/projects/prj_8vZMCgKG4nveomMXmwbU7ScGFTgw?teamId=${VERCEL_ORG_ID:-none}" /tmp/t1.json)
-          emit "direct+team http=$code rootDirectory=[$(jq -r '.rootDirectory // "<null>"' /tmp/t1.json 2>/dev/null)]"
-          code=$(api "https://api.vercel.com/v9/projects/prj_8vZMCgKG4nveomMXmwbU7ScGFTgw" /tmp/t2.json)
-          rd=$(jq -r '.rootDirectory // "<null>"' /tmp/t2.json 2>/dev/null)
-          emit "direct-noteam http=$code rootDirectory=[$rd]"
-
-          # 4. if readable without teamId, patch it
-          if [ "$code" = "200" ] && [ "$rd" != "client" ]; then
-            pcode=$(curl -sS -o /tmp/p.json -w "%{http_code}" -X PATCH "${auth[@]}" \
-              -H "Content-Type: application/json" -d '{"rootDirectory":"client"}' \
-              "https://api.vercel.com/v9/projects/prj_8vZMCgKG4nveomMXmwbU7ScGFTgw")
-            emit "patch-noteam http=$pcode after=[$(jq -r '.rootDirectory // "<null>"' /tmp/p.json 2>/dev/null)]"
-          fi
+          h() { printf '%s' "$1" | sha256sum | cut -c1-16; }
+          echo "::error::VERCEL_HASH project=$(h "${VERCEL_PROJECT_ID:-}") org=$(h "${VERCEL_ORG_ID:-}")"
