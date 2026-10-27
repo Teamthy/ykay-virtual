@@ -461,7 +461,7 @@ func (s *PaymentService) ProcessWebhook(ctx context.Context, providerName paymen
 				"action": "duplicate_settlement_blocked", "reference": reference,
 				"amount": paymentRow.Amount, "currency": paymentRow.Currency,
 				"order_number": order.OrderNumber,
-				"note": "gateway captured funds for an already-PAID order — refund via payments runbook",
+				"note":         "gateway captured funds for an already-PAID order — refund via payments runbook",
 			}, nil, nil)
 		if err := uow.Commit(ctx); err != nil {
 			return nil, err

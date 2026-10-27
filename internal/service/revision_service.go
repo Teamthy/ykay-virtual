@@ -99,7 +99,7 @@ func (s *RevisionService) Rebalance(ctx context.Context, planID uuid.UUID) (chan
 		// its score into the weak band so it is promoted to priority 1.
 		prio := 2 // unknown — neutral
 		if score, ok := m[t.Topic]; ok {
-			prio = priorityForMastery(max(score, 1))
+			prio = priorityForMastery(max(score.Mastery, 1))
 		}
 		if prio != t.Priority || t.Source != "rebalanced" {
 			if err := s.repo.SetTaskPriority(ctx, t.ID, prio, "rebalanced"); err != nil {
