@@ -1,0 +1,47 @@
+name: Probe module sums
+# TEMPORARY: emit official go.sum h1 lines for the security-bump module set
+# as annotations (sandbox cannot reach proxy.golang.org). Delete after use.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          check-latest: true
+      - name: Probe official sums
+        run: |
+          cd "$(mktemp -d)"
+          go mod init probe.local/x >/dev/null 2>&1
+          for m in \
+            go.opentelemetry.io/otel@v1.47.0 \
+            go.opentelemetry.io/otel/sdk@v1.47.0 \
+            go.opentelemetry.io/otel/sdk/metric@v1.47.0 \
+            go.opentelemetry.io/otel/metric@v1.47.0 \
+            go.opentelemetry.io/otel/trace@v1.47.0 \
+            go.opentelemetry.io/otel/log@v1.47.0 \
+            go.opentelemetry.io/otel/exporters/otlp/otlptrace@v1.47.0 \
+            go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp@v1.47.0 \
+            go.opentelemetry.io/proto/otlp@v1.11.0 \
+            go.yaml.in/yaml/v3@v3.0.5 \
+            github.com/go-logr/logr@v1.4.4 \
+            github.com/stretchr/testify@v1.12.1 \
+            google.golang.org/protobuf@v1.36.12 \
+            google.golang.org/grpc@v1.83.2 \
+            github.com/grpc-ecosystem/grpc-gateway/v2@v2.30.0 \
+            google.golang.org/genproto/googleapis/api@v0.0.0-20260928230214-8a89bd6388cc \
+            google.golang.org/genproto/googleapis/rpc@v0.0.0-20260928230214-8a89bd6388cc \
+            ; do
+            out=$(go mod download -json "$m" 2>&1 || true)
+            sum=$(jq -r '.Sum // "NONE"' <<<"$out" 2>/dev/null || echo JQ_ERR)
+            gsum=$(jq -r '.GoModSum // "NONE"' <<<"$out" 2>/dev/null || echo JQ_ERR)
+            err=$(jq -r '.Error // ""' <<<"$out" 2>/dev/null || echo "")
+            echo "::error::GOSUM $m zip=$sum mod=$gsum err=$err"
+          done
