@@ -43,6 +43,14 @@ func (c *countingOrderRepo) GetByNumber(ctx context.Context, number string) (*pa
 func (c *countingOrderRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status payment.OrderStatus) error {
 	return c.inner.UpdateStatus(ctx, id, status)
 }
+
+func (c *countingOrderRepo) TryMarkPaid(ctx context.Context, id uuid.UUID) (bool, error) {
+	return c.inner.TryMarkPaid(ctx, id)
+}
+
+func (c *countingOrderRepo) CancelIfPending(ctx context.Context, id uuid.UUID) (bool, error) {
+	return c.inner.CancelIfPending(ctx, id)
+}
 func (c *countingOrderRepo) Update(ctx context.Context, o *payment.Order) error {
 	return c.inner.Update(ctx, o)
 }
