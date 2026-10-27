@@ -39,6 +39,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
+          # Latest 1.26 patch, not the runner's preinstalled copy: stdlib
+          # security fixes (e.g. GO-2026-6809 in x509) ship only in patch
+          # releases, and govulncheck fails the gate on whatever runs here.
+          check-latest: true
           cache: true
       - name: Lint (gofmt + vet)
         run: |
@@ -47,7 +51,14 @@ jobs:
       - name: Vulnerability gate (govulncheck)
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./...
+          set -o pipefail
+          if ! govulncheck ./... 2>&1 | tee /tmp/govulncheck.log; then
+            # Re-surface finding IDs as PR annotations — the raw job log is
+            # not fetchable from every environment, the annotations are.
+            grep -E "GO-[0-9]{4}-[0-9]+|Found in:|Fixed in:|More info:" /tmp/govulncheck.log \
+              | sort -u | head -60 | sed 's/^/::error::/' || true
+            exit 1
+          fi
       - name: Test (root module — Redis integration included)
         env:
           REDIS_URL: redis://localhost:6379/0
@@ -61,6 +72,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
+          check-latest: true
           cache: true
       - name: Run CI eval suite (deterministic rubric)
         run: go test ./internal/service/ -run 'TestChatPromptEvals_CI|TestChatService_|TestPushService_' -v
@@ -92,6 +104,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
+          check-latest: true
           cache: true
       - name: Install postgres client (psql/pg_dump)
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
