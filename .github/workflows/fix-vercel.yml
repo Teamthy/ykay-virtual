@@ -1,0 +1,59 @@
+name: Fix Vercel root directory
+# ONE-SHOT: the `ykay-virtual` Vercel project's Root Directory is " client"
+# (leading space) — documented in docs/AUDIT_PRE_PRODUCTION_2026.md:201 as the
+# reason its Git-integration deploys fail while `ykay-virtual-wtar` succeeds.
+# This patch fixes the setting through the Vercel API using the same secrets
+# the Deploy workflow consumes, then reports before/after as annotations.
+# Safe to delete after it has run green once.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/fix-vercel.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  fix-root-directory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Patch project rootDirectory client
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -u
+          if [ -z "${VERCEL_TOKEN:-}" ] || [ -z "${VERCEL_ORG_ID:-}" ]; then
+            echo "::error::VERCEL_FIX missing secrets (VERCEL_TOKEN/VERCEL_ORG_ID) — cannot patch from CI; fix Root Directory in Vercel dashboard instead."
+            exit 1
+          fi
+          TARGET=prj_8vZMCgKG4nveomMXmwbU7ScGFTgw   # ykay-virtual (the failing project)
+          auth=(-H "Authorization: Bearer $VERCEL_TOKEN")
+          api() { curl -sS -o "$2" -w "%{http_code}" "${auth[@]}" "$1"; }
+
+          code=$(api "https://api.vercel.com/v9/projects/$TARGET?teamId=$VERCEL_ORG_ID" /tmp/before.json)
+          before=$(jq -r '.rootDirectory // "<null>"' /tmp/before.json 2>/dev/null || echo parse-err)
+          echo "VERCEL_FIX before rootDirectory=[$before] project=$TARGET http=$code"
+          if [ "$code" != "200" ]; then
+            echo "::error::VERCEL_FIX GET failed http=$code body=$(head -c 300 /tmp/before.json)"
+            exit 1
+          fi
+
+          code=$(curl -sS -o /tmp/after.json -w "%{http_code}" -X PATCH "${auth[@]}" \
+            -H "Content-Type: application/json" \
+            -d '{"rootDirectory":"client"}' \
+            "https://api.vercel.com/v9/projects/$TARGET?teamId=$VERCEL_ORG_ID")
+          after=$(jq -r '.rootDirectory // "<null>"' /tmp/after.json 2>/dev/null || echo parse-err)
+          echo "VERCEL_FIX patch http=$code after rootDirectory=[$after]"
+          if [ "$code" != "200" ]; then
+            echo "::error::VERCEL_FIX PATCH failed http=$code body=$(head -c 300 /tmp/after.json)"
+            exit 1
+          fi
+
+          if [ "$after" != "client" ]; then
+            echo "::error::VERCEL_FIX after=[$after] expected [client] — check token scope (Project Settings write)."
+            exit 1
+          fi
+          echo "::error::VERCEL_FIX OK project=$TARGET before=[$before] after=[$after]"
