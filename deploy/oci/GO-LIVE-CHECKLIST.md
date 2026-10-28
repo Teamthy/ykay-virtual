@@ -1,5 +1,19 @@
 # YKAY GO-LIVE CHECKLIST (both systems)
 
+> **Reconciled 2026-10-28 against `Teamthy/ykay_eduport-` (HEAD `0f7553f`):**
+> the item bodies in both repositories are **byte-identical**; only the
+> headers had drifted. EduPortal has re-scoped *its* copy of this checklist
+> as **legacy ecosystem** — its current launch gates are
+> [`production-readiness-audit-2026-10-23.md`](https://github.com/Teamthy/ykay_eduport-/blob/main/docs/production-readiness-audit-2026-10-23.md)
+> and [`launch-deployment-runbook.md`](https://github.com/Teamthy/ykay_eduport-/blob/main/docs/launch-deployment-runbook.md),
+> with **Render Docker** as its recommended target — so the OCI/Vercel rows
+> below are **not** evidence that an EduPortal path is deployed or validated.
+> Evidence for College-side rows comes from their current docs; this file
+> stays the gate for the YK-Virtual arm (verdict:
+> [`GO_LIVE_1K_READINESS.md`](../../docs/GO_LIVE_1K_READINESS.md)) plus the
+> shared ecosystem rows below. YK-Virtual and multi-tenant onboarding remain
+> separate gates. **Keep the item bodies in sync with the EduPortal copy.**
+
 Use as the launch gate. Every item needs an owner, evidence, and a date.
 No production DNS until **every** Critical item is green.
 

@@ -15,24 +15,30 @@ import (
 )
 
 // fakeCollegePortal stands in for the EDU Portal's
-// POST /api/auth/verify-session endpoint.
+// POST /api/auth/verify-session and POST /api/auth/verify-credentials
+// endpoints, recording exactly what the client presented so tests can lock
+// the cross-repo contract (path, header, payload fields).
 type fakeCollegePortal struct {
-	status    int
-	body      any
-	gotSecret string
-	gotToken  string
-	calls     int
+	status      int
+	body        any
+	gotSecret   string
+	gotPath     string
+	gotToken    string
+	gotEmail    string
+	gotPassword string
+	calls       int
 }
 
 func (f *fakeCollegePortal) handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		f.calls++
 		f.gotSecret = r.Header.Get("X-College-SSO-Secret")
-		var req struct {
-			Token string `json:"token"`
-		}
+		f.gotPath = r.URL.Path
+		var req map[string]string
 		_ = json.NewDecoder(r.Body).Decode(&req)
-		f.gotToken = req.Token
+		f.gotToken = req["token"]
+		f.gotEmail = req["email"]
+		f.gotPassword = req["password"]
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(f.status)
 		_ = json.NewEncoder(w).Encode(f.body)
@@ -226,6 +232,129 @@ func TestCollegeAuth_ExchangeSession_LocalSuspensionIsRespected(t *testing.T) {
 	_, _, _, err = svc.ExchangeSession(ctx, "college-jwt", "1.2.3.4", "ua")
 	assert.ErrorIs(t, err, domain.ErrForbidden, "a locally suspended account must stay locked out")
 	assert.Equal(t, 1, portal.calls, "the portal was consulted; the refusal is the local check")
+}
+
+// ── ExchangePassword — POST /auth/college/credentials → the EduPortal's
+// ── POST /api/auth/verify-credentials ──────────────────────────────────────
+
+// Lock the cross-repo credential contract: our client must hit the endpoint
+// the EduPortal actually implements, present the shared secret header
+// (x-college-sso-secret), and send {email, password} with the email trimmed
+// (their zod schema trims+lowercases it server-side). A path or payload drift
+// in either repository must fail here rather than in production login.
+func TestCollegeAuth_ExchangePassword_MatchesPortalContract(t *testing.T) {
+	env := newAuthEnv(t)
+	portal := &fakeCollegePortal{
+		status: http.StatusOK,
+		body:   validCollegeBody("tunde@ykaycollege.com", "STUDENT", "Tunde Bakare"),
+	}
+	srv := httptest.NewServer(portal.handler())
+	t.Cleanup(srv.Close)
+	svc := NewCollegeAuthService(CollegeSSOConfig{
+		BaseURL: srv.URL,
+		Secret:  "college-sso-secret-that-is-long-enough",
+	}, env.svc)
+
+	token, user, roles, err := svc.ExchangePassword(context.Background(),
+		"  Tunde@YkayCollege.com  ", "correct horse", "1.2.3.4", "ua")
+	require.NoError(t, err)
+	require.NotEmpty(t, token)
+
+	assert.Equal(t, "/api/auth/verify-credentials", portal.gotPath,
+		"the portal route implemented in ykay_eduport is /api/auth/verify-credentials")
+	assert.Equal(t, "college-sso-secret-that-is-long-enough", portal.gotSecret)
+	assert.Equal(t, "Tunde@YkayCollege.com", portal.gotEmail,
+		"email is trimmed only; the portal lowercases it itself")
+	assert.Equal(t, "correct horse", portal.gotPassword, "password must pass through untouched")
+	assert.Equal(t, 1, portal.calls)
+
+	assert.Equal(t, "tunde@ykaycollege.com", user.Email, "local email is the lowercased join key")
+	assert.Contains(t, roles, "STUDENT")
+
+	// The session minted from the answer must be live, not just a string.
+	me, meRoles, err := env.svc.Me(context.Background(), HashToken(token))
+	require.NoError(t, err)
+	assert.Equal(t, "tunde@ykaycollege.com", me.Email)
+	assert.NotEmpty(t, meRoles)
+}
+
+// Every portal failure mode on the credential path must map to the right
+// domain error: 401 bad password, 403 suspended/inactive, 503 portal down
+// (conflict — retryable), 429 portal-side rate limit surfaced as 429.
+func TestCollegeAuth_ExchangePassword_MapsPortalFailures(t *testing.T) {
+	cases := []struct {
+		name    string
+		status  int
+		body    any
+		wantErr error
+	}{
+		{"wrong password", http.StatusUnauthorized,
+			map[string]any{"valid": false, "reason": "INVALID_TOKEN"}, domain.ErrUnauthorized},
+		{"suspended on the portal", http.StatusForbidden,
+			map[string]any{"valid": false, "reason": "USER_SUSPENDED"}, domain.ErrForbidden},
+		{"inactive on the portal", http.StatusForbidden,
+			map[string]any{"valid": false, "reason": "USER_INACTIVE"}, domain.ErrForbidden},
+		{"portal database unreachable", http.StatusServiceUnavailable,
+			map[string]any{"valid": false, "reason": "IDENTITY_UNVERIFIABLE"}, domain.ErrConflict},
+		{"portal rate limited us", http.StatusTooManyRequests,
+			map[string]any{"error": "Too many requests."}, domain.ErrTooManyRequests},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			svc := newCollegeSvc(t, &fakeCollegePortal{status: tc.status, body: tc.body})
+			token, user, roles, err := svc.ExchangePassword(context.Background(), "a@b.com", "nope", "1.2.3.4", "ua")
+			assert.ErrorIs(t, err, tc.wantErr)
+			assert.Empty(t, token)
+			assert.Nil(t, user)
+			assert.Nil(t, roles)
+		})
+	}
+}
+
+// The portal's REAL success body carries extra fields — issuer, issuedAt,
+// nonce (and revalidateAfterSeconds on verify-session). They must be
+// tolerated: only valid + user matter to this client.
+func TestCollegeAuth_ExchangePassword_ToleratesPortalExtraFields(t *testing.T) {
+	env := newAuthEnv(t)
+	body := validCollegeBody("extra@ykaycollege.com", "STUDENT", "Extra Fields")
+	body["issuer"] = "ykay-college-eduportal"
+	body["issuedAt"] = "2026-10-28T12:00:00.000Z"
+	body["nonce"] = "abc123def4567890"
+	body["revalidateAfterSeconds"] = 60
+	portal := &fakeCollegePortal{status: http.StatusOK, body: body}
+	srv := httptest.NewServer(portal.handler())
+	t.Cleanup(srv.Close)
+	svc := NewCollegeAuthService(CollegeSSOConfig{
+		BaseURL: srv.URL,
+		Secret:  "college-sso-secret-that-is-long-enough",
+	}, env.svc)
+
+	token, user, _, err := svc.ExchangePassword(context.Background(), "Extra@YkayCollege.com", "pw", "1.2.3.4", "ua")
+	require.NoError(t, err)
+	require.NotEmpty(t, token)
+	assert.Equal(t, "extra@ykaycollege.com", user.Email)
+}
+
+// Blank credentials must be rejected before any call-out — never POSTing an
+// empty password to the portal — and an unconfigured integration must fail
+// closed as a conflict, same as the session path.
+func TestCollegeAuth_ExchangePassword_RejectsBlankInputWithoutCall(t *testing.T) {
+	portal := &fakeCollegePortal{status: http.StatusOK, body: validCollegeBody("a@b.com", "STUDENT", "A B")}
+	svc := newCollegeSvc(t, portal)
+	for _, in := range [][2]string{{"", "pw"}, {"  ", "pw"}, {"a@b.com", ""}, {"a@b.com", "   "}} {
+		_, _, _, err := svc.ExchangePassword(context.Background(), in[0], in[1], "1.2.3.4", "ua")
+		assert.ErrorIs(t, err, domain.ErrInvalidInput, "input %q/%q", in[0], in[1])
+	}
+	assert.Equal(t, 0, portal.calls, "blank credentials must never reach the portal")
+}
+
+func TestCollegeAuth_ExchangePassword_UnconfiguredFailsClosed(t *testing.T) {
+	env := newAuthEnv(t)
+	svc := NewCollegeAuthService(CollegeSSOConfig{}, env.svc)
+	assert.False(t, svc.Enabled())
+
+	_, _, _, err := svc.ExchangePassword(context.Background(), "a@b.com", "pw", "1.2.3.4", "ua")
+	assert.ErrorIs(t, err, domain.ErrConflict)
 }
 
 // Least privilege: a College staff/admin role must not confer any YK Virtual
